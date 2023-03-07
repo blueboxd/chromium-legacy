@@ -120,13 +120,23 @@ void ReadAnythingModel::SetSelectedLetterSpacingByIndex(size_t new_index) {
   NotifyThemeChanged();
 }
 
-void ReadAnythingModel::SetDistilledAXTree(
-    ui::AXTreeUpdate snapshot,
-    std::vector<ui::AXNodeID> content_node_ids) {
-  // Update state and notify listeners
-  snapshot_ = std::move(snapshot);
-  content_node_ids_ = std::move(content_node_ids);
-  NotifyAXTreeDistilled();
+void ReadAnythingModel::AccessibilityEventReceived(
+    const content::AXEventNotificationDetails& details) {
+  for (Observer& obs : observers_) {
+    obs.AccessibilityEventReceived(details);
+  }
+}
+
+void ReadAnythingModel::OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) {
+  for (Observer& obs : observers_) {
+    obs.OnActiveAXTreeIDChanged(tree_id);
+  }
+}
+
+void ReadAnythingModel::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
+  for (Observer& obs : observers_) {
+    obs.OnAXTreeDestroyed(tree_id);
+  }
 }
 
 double ReadAnythingModel::GetValidFontScale(double font_scale) {
@@ -152,14 +162,6 @@ void ReadAnythingModel::IncreaseTextSize() {
     font_scale_ = kReadAnythingMaximumFontScale;
 
   NotifyThemeChanged();
-}
-
-void ReadAnythingModel::NotifyAXTreeDistilled() {
-  // The snapshot must have a valid root id.
-  DCHECK(snapshot_.root_id != ui::kInvalidAXNodeID);
-  for (Observer& obs : observers_) {
-    obs.OnAXTreeDistilled(snapshot_, content_node_ids_);
-  }
 }
 
 void ReadAnythingModel::NotifyThemeChanged() {

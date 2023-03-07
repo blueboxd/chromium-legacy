@@ -3,7 +3,7 @@
 <div class="content-area custom-scrollbar" scrollable tabindex="-1">
   <div class="header">
     <img class="logo" alt="">
-    <h2>$i18n{m1ConsentTitle}</h2>
+    <h1>$i18n{m1ConsentTitle}</h1>
   </div>
   <div class="section cr-secondary-text">
     $i18n{m1ConsentDescription1}
@@ -12,7 +12,7 @@
     $i18n{m1ConsentDescription2}
   </div>
   <div class="banner">
-    <img alt="$i18n{m1ConsentBannerImageA11yDescription}">
+    <img class="topics-banner" alt="">
   </div>
   <div class="section cr-secondary-text">
     $i18n{m1ConsentDescription3}
@@ -20,7 +20,6 @@
   <privacy-sandbox-dialog-learn-more class="learn-more-section"
       expanded="{{expanded_}}"
       title="$i18n{m1ConsentLearnMoreExpandLabel}">
-    <div><b>$i18n{m1ConsentLearnMoreHeading}</b></div>
       <ul class="cr-secondary-text">
         <li>$i18nRaw{m1ConsentLearnMoreBullet1}</li>
         <li>$i18nRaw{m1ConsentLearnMoreBullet2}</li>
@@ -28,15 +27,22 @@
       </ul>
       <div class="cr-secondary-text">$i18n{m1ConsentLearnMoreLink}</div>
   </privacy-sandbox-dialog-learn-more>
-  <div class="section cr-secondary-text">
+  <div class="section cr-secondary-text" id="lastTextElement">
     $i18n{m1ConsentDescription4}
   </div>
+  <div class="buttons-container">
+    <cr-button id="declineButton" on-click="onConsentDeclined_">
+      $i18n{m1ConsentDeclineButton}
+    </cr-button>
+    <cr-button id="confirmButton" on-click="onConsentAccepted_">
+      $i18n{m1ConsentAcceptButton}
+    </cr-button>
+  </div>
 </div>
-<div class="buttons-container">
-  <cr-button id="declineButton" on-click="onConsentDeclined_">
-    $i18n{m1ConsentDeclineButton}
-  </cr-button>
-  <cr-button id="confirmButton" on-click="onConsentAccepted_">
-    $i18n{m1ConsentAcceptButton}
+<div id="showMoreOverlay" hidden="[[wasScrolledToBottom]]">
+  <cr-button id="moreButton" on-click="onConsentMoreClicked"
+      class="action-button" aria-hidden="true" tabindex="-1">
+    $i18n{m1DialogMoreButton}
+    <iron-icon icon="cr:expand-more"></iron-icon>
   </cr-button>
 </div>

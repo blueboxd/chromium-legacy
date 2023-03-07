@@ -8,12 +8,12 @@ if (!is_android) {
   static_library("live_caption") {
     sources = [
       "caption_bubble_context.h",
+      "caption_bubble_context_remote.cc",
+      "caption_bubble_context_remote.h",
       "caption_bubble_controller.h",
       "caption_bubble_session_observer.h",
       "live_caption_controller.cc",
       "live_caption_controller.h",
-      "live_translate_controller.cc",
-      "live_translate_controller.h",
     ]
 
     deps = [
@@ -28,6 +28,7 @@ if (!is_android) {
       "//components/sync_preferences",
       "//media",
       "//media/mojo/mojom",
+      "//mojo/public/cpp/bindings",
       "//ui/native_theme",
     ]
 
@@ -52,6 +53,51 @@ if (!is_android) {
         "//ui/views",
       ]
     }  # toolkit_views
+  }
+
+  static_library("live_translate") {
+    sources = [
+      "live_translate_controller.cc",
+      "live_translate_controller.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/keyed_service/core",
+      "//components/live_caption:constants",
+      "//components/live_caption:utils",
+      "//components/pref_registry",
+      "//components/prefs",
+      "//components/soda",
+      "//components/soda:constants",
+      "//components/sync_preferences",
+      "//content/public/browser",
+      "//google_apis:google_apis",
+      "//media",
+      "//media/mojo/mojom",
+      "//services/data_decoder/public/cpp:cpp",
+      "//services/data_decoder/public/mojom:mojom",
+      "//services/network/public/cpp",
+      "//services/network/public/mojom",
+      "//ui/native_theme",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+
+    sources = [ "caption_bubble_context_remote_unittest.cc" ]
+
+    deps = [
+      ":live_caption",
+      "//base",
+      "//base/test:test_support",
+      "//media/mojo/mojom:speech_recognition",
+      "//mojo/public/cpp/bindings:bindings",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/gfx/geometry:geometry",
+    ]
   }
 }  # !is_android
 

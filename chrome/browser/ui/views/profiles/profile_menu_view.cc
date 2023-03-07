@@ -16,6 +16,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -295,7 +297,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
       // This error means that the Sync engine failed to initialize. Shutdown
       // Sync engine by revoking sync consent.
       identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-          signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+          signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
           signin_metrics::SignoutDelete::kIgnoreMetric);
       GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
       // Re-enable sync with the same primary account.
@@ -365,8 +367,9 @@ void ProfileMenuView::OnSignoutButtonClicked() {
   CHECK(!browser()->profile()->IsMainProfile());
   IdentityManagerFactory::GetForProfile(browser()->profile())
       ->GetPrimaryAccountMutator()
-      ->ClearPrimaryAccount(signin_metrics::USER_CLICKED_SIGNOUT_PROFILE_MENU,
-                            signin_metrics::SignoutDelete::kIgnoreMetric);
+      ->ClearPrimaryAccount(
+          signin_metrics::ProfileSignout::kUserClickedSignoutProfileMenu,
+          signin_metrics::SignoutDelete::kIgnoreMetric);
 #endif
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -636,7 +639,12 @@ void ProfileMenuView::BuildFeatureButtons() {
       !profile->IsGuestSession() &&
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
 
-  bool add_sign_out_button = has_unconsented_account && !has_primary_account;
+  bool hide_signout_button_for_managed_profiles =
+      chrome::enterprise_util::UserAcceptedAccountManagement(profile) &&
+      base::FeatureList::IsEnabled(kDisallowManagedProfileSignout);
+
+  bool add_sign_out_button = has_unconsented_account && !has_primary_account &&
+                             !hide_signout_button_for_managed_profiles;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Clearing the primary account is not allowed in the main profile.
   add_sign_out_button &= !profile->IsMainProfile();

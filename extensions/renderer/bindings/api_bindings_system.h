@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
 #include "extensions/renderer/bindings/api_binding.h"
@@ -148,7 +148,7 @@ class APIBindingsSystem {
 
   std::map<std::string, CustomTypeHandler> custom_types_;
 
-  // The method to retrieve the DictionaryValue describing a given extension
+  // The method to retrieve the dictionary describing a given extension
   // API. Curried in for testing purposes so we can use fake APIs.
   GetAPISchemaMethod get_api_schema_;
 

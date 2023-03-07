@@ -1,36 +1,40 @@
 <style>
   :host {
-    align-items: center;
+    --customize-chrome-color-border-radius: 50%;
+    box-sizing: border-box;
     cursor: pointer;
-    display: flex;
-    justify-content: center;
+    display: block;
+    outline: none;
+    padding: 8px;
+    width: 100%;
   }
 
-  :host,
+  :host(:focus) {
+    box-shadow: 0 0 0 2px var(--cr-focus-outline-color);
+  }
+
   svg {
-    height: 50px;
-    width: 50px;
+    border: 1px solid var(--customize-chrome-color-foreground-color);
+    border-radius: var(--customize-chrome-color-border-radius);
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
   }
 
   :host([checked]) svg {
-    height: 46px;
-    width: 46px;
+    width: calc(100% - 4px);
   }
 
   customize-chrome-check-mark {
     --customize-chrome-check-mark-wrapper-end: -1px;
   }
 
-  svg {
-    border-radius: 25px;
-  }
-
   #background {
     fill: var(--customize-chrome-color-background-color);
   }
 
-  :host([checked]) #background {
-    r: 25px;
+  :host([checked]) svg {
+    border: none;
   }
 
   :host([background-color-hidden]) #background {
@@ -44,12 +48,9 @@
 <customize-chrome-check-mark-wrapper checked="[[checked]]">
   <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink">
-    <circle id="foreground" cx="25" cy="25" r="25">
-    </circle>
-    <clipPath id="bottomHalf">
-      <rect x="1" y="25" width="50" height="25"></rect>
-    </clipPath>
-    <circle id="background" cx="25" cy="25" r="24"
-        clip-path="url(#bottomHalf)"></circle>
+    <rect id="foreground" x="0" y="0" width="50" height="50">
+    </rect>
+    <rect id="background" x="0" y="25" width="50" height="25">
+    </rect>
   </svg>
 </customize-chrome-check-mark-wrapper>

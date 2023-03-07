@@ -132,9 +132,8 @@ void DiagnosticsLogController::Initialize(
                      g_instance->log_base_path_));
 }
 
-bool DiagnosticsLogController::GenerateSessionLogOnBlockingPool(
-    const base::FilePath& save_file_path) {
-  DCHECK(!save_file_path.empty());
+std::string DiagnosticsLogController::GenerateSessionStringOnBlockingPool()
+    const {
   std::vector<std::string> log_pieces;
 
   // Fetch system data from TelemetryLog.
@@ -150,21 +149,19 @@ bool DiagnosticsLogController::GenerateSessionLogOnBlockingPool(
   // Add the routine section for the system category.
   log_pieces.push_back(GetRoutineResultsString(system_routines));
 
-  if (features::IsNetworkingInDiagnosticsAppEnabled()) {
-    // Add networking category.
-    log_pieces.push_back(kNetworkingLogSectionHeader);
+  // Add networking category.
+  log_pieces.push_back(kNetworkingLogSectionHeader);
 
-    // Add the network info section.
-    log_pieces.push_back(networking_log_->GetNetworkInfo());
+  // Add the network info section.
+  log_pieces.push_back(networking_log_->GetNetworkInfo());
 
-    // Add the routine section for the network category.
-    const std::string network_routines = routine_log_->GetContentsForCategory(
-        RoutineLog::RoutineCategory::kNetwork);
-    log_pieces.push_back(GetRoutineResultsString(network_routines));
+  // Add the routine section for the network category.
+  const std::string network_routines = routine_log_->GetContentsForCategory(
+      RoutineLog::RoutineCategory::kNetwork);
+  log_pieces.push_back(GetRoutineResultsString(network_routines));
 
-    // Add the network events section.
-    log_pieces.push_back(networking_log_->GetNetworkEvents());
-  }
+  // Add the network events section.
+  log_pieces.push_back(networking_log_->GetNetworkEvents());
 
   if (features::IsInputInDiagnosticsAppEnabled()) {
     std::string input_log_contents = keyboard_input_log_->GetLogContents();
@@ -174,7 +171,13 @@ bool DiagnosticsLogController::GenerateSessionLogOnBlockingPool(
     }
   }
 
-  return base::WriteFile(save_file_path, base::JoinString(log_pieces, "\n"));
+  return base::JoinString(log_pieces, "\n");
+}
+
+bool DiagnosticsLogController::GenerateSessionLogOnBlockingPool(
+    const base::FilePath& save_file_path) {
+  DCHECK(!save_file_path.empty());
+  return base::WriteFile(save_file_path, GenerateSessionStringOnBlockingPool());
 }
 
 void DiagnosticsLogController::ResetAndInitializeLogWriters() {

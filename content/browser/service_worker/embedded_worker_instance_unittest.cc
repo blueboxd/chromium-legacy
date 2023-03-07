@@ -16,7 +16,7 @@
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/public/common/child_process_host.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/test/embedded_worker_instance_test_harness.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -380,8 +380,8 @@ TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   RegistrationAndVersionPair pair =
       helper_->PrepareRegistrationAndVersion(scope, url);
   // We should set COEP, or cache storage pipe won't be made.
-  pair.second->set_cross_origin_embedder_policy(
-      network::CrossOriginEmbedderPolicy());
+  pair.second->set_policy_container_host(
+      base::MakeRefCounted<PolicyContainerHost>());
   auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // Start the worker.

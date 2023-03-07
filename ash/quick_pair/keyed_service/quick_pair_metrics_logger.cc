@@ -4,15 +4,81 @@
 
 #include "ash/quick_pair/keyed_service/quick_pair_metrics_logger.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/common/fast_pair/fast_pair_feature_usage_metrics_logger.h"
 #include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
+#include "ash/quick_pair/repository/fast_pair/device_metadata.h"
+#include "ash/quick_pair/repository/fast_pair_repository.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/containers/contains.h"
+#include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 namespace ash {
 namespace quick_pair {
+
+namespace {
+
+void AttemptToRecordEngagementFunnelFlowWithMetadata(
+    scoped_refptr<Device> device,
+    FastPairEngagementFlowEvent event,
+    DeviceMetadata* device_metadata,
+    bool has_retryable_error) {
+  // TODO(b/262452942): Add logic to retry fetching metadata to record funnel
+  // flow. Currently we are missing logging if fetching metadata fails, and we
+  // do not retry. |has_retryable_error| is currently not used, but will be if
+  // we decide to retry.
+  if (!device_metadata) {
+    return;
+  }
+
+  RecordFastPairDeviceAndNotificationSpecificEngagementFlow(
+      *device, device_metadata->GetDetails(), event);
+}
+
+void GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+    scoped_refptr<Device> device,
+    FastPairEngagementFlowEvent event) {
+  FastPairRepository::Get()->GetDeviceMetadata(
+      device->metadata_id(),
+      base::BindOnce(&AttemptToRecordEngagementFunnelFlowWithMetadata, device,
+                     event));
+}
+
+void AttemptToRecordRetroactiveEngagementFunnelFlowWithMetadata(
+    scoped_refptr<Device> device,
+    FastPairRetroactiveEngagementFlowEvent event,
+    DeviceMetadata* device_metadata,
+    bool has_retryable_error) {
+  // TODO(b/262452942): Add logic to retry fetching metadata to record funnel
+  // flow. Currently we are missing logging if fetching metadata fails, and we
+  // do not retry.
+  if (!device_metadata) {
+    return;
+  }
+
+  RecordFastPairDeviceAndNotificationSpecificRetroactiveEngagementFlow(
+      *device, device_metadata->GetDetails(), event);
+}
+
+void GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+    scoped_refptr<Device> device,
+    FastPairRetroactiveEngagementFlowEvent event) {
+  FastPairRepository::Get()->GetDeviceMetadata(
+      device->metadata_id(),
+      base::BindOnce(
+          &AttemptToRecordRetroactiveEngagementFunnelFlowWithMetadata, device,
+          event));
+}
+
+PrefService* GetLastActiveUserPrefService() {
+  return Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+}
+
+}  // namespace
 
 QuickPairMetricsLogger::QuickPairMetricsLogger(
     ScannerBroker* scanner_broker,
@@ -63,6 +129,8 @@ void QuickPairMetricsLogger::DevicePairedChanged(
 void QuickPairMetricsLogger::OnDevicePaired(scoped_refptr<Device> device) {
   AttemptRecordingFastPairEngagementFlow(
       *device, FastPairEngagementFlowEvent::kPairingSucceeded);
+  GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+      device, FastPairEngagementFlowEvent::kPairingSucceeded);
   RecordPairingResult(*device, /*success=*/true);
   feature_usage_metrics_logger_->RecordUsage(/*success=*/true);
 
@@ -85,6 +153,8 @@ void QuickPairMetricsLogger::OnPairFailure(scoped_refptr<Device> device,
                                            PairFailure failure) {
   AttemptRecordingFastPairEngagementFlow(
       *device, FastPairEngagementFlowEvent::kPairingFailed);
+  GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+      device, FastPairEngagementFlowEvent::kPairingFailed);
   base::TimeDelta total_pair_time =
       base::TimeTicks::Now() - device_pairing_start_timestamps_[device];
   device_pairing_start_timestamps_.erase(device);
@@ -98,8 +168,8 @@ void QuickPairMetricsLogger::OnPairFailure(scoped_refptr<Device> device,
 void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
                                                DiscoveryAction action) {
   switch (action) {
-    case DiscoveryAction::kPairToDevice:
-      switch (device->protocol) {
+    case DiscoveryAction::kPairToDevice: {
+      switch (device->protocol()) {
         case Protocol::kFastPairSubsequent:
           RecordSubsequentSuccessFunnelFlow(
               FastPairSubsequentSuccessFunnelEvent::kNotificationsClicked);
@@ -116,14 +186,25 @@ void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
         AttemptRecordingFastPairEngagementFlow(
             *device, FastPairEngagementFlowEvent::
                          kDiscoveryUiConnectPressedAfterLearnMorePressed);
+        GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+            device, FastPairEngagementFlowEvent::
+                        kDiscoveryUiConnectPressedAfterLearnMorePressed);
         discovery_learn_more_devices_.erase(device);
         break;
       }
 
+      PrefService* pref = GetLastActiveUserPrefService();
+      if (pref->FindPreference(ash::prefs::kUserPairedWithFastPair)) {
+        pref->SetBoolean(ash::prefs::kUserPairedWithFastPair, true);
+      }
+
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiConnectPressed);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kDiscoveryUiConnectPressed);
       device_pairing_start_timestamps_[device] = base::TimeTicks::Now();
       break;
+    }
     case DiscoveryAction::kLearnMore:
       // We need to record whether or not the Discovery UI for this
       // device has had the Learn More button pressed because since the
@@ -136,42 +217,59 @@ void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
 
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiLearnMorePressed);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kDiscoveryUiLearnMorePressed);
       break;
     case DiscoveryAction::kDismissedByUser:
       if (base::Contains(discovery_learn_more_devices_, device)) {
         AttemptRecordingFastPairEngagementFlow(
             *device, FastPairEngagementFlowEvent::
                          kDiscoveryUiDismissedByUserAfterLearnMorePressed);
+        GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+            device, FastPairEngagementFlowEvent::
+                        kDiscoveryUiDismissedByUserAfterLearnMorePressed);
         discovery_learn_more_devices_.erase(device);
         break;
       }
 
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissedByUser);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kDiscoveryUiDismissedByUser);
       break;
     case DiscoveryAction::kDismissedByOs:
       if (base::Contains(discovery_learn_more_devices_, device)) {
         AttemptRecordingFastPairEngagementFlow(
             *device, FastPairEngagementFlowEvent::
                          kDiscoveryUiDismissedAfterLearnMorePressed);
+        GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+            device, FastPairEngagementFlowEvent::
+                        kDiscoveryUiDismissedAfterLearnMorePressed);
         discovery_learn_more_devices_.erase(device);
         break;
       }
 
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissed);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kDiscoveryUiDismissed);
       break;
     case DiscoveryAction::kDismissedByTimeout:
       if (base::Contains(discovery_learn_more_devices_, device)) {
         AttemptRecordingFastPairEngagementFlow(
             *device, FastPairEngagementFlowEvent::
                          kDiscoveryUiDismissedByTimeoutAfterLearnMorePressed);
+        GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+            device, FastPairEngagementFlowEvent::
+                        kDiscoveryUiDismissedByTimeoutAfterLearnMorePressed);
         discovery_learn_more_devices_.erase(device);
         break;
       }
 
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissedByTimeout);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kDiscoveryUiDismissedByTimeout);
       break;
   }
 }
@@ -183,14 +281,20 @@ void QuickPairMetricsLogger::OnPairingFailureAction(
     case PairingFailedAction::kNavigateToSettings:
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kErrorUiSettingsPressed);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kErrorUiSettingsPressed);
       break;
     case PairingFailedAction::kDismissedByUser:
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kErrorUiDismissedByUser);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kErrorUiDismissedByUser);
       break;
     case PairingFailedAction::kDismissed:
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kErrorUiDismissed);
+      GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+          device, FastPairEngagementFlowEvent::kErrorUiDismissed);
       break;
   }
 }
@@ -198,13 +302,15 @@ void QuickPairMetricsLogger::OnPairingFailureAction(
 void QuickPairMetricsLogger::OnDeviceFound(scoped_refptr<Device> device) {
   AttemptRecordingFastPairEngagementFlow(
       *device, FastPairEngagementFlowEvent::kDiscoveryUiShown);
+  GetDeviceMetadataAndLogEngagementFunnelWithMetadata(
+      device, FastPairEngagementFlowEvent::kDiscoveryUiShown);
 }
 
 void QuickPairMetricsLogger::OnPairingStart(scoped_refptr<Device> device) {
   RecordFastPairInitializePairingProcessEvent(
       *device, FastPairInitializePairingProcessEvent::kInitializationStarted);
 
-  switch (device->protocol) {
+  switch (device->protocol()) {
     case Protocol::kFastPairSubsequent:
       RecordSubsequentSuccessFunnelFlow(
           FastPairSubsequentSuccessFunnelEvent::kInitializationStarted);
@@ -224,7 +330,7 @@ void QuickPairMetricsLogger::OnHandshakeComplete(scoped_refptr<Device> device) {
   RecordFastPairInitializePairingProcessEvent(
       *device, FastPairInitializePairingProcessEvent::kInitializationComplete);
 
-  switch (device->protocol) {
+  switch (device->protocol()) {
     case Protocol::kFastPairSubsequent:
       RecordSubsequentSuccessFunnelFlow(
           FastPairSubsequentSuccessFunnelEvent::kPairingStarted);
@@ -241,7 +347,7 @@ void QuickPairMetricsLogger::OnHandshakeComplete(scoped_refptr<Device> device) {
 }
 
 void QuickPairMetricsLogger::OnPairingComplete(scoped_refptr<Device> device) {
-  switch (device->protocol) {
+  switch (device->protocol()) {
     case Protocol::kFastPairSubsequent:
       RecordSubsequentSuccessFunnelFlow(
           FastPairSubsequentSuccessFunnelEvent::kProcessComplete);
@@ -263,6 +369,8 @@ void QuickPairMetricsLogger::OnRetroactivePairFound(
   AttemptRecordingFastPairRetroactiveEngagementFlow(
       *device,
       FastPairRetroactiveEngagementFlowEvent::kAssociateAccountUiShown);
+  GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+      device, FastPairRetroactiveEngagementFlowEvent::kAssociateAccountUiShown);
   RecordRetroactiveSuccessFunnelFlow(
       FastPairRetroactiveSuccessFunnelEvent::kDeviceDetected);
 }
@@ -271,21 +379,33 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
     scoped_refptr<Device> device,
     AssociateAccountAction action) {
   switch (action) {
-    case AssociateAccountAction::kAssoicateAccount:
+    case AssociateAccountAction::kAssoicateAccount: {
       if (base::Contains(associate_account_learn_more_devices_, device)) {
         AttemptRecordingFastPairRetroactiveEngagementFlow(
             *device, FastPairRetroactiveEngagementFlowEvent::
                          kAssociateAccountSavePressedAfterLearnMorePressed);
+        GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+            device, FastPairRetroactiveEngagementFlowEvent::
+                        kAssociateAccountSavePressedAfterLearnMorePressed);
         associate_account_learn_more_devices_.erase(device);
         break;
+      }
+
+      PrefService* pref = GetLastActiveUserPrefService();
+      if (pref->FindPreference(ash::prefs::kUserPairedWithFastPair)) {
+        pref->SetBoolean(ash::prefs::kUserPairedWithFastPair, true);
       }
 
       AttemptRecordingFastPairRetroactiveEngagementFlow(
           *device,
           FastPairRetroactiveEngagementFlowEvent::kAssociateAccountSavePressed);
+      GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+          device,
+          FastPairRetroactiveEngagementFlowEvent::kAssociateAccountSavePressed);
       RecordRetroactiveSuccessFunnelFlow(
           FastPairRetroactiveSuccessFunnelEvent::kSaveRequested);
       break;
+    }
     case AssociateAccountAction::kLearnMore:
       // We need to record whether or not the Associate Account UI for this
       // device has had the Learn More button pressed because since the
@@ -299,12 +419,18 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
       AttemptRecordingFastPairRetroactiveEngagementFlow(
           *device, FastPairRetroactiveEngagementFlowEvent::
                        kAssociateAccountLearnMorePressed);
+      GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+          device, FastPairRetroactiveEngagementFlowEvent::
+                      kAssociateAccountLearnMorePressed);
       break;
     case AssociateAccountAction::kDismissedByUser:
       if (base::Contains(associate_account_learn_more_devices_, device)) {
         AttemptRecordingFastPairRetroactiveEngagementFlow(
             *device, FastPairRetroactiveEngagementFlowEvent::
                          kAssociateAccountDismissedByUserAfterLearnMorePressed);
+        GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+            device, FastPairRetroactiveEngagementFlowEvent::
+                        kAssociateAccountDismissedByUserAfterLearnMorePressed);
         associate_account_learn_more_devices_.erase(device);
         break;
       }
@@ -312,11 +438,18 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
       AttemptRecordingFastPairRetroactiveEngagementFlow(
           *device, FastPairRetroactiveEngagementFlowEvent::
                        kAssociateAccountUiDismissedByUser);
+      GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+          device, FastPairRetroactiveEngagementFlowEvent::
+                      kAssociateAccountUiDismissedByUser);
       break;
     case AssociateAccountAction::kDismissedByTimeout:
       if (base::Contains(associate_account_learn_more_devices_, device)) {
         AttemptRecordingFastPairRetroactiveEngagementFlow(
             *device,
+            FastPairRetroactiveEngagementFlowEvent::
+                kAssociateAccountDismissedByTimeoutAfterLearnMorePressed);
+        GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+            device,
             FastPairRetroactiveEngagementFlowEvent::
                 kAssociateAccountDismissedByTimeoutAfterLearnMorePressed);
         associate_account_learn_more_devices_.erase(device);
@@ -326,18 +459,27 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
       AttemptRecordingFastPairRetroactiveEngagementFlow(
           *device, FastPairRetroactiveEngagementFlowEvent::
                        kAssociateAccountUiDismissedByTimeout);
+      GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+          device, FastPairRetroactiveEngagementFlowEvent::
+                      kAssociateAccountUiDismissedByTimeout);
       break;
     case AssociateAccountAction::kDismissedByOs:
       if (base::Contains(associate_account_learn_more_devices_, device)) {
         AttemptRecordingFastPairRetroactiveEngagementFlow(
             *device, FastPairRetroactiveEngagementFlowEvent::
                          kAssociateAccountDismissedAfterLearnMorePressed);
+        GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+            device, FastPairRetroactiveEngagementFlowEvent::
+                        kAssociateAccountDismissedAfterLearnMorePressed);
         associate_account_learn_more_devices_.erase(device);
         break;
       }
 
       AttemptRecordingFastPairRetroactiveEngagementFlow(
           *device,
+          FastPairRetroactiveEngagementFlowEvent::kAssociateAccountUiDismissed);
+      GetDeviceMetadataAndLogRetroactiveEngagementFunnelWithMetadata(
+          device,
           FastPairRetroactiveEngagementFlowEvent::kAssociateAccountUiDismissed);
       break;
   }
@@ -346,7 +488,7 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
 void QuickPairMetricsLogger::OnAccountKeyWrite(
     scoped_refptr<Device> device,
     absl::optional<AccountKeyFailure> error) {
-  switch (device->protocol) {
+  switch (device->protocol()) {
     case Protocol::kFastPairSubsequent:
       // TODO(b/259443372): Record this case once we implement account key
       // writing in all scenarios,

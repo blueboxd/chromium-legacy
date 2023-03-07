@@ -36,12 +36,11 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/filter/source_stream.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-blink.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-blink-forward.h"
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
-#include "services/network/public/mojom/url_loader.mojom-blink.h"
 #include "services/network/public/mojom/web_bundle_handle.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
@@ -243,6 +242,13 @@ class PLATFORM_EXPORT ResourceRequestHead {
   void SetPriority(ResourceLoadPriority, int intra_priority_value = 0);
 
   bool IsConditional() const;
+
+  // Incremental property of HTTP Extensible Priorities which specifies that
+  // responses can be delivered concurrently if they are the same priority on
+  // a connection that supports multiplexing (HTTP/3 primarily).
+  // https://www.rfc-editor.org/rfc/rfc9218
+  bool PriorityIncremental() const;
+  void SetPriorityIncremental(bool);
 
   // Whether the associated ResourceHandleClient needs to be notified of
   // upload progress made for that resource.
@@ -572,6 +578,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool download_to_cache_only_ : 1;
   bool site_for_cookies_set_ : 1;
   bool is_form_submission_ : 1;
+  bool priority_incremental_ : 1;
   ResourceLoadPriority initial_priority_;
   ResourceLoadPriority priority_;
   int intra_priority_value_;

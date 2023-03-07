@@ -11,11 +11,11 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -24,6 +24,7 @@
 #include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_attestation.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
@@ -37,6 +38,7 @@
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
@@ -62,6 +64,7 @@ struct AggregatableReportMetadataRecord {
   base::Time initial_report_time;
   int aggregation_coordinator = static_cast<int>(
       ::aggregation_service::mojom::AggregationCoordinator::kDefault);
+  absl::optional<std::string> attestation_token;
 };
 
 struct AggregatableContributionRecord {
@@ -167,7 +170,7 @@ class AttributionStorageSqlTest : public testing::Test {
 
     static constexpr char kStoreMetadataSql[] =
         "INSERT INTO aggregatable_report_metadata "
-        "VALUES(?,?,?,?,?,?,?,?,?)";
+        "VALUES(?,?,?,?,?,?,?,?,?,?)";
     sql::Statement statement(raw_db.GetUniqueStatement(kStoreMetadataSql));
     statement.BindInt64(0, record.aggregation_id);
     statement.BindInt64(1, record.source_id);
@@ -182,6 +185,11 @@ class AttributionStorageSqlTest : public testing::Test {
     statement.BindInt(6, record.failed_send_attempts);
     statement.BindTime(7, record.initial_report_time);
     statement.BindInt(8, record.aggregation_coordinator);
+    if (record.attestation_token.has_value()) {
+      statement.BindString(9, record.attestation_token.value());
+    } else {
+      statement.BindNull(9);
+    }
     ASSERT_TRUE(statement.Run());
   }
 
@@ -259,8 +267,8 @@ TEST_F(AttributionStorageSqlTest,
     // [rate_limit_reporting_origin_idx], [rate_limit_time_idx],
     // [rate_limit_impression_id_idx], [aggregate_source_id_idx],
     // [aggregate_trigger_time_idx], [aggregate_report_time_idx],
-    // [contribution_aggregation_id_idx] and the meta table index.
-    EXPECT_EQ(15u, sql::test::CountSQLIndices(&raw_db));
+    // and the meta table index.
+    EXPECT_EQ(14u, sql::test::CountSQLIndices(&raw_db));
   }
 }
 
@@ -315,6 +323,42 @@ TEST_F(AttributionStorageSqlTest, VersionTooNew_RazesDB) {
   // The DB should be razed because the version is too new.
   ASSERT_NO_FATAL_FAILURE(OpenDatabase());
   ASSERT_THAT(storage()->GetAttributionReports(base::Time::Now()), IsEmpty());
+}
+
+TEST_F(AttributionStorageSqlTest, StoreAndRetrieveReportWithAttestation) {
+  OpenDatabase();
+
+  StorableSource source = TestAggregatableSourceProvider()
+                              .GetBuilder()
+                              .SetExpiry(base::Days(30))
+                              .Build();
+  storage()->StoreSource(source);
+
+  auto trigger_attestation = attribution_reporting::TriggerAttestation::Create(
+      /*token=*/"attestation-token", /*aggregatable_report_id=*/
+      "55865da3-fb0e-4b71-965e-64fc4bf0a323");
+  AttributionTrigger trigger = DefaultAggregatableTriggerBuilder()
+                                   .SetAttestation(trigger_attestation)
+                                   .Build();
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(trigger),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  AttributionReport aggregatable_report =
+      storage()->GetAttributionReports(base::Time::Max()).at(1);
+  // Should create the report with the id from the trigger attestation.
+  EXPECT_EQ(aggregatable_report.external_report_id(),
+            trigger_attestation->aggregatable_report_id());
+
+  // Should store the attestation token on the report.
+  const auto* data =
+      absl::get_if<AttributionReport::AggregatableAttributionData>(
+          &aggregatable_report.data());
+  EXPECT_EQ(data->attestation_token.value(), trigger_attestation->token());
+
+  CloseDatabase();
 }
 
 // Create a source with three triggers and craft a query that will target all.

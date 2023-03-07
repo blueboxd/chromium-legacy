@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -352,6 +352,15 @@ class OpenscreenSessionHostTest : public mojom::ResourceProvider,
     Mock::VerifyAndClear(this);
   }
 
+  void RemotePlaybackSessionTimeOut() {
+    EXPECT_TRUE(video_host_);
+    EXPECT_CALL(*video_host_, OnStopped());
+    EXPECT_CALL(*this, DidStop());
+    task_environment_.AdvanceClock(base::Seconds(5));
+    task_environment_.RunUntilIdle();
+    Mock::VerifyAndClear(this);
+  }
+
   void CaptureOneVideoFrame() {
     ASSERT_EQ(cast_mode_, "mirroring");
     ASSERT_TRUE(video_host_);
@@ -432,6 +441,9 @@ class OpenscreenSessionHostTest : public mojom::ResourceProvider,
         .Times(0);
     EXPECT_CALL(*this, OnOutboundMessage(SenderMessage::Type::kOffer))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    if (is_remote_playback_) {
+      EXPECT_TRUE(video_host_ && video_host_->paused());
+    }
     remoter_->Start();
     run_loop.Run();
     task_environment_.RunUntilIdle();
@@ -538,7 +550,8 @@ class OpenscreenSessionHostTest : public mojom::ResourceProvider,
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   const net::IPEndPoint receiver_endpoint_ =
       media::cast::test::GetFreeLocalPort();
   mojo::Receiver<mojom::ResourceProvider> resource_provider_receiver_{this};
@@ -696,6 +709,12 @@ TEST_F(OpenscreenSessionHostTest, SwitchSourceTabFromRemoting) {
   StopSession();
 }
 
+TEST_F(OpenscreenSessionHostTest, StartRemotePlaybackTimeOut) {
+  CreateSession(SessionType::AUDIO_AND_VIDEO, true);
+  StartSession();
+  RemotePlaybackSessionTimeOut();
+}
+
 // TODO(https://crbug.com/1363017): reenable adaptive playout delay.
 TEST_F(OpenscreenSessionHostTest, ChangeTargetPlayoutDelay) {
   CreateSession(SessionType::AUDIO_AND_VIDEO);
@@ -770,7 +789,7 @@ TEST_F(OpenscreenSessionHostTest, Vp9CodecEnabledInOffer) {
 
 TEST_F(OpenscreenSessionHostTest, Av1CodecEnabledInOffer) {
 // Cast streaming of AV1 is desktop only.
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && defined(ENABLE_LIBAOM)
   base::test::ScopedFeatureList feature_list(media::kCastStreamingAv1);
   CreateSession(SessionType::VIDEO_ONLY);
 

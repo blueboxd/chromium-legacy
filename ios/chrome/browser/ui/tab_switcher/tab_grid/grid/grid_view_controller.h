@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 
-@protocol GridContextMenuProvider;
+@protocol TabContextMenuProvider;
 @protocol TabCollectionDragDropHandler;
 @protocol GridEmptyView;
 @protocol GridImageDataSource;
@@ -90,6 +90,13 @@ enum class DragDropTabs {
 - (void)gridViewControllerScrollViewDidScroll:
     (GridViewController*)gridViewController;
 
+// Tells the delegate that a drop animation will begin.
+- (void)gridViewControllerDropAnimationWillBegin:
+    (GridViewController*)gridViewController;
+// Tells the delegate that a drop animation did end.
+- (void)gridViewControllerDropAnimationDidEnd:
+    (GridViewController*)gridViewController;
+
 @end
 
 // A view controller that contains a grid of items.
@@ -137,7 +144,7 @@ enum class DragDropTabs {
 // biometric authentication.
 @property(nonatomic, assign) BOOL contentNeedsAuthentication;
 // Provider of context menu configurations for the tabs in the grid.
-@property(nonatomic, weak) id<GridContextMenuProvider> menuProvider;
+@property(nonatomic, weak) id<TabContextMenuProvider> menuProvider;
 // Provider of shareable state for tabs in the grid.
 @property(nonatomic, weak) id<GridShareableItemsProvider>
     shareableItemsProvider;

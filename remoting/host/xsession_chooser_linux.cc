@@ -20,12 +20,12 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
@@ -81,11 +81,10 @@ class SessionDialog {
       GtkTreeIter iter;
       gtk_list_store_append(session_store, &iter);
       // gtk_list_store_set makes its own internal copy of the strings.
-      gtk_list_store_set(session_store, &iter,
-                         INDEX_COLUMN, static_cast<guint>(i),
-                         NAME_COLUMN, choices_[i].name.c_str(),
-                         COMMENT_COLUMN, choices_[i].comment.c_str(),
-                         -1);
+      gtk_list_store_set(session_store, &iter, INDEX_COLUMN,
+                         static_cast<guint>(i), NAME_COLUMN,
+                         choices_[i].name.c_str(), COMMENT_COLUMN,
+                         choices_[i].comment.c_str(), -1);
     }
 
     g_signal_connect(gtk_builder_get_object(ui_, "session_list"),

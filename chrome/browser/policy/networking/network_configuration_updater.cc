@@ -4,8 +4,8 @@
 
 #include "chrome/browser/policy/networking/network_configuration_updater.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/components/onc/onc_utils.h"
@@ -218,38 +218,38 @@ void NetworkConfigurationUpdater::
         base::Value::List& network_configs_onc) {
   for (auto& network_config_onc : network_configs_onc) {
     DCHECK(network_config_onc.is_dict());
+    base::Value::Dict& network_config_onc_dict = network_config_onc.GetDict();
     const std::string* type =
-        network_config_onc.FindStringKey(::onc::network_config::kType);
+        network_config_onc_dict.FindString(::onc::network_config::kType);
     if (!type || *type != ::onc::network_type::kEthernet)
       continue;
-    const base::Value* ethernet = network_config_onc.FindKeyOfType(
-        ::onc::network_config::kEthernet, base::Value::Type::DICTIONARY);
+    const base::Value::Dict* ethernet =
+        network_config_onc_dict.FindDict(::onc::network_config::kEthernet);
     if (!ethernet)
       continue;
     const std::string* auth =
-        ethernet->FindStringKey(::onc::ethernet::kAuthentication);
+        ethernet->FindString(::onc::ethernet::kAuthentication);
     if (!auth || *auth != ::onc::ethernet::kAuthenticationNone)
       continue;
 
     // If anything has been recommended, trust the server and don't change
     // anything.
-    if (network_config_onc.FindKey(::onc::kRecommended))
+    if (network_config_onc_dict.contains(::onc::kRecommended)) {
       continue;
-    base::Value* static_ip_config =
-        network_config_onc.FindKey(::onc::network_config::kStaticIPConfig);
-    if (static_ip_config && static_ip_config->FindKey(::onc::kRecommended))
-      continue;
+    }
 
     // Ensure kStaticIPConfig exists because a "Recommended" field will be added
-    // to it.
-    if (!static_ip_config) {
-      static_ip_config = network_config_onc.SetKey(
-          ::onc::network_config::kStaticIPConfig, base::DictionaryValue());
+    // to it, if not already present.
+    base::Value::Dict* static_ip_config = network_config_onc_dict.EnsureDict(
+        ::onc::network_config::kStaticIPConfig);
+    if (static_ip_config->contains(::onc::kRecommended)) {
+      continue;
     }
-    SetRecommended(&network_config_onc,
+
+    SetRecommended(network_config_onc_dict,
                    {::onc::network_config::kIPAddressConfigType,
                     ::onc::network_config::kNameServersConfigType});
-    SetRecommended(static_ip_config,
+    SetRecommended(*static_ip_config,
                    {::onc::ipconfig::kGateway, ::onc::ipconfig::kIPAddress,
                     ::onc::ipconfig::kRoutingPrefix, ::onc::ipconfig::kType,
                     ::onc::ipconfig::kNameServers});
@@ -257,15 +257,13 @@ void NetworkConfigurationUpdater::
 }
 
 void NetworkConfigurationUpdater::SetRecommended(
-    base::Value* onc_value,
+    base::Value::Dict& onc_dict,
     std::initializer_list<base::StringPiece> recommended_field_names) {
-  DCHECK(onc_value);
-  DCHECK(onc_value->is_dict());
-  base::Value recommended_list(base::Value::Type::LIST);
+  base::Value::List recommended_list;
   for (const auto& recommended_field_name : recommended_field_names) {
-    recommended_list.Append(base::Value(recommended_field_name));
+    recommended_list.Append(recommended_field_name);
   }
-  onc_value->SetKey(::onc::kRecommended, std::move(recommended_list));
+  onc_dict.Set(::onc::kRecommended, std::move(recommended_list));
 }
 
 std::string NetworkConfigurationUpdater::LogHeader() const {

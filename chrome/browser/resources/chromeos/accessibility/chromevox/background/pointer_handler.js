@@ -9,13 +9,13 @@
 import {AutomationPredicate} from '../../common/automation_predicate.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {LocalStorage} from '../../common/local_storage.js';
-import {Earcon} from '../common/abstract_earcons.js';
 import {CustomAutomationEvent} from '../common/custom_automation_event.js';
+import {EarconId} from '../common/earcon_id.js';
 import {QueueMode} from '../common/tts_types.js';
 
 import {BaseAutomationHandler} from './base_automation_handler.js';
 import {ChromeVox} from './chromevox.js';
-import {ChromeVoxState} from './chromevox_state.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {Output} from './output/output.js';
 
@@ -182,20 +182,20 @@ export class PointerHandler extends BaseAutomationHandler {
       // This clears the anchor point in the TouchExplorationController (so when
       // a user touch explores back to the previous range, it will be announced
       // again).
-      ChromeVoxState.instance.setCurrentRange(null);
+      ChromeVoxRange.set(null);
 
       // Play a earcon to let the user know they're in the middle of nowhere.
       if ((new Date() - this.lastNoPointerAnchorEarconPlayedTime_) >
           PointerHandler.MIN_NO_POINTER_ANCHOR_SOUND_DELAY_MS) {
-        ChromeVox.earcons.playEarcon(Earcon.NO_POINTER_ANCHOR);
+        ChromeVox.earcons.playEarcon(EarconId.NO_POINTER_ANCHOR);
         this.lastNoPointerAnchorEarconPlayedTime_ = new Date();
       }
       chrome.tts.stop();
       return;
     }
 
-    if (ChromeVoxState.instance.currentRange &&
-        target === ChromeVoxState.instance.currentRange.start.node) {
+    if (ChromeVoxRange.current &&
+        target === ChromeVoxRange.current.start.node) {
       return;
     }
 

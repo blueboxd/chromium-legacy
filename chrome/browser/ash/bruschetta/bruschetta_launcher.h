@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_ASH_BRUSCHETTA_BRUSCHETTA_LAUNCHER_H_
 
 #include <string>
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/files/file.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
@@ -23,6 +23,8 @@ namespace bruschetta {
 // Launches Bruschetta. One instance per VM.
 class BruschettaLauncher {
  public:
+  struct Files;
+
   BruschettaLauncher(std::string vm_name, Profile* profile);
   virtual ~BruschettaLauncher();
   BruschettaLauncher(const BruschettaLauncher&) = delete;
@@ -38,7 +40,7 @@ class BruschettaLauncher {
   base::WeakPtr<BruschettaLauncher> GetWeakPtr();
 
  private:
-  void StartVm(base::File bios);
+  void StartVm(std::unique_ptr<Files> files);
   void OnStartVm(absl::optional<vm_tools::concierge::StartVmResponse> response);
 
   base::File MaybeOpenBios();
@@ -49,6 +51,7 @@ class BruschettaLauncher {
   void OnContainerRunning(guest_os::GuestInfo info);
 
   void OnTimeout();
+  void Finish(BruschettaResult result);
 
   std::string vm_name_;
   Profile* profile_;

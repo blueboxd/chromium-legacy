@@ -40,8 +40,6 @@ class ChromeWebClient : public web::WebClient {
       web::BrowserURLRewriter* rewriter) override;
   std::vector<web::JavaScriptFeature*> GetJavaScriptFeatures(
       web::BrowserState* browser_state) const override;
-  NSString* GetDocumentStartScriptForMainFrame(
-      web::BrowserState* browser_state) const override;
   void PrepareErrorPage(web::WebState* web_state,
                         const GURL& url,
                         NSError* error,
@@ -62,6 +60,10 @@ class ChromeWebClient : public web::WebClient {
       web::WebState* web_state) const override;
   bool IsPointingToSameDocument(const GURL& url1,
                                 const GURL& url2) const override;
+  id<UITextSearching> GetSearchableObjectForWebState(
+      web::WebState* web_state) const override API_AVAILABLE(ios(16));
+  void StartTextSearchInWebState(web::WebState* web_state) override;
+  void StopTextSearchInWebState(web::WebState* web_state) override;
 
  private:
   // Reference to a view that is attached to a window.

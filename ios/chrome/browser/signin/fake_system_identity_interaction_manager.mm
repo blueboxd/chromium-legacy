@@ -7,11 +7,19 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
+#import "ios/chrome/browser/signin/test_constants.h"
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Global used to store the +identity of FakeSystemIdentityInteractionManager.
+id<SystemIdentity> gFakeSystemIdentityInteractionManagerIdentity = nil;
+
+}  // namespace
 
 @interface FakeAuthActivityViewController : UIViewController
 
@@ -57,7 +65,7 @@
   // Obnovious color, this is a test screen.
   UIView* mainView = self.view;
   mainView.backgroundColor = [UIColor magentaColor];
-  mainView.accessibilityIdentifier = @"FakeAddAccountViewIdentifier";
+  mainView.accessibilityIdentifier = kFakeAuthActivityViewIdentifier;
 
   // TODO(crbug.com/1400696): Since those buttons have no accessibility
   // identitifer, EarlGrey probably can't interact with them. So they
@@ -134,9 +142,8 @@
 }
 
 - (void)simulateDidTapAddAccount {
-  using std::swap;
-  id<SystemIdentity> identity;
-  swap(_identity, identity);
+  id<SystemIdentity> identity = nil;
+  std::swap(gFakeSystemIdentityInteractionManagerIdentity, identity);
 
   [self dismissAndRunCompletionCallbackWithError:nil
                                         identity:identity
@@ -194,6 +201,14 @@
   return _isActivityViewPresented;
 }
 
++ (id<SystemIdentity>)identity {
+  return gFakeSystemIdentityInteractionManagerIdentity;
+}
+
++ (void)setIdentity:(id<SystemIdentity>)identity {
+  gFakeSystemIdentityInteractionManagerIdentity = identity;
+}
+
 #pragma mark - Private methods
 
 - (void)dismissAndRunCompletionCallbackWithError:(NSError*)error
@@ -204,6 +219,9 @@
   DCHECK(_isActivityViewPresented);
   DCHECK(error || identity)
       << "An identity must be set to close the dialog successfully";
+
+  // Clear the global identity before next interaction.
+  gFakeSystemIdentityInteractionManagerIdentity = nil;
 
   if (identity) {
     FakeSystemIdentityManager* manager = _manager.get();

@@ -4,7 +4,7 @@
 
 #include "components/mirroring/service/media_remoter.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "components/mirroring/service/remoting_sender.h"
 #include "components/mirroring/service/rpc_dispatcher.h"
@@ -162,6 +162,10 @@ void MediaRemoter::Start() {
   }
   state_ = STARTING_REMOTING;
   client_->RequestRemotingStreaming();
+}
+
+void MediaRemoter::StartWithPermissionAlreadyGranted() {
+  NOTIMPLEMENTED();
 }
 
 void MediaRemoter::StartDataStreams(

@@ -8,8 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -74,13 +72,6 @@ void SetGroupPolicies(const base::Value::Dict& values);
 // Copies the logs to a location where they can be retrieved by ResultDB.
 void CopyLog(const base::FilePath& src_dir);
 
-// Waits for a given `predicate` to become true. Invokes `still_waiting`
-// periodically to provide a indication of progress. Returns true if the
-// predicate becomes true before a timeout, otherwise returns false.
-[[nodiscard]] bool WaitFor(
-    base::RepeatingCallback<bool()> predicate,
-    base::RepeatingClosure still_waiting = base::DoNothing());
-
 // Returns the path to the updater data dir.
 absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope);
 
@@ -90,10 +81,8 @@ void ExpectInstalled(UpdaterScope scope);
 // Installs the updater.
 void Install(UpdaterScope scope);
 
-// Expects that the updater is installed on the system and the launchd tasks
-// are updated correctly.
-void ExpectActiveUpdater(UpdaterScope scope);
-
+// Expects that the updater is installed on the system and the specified
+// version is active.
 void ExpectVersionActive(UpdaterScope scope, const std::string& version);
 void ExpectVersionNotActive(UpdaterScope scope, const std::string& version);
 
@@ -128,7 +117,7 @@ void UpdateAll(UpdaterScope scope);
 void DeleteUpdaterDirectory(UpdaterScope scope);
 
 // Runs the command and waits for it to exit or time out.
-bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
+void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
 
 // Returns the path of the Updater executable.
 absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope);
@@ -215,6 +204,7 @@ void InvokeTestServiceFunction(const std::string& function_name,
                                const base::Value::Dict& arguments);
 
 void RunUninstallCmdLine(UpdaterScope scope);
+void RunHandoff(UpdaterScope scope, const std::string& app_id);
 #endif  // BUILDFLAG(IS_WIN)
 
 // Returns the number of files in the directory, not including directories,
@@ -222,8 +212,8 @@ void RunUninstallCmdLine(UpdaterScope scope);
 int CountDirectoryFiles(const base::FilePath& dir);
 
 // Returns true if the `request_body_regex` partially matches `request_body`.
-bool RequestMatcherRegex(const std::string& request_body_regex,
-                         const std::string& request_body);
+[[nodiscard]] bool RequestMatcherRegex(const std::string& request_body_regex,
+                                       const std::string& request_body);
 
 void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
 
@@ -233,6 +223,13 @@ void ExpectUpdateSequence(UpdaterScope scope,
                           const std::string& install_data_index,
                           const base::Version& from_version,
                           const base::Version& to_version);
+
+void ExpectInstallSequence(UpdaterScope scope,
+                           ScopedServer* test_server,
+                           const std::string& app_id,
+                           const std::string& install_data_index,
+                           const base::Version& from_version,
+                           const base::Version& to_version);
 
 void StressUpdateService(UpdaterScope scope);
 
@@ -259,7 +256,6 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id);
 void RunOfflineInstall(UpdaterScope scope,
                        bool is_legacy_install,
                        bool is_silent_install);
-
 }  // namespace updater::test
 
 #endif  // CHROME_UPDATER_TEST_INTEGRATION_TESTS_IMPL_H_

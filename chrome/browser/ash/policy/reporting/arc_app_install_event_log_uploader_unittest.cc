@@ -14,7 +14,6 @@
 #include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/reporting/install_event_log_util.h"
@@ -170,8 +169,7 @@ class ArcAppInstallEventLogUploaderTest : public testing::Test {
   MockArcAppInstallEventLogUploaderDelegate delegate_;
   std::unique_ptr<ArcAppInstallEventLogUploader> uploader_;
 
-  chromeos::system::ScopedFakeStatisticsProvider
-      scoped_fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider scoped_fake_statistics_provider_;
 };
 
 // Make a log upload request. Have serialization and log upload succeed. Verify

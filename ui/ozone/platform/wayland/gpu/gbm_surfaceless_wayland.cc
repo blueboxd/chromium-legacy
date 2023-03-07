@@ -11,7 +11,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
@@ -167,36 +167,10 @@ bool GbmSurfacelessWayland::ScheduleOverlayPlane(
   }
   return frame->schedule_planes_succeeded;
 }
-
-bool GbmSurfacelessWayland::IsOffscreen() {
-  return false;
-}
-
-bool GbmSurfacelessWayland::SupportsAsyncSwap() {
-  return true;
-}
-
-bool GbmSurfacelessWayland::SupportsPostSubBuffer() {
-  return true;
-}
-
-gfx::SwapResult GbmSurfacelessWayland::PostSubBuffer(
-    int x,
-    int y,
-    int width,
-    int height,
-    PresentationCallback callback,
-    gl::FrameData data) {
-  // The actual sub buffer handling is handled at higher layers.
-  NOTREACHED();
-  return gfx::SwapResult::SWAP_FAILED;
-}
-
-void GbmSurfacelessWayland::SwapBuffersAsync(
-    SwapCompletionCallback completion_callback,
-    PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  TRACE_EVENT0("wayland", "GbmSurfacelessWayland::SwapBuffersAsync");
+void GbmSurfacelessWayland::Present(SwapCompletionCallback completion_callback,
+                                    PresentationCallback presentation_callback,
+                                    gfx::FrameData data) {
+  TRACE_EVENT0("wayland", "GbmSurfacelessWayland::Present");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
     std::move(completion_callback)
@@ -206,8 +180,7 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
     return;
   }
 
-  if ((!no_gl_flush_for_tests_ && !buffer_manager_->supports_acquire_fence()) ||
-      requires_gl_flush_on_swap_buffers_) {
+  if (!no_gl_flush_for_tests_ && !buffer_manager_->supports_acquire_fence()) {
     glFlush();
   }
 
@@ -249,18 +222,6 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
       std::move(fence_wait_task), std::move(fence_retired_callback));
 }
 
-void GbmSurfacelessWayland::PostSubBufferAsync(
-    int x,
-    int y,
-    int width,
-    int height,
-    SwapCompletionCallback completion_callback,
-    PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  SwapBuffersAsync(std::move(completion_callback),
-                   std::move(presentation_callback), data);
-}
-
 EGLConfig GbmSurfacelessWayland::GetConfig() {
   if (!config_) {
     EGLint config_attribs[] = {EGL_BUFFER_SIZE,
@@ -297,12 +258,6 @@ bool GbmSurfacelessWayland::SupportsOverridePlatformSize() const {
 
 bool GbmSurfacelessWayland::SupportsViewporter() const {
   return buffer_manager_->supports_viewporter();
-}
-
-gfx::SurfaceOrigin GbmSurfacelessWayland::GetOrigin() const {
-  // GbmSurfacelessWayland's y-axis is flipped compare to GL - (0,0) is at top
-  // left corner.
-  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 bool GbmSurfacelessWayland::Resize(const gfx::Size& size,
@@ -366,10 +321,6 @@ void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {
 
 void GbmSurfacelessWayland::SetNoGLFlushForTests() {
   no_gl_flush_for_tests_ = true;
-}
-
-void GbmSurfacelessWayland::SetForceGlFlushOnSwapBuffers() {
-  requires_gl_flush_on_swap_buffers_ = true;
 }
 
 void GbmSurfacelessWayland::OnSubmission(uint32_t frame_id,

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/extensions/extension_popup_types.h"
@@ -148,6 +148,14 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   PopupShowAction show_action_;
 
   ShowPopupCallback shown_callback_;
+
+#if BUILDFLAG(IS_MAC)
+  class ScopedBrowserActivationObservation;
+  // The observation on the browser window.
+  // Closes the extension popup when the browser window gets activation.
+  std::unique_ptr<ScopedBrowserActivationObservation>
+      scoped_browser_activation_obvervation_;
+#endif
 
   // Note: This must be reset *before* `host_`. See note in
   // OnExtensionUnloaded().

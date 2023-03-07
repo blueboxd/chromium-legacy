@@ -26,6 +26,7 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/ip_address_space.mojom.h"
+#include "services/network/public/mojom/trust_token_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/public/mojom/url_request.mojom.h"
@@ -91,6 +92,8 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
   out->allow_cookies_from_browser = data.allow_cookies_from_browser();
   out->cookie_observer = data.TakeCookieObserver<
       mojo::PendingRemote<network::mojom::CookieAccessObserver>>();
+  out->trust_token_observer = data.TakeTrustTokenObserver<
+      mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>>();
   out->url_loader_network_observer = data.TakeUrlLoaderNetworkObserver<
       mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>>();
   out->devtools_observer = data.TakeDevtoolsObserver<
@@ -199,6 +202,7 @@ bool StructTraits<
       data.update_first_party_url_on_redirect();
   out->load_flags = data.load_flags();
   out->resource_type = data.resource_type();
+  out->priority_incremental = data.priority_incremental();
   out->originated_from_service_worker = data.originated_from_service_worker();
   out->skip_service_worker = data.skip_service_worker();
   out->corb_detachable = data.corb_detachable();

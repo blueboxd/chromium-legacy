@@ -8,12 +8,14 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/style/color_util.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -48,6 +50,9 @@ constexpr base::TimeDelta kTuckWindowBounceEndDuration =
 
 constexpr base::TimeDelta kUntuckWindowAnimationDuration =
     base::Milliseconds(400);
+
+constexpr base::TimeDelta kSlideHandleForOverviewDuration =
+    base::Milliseconds(200);
 
 // Returns the tuck handle bounds aligned with `window_bounds`.
 const gfx::Rect GetTuckHandleBounds(bool left, const gfx::Rect& window_bounds) {
@@ -188,10 +193,11 @@ ScopedWindowTucker::ScopedWindowTucker(aura::Window* window, bool left)
   DCHECK(window_to_activate);
   wm::ActivateWindow(window_to_activate);
 
-  Shell::Get()->activation_client()->AddObserver(this);
-
   targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
       window_, std::make_unique<aura::NullWindowTargeter>());
+
+  Shell::Get()->activation_client()->AddObserver(this);
+  overview_observer_.Observe(Shell::Get()->overview_controller());
 }
 
 ScopedWindowTucker::~ScopedWindowTucker() {
@@ -223,6 +229,10 @@ void ScopedWindowTucker::AnimateTuck() {
       left_ ? -kTuckOffscreenPaddingDp : kTuckOffscreenPaddingDp, 0);
 
   views::AnimationBuilder()
+      .OnAborted(base::BindOnce(&ScopedWindowTucker::OnAnimateTuckEnded,
+                                weak_factory_.GetWeakPtr()))
+      .OnEnded(base::BindOnce(&ScopedWindowTucker::OnAnimateTuckEnded,
+                              weak_factory_.GetWeakPtr()))
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
       .Once()
@@ -239,9 +249,14 @@ void ScopedWindowTucker::AnimateTuck() {
       .SetTransform(window_, gfx::Transform(), gfx::Tween::ACCEL_20_DECEL_100)
       .SetTransform(tuck_handle, gfx::Transform(),
                     gfx::Tween::ACCEL_20_DECEL_100);
+
+  base::RecordAction(base::UserMetricsAction(kTuckUserAction));
 }
 
 void ScopedWindowTucker::AnimateUntuck(base::OnceClosure callback) {
+  ScopedAnimationDisabler disable(window_);
+  window_->Show();
+
   const gfx::RectF initial_bounds(window_->bounds());
 
   TabletModeWindowState::UpdateWindowPosition(
@@ -266,6 +281,8 @@ void ScopedWindowTucker::AnimateUntuck(base::OnceClosure callback) {
       .SetTransform(window_, gfx::Transform(), gfx::Tween::ACCEL_5_70_DECEL_90)
       .SetTransform(tuck_handle, gfx::Transform(),
                     gfx::Tween::ACCEL_5_70_DECEL_90);
+
+  base::RecordAction(base::UserMetricsAction(kUntuckUserAction));
 }
 
 void ScopedWindowTucker::OnWindowActivated(ActivationReason reason,
@@ -274,6 +291,51 @@ void ScopedWindowTucker::OnWindowActivated(ActivationReason reason,
   // Note that `UntuckWindow()` destroys `this`.
   if (gained_active == window_)
     UntuckWindow();
+}
+
+void ScopedWindowTucker::OnOverviewModeStarting() {
+  OnOverviewModeChanged(/*in_overview=*/true);
+}
+
+void ScopedWindowTucker::OnOverviewModeEndingAnimationComplete(bool canceled) {
+  OnOverviewModeChanged(/*in_overview=*/false);
+}
+
+void ScopedWindowTucker::OnOverviewModeChanged(bool in_overview) {
+  // Slide the tuck handle offscreen if entering overview mode, or back onscreen
+  // if exiting overview mode.
+  aura::Window* tuck_handle = tuck_handle_widget_->GetNativeWindow();
+  const gfx::Rect bounds = tuck_handle->bounds();
+  gfx::Rect target_bounds =
+      GetTuckHandleBounds(left_, window_->GetTargetBounds());
+  if (in_overview) {
+    const int x_offset = left_ ? -kTuckHandleWidth : kTuckHandleWidth;
+    target_bounds.Offset(x_offset, 0);
+  }
+
+  if (target_bounds == bounds) {
+    return;
+  }
+
+  tuck_handle->SetBounds(target_bounds);
+  const gfx::Transform transform =
+      gfx::TransformBetweenRects(gfx::RectF(target_bounds), gfx::RectF(bounds));
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetTransform(tuck_handle, transform)
+      .Then()
+      .SetDuration(kSlideHandleForOverviewDuration)
+      .SetTransform(tuck_handle, gfx::Transform(),
+                    gfx::Tween::ACCEL_20_DECEL_100);
+}
+
+void ScopedWindowTucker::OnAnimateTuckEnded() {
+  ScopedAnimationDisabler disable(window_);
+  window_->Hide();
 }
 
 void ScopedWindowTucker::UntuckWindow() {

@@ -14,6 +14,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
@@ -619,18 +620,13 @@ public class DOMUtils {
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
                 + getMaybeTopControlsHeight(webContents);
-
-        // This scale will almost always be 1. See the comments on
-        // DisplayAndroid#getAndroidUIScaling().
-        float scale = webContents.getTopLevelNativeWindow().getDisplay().getAndroidUIScaling();
-
-        return new int[] {(int) (clickX * scale), (int) (clickY * scale)};
+        return new int[] {clickX, clickY};
     }
 
     private static int getMaybeTopControlsHeight(final WebContents webContents) {
         try {
             return TestThreadUtils.runOnUiThreadBlocking(
-                    () -> nativeGetTopControlsShrinkBlinkHeight(webContents));
+                    () -> DOMUtilsJni.get().getTopControlsShrinkBlinkHeight(webContents));
         } catch (ExecutionException e) {
             return 0;
         }
@@ -689,5 +685,8 @@ public class DOMUtils {
         return script;
     }
 
-    private static native int nativeGetTopControlsShrinkBlinkHeight(WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        int getTopControlsShrinkBlinkHeight(WebContents webContents);
+    }
 }

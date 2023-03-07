@@ -30,26 +30,6 @@ public class PrivacySandboxBridge {
         PrivacySandboxBridgeJni.get().setPrivacySandboxEnabled(enabled);
     }
 
-    public static String getFlocStatusString() {
-        return PrivacySandboxBridgeJni.get().getFlocStatusString();
-    }
-
-    public static String getFlocGroupString() {
-        return PrivacySandboxBridgeJni.get().getFlocGroupString();
-    }
-
-    public static String getFlocUpdateString() {
-        return PrivacySandboxBridgeJni.get().getFlocUpdateString();
-    }
-
-    public static String getFlocDescriptionString() {
-        return PrivacySandboxBridgeJni.get().getFlocDescriptionString();
-    }
-
-    public static String getFlocResetExplanationString() {
-        return PrivacySandboxBridgeJni.get().getFlocResetExplanationString();
-    }
-
     public static List<Topic> getCurrentTopTopics() {
         return sortTopics(Arrays.asList(PrivacySandboxBridgeJni.get().getCurrentTopTopics()));
     }
@@ -121,6 +101,10 @@ public class PrivacySandboxBridge {
         return PrivacySandboxBridgeJni.get().getFirstPartySetOwner(memberOrigin);
     }
 
+    public static void topicsToggleChanged(boolean newValue) {
+        PrivacySandboxBridgeJni.get().topicsToggleChanged(newValue);
+    }
+
     @NativeMethods
     public interface Natives {
         boolean isPrivacySandboxEnabled();
@@ -132,11 +116,6 @@ public class PrivacySandboxBridge {
         void setPrivacySandboxEnabled(boolean enabled);
         void setFirstPartySetsDataAccessEnabled(boolean enabled);
         String getFirstPartySetOwner(String memberOrigin);
-        String getFlocStatusString();
-        String getFlocGroupString();
-        String getFlocUpdateString();
-        String getFlocDescriptionString();
-        String getFlocResetExplanationString();
         Topic[] getCurrentTopTopics();
         Topic[] getBlockedTopics();
         void setTopicAllowed(int topicId, int taxonomyVersion, boolean allowed);
@@ -145,5 +124,6 @@ public class PrivacySandboxBridge {
         void setFledgeJoiningAllowed(String topFrameEtldPlus1, boolean allowed);
         int getRequiredPromptType();
         void promptActionOccurred(int action);
+        void topicsToggleChanged(boolean newValue);
     }
 }

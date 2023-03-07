@@ -12,9 +12,6 @@ class PrefRegistrySimple;
 
 namespace enterprise_connectors {
 
-// Pref that maps to the "SendDownloadToCloudEnterpriseConnector" policy.
-extern const char kSendDownloadToCloudPref[];
-
 // Pref that maps to the "OnFileAttachedEnterpriseConnector" policy.
 extern const char kOnFileAttachedPref[];
 
@@ -47,10 +44,6 @@ extern const char kOnFileTransferScopePref[];
 extern const char kOnSecurityEventScopePref[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-#if BUILDFLAG(IS_MAC)
-void RegisterLocalPrefs(PrefRegistrySimple* registry);
-#endif
 
 }  // namespace enterprise_connectors
 

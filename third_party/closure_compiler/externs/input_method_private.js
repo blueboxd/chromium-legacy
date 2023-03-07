@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,17 +259,6 @@ chrome.inputMethodPrivate.hideInputView = function(callback) {};
 chrome.inputMethodPrivate.openOptionsPage = function(inputMethodId) {};
 
 /**
- * Gets the composition bounds
- * @param {function(!Array<{
- *   x: number,
- *   y: number,
- *   w: number,
- *   h: number
- * }>): void} callback Callback which is called to provide the result
- */
-chrome.inputMethodPrivate.getCompositionBounds = function(callback) {};
-
-/**
  * Gets the surrounding text of the current selection. WARNING: This could
  * return a stale cache that doesn't reflect reality, due to async between IMF
  * and TextInputClient.
@@ -372,12 +361,6 @@ chrome.inputMethodPrivate.onCaretBoundsChanged;
  * @type {!ChromeEvent}
  */
 chrome.inputMethodPrivate.onChanged;
-
-/**
- * Fired when the composition bounds or cursor bounds are changed.
- * @type {!ChromeEvent}
- */
-chrome.inputMethodPrivate.onCompositionBoundsChanged;
 
 /**
  * Fired when the custom spelling dictionary is loaded.

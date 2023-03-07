@@ -26,6 +26,7 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/common/content_features.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -75,7 +76,7 @@ constexpr NSString* const kGoogleJapaneseInputPrefix =
 // functions.
 class DummyHostHelper : public RenderWidgetHostNSViewHostHelper {
  public:
-  explicit DummyHostHelper() {}
+  explicit DummyHostHelper() = default;
 
   DummyHostHelper(const DummyHostHelper&) = delete;
   DummyHostHelper& operator=(const DummyHostHelper&) = delete;
@@ -117,37 +118,32 @@ BOOL EventIsReservedBySystem(NSEvent* event) {
   return content::GetSystemHotkeyMap()->IsEventReserved(event);
 }
 
-// TODO(suzhe): Upstream this function.
-SkColor SkColorFromNSColor(NSColor* color) {
-  CGFloat r, g, b, a;
-  [color getRed:&r green:&g blue:&b alpha:&a];
-
-  return base::clamp(static_cast<int>(lroundf(255.0f * a)), 0, 255) << 24 |
-         base::clamp(static_cast<int>(lroundf(255.0f * r)), 0, 255) << 16 |
-         base::clamp(static_cast<int>(lroundf(255.0f * g)), 0, 255) << 8 |
-         base::clamp(static_cast<int>(lroundf(255.0f * b)), 0, 255);
-}
-
-// Extract underline information from an attributed string. Mostly copied from
-// third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
+// Extract underline information from an attributed string. Inspired by
+// `extractUnderlines` in
+// https://github.com/WebKit/WebKit/blob/main/Source/WebKitLegacy/mac/WebView/WebHTMLView.mm
 void ExtractUnderlines(NSAttributedString* string,
                        std::vector<ui::ImeTextSpan>* ime_text_spans) {
-  int length = [[string string] length];
-  int i = 0;
+  NSUInteger length = string.length;
+  NSUInteger i = 0;
   while (i < length) {
     NSRange range;
     NSDictionary* attrs = [string attributesAtIndex:i
                               longestEffectiveRange:&range
                                             inRange:NSMakeRange(i, length - i)];
-    if (NSNumber* style = attrs[NSUnderlineStyleAttributeName]) {
+    if (NSNumber* style_attr = attrs[NSUnderlineStyleAttributeName]) {
       SkColor color = SK_ColorBLACK;
-      if (NSColor* colorAttr = attrs[NSUnderlineColorAttributeName]) {
-        color = SkColorFromNSColor(
-            [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
+      if (NSColor* color_attr = attrs[NSUnderlineColorAttributeName]) {
+        color = skia::NSDeviceColorToSkColor(
+            [color_attr colorUsingColorSpace:NSColorSpace.deviceRGBColorSpace]);
       }
+
+      // `NSUnderlineStyle` is the combination of a type enum with a pattern
+      // style in the higher bits. Fold anything more complicated than a single
+      // unstyled underline down to "thick" rather than "thin".
       ui::ImeTextSpan::Thickness thickness =
-          [style intValue] > 1 ? ui::ImeTextSpan::Thickness::kThick
-                               : ui::ImeTextSpan::Thickness::kThin;
+          style_attr.intValue > NSUnderlineStyleSingle
+              ? ui::ImeTextSpan::Thickness::kThick
+              : ui::ImeTextSpan::Thickness::kThin;
       ui::ImeTextSpan ui_ime_text_span = ui::ImeTextSpan(
           ui::ImeTextSpan::Type::kComposition, range.location,
           NSMaxRange(range), thickness, ui::ImeTextSpan::UnderlineStyle::kSolid,
@@ -155,7 +151,7 @@ void ExtractUnderlines(NSAttributedString* string,
       ui_ime_text_span.underline_color = color;
       ime_text_spans->push_back(ui_ime_text_span);
     }
-    i = range.location + range.length;
+    i = NSMaxRange(range);
   }
 }
 
@@ -1055,19 +1051,6 @@ void ExtractUnderlines(NSAttributedString* string,
   // down event.
   _handlingKeyDown = YES;
 
-  // This is to handle an edge case for the "Live Conversion" feature in default
-  // Japanese IME. When the feature is on, pressing the left key at the
-  // composition boundary will reconvert previously committed text. The text
-  // input system will call setMarkedText multiple times to end the current
-  // composition and start a new one. In this case we'll need to call
-  // ImeSetComposition in setMarkedText instead of here in keyEvent:, otherwise,
-  // only the last setMarkedText will be processed.
-  ui::DomCode domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(keyCode);
-  _isReconversionTriggered =
-      _hasMarkedText && domCode == ui::DomCode::ARROW_LEFT &&
-      _markedTextSelectedRange.location == 0 && _markedRange.location != 0 &&
-      _markedRange.location != NSNotFound;
-
   // These variables might be set when handling the keyboard event.
   // Clear them here so that we can know whether they have changed afterwards.
   _textToBeInserted.clear();
@@ -1189,12 +1172,10 @@ void ExtractUnderlines(NSAttributedString* string,
     // composition node in WebKit.
     // When marked text is available, |markedTextSelectedRange_| will be the
     // range being selected inside the marked text.
-    if (!_isReconversionTriggered) {
-      _host->ImeSetComposition(_markedText, _ime_text_spans,
-                               _setMarkedTextReplacementRange,
-                               _markedTextSelectedRange.location,
-                               NSMaxRange(_markedTextSelectedRange));
-    }
+    _host->ImeSetComposition(_markedText, _ime_text_spans,
+                             _setMarkedTextReplacementRange,
+                             _markedTextSelectedRange.location,
+                             NSMaxRange(_markedTextSelectedRange));
   } else if (oldHasMarkedText && !_hasMarkedText && !textInserted) {
     if (_unmarkTextCalled) {
       _host->ImeFinishComposingText();
@@ -1202,8 +1183,6 @@ void ExtractUnderlines(NSAttributedString* string,
       _host->ImeCancelCompositionFromCocoa();
     }
   }
-
-  _isReconversionTriggered = NO;
 
   // Clear information from |interpretKeyEvents:|
   _setMarkedTextReplacementRange = gfx::Range::InvalidRange();
@@ -2045,33 +2024,15 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   _markedText = base::SysNSStringToUTF16(im_text);
   _hasMarkedText = (length > 0);
 
-  // Update markedRange/textSelectionRange assuming blink sets composition text
-  // as is. We need this because the IME checks markedRange/textSelectionRange
-  // before IPC to blink. If markedRange/textSelectionRange is not updated, IME
-  // will behave incorrectly, e.g., wrong popup window position or duplicate
-  // characters.
+  // Update markedRange assuming blink sets composition text as is.
+  // We need this because the IME checks markedRange before IPC to blink.
+  // If markedRange is not updated, IME won't update the popup window position.
   if (length > 0) {
-    // If the replacement range is valid, the range should be replaced with the
-    // new text.
-    if (replacementRange.location != NSNotFound)
-      _markedRange = NSMakeRange(replacementRange.location, length);
-    // if no replacement range and no marked range, the current selection should
-    // be replaced.
-    else if (_markedRange.location == NSNotFound)
-      _markedRange = NSMakeRange(_textSelectionRange.start(), length);
-    // if no replacement range and the marked range is valid, the current marked
-    // text should be replaced.
-    else
-      _markedRange.length = length;
-
-    _textSelectionRange =
-        gfx::Range(_markedRange.location + newSelRange.location,
-                   _markedRange.location + NSMaxRange(newSelRange));
+    if (replacementRange.location != NSNotFound) {
+      _markedRange.location = replacementRange.location;
+    }
+    _markedRange.length = [string length];
   } else {
-    // An empty text means the composition is about to be cancelled,
-    // collapse the selection to the begining of the current marked range.
-    _textSelectionRange =
-        gfx::Range(_markedRange.location, _markedRange.location);
     _markedRange = NSMakeRange(NSNotFound, 0);
   }
 
@@ -2080,20 +2041,20 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
     ExtractUnderlines(string, &_ime_text_spans);
   } else {
     // Use a thin black underline by default.
-    _ime_text_spans.push_back(ui::ImeTextSpan(
-        ui::ImeTextSpan::Type::kComposition, 0, length,
-        ui::ImeTextSpan::Thickness::kThin,
-        ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
+    _ime_text_spans.emplace_back(ui::ImeTextSpan::Type::kComposition, 0, length,
+                                 ui::ImeTextSpan::Thickness::kThin,
+                                 ui::ImeTextSpan::UnderlineStyle::kSolid,
+                                 SK_ColorTRANSPARENT);
   }
 
-  // If we are handling a key down event and the reconversion is not triggered,
-  // SetComposition() will be called in keyEvent: method.
+  // If we are handling a key down event, then SetComposition() will be
+  // called in keyEvent: method.
   // Input methods of Mac use setMarkedText calls with an empty text to cancel
   // an ongoing composition. So, we should check whether or not the given text
   // is empty to update the input method state. (Our input method backend
   // automatically cancels an ongoing composition when we send an empty text.
   // So, it is OK to send an empty text to the renderer.)
-  if (_handlingKeyDown && !_isReconversionTriggered) {
+  if (_handlingKeyDown) {
     _setMarkedTextReplacementRange = gfx::Range(replacementRange);
   } else {
     _host->ImeSetComposition(_markedText, _ime_text_spans,

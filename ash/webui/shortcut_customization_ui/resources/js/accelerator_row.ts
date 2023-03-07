@@ -9,12 +9,14 @@ import '../css/shortcut_customization_shared.css.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './accelerator_row.html.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {AcceleratorInfo, AcceleratorSource, LayoutStyle, ShortcutProviderInterface} from './shortcut_types.js';
-import {isCustomizationDisabled} from './shortcut_utils.js';
+import {AcceleratorInfo, AcceleratorSource, LayoutStyle, ShortcutProviderInterface, TextAcceleratorPart} from './shortcut_types.js';
+import {isCustomizationDisabled, isTextAcceleratorInfo} from './shortcut_utils.js';
 
 export type ShowEditDialogEvent = CustomEvent<{
   description: string,
@@ -36,11 +38,11 @@ declare global {
  * TODO(jimmyxgong): Implement opening a dialog when clicked.
  */
 export class AcceleratorRowElement extends PolymerElement {
-  static get is() {
+  static get is(): string {
     return 'accelerator-row';
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       description: {
         type: String,
@@ -49,20 +51,14 @@ export class AcceleratorRowElement extends PolymerElement {
 
       acceleratorInfos: {
         type: Array,
-        value: () => {},
-      },
-
-      acceleratorText: {
-        type: String,
-        value: '',
+        value: () => [],
       },
 
       layoutStyle: {
         type: Object,
-        value: () => {},
       },
 
-      isLocked_: {
+      isLocked: {
         type: Boolean,
         value: false,
       },
@@ -75,35 +71,41 @@ export class AcceleratorRowElement extends PolymerElement {
       source: {
         type: Number,
         value: 0,
-        observer: 'onSourceChanged_',
+        observer: AcceleratorRowElement.prototype.onSourceChanged,
       },
     };
   }
 
   description: string;
   acceleratorInfos: AcceleratorInfo[];
-  /** The text to display when layoutStyle == kText. */
-  acceleratorText?: string;
   layoutStyle: LayoutStyle;
   action: number;
   source: AcceleratorSource;
-  private isLocked_: boolean;
-  private shortcutInterfaceProvider_: ShortcutProviderInterface =
+  private isLocked: boolean;
+  private shortcutInterfaceProvider: ShortcutProviderInterface =
       getShortcutProvider();
 
-  override disconnectedCallback() {
+  override disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (!this.isLocked_) {
-      this.removeEventListener('click', () => this.showDialog_());
+    if (!this.isLocked) {
+      this.removeEventListener('click', () => this.showDialog());
     }
   }
 
-  protected onSourceChanged_() {
-    this.shortcutInterfaceProvider_.isMutable(this.source)
+  override ready(): void {
+    super.ready();
+    const numberOfAccelerators = this.layoutStyle == LayoutStyle.kDefault ?
+        this.acceleratorInfos.length :
+        1;
+    this.updateStyles({'--accelerator-row-num-accels': numberOfAccelerators});
+  }
+
+  protected onSourceChanged(): void {
+    this.shortcutInterfaceProvider.isMutable(this.source)
         .then(({isMutable}) => {
-          this.isLocked_ = !isMutable;
-          if (!this.isLocked_) {
-            this.addEventListener('click', () => this.showDialog_());
+          this.isLocked = !isMutable;
+          if (!this.isLocked) {
+            this.addEventListener('click', () => this.showDialog());
           }
         });
   }
@@ -116,16 +118,8 @@ export class AcceleratorRowElement extends PolymerElement {
     return this.layoutStyle === LayoutStyle.kText;
   }
 
-  private shouldShowLockIcon_(): boolean {
-    if (isCustomizationDisabled()) {
-      return false;
-    }
-
-    return this.isLocked_;
-  }
-
-  private showDialog_() {
-    if (isCustomizationDisabled()) {
+  private showDialog(): void {
+    if (isCustomizationDisabled() || this.isTextLayout()) {
       return;
     }
 
@@ -144,7 +138,17 @@ export class AcceleratorRowElement extends PolymerElement {
         ));
   }
 
-  static get template() {
+  protected getTextAcceleratorParts(info: AcceleratorInfo[]):
+      TextAcceleratorPart[] {
+    // For text based layout accelerators, we always expect this to be an array
+    // with a single element.
+    assert(info.length === 1);
+    const textAcceleratorInfo = info[0];
+    assert(isTextAcceleratorInfo(textAcceleratorInfo));
+    return textAcceleratorInfo.layoutProperties.textAccelerator.parts;
+  }
+
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 }

@@ -8,9 +8,12 @@
 #include <queue>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
+#include "base/functional/callback.h"
+#include "base/no_destructor.h"
+#include "build/build_config.h"
+#include "content/public/browser/browsing_data_remover.h"
 
 class Profile;
 
@@ -21,8 +24,18 @@ namespace enterprise_idle {
 // Actions run in order, based on their numerical value. Lower values run first.
 // Keep this enum sorted by priority.
 enum class ActionType {
+#if !BUILDFLAG(IS_ANDROID)
   kCloseBrowsers = 0,
   kShowProfilePicker = 1,
+#endif  // !BUILDFLAG(IS_ANDROID)
+  kClearBrowsingHistory = 2,
+  kClearDownloadHistory = 3,
+  kClearCookiesAndOtherSiteData = 4,
+  kClearCachedImagesAndFiles = 5,
+  kClearPasswordSignin = 6,
+  kClearAutofill = 7,
+  kClearSiteSettings = 8,
+  kClearHostedAppData = 9,
 };
 
 // A mapping of names to enums, for the ConfigurationPolicyHandler to make
@@ -75,12 +88,19 @@ class ActionFactory {
   ActionFactory& operator=(const ActionFactory&) = delete;
   ActionFactory(ActionFactory&&) = delete;
   ActionFactory& operator=(ActionFactory&&) = delete;
+  ~ActionFactory();
 
   // Converts the pref/policy value to a priority_queue<> of actions.
   virtual ActionQueue Build(const std::vector<ActionType>& action_names);
 
+  void SetBrowsingDataRemoverForTesting(content::BrowsingDataRemover* remover);
+
  protected:
+  friend class base::NoDestructor<ActionFactory>;
+
   ActionFactory();
+
+  raw_ptr<content::BrowsingDataRemover> browsing_data_remover_for_testing_;
 };
 
 }  // namespace enterprise_idle

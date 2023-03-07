@@ -13,13 +13,10 @@ class PrefService;
 
 namespace ash {
 class InstallAttributes;
-}
-
-namespace chromeos {
 namespace system {
 class StatisticsProvider;
 }
-}  // namespace chromeos
+}  // namespace ash
 
 namespace policy {
 
@@ -106,6 +103,17 @@ struct EnrollmentConfig {
     AUTH_MECHANISM_BEST_AVAILABLE = 2,
   };
 
+  // An enumeration of assigned upgrades that a device can after initial
+  // enrollment.
+  enum class AssignedUpgradeType {
+    // Unspecified Upgrade
+    kAssignedUpgradeTypeUnspecified = 0,
+    // Chrome Enterprise Upgrade
+    kAssignedUpgradeTypeChromeEnterprise = 1,
+    // Kiosk & Signage Upgrade
+    kAssignedUpgradeTypeKioskAndSignage = 2,
+  };
+
   // Get the enrollment configuration that has been set up via signals such as
   // device requisition, OEM manifest, pre-existing installation-time attributes
   // or server-backed state retrieval. The configuration is stored in |config|,
@@ -120,7 +128,7 @@ struct EnrollmentConfig {
   static EnrollmentConfig GetPrescribedEnrollmentConfig(
       const PrefService& local_state,
       const ash::InstallAttributes& install_attributes,
-      chromeos::system::StatisticsProvider* statistics_provider);
+      ash::system::StatisticsProvider* statistics_provider);
 
   // Returns the respective manual fallback enrollment mode when given an
   // attestation mode.
@@ -224,6 +232,12 @@ struct EnrollmentConfig {
 
   // Which type of license device has.
   LicenseType license_type = LicenseType::kNone;
+
+  // The assigned upgrade for a device after initial enrollment. Chrome
+  // Enterpise Upgrade is the default upgrade for ZTE devices, unless other is
+  // specified in the server-backed initial state retrieval.
+  AssignedUpgradeType assigned_upgrade_type =
+      AssignedUpgradeType::kAssignedUpgradeTypeChromeEnterprise;
 
   // The authentication mechanism to use.
   // TODO(drcrash): Change to best available once ZTE is everywhere.

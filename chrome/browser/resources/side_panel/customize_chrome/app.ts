@@ -3,15 +3,19 @@
 // found in the LICENSE file.
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './appearance.js';
+import './cards.js';
 import './categories.js';
+import './chrome_colors.js';
 import './shortcuts.js';
 import './themes.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
 import {AppearanceElement} from './appearance.js';
 import {CategoriesElement} from './categories.js';
+import {ChromeColorsElement} from './chrome_colors.js';
 import {BackgroundCollection} from './customize_chrome.mojom-webui.js';
 import {ThemesElement} from './themes.js';
 
@@ -19,6 +23,7 @@ export enum CustomizeChromePage {
   OVERVIEW = 'overview',
   CATEGORIES = 'categories',
   THEMES = 'themes',
+  CHROME_COLORS = 'chrome-colors',
 }
 
 export interface AppElement {
@@ -27,6 +32,7 @@ export interface AppElement {
     categoriesPage: CategoriesElement,
     themesPage: ThemesElement,
     appearanceElement: AppearanceElement,
+    chromeColorsPage: ChromeColorsElement,
   };
 }
 
@@ -44,6 +50,10 @@ export class AppElement extends PolymerElement {
       page_: {
         type: String,
         value: CustomizeChromePage.OVERVIEW,
+      },
+      modulesEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('modulesEnabled'),
       },
       selectedCollection_: {
         type: Object,
@@ -63,6 +73,9 @@ export class AppElement extends PolymerElement {
       case CustomizeChromePage.THEMES:
         this.page_ = CustomizeChromePage.CATEGORIES;
         break;
+      case CustomizeChromePage.CHROME_COLORS:
+        this.page_ = CustomizeChromePage.CATEGORIES;
+        break;
     }
   }
 
@@ -75,8 +88,12 @@ export class AppElement extends PolymerElement {
     this.page_ = CustomizeChromePage.THEMES;
   }
 
-  private onThemeSelect_() {
+  private onLocalImageUpload_() {
     this.page_ = CustomizeChromePage.OVERVIEW;
+  }
+
+  private onChromeColorsSelect_() {
+    this.page_ = CustomizeChromePage.CHROME_COLORS;
   }
 }
 

@@ -7,12 +7,12 @@
 #include <tuple>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/functional/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
@@ -148,7 +148,7 @@ void OnSetRlzPingSent(int retry_count, bool success) {
 
   if (retry_count >= RlzValueStoreChromeOS::kMaxRetryCount) {
     UMA_HISTOGRAM_BOOLEAN("Rlz.SetRlzPingSent", false);
-    LOG(ERROR) << "Setting " << chromeos::system::kShouldSendRlzPingKey
+    LOG(ERROR) << "Setting " << ash::system::kShouldSendRlzPingKey
                << " failed after " << RlzValueStoreChromeOS::kMaxRetryCount
                << " attempts.";
     return;
@@ -377,20 +377,19 @@ bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
       GetKeyName(kStatefulEventKey, product), base::Value(event_rlz));
 
   if (strcmp(event_rlz, "CAF") == 0) {
-    chromeos::system::StatisticsProvider* stats =
-        chromeos::system::StatisticsProvider::GetInstance();
+    ash::system::StatisticsProvider* stats =
+        ash::system::StatisticsProvider::GetInstance();
     if (const absl::optional<base::StringPiece> should_send_rlz_ping_value =
-            stats->GetMachineStatistic(
-                chromeos::system::kShouldSendRlzPingKey)) {
+            stats->GetMachineStatistic(ash::system::kShouldSendRlzPingKey)) {
       if (should_send_rlz_ping_value ==
-          chromeos::system::kShouldSendRlzPingValueFalse) {
+          ash::system::kShouldSendRlzPingValueFalse) {
         return true;
       } else if (should_send_rlz_ping_value !=
-                 chromeos::system::kShouldSendRlzPingValueTrue) {
-        LOG(WARNING) << chromeos::system::kShouldSendRlzPingKey
+                 ash::system::kShouldSendRlzPingValueTrue) {
+        LOG(WARNING) << ash::system::kShouldSendRlzPingKey
                      << " has an unexpected value: "
                      << should_send_rlz_ping_value.value() << ". Treat it as "
-                     << chromeos::system::kShouldSendRlzPingValueFalse
+                     << ash::system::kShouldSendRlzPingValueFalse
                      << " to avoid sending duplicate rlz ping.";
         return true;
       }
@@ -419,10 +418,10 @@ void RlzValueStoreChromeOS::CollectGarbage() {
 
 // static
 bool RlzValueStoreChromeOS::HasRlzEmbargoEndDatePassed() {
-  chromeos::system::StatisticsProvider* statistics_provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  return chromeos::system::GetRlzPingEmbargoState(statistics_provider) !=
-         chromeos::system::FactoryPingEmbargoState::kNotPassed;
+  ash::system::StatisticsProvider* statistics_provider =
+      ash::system::StatisticsProvider::GetInstance();
+  return ash::system::GetRlzPingEmbargoState(statistics_provider) !=
+         ash::system::FactoryPingEmbargoState::kNotPassed;
 }
 
 void RlzValueStoreChromeOS::ReadStore() {

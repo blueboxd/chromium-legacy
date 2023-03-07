@@ -128,7 +128,6 @@
 <translation id="2084108471225856927">పరికర సెట్టింగ్‌లు</translation>
 <translation id="2084809735218147718">సంజ్ఞ ద్వారా థ్యాంక్ యు చెబుతున్న వ్యక్తి</translation>
 <translation id="2088690981887365033">VPN నెట్‌వర్క్</translation>
-<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> ఐటెమ్‌లు తొలగించబడతాయి, మీరు వాటిని రీస్టోర్ చేయలేరు.</translation>
 <translation id="2122305276694332719">దాచబడిన నెట్‌వర్క్‌కు ఆటోమేటిక్‌గా కనెక్ట్ చేయడం వలన మీ పరికరాన్ని, కొన్ని నెట్‌వర్క్‌ల సెట్టింగ్‌లను ఇతరులు చూడగలుగుతారు, కనుక ఇది సిఫార్సు చేయబడదు.</translation>
 <translation id="2125607626296734455">ఖ్మేర్</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" />వ నెట్‌వర్క్, <ph name="NETWORK_NAME" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది, కనెక్ట్ చేయండి</translation>
@@ -145,6 +144,7 @@
 <translation id="2208919847696382164">Linuxతో ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="2225536596944493418">మీరు <ph name="NUMBER_OF_ITEMS" /> అంశాలను ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?</translation>
 <translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" ఫోల్డర్‌ను క్రియేట్ చేయడం సాధ్యపడలేదు. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="2236732657580416950">మీ Google Drive కాష్ క్లియర్ చేయబడింది.</translation>
 <translation id="2239068707900391003">కాఫీని పట్టుకుని ఉన్న వ్యక్తి</translation>
 <translation id="2251368349685848079">ట్రాష్ నుండి రీస్టోర్ చేయండి</translation>
 <translation id="2282155092769082568">ఆటోకాన్ఫిగరేషన్ URL:</translation>
@@ -219,6 +219,7 @@
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;కు అంశాలు సరిపోలలేదు</translation>
 <translation id="2894654529758326923">సమాచారం</translation>
 <translation id="2902734494705624966">యుఎస్ విస్తారితం</translation>
+<translation id="2904378509913846215">"<ph name="FILENAME" />" పేరు గల ఫోల్డర్ ఇప్పటికే వినియోగంలో ఉంది. మీరు తరలిస్తున్న దానితో దీన్ని రీప్లేస్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="290843123675549676">మరాఠీ</translation>
 <translation id="2923240520113693977">ఈస్టోనియన్</translation>
 <translation id="2938685643439809023">మంగోలియన్</translation>
@@ -396,7 +397,6 @@
 <translation id="4398096759193130964">ఐటెమ్‌లను రీస్టోర్ చేయండి లేదా వాటిని ట్రాష్ వెలుపల ఉన్న కొత్త ఫోల్డర్‌కు లాగండి</translation>
 <translation id="4401287888955153199">అన్నింటినీ ఎక్స్‌ట్రాక్ట్ చేయండి</translation>
 <translation id="4410695710508688828">ఎక్స్‌ట్రాక్ట్ చేయడం విఫలమైంది. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="4414834425328380570">"<ph name="FILE_NAME" />" తొలగించబడుతుంది, దానిని రీస్టోర్ చేయలేరు.</translation>
 <translation id="4418686080762064601">మీ ఫైల్స్ కోసం షార్ట్‌కట్‌ను క్రియేట్ చేయండి</translation>
 <translation id="4425149324548788773">నా డ్రైవ్‌</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, కనెక్ట్ చేయండి</translation>
@@ -640,6 +640,7 @@
 <translation id="6241349547798190358">డచ్ (బెల్జియం)</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="PHONE_NAME" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, ఫోన్ బ్యాటరీ <ph name="BATTERY_STATUS" />%, కనెక్ట్ చేయండి</translation>
 <translation id="6269630227984243955">మలయ్</translation>
+<translation id="6271903698064569429">ఫైల్స్‌ను అప్‌లోడ్ చేయడం సాధ్యం కాదు ఎందుకంటే "<ph name="SHARED_DRIVE_NAME" />"‌లో తగినంత స్టోరేజ్ లేదు.</translation>
 <translation id="6287852322318138013">ఈ ఫైల్‌ను తెరవడానికి యాప్‌ను ఎంచుకోండి</translation>
 <translation id="6295542640242147836">లాక్ SIM</translation>
 <translation id="6296410173147755564">చెల్లని PUK</translation>
@@ -929,7 +930,6 @@
 <translation id="8560515948038859357">కాంటోనీస్</translation>
 <translation id="8561206103590473338">ఏనుగు</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_COUNT" />‌లో <ph name="NETWORK_INDEX" />వ నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ బ్లాక్ చేశారు, వివరాలు</translation>
-<translation id="8568374623837201676">ఈ ఫైల్‌ను శాశ్వతంగా తొలగించాలా?</translation>
 <translation id="8569764466147087991">తెరవడానికి ఫైల్‌ని ఎంచుకోండి</translation>
 <translation id="8577897833047451336">క్రోవేషియన్</translation>
 <translation id="8578308463707544055">ఇండోనేషియన్</translation>

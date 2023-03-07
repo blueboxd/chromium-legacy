@@ -11,7 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -270,13 +269,7 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
   raw_ptr<views::Textfield, DanglingUntriaged> textfield_ = nullptr;
 };
 
-// Flaky on MSan bots: http://crbug.com/1178328
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_EmptyPolicy DISABLED_EmptyPolicy
-#else
-#define MAYBE_EmptyPolicy EmptyPolicy
-#endif
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_EmptyPolicy) {
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, EmptyPolicy) {
   SetClipboardText(kClipboardText116, nullptr);
 
   ui::DataTransferEndpoint data_dst((GURL("https://google.com")));
@@ -291,30 +284,28 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
     ScopedListPrefUpdate update(g_browser_process->local_state(),
                                 policy_prefs::kDlpRulesList);
 
-    base::Value src_urls1(base::Value::Type::LIST);
+    base::Value::List src_urls1;
     src_urls1.Append(kMailUrl);
-    base::Value dst_urls1(base::Value::Type::LIST);
+    base::Value::List dst_urls1;
     dst_urls1.Append("*");
-    base::Value restrictions1(base::Value::Type::LIST);
+    base::Value::List restrictions1;
     restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
         dlp::kClipboardRestriction, dlp::kBlockLevel));
     update->Append(dlp_test_util::CreateRule(
         "rule #1", "Block Gmail", std::move(src_urls1), std::move(dst_urls1),
-        /*dst_components=*/base::Value(base::Value::Type::LIST),
-        std::move(restrictions1)));
+        /*dst_components=*/base::Value::List(), std::move(restrictions1)));
 
-    base::Value src_urls2(base::Value::Type::LIST);
+    base::Value::List src_urls2;
     src_urls2.Append(kMailUrl);
-    base::Value dst_urls2(base::Value::Type::LIST);
+    base::Value::List dst_urls2;
     dst_urls2.Append(kDocsUrl);
-    base::Value restrictions2(base::Value::Type::LIST);
+    base::Value::List restrictions2;
     restrictions2.Append(dlp_test_util::CreateRestrictionWithLevel(
         dlp::kClipboardRestriction, dlp::kAllowLevel));
     update->Append(dlp_test_util::CreateRule(
         "rule #2", "Allow Gmail for work purposes", std::move(src_urls2),
         std::move(dst_urls2),
-        /*dst_components=*/base::Value(base::Value::Type::LIST),
-        std::move(restrictions2)));
+        /*dst_components=*/base::Value::List(), std::move(restrictions2)));
   }
 
   SetClipboardText(
@@ -358,9 +349,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   FlushMessageLoop();
 }
 
-// Flaky on MSan bots: http://crbug.com/1178328
 // Failing on Lacros: http://crbug.com/1380180
-#if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_WarnDestination DISABLED_WarnDestination
 #else
 #define MAYBE_WarnDestination WarnDestination
@@ -522,7 +512,13 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<FakeDlpController> dlp_controller_;
 };
 
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
+// Failing on Lacros: http://crbug.com/1380180
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_ProceedOnWarn DISABLED_ProceedOnWarn
+#else
+#define MAYBE_ProceedOnWarn ProceedOnWarn
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ProceedOnWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -608,8 +604,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
   EXPECT_TRUE(!widget || widget->IsClosed());
 }
 
-// TODO(crbug.com/1395711): The test is flaky. Re-enable it.
-#if BUILDFLAG(IS_LINUX)
+// Failing on Lacros: http://crbug.com/1380180
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CancelWarn DISABLED_CancelWarn
 #else
 #define MAYBE_CancelWarn CancelWarn
@@ -696,13 +692,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_CancelWarn) {
   EXPECT_TRUE(!widget || widget->IsClosed());
 }
 
-#if defined(MEMORY_SANITIZER)
+// Failing on Lacros: http://crbug.com/1380180
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_ShouldProceedWarn DISABLED_ShouldProceedWarn
 #else
 #define MAYBE_ShouldProceedWarn ShouldProceedWarn
 #endif
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
-                       MAYBE_ShouldProceedWarn) {
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ShouldProceedWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -774,7 +770,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
 }
 
 // Test case for crbug.com/1213143
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, Reporting) {
+// Failing on Lacros: http://crbug.com/1380180
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_Reporting DISABLED_Reporting
+#else
+#define MAYBE_Reporting Reporting
+#endif
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_Reporting) {
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());

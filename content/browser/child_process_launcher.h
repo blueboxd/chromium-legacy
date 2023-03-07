@@ -23,6 +23,7 @@
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -163,17 +164,19 @@ struct ChildProcessLauncherFileData {
       delete;
   ~ChildProcessLauncherFileData();
 
-#if BUILDFLAG(IS_POSIX)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
   // Files opened by the browser and passed as corresponding file descriptors
-  // in the child process.
+  // in the child process. If a FilePath is provided, the file will be opened
+  // and the descriptor cached for future process launches. If a ScopedFD is
+  // provided, it will be passed to the new process and closed in the current
+  // one.
+  //
+  // The files will be stored in base::FileDescriptorStore in the new process,
+  // with the corresponding key.
+  //
   // Currently only supported on Linux, ChromeOS and Android platforms.
-  std::map<std::string, base::FilePath> files_to_preload;
-
-  // Map of file descriptors to pass. This is used instead of
-  // `files_to_preload` when the data is already contained as a file
-  // descriptor.
-  // Currently only supported on POSIX platforms.
-  std::map<int, base::ScopedFD> additional_remapped_fds;
+  std::map<std::string, absl::variant<base::FilePath, base::ScopedFD>>
+      files_to_preload;
 #endif
 };
 
@@ -207,16 +210,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // If `process_error_callback` is provided, it will be called if a Mojo error
   // is encountered when processing messages from the child process. This
   // callback must be safe to call from any thread.
-  //
-  // `file_data` consists of 2 members:
-  // files_to_preload: a map of key names to file paths. These files will be
-  // opened by the browser process and corresponding file descriptors inherited
-  // by the new child process, accessible using the corresponding key via some
-  // platform-specific mechanism (such as base::FileDescriptorStore on POSIX).
-  // Currently only supported on Linux, ChromeOS and Android platforms.
-  // additional_remapped_fds: is a map of file descriptors to pass. This is
-  // used instead of files_to_preload when the data is already contained as a
-  // file descriptor. Currently only supported on POSIX platforms.
   ChildProcessLauncher(
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       std::unique_ptr<base::CommandLine> cmd_line,

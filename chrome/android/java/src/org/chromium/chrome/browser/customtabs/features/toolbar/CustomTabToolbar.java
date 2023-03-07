@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs.features.toolbar;
 
+import static androidx.browser.customtabs.CustomTabsIntent.CLOSE_BUTTON_POSITION_END;
+
 import static org.chromium.base.MathUtils.interpolate;
-import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CLOSE_BUTTON_POSITION_END;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -43,15 +44,15 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.browser.customtabs.CustomTabsIntent.CloseButtonPosition;
 import androidx.core.view.MarginLayoutParamsCompat;
+import androidx.core.widget.ImageViewCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CallbackController;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CloseButtonPosition;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -332,7 +333,13 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         return false;
     }
 
-    public void setHandleStrategy(HandleStrategy strategy) {
+    public void setHandleStrategy(@Nullable HandleStrategy strategy) {
+        // When the (P)CCT does not need to be resized the handle strategy can be null.
+        if (strategy == null) {
+            mHandleStrategy = null;
+            return;
+        }
+
         mHandleStrategy = strategy;
         mHandleStrategy.setCloseClickHandler(mCloseButton::callOnClick);
         if (!CustomTabsConnection.getInstance().isDynamicFeatureEnabled(
@@ -1075,7 +1082,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         private void showBrandingIconAndText() {
             ColorStateList colorStateList = AppCompatResources.getColorStateList(
                     getContext(), mLocationBarDataProvider.getSecurityIconColorStateList());
-            ApiCompatibilityUtils.setImageTintList(mSecurityButton, colorStateList);
+            ImageViewCompat.setImageTintList(mSecurityButton, colorStateList);
             mAnimDelegate.updateSecurityButton(R.drawable.chromelogo16, mAnimateIconTransition);
 
             mUrlBar.setText(R.string.twa_running_in_chrome);
@@ -1105,7 +1112,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             if (securityIconResource != 0) {
                 ColorStateList colorStateList = AppCompatResources.getColorStateList(
                         getContext(), mLocationBarDataProvider.getSecurityIconColorStateList());
-                ApiCompatibilityUtils.setImageTintList(mSecurityButton, colorStateList);
+                ImageViewCompat.setImageTintList(mSecurityButton, colorStateList);
             }
             mAnimDelegate.updateSecurityButton(securityIconResource, mAnimateIconTransition);
 
@@ -1121,8 +1128,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
             // If the url is about:blank, we shouldn't show a title as it is prone to spoofing.
             if (!mLocationBarDataProvider.hasTab() || TextUtils.isEmpty(title)
-                    || (shouldShowAboutBlankUrl()
-                            && ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(getUrl()))) {
+                    || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(getUrl())) {
                 mTitleBar.setText("");
                 return;
             }
@@ -1160,9 +1166,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             String publisherUrl = TrustedCdn.getPublisherUrl(tab);
             String url = getUrl();
             // Don't show anything for Chrome URLs.
-            if (NativePage.isNativePageUrl(url, getCurrentTab().isIncognito())
-                    || (!shouldShowAboutBlankUrl()
-                            && ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url))) {
+            if (NativePage.isNativePageUrl(url, getCurrentTab().isIncognito())) {
                 mUrlCoordinator.setUrlBarData(
                         UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
                 return;
@@ -1201,10 +1205,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
             String publisherUrl = TrustedCdn.getPublisherUrl(tab);
             return publisherUrl != null ? publisherUrl : tab.getUrl().getSpec().trim();
-        }
-
-        private boolean shouldShowAboutBlankUrl() {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_SHOW_ABOUT_BLANK_URL);
         }
 
         private void updateColors() {

@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
+#include "chrome/browser/extensions/error_console/error_console_test_observer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/web_navigation.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
@@ -137,39 +137,6 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
 constexpr char kTestExtensionId[] = "ogdbpbegnmindpdjfafpmpicikegejdj";
 
 }  // namespace
-
-class ErrorObserver : public ErrorConsole::Observer {
- public:
-  ErrorObserver(size_t errors_expected, ErrorConsole* error_console)
-      : errors_expected_(errors_expected),
-        error_console_(error_console),
-        errors_observed_(0) {
-    observation_.Observe(error_console_.get());
-  }
-
-  // ErrorConsole::Observer implementation.
-  void OnErrorAdded(const ExtensionError* error) override {
-    ++errors_observed_;
-    if (errors_observed_ >= errors_expected_) {
-      run_loop_.Quit();
-    }
-  }
-
-  // Spin until the appropriate number of errors have been observed.
-  void WaitForErrors() {
-    if (errors_observed_ < errors_expected_) {
-      run_loop_.Run();
-    }
-  }
-
- private:
-  size_t errors_expected_;
-  raw_ptr<ErrorConsole> error_console_;
-  size_t errors_observed_;
-  base::ScopedObservation<ErrorConsole, ErrorConsole::Observer> observation_{
-      this};
-  base::RunLoop run_loop_;
-};
 
 class ServiceWorkerTest : public ExtensionApiTest {
  public:
@@ -422,10 +389,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // Tests that registering a module service worker with dynamic import fails.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        ModuleServiceWorkerWithDynamicImport) {
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   constexpr size_t kErrorsExpected = 1u;
-  ErrorObserver observer(kErrorsExpected, error_console);
+  ErrorConsoleTestObserver observer(kErrorsExpected, profile());
+  observer.EnableErrorCollection();
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("service_worker/worker_based_background/"
@@ -433,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 
   observer.WaitForErrors();
   const ErrorList& error_list =
-      error_console->GetErrorsForExtension(extension->id());
+      ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
   ASSERT_EQ(
       error_list[0]->message(),
@@ -446,12 +412,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // synchronously throwing a runtime error.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        ServiceWorkerWithRegistrationFailure) {
-  // The error console only captures errors if the user is in dev mode.
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
-
   constexpr size_t kErrorsExpected = 2u;
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  ErrorObserver observer(kErrorsExpected, error_console);
+  ErrorConsoleTestObserver observer(kErrorsExpected, profile());
+  observer.EnableErrorCollection();
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("service_worker/worker_based_background/"
@@ -461,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ASSERT_TRUE(extension);
   observer.WaitForErrors();
   const ErrorList& error_list =
-      error_console->GetErrorsForExtension(extension->id());
+      ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
 
   std::vector<std::u16string> error_message_list;
@@ -478,11 +441,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // Tests that an error is generated if there is a syntax error in the service
 // worker script.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, SyntaxError) {
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  // Error is observed on extension UI for developer mode only.
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   const size_t kErrorsExpected = 1u;
-  ErrorObserver observer(kErrorsExpected, error_console);
+  ErrorConsoleTestObserver observer(kErrorsExpected, profile());
+  observer.EnableErrorCollection();
 
   ExtensionTestMessageListener test_listener("ready",
                                              ReplyBehavior::kWillReply);
@@ -495,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, SyntaxError) {
   observer.WaitForErrors();
 
   const ErrorList& error_list =
-      error_console->GetErrorsForExtension(extension->id());
+      ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
   EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
   EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
@@ -506,11 +467,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, SyntaxError) {
 // Tests that an error is generated if there is an undefined variable in the
 // service worker script.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UndefinedVariable) {
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  // Error is observed on extension UI for developer mode only.
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   const size_t kErrorsExpected = 1u;
-  ErrorObserver observer(kErrorsExpected, error_console);
+  ErrorConsoleTestObserver observer(kErrorsExpected, profile());
+  observer.EnableErrorCollection();
 
   ExtensionTestMessageListener test_listener("ready",
                                              ReplyBehavior::kWillReply);
@@ -523,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UndefinedVariable) {
   observer.WaitForErrors();
 
   const ErrorList& error_list =
-      error_console->GetErrorsForExtension(extension->id());
+      ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
   EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
   EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
@@ -534,19 +493,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UndefinedVariable) {
 // Tests that an error is generated if console.error() is called from an
 // extension's service worker.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, ConsoleError) {
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  // Error is observed on extension UI for developer mode only.
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   const size_t kErrorsExpected = 1u;
-  ErrorObserver observer(kErrorsExpected, error_console);
+  ErrorConsoleTestObserver observer(kErrorsExpected, profile());
+  observer.EnableErrorCollection();
 
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/console_error"))
       << message_;
 
   observer.WaitForErrors();
-  const ErrorList& error_list = error_console->GetErrorsForExtension(
-      ExtensionBrowserTest::last_loaded_extension_id());
+  const ErrorList& error_list =
+      ErrorConsole::Get(profile())->GetErrorsForExtension(
+          ExtensionBrowserTest::last_loaded_extension_id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
   EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
   EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
@@ -2203,6 +2161,55 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
   }
 }
 
+// Test extension with OnInstalled listener can be successfully updated when,
+// 1) Was allowed in incognito.
+// 2) An incognito window was open.
+// 3) Toggle the allow in incognito switch to off
+// Regression test for crbug.com/1394588
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       DisallowIncognitoWithOnInstalledListener) {
+  ResultCatcher catcher;
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
+                                .AppendASCII("update_incognito_mode")
+                                .AppendASCII("service_worker.pem");
+
+  base::FilePath path_v1 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update_incognito_mode")
+                                   .AppendASCII("v1"),
+                               scoped_temp_dir.GetPath().AppendASCII("v1.crx"),
+                               pem_path, base::FilePath());
+  base::FilePath path_v2 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update_incognito_mode")
+                                   .AppendASCII("v2"),
+                               scoped_temp_dir.GetPath().AppendASCII("v2.crx"),
+                               pem_path, base::FilePath());
+
+  // Allow in incognito.
+  const Extension* extension =
+      LoadExtension(path_v1, {.allow_in_incognito = true});
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Open an incognito window.
+  GURL url(url::kAboutBlankURL);
+  OpenURLOffTheRecord(profile(), url);
+
+  // Disallow in incognito.
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
+  extension_prefs->SetIsIncognitoEnabled(extension->id(), false);
+
+  // Should successfully update.
+  const Extension* extension2 = UpdateExtension(extension->id(), path_v2, 0);
+  EXPECT_TRUE(extension2);
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        TabsOnUpdatedSpanning) {
   // The spanning test differs from the Split test because it lets the
@@ -2838,8 +2845,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWithManifestVersionTest,
   const char* kDefaultCSP = GetParam() == ManifestVersion::kTwo
                                 ? "script-src 'self' blob: filesystem:; "
                                   "object-src 'self' blob: filesystem:;"
-                                : "script-src 'self'; "
-                                  "object-src 'self';";
+                                : "script-src 'self';";
   ExtensionTestMessageListener csp_modified_listener(kDefaultCSP);
   csp_modified_listener.set_extension_id(extension_id);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(

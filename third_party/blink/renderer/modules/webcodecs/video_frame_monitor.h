@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
@@ -95,42 +96,30 @@ class MODULES_EXPORT VideoFrameMonitor {
   // key: unique ID of a frame.
   // value: reference count for the frame (among objects explicitly tracking
   //        the frame with VideoFrameMonitor).
-  struct VideoFrameIDHashArg {
+  struct VideoFrameIDHashTraits
+      : WTF::GenericHashTraits<media::VideoFrame::ID> {
     static unsigned GetHash(media::VideoFrame::ID key) {
       static_assert(std::is_same_v<decltype(key.GetUnsafeValue()), uint64_t>);
       return WTF::HashInt(key.GetUnsafeValue());
     }
-    static bool Equal(media::VideoFrame::ID a, media::VideoFrame::ID b) {
-      return a == b;
-    }
-    static const bool safe_to_compare_to_empty_or_deleted = true;
-  };
-  struct VideoFrameIDHashTraits
-      : WTF::GenericHashTraits<media::VideoFrame::ID> {
+
     static const bool kEmptyValueIsZero = false;
-    static const bool kHasIsEmptyValueFunction = false;
 
     static media::VideoFrame::ID EmptyValue() {
       return media::VideoFrame::ID();
     }
-    static void ConstructDeletedValue(media::VideoFrame::ID& slot, bool) {
-      slot = media::VideoFrame::ID::FromUnsafeValue(
+    static media::VideoFrame::ID DeletedValue() {
+      return media::VideoFrame::ID::FromUnsafeValue(
           std::numeric_limits<media::VideoFrame::ID::underlying_type>::max());
     }
-    static bool IsDeletedValue(media::VideoFrame::ID value) {
-      return value.GetUnsafeValue() ==
-             std::numeric_limits<media::VideoFrame::ID::underlying_type>::max();
-    }
   };
-  using FrameMap = HashMap<media::VideoFrame::ID,
-                           int,
-                           VideoFrameIDHashArg,
-                           VideoFrameIDHashTraits>;
+  using FrameMap = HashMap<media::VideoFrame::ID, int, VideoFrameIDHashTraits>;
 
   // key: ID of the source of the frames.
   // value: References to frames associated to that source.
   // Using std::map because HashMap does not directly support std::string.
-  using SourceMap = std::map<std::string, FrameMap>;
+  using SourceMap ALLOW_DISCOURAGED_TYPE("TODO(crbug.com/1404327)") =
+      std::map<std::string, FrameMap>;
 
   base::Lock lock_;
   // Contains all data for VideoFrameMonitor.

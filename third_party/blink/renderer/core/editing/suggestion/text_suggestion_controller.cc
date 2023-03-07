@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/ranges/algorithm.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
@@ -210,17 +211,16 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
     const PositionInFlatTree& caret_position) {
   if (!IsAvailable()) {
     // TODO(crbug.com/1054955): We should fix caller not to make this happens.
-    NOTREACHED();
+    // TODO(crbug.com/1409155): We should use `CHECK()`.
+    base::debug::DumpWithoutCrashing();
     return;
   }
   if (GetFrame() != GetDocument().GetFrame()) {
     // TODO(crbug.com/1054955): We should fix caller not to make this happens.
-    NOTREACHED();
+    // TODO(crbug.com/1409155): We should use `CHECK_EQ()`.
+    base::debug::DumpWithoutCrashing();
     return;
   }
-  // TODO(crbug.com/779126): add support for suggestions in immersive mode.
-  if (GetFrame().GetSettings()->GetImmersiveModeEnabled())
-    return;
 
   // It's theoretically possible, but extremely unlikely, that the user has
   // managed to tap on some text after TextSuggestionController has told the

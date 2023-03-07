@@ -4,9 +4,9 @@
 
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,6 +44,26 @@ using blink::WebPluginContainer;
 using blink::WebString;
 
 namespace content {
+
+namespace {
+
+bool UseSharedImagesSwapChainForPPAPI() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePPAPISharedImagesSwapChain)) {
+    // This log is to make diagnosing any outages for Enterprise customers
+    // easier.
+    LOG(WARNING) << "NaCL SwapChain: Disabled by policy";
+    return false;
+  }
+
+  auto enabled =
+      base::FeatureList::IsEnabled(features::kPPAPISharedImagesSwapChain);
+  // This log is to make diagnosing any outages for Enterprise customers easier.
+  LOG(WARNING) << "NaCL SwapChain: Feature Controled: " << enabled;
+  return enabled;
+}
+
+}  // namespace
 
 // This class encapsulates ColorBuffer for the plugin. It wraps corresponding
 // SharedImage that we draw to and that we send to display compositor.
@@ -161,8 +181,8 @@ class PPB_Graphics3D_Impl::ColorBuffer {
 
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : PPB_Graphics3D_Shared(instance,
-                            /*use_shared_images_swapchain=*/features::
-                                UseSharedImagesSwapChainForPPAPI()),
+                            /*use_shared_images_swapchain=*/
+                            UseSharedImagesSwapChainForPPAPI()),
       bound_to_instance_(false),
       commit_pending_(false),
       has_alpha_(false),
@@ -535,7 +555,7 @@ gpu::Mailbox PPB_Graphics3D_Impl::GenerateMailbox() {
     return mailbox;
   }
 
-  return gpu::Mailbox::Generate();
+  return gpu::Mailbox::GenerateLegacyMailbox();
 }
 
 int32_t PPB_Graphics3D_Impl::DoPresent(const gpu::SyncToken& sync_token,

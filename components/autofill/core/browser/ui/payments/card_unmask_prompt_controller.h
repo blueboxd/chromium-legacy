@@ -32,16 +32,21 @@ class CardUnmaskPromptController {
   virtual std::u16string GetOkButtonLabel() const = 0;
   virtual int GetCvcImageRid() const = 0;
   virtual bool ShouldRequestExpirationDate() const = 0;
-  virtual bool GetStoreLocallyStartState() const = 0;
 #if BUILDFLAG(IS_ANDROID)
+  virtual std::string GetCardIconString() const = 0;
+  virtual std::u16string GetCardName() const = 0;
+  virtual std::u16string GetCardLastFourDigits() const = 0;
+  virtual std::u16string GetCardExpiration() const = 0;
   virtual int GetGooglePayImageRid() const = 0;
   virtual bool ShouldOfferWebauthn() const = 0;
   virtual bool GetWebauthnOfferStartState() const = 0;
-  virtual bool IsCardLocal() const = 0;
 #endif
   virtual base::TimeDelta GetSuccessMessageDuration() const = 0;
   virtual AutofillClient::PaymentsRpcResult GetVerificationResult() const = 0;
   virtual bool IsVirtualCard() const = 0;
+#if !BUILDFLAG(IS_IOS)
+  virtual int GetCvcTooltipResourceId() = 0;
+#endif
 
   // Utilities.
   virtual bool InputCvcIsValid(const std::u16string& input_text) const = 0;

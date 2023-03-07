@@ -25,6 +25,10 @@ class ProfileManager;
 namespace ash {
 class PrinterConfigurer;
 struct PrintServersConfig;
+
+namespace printing {
+class IppClientInfoCalculator;
+}
 }  // namespace ash
 
 namespace chromeos {
@@ -118,6 +122,8 @@ class LocalPrinterAsh : public mojom::LocalPrinter,
                            AddPrintJobObserverCallback callback) override;
   void GetOAuthAccessToken(const std::string& printer_id,
                            GetOAuthAccessTokenCallback callback) override;
+  void GetIppClientInfo(const std::string& printer_id,
+                        GetIppClientInfoCallback callback) override;
 
  private:
   void NotifyPrintJobUpdate(base::WeakPtr<ash::CupsPrintJob> job,
@@ -129,10 +135,14 @@ class LocalPrinterAsh : public mojom::LocalPrinter,
       Profile* profile);
   virtual std::unique_ptr<ash::PrinterConfigurer> CreatePrinterConfigurer(
       Profile* profile);
+  virtual ash::printing::IppClientInfoCalculator* GetIppClientInfoCalculator();
 
   ProfileManager* profile_manager_ = nullptr;
 
   bool observers_registered_ = false;
+
+  std::unique_ptr<ash::printing::IppClientInfoCalculator>
+      ipp_client_info_calculator_;
 
   // This class supports any number of connections. This allows the client to
   // have multiple, potentially thread-affine, remotes.

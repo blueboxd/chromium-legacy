@@ -51,7 +51,7 @@ class RunOnOsLoginCommand : public WebAppCommandTemplate<AppLock> {
       base::OnceClosure callback);
   ~RunOnOsLoginCommand() override;
 
-  LockDescription& lock_description() const override;
+  const LockDescription& lock_description() const override;
 
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
   void OnSyncSourceRemoved() override {}
@@ -87,6 +87,7 @@ class RunOnOsLoginCommand : public WebAppCommandTemplate<AppLock> {
   RunOnOsLoginAction set_or_sync_mode_;
   std::string stop_reason_;
   base::OnceClosure callback_ = base::DoNothing();
+  bool completion_state_set_ = false;
 
   base::WeakPtrFactory<RunOnOsLoginCommand> weak_factory_{this};
 };

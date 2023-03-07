@@ -8,8 +8,8 @@
 #include <sstream>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
@@ -160,7 +160,7 @@ void WebAppUninstallCommand::OnShutdown() {
   return;
 }
 
-LockDescription& WebAppUninstallCommand::lock_description() const {
+const LockDescription& WebAppUninstallCommand::lock_description() const {
   return *lock_description_;
 }
 

@@ -1,26 +1,30 @@
 <style include="cr-shared-style shared-style">
-  .header img {
-    content: url(images/privacy_sandbox_notice_image.svg);
-    height: 137px;
-  }
-
   /* Center the content */
   .content-area {
     display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .content-wrapper {
     margin: auto;
+  }
+
+  .banner {
+    height: 140px;
   }
 </style>
 
 <div class="content-area custom-scrollbar" scrollable tabindex="-1">
   <div class="content-wrapper">
     <div class="header">
-      <img alt="">
-      <h2>$i18n{m1NoticeEeaTitle}</h2>
+      <img class="logo" alt="">
+      <h1>$i18n{m1NoticeEeaTitle}</h1>
     </div>
     <div class="section cr-secondary-text">
       $i18n{m1NoticeEeaDescription1}
+    </div>
+    <div class="banner">
+      <img class="fledge-banner" alt="">
     </div>
     <ul class="section cr-secondary-text">
       <li>$i18n{m1NoticeEeaBullet1}</li>
@@ -29,27 +33,35 @@
     <privacy-sandbox-dialog-learn-more class="learn-more-section"
         expanded="{{expanded_}}"
         title="$i18n{m1NoticeEeaLearnMoreExpandLabel}">
-      <div><b>$i18n{m1NoticeEeaLearnMoreHeading1}</b></div>
-      <div class="cr-secondary-text">
-        $i18n{m1NoticeEeaLearnMoreDescription}
-      </div>
-      <div><b>$i18n{m1NoticeEeaLearnMoreHeading2}</b></div>
+      <h2>$i18n{m1NoticeEeaLearnMoreHeading1}</h2>
       <ul class="cr-secondary-text">
         <li>$i18nRaw{m1NoticeEeaLearnMoreBullet1}</li>
         <li>$i18nRaw{m1NoticeEeaLearnMoreBullet2}</li>
         <li>$i18nRaw{m1NoticeEeaLearnMoreBullet3}</li>
       </ul>
+      <h2>$i18n{m1NoticeEeaLearnMoreHeading2}</h2>
+      <div class="cr-secondary-text">
+        $i18n{m1NoticeEeaLearnMoreDescription}
+      </div>
     </privacy-sandbox-dialog-learn-more>
-    <div class="section cr-secondary-text">
+    <div class="section cr-secondary-text" id="lastTextElement">
       $i18n{m1NoticeEeaDescription2}
     </div>
   </div>
+  <div class="buttons-container">
+    <cr-button id="settingsButton" on-click="onNoticeOpenSettings">
+      $i18n{m1NoticeEeaSettingsButton}
+    </cr-button>
+    <cr-button id="ackButton" class="action-button"
+        on-click="onNoticeAcknowledge">
+      $i18n{m1NoticeEeaAckButton}
+    </cr-button>
+  </div>
 </div>
-<div class="buttons-container">
-  <cr-button id="settingsButton" on-click="onNoticeOpenSettings">
-    $i18n{m1NoticeEeaSettingsButton}
-  </cr-button>
-  <cr-button id="ackButton" on-click="onNoticeAcknowledge">
-    $i18n{m1NoticeEeaAckButton}
+<div id="showMoreOverlay" hidden="[[wasScrolledToBottom]]">
+  <cr-button id="moreButton" on-click="onNoticeMoreClicked"
+      class="action-button" aria-hidden="true" tabindex="-1">
+    $i18n{m1DialogMoreButton}
+    <iron-icon icon="cr:expand-more"></iron-icon>
   </cr-button>
 </div>

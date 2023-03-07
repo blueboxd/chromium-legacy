@@ -10,8 +10,8 @@
 #include "apps/test/app_window_waiter.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/functional/callback_forward.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -33,7 +33,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
@@ -207,10 +207,6 @@ void KioskBaseTest::TearDownOnMainThread() {
   KioskLaunchController::SetNetworkTimeoutCallbackForTesting(nullptr);
 
   OobeBaseTest::TearDownOnMainThread();
-
-  // Clean up while main thread still runs.
-  // See http://crbug.com/176659.
-  KioskAppManager::Get()->CleanUp();
 }
 
 void KioskBaseTest::SetUpCommandLine(base::CommandLine* command_line) {

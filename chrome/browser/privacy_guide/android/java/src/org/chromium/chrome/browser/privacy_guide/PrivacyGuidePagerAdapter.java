@@ -8,27 +8,53 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Controls the behavior of the ViewPager to navigate between privacy guide steps.
  */
 public class PrivacyGuidePagerAdapter extends FragmentStateAdapter {
-    private final List<Integer> mFragmentTypeList = new ArrayList<>();
+    private final List<Integer> mFragmentTypeList;
 
     public PrivacyGuidePagerAdapter(Fragment parent, StepDisplayHandler displayHandler) {
         super(parent);
+        Set<Integer> fragmentTypesToDisplay = getFragmentTypesToDisplay(displayHandler);
+        mFragmentTypeList = getFragmentTypesToDisplayInOrder(fragmentTypesToDisplay);
+    }
 
-        mFragmentTypeList.add(PrivacyGuideFragment.FragmentType.MSBB);
-        if (displayHandler.shouldDisplaySync()) {
-            mFragmentTypeList.add(PrivacyGuideFragment.FragmentType.SYNC);
+    private List<Integer> getFragmentTypesToDisplayInOrder(Set<Integer> fragmentTypesToDisplay) {
+        List<Integer> fragmentTypesToDisplayInOrder = new ArrayList<>();
+
+        // Add the fragment types to display to |fragmentTypesToDisplayInOrder|
+        // in the order they are declared in FragmentType.
+        for (@PrivacyGuideFragment.FragmentType int fragmentType = 0;
+                fragmentType <= PrivacyGuideFragment.FragmentType.MAX_VALUE; fragmentType++) {
+            if (fragmentTypesToDisplay.contains(fragmentType)) {
+                fragmentTypesToDisplayInOrder.add(fragmentType);
+            }
+        }
+
+        return fragmentTypesToDisplayInOrder;
+    }
+
+    private Set<Integer> getFragmentTypesToDisplay(StepDisplayHandler displayHandler) {
+        Set<Integer> fragmentTypesToDisplay = new HashSet<>();
+
+        fragmentTypesToDisplay.add(PrivacyGuideFragment.FragmentType.MSBB);
+        if (displayHandler.shouldDisplayHistorySync()) {
+            fragmentTypesToDisplay.add(PrivacyGuideFragment.FragmentType.HISTORY_SYNC);
         }
         if (displayHandler.shouldDisplaySafeBrowsing()) {
-            mFragmentTypeList.add(PrivacyGuideFragment.FragmentType.SAFE_BROWSING);
+            fragmentTypesToDisplay.add(PrivacyGuideFragment.FragmentType.SAFE_BROWSING);
         }
         if (displayHandler.shouldDisplayCookies()) {
-            mFragmentTypeList.add(PrivacyGuideFragment.FragmentType.COOKIES);
+            fragmentTypesToDisplay.add(PrivacyGuideFragment.FragmentType.COOKIES);
         }
+
+        return Collections.unmodifiableSet(fragmentTypesToDisplay);
     }
 
     @Override
@@ -38,8 +64,8 @@ public class PrivacyGuidePagerAdapter extends FragmentStateAdapter {
         switch (fragmentType) {
             case PrivacyGuideFragment.FragmentType.MSBB:
                 return new MSBBFragment();
-            case PrivacyGuideFragment.FragmentType.SYNC:
-                return new SyncFragment();
+            case PrivacyGuideFragment.FragmentType.HISTORY_SYNC:
+                return new HistorySyncFragment();
             case PrivacyGuideFragment.FragmentType.SAFE_BROWSING:
                 return new SafeBrowsingFragment();
             case PrivacyGuideFragment.FragmentType.COOKIES:
@@ -55,7 +81,6 @@ public class PrivacyGuidePagerAdapter extends FragmentStateAdapter {
 
     /**
      * Returns a {@link PrivacyGuideFragment.FragmentType} at a specified position of Privacy Guide.
-     * TODO(crbug.com/1396267): Remove this method and substitute with getCurrentFragmentType
      *
      * @param position within |mFragmentTypeList|
      * @return the {@link PrivacyGuideFragment.FragmentType} at the specified position.

@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/strcat.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -21,7 +21,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -52,8 +51,6 @@ constexpr base::TimeDelta kSearchIconAnimationDuration =
     base::Milliseconds(150);
 
 constexpr int kInnerPadding = 16;
-
-constexpr int kFocusBorderThickness = 2;
 
 // Padding to make autocomplete ghost text line up with search box text.
 constexpr gfx::Insets kGhostTextLabelPadding = gfx::Insets::TLBR(0, 0, 1, 0);
@@ -132,21 +129,15 @@ class SearchBoxImageButton : public views::ImageButton {
       : ImageButton(std::move(callback)) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
 
-    // Avoid drawing default dashed focus and draw customized focus in
-    // OnPaintBackground();
-    SetInstallFocusRingOnFocus(false);
-
-    // Inkdrop only on click.
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
     views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
-                                                 /*highlight_on_hover=*/false);
-
+                                                 /*highlight_on_hover=*/true);
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
-    SetPreferredSize(gfx::Size(kClassicSearchBoxButtonSizeDip,
-                               kClassicSearchBoxButtonSizeDip));
+    SetPreferredSize(gfx::Size(kBubbleLauncherSearchBoxButtonSizeDip,
+                               kBubbleLauncherSearchBoxButtonSizeDip));
     SetImageHorizontalAlignment(ALIGN_CENTER);
     SetImageVerticalAlignment(ALIGN_MIDDLE);
 
@@ -183,14 +174,13 @@ class SearchBoxImageButton : public views::ImageButton {
   void set_is_showing(bool is_showing) { is_showing_ = is_showing; }
   bool is_showing() { return is_showing_; }
 
-  void UpdateInkDropColors(SkColor background_color) {
-    const views::Widget* app_list_widget = GetWidget();
-    views::InkDrop::Get(this)->SetBaseColor(
-        AppListColorProvider::Get()->GetInkDropBaseColor(app_list_widget,
-                                                         background_color));
-    views::InkDrop::Get(this)->SetVisibleOpacity(
-        AppListColorProvider::Get()->GetInkDropOpacity(app_list_widget,
-                                                       background_color));
+  void UpdateInkDropColorAndOpacity(SkColor background_color) {
+    const std::pair<SkColor, float> base_color_and_opacity =
+        ash::ColorProvider::Get()->GetInkDropBaseColorAndOpacity(
+            background_color);
+    auto* ink_drop = views::InkDrop::Get(this);
+    ink_drop->SetBaseColor(base_color_and_opacity.first);
+    ink_drop->SetVisibleOpacity(base_color_and_opacity.second);
   }
 
  private:
@@ -198,21 +188,6 @@ class SearchBoxImageButton : public views::ImageButton {
 
   // Whether the button is showing/shown or hiding/hidden.
   bool is_showing_ = false;
-
-  // views::View:
-  void OnPaintBackground(gfx::Canvas* canvas) override {
-    if (HasFocus()) {
-      cc::PaintFlags circle_flags;
-      circle_flags.setAntiAlias(true);
-      circle_flags.setColor(
-          AppListColorProvider::Get()->GetFocusRingColor(GetWidget()));
-      circle_flags.setStyle(cc::PaintFlags::kStroke_Style);
-      circle_flags.setStrokeWidth(kFocusBorderThickness);
-      canvas->DrawCircle(GetLocalBounds().CenterPoint(),
-                         GetButtonRadius() - kFocusBorderThickness,
-                         circle_flags);
-    }
-  }
 
   const char* GetClassName() const override { return "SearchBoxImageButton"; }
 };
@@ -757,11 +732,11 @@ void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
   if (located_event->type() == ui::ET_MOUSE_PRESSED ||
       located_event->type() == ui::ET_GESTURE_TAP) {
     const bool event_is_in_searchbox_bounds =
-        GetWidget()->GetWindowBoundsInScreen().Contains(
-            located_event->root_location());
-    // Don't handle an event out of the searchbox bounds.
+        GetBoundsInScreen().Contains(located_event->root_location());
     if (!event_is_in_searchbox_bounds)
       return;
+
+    located_event->SetHandled();
 
     // If the event is in an inactive empty search box, enable the search box.
     if (!is_search_box_active_ && search_box_->GetText().empty()) {
@@ -780,9 +755,9 @@ void SearchBoxViewBase::UpdateBackgroundColor(SkColor color) {
   if (search_box_background)
     search_box_background->SetNativeControlColor(color);
   if (close_button_)
-    close_button_->UpdateInkDropColors(color);
+    close_button_->UpdateInkDropColorAndOpacity(color);
   if (assistant_button_)
-    assistant_button_->UpdateInkDropColors(color);
+    assistant_button_->UpdateInkDropColorAndOpacity(color);
 }
 
 }  // namespace ash

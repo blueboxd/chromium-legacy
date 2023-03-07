@@ -27,7 +27,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/sequence_manager/work_queue.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -94,10 +93,7 @@ class EarlyFeatureAccessTracker {
     // TODO(crbug.com/1383852): When we believe that all early accesses have
     // been fixed, remove this base::debug::DumpWithoutCrashing() and change the
     // above DCHECK to a CHECK.
-
-    // The following line is commented to reduce the crash volume while a fix
-    // for crbug.com/1392145 is prepared.
-    // base::debug::DumpWithoutCrashing();
+    base::debug::DumpWithoutCrashing();
 #endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID) &&
         // !BUILDFLAG(IS_CHROMEOS)
   }
@@ -592,8 +588,6 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
 
   g_cache_override_state =
       base::FeatureList::IsEnabled(kCacheFeatureOverrideState);
-
-  base::sequence_manager::internal::WorkQueue::ConfigureCapacityFieldTrial();
 
 #if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
   // Update the behaviour of LOGGING_DCHECK to match the Feature configuration.

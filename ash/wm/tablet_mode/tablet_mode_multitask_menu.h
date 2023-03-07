@@ -10,8 +10,8 @@
 #include "base/scoped_observation.h"
 #include "ui/aura/window.h"
 #include "ui/display/display_observer.h"
+#include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/unique_widget_ptr.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {
 class MultitaskMenuView;
@@ -24,9 +24,10 @@ class TabletModeMultitaskMenuView;
 
 // Creates and maintains the multitask menu. Responsible for showing,
 // hiding, and animating the menu.
-class ASH_EXPORT TabletModeMultitaskMenu : public aura::WindowObserver,
-                                           public views::WidgetObserver,
-                                           public display::DisplayObserver {
+class ASH_EXPORT TabletModeMultitaskMenu
+    : public aura::WindowObserver,
+      public views::WidgetFocusChangeListener,
+      public display::DisplayObserver {
  public:
   TabletModeMultitaskMenu(TabletModeMultitaskMenuEventHandler* event_handler,
                           aura::Window* window);
@@ -49,9 +50,10 @@ class ASH_EXPORT TabletModeMultitaskMenu : public aura::WindowObserver,
   void AnimateFadeOut();
 
   // Actions called by the event handler, where `initial_y` and `current_y` are
-  // in `window_`'s coordinates.
-  void BeginDrag(float initial_y);
-  void UpdateDrag(float current_y);
+  // in `window_`'s coordinates. If `down` is true, we are dragging down to show
+  // the menu, else we are dragging up to hide the menu.
+  void BeginDrag(float initial_y, bool down);
+  void UpdateDrag(float current_y, bool down);
   void EndDrag();
 
   // Calls the event handler to destroy `this`.
@@ -60,8 +62,8 @@ class ASH_EXPORT TabletModeMultitaskMenu : public aura::WindowObserver,
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // views::WidgetObserver:
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  // views::WidgetFocusChangeListener:
+  void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -83,12 +85,12 @@ class ASH_EXPORT TabletModeMultitaskMenu : public aura::WindowObserver,
   // The contents view of the above widget.
   raw_ptr<TabletModeMultitaskMenuView> menu_view_ = nullptr;
 
+  // Initial y location in `window_` coordinates. Only relevant for drags.
+  float initial_y_;
+
   // Window observer for `window_`.
   base::ScopedObservation<aura::Window, aura::WindowObserver> observed_window_{
       this};
-
-  base::ScopedObservation<views::Widget, views::WidgetObserver>
-      widget_observation_{this};
 
   display::ScopedOptionalDisplayObserver display_observer_{this};
 

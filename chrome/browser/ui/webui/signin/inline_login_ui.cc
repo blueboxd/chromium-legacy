@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -50,8 +50,12 @@
 #include "chrome/grit/arc_account_picker_resources_map.h"
 #include "chrome/grit/gaia_action_buttons_resources.h"
 #include "chrome/grit/gaia_action_buttons_resources_map.h"
+#include "chrome/grit/supervision_resources.h"
+#include "chrome/grit/supervision_resources_map.h"
 #include "components/account_manager_core/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -92,14 +96,14 @@ void AddEduStrings(content::WebUIDataSource* source,
                     chrome::kAccountRecoveryURL);
 
   // Strings for server based EDU Coexistence flow.
-  source->AddLocalizedString("eduCoexistenceNetworkDownHeading",
-                             IDS_EDU_COEXISTENCE_NETWORK_DOWN_HEADING);
-  source->AddLocalizedString("eduCoexistenceNetworkDownDescription",
-                             IDS_EDU_COEXISTENCE_NETWORK_DOWN_DESCRIPTION);
-  source->AddLocalizedString("eduCoexistenceErrorHeading",
-                             IDS_EDU_COEXISTENCE_ERROR_HEADING);
-  source->AddLocalizedString("eduCoexistenceErrorDescription",
-                             IDS_EDU_COEXISTENCE_ERROR_DESCRIPTION);
+  source->AddLocalizedString("supervisedUserOfflineTitle",
+                             IDS_SUPERVISED_USER_OFFLINE_TITLE);
+  source->AddLocalizedString("supervisedUserOfflineDescription",
+                             IDS_SUPERVISED_USER_OFFLINE_DESCRIPTION);
+  source->AddLocalizedString("supervisedUserErrorTitle",
+                             IDS_SUPERVISED_USER_ERROR_TITLE);
+  source->AddLocalizedString("supervisedUserErrorDescription",
+                             IDS_SUPERVISED_USER_ERROR_DESCRIPTION);
   source->AddLocalizedString("loadingMessage", IDS_LOGIN_GAIA_LOADING_MESSAGE);
   source->AddLocalizedString(
       "addSchoolAccountLabel",
@@ -107,9 +111,9 @@ void AddEduStrings(content::WebUIDataSource* source,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
+void CreateAndAddWebUIDataSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIChromeSigninHost);
 
   source->AddResourcePaths(
       base::make_span(kInlineLoginResources, kInlineLoginResourcesSize));
@@ -126,6 +130,8 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
                                            kArcAccountPickerResourcesSize));
   source->AddResourcePaths(base::make_span(kGaiaActionButtonsResources,
                                            kGaiaActionButtonsResourcesSize));
+  source->AddResourcePaths(
+      base::make_span(kSupervisionResources, kSupervisionResourcesSize));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Only add a filter when runing as test.
@@ -311,9 +317,11 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, "frame-src chrome://test/;");
-#endif
 
-  return source;
+  std::u16string username =
+      ash::ProfileHelper::Get()->GetUserByProfile(profile)->GetGivenName();
+  AddEduStrings(source, username);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // Returns whether |url| can be displayed in a chrome://chrome-signin web
@@ -352,17 +360,10 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   // Always instantiate the WebUIDataSource so that tests pulling deps from
   // from chrome://chrome-signin/gaia_auth_host/ can work.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource* source = CreateWebUIDataSource(profile);
-  content::WebUIDataSource::Add(profile, source);
+  CreateAndAddWebUIDataSource(profile);
 
   if (!IsValidChromeSigninReason(web_ui->GetWebContents()->GetVisibleURL()))
     return;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::u16string username =
-      ash::ProfileHelper::Get()->GetUserByProfile(profile)->GetGivenName();
-  AddEduStrings(source, username);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   web_ui->AddMessageHandler(

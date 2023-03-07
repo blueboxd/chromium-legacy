@@ -12,11 +12,12 @@
 #include <unordered_map>
 
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_sync_metrics_helper.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"
-#include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
 
@@ -28,10 +29,11 @@ class BrowserContext;
 
 namespace arc {
 
-// Class that syncs ARC pakcages install/uninstall.
+// Class that syncs ARC packages install/uninstall.
 class ArcPackageSyncableService : public syncer::SyncableService,
                                   public KeyedService,
-                                  public ArcAppListPrefs::Observer {
+                                  public ArcAppListPrefs::Observer,
+                                  public ArcSessionManagerObserver {
  public:
   struct SyncItem {
     SyncItem(const std::string& package_name,
@@ -62,8 +64,7 @@ class ArcPackageSyncableService : public syncer::SyncableService,
   absl::optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) override;
   void StopSyncing(syncer::ModelType type) override;
   absl::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
@@ -83,6 +84,9 @@ class ArcPackageSyncableService : public syncer::SyncableService,
   void OnPackageRemoved(const std::string& package_name,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
+
+  // ArcSessionManagerObserver:
+  void OnArcSessionStopped(ArcStopReason stop_reason) override;
 
   // Sends adds/updates sync change to sync server.
   void SendSyncChange(
@@ -108,10 +112,12 @@ class ArcPackageSyncableService : public syncer::SyncableService,
   // use cases.
   bool ShouldSyncPackage(const std::string& package_name) const;
 
+  // Maybe updates installation info for app sync metrics.
+  void MaybeUpdateInstallMetrics(const mojom::ArcPackageInfo& package_info);
+
   Profile* const profile_;
   base::OnceClosure wait_until_ready_to_sync_cb_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler_;
 
   // Items which are synced.
   SyncItemMap sync_items_;
@@ -135,6 +141,8 @@ class ArcPackageSyncableService : public syncer::SyncableService,
   syncer::SyncableService::StartSyncFlare flare_;
 
   ArcAppListPrefs* const prefs_;
+
+  ArcAppSyncMetricsHelper metrics_helper_;
 };
 
 }  // namespace arc

@@ -17,6 +17,7 @@ source_set("clear_browsing_data") {
     "clear_browsing_data_ui_constants.h",
     "clear_browsing_data_ui_constants.mm",
     "clear_browsing_data_ui_delegate.h",
+    "time_range_selector_table_view_controller+private.h",
     "time_range_selector_table_view_controller.h",
     "time_range_selector_table_view_controller.mm",
   ]
@@ -58,7 +59,6 @@ source_set("clear_browsing_data") {
     "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
-    "//ios/chrome/browser/ui/resources:legacy_password_key",
     "//ios/chrome/browser/ui/resources:password_key",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/cells",
@@ -107,6 +107,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:fake_system_identity_manager",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
@@ -118,7 +119,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/table_view:test_support",
     "//ios/chrome/common",
     "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -148,7 +148,6 @@ source_set("eg2_tests") {
   sources = [ "clear_browsing_data_egtest.mm" ]
   deps = [
     "//base/test:test_support",
-    "//components/signin/public/base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",

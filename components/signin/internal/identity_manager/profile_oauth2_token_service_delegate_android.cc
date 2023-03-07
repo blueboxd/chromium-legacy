@@ -7,9 +7,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -398,6 +398,11 @@ void ProfileOAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 
   for (const CoreAccountId& account : accounts_to_revoke)
     FireRefreshTokenRevoked(account);
+
+  JNIEnv* env = AttachCurrentThread();
+  signin::
+      Java_ProfileOAuth2TokenServiceDelegate_invalidateAccountsSeedingStatus(
+          env, java_ref_);
 }
 
 void ProfileOAuth2TokenServiceDelegateAndroid::LoadCredentials(

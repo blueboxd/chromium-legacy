@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_item_ui_device_selector_view.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
@@ -173,9 +173,10 @@ void ExpandDeviceSelectorButton::OnColorsChanged(SkColor foreground_color) {
   // When the button is not toggled, the device list is collapsed and the arrow
   // is pointing up. Otherwise, the device list is expanded and the arrow is
   // pointing down.
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(vector_icons::kCaretDownIcon,
-                                 kDropdownButtonIconSize, foreground_color));
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(vector_icons::kCaretDownIcon,
+                                               foreground_color,
+                                               kDropdownButtonIconSize));
   const auto caret_down_image = ui::ImageModel::FromVectorIcon(
       vector_icons::kCaretUpIcon, foreground_color, kDropdownButtonIconSize);
   SetToggledImageModel(views::Button::STATE_NORMAL, caret_down_image);
@@ -221,6 +222,11 @@ MediaItemUIDeviceSelectorView::MediaItemUIDeviceSelectorView(
   if (cast_controller) {
     cast_controller_ = std::move(cast_controller);
     cast_controller_->AddObserver(this);
+    cast_controller_->RegisterDestructor(
+        base::BindOnce(&MediaItemUIDeviceSelectorView::DestroyCastController,
+                       // Unretained is safe: this callback is held by
+                       // cast_controller_, which is owned by this object.
+                       base::Unretained(this)));
   }
 }
 
@@ -498,10 +504,6 @@ void MediaItemUIDeviceSelectorView::OnModelUpdated(
     observer.OnMediaItemUIDeviceSelectorUpdated(device_entry_ui_map_);
 }
 
-void MediaItemUIDeviceSelectorView::OnControllerInvalidated() {
-  cast_controller_.reset();
-}
-
 void MediaItemUIDeviceSelectorView::OnDeviceSelected(int tag) {
   auto it = device_entry_ui_map_.find(tag);
   DCHECK(it != device_entry_ui_map_.end());
@@ -655,6 +657,10 @@ void MediaItemUIDeviceSelectorView::RegisterAudioDeviceCallbacks() {
           item_id_, base::BindRepeating(&MediaItemUIDeviceSelectorView::
                                             UpdateIsAudioDeviceSwitchingEnabled,
                                         weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MediaItemUIDeviceSelectorView::DestroyCastController() {
+  cast_controller_.reset();
 }
 
 BEGIN_METADATA(MediaItemUIDeviceSelectorView, views::View)

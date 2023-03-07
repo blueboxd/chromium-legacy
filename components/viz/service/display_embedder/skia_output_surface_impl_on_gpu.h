@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
@@ -206,9 +206,13 @@ class SkiaOutputSurfaceImplOnGpu
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
   void SetEnableDCLayers(bool enable);
+
   void SetGpuVSyncEnabled(bool enabled);
 
+  void SetVSyncDisplayID(int64_t display_id);
+
   void SetFrameRate(float frame_rate);
+
   bool was_context_lost() { return context_state_->context_lost(); }
 
   void SetCapabilitiesForTesting(

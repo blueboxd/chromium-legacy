@@ -7,6 +7,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "components/cast_streaming/browser/public/network_context_getter.h"
 #include "components/cast_streaming/browser/receiver_config_conversions.h"
+#include "components/cast_streaming/public/features.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/video_decoder_config.h"
 
@@ -48,6 +49,26 @@ ReceiverSessionImpl::~ReceiverSessionImpl() = default;
 
 void ReceiverSessionImpl::StartStreamingAsync(
     mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector) {
+  DCHECK(!IsCastRemotingEnabled());
+  StartStreamingAsyncInternal(std::move(demuxer_connector));
+}
+
+void ReceiverSessionImpl::StartStreamingAsync(
+    mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector,
+    mojo::AssociatedRemote<mojom::RendererController> renderer_controller) {
+  DCHECK(IsCastRemotingEnabled());
+  DCHECK(!renderer_control_config_);
+  external_renderer_controls_ =
+      std::make_unique<RendererControllerImpl>(base::BindOnce(
+          &ReceiverSessionImpl::OnMojoDisconnect, weak_factory_.GetWeakPtr()));
+  renderer_control_config_.emplace(std::move(renderer_controller),
+                                   external_renderer_controls_->Bind());
+
+  StartStreamingAsyncInternal(std::move(demuxer_connector));
+}
+
+void ReceiverSessionImpl::StartStreamingAsyncInternal(
+    mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector) {
   DCHECK(HasNetworkContextGetter());
 
   DVLOG(1) << __func__;
@@ -57,19 +78,6 @@ void ReceiverSessionImpl::StartStreamingAsync(
       &ReceiverSessionImpl::OnReceiverEnabled, weak_factory_.GetWeakPtr()));
   demuxer_connector_.set_disconnect_handler(base::BindOnce(
       &ReceiverSessionImpl::OnMojoDisconnect, weak_factory_.GetWeakPtr()));
-}
-
-void ReceiverSessionImpl::StartStreamingAsync(
-    mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector,
-    mojo::AssociatedRemote<mojom::RendererController> renderer_controller) {
-  DCHECK(!renderer_control_config_);
-  external_renderer_controls_ =
-      std::make_unique<RendererControllerImpl>(base::BindOnce(
-          &ReceiverSessionImpl::OnMojoDisconnect, weak_factory_.GetWeakPtr()));
-  renderer_control_config_.emplace(std::move(renderer_controller),
-                                   external_renderer_controls_->Bind());
-
-  StartStreamingAsync(std::move(demuxer_connector));
 }
 
 ReceiverSession::RendererController*
@@ -137,6 +145,7 @@ void ReceiverSessionImpl::OnSessionInitialization(
   demuxer_connector_->OnStreamsInitialized(std::move(audio_info),
                                            std::move(video_info));
 
+  PreloadBuffersAndStartPlayback();
   InformClientOfConfigChange();
 }
 
@@ -202,6 +211,7 @@ void ReceiverSessionImpl::OnSessionReinitialization(
     }
   }
 
+  PreloadBuffersAndStartPlayback();
   InformClientOfConfigChange();
 }
 
@@ -228,6 +238,22 @@ void ReceiverSessionImpl::OnSessionEnded() {
   // Cast Streaming Session ending was initiated by the receiver component.
   audio_demuxer_stream_data_provider_.reset();
   video_demuxer_stream_data_provider_.reset();
+}
+
+void ReceiverSessionImpl::PreloadBuffersAndStartPlayback() {
+  DCHECK(audio_demuxer_stream_data_provider_ ||
+         video_demuxer_stream_data_provider_);
+  DVLOG(1) << __func__;
+
+  if (audio_demuxer_stream_data_provider_) {
+    audio_demuxer_stream_data_provider_->PreloadBuffer(
+        cast_streaming_session_.GetAudioBufferPreloader());
+  }
+
+  if (video_demuxer_stream_data_provider_) {
+    video_demuxer_stream_data_provider_->PreloadBuffer(
+        cast_streaming_session_.GetVideoBufferPreloader());
+  }
 }
 
 void ReceiverSessionImpl::OnMojoDisconnect() {
@@ -263,20 +289,9 @@ bool ReceiverSessionImpl::RendererControllerImpl::IsValid() const {
   return renderer_controls_.is_bound() && renderer_controls_.is_connected();
 }
 
-void ReceiverSessionImpl::RendererControllerImpl::StartPlayingFrom(
-    base::TimeDelta time) {
-  DCHECK(IsValid());
-  renderer_controls_->StartPlayingFrom(time);
-}
-
-void ReceiverSessionImpl::RendererControllerImpl::SetPlaybackRate(
-    double playback_rate) {
-  DCHECK(IsValid());
-  renderer_controls_->SetPlaybackRate(playback_rate);
-}
-
 void ReceiverSessionImpl::RendererControllerImpl::SetVolume(float volume) {
   DCHECK(IsValid());
+
   renderer_controls_->SetVolume(volume);
 }
 

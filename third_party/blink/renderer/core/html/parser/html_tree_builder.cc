@@ -153,8 +153,42 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
 
   void SkipLeadingWhitespace() { SkipLeading<IsHTMLSpace<UChar>>(); }
 
-  StringView TakeLeadingWhitespace() {
-    return TakeLeading<IsHTMLSpace<UChar>>();
+  struct TakeLeadingWhitespaceResult {
+    StringView string;
+    WhitespaceMode whitespace_mode;
+  };
+
+  TakeLeadingWhitespaceResult TakeLeadingWhitespace() {
+    DCHECK(!IsEmpty());
+    const unsigned start = current_;
+    WhitespaceMode whitespace_mode = WhitespaceMode::kNewlineThenWhitespace;
+
+    // First, check the first character to identify whether the string looks
+    // common (i.e. "\n<space>*").
+    const UChar first = (*characters_)[current_];
+    if (!IsHTMLSpace(first)) {
+      return {StringView(characters_.get(), start, 0),
+              WhitespaceMode::kNotAllWhitespace};
+    }
+    if (first != '\n') {
+      whitespace_mode = WhitespaceMode::kAllWhitespace;
+    }
+
+    // Then, check the rest.
+    ++current_;
+    for (; current_ != end_; ++current_) {
+      const UChar ch = (*characters_)[current_];
+      if (LIKELY(ch == ' ')) {
+        continue;
+      } else if (IsHTMLSpecialWhitespace(ch)) {
+        whitespace_mode = WhitespaceMode::kAllWhitespace;
+      } else {
+        break;
+      }
+    }
+
+    return {StringView(characters_.get(), start, current_ - start),
+            whitespace_mode};
   }
 
   void SkipLeadingNonWhitespace() { SkipLeading<IsNotHTMLSpace<UChar>>(); }
@@ -175,34 +209,58 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
     current_ = end_;
   }
 
-  String TakeRemainingWhitespace() {
+  struct TakeRemainingWhitespaceResult {
+    String string;
+    WhitespaceMode whitespace_mode;
+  };
+
+  TakeRemainingWhitespaceResult TakeRemainingWhitespace() {
     DCHECK(!IsEmpty());
     const unsigned start = current_;
     current_ = end_;  // One way or another, we're taking everything!
 
+    WhitespaceMode whitespace_mode = WhitespaceMode::kNewlineThenWhitespace;
     unsigned length = 0;
     for (unsigned i = start; i < end_; ++i) {
-      if (IsHTMLSpace<UChar>((*characters_)[i]))
+      const UChar ch = (*characters_)[i];
+      if (length == 0) {
+        if (ch == '\n') {
+          ++length;
+          continue;
+        }
+        // Otherwise, it's a random whitespace string. Drop the mode.
+        whitespace_mode = WhitespaceMode::kAllWhitespace;
+      }
+
+      if (ch == ' ') {
         ++length;
+      } else if (IsHTMLSpecialWhitespace<UChar>(ch)) {
+        whitespace_mode = WhitespaceMode::kAllWhitespace;
+        ++length;
+      }
     }
     // Returning the null string when there aren't any whitespace
     // characters is slightly cleaner semantically because we don't want
     // to insert a text node (as opposed to inserting an empty text node).
-    if (!length)
-      return String();
-    if (length == start - end_)  // It's all whitespace.
-      return String(characters_->Substring(start, start - end_));
+    if (!length) {
+      return {String(), WhitespaceMode::kNotAllWhitespace};
+    }
+    if (length == start - end_) {  // It's all whitespace.
+      return {String(characters_->Substring(start, start - end_)),
+              whitespace_mode};
+    }
 
     // All HTML spaces are ASCII.
     StringBuffer<LChar> result(length);
     unsigned j = 0;
     for (unsigned i = start; i < end_; ++i) {
       UChar c = (*characters_)[i];
-      if (IsHTMLSpace(c))
+      if (c == ' ' || IsHTMLSpecialWhitespace(c)) {
         result[j++] = static_cast<LChar>(c);
+      }
     }
     DCHECK_EQ(j, length);
-    return String::Adopt(result);
+    return {String::Adopt(result), whitespace_mode};
   }
 
  private:
@@ -213,14 +271,6 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
       if (++current_ == end_)
         return;
     }
-  }
-
-  template <bool characterPredicate(UChar)>
-  StringView TakeLeading() {
-    DCHECK(!IsEmpty());
-    const unsigned start = current_;
-    SkipLeading<characterPredicate>();
-    return StringView(characters_.get(), start, current_ - start);
   }
 
   scoped_refptr<StringImpl> characters_;
@@ -943,18 +993,33 @@ DeclarativeShadowRootType DeclarativeShadowRootTypeFromToken(
   //   <template shadowroot=open shadowrootmode=open> ==> new behavior
   // crbug.com/1379513 tracks the new behavior.
   // crbug.com/1396384 tracks the eventual removal of the old behavior.
-  Attribute* type_attribute_non_streaming =
-      token->GetAttributeItem(html_names::kShadowrootAttr);
   Attribute* type_attribute_streaming =
       token->GetAttributeItem(html_names::kShadowrootmodeAttr);
   bool streaming =
       type_attribute_streaming &&
       RuntimeEnabledFeatures::StreamingDeclarativeShadowDOMEnabled();
-  if (!type_attribute_non_streaming && !streaming)
-    return DeclarativeShadowRootType::kNone;
+  String shadow_mode;
+  if (streaming) {
+    shadow_mode = type_attribute_streaming->Value();
+  } else {
+    Attribute* type_attribute_non_streaming =
+        token->GetAttributeItem(html_names::kShadowrootAttr);
+    if (!type_attribute_non_streaming) {
+      return DeclarativeShadowRootType::kNone;
+    }
+    shadow_mode = type_attribute_non_streaming->Value();
+  }
+
+  if (include_shadow_roots) {
+    if (EqualIgnoringASCIICase(shadow_mode, "open")) {
+      return streaming ? DeclarativeShadowRootType::kStreamingOpen
+                       : DeclarativeShadowRootType::kOpen;
+    } else if (EqualIgnoringASCIICase(shadow_mode, "closed")) {
+      return streaming ? DeclarativeShadowRootType::kStreamingClosed
+                       : DeclarativeShadowRootType::kClosed;
+    }
+  }
   String attribute_in_use = streaming ? "shadowrootmode" : "shadowroot";
-  String shadow_mode = streaming ? type_attribute_streaming->Value()
-                                 : type_attribute_non_streaming->Value();
   if (!include_shadow_roots) {
     document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
@@ -962,22 +1027,13 @@ DeclarativeShadowRootType DeclarativeShadowRootTypeFromToken(
         "Found declarative " + attribute_in_use +
             " attribute on a template, but declarative "
             "Shadow DOM has not been enabled by includeShadowRoots."));
-    return DeclarativeShadowRootType::kNone;
+  } else {
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "Invalid declarative " + attribute_in_use + " attribute value \"" +
+            shadow_mode + "\". Valid values include \"open\" and \"closed\"."));
   }
-
-  if (EqualIgnoringASCIICase(shadow_mode, "open")) {
-    return streaming ? DeclarativeShadowRootType::kStreamingOpen
-                     : DeclarativeShadowRootType::kOpen;
-  } else if (EqualIgnoringASCIICase(shadow_mode, "closed")) {
-    return streaming ? DeclarativeShadowRootType::kStreamingClosed
-                     : DeclarativeShadowRootType::kClosed;
-  }
-
-  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-      mojom::blink::ConsoleMessageSource::kOther,
-      mojom::blink::ConsoleMessageLevel::kWarning,
-      "Invalid declarative " + attribute_in_use + " attribute value \"" +
-          shadow_mode + "\". Valid values include \"open\" and \"closed\"."));
   return DeclarativeShadowRootType::kNone;
 }
 }  // namespace
@@ -2473,18 +2529,22 @@ ReprocessBuffer:
       [[fallthrough]];
     }
     case kInHeadMode: {
-      StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.empty())
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
+      auto leading_whitespace = buffer.TakeLeadingWhitespace();
+      if (!leading_whitespace.string.empty()) {
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
+      }
       if (buffer.IsEmpty())
         return;
       DefaultForInHead();
       [[fallthrough]];
     }
     case kAfterHeadMode: {
-      StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.empty())
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
+      auto leading_whitespace = buffer.TakeLeadingWhitespace();
+      if (!leading_whitespace.string.empty()) {
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
+      }
       if (buffer.IsEmpty())
         return;
       DefaultForAfterHead();
@@ -2522,9 +2582,11 @@ ReprocessBuffer:
       break;
     }
     case kInColumnGroupMode: {
-      StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.empty())
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
+      auto leading_whitespace = buffer.TakeLeadingWhitespace();
+      if (!leading_whitespace.string.empty()) {
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
+      }
       if (buffer.IsEmpty())
         return;
       if (!ProcessColgroupEndTagForInColumnGroup()) {
@@ -2539,11 +2601,12 @@ ReprocessBuffer:
     case kAfterBodyMode:
     case kAfterAfterBodyMode: {
       // FIXME: parse error
-      StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.empty()) {
+      auto leading_whitespace = buffer.TakeLeadingWhitespace();
+      if (!leading_whitespace.string.empty()) {
         InsertionMode mode = GetInsertionMode();
         SetInsertionMode(kInBodyMode);
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
         SetInsertionMode(mode);
       }
       if (buffer.IsEmpty())
@@ -2556,19 +2619,24 @@ ReprocessBuffer:
       break;
     }
     case kInHeadNoscriptMode: {
-      StringView leading_whitespace = buffer.TakeLeadingWhitespace();
-      if (!leading_whitespace.empty())
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
-      if (buffer.IsEmpty())
+      auto leading_whitespace = buffer.TakeLeadingWhitespace();
+      if (!leading_whitespace.string.empty()) {
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
+      }
+      if (buffer.IsEmpty()) {
         return;
+      }
       DefaultForInHeadNoscript();
       goto ReprocessBuffer;
     }
     case kInFramesetMode:
     case kAfterFramesetMode: {
-      String leading_whitespace = buffer.TakeRemainingWhitespace();
-      if (!leading_whitespace.empty())
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
+      auto leading_whitespace = buffer.TakeRemainingWhitespace();
+      if (!leading_whitespace.string.empty()) {
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
+      }
       // FIXME: We should generate a parse error if we skipped over any
       // non-whitespace characters.
       break;
@@ -2579,10 +2647,11 @@ ReprocessBuffer:
       break;
     }
     case kAfterAfterFramesetMode: {
-      String leading_whitespace = buffer.TakeRemainingWhitespace();
-      if (!leading_whitespace.empty()) {
+      auto leading_whitespace = buffer.TakeRemainingWhitespace();
+      if (!leading_whitespace.string.empty()) {
         tree_.ReconstructTheActiveFormattingElements();
-        tree_.InsertTextNode(leading_whitespace, kAllWhitespace);
+        tree_.InsertTextNode(leading_whitespace.string,
+                             leading_whitespace.whitespace_mode);
       }
       // FIXME: We should generate a parse error if we skipped over any
       // non-whitespace characters.
@@ -2726,7 +2795,7 @@ void HTMLTreeBuilder::DefaultForInTableText() {
     // FIXME: parse error
     HTMLConstructionSite::RedirectToFosterParentGuard redirecter(tree_);
     tree_.ReconstructTheActiveFormattingElements();
-    tree_.InsertTextNode(characters, kNotAllWhitespace);
+    tree_.InsertTextNode(characters, WhitespaceMode::kNotAllWhitespace);
     frameset_ok_ = false;
     SetInsertionMode(original_insertion_mode_);
     return;

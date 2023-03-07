@@ -58,6 +58,8 @@ std::string ResultTypeToString(const ash::AppListSearchResultType result_type) {
       return "Games";
     case ash::AppListSearchResultType::kPersonalization:
       return "Personalization";
+    case ash::AppListSearchResultType::kImageSearch:
+      return "Image search";
   }
   NOTREACHED();
 }
@@ -138,6 +140,8 @@ std::string MetricsTypeToString(const ash::SearchResultType metrics_type) {
       return "REMOTE_APP";
     case ash::SearchResultType::BOREALIS_APP:
       return "BOREALIS_APP";
+    case ash::SearchResultType::BRUSCHETTA_APP:
+      return "BRUSCHETTA_APP";
     case ash::SearchResultType::HELP_APP_DEFAULT:
       return "HELP_APP_DEFAULT";
     case ash::SearchResultType::OMNIBOX_SEARCH_SUGGEST_ENTITY:

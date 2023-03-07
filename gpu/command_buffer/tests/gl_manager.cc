@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
@@ -32,7 +32,6 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -319,7 +318,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
   attribs.sample_buffers = options.multisampled ? 1 : 0;
   attribs.alpha_size = options.backbuffer_alpha ? 8 : 0;
   attribs.should_use_native_gmb_for_backbuffer =
-      options.image_factory != nullptr;
+      options.should_use_native_gmb_for_backbuffer;
   attribs.offscreen_framebuffer_size = options.size;
   attribs.buffer_preserved = options.preserve_backbuffer;
   attribs.bind_generates_resource = options.bind_generates_resource;
@@ -350,7 +349,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
       command_buffer_.get(), command_buffer_->service(), &outputter_,
-      context_group, options.image_factory));
+      context_group));
   if (options.force_shader_name_hashing) {
     decoder_->SetForceShaderNameHashingForTest(true);
   }

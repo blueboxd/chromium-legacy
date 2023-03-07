@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/ranges/algorithm.h"
@@ -114,8 +114,8 @@ class DirectiveStatus {
  public:
   // Subframe related directives can have multiple directive names: "child-src"
   // or "frame-src".
-  DirectiveStatus(std::initializer_list<const char*> directives)
-      : directive_names_(directives.begin(), directives.end()) {}
+  explicit DirectiveStatus(std::vector<std::string> directives)
+      : directive_names_(std::move(directives)) {}
 
   DirectiveStatus(const DirectiveStatus&) = delete;
   DirectiveStatus(DirectiveStatus&&) = default;
@@ -401,9 +401,7 @@ class CSPEnforcer {
   virtual std::string GetDefaultCSPValue(const DirectiveStatus& status) = 0;
 
   // List of directives we care about.
-  // TODO(karandeepb): There is no reason for these to be on the heap. Stack
-  // allocate.
-  std::vector<std::unique_ptr<DirectiveStatus>> secure_directives_;
+  std::vector<DirectiveStatus> secure_directives_;
 
  private:
   const std::string manifest_key_;
@@ -424,9 +422,9 @@ std::string CSPEnforcer::Enforce(const DirectiveList& directives,
   for (const auto& directive : directives) {
     CSPDirectiveToken csp_directive_token(directive);
     bool matches_enforcing_directive = false;
-    for (const std::unique_ptr<DirectiveStatus>& status : secure_directives_) {
-      if (csp_directive_token.MatchAndUpdateStatus(
-              status.get(), secure_function_, manifest_key_, warnings)) {
+    for (DirectiveStatus& status : secure_directives_) {
+      if (csp_directive_token.MatchAndUpdateStatus(&status, secure_function_,
+                                                   manifest_key_, warnings)) {
         matches_enforcing_directive = true;
         break;
       }
@@ -441,8 +439,8 @@ std::string CSPEnforcer::Enforce(const DirectiveList& directives,
   }
 
   if (default_src_status.seen_in_policy()) {
-    for (const std::unique_ptr<DirectiveStatus>& status : secure_directives_) {
-      if (!status->seen_in_policy()) {
+    for (const DirectiveStatus& status : secure_directives_) {
+      if (!status.seen_in_policy()) {
         // This |status| falls back to "default-src". So warnings from
         // "default-src" will apply.
         if (warnings) {
@@ -457,16 +455,17 @@ std::string CSPEnforcer::Enforce(const DirectiveList& directives,
   } else {
     // Did not see "default-src".
     // Make sure we cover all sources from |secure_directives_|.
-    for (const std::unique_ptr<DirectiveStatus>& status : secure_directives_) {
-      if (status->seen_in_policy())  // Already covered.
+    for (const DirectiveStatus& status : secure_directives_) {
+      if (status.seen_in_policy()) {  // Already covered.
         continue;
-      enforced_csp_parts.push_back(GetDefaultCSPValue(*status));
+      }
+      enforced_csp_parts.push_back(GetDefaultCSPValue(status));
 
       if (warnings && show_missing_csp_warnings_) {
         warnings->push_back(
             InstallWarning(ErrorUtils::FormatErrorMessage(
                                manifest_errors::kInvalidCSPMissingSecureSrc,
-                               manifest_key_, status->name()),
+                               manifest_key_, status.name()),
                            manifest_key_));
       }
     }
@@ -483,9 +482,9 @@ class ExtensionCSPEnforcer : public CSPEnforcer {
       : CSPEnforcer(std::move(manifest_key),
                     true,
                     base::BindRepeating(&GetSecureDirectiveValues, options)) {
-    secure_directives_.emplace_back(new DirectiveStatus({kScriptSrc}));
+    secure_directives_.emplace_back(std::vector<std::string>({kScriptSrc}));
     if (!allow_insecure_object_src)
-      secure_directives_.emplace_back(new DirectiveStatus({kObjectSrc}));
+      secure_directives_.emplace_back(std::vector<std::string>({kObjectSrc}));
   }
 
   ExtensionCSPEnforcer(const ExtensionCSPEnforcer&) = delete;
@@ -507,8 +506,8 @@ class AppSandboxPageCSPEnforcer : public CSPEnforcer {
                     false,
                     base::BindRepeating(&GetAppSandboxSecureDirectiveValues)) {
     secure_directives_.emplace_back(
-        new DirectiveStatus({kChildSrc, kFrameSrc}));
-    secure_directives_.emplace_back(new DirectiveStatus({kScriptSrc}));
+        std::vector<std::string>({kChildSrc, kFrameSrc}));
+    secure_directives_.emplace_back(std::vector<std::string>({kScriptSrc}));
   }
 
   AppSandboxPageCSPEnforcer(const AppSandboxPageCSPEnforcer&) = delete;
@@ -642,12 +641,15 @@ bool DoesCSPDisallowRemoteCode(const std::string& content_security_policy,
 
     DirectiveStatus status;
     raw_ptr<const CSPParser::Directive, DanglingUntriaged> directive = nullptr;
+    bool required = true;
   };
 
   DirectiveMapping script_src_mapping({DirectiveStatus({kScriptSrc})});
-  DirectiveMapping object_src_mapping({DirectiveStatus({kObjectSrc})});
   DirectiveMapping worker_src_mapping({DirectiveStatus({kWorkerSrc})});
   DirectiveMapping default_src_mapping({DirectiveStatus({kDefaultSrc})});
+
+  DirectiveMapping object_src_mapping({DirectiveStatus({kObjectSrc})});
+  object_src_mapping.required = false;
 
   DirectiveMapping* directive_mappings[] = {
       &script_src_mapping,
@@ -686,20 +688,27 @@ bool DoesCSPDisallowRemoteCode(const std::string& content_security_policy,
   // "script-src" fallbacks to "default-src".
   fallback_if_necessary(&script_src_mapping, default_src_mapping);
 
-  // "object-src" fallbacks to "default-src".
-  fallback_if_necessary(&object_src_mapping, default_src_mapping);
-
   // "worker-src" fallbacks to "script-src", which might itself fallback to
   // "default-src".
   fallback_if_necessary(&worker_src_mapping, script_src_mapping);
 
+  // Note: Even though "object-src" will fall back to default-src in the CSP
+  // enforcement, we don't fall back to it here. This allows developers to
+  // specify a default-src with a remote target without needing to separately
+  // specify an object-src.
+
   auto is_secure_directive = [manifest_key](const DirectiveMapping& mapping,
                                             std::u16string* error) {
     if (!mapping.directive) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          manifest_errors::kInvalidCSPMissingSecureSrc, manifest_key,
-          mapping.status.name());
-      return false;
+      if (mapping.required) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            manifest_errors::kInvalidCSPMissingSecureSrc, manifest_key,
+            mapping.status.name());
+        return false;
+      }
+
+      // The directive wasn't present, but isn't required. Allow it.
+      return true;
     }
 
     auto directive_values = mapping.directive->directive_values;
@@ -735,7 +744,11 @@ bool DoesCSPDisallowRemoteCode(const std::string& content_security_policy,
     if (!is_secure_directive(*mapping, error))
       return false;
 
-    DCHECK(mapping->directive);
+    if (!mapping->directive) {
+      DCHECK(!mapping->required);
+      continue;
+    }
+
     secure_directives.insert(mapping->directive);
   }
 

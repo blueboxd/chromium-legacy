@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
+import("//components/nacl/features.gni")
 import("//components/signin/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 
@@ -189,6 +190,10 @@ source_set("policy_specific_browser_tests") {
     sources += [ "test/policy_certs_browsertest.cc" ]
   }
 
+  if (enable_nacl) {
+    sources += [ "test/ppb_video_decoder_dev_api_policy_browsertest.cc" ]
+  }
+
   deps = [
     ":test_support",
     "//base",
@@ -352,6 +357,7 @@ source_set("browser_tests") {
       "//ash/components/arc:arc_test_support",
       "//ash/components/arc:prefs",
       "//ash/components/arc/session:session",
+      "//chrome/browser/apps/app_service",
       "//chrome/browser/ash",
       "//chrome/browser/ash/system_web_apps/test_support",
       "//chromeos/ash/components/audio",
@@ -412,6 +418,8 @@ source_set("browser_tests") {
 
   if (is_win || is_linux || is_chromeos) {
     sources += [ "test/full_screen_allowed_policy_browsertest.cc" ]
+
+    deps += [ "//chrome/browser/apps/app_service" ]
   }
 
   if (!is_chromeos) {

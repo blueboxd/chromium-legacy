@@ -21,24 +21,7 @@ class PathBuilderTestDelegate {
     ASSERT_FALSE(test.chain.empty());
 
     TrustStoreInMemory trust_store;
-
-    switch (test.last_cert_trust.type) {
-      case CertificateTrustType::TRUSTED_ANCHOR:
-        trust_store.AddTrustAnchor(test.chain.back());
-        break;
-      case CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION:
-        trust_store.AddTrustAnchorWithExpiration(test.chain.back());
-        break;
-      case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
-        trust_store.AddTrustAnchorWithConstraints(test.chain.back());
-        break;
-      case CertificateTrustType::UNSPECIFIED:
-        trust_store.AddCertificateWithUnspecifiedTrust(test.chain.back());
-        break;
-      case CertificateTrustType::DISTRUSTED:
-        trust_store.AddDistrustedCertificateForTest(test.chain.back());
-        break;
-    }
+    trust_store.AddCertificate(test.chain.back(), test.last_cert_trust);
 
     CertIssuerSourceStatic intermediate_cert_issuer_source;
     for (size_t i = 1; i < test.chain.size(); ++i)
@@ -54,6 +37,12 @@ class PathBuilderTestDelegate {
 
     CertPathBuilder::Result result = path_builder.Run();
     EXPECT_EQ(!test.HasHighSeverityErrors(), result.HasValidPath());
+    if (result.HasValidPath()) {
+      VerifyUserConstrainedPolicySet(
+          test.expected_user_constrained_policy_set,
+          result.GetBestValidPath()->user_constrained_policy_set,
+          test_file_path);
+    }
   }
 };
 

@@ -7,11 +7,11 @@
 #include <iterator>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/process/memory.h"
@@ -47,10 +47,8 @@
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/app/server/win/service_main.h"
 #include "chrome/updater/util/win_util.h"
-#elif BUILDFLAG(IS_MAC)
-#include "chrome/updater/app/server/mac/server.h"
-#elif BUILDFLAG(IS_LINUX)
-#include "chrome/updater/app/server/linux/server.h"
+#elif BUILDFLAG(IS_POSIX)
+#include "chrome/updater/app/server/posix/app_server_posix.h"
 #endif
 
 // Instructions For Windows.

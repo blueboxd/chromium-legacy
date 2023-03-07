@@ -38,18 +38,13 @@ export class OptionsPage {
       OptionsPage.brailleTables = tables;
       OptionsPage.populateBrailleTablesSelect();
     });
-    chrome.storage.local.get({'brailleWordWrap': true}, function(items) {
-      $('brailleWordWrap').checked = items.brailleWordWrap;
-    });
 
-    chrome.storage.local.get({'virtualBrailleRows': 1}, function(items) {
-      $('virtual_braille_display_rows_input').value =
-          items['virtualBrailleRows'];
-    });
-    chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
-      $('virtual_braille_display_columns_input').value =
-          items['virtualBrailleColumns'];
-    });
+    $('brailleWordWrap').checked = LocalStorage.get('brailleWordWrap', true);
+    $('virtual_braille_display_rows_input').value =
+        LocalStorage.get('virtualBrailleRows', 1);
+    $('virtual_braille_display_columns_input').value =
+        LocalStorage.get('virtualBrailleColumns', 40);
+
     const changeToInterleave =
         Msgs.getMsg('options_change_current_display_style_interleave');
     const changeToSideBySide =
@@ -97,8 +92,8 @@ export class OptionsPage {
     }
 
     if (LocalStorage.get(TtsSettings.PUNCTUATION_ECHO)) {
-      const currentPunctuationEcho =
-          PunctuationEchoes[LocalStorage.get(TtsSettings.PUNCTUATION_ECHO)];
+      const currentPunctuationEcho = PunctuationEchoes[LocalStorage.getNumber(
+          TtsSettings.PUNCTUATION_ECHO)];
       for (let i = 0, opt; opt = $('punctuationEcho').options[i]; ++i) {
         if (opt.id === currentPunctuationEcho.name) {
           opt.setAttribute('selected', '');
@@ -151,12 +146,9 @@ export class OptionsPage {
     document.addEventListener('click', OptionsPage.eventListener, false);
     document.addEventListener('keydown', OptionsPage.eventListener, false);
 
-    window.addEventListener('storage', event => {
-      if (event.key === 'speakTextUnderMouse') {
-        chrome.accessibilityPrivate.enableMouseEvents(
-            event.newValue === String(true));
-      }
-    });
+    LocalStorage.addListenerForKey(
+        'speakTextUnderMouse',
+        enabled => chrome.accessibilityPrivate.enableMouseEvents(enabled));
 
     const clearVirtualDisplay = function() {
       const groups = [];
@@ -208,7 +200,8 @@ export class OptionsPage {
             'capitalStrategy', 'announceCapitals');
       } else {
         $('increasePitch').disabled = false;
-        const capitalStrategyBackup = LocalStorage.get('capitalStrategyBackup');
+        const capitalStrategyBackup =
+            LocalStorage.getString('capitalStrategyBackup');
         if (capitalStrategyBackup) {
           // Restore original capitalStrategy setting.
           $('announceCapitals').selected =
@@ -294,7 +287,7 @@ export class OptionsPage {
     select.addEventListener('change', function(evt) {
       const selIndex = select.selectedIndex;
       const sel = select.options[selIndex];
-      chrome.storage.local.set({voiceName: sel.voiceName});
+      LocalStorage.set('voiceName', sel.voiceName);
     }, true);
   }
 
@@ -344,7 +337,7 @@ export class OptionsPage {
         LocalStorage.set('brailleTable', sel.id);
         LocalStorage.set(node.id, sel.id);
         BackgroundBridge.BrailleBackground.refreshBrailleTable(
-            LocalStorage.get('brailleTable'));
+            LocalStorage.getString('brailleTable', ''));
       };
     };
 
@@ -377,7 +370,7 @@ export class OptionsPage {
             Msgs.getMsg('options_braille_table_type_8');
       }
       BackgroundBridge.BrailleBackground.refreshBrailleTable(
-          LocalStorage.get('brailleTable'));
+          LocalStorage.getString('brailleTable', ''));
     };
     updateTableType(false);
 
@@ -453,7 +446,7 @@ export class OptionsPage {
     setTimeout(function() {
       const target = event.target;
       if (target.id === 'brailleWordWrap') {
-        chrome.storage.local.set({brailleWordWrap: target.checked});
+        LocalStorage.set(target.id, target.checked);
       } else if (target.className.indexOf('logging') !== -1) {
         BackgroundBridge.ChromeVoxPrefs.setLoggingPrefs(
             target.name, target.checked);
@@ -508,21 +501,15 @@ const handleNumericalInputPref = function(id, pref) {
       return;
     } else if (
         parseInt($(id).value, 10) < 1 || parseInt($(id).value, 10) > 99) {
-      chrome.storage.local.get(pref, function(items) {
-        $(id).value = items[pref];
-      });
+      $(id).value = LocalStorage.get(pref);
     } else {
-      const items = {};
-      items[pref] = $(id).value;
-      chrome.storage.local.set(items);
+      LocalStorage.set(pref, $(id).value);
     }
   }, true);
 
   $(id).addEventListener('focusout', function(evt) {
     if ($(id).value === '') {
-      chrome.storage.local.get(pref, function(items) {
-        $(id).value = items[pref];
-      });
+      $(id).value = LocalStorage.get(pref);
     }
   }, true);
 };

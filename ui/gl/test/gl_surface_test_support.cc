@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
@@ -72,7 +73,7 @@ GLDisplay* InitializeOneOffHelper(bool init_extensions) {
       impl, fallback_to_software_gl));
   GLDisplay* display = gl::init::InitializeGLOneOffPlatformImplementation(
       fallback_to_software_gl, disable_gl_drawing, init_extensions,
-      /*system_device_id=*/0);
+      /*gpu_preference=*/gl::GpuPreference::kDefault);
   CHECK(display);
   return display;
 }
@@ -102,7 +103,7 @@ GLDisplay* GLSurfaceTestSupport::InitializeOneOffImplementation(
       impl, fallback_to_software_gl));
   GLDisplay* display = gl::init::InitializeGLOneOffPlatformImplementation(
       fallback_to_software_gl, disable_gl_drawing, init_extensions,
-      /*system_device_id=*/0);
+      /*gpu_preference=*/gl::GpuPreference::kDefault);
   CHECK(display);
   return display;
 }
@@ -126,9 +127,16 @@ GLDisplay* GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
+  if (features::UsePassthroughCommandDecoder()) {
+    auto* display = InitializeOneOffImplementation(
+        GLImplementationParts(gl::ANGLEImplementation::kNull), false);
 
-  return InitializeOneOffImplementation(
-      GLImplementationParts(kGLImplementationStubGL), false);
+    DCHECK_EQ(gl::GetANGLEImplementation(), gl::ANGLEImplementation::kNull);
+    return display;
+  } else {
+    return InitializeOneOffImplementation(
+        GLImplementationParts(kGLImplementationStubGL), false);
+  }
 }
 
 // static

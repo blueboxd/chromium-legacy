@@ -264,7 +264,8 @@ chromium-metrics-reviews@google.com.
     Tracks the enabled state for the Page Zoom option on the main app menu. The
     state will be one of the following enumerated states: 0) not enabled, 1)
     enabled explicitly by the user on the Accessibility Page Zoom setting, 2)
-    enabled automatically if the user has an Android OS-wide default font size.
+    enabled automatically if the user has an Android OS-wide default font size,
+    3) disabled explicitly by the user on the Accessibility Page Zoom setting.
     Recorded each time the app menu is opened.
   </summary>
 </histogram>
@@ -1734,6 +1735,24 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.ScreenAI.Screen2xDistillationTime.{Result}"
+    units="ms" expires_after="2023-11-30">
+  <owner>abigailbklein@google.com</owner>
+  <owner>rhalavati@google.com</owner>
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the time taken to distill a web page for cases where the action
+    {Result}. It's being emitted each time whenever it distills or fails to
+    distill a page. for Screen2x. Refer to
+    ScreenAIService::ExtractMainContentInternal for details.
+  </summary>
+  <token key="Result">
+    <variant name="Failure" summary="has failed"/>
+    <variant name="Success" summary="has succeeded"/>
+  </token>
+</histogram>
+
 <histogram name="Accessibility.ScreenAI.VisualAnnotator.NodesCount"
     units="count" expires_after="2023-11-30">
   <owner>kyungjunlee@google.com</owner>
@@ -1796,7 +1815,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.WebSpeech.Duration" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <summary>
@@ -1965,7 +1984,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.InfoBarUsage" enum="BooleanUsage"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
+  <obsolete>
+    Deprecated in January 2023 as part of message post-launch cleanup since the
+    messages system records dismissal reasons using
+    Android.Messages.Dismissed.ReaderMode.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <summary>
     &quot;Used&quot; is recorded when the user clicks the infobar to enter
@@ -1993,7 +2017,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.MessageDismissalCondition"
-    enum="ReaderModeMessageDismissalCondition" expires_after="2023-05-07">
+    enum="ReaderModeMessageDismissalCondition" expires_after="2023-07-09">
   <owner>twellington@chromium.org</owner>
   <owner>aishwaryarj@google.com</owner>
   <summary>
@@ -2059,7 +2083,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.
@@ -2177,7 +2201,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.Time.ViewingReaderModePage" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records the amount of time a user spent on a Reader Mode Page.
@@ -2330,6 +2354,15 @@ chromium-metrics-reviews@google.com.
     True if an utterance is spoken with native speech provided by the operating
     system, otherwise it's spoken via a Chrome extension that implements
     text-to-speech support.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.Rate" units="count"
+    expires_after="2023-11-30">
+  <owner>dtseng@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The rate of an utterance to be spoken via synthesized text-to-speech.
   </summary>
 </histogram>
 

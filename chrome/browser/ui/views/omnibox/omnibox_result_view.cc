@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 #include "chrome/browser/ui/views/omnibox/remove_suggestion_bubble.h"
@@ -145,10 +145,9 @@ END_METADATA
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
-OmniboxResultView::OmniboxResultView(
-    OmniboxPopupContentsView* popup_contents_view,
-    OmniboxEditModel* model,
-    size_t model_index)
+OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_contents_view,
+                                     OmniboxEditModel* model,
+                                     size_t model_index)
     : popup_contents_view_(popup_contents_view),
       model_(model),
       model_index_(model_index),
@@ -276,12 +275,13 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 }
 
 void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
-  const SkColor icon_color = GetColorProvider()->GetColor(
-      GetMatchSelected() ? kColorOmniboxResultsIconSelected
-                         : kColorOmniboxResultsIcon);
+  const ui::ColorId icon_color_id = GetMatchSelected()
+                                        ? kColorOmniboxResultsIconSelected
+                                        : kColorOmniboxResultsIcon;
   views::SetImageFromVectorIconWithColor(
       remove_suggestion_button_, vector_icons::kCloseRoundedIcon,
-      GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetColorProvider()->GetColor(icon_color_id),
       /* omnibox buttons are never disabled */
       gfx::kPlaceholderColor);
 
@@ -304,9 +304,9 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   //       be an optimization opportunity here.
   // TODO(dschuyler): determine whether to optimize the color changes.
   suggestion_view_->icon()->SetImage(GetIcon().ToImageSkia());
-  keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(
-      omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      icon_color));
+  keyword_view_->icon()->SetImage(ui::ImageModel::FromVectorIcon(
+      omnibox::kKeywordSearchIcon, icon_color_id,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
 
   // We must reapply colors for all the text fields here. If we don't, we can
   // break theme changes for ZeroSuggest. See https://crbug.com/1095205.
@@ -361,7 +361,7 @@ void OmniboxResultView::OnSelectionStateChanged() {
     // but this selection event allows the screen reader to get more details
     // about the list and the user's position within it.
     // Limit which selection states fire the events, in order to avoid duplicate
-    // events. Specifically, OmniboxPopupContentsView::ProvideButtonFocusHint()
+    // events. Specifically, OmniboxPopupViewViews::ProvideButtonFocusHint()
     // already fires the correct events when the user tabs to an attached button
     // in the current row.
     if (selection_state == OmniboxPopupSelection::FOCUSED_BUTTON_HEADER ||

@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -307,7 +307,7 @@ class PDFEngine {
       const std::vector<int>& page_index,
       const blink::WebPrintParams& print_params) = 0;
   virtual void PrintEnd() = 0;
-  virtual void StartFind(const std::string& text, bool case_sensitive) = 0;
+  virtual void StartFind(const std::u16string& text, bool case_sensitive) = 0;
   virtual bool SelectFindResult(bool forward) = 0;
   virtual void StopFind() = 0;
   virtual void ZoomUpdated(double new_zoom_level) = 0;

@@ -10,10 +10,10 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim.h"
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -59,6 +59,7 @@ BASE_FEATURE(kAvoidFramePointers,
 #endif
 
 using StackUnwinder = SamplingHeapProfiler::StackUnwinder;
+using base::allocator::dispatcher::AllocationSubsystem;
 
 // If a thread name has been set from ThreadIdNameManager, use that. Otherwise,
 // gets the thread name from kernel if available or returns a string with id.
@@ -247,12 +248,11 @@ void** SamplingHeapProfiler::CaptureStackTrace(void** frames,
   return frames + skip_frames;
 }
 
-void SamplingHeapProfiler::SampleAdded(
-    void* address,
-    size_t size,
-    size_t total,
-    PoissonAllocationSampler::AllocatorType type,
-    const char* context) {
+void SamplingHeapProfiler::SampleAdded(void* address,
+                                       size_t size,
+                                       size_t total,
+                                       AllocationSubsystem type,
+                                       const char* context) {
   // CaptureStack and allocation context tracking may use TLS.
   // Bail out if it has been destroyed.
   if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
@@ -263,7 +263,7 @@ void SamplingHeapProfiler::SampleAdded(
   CaptureNativeStack(context, &sample);
   AutoLock lock(mutex_);
   if (UNLIKELY(PoissonAllocationSampler::AreHookedSamplesMuted() &&
-               type != PoissonAllocationSampler::kManualForTesting)) {
+               type != AllocationSubsystem::kManualForTesting)) {
     // Throw away any non-test samples that were being collected before
     // ScopedMuteHookedSamplesForTesting was enabled. This is done inside the
     // lock to catch any samples that were being collected while
@@ -271,7 +271,12 @@ void SamplingHeapProfiler::SampleAdded(
     return;
   }
   RecordString(sample.context);
-  samples_.emplace(address, std::move(sample));
+
+  // If a sample is already present with the same address, then that means that
+  // the sampling heap profiler failed to observe the destruction -- possibly
+  // because the sampling heap profiler was temporarily disabled. We should
+  // override the old entry.
+  samples_.insert_or_assign(address, std::move(sample));
 }
 
 void SamplingHeapProfiler::CaptureNativeStack(const char* context,

@@ -19,7 +19,7 @@ class CompatibleUtilsTest(unittest.TestCase):
 
     def test_running_unattended_returns_true_if_headless_set(self) -> None:
         """Test |running_unattended| returns True if CHROME_HEADLESS is set."""
-        with mock.patch('os.environ', {'CHROME_HEADLESS': 0}):
+        with mock.patch('os.environ', {'SWARMING_SERVER': 0}):
             self.assertTrue(compatible_utils.running_unattended())
 
         with mock.patch('os.environ', {'FOO_HEADLESS': 0}):
@@ -263,7 +263,20 @@ universe_package_labels += []
                 os.path.join(tmp_dir, 'images-internal', 'chromebook-x64',
                              'workstation_eng'))
 
+    def trim_noop_prefixes(self, path):
+        """Helper function to trim no-op path name prefixes that are
+        introduced by os.path.realpath on some platforms. These break
+        the unit tests, but have no actual effect on behavior."""
+        # These must all end in the path separator character for the
+        # string length computation to be correct on all platforms.
+        noop_prefixes = ['/private/']
+        for prefix in noop_prefixes:
+            if path.startswith(prefix):
+                return path[len(prefix) - 1:]
+        return path
+
     def test_install_symbols(self):
+
         """Test |install_symbols|."""
 
         with tempfile.TemporaryDirectory() as fuchsia_out_dir:
@@ -277,8 +290,9 @@ universe_package_labels += []
                     f.write(f'{build_id} {binary_relpath}')
                 compatible_utils.install_symbols([id_path], fuchsia_out_dir)
                 self.assertTrue(os.path.islink(symbol_file))
-                self.assertEqual(os.path.realpath(symbol_file),
-                                 os.path.join(fuchsia_out_dir, binary_relpath))
+                self.assertEqual(
+                    self.trim_noop_prefixes(os.path.realpath(symbol_file)),
+                    os.path.join(fuchsia_out_dir, binary_relpath))
 
                 new_binary_relpath = 'path/to/new/binary'
                 with open(id_path, 'w') as f:
@@ -286,7 +300,7 @@ universe_package_labels += []
                 compatible_utils.install_symbols([id_path], fuchsia_out_dir)
                 self.assertTrue(os.path.islink(symbol_file))
                 self.assertEqual(
-                    os.path.realpath(symbol_file),
+                    self.trim_noop_prefixes(os.path.realpath(symbol_file)),
                     os.path.join(fuchsia_out_dir, new_binary_relpath))
             finally:
                 os.remove(id_path)

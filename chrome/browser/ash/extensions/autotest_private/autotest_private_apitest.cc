@@ -24,6 +24,7 @@
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/json/json_writer.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -107,9 +108,9 @@ class TestSearchProvider : public app_list::SearchProvider {
 class AutotestPrivateApiTest : public ExtensionApiTest {
  public:
   AutotestPrivateApiTest() {
-    // SyncSettingsCategorization makes an untitled Play Store icon appear in
-    // the shelf due to app pin syncing code. Sync isn't relevant to this test,
-    // so skip pinned app sync. https://crbug.com/1085597
+    // App pin syncing code makes an untitled Play Store icon appear in the
+    // shelf. Sync isn't relevant to this test, so skip pinned app sync.
+    // https://crbug.com/1085597
     ChromeShelfPrefs::SkipPinnedAppsFromSyncForTest();
   }
 
@@ -562,7 +563,7 @@ class AutotestPrivateSearchTest
           std::make_unique<app_list::TestResult>(
               ids[i], display_types[i], categories[i], best_match_ranks[i],
               /*relevance=*/scores[i], /*ftrl_result_score=*/scores[i]);
-      test_result->scoring().override_filter_for_test = true;
+      test_result->scoring().override_filter_for_test(true);
       results.emplace_back(std::move(test_result));
     }
     return results;
@@ -576,7 +577,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          AutotestPrivateSearchTest,
                          /* tablet_mode= */ ::testing::Bool());
 
-// TODO(https://crbug.com/1385365): This test is extremely flaky.
 IN_PROC_BROWSER_TEST_P(AutotestPrivateSearchTest,
                        LauncherSearchBoxStateAPITest) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(GetParam());

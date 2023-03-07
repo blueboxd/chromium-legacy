@@ -13,10 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -42,6 +42,24 @@
 #include "url/origin.h"
 
 namespace content {
+
+namespace {
+
+auction_worklet::mojom::AuctionWorkletPermissionsPolicyStatePtr
+GetAuctionWorkletPermissionsPolicyState(RenderFrameHostImpl* auction_runner_rfh,
+                                        const GURL& worklet_script_url) {
+  const blink::PermissionsPolicy* permissions_policy =
+      auction_runner_rfh->permissions_policy();
+
+  url::Origin worklet_origin = url::Origin::Create(worklet_script_url);
+
+  return auction_worklet::mojom::AuctionWorkletPermissionsPolicyState::New(
+      permissions_policy->IsFeatureEnabledForOrigin(
+          blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
+          worklet_origin));
+}
+
+}  // namespace
 
 class AuctionWorkletManager::WorkletOwner
     : public base::RefCounted<AuctionWorkletManager::WorkletOwner> {
@@ -190,6 +208,8 @@ void AuctionWorkletManager::WorkletOwner::OnProcessAssigned() {
           std::move(url_loader_factory), worklet_info_.script_url,
           worklet_info_.wasm_url, worklet_info_.signals_url,
           worklet_manager_->top_window_origin(),
+          GetAuctionWorkletPermissionsPolicyState(delegate->GetFrame(),
+                                                  worklet_info_.script_url),
           worklet_info_.experiment_group_id.has_value(),
           worklet_info_.experiment_group_id.value_or(0u));
       bidder_worklet_.set_disconnect_with_reason_handler(base::BindOnce(
@@ -207,6 +227,8 @@ void AuctionWorkletManager::WorkletOwner::OnProcessAssigned() {
           std::move(worklet_receiver), worklet_debug_->should_pause_on_start(),
           std::move(url_loader_factory), worklet_info_.script_url,
           worklet_info_.signals_url, worklet_manager_->top_window_origin(),
+          GetAuctionWorkletPermissionsPolicyState(delegate->GetFrame(),
+                                                  worklet_info_.script_url),
           worklet_info_.experiment_group_id.has_value(),
           worklet_info_.experiment_group_id.value_or(0u));
       seller_worklet_.set_disconnect_with_reason_handler(base::BindOnce(

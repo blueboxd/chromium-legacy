@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -114,8 +114,6 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
     network_accessed_ = true;
 
   if (is_main_script) {
-    cross_origin_embedder_policy_ =
-        running_checker_->cross_origin_embedder_policy();
     policy_container_host_ = running_checker_->policy_container_host();
   }
 

@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/debug/alias.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -176,16 +176,9 @@ void Button::SetCallback(PressedCallback callback) {
   callback_ = std::move(callback);
 }
 
-void Button::SetAccessibleName(const std::u16string& name) {
-  if (name == accessible_name_)
-    return;
-  accessible_name_ = name;
-  OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
-  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
-}
-
 const std::u16string& Button::GetAccessibleName() const {
-  return accessible_name_.empty() ? tooltip_text_ : accessible_name_;
+  return View::GetAccessibleName().empty() ? tooltip_text_
+                                           : View::GetAccessibleName();
 }
 
 Button::ButtonState Button::GetState() const {
@@ -717,7 +710,6 @@ void Button::OnEnabledChanged() {
 }
 
 BEGIN_METADATA(Button, View)
-ADD_PROPERTY_METADATA(std::u16string, AccessibleName)
 ADD_PROPERTY_METADATA(PressedCallback, Callback)
 ADD_PROPERTY_METADATA(bool, AnimateOnStateChange)
 ADD_PROPERTY_METADATA(bool, HasInkDropActionOnClick)

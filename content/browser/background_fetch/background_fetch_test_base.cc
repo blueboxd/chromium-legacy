@@ -9,11 +9,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -161,8 +161,6 @@ void BackgroundFetchTestBase::UnregisterServiceWorker(
     int64_t service_worker_registration_id) {
   base::RunLoop run_loop;
   const GURL scope = GetScopeForId(kTestOrigin, service_worker_registration_id);
-  // TODO(crbug.com/1199077): Update this when background fetch implements
-  // StorageKey.
   embedded_worker_test_helper_.context()->UnregisterServiceWorker(
       scope, blink::StorageKey(url::Origin::Create(scope)),
       /*is_immediate=*/false,

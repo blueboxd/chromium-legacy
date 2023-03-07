@@ -10,7 +10,7 @@
 #include <set>
 #include <utility>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
@@ -186,7 +186,6 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
   }
   std::unique_ptr<gpu::SharedImageBacking> CreateSharedImage(
       const gpu::Mailbox& mailbox,
-      int client_id,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
       gfx::BufferPlane plane,
@@ -227,18 +226,9 @@ class MockPresenter : public gl::Presenter {
   explicit MockPresenter(gl::GLDisplayEGL* display)
       : gl::Presenter(display, gfx::Size()) {}
 
-  bool SupportsAsyncSwap() override { return true; }
-
-  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
-                        PresentationCallback presentation_callback,
-                        gl::FrameData data) override {
-    swap_completion_callbacks_.push_back(std::move(completion_callback));
-    presentation_callbacks_.push_back(std::move(presentation_callback));
-  }
-
-  void CommitOverlayPlanesAsync(SwapCompletionCallback completion_callback,
-                                PresentationCallback presentation_callback,
-                                gl::FrameData data) override {
+  void Present(SwapCompletionCallback completion_callback,
+               PresentationCallback presentation_callback,
+               gfx::FrameData data) override {
     swap_completion_callbacks_.push_back(std::move(completion_callback));
     presentation_callbacks_.push_back(std::move(presentation_callback));
   }
@@ -252,10 +242,6 @@ class MockPresenter : public gl::Presenter {
 
   bool ScheduleCALayer(const ui::CARendererLayerParams& params) override {
     return true;
-  }
-
-  gfx::SurfaceOrigin GetOrigin() const override {
-    return gfx::SurfaceOrigin::kTopLeft;
   }
 
   void SwapComplete() {
@@ -336,8 +322,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
         dependency_->GetGpuDriverBugWorkarounds(),
         dependency_->GetGpuFeatureInfo(),
         dependency_->GetSharedContextState().get(),
-        dependency_->GetSharedImageManager(), dependency_->GetGpuImageFactory(),
-        memory_tracker_.get(),
+        dependency_->GetSharedImageManager(), memory_tracker_.get(),
         /*is_for_display_compositor=*/true),
     shared_image_factory_->RegisterSharedImageBackingFactoryForTesting(
         &test_backing_factory_);

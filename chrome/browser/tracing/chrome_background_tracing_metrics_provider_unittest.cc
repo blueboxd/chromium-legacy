@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -152,7 +152,7 @@ class ChromeBackgroundTracingMetricsProviderChromeOSTest
 TEST_F(ChromeBackgroundTracingMetricsProviderChromeOSTest, HardwareClass) {
   // Set a fake hardware class.
   constexpr char kFakeHardwareClass[] = "Fake hardware class";
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider;
   fake_statistics_provider.SetMachineStatistic("hardware_class",
                                                kFakeHardwareClass);
 

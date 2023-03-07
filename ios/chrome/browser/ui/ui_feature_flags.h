@@ -33,11 +33,6 @@ BASE_DECLARE_FEATURE(kTestFeature);
 // Feature flag to enable Shared Highlighting (Link to Text).
 BASE_DECLARE_FEATURE(kSharedHighlightingIOS);
 
-// Feature flag for testing the 'default browser' screen in FRE and different
-// experiments to suggest the users to update the default browser in the
-// Settings.app.
-BASE_DECLARE_FEATURE(kEnableFREDefaultBrowserPromoScreen);
-
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
 BASE_DECLARE_FEATURE(kModernTabStrip);
@@ -61,28 +56,8 @@ BASE_DECLARE_FEATURE(kIOSLocationBarUseNativeContextMenu);
 // Feature flag that swaps the omnibox textfield implementation.
 BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
 
-// Feature flag that toggles the SwiftUI omnibox popup implementation.
-BASE_DECLARE_FEATURE(kIOSOmniboxUpdatedPopupUI);
-
 // Feature flag that removes the crash infobar.
 BASE_DECLARE_FEATURE(kRemoveCrashInfobar);
-
-// Parameter name for the parameter controlling which UI variation to use for
-// the SwiftUI omnibox popup.
-extern const char kIOSOmniboxUpdatedPopupUIVariationName[];
-
-// Variation 1 for the parameter controlling which UI variation to use for
-// the SwiftUI omnibox popup.
-extern const char kIOSOmniboxUpdatedPopupUIVariation1[];
-// Variation 2 for the parameter controlling which UI variation to use for
-// the SwiftUI omnibox popup.
-extern const char kIOSOmniboxUpdatedPopupUIVariation2[];
-// Variation 3 for the parameter controlling the UI variation of the
-// SwiftUI/UIKit pedals popup.
-extern const char kIOSOmniboxUpdatedPopupUIVariation1UIKit[];
-// Variation 4 for the parameter controlling the UI variation of the
-// SwiftUI/UIKit pedals popup.
-extern const char kIOSOmniboxUpdatedPopupUIVariation2UIKit[];
 
 // Feature flag to enable removing any entry points to the history UI from
 // Incognito mode.
@@ -122,6 +97,9 @@ BASE_DECLARE_FEATURE(kCalendarExperienceKit);
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
+// Feature flag to enable Emails detection.
+BASE_DECLARE_FEATURE(kEnableEmails);
+
 // Feature flag to enable Phone Numbers detection.
 BASE_DECLARE_FEATURE(kEnablePhoneNumbers);
 
@@ -140,6 +118,15 @@ BASE_DECLARE_FEATURE(kEnableMiniMap);
 
 // When enabled sort tab by last usage in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridRecencySort);
+
+// Feature to enable the new bookmarks implementation.
+BASE_DECLARE_FEATURE(kEnableNewBookmarksImplementation);
+
+// Feature to enable multiline gradient support in fade truncating label.
+BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);
+
+// Flag to enable accessibility identifier to omnibox leading image.
+BASE_DECLARE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage);
 
 // Whether the tab grid tabs should be sorted by recency.
 bool IsTabGridSortedByRecency();

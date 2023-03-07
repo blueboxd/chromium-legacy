@@ -13,13 +13,14 @@
 #include "ash/public/cpp/clipboard_image_model_factory.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_types.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/values.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -75,7 +76,7 @@ keyboard::ContainerType ConvertKeyboardModeToContainerType(int mode) {
 // Returns the ui::TextInputClient of the active InputMethod or nullptr.
 ui::TextInputClient* GetFocusedTextInputClient() {
   ui::InputMethod* input_method =
-      ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+      ash::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
   if (!input_method)
     return nullptr;
 
@@ -499,14 +500,15 @@ void ChromeVirtualKeyboardDelegate::OnGetHistoryValuesAfterItemsUpdated(
   // Broadcast an api event for each updated item.
   for (auto& item : updated_items.GetList()) {
     keyboard_api::ClipboardItem clipboard_item;
-    if (item.FindKey("imageData")) {
-      clipboard_item.image_data = item.FindKey("imageData")->GetString();
+    const base::Value::Dict& dict = item.GetDict();
+    if (dict.FindString("imageData")) {
+      clipboard_item.image_data = *dict.FindString("imageData");
     }
-    if (item.FindKey("textData")) {
-      clipboard_item.text_data = item.FindKey("textData")->GetString();
+    if (dict.FindString("textData")) {
+      clipboard_item.text_data = *dict.FindString("textData");
     }
-    if (item.FindKey("idToken")) {
-      clipboard_item.id = item.FindKey("idToken")->GetString();
+    if (dict.FindString("idToken")) {
+      clipboard_item.id = *dict.FindString("textData");
     }
 
     auto item_value =
@@ -535,7 +537,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
               keyboard_client->IsEnableFlagSet(
                   keyboard::KeyboardEnableFlag::kAccessibilityEnabled));
   results.Set("hotrodmode", g_hotrod_keyboard_enabled);
-  base::Value features(base::Value::Type::LIST);
+  base::Value::List features;
 
   keyboard::KeyboardConfig config = keyboard_client->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
@@ -579,7 +581,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features.Append(GenerateFeatureFlag(
       "roundCorners", base::FeatureList::IsEnabled(
                           ash::features::kVirtualKeyboardRoundCorners)));
-  features.Append(GenerateFeatureFlag("systemchinesephysicaltyping", true));
   features.Append(
       GenerateFeatureFlag("systemjapanesephysicaltyping",
                           base::FeatureList::IsEnabled(
@@ -611,7 +612,7 @@ void ChromeVirtualKeyboardDelegate::DispatchConfigChangeEvent(
     return;
 
   base::Value::List event_args;
-  event_args.Append(base::Value(std::move(*settings)));
+  event_args.Append(std::move(*settings));
 
   auto event = std::make_unique<extensions::Event>(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CONFIG_CHANGED,

@@ -10,11 +10,11 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -291,7 +291,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
   // Cache the sizes of RenderWidgetHostView and WebContentsView when the
   // navigation entry is committed, which is before
-  // WebContentsDelegate::DidNavigatePrimaryMainFramePostCommit is called.
+  // WebContentsObserver::DidFinishNavigation is called.
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& details) override {
     content::RenderViewHost* rvh =
@@ -656,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogDefersNavigationCommit) {
     EXPECT_TRUE(handle->IsWaitingToCommit());
   }
 
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 }
 
 // Test for crbug.com/297289.  Ensure that modal dialogs are closed when a
@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RendererCrossProcessNavCancelsDialogs) {
   EXPECT_TRUE(js_dialog_manager->IsShowingDialogForTesting());
 
   // Let the navigation to url2 finish and dismiss the dialog.
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   EXPECT_FALSE(js_dialog_manager->IsShowingDialogForTesting());
 
   // Make sure input events still work in the renderer process.
@@ -757,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DownloadDoesntDismissDialog) {
 
   // Let the url2 response finish and become a download, without dismissing the
   // dialog.
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   EXPECT_TRUE(js_dialog_manager->IsShowingDialogForTesting());
   download_waiter->WaitForFinished();
 
@@ -1484,19 +1484,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 // set_show_state(ui::SHOW_STATE_MAXIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   Browser::CreateParams params[] = {
-    Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true),
-    Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
-    Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
-                                        browser()->profile(), true),
-    Browser::CreateParams::CreateForDevTools(browser()->profile()),
-    Browser::CreateParams::CreateForAppPopup("app_name", true, gfx::Rect(),
-                                             browser()->profile(), true),
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-    // Picture in picture v2 is not supported yet.
-    // See crbug.com/1320453 .
-    Browser::CreateParams(Browser::TYPE_PICTURE_IN_PICTURE,
-                          browser()->profile(), true),
-#endif
+      Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true),
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
+      Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
+                                          browser()->profile(), true),
+      Browser::CreateParams::CreateForDevTools(browser()->profile()),
+      Browser::CreateParams::CreateForAppPopup("app_name", true, gfx::Rect(),
+                                               browser()->profile(), true),
+      Browser::CreateParams(Browser::TYPE_PICTURE_IN_PICTURE,
+                            browser()->profile(), true),
   };
   for (size_t i = 0; i < std::size(params); ++i) {
     params[i].initial_show_state = ui::SHOW_STATE_MAXIMIZED;
@@ -1514,18 +1510,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
 // set_show_state(ui::SHOW_STATE_MINIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
   Browser::CreateParams params[] = {
-    Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true),
-    Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
-    Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
-                                        browser()->profile(), true),
-    Browser::CreateParams::CreateForDevTools(browser()->profile()),
-    Browser::CreateParams::CreateForAppPopup("app_name", true, gfx::Rect(),
-                                             browser()->profile(), true),
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-    // Picture in picture v2 is not supported yet.
-    Browser::CreateParams(Browser::TYPE_PICTURE_IN_PICTURE,
-                          browser()->profile(), true),
-#endif  // !IS_CHROMEOS_LACROS
+      Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true),
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
+      Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
+                                          browser()->profile(), true),
+      Browser::CreateParams::CreateForDevTools(browser()->profile()),
+      Browser::CreateParams::CreateForAppPopup("app_name", true, gfx::Rect(),
+                                               browser()->profile(), true),
+      Browser::CreateParams(Browser::TYPE_PICTURE_IN_PICTURE,
+                            browser()->profile(), true),
   };
   for (size_t i = 0; i < std::size(params); ++i) {
     params[i].initial_show_state = ui::SHOW_STATE_MINIMIZED;
@@ -2439,8 +2432,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   // should be the same as when it was first created.
   EXPECT_EQ(rwhv_create_size0, rwhv_commit_size0);
   // Sizes of the current RenderWidgetHostView and WebContentsView should not
-  // change before and after
-  // WebContentsDelegate::DidNavigatePrimaryMainFramePostCommit
+  // change before and after WebContentsObserver::DidFinishNavigation
   // (implemented by Browser); we obtain the sizes before PostCommit via
   // WebContentsObserver::NavigationEntryCommitted (implemented by
   // RenderViewSizeObserver).

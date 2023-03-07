@@ -6,9 +6,10 @@
 
 #include <numeric>
 
-#include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"

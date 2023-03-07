@@ -37,6 +37,7 @@
 #include "content/public/browser/visibility.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-shared.h"
@@ -47,6 +48,27 @@
 namespace content {
 
 class RenderProcessHostInternalObserver;
+
+// Allows overriding the sizes of back/forward cache.
+// Sizes set via this feature's parameters take precedence over others.
+BASE_FEATURE(kBackForwardCacheSize,
+             "BackForwardCacheSize",
+// Sets the BackForwardCache size for desktop.
+// See crbug.com/1291435.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+// Sets BackForwardCache cache_size=6 per crbug.com/1291435.
+const base::FeatureParam<int> kBackForwardCacheSizeCacheSize{
+    &kBackForwardCacheSize, "cache_size", 6};
+// Disables EnforceCacheSizeLimitInternal() with foreground_cache_size=0, as
+// the BFCachePolicy manager takes care of pruning for foreground tabs as well.
+const base::FeatureParam<int> kBackForwardCacheSizeForegroundCacheSize{
+    &kBackForwardCacheSize, "foreground_cache_size", 0};
 
 namespace {
 
@@ -164,6 +186,7 @@ constexpr WebSchedulerTrackedFeatures kDisallowedFeatures(
     WebSchedulerTrackedFeature::kDummy,
     WebSchedulerTrackedFeature::kIdleManager,
     WebSchedulerTrackedFeature::kIndexedDBConnection,
+    WebSchedulerTrackedFeature::kIndexedDBEvent,
     WebSchedulerTrackedFeature::kKeyboardLock,
     WebSchedulerTrackedFeature::kKeepaliveRequest,
     WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction,
@@ -305,14 +328,10 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
   // cases like page navigating back with window.history.back(), while being
   // hidden.
   if (rfh->delegate()->GetVisibility() != Visibility::HIDDEN) {
-    // The trigger can be null in unit tests.
-    auto* trigger = rfh->GetRenderWidgetHost()->GetVisibleTimeRequestTrigger();
-    if (trigger) {
-      trigger->UpdateRequest(navigation_start,
-                             false /* destination_is_loaded */,
-                             false /* show_reason_tab_switching */,
-                             true /* show_reason_bfcache_restore */);
-    }
+    rfh->GetRenderWidgetHost()->GetVisibleTimeRequestTrigger().UpdateRequest(
+        navigation_start, /*destination_is_loaded=*/false,
+        /*show_reason_tab_switching=*/false,
+        /*show_reason_bfcache_restore=*/true);
   }
 }
 
@@ -570,10 +589,9 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
 size_t BackForwardCacheImpl::GetCacheSize() {
   if (!IsBackForwardCacheEnabled())
     return 0;
-  auto cache_size = GetFieldTrialParamByFeatureAsOptionalInt(
-      kBackForwardCacheSize, "cache_size");
-  if (cache_size.has_value())
-    return cache_size.value();
+  if (base::FeatureList::IsEnabled(kBackForwardCacheSize)) {
+    return kBackForwardCacheSizeCacheSize.Get();
+  }
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kBackForwardCache, "cache_size", kDefaultBackForwardCacheSize);
 }
@@ -582,10 +600,9 @@ size_t BackForwardCacheImpl::GetCacheSize() {
 size_t BackForwardCacheImpl::GetForegroundedEntriesCacheSize() {
   if (!IsBackForwardCacheEnabled())
     return 0;
-  auto foreground_cache_size = GetFieldTrialParamByFeatureAsOptionalInt(
-      kBackForwardCacheSize, "foreground_cache_size");
-  if (foreground_cache_size.has_value())
-    return foreground_cache_size.value();
+  if (base::FeatureList::IsEnabled(kBackForwardCacheSize)) {
+    return kBackForwardCacheSizeForegroundCacheSize.Get();
+  }
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kBackForwardCache, "foreground_cache_size",
       kDefaultForegroundBackForwardCacheSize);
@@ -1220,20 +1237,23 @@ bool BackForwardCache::IsBackForwardCacheFeatureEnabled() {
 // static
 void BackForwardCache::DisableForRenderFrameHost(
     RenderFrameHost* render_frame_host,
-    BackForwardCache::DisabledReason reason) {
-  DisableForRenderFrameHost(render_frame_host->GetGlobalId(), reason);
+    DisabledReason reason,
+    absl::optional<ukm::SourceId> source_id) {
+  DisableForRenderFrameHost(render_frame_host->GetGlobalId(), reason,
+                            source_id);
 }
 
 // static
 void BackForwardCache::DisableForRenderFrameHost(
     GlobalRenderFrameHostId id,
-    BackForwardCache::DisabledReason reason) {
+    DisabledReason reason,
+    absl::optional<ukm::SourceId> source_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (g_bfcache_disabled_test_observer)
     g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
 
   if (auto* rfh = RenderFrameHostImpl::FromID(id))
-    rfh->DisableBackForwardCache(reason);
+    rfh->DisableBackForwardCache(reason, source_id);
 }
 
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
@@ -1490,6 +1510,7 @@ BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
     : document_result_(std::move(result_for_this_document)),
       is_same_origin_(
           IsSameOriginForTreeResult(rfh, url, main_document_origin)),
+      is_root_outermost_main_frame_(rfh->IsOutermostMainFrame()),
       id_(rfh->frame_tree_node()->html_id()),
       name_(rfh->frame_tree_node()->html_name()),
       src_(rfh->frame_tree_node()->html_src()),
@@ -1500,6 +1521,7 @@ BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
     const GURL& url)
     : document_result_(BackForwardCacheCanStoreDocumentResult()),
       is_same_origin_(is_same_origin),
+      is_root_outermost_main_frame_(true),
       id_(""),
       name_(""),
       src_(""),
@@ -1556,6 +1578,7 @@ BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
 
 blink::mojom::BackForwardCacheNotRestoredReasonsPtr
 BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasons() {
+  DCHECK(is_root_outermost_main_frame_);
   uint32_t count = GetCrossOriginReachableFrameCount();
   int index = count == 0 ? 0 : base::RandInt(0, count - 1);
   return GetWebExposedNotRestoredReasonsInternal(index);
@@ -1573,9 +1596,6 @@ BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasonsInternal(
     not_restored_reasons->same_origin_details =
         blink::mojom::SameOriginBfcacheNotRestoredDetails::New();
     not_restored_reasons->same_origin_details->url = url_.spec();
-    not_restored_reasons->same_origin_details->src = src_;
-    not_restored_reasons->same_origin_details->id = id_;
-    not_restored_reasons->same_origin_details->name = name_;
     not_restored_reasons->same_origin_details->reasons =
         GetDocumentResult().GetStringReasons();
 
@@ -1600,7 +1620,17 @@ BackForwardCacheCanStoreTreeResult::GetWebExposedNotRestoredReasonsInternal(
     }
     // Decrease the index now that we saw a cross-origin iframe.
     index--;
+    // Do not iterate through the children now that we have encountered a
+    // cross-origin iframe.
   }
+  // Report src, id and name for both cross-origin and same-origin frames. This
+  // information is only sent to the main frame's renderer, which already knew
+  // it on the previous visit. We send this because the frame tree could have
+  // changed by the time the page is navigated away, and sending this
+  // information would help identify which frames caused restore to fail.
+  not_restored_reasons->src = src_;
+  not_restored_reasons->id = id_;
+  not_restored_reasons->name = name_;
   return not_restored_reasons;
 }
 

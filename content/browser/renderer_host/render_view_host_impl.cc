@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
@@ -186,9 +186,6 @@ const int PerProcessRenderViewHostSet::kUserDataKey;
 
 }  // namespace
 
-// static
-const base::TimeDelta RenderViewHostImpl::kUnloadTimeout;
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, public:
 
@@ -284,7 +281,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     int32_t routing_id,
     int32_t main_frame_routing_id,
     bool has_initialized_audio_host,
-    scoped_refptr<BrowsingContextState> main_browsing_context_state)
+    scoped_refptr<BrowsingContextState> main_browsing_context_state,
+    CreateRenderViewHostCase create_case)
     : render_widget_host_(std::move(widget)),
       delegate_(delegate),
       render_view_host_map_id_(frame_tree->GetRenderViewHostMapId(group)),
@@ -296,7 +294,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       main_browsing_context_state_(
           main_browsing_context_state
               ? absl::make_optional(main_browsing_context_state->GetSafeRef())
-              : absl::nullopt) {
+              : absl::nullopt),
+      is_speculative_(create_case == CreateRenderViewHostCase::kSpeculative) {
   TRACE_EVENT("navigation", "RenderViewHostImpl::RenderViewHostImpl",
               ChromeTrackEvent::kRenderViewHost, *this);
   TRACE_EVENT_BEGIN("navigation", "RenderViewHost",
@@ -329,9 +328,6 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active())
     GetWidget()->UpdatePriority();
 
-  close_timeout_ = std::make_unique<TimeoutMonitor>(base::BindRepeating(
-      &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr()));
-
   input_device_change_observer_ =
       std::make_unique<InputDeviceChangeObserver>(this);
 
@@ -341,8 +337,6 @@ RenderViewHostImpl::RenderViewHostImpl(
                              : blink::mojom::PageVisibilityState::kVisible);
 
   GetWidget()->set_owner_delegate(this);
-  frame_tree_->RegisterRenderViewHost(render_view_host_map_id_, this);
-  registered_with_frame_tree_ = true;
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
@@ -364,8 +358,8 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
 
-  // We may have already unregistered the RenderViewHost when marking this
-  // not available for reuse.
+  // We may have already unregistered the RenderViewHost when marking this not
+  // available for reuse.
   if (registered_with_frame_tree_)
     frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
 
@@ -375,6 +369,10 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
   return delegate_;
+}
+
+base::WeakPtr<RenderViewHostImpl> RenderViewHostImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void RenderViewHostImpl::DisallowReuse() {
@@ -735,31 +733,6 @@ RenderFrameHostImpl* RenderViewHostImpl::GetMainRenderFrameHost() {
   return frame_tree_->root()->render_manager()->speculative_frame_host();
 }
 
-void RenderViewHostImpl::ClosePage() {
-  is_waiting_for_page_close_completion_ = true;
-  DCHECK(GetMainRenderFrameHost()->IsOutermostMainFrame());
-
-  if (IsRenderViewLive() && !SuddenTerminationAllowed()) {
-    close_timeout_->Start(kUnloadTimeout);
-
-    GetMainRenderFrameHost()->GetAssociatedLocalMainFrame()->ClosePage(
-        base::BindOnce(&RenderViewHostImpl::OnPageClosed,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    // This RenderViewHost doesn't have a live renderer, so just skip the close
-    // event and close the page.
-    ClosePageIgnoringUnloadEvents();
-  }
-}
-
-void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
-  close_timeout_->Stop();
-  is_waiting_for_page_close_completion_ = false;
-
-  sudden_termination_allowed_ = true;
-  delegate_->Close(this);
-}
-
 void RenderViewHostImpl::ZoomToFindInPageRect(const gfx::Rect& rect_to_zoom) {
   GetMainRenderFrameHost()->GetAssociatedLocalMainFrame()->ZoomToFindInPageRect(
       rect_to_zoom);
@@ -813,15 +786,6 @@ void RenderViewHostImpl::AnimateDoubleTapZoom(const gfx::Point& point,
       point, rect);
 }
 
-bool RenderViewHostImpl::SuddenTerminationAllowed() {
-  // If there is a JavaScript dialog up, don't bother sending the renderer the
-  // close event because it is known unresponsive, waiting for the reply from
-  // the dialog.
-  return sudden_termination_allowed_ ||
-         delegate_->IsJavaScriptDialogShowing() ||
-         GetMainRenderFrameHost()->BeforeUnloadTimedOut();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHostImpl, IPC message handlers:
 
@@ -837,10 +801,6 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
     view->TakeFocus(reverse);
-}
-
-void RenderViewHostImpl::OnPageClosed() {
-  ClosePageIgnoringUnloadEvents();
 }
 
 void RenderViewHostImpl::OnFocus() {
@@ -920,13 +880,6 @@ void RenderViewHostImpl::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
 void RenderViewHostImpl::RenderViewReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->RenderViewReady(this);
-}
-
-void RenderViewHostImpl::ClosePageTimeout() {
-  if (delegate_->ShouldIgnoreUnresponsiveRenderer())
-    return;
-
-  ClosePageIgnoringUnloadEvents();
 }
 
 std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {

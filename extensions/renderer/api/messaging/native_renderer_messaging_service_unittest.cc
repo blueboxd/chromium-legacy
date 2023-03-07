@@ -8,7 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/common/child_process_host.h"
+#include "content/public/common/content_constants.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/serialization_format.h"
 #include "extensions/common/extension.h"
@@ -151,15 +151,14 @@ TEST_F(NativeRendererMessagingServiceTest, OpenMessagePort) {
   tab_connection_info.frame_id = 0;
   const int tab_id = 10;
   GURL source_url("http://example.com");
-  tab_connection_info.tab =
-      std::move(DictionaryBuilder().Set("tabId", tab_id).Build()->GetDict());
+  tab_connection_info.tab = DictionaryBuilder().Set("tabId", tab_id).Build();
   ExtensionMsg_ExternalConnectionInfo external_connection_info;
   external_connection_info.target_id = extension()->id();
   external_connection_info.source_endpoint =
       MessagingEndpoint::ForExtension(extension()->id());
   external_connection_info.source_url = source_url;
   external_connection_info.guest_process_id =
-      content::ChildProcessHost::kInvalidUniqueID;
+      content::kInvalidChildProcessUniqueId;
   external_connection_info.guest_render_frame_routing_id = 0;
 
   const char kAddListener[] =
@@ -185,14 +184,14 @@ TEST_F(NativeRendererMessagingServiceTest, OpenMessagePort) {
 
   EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
                                                 "eventFired"));
-  std::unique_ptr<base::DictionaryValue> expected_sender =
+  base::Value::Dict expected_sender =
       DictionaryBuilder()
           .Set("frameId", 0)
           .Set("tab", DictionaryBuilder().Set("tabId", tab_id).Build())
           .Set("url", source_url.spec())
           .Set("id", extension()->id())
           .Build();
-  EXPECT_EQ(ValueToString(*expected_sender),
+  EXPECT_EQ(ValueToString(base::Value(std::move(expected_sender))),
             GetStringPropertyFromObject(context->Global(), context, "sender"));
 }
 
@@ -497,15 +496,14 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
   tab_connection_info.frame_id = 0;
   const int tab_id = 10;
   GURL source_url("http://example.com");
-  tab_connection_info.tab =
-      std::move(DictionaryBuilder().Set("tabId", tab_id).Build()->GetDict());
+  tab_connection_info.tab = DictionaryBuilder().Set("tabId", tab_id).Build();
   ExtensionMsg_ExternalConnectionInfo external_connection_info;
   external_connection_info.target_id = extension()->id();
   external_connection_info.source_endpoint =
       MessagingEndpoint::ForExtension(extension()->id());
   external_connection_info.source_url = source_url;
   external_connection_info.guest_process_id =
-      content::ChildProcessHost::kInvalidUniqueID;
+      content::kInvalidChildProcessUniqueId;
   external_connection_info.guest_render_frame_routing_id = 0;
 
   // Open a receiver for the message.
@@ -570,8 +568,7 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
     tab_connection_info.frame_id = 0;
     const int tab_id = 10;
     GURL source_url("http://example.com");
-    tab_connection_info.tab =
-        std::move(DictionaryBuilder().Set("tabId", tab_id).Build()->GetDict());
+    tab_connection_info.tab = DictionaryBuilder().Set("tabId", tab_id).Build();
 
     ExtensionMsg_ExternalConnectionInfo external_connection_info;
     external_connection_info.target_id = extension()->id();
@@ -579,7 +576,7 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
         MessagingEndpoint::ForExtension(source_id);
     external_connection_info.source_url = source_url;
     external_connection_info.guest_process_id =
-        content::ChildProcessHost::kInvalidUniqueID;
+        content::kInvalidChildProcessUniqueId;
     external_connection_info.guest_render_frame_routing_id = 0;
 
     // Open a receiver for the message.

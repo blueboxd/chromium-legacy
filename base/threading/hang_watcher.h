@@ -14,15 +14,16 @@
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/bits.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/debug/crash_logging.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/template_util.h"
@@ -98,7 +99,9 @@ class BASE_EXPORT WatchHangsInScope {
 
 #if DCHECK_IS_ON()
   // The previous WatchHangsInScope created on this thread.
-  WatchHangsInScope* previous_watch_hangs_in_scope_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION WatchHangsInScope* previous_watch_hangs_in_scope_;
 #endif
 };
 

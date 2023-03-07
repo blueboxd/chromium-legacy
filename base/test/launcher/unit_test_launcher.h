@@ -10,16 +10,14 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
 
 namespace base {
-
-extern const char kDontUseJobObjectFlag[];
 
 // Callback that runs a test suite and returns exit code.
 using RunTestSuiteCallback = OnceCallback<int(void)>;

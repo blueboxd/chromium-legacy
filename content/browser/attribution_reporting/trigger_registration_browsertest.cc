@@ -4,7 +4,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -28,7 +29,7 @@ namespace content {
 
 namespace {
 
-using ::blink::mojom::AttributionRegistrationType;
+using ::attribution_reporting::mojom::RegistrationType;
 using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::Pointee;
@@ -89,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(AttributionTriggerRegistrationBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              AttributionRegistrationType) {
+              RegistrationType) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -100,8 +101,9 @@ IN_PROC_BROWSER_TEST_F(AttributionTriggerRegistrationBrowserTest,
   EXPECT_TRUE(ExecJs(web_contents(),
                      JsReplace("createTrackingPixel($1);", register_url)));
 
-  if (!data_host)
+  if (!data_host) {
     loop.Run();
+  }
 
   data_host->WaitForTriggerData(/*num_trigger_data=*/1);
   const auto& trigger_data = data_host->trigger_data();
@@ -127,10 +129,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillRepeatedly(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              AttributionRegistrationType) {
+              RegistrationType) {
             data_hosts.push_back(GetRegisteredDataHost(std::move(host)));
-            if (data_hosts.size() == 2)
+            if (data_hosts.size() == 2) {
               loop.Quit();
+            }
           });
 
   GURL register_url = https_server()->GetURL(
@@ -139,8 +142,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(ExecJs(web_contents(),
                      JsReplace("createTrackingPixel($1);", register_url)));
 
-  if (data_hosts.size() != 2)
+  if (data_hosts.size() != 2) {
     loop.Run();
+  }
 
   data_hosts.front()->WaitForTriggerData(/*num_trigger_data=*/1);
   const auto& trigger_data1 = data_hosts.front()->trigger_data();

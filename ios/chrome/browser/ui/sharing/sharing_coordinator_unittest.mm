@@ -14,15 +14,11 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
+#import "ios/chrome/browser/bookmarks/bookmark_ios_unit_test_support.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
-#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -31,6 +27,10 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/canonical_url_retriever.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/requirements/activity_service_positioner.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -59,7 +59,7 @@ using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 // Test fixture for testing SharingCoordinator.
-class SharingCoordinatorTest : public BookmarkIOSUnitTest {
+class SharingCoordinatorTest : public BookmarkIOSUnitTestSupport {
  protected:
   SharingCoordinatorTest()
       : base_view_controller_([[UIViewController alloc] init]),
@@ -70,7 +70,7 @@ class SharingCoordinatorTest : public BookmarkIOSUnitTest {
   }
 
   void SetUp() override {
-    BookmarkIOSUnitTest::SetUp();
+    BookmarkIOSUnitTestSupport::SetUp();
     snackbar_handler_ = OCMStrictProtocolMock(@protocol(SnackbarCommands));
     [browser_->GetCommandDispatcher()
         startDispatchingToTarget:snackbar_handler_

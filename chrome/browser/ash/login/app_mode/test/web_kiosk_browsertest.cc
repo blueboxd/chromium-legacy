@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_tags.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/app_session_ash.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
@@ -35,7 +36,7 @@
 #include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -139,7 +140,8 @@ class WebKioskTest : public OobeBaseTest {
           auto* provider =
               web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
           web_app::ExternalInstallOptions install_options(
-              GURL(kAppInstallUrl), web_app::UserDisplayMode::kStandalone,
+              GURL(kAppInstallUrl),
+              web_app::mojom::UserDisplayMode::kStandalone,
               web_app::ExternalInstallSource::kKiosk);
           install_options.install_placeholder = true;
           provider->externally_managed_app_manager().InstallNow(
@@ -272,6 +274,9 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, PRE_AlreadyInstalledOffline) {
 
 // Runs the kiosk app offline when it has been already installed.
 IN_PROC_BROWSER_TEST_F(WebKioskTest, AlreadyInstalledOffline) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-35e430a3-04b3-46a7-aa0a-207a368b8cba");
+
   SetOnline(false);
   PrepareAppLaunch();
   LaunchApp();

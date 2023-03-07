@@ -82,13 +82,13 @@ base::Value NetLogChromeRootStoreVersion(int64_t chrome_root_store_version) {
 }
 #endif
 
-base::Value PEMCertListValue(const ParsedCertificateList& certs) {
-  base::Value value(base::Value::Type::LIST);
+base::Value::List PEMCertValueList(const ParsedCertificateList& certs) {
+  base::Value::List value;
   for (const auto& cert : certs) {
     std::string pem;
     X509Certificate::GetPEMEncodedFromDER(cert->der_cert().AsStringPiece(),
                                           &pem);
-    value.GetList().Append(std::move(pem));
+    value.Append(std::move(pem));
   }
   return value;
 }
@@ -97,9 +97,8 @@ base::Value NetLogPathBuilderResultPath(
     const CertPathBuilderResultPath& result_path) {
   base::Value::Dict dict;
   dict.Set("is_valid", result_path.IsValid());
-  dict.Set("last_cert_trust",
-           static_cast<int>(result_path.last_cert_trust.type));
-  dict.Set("certificates", PEMCertListValue(result_path.certs));
+  dict.Set("last_cert_trust", result_path.last_cert_trust.ToDebugString());
+  dict.Set("certificates", PEMCertValueList(result_path.certs));
   // TODO(crbug.com/634484): netlog user_constrained_policy_set.
   std::string errors_string =
       result_path.errors.ToDebugString(result_path.certs);
@@ -493,6 +492,7 @@ void MapPathBuilderErrorsToCertStatus(const CertPathErrors& errors,
   if (errors.ContainsError(cert_errors::kDistrustedByTrustStore) ||
       errors.ContainsError(cert_errors::kVerifySignedDataFailed) ||
       errors.ContainsError(cert_errors::kNoIssuersFound) ||
+      errors.ContainsError(cert_errors::kSubjectDoesNotMatchIssuer) ||
       errors.ContainsError(cert_errors::kDeadlineExceeded) ||
       errors.ContainsError(cert_errors::kIterationLimitExceeded)) {
     *cert_status |= CERT_STATUS_AUTHORITY_INVALID;
@@ -749,7 +749,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
     net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_TARGET_CERT, [&] {
       return NetLogCertParams(input_cert->cert_buffer(), parsing_errors);
     });
-    if (!target || !target->signature_algorithm()) {
+    if (!target) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return ERR_CERT_INVALID;
     }

@@ -81,7 +81,6 @@ include_rules = [
   # limit D-Bus communication to a subset of OS daemons, but that project
   # stopped in 2019. See //ash/README.md.
   "+chromeos/ash/components/dbus",
-  # TODO(https://crbug.com/1164001): removed after all clients have migrated.
   "+chromeos/dbus",
   # //ash should use code in //ash/session to get login state. The state in
   # //ash/session and the state in //chromeos/ash/components/login/login_state
@@ -98,6 +97,7 @@ include_rules = [
   "+chromeos/ash/services/nearby/public",
   "+chromeos/ash/services/multidevice_setup/public",
   "+chromeos/ash/services/secure_channel/public",
+  "+chromeos/ash/services/network_config/public",
   "+chromeos/services/machine_learning/public",
   "+chromeos/services/network_config/public",
   "+chromeos/services/power/public",
@@ -117,12 +117,16 @@ include_rules = [
   "+components/session_manager/session_manager_types.h",
   "-components/user_manager",
   "+components/user_manager/known_user.h",
+  "+components/user_manager/user_directory_integrity_manager.h",
   "+components/user_manager/user_names.h",
   "+components/user_manager/user_type.h",
   "+components/user_manager/user.h",
 ]
 
 specific_include_rules = {
+  "keyboard_capability_unittest\.cc": [
+    "+device/udev_linux/fake_udev_loader.h",
+  ],
   "policy_recommendation_restorer_unittest.cc": [
     "+components/sync_preferences/testing_pref_service_syncable.h"
   ],

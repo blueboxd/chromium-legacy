@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -25,6 +24,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -58,6 +58,7 @@
 #include "base/test/test_file_util.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -77,7 +78,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/strings/string_util_win.h"
-#include "base/win/windows_version.h"
 
 #include <windows.h>
 
@@ -97,7 +97,8 @@
 
 namespace base {
 
-// See https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nkdTP7sstSc/uT3FaE_sgkAJ .
+// See
+// https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nkdTP7sstSc/uT3FaE_sgkAJ
 using ::operator<<;
 
 // The environment variable name for the total number of test shards.
@@ -420,13 +421,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     }
 
     DWORD job_flags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-
-    // Allow break-away from job since sandbox and few other places rely on it
-    // on Windows versions prior to Windows 8 (which supports nested jobs).
-    if (win::GetVersion() < win::Version::WIN8 &&
-        flags & TestLauncher::ALLOW_BREAKAWAY_FROM_JOB) {
-      job_flags |= JOB_OBJECT_LIMIT_BREAKAWAY_OK;
-    }
 
     if (!SetJobObjectLimitFlags(job_handle.get(), job_flags)) {
       LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
@@ -1071,6 +1065,8 @@ TestLauncher::~TestLauncher() {
 }
 
 bool TestLauncher::Run(CommandLine* command_line) {
+  base::PlatformThread::SetName("TestLauncherMain");
+
   if (!Init((command_line == nullptr) ? CommandLine::ForCurrentProcess()
                                       : command_line))
     return false;

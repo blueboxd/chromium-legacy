@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
@@ -157,14 +157,12 @@ TEST_F(CastToolbarButtonTest, UpdateIssues) {
   button_->UpdateIcon();
   EXPECT_TRUE(gfx::test::AreImagesEqual(idle_icon_, GetIcon()));
 
-  button_->OnIssue(
-      Issue(IssueInfo("title notification", IssueInfo::Action::DISMISS,
-                      IssueInfo::Severity::NOTIFICATION)));
+  button_->OnIssue(Issue(
+      IssueInfo("title notification", IssueInfo::Severity::NOTIFICATION)));
   EXPECT_TRUE(gfx::test::AreImagesEqual(idle_icon_, GetIcon()));
 
   button_->OnIssue(
-      Issue(IssueInfo("title warning", IssueInfo::Action::LEARN_MORE,
-                      IssueInfo::Severity::WARNING)));
+      Issue(IssueInfo("title warning", IssueInfo::Severity::WARNING)));
   EXPECT_TRUE(gfx::test::AreImagesEqual(warning_icon_, GetIcon()));
 
   button_->OnIssuesCleared();

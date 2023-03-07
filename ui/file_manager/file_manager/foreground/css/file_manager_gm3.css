@@ -181,7 +181,7 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
 }
 
 #directory-tree .tree-item:not([disabled])
-  .tree-row[active] > .file-row > .item-icon {
+  .tree-row[active] > .file-row > .item-icon:not([style*='background-image']) {
   background-color: var(--cros-icon-color-selection);
 }
 
@@ -1067,6 +1067,9 @@ html.focus-outline-visible .dialog-footer select:focus {
   display: flex;
   flex-direction: row;
   overflow: hidden;
+  padding-bottom: 4px;
+  padding-inline: 8px 48px;
+  padding-top: 4px;
 }
 
 body.check-select .breadcrumbs {
@@ -1141,7 +1144,7 @@ body.check-select #read-only-indicator {
 .list-view #empty-folder > .image {
   /* The list view has a .table-header at the top, the margin-top should also
   cover that, hence the desired margin plus the .table-header height. */
-  margin-top: calc(64px + 57px);
+  margin-top: calc(64px + 49px);
 }
 
 #empty-folder > .label {
@@ -1197,7 +1200,7 @@ body.check-select #read-only-indicator {
 .list-view .loading-indicator {
   /* The list view has a .table-header at the top, the top should also
   cover that, hence the desired top plus the .table-header height. */
-  top: calc(64px + 57px);
+  top: calc(64px + 49px);
 }
 
 @keyframes heightAnimation {
@@ -1269,31 +1272,38 @@ body.files-ng .thumbnail-frame > .img-container {
   position: relative;
 }
 
-body.files-ng .thumbnail-frame > .sync-status {
+#list-container.thumbnail-view .inline-status {
+  align-items: center;
+  display: none;
   height: 16px;
+  justify-content: center;
   position: absolute;
   right: 4px;
   top: 4px;
   width: 16px;
 }
 
-body.files-ng li:not([renaming]):not(.dim-offline) .thumbnail-frame > .sync-status {
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
+#list-container.thumbnail-view .inline-status .progress,
+#list-container.thumbnail-view .inline-status xf-icon {
+  display: none;
+  height: 16px;
+  width: 16px;
 }
 
-body.files-ng li:not([renaming]):not(.dim-offline) .thumbnail-frame[data-sync-status=in_progress] > .sync-status {
-  background-image: url(../images/files/ui/in_progress_indicator.svg);
+#list-container.thumbnail-view .inline-status xf-icon[type^=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
 }
 
-body.files-ng li:not([renaming]):not(.dim-offline) .thumbnail-frame[data-sync-status=error] > .sync-status {
-  background-image: url(../images/files/ui/error.svg);
-}
-
-body.files-ng li.directory .thumbnail-frame > .sync-status {
+#list-container.thumbnail-view li.directory .inline-status {
   height: 100%;
   top: 0;
+}
+
+#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type^=offline]),
+#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type^=offline],
+#list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
+#list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
+  display: flex;
 }
 
 html:not(.pointer-active) body[type='full-page'] .thumbnail-frame > .img-container,
@@ -1478,23 +1488,19 @@ body.files-ng #default-tasks-list {
 }
 
 #default-task-dialog.bottom-shadow::after {
-  background: linear-gradient(180deg,
-                              var(--cros-bg-color) 0,
-                              var(--cros-bg-color) 100%);
+  background: linear-gradient(transparent 0, var(--cros-bg-color) 100%);
   bottom: 24px;
   content: '';
   height: 40px;
   left: 0;
   pointer-events: none;
   position: absolute;
-  transform: rotate(-180deg);
   width: 100%
 }
 
 @media (prefers-color-scheme: dark) {
   #default-task-dialog.bottom-shadow::after {
-    background: linear-gradient(180deg,
-                                var(--cros-bg-color-elevation-2) 0,
+    background: linear-gradient(transparent 0,
                                 var(--cros-bg-color-elevation-2) 100%);
   }
 }
@@ -1729,7 +1735,7 @@ li[renaming=''] .filename-label {
   flex: none;
   font-family: 'Roboto Medium';
   /* The desired height plus the border bottom. */
-  height: calc(56px + 1px);
+  height: calc(48px + 1px);
   line-height: 20px;
 }
 
@@ -1766,11 +1772,6 @@ li[renaming=''] .filename-label {
   align-items: center;
 }
 
-#list-container li.table-row {
-  height: 40px;
-  line-height: 40px;
-}
-
 /* The icon in the name column. See file_types.css for specific icons. */
 .detail-icon {
   height: 24px;
@@ -1797,10 +1798,10 @@ li[renaming=''] .filename-label {
   width: 24px;
 }
 
-body.files-ng #list-container list li .detail-icon {
+#list-container list li .detail-icon {
   color: var(--cros-icon-color-primary);
   height: 40px;
-  margin-inline-end: 8px;
+  margin-inline-end: 12px;
   margin-inline-start: 8px;
   width: 40px;
 }
@@ -1884,6 +1885,7 @@ body[type='folder'] .file,
 body[type='upload-folder'] .file,
 .dialog-container[connection='OFFLINE'] .dim-offline,
 body[block-hosted-docs] .file.dim-hosted,
+body[block-encrypted] .file.dim-encrypted,
 .thumbnail-grid [disabled],
 #detail-table [disabled],
 #directory-tree .tree-item[disabled] > .tree-row {
@@ -2008,28 +2010,29 @@ body[unformatted] .dialog-container #list-container {
   padding-inline-start: 8px;
 }
 
-body.files-ng #list-container .table-header-cell:first-child {
+#list-container .table-header-cell:first-child {
   padding-inline-start: 0;
 }
 
-body.files-ng .table-header-cell {
-  padding-bottom: 12px;
-  padding-top: 12px;
+.table-header-cell {
+  padding-bottom: 8px;
+  padding-top: 8px;
 }
 
-html:not(.pointer-active) body.files-ng .table-header-cell,
-body.files-ng .table-header-cell:active {
+html:not(.pointer-active) .table-header-cell,
+.table-header-cell:active {
   cursor: pointer;
 }
 
-body.files-ng #list-container .table-header-cell:first-child
+#list-container .table-header-cell:first-child
 .table-header-label {
-  margin-inline-start: 16px;
+  margin-inline-start: 20px;
 }
 
 .table-header-label .sort-icon {
   --cr-icon-button-fill-color: var(--cros-icon-color-secondary);
   --cr-icon-button-icon-size: 16px;
+  --cr-icon-button-focus-outline-color: var(--cros-focus-ring-color);
   --cr-icon-button-hover-background-color: var(--cros-ripple-color);
   --cr-icon-button-size: 32px;
   border-radius: 50%;
@@ -2054,26 +2057,21 @@ html.col-resize .table-header-label .sort-icon:not(:active):hover {
   --cr-icon-button-hover-background-color: none;
 }
 
-body.files-ng .table-label-container {
+.table-label-container {
   align-items: center;
   display: flex;
   height: 32px;
 }
 
 /* Text in the column header */
-body.files-ng .table-label-container > span {
+.table-label-container > span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/** Size column is aligned to right. */
-body.files-ng .table-header-label.size .table-label-container {
-  justify-content: flex-end;
-}
-
-body.files-ng #list-container li.table-row {
+#list-container li.table-row {
   box-sizing: border-box;
-  height: 40px;
+  height: 48px;
   line-height: 20px;
 }
 
@@ -2097,10 +2095,10 @@ body.files-ng .table-row-cell > * {
   padding-top: 0 !important;
 }
 
-body.files-ng .table-header-splitter  {
+.table-header-splitter  {
   background: none;
   height: 32px;
-  margin-top: 12px;
+  margin-top: 8px;
   width: auto;
 }
 
@@ -2109,11 +2107,12 @@ body.files-ng .table-header-splitter  {
    * TODO(crbug.com/1268206): the icon is not in disabled state, a new css
    * variable needs to be created and applied here.
    */
-  --cr-icon-button-fill-color: var(--cros-icon-color-disabled);
+  --cr-icon-button-fill-color: var(--cros-sys-outline);
   --cr-icon-button-hover-background-color: var(--cros-ripple-color);
   --cr-icon-button-icon-size: 32px;
   --cr-icon-button-margin-start: 0px;
   --cr-icon-button-size: 32px;
+  --cr-icon-button-stroke-color: var(--cros-sys-outline);
   cursor: default;
   height: 32px;
 }
@@ -2131,9 +2130,9 @@ html.col-resize .table-header-splitter .splitter-icon:not(:active):hover {
   --cr-icon-button-hover-background-color: none;
 }
 
-body.files-ng #list-container .table-row-cell .size {
+#list-container .table-row-cell .size {
   padding-inline-end: 5px;
-  padding-inline-start: 22px;
+  padding-inline-start: 32px;
 }
 
 body.files-ng.check-select list:focus li[selected] .table-row-cell > * {
@@ -2146,6 +2145,7 @@ body.files-ng .table-row-cell:first-child > * {
 
 body.files-ng .table-row-cell .filename-label {
   color: var(--cros-text-color-primary);
+  flex-grow: 1;
   padding-top: 0;
 }
 
@@ -2181,38 +2181,30 @@ body.files-ng #list-container li .detail-thumbnail {
   width: 32px;
 }
 
-.inline-status {
+#list-container .list .inline-status {
+  align-items: center;
   display: none;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
 }
 
-body.files-ng #list-container
-    li.pinned:not([renaming]):not(.dim-offline):not([data-sync-status]) .inline-status {
-  -webkit-mask-image: url(../images/files/ui/offline.svg);
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  background-color: currentColor;
+#list-container .list .inline-status .progress,
+#list-container .list .inline-status xf-icon {
+  display: none;
+  height: 16px;
+  width: 16px;
+}
+
+#list-container .list .inline-status xf-icon[type=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
+}
+
+#list-container .list li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type=offline]),
+#list-container .list li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type=offline],
+#list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
+#list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
   display: flex;
-  height: 40px;
-  width: 40px;
-}
-
-body.files-ng #list-container li[data-sync-status]:not([renaming]):not(.dim-offline) .inline-status {
-  -webkit-mask-image: none;
-  background-color: unset;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
-  display: flex;
-  height: 32px;
-  width: 32px;
-}
-
-body.files-ng #list-container li[data-sync-status=in_progress]:not([renaming]):not(.dim-offline) .inline-status {
-  background-image: url(../images/files/ui/in_progress_indicator.svg);
-}
-
-body.files-ng #list-container li[data-sync-status=error]:not([renaming]):not(.dim-offline) .inline-status {
-  background-image: url(../images/files/ui/error.svg);
 }
 
 #new-folder-button {

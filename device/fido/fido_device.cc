@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
@@ -23,21 +23,6 @@ void FidoDevice::TryWink(base::OnceClosure callback) {
 
 std::string FidoDevice::GetDisplayName() const {
   return GetId();
-}
-
-bool FidoDevice::IsInPairingMode() const {
-  NOTREACHED();
-  return false;
-}
-
-bool FidoDevice::IsPaired() const {
-  NOTREACHED();
-  return false;
-}
-
-bool FidoDevice::RequiresBlePairingPin() const {
-  NOTREACHED();
-  return true;
 }
 
 void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(

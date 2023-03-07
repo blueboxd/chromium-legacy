@@ -14,8 +14,6 @@
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/ash/services/assistant/public/cpp/conversation_observer.h"
 #include "chromeos/ash/services/libassistant/public/cpp/android_app_info.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/services/libassistant/public/cpp/assistant_feedback.h"
 #include "chromeos/ash/services/libassistant/public/cpp/assistant_interaction_metadata.h"
 #include "chromeos/ash/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/ash/services/libassistant/public/mojom/notification_delegate.mojom-forward.h"
@@ -25,6 +23,8 @@
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace ash::assistant {
+
+struct AssistantFeedback;
 
 // Subscribes to Assistant's interaction event. These events are server driven
 // in response to the user's direct interaction with the assistant. Responses
@@ -72,13 +72,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) Assistant {
   // a user facing interaction with the context pre-populated with details
   // to edit the specified reminder.
   virtual void StartEditReminderInteraction(const std::string& client_id) = 0;
-
-  // Starts a screen context interaction. Results related to the screen context
-  // will be returned through the |AssistantInteractionSubscriber| interface to
-  // registered subscribers.
-  // |assistant_screenshot| contains JPEG data.
-  virtual void StartScreenContextInteraction(
-      const std::vector<uint8_t>& assistant_screenshot) = 0;
 
   // Starts a new Assistant text interaction. If |allow_tts| is true, the
   // result will contain TTS. Otherwise TTS will not be present in the
@@ -179,7 +172,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {
 
 }  // namespace ash::assistant
 
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
+// TODO(b/258750971): remove when internal assistant codes are migrated to
+// namespace ash.
 namespace chromeos::assistant {
 using ::ash::assistant::Assistant;
 using ::ash::assistant::AssistantInteractionSubscriber;

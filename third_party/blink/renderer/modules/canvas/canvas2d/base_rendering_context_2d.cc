@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasfilter_string.h"
@@ -24,11 +25,13 @@
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_color_cache.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/v8_canvas_style.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -105,6 +108,7 @@ BaseRenderingContext2D::BaseRenderingContext2D(
               ? UsePaintCache::kEnabled
               : UsePaintCache::kDisabled) {
   state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>());
+  color_cache_ = CanvasColorCache::Create();
 }
 
 BaseRenderingContext2D::~BaseRenderingContext2D() {
@@ -198,13 +202,11 @@ void BaseRenderingContext2D::beginLayer() {
     // We also need to flip how and where the shadows and filter are applied
     // if there are shadows.
     cc::PaintFlags flags;
-    GetState().FillStyle()->ApplyToFlags(flags);
-    flags.setColor(GetState().FillStyle()->PaintColor());
     flags.setBlendMode(GetState().GlobalComposite());
     flags.setImageFilter(GetState().ShouldDrawShadows()
                              ? GetState().ShadowAndForegroundImageFilter()
                              : StateGetFilter());
-    canvas->saveLayer(nullptr, &flags);
+    canvas->saveLayer(flags);
 
     // Push to state stack to keep stack size up to date.
     state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>(
@@ -213,24 +215,26 @@ void BaseRenderingContext2D::beginLayer() {
     max_state_stack_depth_ =
         std::max(state_stack_.size(), max_state_stack_depth_);
 
-    cc::PaintFlags extra_flags;
-    GetState().FillStyle()->ApplyToFlags(extra_flags);
-    extra_flags.setColor(GetState().FillStyle()->PaintColor());
-    extra_flags.setAlpha(globalAlpha() * 255);
-    if (GetState().ShouldDrawShadows())
+    if (GetState().ShouldDrawShadows()) {
+      cc::PaintFlags extra_flags;
+      extra_flags.setAlphaf(static_cast<float>(globalAlpha()));
       extra_flags.setImageFilter(StateGetFilter());
-    canvas->saveLayer(nullptr, &extra_flags);
-  } else {
+      canvas->saveLayer(extra_flags);
+    } else {
+      canvas->saveLayerAlphaf(globalAlpha());
+    }
+  } else if (StateHasFilter() || GetState().ShouldDrawShadows() ||
+             GetState().GlobalComposite() != SkBlendMode::kSrcOver) {
     cc::PaintFlags flags;
-    GetState().FillStyle()->ApplyToFlags(flags);
-    flags.setColor(GetState().FillStyle()->PaintColor());
     flags.setBlendMode(GetState().GlobalComposite());
     // This ComposePaintFilter will work always, whether there is only
     // shadows, or filters, both of them, or none of them.
     flags.setImageFilter(sk_make_sp<ComposePaintFilter>(
         GetState().ShadowAndForegroundImageFilter(), StateGetFilter()));
-    flags.setAlpha(globalAlpha() * 255);
-    canvas->saveLayer(nullptr, &flags);
+    flags.setAlphaf(static_cast<float>(globalAlpha()));
+    canvas->saveLayer(flags);
+  } else {
+    canvas->saveLayerAlphaf(globalAlpha());
   }
 
   ValidateStateStack();
@@ -239,7 +243,7 @@ void BaseRenderingContext2D::beginLayer() {
   setShadowOffsetX(0);
   setShadowOffsetY(0);
   setShadowBlur(0);
-  GetState().SetShadowColor(SK_ColorTRANSPARENT);
+  GetState().SetShadowColor(Color::kTransparent);
   DCHECK(!GetState().ShouldDrawShadows());
   setGlobalAlpha(1.0);
   setGlobalCompositeOperation("source-over");
@@ -331,8 +335,7 @@ void BaseRenderingContext2D::RestoreMatrixClipStack(cc::PaintCanvas* c) const {
     c->setMatrix(SkM44());
     if (curr_state->Get()) {
       curr_state->Get()->PlaybackClips(c);
-      c->setMatrix(
-          AffineTransformToSkMatrix(curr_state->Get()->GetTransform()));
+      c->setMatrix(AffineTransformToSkM44(curr_state->Get()->GetTransform()));
     }
     c->save();
   }
@@ -365,7 +368,7 @@ void BaseRenderingContext2D::ResetInternal() {
     DCHECK_EQ(c->getSaveCount(), 2);
     c->restore();
     c->save();
-    DCHECK(c->getTotalMatrix().isIdentity());
+    DCHECK(c->getLocalToDevice() == SkM44());
 #if DCHECK_IS_ON()
     SkIRect clip_bounds;
     DCHECK(c->getDeviceClipBounds(&clip_bounds));
@@ -429,6 +432,35 @@ void BaseRenderingContext2D::
   }
 }
 
+bool BaseRenderingContext2D::ExtractColorFromV8ValueAndUpdateCache(
+    const V8CanvasStyle& v8_style,
+    Color& color) {
+  // This should only be called for string styles.
+  DCHECK_EQ(v8_style.type, V8CanvasStyleType::kString);
+  if (color_cache_) {
+    const CachedColor* cached_color =
+        color_cache_->GetCachedColor(v8_style.string);
+    if (cached_color) {
+      if (cached_color->parse_result == ColorParseResult::kColor) {
+        color = cached_color->color;
+        return true;
+      }
+      if (cached_color->parse_result == ColorParseResult::kCurrentColor) {
+        color = GetCurrentColor();
+        return true;
+      }
+      DCHECK_EQ(cached_color->parse_result, ColorParseResult::kParseFailed);
+      return false;
+    }
+  }
+  const ColorParseResult parse_result =
+      ParseColorOrCurrentColor(v8_style.string, color);
+  if (color_cache_) {
+    color_cache_->SetCachedColor(v8_style.string, color, parse_result);
+  }
+  return parse_result != ColorParseResult::kParseFailed;
+}
+
 void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
                                             v8::Local<v8::Value> value,
                                             ExceptionState& exception_state) {
@@ -441,7 +473,9 @@ void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
 
   switch (v8_style.type) {
     case V8CanvasStyleType::kCSSColorValue:
-      GetState().SetStrokeColor(v8_style.css_color_value);
+      // TODO (crbug.com/1399566): v8_style should probably store another format
+      // for color.
+      GetState().SetStrokeColor(Color::FromSkColor(v8_style.css_color_value));
       break;
     case V8CanvasStyleType::kGradient:
       GetState().SetStrokeGradient(v8_style.gradient);
@@ -455,19 +489,31 @@ void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
       if (v8_style.string == GetState().UnparsedStrokeColor())
         return;
       Color parsed_color = Color::kTransparent;
-      if (!ParseColorOrCurrentColor(parsed_color, v8_style.string))
+      if (!ExtractColorFromV8ValueAndUpdateCache(v8_style, parsed_color)) {
         return;
-      if (GetState().StrokeStyle()->IsEquivalentRGBA(parsed_color.Rgb())) {
+      }
+      if (GetState().StrokeStyle()->IsEquivalentColor(parsed_color)) {
         GetState().SetUnparsedStrokeColor(v8_style.string);
         return;
       }
-      GetState().SetStrokeColor(parsed_color.Rgb());
+      GetState().SetStrokeColor(parsed_color);
       break;
     }
   }
 
   GetState().SetUnparsedStrokeColor(v8_style.string);
   GetState().ClearResolvedFilter();
+}
+
+ColorParseResult BaseRenderingContext2D::ParseColorOrCurrentColor(
+    const String& color_string,
+    Color& color) const {
+  const ColorParseResult parse_result =
+      ParseCanvasColorString(color_string, color_scheme_, color);
+  if (parse_result == ColorParseResult::kCurrentColor) {
+    color = GetCurrentColor();
+  }
+  return parse_result;
 }
 
 v8::Local<v8::Value> BaseRenderingContext2D::fillStyle(
@@ -489,7 +535,9 @@ void BaseRenderingContext2D::setFillStyle(v8::Isolate* isolate,
 
   switch (v8_style.type) {
     case V8CanvasStyleType::kCSSColorValue:
-      GetState().SetFillColor(v8_style.css_color_value);
+      // TODO (crbug.com/1399566): v8_style should probably store another format
+      // for color.
+      GetState().SetFillColor(Color::FromSkColor(v8_style.css_color_value));
       break;
     case V8CanvasStyleType::kGradient:
       GetState().SetFillGradient(v8_style.gradient);
@@ -503,13 +551,14 @@ void BaseRenderingContext2D::setFillStyle(v8::Isolate* isolate,
       if (v8_style.string == GetState().UnparsedFillColor())
         return;
       Color parsed_color = Color::kTransparent;
-      if (!ParseColorOrCurrentColor(parsed_color, v8_style.string))
+      if (!ExtractColorFromV8ValueAndUpdateCache(v8_style, parsed_color)) {
         return;
-      if (GetState().FillStyle()->IsEquivalentRGBA(parsed_color.Rgb())) {
+      }
+      if (GetState().FillStyle()->IsEquivalentColor(parsed_color)) {
         GetState().SetUnparsedFillColor(v8_style.string);
         return;
       }
-      GetState().SetFillColor(parsed_color.Rgb());
+      GetState().SetFillColor(parsed_color);
       break;
     }
   }
@@ -633,20 +682,23 @@ void BaseRenderingContext2D::setShadowBlur(double blur) {
 String BaseRenderingContext2D::shadowColor() const {
   // TODO(https://1351544): CanvasRenderingContext2DState's shadow color should
   // be a Color, not an SkColor or SkColor4f.
-  return Color::FromSkColor(GetState().ShadowColor()).SerializeAsCanvasColor();
+  return GetState().ShadowColor().SerializeAsCanvasColor();
 }
 
 void BaseRenderingContext2D::setShadowColor(const String& color_string) {
   Color color;
-  if (!ParseColorOrCurrentColor(color, color_string))
+  if (ParseColorOrCurrentColor(color_string, color) ==
+      ColorParseResult::kParseFailed) {
     return;
-  if (Color::FromSkColor(GetState().ShadowColor()) == color)
+  }
+  if (GetState().ShadowColor() == color) {
     return;
+  }
   if (identifiability_study_helper_.ShouldUpdateBuilder()) {
     identifiability_study_helper_.UpdateBuilder(CanvasOps::kSetShadowColor,
                                                 color.Rgb());
   }
-  GetState().SetShadowColor(color.Rgb());
+  GetState().SetShadowColor(color);
 }
 
 const Vector<double>& BaseRenderingContext2D::getLineDash() const {
@@ -889,7 +941,7 @@ void BaseRenderingContext2D::transform(double m11,
   if (!IsTransformInvertible())
     return;
 
-  c->concat(AffineTransformToSkMatrix(transform));
+  c->concat(AffineTransformToSkM44(transform));
   path_.Transform(transform.Inverse());
 }
 
@@ -1418,7 +1470,7 @@ bool BaseRenderingContext2D::ShouldDrawImageAntialiased(
   cc::PaintCanvas* c = GetPaintCanvas();
   DCHECK(c);
 
-  const SkMatrix& ctm = c->getTotalMatrix();
+  const SkMatrix& ctm = c->getLocalToDevice().asM33();
   // Don't disable anti-aliasing if we're rotated or skewed.
   if (!ctm.rectStaysRect())
     return true;
@@ -1490,8 +1542,8 @@ void BaseRenderingContext2D::DrawImageInternal(
   cc::PaintFlags image_flags = *flags;
 
   if (flags->getImageFilter()) {
-    SkMatrix ctm = c->getTotalMatrix();
-    SkMatrix inv_ctm;
+    SkM44 ctm = c->getLocalToDevice();
+    SkM44 inv_ctm;
     if (!ctm.invert(&inv_ctm)) {
       // There is an earlier check for invertibility, but the arithmetic
       // in AffineTransform is not exactly identical, so it is possible
@@ -1500,7 +1552,7 @@ void BaseRenderingContext2D::DrawImageInternal(
       return;
     }
     SkRect bounds = gfx::RectFToSkRect(dst_rect);
-    ctm.mapRect(&bounds);
+    ctm.asM33().mapRect(&bounds);
     if (!bounds.isFinite()) {
       // There is an earlier check for the correctness of the bounds, but it is
       // possible that after applying the matrix transformation we get a faulty
@@ -1516,7 +1568,7 @@ void BaseRenderingContext2D::DrawImageInternal(
     layer_flags.setBlendMode(flags->getBlendMode());
     layer_flags.setImageFilter(flags->getImageFilter());
 
-    c->saveLayer(&bounds, &layer_flags);
+    c->saveLayer(bounds, layer_flags);
     c->concat(ctm);
     image_flags.setBlendMode(SkBlendMode::kSrcOver);
     image_flags.setImageFilter(nullptr);

@@ -12,15 +12,14 @@
 #include <lib/zx/vmo.h>
 #include <perfetto/ext/tracing/core/shared_memory.h>
 
-#include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/functional/bind.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 
 namespace tracing {

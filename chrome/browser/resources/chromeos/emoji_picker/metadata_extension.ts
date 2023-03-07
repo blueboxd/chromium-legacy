@@ -10,7 +10,7 @@
  */
 
 
-import {CategoryEnum, SubcategoryData} from './types.js';
+import {CategoryEnum, GifSubcategoryData, SubcategoryData} from './types.js';
 
 const RECENTLY_USED_NAME = 'Recently used';
 
@@ -86,7 +86,17 @@ export const CATEGORY_METADATA:
       },
     ];
 
-const CATEGORY_TABS = {
+export const GIF_CATEGORY_METADATA:
+    Array<{name: CategoryEnum, icon: string, active: boolean}> = [
+      ...CATEGORY_METADATA,
+      {
+        name: CategoryEnum.GIF,
+        icon: 'emoji_picker_v2:emoji_gif',
+        active: false,
+      },
+    ];
+
+export const CATEGORY_TABS = {
   'emoji': [
     {
       name: 'Smileys & Emotions',
@@ -158,15 +168,31 @@ const CATEGORY_TABS = {
  * The list of tabs based on the order of category buttons and basic tab info
  * of each category.
  */
-export const V2_SUBCATEGORY_TABS = makeGroupTabs(
+export const SUBCATEGORY_TABS = makeGroupTabs(
     CATEGORY_METADATA.map(item => item.name),
     CATEGORY_TABS,
 );
 
+const SUBCATEGORY_TABS_GIF_SUPPORT = makeGroupTabs(
+    GIF_CATEGORY_METADATA.map(item => item.name),
+    CATEGORY_TABS,
+);
+
+export const gifCategoryTabs =
+    (categories: Record<string, GifSubcategoryData[]>) => makeGroupTabs(
+        GIF_CATEGORY_METADATA.map(item => item.name),
+        categories,
+    );
+
 // A mapping from each category to the index of their first tab.
-export const V2_TABS_CATEGORY_START_INDEX: Map<CategoryEnum, number> = new Map(
-    V2_SUBCATEGORY_TABS.map((item, index) => [item.category, index] as const)
+export const TABS_CATEGORY_START_INDEX: Map<CategoryEnum, number> = new Map(
+    SUBCATEGORY_TABS.map((item, index) => [item.category, index] as const)
         .reverse());
+
+export const TABS_CATEGORY_START_INDEX_GIF_SUPPORT: Map<CategoryEnum, number> =
+    new Map(SUBCATEGORY_TABS_GIF_SUPPORT
+                .map((item, index) => [item.category, index] as const)
+                .reverse());
 
 export const EMOJI_GROUP_TABS =
     makeGroupTabs([CategoryEnum.EMOJI], CATEGORY_TABS);

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/branding_buildflags.h"
@@ -19,22 +19,23 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/autofill/autofill_context_menu_manager.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/lens/buildflags.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "components/search_engines/template_url.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 #include "chrome/browser/lens/region_search/lens_region_search_controller.h"
 #endif
 
@@ -52,6 +53,7 @@ class Profile;
 class QuickAnswersMenuObserver;
 class SpellingMenuObserver;
 class SpellingOptionsSubMenuObserver;
+class PdfOcrMenuObserver;
 
 namespace content {
 class RenderFrameHost;
@@ -93,6 +95,8 @@ class RenderViewContextMenu
     : public RenderViewContextMenuBase,
       public custom_handlers::ProtocolHandlerRegistry::Observer {
  public:
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kExitFullscreenMenuItem);
+
   using ExecutePluginActionCallback =
       base::OnceCallback<void(content::RenderFrameHost*,
                               blink::mojom::PluginActionType)>;
@@ -116,6 +120,7 @@ class RenderViewContextMenu
   void ExecuteCommand(int command_id, int event_flags) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
   void AddAccessibilityLabelsServiceItem(bool is_checked) override;
+  void AddPdfOcrMenuItem(bool is_always_active) override;
 
   // Registers a one-time callback that will be called the next time a context
   // menu is shown.
@@ -128,7 +133,7 @@ class RenderViewContextMenu
       base::OnceCallback<void(content::RenderFrameHost*,
                               blink::mojom::PluginActionType)> cb);
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   lens::LensRegionSearchController* GetLensRegionSearchControllerForTesting() {
     return lens_region_search_controller_.get();
   }
@@ -238,9 +243,6 @@ class RenderViewContextMenu
   void AppendExitFullscreenItem();
   void AppendCopyItem();
   void AppendLinkToTextItems();
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void AppendPdfOcrItem();
-#endif
   void AppendPrintItem();
   void AppendPartialTranslateItem();
   void AppendMediaRouterItem();
@@ -253,6 +255,7 @@ class RenderViewContextMenu
   // Returns true if the items were appended. This might not happen in all
   // cases, e.g. these are only appended if a screen reader is enabled.
   bool AppendAccessibilityLabelsItems();
+  void AppendPdfOcrItems();
   void AppendSearchProvider();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
@@ -337,9 +340,6 @@ class RenderViewContextMenu
   void ExecPictureInPicture();
   // Implemented in RenderViewContextMenuViews.
   void ExecOpenInReadAnything() override {}
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void ExecRunPdfOcr();
-#endif
 
   void MediaPlayerActionAt(const gfx::Point& location,
                            const blink::mojom::MediaPlayerAction& action);
@@ -395,6 +395,10 @@ class RenderViewContextMenu
       accessibility_labels_menu_observer_;
   ui::SimpleMenuModel accessibility_labels_submenu_model_;
 
+  // An observer that handles PDF OCR items.
+  std::unique_ptr<PdfOcrMenuObserver> pdf_ocr_submenu_model_observer_;
+  std::unique_ptr<ui::SimpleMenuModel> pdf_ocr_submenu_model_;
+
 #if !BUILDFLAG(IS_MAC)
   // An observer that handles the submenu for showing spelling options. This
   // submenu lets users select the spelling language, for example.
@@ -437,7 +441,7 @@ class RenderViewContextMenu
   // executed from a given render frame.
   ExecutePluginActionCallback execute_plugin_action_callback_;
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   // Controller for Lens Region Search feature. This controller will be
   // destroyed as soon as the RenderViewContextMenu object is destroyed. The
   // RenderViewContextMenu is reset every time it is shown, but persists between

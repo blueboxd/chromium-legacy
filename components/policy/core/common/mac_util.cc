@@ -28,8 +28,8 @@ void DictionaryEntryToValue(const void* key, const void* value, void* context) {
     if (converted) {
       const std::string string = base::SysCFStringRefToUTF8(cf_key);
       // Policy dictionary values may contain dots in key names.
-      static_cast<base::Value*>(context)->GetDict().Set(string,
-                                                        std::move(*converted));
+      static_cast<base::Value::Dict*>(context)->Set(string,
+                                                    std::move(*converted));
     }
   }
 }
@@ -41,7 +41,7 @@ void ArrayEntryToValue(const void* value, void* context) {
   std::unique_ptr<base::Value> converted =
       PropertyToValue(static_cast<CFPropertyListRef>(value));
   if (converted) {
-    static_cast<base::ListValue*>(context)->GetList().Append(
+    static_cast<base::Value::List*>(context)->Append(
         base::Value::FromUniquePtrValue(std::move(converted)));
   }
 }
@@ -78,19 +78,16 @@ std::unique_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
   }
 
   if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {
-    std::unique_ptr<base::DictionaryValue> dict_value(
-        new base::DictionaryValue());
-    CFDictionaryApplyFunction(dict, DictionaryEntryToValue, dict_value.get());
-    return std::move(dict_value);
+    base::Value::Dict dict_value;
+    CFDictionaryApplyFunction(dict, DictionaryEntryToValue, &dict_value);
+    return std::make_unique<base::Value>(std::move(dict_value));
   }
 
   if (CFArrayRef array = CFCast<CFArrayRef>(property)) {
-    std::unique_ptr<base::ListValue> list_value(new base::ListValue());
-    CFArrayApplyFunction(array,
-                         CFRangeMake(0, CFArrayGetCount(array)),
-                         ArrayEntryToValue,
-                         list_value.get());
-    return std::move(list_value);
+    base::Value::List list_value;
+    CFArrayApplyFunction(array, CFRangeMake(0, CFArrayGetCount(array)),
+                         ArrayEntryToValue, &list_value);
+    return std::make_unique<base::Value>(std::move(list_value));
   }
 
   return nullptr;

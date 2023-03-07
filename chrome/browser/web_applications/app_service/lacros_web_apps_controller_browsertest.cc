@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
@@ -72,7 +71,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -186,10 +184,6 @@ class LacrosWebAppsControllerBrowserTest : public WebAppControllerBrowserTest {
  public:
   LacrosWebAppsControllerBrowserTest() = default;
   ~LacrosWebAppsControllerBrowserTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_{
-      blink::features::kFileHandlingAPI};
 };
 
 IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PublishApps) {
@@ -328,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
     web_app_info->description = description;
     app_id = InstallWebApp(std::move(web_app_info));
 
-    provider().sync_bridge().SetAppIsLocallyInstalled(
+    provider().sync_bridge_unsafe().SetAppIsLocallyInstalled(
         app_id,
         /*is_locally_installed=*/false);
   }
@@ -343,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
                                      IconEffects::kBlocked |
                                      IconEffects::kCrOsStandardMask));
 
-  provider().sync_bridge().SetAppIsLocallyInstalled(
+  provider().sync_bridge_unsafe().SetAppIsLocallyInstalled(
       app_id,
       /*is_locally_installed=*/true);
   mock_app_publisher.Wait();
@@ -369,15 +363,15 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PolicyIds) {
 
   // Writing to the external prefs to set policy to pin the app.
   web_app::test::AddInstallUrlData(
-      browser()->profile()->GetPrefs(), &provider().sync_bridge(), app_id,
-      install_url, ExternalInstallSource::kExternalPolicy);
+      browser()->profile()->GetPrefs(), &provider().sync_bridge_unsafe(),
+      app_id, install_url, ExternalInstallSource::kExternalPolicy);
 
   // Add a mock secondary install url to verify that all values are propagated
   // to policy_ids correctly.
   const GURL secondary_install_url{"http://install.url/manifest.json"};
   web_app::test::AddInstallUrlData(
-      browser()->profile()->GetPrefs(), &provider().sync_bridge(), app_id,
-      secondary_install_url, ExternalInstallSource::kExternalPolicy);
+      browser()->profile()->GetPrefs(), &provider().sync_bridge_unsafe(),
+      app_id, secondary_install_url, ExternalInstallSource::kExternalPolicy);
 
   provider().install_manager().NotifyWebAppInstalledWithOsHooks(app_id);
 
@@ -533,7 +527,8 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, LaunchWithFiles) {
   launch_params->intent->files = std::move(files);
 
   // Skip past the permission dialog.
-  ScopedRegistryUpdate(&WebAppProvider::GetForTest(profile())->sync_bridge())
+  ScopedRegistryUpdate(
+      &WebAppProvider::GetForTest(profile())->sync_bridge_unsafe())
       ->UpdateApp(app_id)
       ->SetFileHandlerApprovalState(ApiApprovalState::kAllowed);
 
@@ -749,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, Notification) {
 
 IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, DisabledState) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppSyncBridge& web_app_sync_bridge = provider().sync_bridge();
+  WebAppSyncBridge& web_app_sync_bridge = provider().sync_bridge_unsafe();
   const AppId app_id = InstallWebAppFromManifest(
       browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
 
@@ -1024,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
   EXPECT_EQ(
       ApiApprovalState::kRequiresPrompt,
       provider().registrar_unsafe().GetAppFileHandlerApprovalState(app_id));
-  provider().sync_bridge().SetAppFileHandlerApprovalState(
+  provider().sync_bridge_unsafe().SetAppFileHandlerApprovalState(
       app_id, ApiApprovalState::kDisallowed);
 
   mock_app_publisher.Wait();

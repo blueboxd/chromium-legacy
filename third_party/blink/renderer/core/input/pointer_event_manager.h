@@ -131,10 +131,7 @@ class CORE_EXPORT PointerEventManager final
   // deleted hash value.
   template <typename T>
   using PointerIdKeyMap =
-      HeapHashMap<int64_t,
-                  T,
-                  WTF::IntHash<int64_t>,
-                  WTF::UnsignedWithZeroKeyHashTraits<int64_t>>;
+      HeapHashMap<int64_t, T, IntWithZeroKeyHashTraits<int64_t>>;
   using PointerCapturingMap = PointerIdKeyMap<Member<Element>>;
   using ElementUnderPointerMap = PointerIdKeyMap<Member<EventTargetAttributes>>;
 

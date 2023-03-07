@@ -32,10 +32,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -70,7 +70,8 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   MediaStreamTrackImpl(ExecutionContext*,
                        MediaStreamComponent*,
                        MediaStreamSource::ReadyState,
-                       base::OnceClosure callback);
+                       base::OnceClosure callback,
+                       bool is_clone = false);
   ~MediaStreamTrackImpl() override;
 
   // MediaStreamTrack
@@ -133,6 +134,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   absl::optional<const MediaStreamDevice> device() const override;
 
   void BeingTransferred(const base::UnguessableToken& transfer_id) override;
+  bool TransferAllowed(String& message) const override;
 
   void AddObserver(MediaStreamTrack::Observer*) override;
 
@@ -159,8 +161,6 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   void SourceChangedCaptureHandle() override;
 
   void PropagateTrackEnded();
-  void applyConstraintsImageCapture(ScriptPromiseResolver*,
-                                    const MediaTrackConstraints*);
 
   void SendLogMessage(const WTF::String& message);
 
@@ -179,6 +179,10 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
       feature_handle_for_scheduler_;
 
   MediaStreamSource::ReadyState ready_state_;
+  // has_clones indicates if clone has been called on this MediaStreamTrack or
+  // if it is cloned from another MediaStreamTrack. If set, it will remain true
+  // even if the other MediaStreamTrack is gargabe-collected.
+  bool has_clones_ = false;
   HeapHashSet<Member<MediaStream>> registered_media_streams_;
   bool is_iterating_registered_media_streams_ = false;
   Member<MediaStreamComponent> component_;

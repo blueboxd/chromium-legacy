@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
@@ -25,7 +25,6 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
-#include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-forward.h"
@@ -58,11 +58,12 @@ class WebMouseWheelEvent;
 
 namespace ui {
 class Compositor;
-enum class DomCode;
+class Cursor;
 class LatencyInfo;
 class TouchEvent;
+enum class DomCode;
 struct DidOverscrollParams;
-}
+}  // namespace ui
 
 namespace content {
 
@@ -73,7 +74,6 @@ class RenderWidgetHostViewBaseObserver;
 class SyntheticGestureTarget;
 class TextInputManager;
 class TouchSelectionControllerClientManager;
-class WebCursor;
 class WebContentsAccessibility;
 class DelegatedFrameHost;
 
@@ -107,7 +107,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   void Show() final;
   void WasUnOccluded() override {}
   void WasOccluded() override {}
-  void SetIsInVR(bool is_in_vr) override;
   std::u16string GetSelectedText() override;
   bool IsMouseLocked() override;
   bool GetIsMouseLockedUnadjustedMovementForTesting() override;
@@ -361,9 +360,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // need to also be resolved.
   virtual bool IsRenderWidgetHostViewChildFrame();
 
-  // Returns true if the current view is in virtual reality mode.
-  virtual bool IsInVR() const;
-
   // Obtains the root window FrameSinkId.
   virtual viz::FrameSinkId GetRootFrameSinkId();
 
@@ -434,13 +430,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
                            const gfx::Rect& bounds,
                            const gfx::Rect& anchor_rect) = 0;
 
-  // Sets the cursor for this view to the one associated with the specified
-  // cursor_type.
-  virtual void UpdateCursor(const WebCursor& cursor) = 0;
+  // Sets the cursor for this view to the one specified.
+  virtual void UpdateCursor(const ui::Cursor& cursor) = 0;
 
   // Changes the cursor that is displayed on screen. This may or may not match
   // the current cursor's view which was set by UpdateCursor.
-  virtual void DisplayCursor(const WebCursor& cursor);
+  virtual void DisplayCursor(const ui::Cursor& cursor);
 
   // Views that manage cursors for window return a CursorManager. Other views
   // return nullptr.
@@ -561,10 +556,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   void SetTooltipObserverForTesting(TooltipObserver* observer);
 
   virtual ui::Compositor* GetCompositor();
-
-  // Returns the object that tracks content to visible events for the
-  // RenderWidgetHostView.
-  VisibleTimeRequestTrigger* GetVisibleTimeRequestTrigger();
 
   virtual void EnterFullscreenMode(
       const blink::mojom::FullscreenOptions& options) {}
@@ -734,12 +725,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 
   absl::optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
-
-  // TODO(crbug.com/1164477): The VisibleTimeRequestTrigger is now stored in
-  // WebContentsImpl. This obsolete version is only used when
-  // blink::features::kTabSwitchMetrics2 is disabled. Remove it once the
-  // feature is validated and becomes the default.
-  VisibleTimeRequestTrigger visible_time_request_trigger_;
 
   // True when StopFlingingIfNecessary() calls StopFling().
   bool view_stopped_flinging_for_test_ = false;

@@ -132,6 +132,7 @@ export let FileTaskDescriptor;
  *   iconType: string,
  *   isDefault: (boolean|undefined),
  *   isGenericFileHandler: (boolean|undefined),
+ *   isDlpBlocked: (boolean|undefined),
  * }}
  */
 export let FileTask;
@@ -170,14 +171,25 @@ export let FileTasks;
 export let Selection;
 
 /**
+ * Represents the entries displayed in the file list/grid.
+ *
+ * @typedef {{
+ *    keys: !Array<!FileKey>,
+ * }}
+ */
+export let DirectoryContent;
+
+/**
  * The current directory.
  * The directory is only effectively active when the `status` is SUCCESS.
  * @typedef {{
  *   status: !PropStatus,
  *   key: !FileKey,
  *   pathComponents: !Array<PathComponent>,
+ *   content: !DirectoryContent,
  *   selection: Selection,
  *   rootType: (VolumeManagerCommon.RootType|undefined),
+ *   hasDlpDisabledFiles: boolean,
  * }}
  */
 export let CurrentDirectory;

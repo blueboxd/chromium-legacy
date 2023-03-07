@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -474,8 +474,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
     // credentials. Abort the reconcilor here to make sure tests start in a
     // stable state.
     reconcilor->AbortReconcile();
-    reconcilor->SetState(
-        signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
+    reconcilor->SetState(signin_metrics::AccountReconcilorState::kOk);
     account_reconcilor_observation_.Observe(reconcilor);
   }
 
@@ -539,8 +538,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
     RunClosureIfValid(std::move(unblock_count_quit_closure_));
   }
   void OnStateChanged(signin_metrics::AccountReconcilorState state) override {
-    if (state ==
-        signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_RUNNING) {
+    if (state == signin_metrics::AccountReconcilorState::kRunning) {
       ++reconcilor_started_count_;
     }
   }
@@ -898,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest,
   auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
       nullptr, browser()->profile(), https_server_.GetURL(kSigninURL),
       extensions::WebAuthFlow::INTERACTIVE,
-      extensions::WebAuthFlow::LAUNCH_WEB_AUTH_FLOW);
+      extensions::WebAuthFlow::LAUNCH_WEB_AUTH_FLOW, "extension_name");
   web_auth_flow->Start();
 
   if (dice_request_header_.empty())
@@ -925,7 +923,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, DiceExtensionConsent_GetAuthToken) {
   auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
       &delegate, browser()->profile(), https_server_.GetURL(kSigninURL),
       extensions::WebAuthFlow::INTERACTIVE,
-      extensions::WebAuthFlow::GET_AUTH_TOKEN);
+      extensions::WebAuthFlow::GET_AUTH_TOKEN, "extension_name");
   web_auth_flow->Start();
 
   // Check that the token was requested and added to the token service.

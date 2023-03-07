@@ -7,9 +7,9 @@
 #include <memory>
 #include <set>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -213,12 +213,13 @@ TEST_F(CWVSyncControllerTest, DelegateDidFailWithError) {
   OCMExpect([delegate
         syncController:sync_controller
       didFailWithError:[OCMArg checkWithBlock:^BOOL(NSError* error) {
-        return error.code == CWVSyncErrorConnectionFailed &&
-               error.domain == CWVSyncErrorDomain &&
-               [error.userInfo[CWVSyncErrorIsTransientKey] boolValue];
+        // TestSyncService uses INVALID_GAIA_CREDENTIALS for persistent auth
+        // errors.
+        return error.code == CWVSyncErrorInvalidGAIACredentials &&
+               error.domain == CWVSyncErrorDomain;
       }]]);
   OCMExpect([delegate syncControllerDidUpdateState:sync_controller]);
-  sync_service_.SetTransientAuthError();
+  sync_service_.SetPersistentAuthErrorOtherThanWebSignout();
   sync_service_.FireStateChanged();
 
   [delegate verify];

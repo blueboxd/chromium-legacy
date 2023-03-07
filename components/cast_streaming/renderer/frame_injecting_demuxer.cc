@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -67,7 +67,7 @@ class FrameInjectingDemuxerStream
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     was_read_aborted_ = true;
     if (pending_read_cb_)
-      std::move(pending_read_cb_).Run(Status::kAborted, nullptr);
+      std::move(pending_read_cb_).Run(Status::kAborted, {});
   }
 
  protected:
@@ -83,7 +83,7 @@ class FrameInjectingDemuxerStream
 
     is_bitstream_enable_in_progress_ = false;
     if (pending_read_cb_) {
-      Read(std::move(pending_read_cb_));
+      Read(1, std::move(pending_read_cb_));
     }
   }
 
@@ -97,10 +97,12 @@ class FrameInjectingDemuxerStream
       return;
     }
 
-    if (buffer->end_of_stream()) {
-      std::move(pending_read_cb_).Run(Status::kError, nullptr);
+    if (!buffer) {
+      std::move(pending_read_cb_).Run(Status::kAborted, {});
+    } else if (buffer->end_of_stream()) {
+      std::move(pending_read_cb_).Run(Status::kError, {});
     } else {
-      std::move(pending_read_cb_).Run(Status::kOk, std::move(buffer));
+      std::move(pending_read_cb_).Run(Status::kOk, {std::move(buffer)});
     }
   }
 
@@ -114,7 +116,7 @@ class FrameInjectingDemuxerStream
     pending_config_change_ = true;
 
     if (pending_read_cb_) {
-      Read(std::move(pending_read_cb_));
+      Read(1, std::move(pending_read_cb_));
     }
   }
 
@@ -142,24 +144,24 @@ class FrameInjectingDemuxerStream
 
     buffer_requester_.reset();
     if (pending_read_cb_) {
-      std::move(pending_read_cb_)
-          .Run(Status::kAborted, scoped_refptr<media::DecoderBuffer>(nullptr));
+      std::move(pending_read_cb_).Run(Status::kAborted, {});
     }
   }
 
   // DemuxerStream partial implementation.
-  void Read(ReadCB read_cb) final {
+  void Read(uint32_t count, ReadCB read_cb) final {
     DVLOG(3) << __func__;
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!pending_read_cb_);
     DCHECK(!buffer_requester_ || current_buffer_provider_);
+    DCHECK_EQ(count, 1u)
+        << "FrameInjectingDemuxerStream only reads a single buffer.";
 
     pending_read_cb_ = std::move(read_cb);
 
     // Check whether OnMojoDisconnect() has been called and abort if so.
     if (!buffer_requester_) {
-      std::move(pending_read_cb_)
-          .Run(Status::kAborted, scoped_refptr<media::DecoderBuffer>(nullptr));
+      std::move(pending_read_cb_).Run(Status::kAborted, {});
       return;
     }
 
@@ -173,7 +175,7 @@ class FrameInjectingDemuxerStream
     // Handle the special case of a config change.
     if (pending_config_change_) {
       pending_config_change_ = false;
-      std::move(pending_read_cb_).Run(Status::kConfigChanged, nullptr);
+      std::move(pending_read_cb_).Run(Status::kConfigChanged, {});
       return;
     }
 
@@ -399,6 +401,10 @@ void FrameInjectingDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {}
 void FrameInjectingDemuxer::Seek(base::TimeDelta time,
                                  media::PipelineStatusCallback status_cb) {
   std::move(status_cb).Run(media::PIPELINE_OK);
+}
+
+bool FrameInjectingDemuxer::IsSeekable() const {
+  return false;
 }
 
 void FrameInjectingDemuxer::Stop() {

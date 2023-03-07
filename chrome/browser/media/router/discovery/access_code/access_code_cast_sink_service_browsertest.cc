@@ -4,11 +4,6 @@
 
 #include "chrome/test/media_router/access_code_cast/access_code_cast_integration_browsertest.h"
 
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-#endif
-#include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/buildflags.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_constants.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_media_sink_util.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_test_util.h"
@@ -45,27 +40,11 @@ const char kEndpointResponseSuccess[] =
 class AccessCodeCastSinkServiceBrowserTest
     : public AccessCodeCastIntegrationBrowserTest {};
 
-// TODO(b/242928209): Saved device tests are flaky on linux-rel/Mac/ChromeOS.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_PRE_InstantExpiration DISABLED_PRE_InstantExpiration
-#define MAYBE_InstantExpiration DISABLED_InstantExpiration
-#else
-#define MAYBE_PRE_InstantExpiration PRE_InstantExpiration
-#define MAYBE_InstantExpiration InstantExpiration
-#endif
 IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
-                       MAYBE_PRE_InstantExpiration) {
-#if BUILDFLAG(IS_WIN)
-  // TODO(b/235896651): This test sometimes timesout on win10.
-  if (base::win::GetVersion() >= base::win::Version::WIN10)
-    GTEST_SKIP() << "This test is flaky on win10";
-#endif
-
+                       PRE_InstantExpiration) {
   // This pre test adds a device successfully to the browser. The next test
   // then ensures the devices was not saved when the browsertest starts up
   // again.
-
-  base::HistogramTester histogram_tester;
 
   // Mock a successful fetch from our server.
   SetEndpointFetcherMockResponse(kEndpointResponseSuccess, net::HTTP_OK,
@@ -93,15 +72,6 @@ IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
   UpdateRoutes({media_route_cast});
   base::RunLoop().RunUntilIdle();
 
-// Recorded once from the route created when pressing submit, and then again
-// when we manually call `UpdateRoutes`.
-// TODO(b/262287112): AccessCodeCast.Discovery.DeviceDurationOnRoute is
-// recorded twice for saved devices browser tests on ChromeOS.
-#if !BUILDFLAG(IS_CHROMEOS)
-  histogram_tester.ExpectTotalCount(
-      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 1);
-#endif
-
   EXPECT_CALL(*mock_cast_media_sink_service_impl(), DisconnectAndRemoveSink(_));
   UpdateRoutes({});
   WaitForPrefRemoval("cast:<1234>");
@@ -119,12 +89,7 @@ IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
-                       MAYBE_InstantExpiration) {
-#if BUILDFLAG(IS_WIN)
-  // TODO(b/235896651): This test sometimes timesout on win10.
-  if (base::win::GetVersion() >= base::win::Version::WIN10)
-    GTEST_SKIP() << "This test is flaky on win10";
-#endif
+                       InstantExpiration) {
   // This test is run after an instant expiration device was successfully
   // added to the browser. Upon restart it should not exists in prefs nor should
   // it be added to the media router.
@@ -143,25 +108,9 @@ IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-// TODO(b/242928209): Saved device tests are flaky on linux-rel/Mac
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_PRE_SavedDevice DISABLED_PRE_SavedDevice
-#define MAYBE_SavedDevice DISABLED_SavedDevice
-#else
-#define MAYBE_PRE_SavedDevice PRE_SavedDevice
-#define MAYBE_SavedDevice SavedDevice
-#endif
-IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
-                       MAYBE_PRE_SavedDevice) {
-#if BUILDFLAG(IS_WIN)
-  // TODO(b/235896651): This test sometimes timesout on win10.
-  if (base::win::GetVersion() >= base::win::Version::WIN10)
-    GTEST_SKIP() << "This test is flaky on win10";
-#endif
+IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest, PRE_SavedDevice) {
   // This pre test adds a device successfully to the browser. The next test then
   // ensures the devices was saved when the browsertest starts up again.
-  AddScreenplayTag(AccessCodeCastIntegrationBrowserTest::
-                       kAccessCodeCastSavedDeviceScreenplayTag);
 
   // Mock a successful fetch from our server.
   SetEndpointFetcherMockResponse(kEndpointResponseSuccess, net::HTTP_OK,
@@ -211,17 +160,13 @@ IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
       GetPrefUpdater()->GetMediaSinkInternalValueBySinkId("cast:<1234>"));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest,
-                       MAYBE_SavedDevice) {
-#if BUILDFLAG(IS_WIN)
-  // TODO(b/235896651): This test sometimes timesout on win10.
-  if (base::win::GetVersion() >= base::win::Version::WIN10)
-    GTEST_SKIP() << "This test is flaky on win10";
-#endif
-
+IN_PROC_BROWSER_TEST_F(AccessCodeCastSinkServiceBrowserTest, SavedDevice) {
   // This test is run after a saved device was successfully added to the
   // browser. Upon restart it should exists in prefs && it should be added
   // to the media router.
+  AddScreenplayTag(AccessCodeCastIntegrationBrowserTest::
+                       kAccessCodeCastSavedDeviceScreenplayTag);
+
   EXPECT_TRUE(
       GetPrefUpdater()->GetMediaSinkInternalValueBySinkId("cast:<1234>"));
 

@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
@@ -89,8 +89,6 @@ class SettingsResetPromptModel {
   // config. This is a subset of the URLs returned by |startup_urls()|.
   virtual const std::vector<GURL>& startup_urls_to_reset() const;
   virtual ResetState startup_urls_reset_state() const;
-
-  void ReportUmaMetrics() const;
 
  private:
   // Functions to be called by the constructor to initialize the model

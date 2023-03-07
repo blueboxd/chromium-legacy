@@ -12,17 +12,16 @@
 #include <tuple>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_sources.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/run_on_os_login_types.h"
-#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 
 class GURL;
 class Profile;
@@ -175,7 +174,7 @@ enum class AppSettingsPageEntryPoint {
 DisplayMode ResolveEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& app_display_mode_overrides,
-    UserDisplayMode user_display_mode,
+    mojom::UserDisplayMode user_display_mode,
     bool is_isolated);
 
 apps::LaunchContainer ConvertDisplayModeToAppLaunchContainer(

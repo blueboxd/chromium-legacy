@@ -7,16 +7,16 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
-#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
@@ -170,7 +170,7 @@ void ExploreSitesFetcher::Start() {
 }
 
 float ExploreSitesFetcher::DeviceDelegate::GetScaleFactorFromDevice() {
-  return ExploreSitesBridge::GetScaleFactorFromDevice();
+  return 1.5f;
 }
 
 void ExploreSitesFetcher::SetDeviceDelegateForTest(

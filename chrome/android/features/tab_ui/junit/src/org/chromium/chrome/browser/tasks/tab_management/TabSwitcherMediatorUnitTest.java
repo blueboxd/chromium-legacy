@@ -87,7 +87,7 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 @LooperMode(LooperMode.Mode.LEGACY)
 @DisableFeatures(
-        {ChromeFeatureList.TAB_SWITCHER_ON_RETURN, ChromeFeatureList.START_SURFACE_ANDROID})
+        {ChromeFeatureList.START_SURFACE_RETURN_TIME, ChromeFeatureList.START_SURFACE_ANDROID})
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ChromeFeatureList.TAB_TO_GTS_ANIMATION})
 public class TabSwitcherMediatorUnitTest {
     @Rule
@@ -235,7 +235,7 @@ public class TabSwitcherMediatorUnitTest {
         mMediator = new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
-                TabListCoordinator.TabListMode.GRID, mIncognitoReauthControllerSupplier);
+                TabListCoordinator.TabListMode.GRID, mIncognitoReauthControllerSupplier, null);
 
         mMediator.initWithNative(controller, null);
         mMediator.addTabSwitcherViewObserver(mTabSwitcherViewObserver);
@@ -476,15 +476,15 @@ public class TabSwitcherMediatorUnitTest {
 
         doReturn(1).when(mTabModelFilter).index();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(1));
 
         doReturn(2).when(mTabModelFilter).index();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(2));
 
         doReturn(3).when(mTabModelFilter).index();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(1));
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(3));
     }
 
     @Test
@@ -576,10 +576,11 @@ public class TabSwitcherMediatorUnitTest {
         mMediator.showTabSwitcherView(true);
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
 
-        mModel.set(TabListContainerProperties.INITIAL_SCROLL_INDEX, 1);
+        // Set to an "invalid" value and ensure it gets changed.
+        mModel.set(TabListContainerProperties.INITIAL_SCROLL_INDEX, 1337);
 
         mTabModelObserverCaptor.getValue().restoreCompleted();
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(2));
     }
 
     @Test
@@ -715,10 +716,11 @@ public class TabSwitcherMediatorUnitTest {
         initAndAssertAllProperties();
         doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
-        mModel.set(TabListContainerProperties.INITIAL_SCROLL_INDEX, 1);
+        // Set to an "invalid" value and ensure it gets changed.
+        mModel.set(TabListContainerProperties.INITIAL_SCROLL_INDEX, 1337);
 
         mMediator.prepareTabSwitcherView();
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(2));
     }
 
     @Test
@@ -909,14 +911,14 @@ public class TabSwitcherMediatorUnitTest {
         new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
-                TabListCoordinator.TabListMode.GRID, mIncognitoReauthControllerSupplier);
+                TabListCoordinator.TabListMode.GRID, mIncognitoReauthControllerSupplier, null);
         assertEquals(16, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
 
         mModel.set(TabListContainerProperties.BOTTOM_PADDING, 0);
         new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
-                TabListCoordinator.TabListMode.STRIP, mIncognitoReauthControllerSupplier);
+                TabListCoordinator.TabListMode.STRIP, mIncognitoReauthControllerSupplier, null);
         assertEquals(0, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
     }
 

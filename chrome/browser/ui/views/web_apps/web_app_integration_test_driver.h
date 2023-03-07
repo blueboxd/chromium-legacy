@@ -14,11 +14,13 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -55,7 +57,10 @@ enum class Site {
   kFileHandler,
   kNoServiceWorker,
   kNotInstalled,
-  kScreenshots
+  kScreenshots,
+  kHasSubApps,
+  kSubApp1,
+  kSubApp2,
 };
 
 enum class InstallableSite {
@@ -68,7 +73,10 @@ enum class InstallableSite {
   kFileHandler,
   kNoServiceWorker,
   kNotInstalled,
-  kScreenshots
+  kScreenshots,
+  kHasSubApps,
+  kSubApp1,
+  kSubApp2,
 };
 
 enum class Title { kStandaloneOriginal, kStandaloneUpdated };
@@ -113,6 +121,12 @@ enum class UpdateDialogResponse {
   kSkipUpdate
 };
 
+enum class SubAppInstallDialogOptions {
+  kUserAllow,
+  kUserDeny,
+  kPolicyOverride
+};
+
 // These structs are used to store the current state of the world before & after
 // each state-change action.
 
@@ -135,9 +149,13 @@ struct BrowserState {
   BrowserState(const BrowserState&);
   bool operator==(const BrowserState& other) const;
 
-  Browser* browser;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION Browser* browser;
   base::flat_map<content::WebContents*, TabState> tabs;
-  content::WebContents* active_tab;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION content::WebContents* active_tab;
   // If this isn't an app browser, `app_id` is empty.
   AppId app_id;
   bool launch_icon_shown;
@@ -149,7 +167,7 @@ struct AppState {
            GURL app_scope,
            apps::RunOnOsLoginMode run_on_os_login_mode,
            blink::mojom::DisplayMode effective_display_mode,
-           absl::optional<UserDisplayMode> user_display_mode,
+           absl::optional<mojom::UserDisplayMode> user_display_mode,
            std::string manifest_launcher_icon_filename,
            bool is_installed_locally,
            bool is_shortcut_created);
@@ -162,7 +180,7 @@ struct AppState {
   GURL scope;
   apps::RunOnOsLoginMode run_on_os_login_mode;
   blink::mojom::DisplayMode effective_display_mode;
-  absl::optional<UserDisplayMode> user_display_mode;
+  absl::optional<mojom::UserDisplayMode> user_display_mode;
   std::string manifest_launcher_icon_filename;
   bool is_installed_locally;
   bool is_shortcut_created;
@@ -241,6 +259,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
                         ShortcutOptions shortcut,
                         WindowOptions window,
                         InstallMode mode);
+  void InstallSubApp(Site parentapp,
+                     Site subapp,
+                     SubAppInstallDialogOptions option);
+  void RemoveSubApp(Site parentapp, Site subapp);
   // These functions install apps which are tabbed and creates shortcuts.
   void ApplyRunOnOsLoginPolicyAllowed(Site site);
   void ApplyRunOnOsLoginPolicyBlocked(Site site);
@@ -304,6 +326,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckCreateShortcutNotShown();
   void CheckCreateShortcutShown();
   void CheckWindowModeIsNotVisibleInAppSettings(Site site);
+  void CheckFilesLoadedInSite(Site site, FilesOptions files_options);
   void CheckInstallIconShown();
   void CheckInstallIconNotShown();
   void CheckLaunchIconShown();
@@ -319,7 +342,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckSiteHandlesFile(Site site, FileExtension file_extension);
   void CheckSiteNotHandlesFile(Site site, FileExtension file_extension);
   void CheckUserCannotSetRunOnOsLogin(Site site);
-  void CheckUserDisplayModeInternal(UserDisplayMode user_display_mode);
+  void CheckUserDisplayModeInternal(mojom::UserDisplayMode user_display_mode);
   void CheckWindowClosed();
   void CheckWindowCreated();
   void CheckWindowNotCreated();
@@ -328,6 +351,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckWindowDisplayBrowser();
   void CheckWindowDisplayMinimal();
   void CheckWindowDisplayStandalone();
+  void CheckNotHasSubApp(Site subapp);
+  void CheckHasSubApp(Site subapp);
+  void CheckNoSubApps();
 
  protected:
   // WebAppInstallManagerObserver:
@@ -384,6 +410,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   bool IsShortcutAndIconCreated(Profile* profile,
                                 const std::string& name,
                                 const AppId& id);
+
+  bool DoIconColorsMatch(Profile* profile,
+                         const std::string& name,
+                         const AppId& id);
 
   bool IsFileHandledBySite(Site site, FileExtension file_extension);
   void SetFileHandlingEnabled(Site site, bool enabled);
@@ -450,7 +480,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       observation_{this};
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
       override_registration_;
 
   std::unique_ptr<base::RunLoop> window_controls_overlay_callback_for_testing_ =

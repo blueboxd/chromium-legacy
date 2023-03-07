@@ -30,9 +30,12 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
+#include "base/feature_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_string_stringsequence.h"
@@ -40,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
@@ -102,13 +106,14 @@ IDBDatabase::IDBDatabase(
       connection_lifetime_(std::move(connection_lifetime)),
       event_queue_(
           MakeGarbageCollected<EventQueue>(context, TaskType::kDatabaseAccess)),
-      callbacks_receiver_(this, context),
-      feature_handle_for_scheduler_(
-          context
-              ? context->GetScheduler()->RegisterFeature(
-                    SchedulingPolicy::Feature::kIndexedDBConnection,
-                    {SchedulingPolicy::DisableBackForwardCache()})
-              : FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle()) {
+      callbacks_receiver_(this, context) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAllowPageWithIDBConnectionInBFCache) &&
+      context) {
+    feature_handle_for_scheduler_ = context->GetScheduler()->RegisterFeature(
+        SchedulingPolicy::Feature::kIndexedDBConnection,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
   callbacks_receiver_.Bind(std::move(callbacks_receiver),
                            context->GetTaskRunner(TaskType::kDatabaseAccess));
 }
@@ -552,6 +557,14 @@ void IDBDatabase::ContextDestroyed() {
   }
 
   connection_lifetime_.reset();
+}
+
+void IDBDatabase::ContextEnteredBackForwardCache() {
+  if (features::IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled()) {
+    if (backend_) {
+      backend_->DidBecomeInactive();
+    }
+  }
 }
 
 const AtomicString& IDBDatabase::InterfaceName() const {

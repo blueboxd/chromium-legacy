@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -32,6 +32,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/values_test_util.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -136,6 +137,7 @@ namespace {
 
 namespace dnr_api = api::declarative_net_request;
 
+using ::testing::ElementsAreArray;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
@@ -427,6 +429,77 @@ class DeclarativeNetRequestBrowserTest
     EXPECT_EQ(expected_error, result);
   }
 
+  void UpdateStaticRules(const ExtensionId& extension_id,
+                         const std::string& ruleset_id,
+                         const std::vector<int>& rule_ids_to_disable,
+                         const std::vector<int>& rule_ids_to_enable) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.updateStaticRules(
+          {rulesetId: $1, disableRuleIds: $2, enableRuleIds: $3},
+          () => {
+            window.domAutomationController.send(chrome.runtime.lastError ?
+                chrome.runtime.lastError.message : 'success');
+          });
+    )";
+
+    base::Value::List ids_to_disable =
+        ListBuilder()
+            .Append(rule_ids_to_disable.begin(), rule_ids_to_disable.end())
+            .Build();
+    base::Value::List ids_to_enable =
+        ListBuilder()
+            .Append(rule_ids_to_enable.begin(), rule_ids_to_enable.end())
+            .Build();
+
+    const std::string script = content::JsReplace(
+        kScript, ruleset_id, base::Value(std::move(ids_to_disable)),
+        base::Value(std::move(ids_to_enable)));
+    std::string result = ExecuteScriptInBackgroundPage(extension_id, script);
+
+    ASSERT_EQ("success", result);
+  }
+
+  base::flat_set<int> GetDisabledRuleIdsFromMatcher(
+      const std::string& ruleset_id_string) {
+    return GetDisabledRuleIdsFromMatcherForTesting(
+        *ruleset_manager(), *last_loaded_extension(), ruleset_id_string);
+  }
+
+  void VerifyGetDisabledRuleIds(
+      const ExtensionId& extension_id,
+      const std::string& ruleset_id_string,
+      const std::vector<int>& expected_disabled_rule_ids) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.getDisabledRuleIds(
+          {rulesetId: $1},
+          (disabledRuleIds) => {
+            if (chrome.runtime.lastError) {
+              window.domAutomationController.send(
+                  'error: ' + chrome.runtime.lastError.message);
+              return;
+            }
+            if (!disabledRuleIds) {
+              window.domAutomationController.send('no result');
+              return;
+            }
+
+            let actual = JSON.stringify(disabledRuleIds);
+            let expected = JSON.stringify($2);
+            window.domAutomationController.send(actual == expected
+                ? 'success'
+                : ['expected:', expected, '; actual:', actual].join(''));
+          });
+    )";
+    base::Value::List expected = ListBuilder()
+                                     .Append(expected_disabled_rule_ids.begin(),
+                                             expected_disabled_rule_ids.end())
+                                     .Build();
+    std::string result = ExecuteScriptInBackgroundPage(
+        extension_id,
+        content::JsReplace(kScript, ruleset_id_string, std::move(expected)));
+    ASSERT_EQ("success", result);
+  }
+
   void VerifyPublicRulesetIds(
       const Extension* extension,
       const std::vector<std::string>& expected_ruleset_ids) {
@@ -641,7 +714,7 @@ class DeclarativeNetRequestBrowserTest
       rules_to_add_builder.Append(rule.ToValue());
 
     // Serialize |rule_ids|.
-    std::unique_ptr<base::Value> rule_ids_to_remove_value =
+    base::Value::List rule_ids_to_remove_value =
         ListBuilder()
             .Append(rule_ids_to_remove.begin(), rule_ids_to_remove.end())
             .Build();
@@ -656,11 +729,10 @@ class DeclarativeNetRequestBrowserTest
         break;
     }
 
-    // A cast is necessary from ListValue to Value, else this fails to compile.
-    const std::string script = content::JsReplace(
-        base::StringPrintf(kScript, function_name),
-        static_cast<const base::Value&>(*rules_to_add_builder.Build()),
-        static_cast<const base::Value&>(*rule_ids_to_remove_value));
+    const std::string script =
+        content::JsReplace(base::StringPrintf(kScript, function_name),
+                           base::Value(rules_to_add_builder.Build()),
+                           base::Value(std::move(rule_ids_to_remove_value)));
     ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
   }
 
@@ -792,19 +864,18 @@ class DeclarativeNetRequestBrowserTest
       });
     )";
 
-    std::unique_ptr<base::Value> ids_to_remove =
+    base::Value::List ids_to_remove =
         ListBuilder()
             .Append(ruleset_ids_to_remove.begin(), ruleset_ids_to_remove.end())
             .Build();
-    std::unique_ptr<base::Value> ids_to_add =
+    base::Value::List ids_to_add =
         ListBuilder()
             .Append(ruleset_ids_to_add.begin(), ruleset_ids_to_add.end())
             .Build();
 
-    // A cast is necessary from ListValue to Value, else this fails to compile.
-    const std::string script = content::JsReplace(
-        kScript, static_cast<const base::Value&>(*ids_to_remove),
-        static_cast<const base::Value&>(*ids_to_add));
+    const std::string script =
+        content::JsReplace(kScript, base::Value(std::move(ids_to_remove)),
+                           base::Value(std::move(ids_to_add)));
     return ExecuteScriptInBackgroundPage(extension_id, script);
   }
 
@@ -4833,6 +4904,58 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   EXPECT_FALSE(prefs->GetDNRDynamicRulesetChecksum(extension_id, &checksum));
 }
 
+// Tests that persisted disabled static rule ids are no longer kept after an
+// extension update.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
+                       PackedUpdateAfterUpdateStaticRules) {
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
+
+  std::string ruleset_id = "ruleset1";
+  std::vector<TestRulesetInfo> rulesets = {TestRulesetInfo(
+      ruleset_id, ToListValue({CreateGenericRule(1), CreateGenericRule(2),
+                               CreateGenericRule(3)}))};
+
+  const char* kDirectory1 = "dir1";
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRulesets(rulesets, kDirectory1, {} /* hosts */));
+  const Extension* extension = last_loaded_extension();
+
+  CompositeMatcher* composite_matcher =
+      ruleset_manager()->GetMatcherForExtension(last_loaded_extension_id());
+  ASSERT_TRUE(composite_matcher);
+
+  EXPECT_THAT(GetPublicRulesetIDs(*extension, *composite_matcher),
+              UnorderedElementsAre(ruleset_id));
+
+  EXPECT_THAT(GetDisabledRuleIdsFromMatcher(ruleset_id), testing::IsEmpty());
+  VerifyGetDisabledRuleIds(last_loaded_extension_id(), ruleset_id, {});
+
+  UpdateStaticRules(last_loaded_extension_id(), ruleset_id,
+                    {2} /* rule_ids_to_disable */, {} /* rule_ids_to_enable */);
+
+  EXPECT_THAT(GetDisabledRuleIdsFromMatcher(ruleset_id), ElementsAreArray({2}));
+  VerifyGetDisabledRuleIds(last_loaded_extension_id(), ruleset_id, {2});
+
+  const char* kDirectory2 = "dir2";
+  ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
+      rulesets, kDirectory2, {} /* hosts */,
+      0 /* expected_extensions_with_rulesets_count_change */,
+      false /* has_dynamic_ruleset */));
+  extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+
+  composite_matcher =
+      ruleset_manager()->GetMatcherForExtension(last_loaded_extension_id());
+  EXPECT_TRUE(composite_matcher);
+
+  EXPECT_THAT(GetPublicRulesetIDs(*extension, *composite_matcher),
+              UnorderedElementsAre(ruleset_id));
+
+  EXPECT_THAT(GetDisabledRuleIdsFromMatcher(ruleset_id), testing::IsEmpty());
+  VerifyGetDisabledRuleIds(last_loaded_extension_id(), ruleset_id, {});
+}
+
 // Fixture to test the "allowAllRequests" action.
 class DeclarativeNetRequestAllowAllRequestsBrowserTest
     : public DeclarativeNetRequestBrowserTest {
@@ -6474,7 +6597,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, FledgeAuctionScripts) {
   ASSERT_TRUE(https_server()->Start());
 
   PrivacySandboxSettingsFactory::GetForProfile(profile())
-      ->SetPrivacySandboxEnabled(true);
+      ->SetAllPrivacySandboxAllowedForTesting();
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), https_server()->GetURL("/interest_group/fenced_frame.html")));

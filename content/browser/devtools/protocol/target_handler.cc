@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -243,26 +243,34 @@ class BrowserToPageConnector {
     if (agent_host == page_host_.get()) {
       std::unique_ptr<base::Value> value =
           base::JSONReader::ReadDeprecated(message_sp);
-      if (!value || !value->is_dict())
+      if (!value || !value->is_dict()) {
         return;
+      }
+
+      const base::Value::Dict& dict = value->GetDict();
       // Make sure this is a binding call.
-      base::Value* method = value->FindKey("method");
-      if (!method || !method->is_string() ||
-          method->GetString() != "Runtime.bindingCalled")
+      const std::string* method = dict.FindString("method");
+      if (!method || *method != "Runtime.bindingCalled") {
         return;
-      base::Value* params = value->FindKey("params");
-      if (!params || !params->is_dict())
+      }
+
+      const base::Value::Dict* params = dict.FindDict("params");
+      if (!params) {
         return;
-      base::Value* name = params->FindKey("name");
-      if (!name || !name->is_string() || name->GetString() != binding_name_)
+      }
+
+      const std::string* name = params->FindString("name");
+      if (!name || *name != binding_name_) {
         return;
-      base::Value* payload = params->FindKey("payload");
-      if (!payload || !payload->is_string())
+      }
+
+      const std::string* payload = params->FindString("payload");
+      if (!payload) {
         return;
-      const std::string& payload_str = payload->GetString();
+      }
       browser_host_->DispatchProtocolMessage(
           browser_host_client_.get(),
-          base::as_bytes(base::make_span(payload_str)));
+          base::as_bytes(base::make_span(*payload)));
       return;
     }
     DCHECK(agent_host == browser_host_.get());
@@ -1158,6 +1166,7 @@ Response TargetHandler::CreateTarget(const std::string& url,
                                      Maybe<bool> enable_begin_frame_control,
                                      Maybe<bool> new_window,
                                      Maybe<bool> background,
+                                     Maybe<bool> for_tab,
                                      std::string* out_target_id) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
     return Response::ServerError(kNotAllowedError);
@@ -1170,7 +1179,9 @@ Response TargetHandler::CreateTarget(const std::string& url,
     gurl = GURL(url::kAboutBlankURL);
   }
   scoped_refptr<content::DevToolsAgentHost> agent_host =
-      delegate->CreateNewTarget(gurl);
+      delegate->CreateNewTarget(
+          gurl, for_tab.fromMaybe(session_mode_ ==
+                                  DevToolsSession::Mode::kSupportsTabTarget));
   if (!agent_host)
     return Response::ServerError("Not supported");
   *out_target_id = agent_host->GetId();

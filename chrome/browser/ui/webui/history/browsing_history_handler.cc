@@ -8,10 +8,10 @@
 
 #include <set>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/notreached.h"
@@ -493,7 +493,7 @@ void BrowsingHistoryHandler::OnQueryComplete(
       DeviceInfoSyncServiceFactory::GetForProfile(profile)
           ->GetDeviceInfoTracker();
 
-  // Convert the result vector into a ListValue.
+  // Convert the result vector into a base::Value::List
   DCHECK(tracker);
   base::Value::List results_value;
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {

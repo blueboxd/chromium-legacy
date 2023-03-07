@@ -125,7 +125,6 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.ENABLE_IPH)
 public class AppBannerManagerTest {
     @Rule
     public ChromeTabbedActivityTestRule mTabbedActivityTestRule =
@@ -476,6 +475,29 @@ public class AppBannerManagerTest {
             PropertyModel model = activity.getModalDialogManager().getCurrentDialogForTest();
             model.get(ModalDialogProperties.CONTROLLER).onClick(model, buttonType);
         });
+    }
+
+    private void dismissAmbientBadgeMessage(ChromeActivityTestRule<? extends ChromeActivity> rule)
+            throws Exception {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE)) {
+            WindowAndroid windowAndroid = rule.getActivity().getWindowAndroid();
+
+            MessageDispatcher dispatcher = TestThreadUtils.runOnUiThreadBlocking(
+                    () -> MessageDispatcherProvider.from(windowAndroid));
+            PropertyModel model = TestThreadUtils.runOnUiThreadBlocking(
+                    ()
+                            -> MessagesTestHelper.getCurrentMessage(
+                                    MessagesTestHelper
+                                            .getEnqueuedMessages(dispatcher,
+                                                    MessageIdentifier.INSTALLABLE_AMBIENT_BADGE)
+                                            .get(0)));
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { dispatcher.dismissMessage(model, DismissReason.GESTURE); });
+            CriteriaHelper.pollUiThread(
+                    ()
+                            -> Criteria.checkThat(MessagesTestHelper.getMessageCount(windowAndroid),
+                                    Matchers.is(0)));
+        }
     }
 
     @Test
@@ -1077,7 +1099,6 @@ public class AppBannerManagerTest {
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE})
-    @Features.DisableFeatures(ChromeFeatureList.SNOOZABLE_IPH)
     public void
     testInProductHelp() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
@@ -1117,7 +1138,6 @@ public class AppBannerManagerTest {
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR})
-    @Features.DisableFeatures(ChromeFeatureList.SNOOZABLE_IPH)
     public void
     testInProductHelp_Message() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
@@ -1127,6 +1147,8 @@ public class AppBannerManagerTest {
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
         waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
+        // Dismiss the message so it will not overlap with the IPH.
+        dismissAmbientBadgeMessage(mTabbedActivityTestRule);
 
         waitForHelpBubble(withText(R.string.iph_pwa_install_available_text)).perform(click());
         assertThat(mTracker.wasDismissed(), is(true));
@@ -1227,5 +1249,24 @@ public class AppBannerManagerTest {
         // Calls prompt() on the beforeinstallprompt event, we expect to see the modal banner.
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AppBanners"})
+    public void testAppBannerDismissedAfterNavigation() throws Exception {
+        String url = WebappTestPage.getServiceWorkerUrlWithAction(
+                mTestServer, "call_stashed_prompt_on_click");
+        resetEngagementForUrl(url, 10);
+
+        mTabbedActivityTestRule.loadUrlInNewTab(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
+        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
+
+        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
+        tapAndWaitForModalBanner(tab);
+
+        mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        waitUntilNoDialogsShowing(tab);
     }
 }

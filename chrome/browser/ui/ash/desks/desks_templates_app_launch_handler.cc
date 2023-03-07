@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_restore/app_launch_handler.h"
@@ -194,6 +193,7 @@ void DesksTemplatesAppLaunchHandler::LaunchBrowsers() {
                                       /*user_gesture=*/false);
 
       create_params.restore_id = window_iter.first;
+      create_params.creation_source = Browser::CreationSource::kDeskTemplate;
 
       absl::optional<chromeos::WindowStateType> window_state_type(
           app_restore_data->window_state_type);

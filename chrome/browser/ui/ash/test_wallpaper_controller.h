@@ -96,8 +96,6 @@ class TestWallpaperController : public ash::WallpaperController {
                                  const gfx::ImageSkia& image) override;
   void SetOnlineWallpaper(const ash::OnlineWallpaperParams& params,
                           SetWallpaperCallback callback) override;
-  void SetOnlineWallpaperIfExists(const ash::OnlineWallpaperParams& params,
-                                  SetWallpaperCallback callback) override;
   void SetGooglePhotosWallpaper(const ash::GooglePhotosWallpaperParams& params,
                                 SetWallpaperCallback callback) override;
   void SetGooglePhotosDailyRefreshAlbumId(const AccountId& account_id,
@@ -140,8 +138,6 @@ class TestWallpaperController : public ash::WallpaperController {
   void RemoveAlwaysOnTopWallpaper() override;
   void RemoveUserWallpaper(const AccountId& account_id) override;
   void RemovePolicyWallpaper(const AccountId& account_id) override;
-  void GetOfflineWallpaperList(
-      GetOfflineWallpaperListCallback callback) override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
   void MinimizeInactiveWindows(const std::string& user_id_hash) override;

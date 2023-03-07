@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
@@ -168,11 +168,5 @@ class ScopedTestCrosSettings {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when Chrome OS code migration is
-// done.
-namespace chromeos {
-using ::ash::CrosSettings;
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_SETTINGS_CROS_SETTINGS_H_

@@ -9,10 +9,14 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/sid.h"
@@ -50,11 +54,6 @@ class TargetProcess {
                     std::unique_ptr<StartupInformationHelper> startup_info,
                     base::win::ScopedProcessInformation* target_info,
                     DWORD* win_error);
-
-  // Assign a new lowbox token to the process post creation. The process
-  // must still be in its initial suspended state, however this still
-  // might fail in the presence of third-party software.
-  ResultCode AssignLowBoxToken(const base::win::ScopedHandle& token);
 
   // Destroys the target process.
   void Terminate();
@@ -96,8 +95,16 @@ class TargetProcess {
       HMODULE base_address);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TargetProcessTest, FilterEnvironment);
   // Verify the target process looks the same as the broker process.
   ResultCode VerifySentinels();
+
+  // Filters an environment to only include those that have an entry in
+  // `to_keep`.
+  static std::wstring FilterEnvironment(
+      const wchar_t* env,
+      const base::span<const base::WStringPiece> to_keep);
+
   // Details of the target process.
   base::win::ScopedProcessInformation sandbox_process_info_;
   // The token associated with the process. It provides the core of the

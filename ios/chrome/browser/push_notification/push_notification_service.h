@@ -15,6 +15,7 @@ class PrefRegistrySyncable;
 namespace ios {
 class ChromeBrowserStateManager;
 }
+@class PushNotificationAccountContext;
 @class PushNotificationAccountContextManager;
 class PushNotificationClientManager;
 
@@ -40,7 +41,16 @@ class PushNotificationService {
   virtual void UnregisterDevice(CompletionHandler completion_handler) = 0;
 
   // Returns whether the device has retrieved and stored its APNS device token.
-  virtual bool DeviceTokenIsSet() const;
+  virtual bool DeviceTokenIsSet() const = 0;
+
+  // Returns PushNotificationService's PushNotificationClientManager.
+  PushNotificationClientManager* GetPushNotificationClientManager();
+
+  // Returns PushNotificationService's PushNotificationAccountContext for the
+  // given `account_id`.
+  PushNotificationAccountContext* GetAccountContext(NSString* account_id);
+
+  void InitializeAccountContextManager(ios::ChromeBrowserStateManager* manager);
 
   // Registers the new account to the push notification server. In a multi
   // BrowserState environment, the PushNotificationService tracks the signed in
@@ -66,9 +76,6 @@ class PushNotificationService {
   // disabled by default.
   static void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry);
-
-  // Returns PushNotificationService's PushNotificationClientManager.
-  PushNotificationClientManager* GetPushNotificationClientManager();
 
  protected:
   PushNotificationService(ios::ChromeBrowserStateManager* manager);

@@ -4,14 +4,14 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_stream_set.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/screen_capture_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/screen_enumeration/screen_detailed.h"
-#include "third_party/blink/renderer/modules/screen_enumeration/screen_details.h"
+#include "third_party/blink/renderer/modules/screen_details/screen_detailed.h"
+#include "third_party/blink/renderer/modules/screen_details/screen_details.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"

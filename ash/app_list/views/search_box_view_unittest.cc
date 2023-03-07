@@ -15,26 +15,24 @@
 #include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view_delegate.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
-#include "ash/public/cpp/test/test_app_list_color_provider.h"
 #include "ash/search_box/search_box_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_mixer.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/test/ash_test_base.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -143,10 +141,9 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     view->InitializeForBubbleLauncher();
     view_ = widget_->GetContentsView()->AddChildView(std::move(view));
 
-    productivity_launcher_search_view_ =
-        widget_->GetContentsView()->AddChildView(
-            std::make_unique<ProductivityLauncherSearchView>(
-                &view_delegate_, /*dialog_controller=*/nullptr, view_));
+    search_view_ = widget_->GetContentsView()->AddChildView(
+        std::make_unique<AppListSearchView>(
+            &view_delegate_, /*dialog_controller=*/nullptr, view_));
     widget_->Show();
   }
 
@@ -217,18 +214,16 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   SearchModel::SearchResults* results() { return GetSearchModel()->results(); }
 
   SearchResultBaseView* GetFirstResultView() {
-    return productivity_launcher_search_view_
-        ->result_container_views_for_test()[kBestMatchIndex]
+    return search_view_->result_container_views_for_test()[kBestMatchIndex]
         ->GetFirstResultView();
   }
 
   ResultSelectionController* GetResultSelectionController() {
-    return productivity_launcher_search_view_
-        ->result_selection_controller_for_test();
+    return search_view_->result_selection_controller_for_test();
   }
 
   void OnSearchResultContainerResultsChanged() {
-    productivity_launcher_search_view_->OnSearchResultContainerResultsChanged();
+    search_view_->OnSearchResultContainerResultsChanged();
   }
 
   void SimulateQuery(const std::u16string& query) {
@@ -240,8 +235,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(const std::u16string& trimmed_query,
                     bool initiated_by_user) override {
-    productivity_launcher_search_view_->UpdateForNewSearch(
-        !trimmed_query.empty());
+    search_view_->UpdateForNewSearch(!trimmed_query.empty());
   }
   void AssistantButtonPressed() override {}
   void CloseButtonPressed() override {}
@@ -250,8 +244,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   bool CanSelectSearchResults() override { return true; }
 
   AshColorProvider ash_color_provider_;
-  ProductivityLauncherSearchView* productivity_launcher_search_view_ = nullptr;
-  TestAppListColorProvider color_provider_;  // Needed by AppListView.
+  AppListSearchView* search_view_ = nullptr;
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_ = nullptr;
   AppListView* app_list_view_ = nullptr;

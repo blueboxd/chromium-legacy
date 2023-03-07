@@ -163,7 +163,7 @@ TEST_F(IdleTimeoutPolicyHandlerTest, InvalidActionWrongType) {
   // IdleTimeoutActions is a list, but one of the elements is not even a string.
   SetPolicyValue(policy::key::kIdleTimeout, base::Value(5));
   base::Value::List list;
-  list.Append("close_browsers");
+  list.Append("clear_browsing_history");
   list.Append(34);
   SetPolicyValue(policy::key::kIdleTimeoutActions,
                  base::Value(std::move(list)));
@@ -180,17 +180,19 @@ TEST_F(IdleTimeoutPolicyHandlerTest, InvalidActionWrongType) {
   EXPECT_EQ(errors().size(), 1U);
   EXPECT_EQ(errors().begin()->second.message, expected_error);
 
-  // Prefs should not be set.
+  // Prefs should be set.
   const base::Value* pref_value;
   EXPECT_TRUE(prefs().GetValue(prefs::kIdleTimeout, &pref_value));
   EXPECT_TRUE(prefs().GetValue(prefs::kIdleTimeoutActions, &pref_value));
+  EXPECT_THAT(pref_value->GetList(), testing::ElementsAre(static_cast<int>(
+                                         ActionType::kClearBrowsingHistory)));
 }
 
 TEST_F(IdleTimeoutPolicyHandlerTest, ValidConfiguration) {
   SetPolicyValue(policy::key::kIdleTimeout, base::Value(15));
   base::Value::List list;
-  list.Append("close_browsers");
-  list.Append("show_profile_picker");
+  list.Append("clear_browsing_history");
+  list.Append("clear_download_history");
   SetPolicyValue(policy::key::kIdleTimeoutActions,
                  base::Value(std::move(list)));
 
@@ -208,10 +210,10 @@ TEST_F(IdleTimeoutPolicyHandlerTest, ValidConfiguration) {
   EXPECT_TRUE(prefs().GetValue(prefs::kIdleTimeoutActions, &pref_value));
   ASSERT_THAT(pref_value, testing::NotNull());
   EXPECT_TRUE(pref_value->is_list());
-  EXPECT_THAT(
-      pref_value->GetList(),
-      testing::ElementsAre(static_cast<int>(ActionType::kCloseBrowsers),
-                           static_cast<int>(ActionType::kShowProfilePicker)));
+  EXPECT_THAT(pref_value->GetList(),
+              testing::ElementsAre(
+                  static_cast<int>(ActionType::kClearBrowsingHistory),
+                  static_cast<int>(ActionType::kClearDownloadHistory)));
 }
 
 TEST_F(IdleTimeoutPolicyHandlerTest, OneMinuteMinimum) {
@@ -240,8 +242,8 @@ TEST_F(IdleTimeoutPolicyHandlerTest, ActionNotRecognized) {
   // as a valid option. Recognized actions are applied, but not the others.
   SetPolicyValue(policy::key::kIdleTimeout, base::Value(5));
   base::Value::List list;
-  list.Append("close_browsers");
-  list.Append("show_profile_picker");
+  list.Append("clear_browsing_history");
+  list.Append("clear_download_history");
   list.Append("added_in_future_version_of_chrome");
   SetPolicyValue(policy::key::kIdleTimeoutActions,
                  base::Value(std::move(list)));
@@ -263,10 +265,58 @@ TEST_F(IdleTimeoutPolicyHandlerTest, ActionNotRecognized) {
   EXPECT_TRUE(prefs().GetValue(prefs::kIdleTimeoutActions, &pref_value));
   ASSERT_THAT(pref_value, testing::NotNull());
   EXPECT_TRUE(pref_value->is_list());
-  EXPECT_THAT(
-      pref_value->GetList(),
-      testing::ElementsAre(static_cast<int>(ActionType::kCloseBrowsers),
-                           static_cast<int>(ActionType::kShowProfilePicker)));
+  EXPECT_THAT(pref_value->GetList(),
+              testing::ElementsAre(
+                  static_cast<int>(ActionType::kClearBrowsingHistory),
+                  static_cast<int>(ActionType::kClearDownloadHistory)));
+}
+
+TEST_F(IdleTimeoutPolicyHandlerTest, AllActions) {
+  SetPolicyValue(policy::key::kIdleTimeout, base::Value(15));
+  base::Value::List list;
+#if !BUILDFLAG(IS_ANDROID)
+  list.Append("close_browsers");
+  list.Append("show_profile_picker");
+#endif  // !BUILDFLAG(IS_ANDROID)
+  list.Append("clear_browsing_history");
+  list.Append("clear_download_history");
+  list.Append("clear_cookies_and_other_site_data");
+  list.Append("clear_cached_images_and_files");
+  list.Append("clear_password_signin");
+  list.Append("clear_autofill");
+  list.Append("clear_site_settings");
+  list.Append("clear_hosted_app_data");
+  SetPolicyValue(policy::key::kIdleTimeoutActions,
+                 base::Value(std::move(list)));
+
+  CheckAndApplyPolicySettings();
+
+  // Should have no errors.
+  EXPECT_TRUE(errors().empty());
+
+  // Prefs should be set.
+  const base::Value* pref_value;
+  EXPECT_TRUE(prefs().GetValue(prefs::kIdleTimeout, &pref_value));
+  ASSERT_THAT(pref_value, testing::NotNull());
+  EXPECT_EQ(base::TimeDeltaToValue(base::Minutes(15)), *pref_value);
+
+  EXPECT_TRUE(prefs().GetValue(prefs::kIdleTimeoutActions, &pref_value));
+  ASSERT_THAT(pref_value, testing::NotNull());
+  EXPECT_TRUE(pref_value->is_list());
+  EXPECT_THAT(pref_value->GetList(),
+              testing::ElementsAre(
+#if !BUILDFLAG(IS_ANDROID)
+                  static_cast<int>(ActionType::kCloseBrowsers),
+                  static_cast<int>(ActionType::kShowProfilePicker),
+#endif  // !BUILDFLAG(IS_ANDROID)
+                  static_cast<int>(ActionType::kClearBrowsingHistory),
+                  static_cast<int>(ActionType::kClearDownloadHistory),
+                  static_cast<int>(ActionType::kClearCookiesAndOtherSiteData),
+                  static_cast<int>(ActionType::kClearCachedImagesAndFiles),
+                  static_cast<int>(ActionType::kClearPasswordSignin),
+                  static_cast<int>(ActionType::kClearAutofill),
+                  static_cast<int>(ActionType::kClearSiteSettings),
+                  static_cast<int>(ActionType::kClearHostedAppData)));
 }
 
 }  // namespace enterprise_idle

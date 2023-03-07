@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -105,7 +105,8 @@ class UpdateService : public KeyedService,
   void HandleComponentUpdateFoundEvent(const std::string& extension_id) const;
 
   // Get the extension Omaha attributes sent from update config.
-  base::Value GetExtensionOmahaAttributes(const std::string& extension_id);
+  base::Value::Dict GetExtensionOmahaAttributes(
+      const std::string& extension_id);
 
  private:
   raw_ptr<content::BrowserContext> browser_context_;

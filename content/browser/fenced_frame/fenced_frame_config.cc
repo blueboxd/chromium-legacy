@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/fenced_frame/fenced_frame_config.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -31,7 +31,7 @@ GenerateURNConfigVectorForConfigs(
     // urn:uuid across processes.
     GURL urn_uuid = GenerateUrnUuid();
     auto config_with_urn = config;
-    config_with_urn.urn_ = urn_uuid;
+    config_with_urn.urn_uuid_ = urn_uuid;
     nested_urn_config_pairs.emplace_back(urn_uuid, config_with_urn);
   }
 
@@ -68,19 +68,20 @@ FencedFrameConfig::FencedFrameConfig(const GURL& mapped_url)
                   VisibilityToEmbedder::kOpaque,
                   VisibilityToContent::kTransparent) {}
 
-FencedFrameConfig::FencedFrameConfig(GURL urn, const GURL& mapped_url)
-    : urn_(urn),
+FencedFrameConfig::FencedFrameConfig(const GURL& urn_uuid,
+                                     const GURL& mapped_url)
+    : urn_uuid_(urn_uuid),
       mapped_url_(absl::in_place,
                   mapped_url,
                   VisibilityToEmbedder::kOpaque,
                   VisibilityToContent::kTransparent) {}
 
 FencedFrameConfig::FencedFrameConfig(
-    GURL urn,
+    const GURL& urn_uuid,
     const GURL& mapped_url,
     const SharedStorageBudgetMetadata& shared_storage_budget_metadata,
     const ReportingMetadata& reporting_metadata)
-    : urn_(urn),
+    : urn_uuid_(urn_uuid),
       mapped_url_(absl::in_place,
                   mapped_url,
                   VisibilityToEmbedder::kOpaque,
@@ -89,13 +90,10 @@ FencedFrameConfig::FencedFrameConfig(
                                       shared_storage_budget_metadata,
                                       VisibilityToEmbedder::kOpaque,
                                       VisibilityToContent::kOpaque),
-      // TODO(crbug.com/1381158): Give the reporting metadata
-      // `VisibilityToContent::kOpaque` once it is no longer needed in the
-      // renderer.
       reporting_metadata_(absl::in_place,
                           reporting_metadata,
                           VisibilityToEmbedder::kOpaque,
-                          VisibilityToContent::kTransparent) {}
+                          VisibilityToContent::kOpaque) {}
 
 FencedFrameConfig::FencedFrameConfig(const FencedFrameConfig&) = default;
 FencedFrameConfig::FencedFrameConfig(FencedFrameConfig&&) = default;
@@ -108,8 +106,8 @@ FencedFrameConfig& FencedFrameConfig::operator=(FencedFrameConfig&&) = default;
 blink::FencedFrame::RedactedFencedFrameConfig FencedFrameConfig::RedactFor(
     FencedFrameEntity entity) const {
   blink::FencedFrame::RedactedFencedFrameConfig redacted_config;
-  if (urn_.has_value()) {
-    redacted_config.urn_ = urn_;
+  if (urn_uuid_.has_value()) {
+    redacted_config.urn_uuid_ = urn_uuid_;
   }
 
   RedactProperty(mapped_url_, entity, redacted_config.mapped_url_);
@@ -141,6 +139,10 @@ blink::FencedFrame::RedactedFencedFrameConfig FencedFrameConfig::RedactFor(
   RedactProperty(reporting_metadata_, entity,
                  redacted_config.reporting_metadata_);
 
+  // The mode never needs to be redacted, because it is a function of which API
+  // was called to generate the config, rather than any cross-site data.
+  redacted_config.mode_ = mode_;
+
   return redacted_config;
 }
 
@@ -154,8 +156,7 @@ FencedFrameProperties::FencedFrameProperties()
                        VisibilityToContent::kOpaque) {}
 
 FencedFrameProperties::FencedFrameProperties(const FencedFrameConfig& config)
-    : urn_(config.urn_),
-      mapped_url_(config.mapped_url_),
+    : mapped_url_(config.mapped_url_),
       container_size_(config.container_size_),
       content_size_(config.content_size_),
       deprecated_should_freeze_initial_size_(
@@ -168,7 +169,8 @@ FencedFrameProperties::FencedFrameProperties(const FencedFrameConfig& config)
       partition_nonce_(absl::in_place,
                        base::UnguessableToken::Create(),
                        VisibilityToEmbedder::kOpaque,
-                       VisibilityToContent::kOpaque) {
+                       VisibilityToContent::kOpaque),
+      mode_(config.mode_) {
   if (config.shared_storage_budget_metadata_) {
     shared_storage_budget_metadata_.emplace(
         &config.shared_storage_budget_metadata_->GetValueIgnoringVisibility(),
@@ -197,10 +199,6 @@ FencedFrameProperties& FencedFrameProperties::operator=(
 blink::FencedFrame::RedactedFencedFrameProperties
 FencedFrameProperties::RedactFor(FencedFrameEntity entity) const {
   blink::FencedFrame::RedactedFencedFrameProperties redacted_properties;
-  if (urn_.has_value()) {
-    redacted_properties.urn_ = urn_;
-  }
-
   RedactProperty(mapped_url_, entity, redacted_properties.mapped_url_);
   RedactProperty(container_size_, entity, redacted_properties.container_size_);
   RedactProperty(content_size_, entity, redacted_properties.content_size_);
@@ -244,6 +242,10 @@ FencedFrameProperties::RedactFor(FencedFrameEntity entity) const {
 
   RedactProperty(reporting_metadata_, entity,
                  redacted_properties.reporting_metadata_);
+
+  // The mode never needs to be redacted, because it is a function of which API
+  // was called to generate the config, rather than any cross-site data.
+  redacted_properties.mode_ = mode_;
 
   return redacted_properties;
 }

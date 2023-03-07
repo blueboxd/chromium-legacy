@@ -324,12 +324,12 @@ export class Dictation {
     }
 
     // Try to run the macro.
-    const runMacroResult = macro.runMacro();
+    const runMacroResult = macro.run();
     if (!runMacroResult.isSuccess) {
       this.showMacroExecutionFailed_(macro, transcript);
       return;
     }
-    if (macro.getMacroName() === MacroName.LIST_COMMANDS) {
+    if (macro.getName() === MacroName.LIST_COMMANDS) {
       // ListCommandsMacro opens a new tab, thereby changing the cursor focus
       // and ending the Dictation session.
       return;
@@ -466,15 +466,15 @@ export class Dictation {
   showMacroExecuted_(macro, transcript) {
     MetricsUtils.recordMacroSucceeded(macro);
 
-    if (macro.getMacroName() === MacroName.INPUT_TEXT_VIEW ||
-        macro.getMacroName() === MacroName.NEW_LINE) {
+    if (macro.getName() === MacroName.INPUT_TEXT_VIEW ||
+        macro.getName() === MacroName.NEW_LINE) {
       this.clearInterimText_();
       this.uiController_.setState(
           UIState.STANDBY, {context: HintContext.TEXT_COMMITTED});
       return;
     }
     this.interimText_ = '';
-    const context = macro.getMacroName() === MacroName.SELECT_ALL_TEXT ?
+    const context = macro.getName() === MacroName.SELECT_ALL_TEXT ?
         HintContext.TEXT_SELECTED :
         HintContext.MACRO_SUCCESS;
     this.uiController_.setState(
@@ -531,9 +531,8 @@ export class Dictation {
   /**
    * Used to increase the NO_FOCUSED_IME_MS timeout to reduce the flakiness of
    * Dictation tests on slower builds. For testing purposes only.
-   * @private
    */
-  increaseNoFocusedImeTimeoutForTesting_() {
+  increaseNoFocusedImeTimeoutForTesting() {
     Dictation.Timeouts.NO_FOCUSED_IME_MS = 20 * 1000;
   }
 
@@ -544,7 +543,7 @@ export class Dictation {
    */
   handleRepeat_(macro) {
     let newMacro = macro;
-    if (newMacro.getMacroName() === MacroName.REPEAT && this.prevMacro_) {
+    if (newMacro.getName() === MacroName.REPEAT && this.prevMacro_) {
       // If this is the REPEAT macro, then we actually want the previously
       // executed macro.
       newMacro = this.prevMacro_;
@@ -554,8 +553,8 @@ export class Dictation {
     return newMacro;
   }
 
-  /** @private */
-  disablePumpkinForTesting_() {
+  /** Disables Pumpkin for tests that use regex-based command parsing. */
+  disablePumpkinForTesting() {
     this.speechParser_.disablePumpkinForTesting();
   }
 }

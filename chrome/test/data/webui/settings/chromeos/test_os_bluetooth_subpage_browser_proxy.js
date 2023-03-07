@@ -18,10 +18,16 @@ export class TestOsBluetoothDevicesSubpageBrowserProxy extends
     super([
       'requestFastPairSavedDevices',
       'deleteFastPairSavedDevice',
+      'requestFastPairDeviceSupport',
     ]);
     this.savedDevices = [];
     this.optInStatus = FastPairSavedDevicesOptInStatus.STATUS_OPTED_IN;
+    this.showBluetoothRevampHatsSurveyCount = 0;
   }
+
+  /** @override */
+  requestFastPairDeviceSupport() {}
+
   /** @override */
   requestFastPairSavedDevices() {
     this.methodCalled('requestFastPairSavedDevices');
@@ -38,5 +44,19 @@ export class TestOsBluetoothDevicesSubpageBrowserProxy extends
     // Remove the device from the proxy's device list if it exists,
     this.savedDevices =
         this.savedDevices.filter(device => device.accountKey !== accountKey);
+  }
+
+  /** @override */
+  showBluetoothRevampHatsSurvey() {
+    this.showBluetoothRevampHatsSurveyCount++;
+  }
+
+  /**
+   * Returns the number of times showBluetoothRevampHatsSurvey()
+   * was called.
+   * @return {Number}
+   */
+  getShowBluetoothRevampHatsSurveyCount() {
+    return this.showBluetoothRevampHatsSurveyCount;
   }
 }

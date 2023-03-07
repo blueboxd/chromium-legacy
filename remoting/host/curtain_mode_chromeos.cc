@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/curtain/remote_maintenance_curtain_view.h"
 #include "ash/curtain/security_curtain_controller.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +14,7 @@
 #include "remoting/host/chromeos/ash_proxy.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/views/view.h"
 
 namespace remoting {
 
@@ -26,6 +28,11 @@ FilterResult OnlyEventsFromSource(ui::EventDeviceId source_device_id,
              ? FilterResult::kKeepEvent
              : FilterResult::kSuppressEvent;
 }
+
+std::unique_ptr<views::View> CreateCurtainOverlay() {
+  return std::make_unique<ash::curtain::RemoteMaintenanceCurtainView>();
+}
+
 }  // namespace
 
 // static
@@ -52,9 +59,11 @@ CurtainModeChromeOs::Core::~Core() {
 }
 
 void CurtainModeChromeOs::Core::Activate() {
-  ash::curtain::SecurityCurtainController::InitParams params;
-  params.event_filter =
-      base::BindRepeating(OnlyEventsFromSource, ui::ED_REMOTE_INPUT_DEVICE);
+  ash::curtain::SecurityCurtainController::InitParams params{
+      /*event_filter=*/base::BindRepeating(OnlyEventsFromSource,
+                                           ui::ED_REMOTE_INPUT_DEVICE),
+      /*curtain_factory=*/base::BindRepeating(CreateCurtainOverlay)};
+
   security_curtain_controller().Enable(params);
 }
 

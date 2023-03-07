@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP-beiðnir mistókust</translation>
 <translation id="1947737735496445907">Prentað</translation>
 <translation id="1951012854035635156">Aðstoðarmaður</translation>
+<translation id="1962550982027027473">Sjálfgefinn aðgangsstaður er nauðsynlegur</translation>
 <translation id="1977994649430373166">Google prófílmynd</translation>
 <translation id="1979103255016296513">Breyting á aðgangsorði komin fram yfir tíma</translation>
 <translation id="1999615961760456652">Innskráningarsíða</translation>
@@ -322,7 +323,7 @@
 <translation id="4117637339509843559">Dökk stilling</translation>
 <translation id="4131410914670010031">Svarthvítt</translation>
 <translation id="4145784616224233563">HTTP-eldveggur</translation>
-<translation id="4147897805161313378">Google-myndir</translation>
+<translation id="4147897805161313378">Google myndir</translation>
 <translation id="4155551848414053977">Gakktu úr skugga um að kveikt sé á skannanum og hann tiltækur í gegnum nettengingu eða beintengingu</translation>
 <translation id="4159784952369912983">Purpurarauður</translation>
 <translation id="4170180284036919717">Taka mynd</translation>
@@ -446,7 +447,7 @@
 <translation id="5166918508782100047">Stillingar skjótra svara</translation>
 <translation id="5168185087976003268">Ástand rafhlöðu</translation>
 <translation id="5170568018924773124">Sýna í möppu</translation>
-<translation id="5190187232518914472">Upplifðu uppáhaldsstundirnar aftur. Opnaðu <ph name="LINK_BEGIN" />Google-myndir<ph name="LINK_END" /> til að bæta við eða breyta albúmum.</translation>
+<translation id="5190187232518914472">Upplifðu uppáhaldsstundirnar aftur. Opnaðu <ph name="LINK_BEGIN" />Google myndir<ph name="LINK_END" /> til að bæta við eða breyta albúmum.</translation>
 <translation id="5212543919916444558">Ég finn ekkert á skjánum sem ég get aðstoðað þig með.
 Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
@@ -599,7 +600,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="649050271426829538">Stöðvað – pappírsstífla</translation>
 <translation id="6494974875566443634">Sérsnið</translation>
 <translation id="6500818810472529210">Sjá niðurstöður í Google leit</translation>
-<translation id="650266656685499220">Farðu í Google-myndir til að búa til möppur</translation>
+<translation id="650266656685499220">Farðu í Google myndir til að búa til möppur</translation>
 <translation id="6516990319416533844">Til að prófa hleðsluhraða rafhlöðunnar skaltu láta rafhleðsluna minnka í stutta stund</translation>
 <translation id="6517239166834772319">Kanna</translation>
 <translation id="6527081081771465939">Óþekkt Wi-Fi öryggisregla</translation>
@@ -635,6 +636,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="6791471867139427246">litur lyklaborðsljóss</translation>
 <translation id="680983167891198932">Lykill</translation>
 <translation id="6816797338148849397">Tiltækar upplýsingar sem tengjast vali þínu. Notaðu ör upp-lykilinn til að opna.</translation>
+<translation id="6838167112108853532">Hvorki er hægt að slökkva á né fjarlægja þennan aðgangsstað. Gakktu úr skugga um að slökkt sé á tengdum aðgangsstöðum sem er kveikt á eða þeir fjarlægðir.</translation>
 <translation id="6853312040151791195">Afhleðsluhraði</translation>
 <translation id="6889786074662672253">Ekki skal taka þetta ytra tæki úr sambandi eða slökkva á tölvunni meðan á endurræsingu stendur. Þú getur minnkað þennan glugga. Þetta gæti tekið nokkrar mínútur og óvíst er að ytra tækið virki á meðan.</translation>
 <translation id="6905724422583748843">Til baka í <ph name="PAGE_NAME" /></translation>
@@ -724,6 +726,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="7769672763586021400">Auðkenni gerðar</translation>
 <translation id="7778717409420828014">Ábendingin þín hjálpar okkur að bæta Chromebook-upplifunina og verður yfirfarin af teyminu okkar. Vegna fjölda tilkynninga höfum við ekki tök á því að svara.</translation>
 <translation id="7784116172884276937">Engir DNS-þjónar eru uppsettir</translation>
+<translation id="7791543448312431591">Bæta við</translation>
 <translation id="779591286616261875">Senda nýja tilkynningu</translation>
 <translation id="7799817062559422778">Ljós stilling</translation>
 <translation id="780301667611848630">Nei, takk</translation>

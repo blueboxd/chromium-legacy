@@ -4,7 +4,7 @@
 
 #include "content/browser/network_context_client_base_impl.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
@@ -139,11 +139,13 @@ void NetworkContextClientBase::OnGenerateHttpNegotiateAuthToken(
 void NetworkContextClientBase::OnTrustAnchorUsed() {}
 #endif
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContextClientBase::OnCanSendSCTAuditingReport(
     OnCanSendSCTAuditingReportCallback callback) {
   std::move(callback).Run(false);
 }
 
 void NetworkContextClientBase::OnNewSCTAuditingReportSent() {}
+#endif
 
 }  // namespace content

@@ -6,9 +6,10 @@
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
-GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "ui/accessibility/accessibility_features.h"');
+GEN('#include "components/user_notes/user_notes_features.h"');
+GEN('#include "components/power_bookmarks/core/power_bookmark_features.h"');
 
 class SidePanelBrowserTest extends PolymerTest {
   /** @override */
@@ -17,26 +18,10 @@ class SidePanelBrowserTest extends PolymerTest {
   }
 }
 
-var SidePanelAppTest = class extends SidePanelBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/side_panel_app_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {disabled: ['features::kUnifiedSidePanel']};
-  }
-};
-
-TEST_F('SidePanelAppTest', 'All', function() {
-  mocha.run();
-});
-
 var SidePanelBookmarksListTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/bookmarks/bookmarks_list_test.js';
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/bookmarks_list_test.js';
   }
 };
 
@@ -47,11 +32,22 @@ TEST_F('SidePanelBookmarksListTest', 'All', function() {
 var SidePanelPowerBookmarksListTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/bookmarks/power_bookmarks_list_test.js';
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/power_bookmarks_list_test.js';
   }
 };
 
 TEST_F('SidePanelPowerBookmarksListTest', 'All', function() {
+  mocha.run();
+});
+
+var SidePanelPowerBookmarksServiceTest = class extends SidePanelBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/power_bookmarks_service_test.js';
+  }
+};
+
+TEST_F('SidePanelPowerBookmarksServiceTest', 'All', function() {
   mocha.run();
 });
 
@@ -65,7 +61,7 @@ GEN('#endif');
 var ShoppingListTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/bookmarks/commerce/shopping_list_test.js';
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/commerce/shopping_list_test.js';
   }
 };
 
@@ -76,7 +72,7 @@ TEST_F('ShoppingListTest', 'MAYBE_All', function() {
 var SidePanelBookmarkFolderTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/bookmarks/bookmark_folder_test.js';
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/bookmark_folder_test.js';
   }
 };
 
@@ -88,7 +84,7 @@ TEST_F('SidePanelBookmarkFolderTest', 'All', function() {
 var SidePanelBookmarksDragManagerTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/bookmarks/bookmarks_drag_manager_test.js';
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/bookmarks_drag_manager_test.js';
   }
 };
 
@@ -110,7 +106,7 @@ TEST_F('ReadingListAppTest', 'All', function() {
 var ReadAnythingAppTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later.top-chrome/test_loader.html?module=side_panel/read_anything/read_anything_app_test.js';
+    return 'chrome://read-anything-side-panel.top-chrome/test_loader.html?module=side_panel/read_anything/read_anything_app_test.js';
   }
 
   /** @override */
@@ -120,5 +116,24 @@ var ReadAnythingAppTest = class extends SidePanelBrowserTest {
 };
 
 TEST_F('ReadAnythingAppTest', 'All', function() {
+  mocha.run();
+});
+
+var UserNotesAppTest = class extends SidePanelBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://user-notes-side-panel.top-chrome/test_loader.html?module=side_panel/user_notes/app_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled:
+          ['user_notes::kUserNotes', 'power_bookmarks::kPowerBookmarkBackend']
+    };
+  }
+};
+
+TEST_F('UserNotesAppTest', 'All', function() {
   mocha.run();
 });

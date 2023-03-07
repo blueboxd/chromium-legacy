@@ -7,10 +7,8 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
@@ -20,7 +18,6 @@
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -29,6 +26,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,14 +41,6 @@ constexpr char kApsStateManager[] = "apps.app_preload_service.state_manager";
 
 const base::Value::Dict& GetStateManager(Profile* profile) {
   return profile->GetPrefs()->GetDict(kApsStateManager);
-}
-
-void FillWebExtras(
-    apps::proto::AppProvisioningListAppsResponse_WebExtras* extras,
-    const std::string& manifest_id,
-    const std::string& manifest_url) {
-  extras->set_manifest_id(manifest_id);
-  extras->set_manifest_url(manifest_url);
 }
 
 }  // namespace
@@ -92,6 +82,7 @@ class AppPreloadServiceTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   user_manager::ScopedUserManager scoped_user_manager_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
 TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
@@ -191,66 +182,6 @@ TEST_F(AppPreloadServiceTest, FirstLoginExistingUserNotStarted) {
   EXPECT_FALSE(flow_started.has_value());
 }
 
-// TODO(b/261632289): temporarily disabled while refactoring is in progress.
-TEST_F(AppPreloadServiceTest, DISABLED_WebAppInstall) {
-  proto::AppProvisioningListAppsResponse response;
-  auto* app = response.add_apps_to_install();
-  app->set_name("Peanut Types");
-  app->set_platform(proto::AppProvisioningListAppsResponse::PLATFORM_WEB);
-  app->set_install_reason(
-      proto::AppProvisioningListAppsResponse::INSTALL_REASON_OEM);
-  FillWebExtras(app->mutable_web_extras(), "https://peanuttypes.com/app",
-                "https://meltingpot.googleusercontent.com/manifest.json");
-
-  url_loader_factory_.AddResponse(
-      AppPreloadServerConnector::GetServerUrl().spec(),
-      response.SerializeAsString());
-
-  base::test::TestFuture<bool> result;
-  auto* service = AppPreloadService::Get(GetProfile());
-  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
-  ASSERT_TRUE(result.Get());
-
-  auto app_id = web_app::GenerateAppId(absl::nullopt,
-                                       GURL("https://peanuttypes.com/app"));
-  bool found =
-      AppServiceProxyFactory::GetForProfile(GetProfile())
-          ->AppRegistryCache()
-          .ForOneApp(app_id, [](const AppUpdate& update) {
-            EXPECT_EQ(update.Name(), "Peanut Types");
-            EXPECT_EQ(update.InstallReason(), InstallReason::kOem);
-            EXPECT_EQ(update.PublisherId(), "https://peanuttypes.com/app");
-          });
-  ASSERT_TRUE(found);
-}
-
-TEST_F(AppPreloadServiceTest, IgnoreDefaultAppInstall) {
-  proto::AppProvisioningListAppsResponse response;
-  auto* app = response.add_apps_to_install();
-  app->set_name("Peanut Types");
-  app->set_platform(proto::AppProvisioningListAppsResponse::PLATFORM_WEB);
-  app->set_install_reason(
-      proto::AppProvisioningListAppsResponse::INSTALL_REASON_DEFAULT);
-  FillWebExtras(app->mutable_web_extras(), "https://peanuttypes.com/app",
-                "https://meltingpot.googleusercontent.com/manifest.json");
-
-  url_loader_factory_.AddResponse(
-      AppPreloadServerConnector::GetServerUrl().spec(),
-      response.SerializeAsString());
-
-  base::test::TestFuture<bool> result;
-  auto* service = AppPreloadService::Get(GetProfile());
-  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
-  ASSERT_TRUE(result.Get());
-
-  auto app_id = web_app::GenerateAppId(absl::nullopt,
-                                       GURL("https://peanuttypes.com/app"));
-  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
-                   ->AppRegistryCache()
-                   .ForOneApp(app_id, [](const AppUpdate&) {});
-  ASSERT_FALSE(found);
-}
-
 TEST_F(AppPreloadServiceTest, IgnoreAndroidAppInstall) {
   constexpr char kPackageName[] = "com.peanuttypes";
   constexpr char kActivityName[] = "com.peanuttypes.PeanutTypesActivity";
@@ -258,11 +189,8 @@ TEST_F(AppPreloadServiceTest, IgnoreAndroidAppInstall) {
   proto::AppProvisioningListAppsResponse response;
   auto* app = response.add_apps_to_install();
   app->set_name("Peanut Types");
-  app->set_platform(proto::AppProvisioningListAppsResponse::PLATFORM_ANDROID);
   app->set_install_reason(
       proto::AppProvisioningListAppsResponse::INSTALL_REASON_OEM);
-  app->mutable_android_extras()->set_package_name(kPackageName);
-  app->mutable_android_extras()->set_activity_name(kActivityName);
 
   url_loader_factory_.AddResponse(
       AppPreloadServerConnector::GetServerUrl().spec(),
@@ -280,42 +208,6 @@ TEST_F(AppPreloadServiceTest, IgnoreAndroidAppInstall) {
                    ->AppRegistryCache()
                    .ForOneApp(app_id, [](const AppUpdate&) {});
   ASSERT_FALSE(found);
-}
-
-// TODO(b/261632289): temporarily disabled while refactoring is in progress.
-TEST_F(AppPreloadServiceTest, DISABLED_InstallOverUserApp) {
-  constexpr char kManifestId[] = "https://www.example.com/";
-  constexpr char kManifestUrl[] =
-      "https://meltingpot.googleusercontent.com/manifest.json";
-  constexpr char kUserAppName[] = "User Installed App";
-
-  auto app_id = web_app::test::InstallDummyWebApp(GetProfile(), kUserAppName,
-                                                  GURL(kManifestId));
-
-  proto::AppProvisioningListAppsResponse response;
-  auto* app = response.add_apps_to_install();
-
-  app->set_name("OEM Installed app");
-  app->set_platform(proto::AppProvisioningListAppsResponse::PLATFORM_WEB);
-  app->set_install_reason(
-      proto::AppProvisioningListAppsResponse::INSTALL_REASON_OEM);
-  FillWebExtras(app->mutable_web_extras(), kManifestId, kManifestUrl);
-
-  url_loader_factory_.AddResponse(
-      AppPreloadServerConnector::GetServerUrl().spec(),
-      response.SerializeAsString());
-
-  base::test::TestFuture<bool> result;
-  auto* service = AppPreloadService::Get(GetProfile());
-  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
-  ASSERT_TRUE(result.Get());
-
-  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
-                   ->AppRegistryCache()
-                   .ForOneApp(app_id, [](const AppUpdate& update) {
-                     EXPECT_EQ(update.InstallReason(), InstallReason::kOem);
-                   });
-  ASSERT_TRUE(found);
 }
 
 TEST_F(AppPreloadServiceTest, FirstLoginStartedNotCompletedAfterServerError) {

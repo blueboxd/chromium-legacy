@@ -48,6 +48,7 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Simple) {
   this->RunTest("target-and-intermediate/main.test");
   this->RunTest("target-and-intermediate/ta-with-expiration.test");
   this->RunTest("target-and-intermediate/ta-with-constraints.test");
+  this->RunTest("target-and-intermediate/trusted_leaf-and-trust_anchor.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, BasicConstraintsCa) {
@@ -56,8 +57,20 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, BasicConstraintsCa) {
   this->RunTest("intermediate-basic-constraints-not-critical/main.test");
   this->RunTest("root-lacks-basic-constraints/main.test");
   this->RunTest("root-lacks-basic-constraints/ta-with-constraints.test");
+  this->RunTest(
+      "root-lacks-basic-constraints/ta-with-require-basic-constraints.test");
+  this->RunTest(
+      "root-lacks-basic-constraints/"
+      "ta-with-constraints-require-basic-constraints.test");
   this->RunTest("root-basic-constraints-ca-false/main.test");
   this->RunTest("root-basic-constraints-ca-false/ta-with-constraints.test");
+
+  this->RunTest("target-has-ca-basic-constraints/main.test");
+  this->RunTest("target-has-ca-basic-constraints/strict.test");
+  this->RunTest(
+      "target-has-ca-basic-constraints/target_only-trusted_leaf.test");
+  this->RunTest(
+      "target-has-ca-basic-constraints/target_only-trusted_leaf-strict.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, BasicConstraintsPathlen) {
@@ -72,6 +85,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, UnknownExtension) {
   this->RunTest("intermediate-unknown-critical-extension/main.test");
   this->RunTest("intermediate-unknown-non-critical-extension/main.test");
   this->RunTest("target-unknown-critical-extension/main.test");
+  this->RunTest(
+      "target-unknown-critical-extension/target_only-trusted_leaf.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, WeakSignature) {
@@ -92,6 +107,7 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, LastCertificateNotTrusted) {
   this->RunTest("target-and-intermediate/distrusted-root.test");
   this->RunTest("target-and-intermediate/distrusted-root-expired.test");
   this->RunTest("target-and-intermediate/unspecified-trust-root.test");
+  this->RunTest("target-and-intermediate/trusted_leaf-root.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, WeakPublicKey) {
@@ -113,6 +129,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Expired) {
   this->RunTest("expired-root/not-after.test");
   this->RunTest("expired-root/not-after-ta-with-expiration.test");
   this->RunTest("expired-root/not-after-ta-with-constraints.test");
+  this->RunTest(
+      "expired-root/not-after-ta-with-expiration-and-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetNotEndEntity) {
@@ -134,6 +152,9 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyUsage) {
   this->RunTest("target-serverauth-various-keyusages/ec-digitalSignature.test");
   this->RunTest("target-serverauth-various-keyusages/ec-keyAgreement.test");
   this->RunTest("target-serverauth-various-keyusages/ec-keyEncipherment.test");
+
+  this->RunTest("root-lacks-keycertsign-key-usage/main.test");
+  this->RunTest("root-lacks-keycertsign-key-usage/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExtendedKeyUsage) {
@@ -170,6 +191,9 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExtendedKeyUsage) {
   this->RunTest("root-eku-clientauth/serverauth.test");
   this->RunTest("root-eku-clientauth/serverauth-strict.test");
   this->RunTest("root-eku-clientauth/serverauth-ta-with-constraints.test");
+  this->RunTest("root-eku-clientauth/serverauth-ta-with-expiration.test");
+  this->RunTest(
+      "root-eku-clientauth/serverauth-ta-with-expiration-and-constraints.test");
   this->RunTest(
       "root-eku-clientauth/serverauth-ta-with-constraints-strict.test");
   this->RunTest("intermediate-eku-server-gated-crypto/sha1-eku-any.test");
@@ -213,6 +237,37 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyRollover) {
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Policies) {
   this->RunTest("unknown-critical-policy-qualifier/main.test");
   this->RunTest("unknown-non-critical-policy-qualifier/main.test");
+
+  this->RunTest("policies-ok/main.test");
+  this->RunTest("policies-ok/ta-with-constraints.test");
+
+  this->RunTest("policies-on-root-ok/main.test");
+  this->RunTest("policies-on-root-ok/ta-with-constraints.test");
+  this->RunTest("policies-on-root-wrong/main.test");
+  this->RunTest("policies-on-root-wrong/ta-with-constraints.test");
+
+  this->RunTest("policies-required-by-root-ok/main.test");
+  this->RunTest("policies-required-by-root-ok/ta-with-constraints.test");
+  this->RunTest("policies-required-by-root-fail/main.test");
+  this->RunTest("policies-required-by-root-fail/ta-with-constraints.test");
+
+  this->RunTest("policies-inhibit-mapping-by-root-ok/main.test");
+  this->RunTest("policies-inhibit-mapping-by-root-ok/ta-with-constraints.test");
+  this->RunTest("policies-inhibit-mapping-by-root-fail/main.test");
+  this->RunTest(
+      "policies-inhibit-mapping-by-root-fail/ta-with-constraints.test");
+
+  this->RunTest("policy-mappings-on-root-ok/main.test");
+  this->RunTest("policy-mappings-on-root-ok/ta-with-constraints.test");
+  this->RunTest("policy-mappings-on-root-fail/main.test");
+  this->RunTest("policy-mappings-on-root-fail/ta-with-constraints.test");
+
+  this->RunTest("policies-inhibit-anypolicy-by-root-ok/main.test");
+  this->RunTest(
+      "policies-inhibit-anypolicy-by-root-ok/ta-with-constraints.test");
+  this->RunTest("policies-inhibit-anypolicy-by-root-fail/main.test");
+  this->RunTest(
+      "policies-inhibit-anypolicy-by-root-fail/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ManyNames) {
@@ -227,6 +282,33 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ManyNames) {
   this->RunTest("many-names/toomany-ips-permitted.test");
   this->RunTest("many-names/toomany-dirnames-excluded.test");
   this->RunTest("many-names/toomany-dirnames-permitted.test");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetOnly) {
+  this->RunTest("target-only/trusted_anchor.test");
+  this->RunTest("target-only/trusted_leaf-and-trust_anchor.test");
+  this->RunTest("target-only/trusted_leaf.test");
+  this->RunTest("target-only/trusted_leaf_require_self_signed.test");
+  this->RunTest("target-only/trusted_leaf-not_after.test");
+  this->RunTest("target-only/trusted_leaf-wrong_eku.test");
+
+  this->RunTest("target-selfissued/trusted_anchor.test");
+  this->RunTest("target-selfissued/trusted_leaf-and-trust_anchor.test");
+  this->RunTest("target-selfissued/trusted_leaf.test");
+  this->RunTest("target-selfissued/trusted_leaf_require_self_signed.test");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetSelfSigned) {
+  // Note that there is not a test here of target-selfsigned with
+  // TRUSTED_ANCHOR, since it will have different results when run under
+  // verify_certificate_chain_unittest.cc and
+  // path_builder_verify_certificate_chain_unittest.cc
+
+  this->RunTest("target-selfsigned/trusted_leaf-and-trust_anchor.test");
+  this->RunTest("target-selfsigned/trusted_leaf.test");
+  this->RunTest("target-selfsigned/trusted_leaf_require_self_signed.test");
+  this->RunTest("target-selfsigned/trusted_leaf-not_after.test");
+  this->RunTest("target-selfsigned/trusted_leaf-wrong_eku.test");
 }
 
 // TODO(eroman): Add test that invalid validity dates where the day or month
@@ -250,7 +332,9 @@ REGISTER_TYPED_TEST_SUITE_P(VerifyCertificateChainSingleRootTest,
                             TrustAnchorNotSelfSigned,
                             KeyRollover,
                             Policies,
-                            ManyNames);
+                            ManyNames,
+                            TargetOnly,
+                            TargetSelfSigned);
 
 }  // namespace net
 

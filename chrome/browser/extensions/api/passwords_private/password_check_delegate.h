@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -60,6 +60,11 @@ class PasswordCheckDelegate
   // present in the password store.
   // TODO:(crbug.com/1350947) - Rename to GetInsecureCredentialsUiEntry.
   std::vector<api::passwords_private::PasswordUiEntry> GetInsecureCredentials();
+
+  // Returns a list of vectors. Each vector contains all credentials that share
+  // the same password.
+  std::vector<api::passwords_private::PasswordUiEntryList>
+  GetCredentialsWithReusedPassword();
 
   // Attempts to mute `credential` from the password store. Returns whether
   // the mute succeeded.

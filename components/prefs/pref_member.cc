@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/task/sequenced_task_runner.h"
@@ -218,11 +218,11 @@ bool PrefMember<base::FilePath>::Internal::UpdateValueInternal(
 template <>
 void PrefMember<std::vector<std::string> >::UpdatePref(
     const std::vector<std::string>& value) {
-  base::ListValue list_value;
+  base::Value::List list_value;
   for (const std::string& val : value)
     list_value.Append(val);
 
-  prefs()->Set(pref_name(), list_value);
+  prefs()->SetList(pref_name(), std::move(list_value));
 }
 
 template <>

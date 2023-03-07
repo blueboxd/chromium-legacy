@@ -4,15 +4,16 @@
 
 #include <memory>
 
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
@@ -58,6 +59,7 @@
 #include "components/version_info/channel.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test.h"
@@ -83,7 +85,6 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
-#include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/switches.h"
@@ -366,6 +367,28 @@ class ExtensionPolicyTest : public ExtensionPolicyTestBase {
 
  private:
   web_app::OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
+};
+
+// Allows tests to wait for renderer process creation.
+class WindowedProcessCreationObserver
+    : public content::RenderProcessHostCreationObserver {
+ public:
+  void Wait() {
+    if (!seen_) {
+      run_loop_.Run();
+    }
+    EXPECT_TRUE(seen_);
+  }
+
+  // content::RenderProcessHostCreationObserver:
+  void OnRenderProcessHostCreated(content::RenderProcessHost* host) override {
+    seen_ = true;
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  bool seen_ = false;
 };
 
 }  // namespace
@@ -1029,9 +1052,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   const std::string old_version_number =
       registry->enabled_extensions().GetByID(kGoodCrxId)->version().GetString();
 
-  content::WindowedNotificationObserver new_process_observer(
-      content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-      content::NotificationService::AllSources());
+  WindowedProcessCreationObserver new_process_observer;
 
   // Updating the force-installed extension.
   extensions::ExtensionUpdater* updater = service->updater();
@@ -1178,17 +1199,15 @@ class ExtensionPinningTest : public extensions::ExtensionBrowserTest {
     GURL update_url = embedded_test_server()->GetURL(update_url_suffix);
 
     PolicyMap policies;
-    base::Value dict(base::Value::Type::DICTIONARY),
-        key_dict(base::Value::Type::DICTIONARY);
-    key_dict.SetStringKey(extensions::schema_constants::kInstallationMode,
-                          extensions::schema_constants::kForceInstalled);
-    key_dict.SetStringKey(extensions::schema_constants::kUpdateUrl,
-                          update_url.spec());
-    key_dict.SetBoolKey(extensions::schema_constants::kOverrideUpdateUrl, true);
-    dict.SetKey(id, std::move(key_dict));
+    base::Value::Dict dict, key_dict;
+    key_dict.Set(extensions::schema_constants::kInstallationMode,
+                 extensions::schema_constants::kForceInstalled);
+    key_dict.Set(extensions::schema_constants::kUpdateUrl, update_url.spec());
+    key_dict.Set(extensions::schema_constants::kOverrideUpdateUrl, true);
+    dict.Set(id, std::move(key_dict));
     policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
-                 nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::Value(std::move(dict)), nullptr);
     provider_.UpdateChromePolicy(policies);
   }
 
@@ -1718,7 +1737,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
   extension_service()->updater()->SetBackoffPolicyForTesting(
-      &kDefaultBackOffPolicyForTesting);
+      kDefaultBackOffPolicyForTesting);
 
   base::FilePath extension_path(ui_test_utils::GetTestFilePath(
       base::FilePath(kTestExtensionsDir), base::FilePath(kGoodV1CrxName)));
@@ -1774,7 +1793,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelistOffline) {
         }));
   }
   extension_service()->updater()->SetBackoffPolicyForTesting(
-      &kDefaultBackOffPolicyForTesting);
+      kDefaultBackOffPolicyForTesting);
 
   base::FilePath extension_path(ui_test_utils::GetTestFilePath(
       base::FilePath(kTestExtensionsDir), base::FilePath(kGoodV1CrxName)));
@@ -2229,22 +2248,20 @@ class WebAppInstallForceListPolicyTest : public ExtensionPolicyTest {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     policy_app_url_ = embedded_test_server()->GetURL(test_page_);
-    base::Value url(policy_app_url_.spec());
-    base::Value launch_container("window");
 
-    base::Value item(base::Value::Type::DICTIONARY);
-    item.SetKey("url", std::move(url));
-    item.SetKey("default_launch_container", std::move(launch_container));
+    base::Value::Dict item;
+    item.Set("url", policy_app_url_.spec());
+    item.Set("default_launch_container", "window");
     if (fallback_app_name_.has_value()) {
-      base::Value fallback_app_name(fallback_app_name_.value());
-      item.SetKey("fallback_app_name", std::move(fallback_app_name));
+      item.Set("fallback_app_name", fallback_app_name_.value());
     }
 
-    base::Value list(base::Value::Type::LIST);
+    base::Value::List list;
     list.Append(std::move(item));
 
     PolicyMap policies;
-    SetPolicy(&policies, key::kWebAppInstallForceList, std::move(list));
+    SetPolicy(&policies, key::kWebAppInstallForceList,
+              base::Value(std::move(list)));
     provider_.UpdateChromePolicy(policies);
   }
 
@@ -2666,6 +2683,11 @@ class MixinBasedExtensionPolicyTest
     extensions::MixinBasedExtensionApiTest::SetUpCommandLine(command_line);
   }
 
+  void AddScreenplayTag() {
+    base::AddTagToTestResult("feature_id",
+                             "screenplay-3c0007b0-8082-4b7d-bdeb-675a4dc1bbb4");
+  }
+
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
 
  private:
@@ -2677,6 +2699,7 @@ class MixinBasedExtensionPolicyTest
 // will not affect incognito profile.
 IN_PROC_BROWSER_TEST_F(MixinBasedExtensionPolicyTest,
                        ForcedProxyExtensionHasNoEffectInIncognitoMode) {
+  AddScreenplayTag();
 #if BUILDFLAG(IS_WIN)
   // Mark as enterprise managed.
   base::win::ScopedDomainStateForTesting scoped_domain(true);
@@ -2703,17 +2726,13 @@ IN_PROC_BROWSER_TEST_F(MixinBasedExtensionPolicyTest,
     EXPECT_EQ(proxy_mode, "system");
   }
 
-  // Force load extension from source dir and get back extension_id.
+  // Force load extension from the source dir and wait until message "ready"
+  // is received.
   // As PEM file is provided, we are expecting same extension ID always.
-  ExtensionTestMessageListener ready_listener("ready");
-  ready_listener.set_extension_id(kProxySettingExtensionId);
   EXPECT_TRUE(force_mixin()->ForceInstallFromSourceDir(
       GetTestDataDir().AppendASCII(kProxySettingExtensionExtensionPath),
       GetTestDataDir().AppendASCII(kProxySettingExtensionPemPath),
-      ExtensionForceInstallMixin::WaitMode::kLoad, nullptr));
-
-  // Waiting for JS execution after the extension is loaded.
-  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+      ExtensionForceInstallMixin::WaitMode::kReadyMessageReceived));
 
   // Verify extension is installed and enabled.
   ASSERT_TRUE(force_mixin()->GetInstalledExtension(kProxySettingExtensionId));

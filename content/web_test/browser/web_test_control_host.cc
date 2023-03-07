@@ -18,11 +18,11 @@
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -32,6 +32,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
@@ -818,20 +819,9 @@ void WebTestControlHost::InitiateCaptureDump(
 
   if (capture_pixels) {
     waiting_for_pixel_results_ = true;
-    auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
-    // If we're running in threaded mode, then the frames will be produced via a
-    // scheduler elsewhere, all we need to do is to ensure that the surface is
-    // synchronized before we copy from it. In single threaded mode, we have to
-    // force each renderer to produce a frame.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableThreadedCompositing)) {
-      rwhv->EnsureSurfaceSynchronizedForWebTest();
-      EnqueueSurfaceCopyRequest();
-    } else {
-      CompositeAllFramesThen(
-          base::BindOnce(&WebTestControlHost::EnqueueSurfaceCopyRequest,
-                         weak_factory_.GetWeakPtr()));
-    }
+    CompositeAllFramesThen(
+        base::BindOnce(&WebTestControlHost::EnqueueSurfaceCopyRequest,
+                       weak_factory_.GetWeakPtr()));
   }
 
   // Try to report results now, if we aren't waiting for anything.
@@ -1467,6 +1457,8 @@ void WebTestControlHost::SetPermission(const std::string& name,
     type = blink::PermissionType::NFC;
   } else if (name == "storage-access") {
     type = blink::PermissionType::STORAGE_ACCESS_GRANT;
+  } else if (name == "top-level-storage-access") {
+    type = blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS;
   } else {
     NOTREACHED();
     type = blink::PermissionType::NOTIFICATIONS;

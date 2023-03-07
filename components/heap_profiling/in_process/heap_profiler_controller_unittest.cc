@@ -9,10 +9,10 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/enum_set.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/notreached.h"
@@ -43,6 +43,7 @@ namespace {
 using ProcessType = metrics::CallStackProfileParams::Process;
 using ProcessTypeSet =
     base::EnumSet<ProcessType, ProcessType::kUnknown, ProcessType::kMax>;
+using base::allocator::dispatcher::AllocationSubsystem;
 
 constexpr size_t kSamplingRate = 1024;
 constexpr size_t kAllocationSize = 42 * kSamplingRate;
@@ -234,8 +235,7 @@ class HeapProfilerControllerTest : public ::testing::Test {
   void AddOneSampleAndWait() {
     auto* sampler = base::PoissonAllocationSampler::Get();
     sampler->RecordAlloc(reinterpret_cast<void*>(0x1337), kAllocationSize,
-                         base::PoissonAllocationSampler::kManualForTesting,
-                         nullptr);
+                         AllocationSubsystem::kManualForTesting, nullptr);
     // Advance several days to be sure the sample isn't scheduled right on the
     // boundary of the fast-forward.
     task_environment_.FastForwardBy(base::Days(2));
@@ -335,11 +335,9 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
 
   auto* sampler = base::PoissonAllocationSampler::Get();
   sampler->RecordAlloc(reinterpret_cast<void*>(0x1337), kAllocationSize,
-                       base::PoissonAllocationSampler::kManualForTesting,
-                       nullptr);
+                       AllocationSubsystem::kManualForTesting, nullptr);
   sampler->RecordAlloc(reinterpret_cast<void*>(0x7331), kAllocationSize,
-                       base::PoissonAllocationSampler::kManualForTesting,
-                       nullptr);
+                       AllocationSubsystem::kManualForTesting, nullptr);
 
   // The profiler should continue to collect snapshots as long as this memory is
   // allocated. If not the test will time out.

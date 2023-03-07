@@ -11,7 +11,6 @@
 #include <lib/sys/cpp/service_directory.h>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -20,11 +19,11 @@
 #include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/startup_context.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "fuchsia_web/runners/buildflags.h"
 #include "fuchsia_web/runners/common/web_component.h"
-#include "fuchsia_web/webinstance_host/web_instance_host_v1.h"
 #include "url/gurl.h"
 
 namespace {
@@ -53,17 +52,19 @@ WebContentRunner::WebInstanceConfig&
 WebContentRunner::WebInstanceConfig::operator=(WebInstanceConfig&&) = default;
 
 WebContentRunner::WebContentRunner(
-    WebInstanceHostV1& web_instance_host,
+    CreateWebInstanceAndContextCallback create_web_instance_callback,
     GetWebInstanceConfigCallback get_web_instance_config_callback)
-    : web_instance_host_(web_instance_host),
+    : create_web_instance_callback_(std::move(create_web_instance_callback)),
       get_web_instance_config_callback_(
           std::move(get_web_instance_config_callback)) {
+  DCHECK(create_web_instance_callback_);
   DCHECK(get_web_instance_config_callback_);
 }
 
-WebContentRunner::WebContentRunner(WebInstanceHostV1& web_instance_host,
-                                   WebInstanceConfig web_instance_config)
-    : web_instance_host_(web_instance_host) {
+WebContentRunner::WebContentRunner(
+    CreateWebInstanceAndContextCallback create_web_instance_callback,
+    WebInstanceConfig web_instance_config)
+    : create_web_instance_callback_(std::move(create_web_instance_callback)) {
   CreateWebInstanceAndContext(std::move(web_instance_config));
 }
 
@@ -110,13 +111,6 @@ void WebContentRunner::StartComponent(
   RegisterComponent(std::move(component));
 }
 
-WebComponent* WebContentRunner::GetAnyComponent() {
-  if (components_.empty())
-    return nullptr;
-
-  return components_.begin()->get();
-}
-
 void WebContentRunner::DestroyComponent(WebComponent* component) {
   components_.erase(components_.find(component));
   if (components_.empty() && on_empty_callback_)
@@ -137,6 +131,15 @@ void WebContentRunner::DestroyWebContext() {
   context_ = nullptr;
 }
 
+void WebContentRunner::CloseFrameWithTimeout(fuchsia::web::FramePtr frame,
+                                             base::TimeDelta timeout) {
+  // Signal `frame` to close within the desired `timeout`, and store it to
+  // `closing_frames_` which will retain it until it closes.
+  frame->Close(std::move(
+      fuchsia::web::FrameCloseRequest().set_timeout(timeout.ToZxDuration())));
+  closing_frames_.AddInterfacePtr(std::move(frame));
+}
+
 void WebContentRunner::EnsureWebInstanceAndContext() {
   // Synchronously check whether the web.Context channel has closed, to reduce
   // the chance of issuing CreateFrameWithParams() to an already-closed channel.
@@ -151,9 +154,9 @@ void WebContentRunner::EnsureWebInstanceAndContext() {
 }
 
 void WebContentRunner::CreateWebInstanceAndContext(WebInstanceConfig config) {
-  web_instance_host_->CreateInstanceForContextWithCopiedArgs(
-      std::move(config.params), web_instance_services_.NewRequest(),
-      config.extra_args);
+  create_web_instance_callback_.Run(std::move(config.params),
+                                    web_instance_services_.NewRequest(),
+                                    config.extra_args);
   zx_status_t result = fdio_service_connect_at(
       web_instance_services_.channel().get(), fuchsia::web::Context::Name_,
       context_.NewRequest().TakeChannel().release());

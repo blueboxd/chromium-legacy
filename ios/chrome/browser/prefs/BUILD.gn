@@ -57,7 +57,6 @@ source_set("browser_prefs") {
     "//components/metrics",
     "//components/metrics/demographics",
     "//components/network_time",
-    "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/omnibox/browser",
     "//components/optimization_guide/core",
@@ -107,7 +106,6 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/voice:prefs",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web/font_size",
-    "//ios/public/provider/chrome/browser",
     "//ios/web/common:features",
     "//ui/base",
   ]

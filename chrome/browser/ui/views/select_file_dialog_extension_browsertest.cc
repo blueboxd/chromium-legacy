@@ -10,9 +10,9 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -803,9 +803,7 @@ class SelectFileDialogExtensionPolicyTest
   storage::ExternalMountPoints* mount_points_ = nullptr;
 };
 
-// TODO(crbug.com/1395135): Re-enable this test
-IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest,
-                       DISABLED_DlpDownloadAllow) {
+IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpDownloadAllow) {
   SetupRulesManager();
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();

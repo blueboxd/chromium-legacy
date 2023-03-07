@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/leak_annotations.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -886,7 +886,13 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
 
   // Clear incremental state every 5 seconds, so that we lose at most the first
   // 5 seconds of the trace (if we wrap around Perfetto's central buffer).
+  // For Android, we reset the incremental state every 0.5 seconds to reduce
+  // data loss in ring buffer mode.
+#if BUILDFLAG(IS_ANDROID)
+  perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(500);
+#else
   perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(5000);
+#endif
 
   SetEnabledImpl(trace_config, perfetto_config);
 #else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
@@ -2106,6 +2112,15 @@ void TraceLog::UpdateProcessLabel(int label_id,
                                   const std::string& current_label) {
   if (!current_label.length())
     return RemoveProcessLabel(label_id);
+
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  if (perfetto::Tracing::IsInitialized()) {
+    auto track = perfetto::ProcessTrack::Current();
+    auto desc = track.Serialize();
+    desc.mutable_process()->add_process_labels(current_label);
+    perfetto::TrackEvent::SetTrackDescriptor(track, std::move(desc));
+  }
+#endif
 
   AutoLock lock(lock_);
   process_labels_[label_id] = current_label;

@@ -8,16 +8,18 @@
 #import "base/check_op.h"
 #import "base/ios/block_types.h"
 #import "base/notreached.h"
-#import "components/signin/ios/browser/features.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
@@ -97,6 +99,7 @@ enum AuthenticationState {
   BOOL _didSignIn;
   BOOL _failedOrCancelled;
   BOOL _shouldSignOut;
+  BOOL _alreadySignedInWithTheSameAccount;
   // YES if the signed in account is a managed account and the sign-in flow
   // includes sync.
   BOOL _shouldShowManagedConfirmation;
@@ -295,31 +298,16 @@ enum AuthenticationState {
     case CHECK_MERGE_CASE: {
       DCHECK_EQ(SHOULD_CLEAR_DATA_USER_CHOICE, self.localDataClearingStrategy);
       __weak AuthenticationFlow* weakSelf = self;
-      ios::CapabilitiesCallback callback =
-          ^(ios::ChromeIdentityCapabilityResult result) {
-            if (result == ios::ChromeIdentityCapabilityResult::kTrue) {
-              [weakSelf didChooseClearDataPolicy:SHOULD_CLEAR_DATA_CLEAR_DATA];
-              return;
-            }
-            switch (weakSelf.postSignInAction) {
-              case POST_SIGNIN_ACTION_COMMIT_SYNC:
-                [weakSelf checkMergeCaseForUnsupervisedAccounts];
-                break;
-              case POST_SIGNIN_ACTION_NONE:
-                [weakSelf continueSignin];
-                break;
-            }
-          };
-      if (base::FeatureList::IsEnabled(signin::kEnableUnicornAccountSupport)) {
-        ios::ChromeIdentityService* identity_service =
-            ios::GetChromeBrowserProvider().GetChromeIdentityService();
-        identity_service->IsSubjectToParentalControls(_identityToSignIn,
-                                                      callback);
-      } else {
-        callback(ios::ChromeIdentityCapabilityResult::kFalse);
-      }
+      GetApplicationContext()
+          ->GetSystemIdentityManager()
+          ->IsSubjectToParentalControls(
+              _identityToSignIn,
+              base::BindOnce(^(SystemIdentityCapabilityResult result) {
+                [weakSelf isSubjectToParentalControlCapabilityFetched:result];
+              }));
       return;
     }
+
     case SHOW_MANAGED_CONFIRMATION:
       [_performer
           showManagedConfirmationForHostedDomain:_identityToSignInHostedDomain
@@ -385,6 +373,35 @@ enum AuthenticationState {
   NOTREACHED();
 }
 
+- (void)isSubjectToParentalControlCapabilityFetched:
+    (SystemIdentityCapabilityResult)result {
+  if (result == SystemIdentityCapabilityResult::kTrue) {
+    [self checkMergeCaseForSupervisedAccounts];
+    return;
+  }
+  switch (self.postSignInAction) {
+    case POST_SIGNIN_ACTION_COMMIT_SYNC:
+      [self checkMergeCaseForUnsupervisedAccounts];
+      break;
+    case POST_SIGNIN_ACTION_NONE:
+      [self continueSignin];
+      break;
+  }
+}
+
+// Checks if data should be merged or cleared when `_identityToSignIn`
+// is subject to parental controls and then continues sign-in.
+- (void)checkMergeCaseForSupervisedAccounts {
+  // Always clear the data for supervised accounts if the account
+  // is not already signed in.
+  self.localDataClearingStrategy = _alreadySignedInWithTheSameAccount
+                                       ? SHOULD_CLEAR_DATA_MERGE_DATA
+                                       : SHOULD_CLEAR_DATA_CLEAR_DATA;
+  [self continueSignin];
+}
+
+// Checks if data should be merged or cleared when `_identityToSignIn`
+// is not subject to parental controls and then continues sign-in.
 - (void)checkMergeCaseForUnsupervisedAccounts {
   if (([_performer shouldHandleMergeCaseForIdentity:_identityToSignIn
                                   browserStatePrefs:_browser->GetBrowserState()
@@ -410,6 +427,8 @@ enum AuthenticationState {
     // sign-out is required.
     _shouldSignOut = YES;
   }
+  _alreadySignedInWithTheSameAccount =
+      [currentIdentity isEqual:_identityToSignIn];
 }
 
 - (void)signInIdentity:(id<SystemIdentity>)identity {

@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -47,13 +47,6 @@
 #include "ui/views/mouse_constants.h"
 
 using views::LabelButtonBorder;
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarActionView::Delegate
-
-bool ToolbarActionView::Delegate::CanShowIconInToolbar() const {
-  return true;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
@@ -277,10 +270,6 @@ views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
 void ToolbarActionView::ShowContextMenuAsFallback() {
   context_menu_controller()->ShowContextMenuForView(
       this, GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_NONE);
-}
-
-bool ToolbarActionView::CanShowIconInToolbar() const {
-  return delegate_->CanShowIconInToolbar();
 }
 
 void ToolbarActionView::OnPopupShown(bool by_user) {

@@ -12,19 +12,18 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/notreached.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -536,7 +535,7 @@ void WebURLLoader::LoadSynchronously(
     absl::optional<WebURLError>& error,
     WebData& data,
     int64_t& encoded_data_length,
-    int64_t& encoded_body_length,
+    uint64_t& encoded_body_length,
     WebBlobInfo& downloaded_blob,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper) {
@@ -586,7 +585,10 @@ void WebURLLoader::LoadSynchronously(
       WebURLResponse::Create(final_url, *sync_load_response.head,
                              has_devtools_request_id, context_->request_id());
   encoded_data_length = sync_load_response.head->encoded_data_length;
-  encoded_body_length = sync_load_response.head->encoded_body_length;
+  encoded_body_length =
+      sync_load_response.head->encoded_body_length
+          ? sync_load_response.head->encoded_body_length->value
+          : 0;
   if (sync_load_response.downloaded_blob) {
     downloaded_blob = WebBlobInfo(
         WebString::FromLatin1(sync_load_response.downloaded_blob->uuid),

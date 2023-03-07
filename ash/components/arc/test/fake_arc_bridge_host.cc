@@ -16,7 +16,6 @@
 #include "ash/components/arc/mojom/bluetooth.mojom.h"
 #include "ash/components/arc/mojom/boot_phase_monitor.mojom.h"
 #include "ash/components/arc/mojom/camera.mojom.h"
-#include "ash/components/arc/mojom/cert_store.mojom.h"
 #include "ash/components/arc/mojom/clipboard.mojom.h"
 #include "ash/components/arc/mojom/compatibility_mode.mojom.h"
 #include "ash/components/arc/mojom/crash_collector.mojom.h"
@@ -48,7 +47,6 @@
 #include "ash/components/arc/mojom/property.mojom.h"
 #include "ash/components/arc/mojom/rotation_lock.mojom.h"
 #include "ash/components/arc/mojom/screen_capture.mojom.h"
-#include "ash/components/arc/mojom/sensor.mojom.h"
 #include "ash/components/arc/mojom/sharesheet.mojom.h"
 #include "ash/components/arc/mojom/storage_manager.mojom.h"
 #include "ash/components/arc/mojom/system_ui.mojom.h"
@@ -103,9 +101,6 @@ void FakeArcBridgeHost::OnBootPhaseMonitorInstanceReady(
 
 void FakeArcBridgeHost::OnCameraInstanceReady(
     mojo::PendingRemote<mojom::CameraInstance> camera_remote) {}
-
-void FakeArcBridgeHost::OnCertStoreInstanceReady(
-    mojo::PendingRemote<mojom::CertStoreInstance> instance_remote) {}
 
 void FakeArcBridgeHost::OnClipboardInstanceReady(
     mojo::PendingRemote<mojom::ClipboardInstance> clipboard_remote) {}
@@ -214,15 +209,8 @@ void FakeArcBridgeHost::OnRotationLockInstanceReady(
 void FakeArcBridgeHost::OnScreenCaptureInstanceReady(
     mojo::PendingRemote<mojom::ScreenCaptureInstance> screen_capture_remote) {}
 
-void FakeArcBridgeHost::OnSensorInstanceReady(
-    mojo::PendingRemote<mojom::SensorInstance> sensor_remote) {}
-
 void FakeArcBridgeHost::OnSharesheetInstanceReady(
     mojo::PendingRemote<mojom::SharesheetInstance> sharesheet_remote) {}
-
-void FakeArcBridgeHost::OnSmartCardManagerInstanceReady(
-    mojo::PendingRemote<mojom::SmartCardManagerInstance>
-        smart_cardManager_remote) {}
 
 void FakeArcBridgeHost::OnStorageManagerInstanceReady(
     mojo::PendingRemote<mojom::StorageManagerInstance> storage_manager_remote) {

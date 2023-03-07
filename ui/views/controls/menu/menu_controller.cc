@@ -8,9 +8,9 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
@@ -304,22 +304,6 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
     LRESULT nc_hit_result = SendMessage(target_window, WM_NCHITTEST, 0, coords);
     const bool client_area = nc_hit_result == HTCLIENT;
 
-    // TODO(sky): this isn't right. The event to generate should correspond with
-    // the event we just got. MouseEvent only tells us what is down, which may
-    // differ. Need to add ability to get changed button from MouseEvent.
-    int event_type;
-    int flags = event->flags();
-    if (flags & ui::EF_LEFT_MOUSE_BUTTON) {
-      event_type = client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
-    } else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON) {
-      event_type = client_area ? WM_MBUTTONDOWN : WM_NCMBUTTONDOWN;
-    } else if (flags & ui::EF_RIGHT_MOUSE_BUTTON) {
-      event_type = client_area ? WM_RBUTTONDOWN : WM_NCRBUTTONDOWN;
-    } else {
-      NOTREACHED();
-      return;
-    }
-
     int window_x = screen_loc_pixels.x();
     int window_y = screen_loc_pixels.y();
     if (client_area) {
@@ -332,7 +316,8 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
     WPARAM target = client_area ? event->native_event().wParam
                                 : static_cast<WPARAM>(nc_hit_result);
     LPARAM window_coords = MAKELPARAM(window_x, window_y);
-    PostMessage(target_window, event_type, target, window_coords);
+    PostMessage(target_window, event->native_event().message, target,
+                window_coords);
     return;
   }
 

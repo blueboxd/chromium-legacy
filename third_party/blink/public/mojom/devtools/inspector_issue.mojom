@@ -194,6 +194,7 @@ enum FederatedAuthRequestResult {
   kErrorFetchingWellKnownHttpNotFound,
   kErrorFetchingWellKnownNoResponse,
   kErrorFetchingWellKnownInvalidResponse,
+  kErrorFetchingWellKnownListEmpty,
   kErrorConfigNotInWellKnown,
   kErrorWellKnownTooBig,
   kErrorFetchingConfigHttpNotFound,
@@ -205,6 +206,7 @@ enum FederatedAuthRequestResult {
   kErrorFetchingAccountsHttpNotFound,
   kErrorFetchingAccountsNoResponse,
   kErrorFetchingAccountsInvalidResponse,
+  kErrorFetchingAccountsListEmpty,
   kErrorFetchingIdTokenHttpNotFound,
   kErrorFetchingIdTokenNoResponse,
   kErrorFetchingIdTokenInvalidResponse,
@@ -220,6 +222,9 @@ struct FederatedAuthRequestIssueDetails {
 enum GenericIssueErrorType {
   kCrossOriginPortalPostMessageError,
   kFormLabelForNameError,
+  kFormDuplicateIdForInputError,
+  kFormInputWithNoLabelError,
+  kFormAutocompleteAttributeEmptyError
 };
 
 struct GenericIssueDetails {

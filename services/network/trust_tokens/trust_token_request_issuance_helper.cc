@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/callback.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
@@ -135,6 +135,8 @@ void TrustTokenRequestIssuanceHelper::Begin(
                         mojom::TrustTokenOperationStatus::kInvalidArgument);
     return;
   }
+
+  token_store_->RecordIssuance(*issuer_);
 
   if (custom_key_commitment_) {
     mojom::TrustTokenKeyCommitmentResultPtr keys =
@@ -341,7 +343,7 @@ TrustTokenRequestIssuanceHelper::CollectOperationResultWithStatus(
   mojom::TrustTokenOperationResultPtr operation_result =
       mojom::TrustTokenOperationResult::New();
   operation_result->status = status;
-  operation_result->type = mojom::TrustTokenOperationType::kIssuance;
+  operation_result->operation = mojom::TrustTokenOperationType::kIssuance;
   operation_result->top_level_origin = top_level_origin_;
   if (issuer_) {
     operation_result->issuer = *issuer_;

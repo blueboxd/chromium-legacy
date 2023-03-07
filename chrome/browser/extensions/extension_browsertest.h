@@ -34,6 +34,7 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -168,8 +169,13 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // LoadExtensionAsComponentWithManifest(path, kManifestFilename).
   const Extension* LoadExtensionAsComponent(const base::FilePath& path);
 
-  // Loads and launches the app from |path|, and returns it.
-  const Extension* LoadAndLaunchApp(const base::FilePath& path);
+  // Loads and launches the app from |path|, and returns it. Waits until the
+  // launched app's WebContents has been created and finished loading. If the
+  // app uses a guest view this will create two WebContents (one for the host
+  // and one for the guest view). `uses_guest_view` is used to wait for the
+  // second WebContents.
+  const Extension* LoadAndLaunchApp(const base::FilePath& path,
+                                    bool uses_guest_view = false);
 
   // Launches |extension| as a window and returns the browser.
   Browser* LaunchAppBrowser(const Extension* extension);
@@ -196,21 +202,18 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
   // you expect a failed upgrade.
   const Extension* InstallExtension(const base::FilePath& path,
-                                    int expected_change) {
-    return InstallOrUpdateExtension(
-        std::string(), path, INSTALL_UI_TYPE_NONE, expected_change);
+                                    absl::optional<int> expected_change) {
+    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+                                    std::move(expected_change));
   }
 
   // Same as above, but an install source other than
   // mojom::ManifestLocation::kInternal can be specified.
   const Extension* InstallExtension(const base::FilePath& path,
-                                    int expected_change,
+                                    absl::optional<int> expected_change,
                                     mojom::ManifestLocation install_source) {
-    return InstallOrUpdateExtension(std::string(),
-                                    path,
-                                    INSTALL_UI_TYPE_NONE,
-                                    expected_change,
-                                    install_source);
+    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+                                    std::move(expected_change), install_source);
   }
 
   // Installs an extension and grants it the permissions it requests.
@@ -218,47 +221,50 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // the time - otherwise the extension installs in a disabled state.
   const Extension* InstallExtensionWithPermissionsGranted(
       const base::FilePath& file_path,
-      int expected_change) {
+      absl::optional<int> expected_change) {
     return InstallOrUpdateExtension(
-        std::string(), file_path, INSTALL_UI_TYPE_NONE, expected_change,
-        mojom::ManifestLocation::kInternal, browser(), Extension::NO_FLAGS,
-        false, true);
+        std::string(), file_path, INSTALL_UI_TYPE_NONE,
+        std::move(expected_change), mojom::ManifestLocation::kInternal,
+        browser(), Extension::NO_FLAGS, false, true);
   }
 
   // Installs extension as if it came from the Chrome Webstore.
-  const Extension* InstallExtensionFromWebstore(const base::FilePath& path,
-                                                int expected_change);
+  const Extension* InstallExtensionFromWebstore(
+      const base::FilePath& path,
+      absl::optional<int> expected_change);
 
   // Same as above but passes an id to CrxInstaller and does not allow a
   // privilege increase.
   const Extension* UpdateExtension(const std::string& id,
                                    const base::FilePath& path,
-                                   int expected_change) {
+                                   absl::optional<int> expected_change) {
     return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
-                                    expected_change);
+                                    std::move(expected_change));
   }
 
   // Same as UpdateExtension but waits for the extension to be idle first.
-  const Extension* UpdateExtensionWaitForIdle(const std::string& id,
-                                              const base::FilePath& path,
-                                              int expected_change);
+  const Extension* UpdateExtensionWaitForIdle(
+      const std::string& id,
+      const base::FilePath& path,
+      absl::optional<int> expected_change);
 
-  const Extension* InstallExtensionWithUIAutoConfirm(const base::FilePath& path,
-                                                     int expected_change,
-                                                     Browser* browser) {
+  const Extension* InstallExtensionWithUIAutoConfirm(
+      const base::FilePath& path,
+      absl::optional<int> expected_change,
+      Browser* browser) {
     return InstallOrUpdateExtension(
-        std::string(), path, INSTALL_UI_TYPE_AUTO_CONFIRM, expected_change,
-        browser, Extension::NO_FLAGS);
+        std::string(), path, INSTALL_UI_TYPE_AUTO_CONFIRM,
+        std::move(expected_change), browser, Extension::NO_FLAGS);
   }
 
   const Extension* InstallExtensionWithSourceAndFlags(
       const base::FilePath& path,
-      int expected_change,
+      absl::optional<int> expected_change,
       mojom::ManifestLocation install_source,
       Extension::InitFromValueFlags creation_flags) {
     return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
-                                    expected_change, install_source, browser(),
-                                    creation_flags, false, false);
+                                    std::move(expected_change), install_source,
+                                    browser(), creation_flags, false, false);
   }
 
   // Begins install process but simulates a user cancel.
@@ -280,12 +286,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count) {
     return observer_->WaitForPageActionVisibilityChangeTo(count);
-  }
-
-  // Wait for the crx installer to be done. Returns true if it has finished
-  // successfully.
-  bool WaitForCrxInstallerDone() {
-    return observer_->WaitForCrxInstallerDone();
   }
 
   // Wait for all extension views to load.
@@ -375,28 +375,29 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     INSTALL_UI_TYPE_AUTO_CONFIRM,
   };
 
-  const Extension* InstallOrUpdateExtension(const std::string& id,
-                                            const base::FilePath& path,
-                                            InstallUIType ui_type,
-                                            int expected_change);
   const Extension* InstallOrUpdateExtension(
       const std::string& id,
       const base::FilePath& path,
       InstallUIType ui_type,
-      int expected_change,
+      absl::optional<int> expected_change);
+  const Extension* InstallOrUpdateExtension(
+      const std::string& id,
+      const base::FilePath& path,
+      InstallUIType ui_type,
+      absl::optional<int> expected_change,
       Browser* browser,
       Extension::InitFromValueFlags creation_flags);
   const Extension* InstallOrUpdateExtension(
       const std::string& id,
       const base::FilePath& path,
       InstallUIType ui_type,
-      int expected_change,
+      absl::optional<int> expected_change,
       mojom::ManifestLocation install_source);
   const Extension* InstallOrUpdateExtension(
       const std::string& id,
       const base::FilePath& path,
       InstallUIType ui_type,
-      int expected_change,
+      absl::optional<int> expected_change,
       mojom::ManifestLocation install_source,
       Browser* browser,
       Extension::InitFromValueFlags creation_flags,

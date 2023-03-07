@@ -134,7 +134,7 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // returns false for prerender page activation navigations, which should be
   // checked by IsPrerenderedPageActivation(). The return value remains
   // constant over the navigation lifetime.
-  virtual bool IsInPrerenderedMainFrame() = 0;
+  virtual bool IsInPrerenderedMainFrame() const = 0;
 
   // Prerender2:
   // Returns true if this navigation will activate a prerendered page. It is
@@ -483,6 +483,11 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // javascript, the initiator origin will be null even though
   // IsRendererInitiated() returns true.
   virtual const absl::optional<url::Origin>& GetInitiatorOrigin() = 0;
+
+  // Returns, for renderer-initiated about:blank and about:srcdoc navigations,
+  // the base url of the document that has initiated the navigation for this
+  // NavigationHandle. The same caveats apply here as for GetInitiatorOrigin().
+  virtual const absl::optional<GURL>& GetInitiatorBaseUrl() = 0;
 
   // Retrieves any DNS aliases for the requested URL. Includes all known
   // aliases, e.g. from A, AAAA, or HTTPS, not just from the address used for

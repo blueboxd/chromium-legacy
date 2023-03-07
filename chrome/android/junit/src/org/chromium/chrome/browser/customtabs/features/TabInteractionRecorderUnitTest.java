@@ -54,8 +54,23 @@ public class TabInteractionRecorderUnitTest {
     }
 
     @Test
-    public void hadInteractionOnTabClosing() {
-        mTestNative.paramHadInteraction = true;
+    public void hadFormInteractionOnTabClosing() {
+        mTestNative.paramHadFormInteractionInSession = true;
+        mTestNative.paramHadFormInteractionInActivePage = true;
+        TabInteractionRecorder.getFromTab(mTab).onTabClosing();
+
+        Assert.assertTrue("Shared pref <CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION> is not recorded.",
+                mPref.contains(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION));
+        Assert.assertTrue("Value of shared pref <CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION> is wrong.",
+                mPref.readBoolean(
+                        ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION, false));
+        Assert.assertTrue("Shared pref <CUSTOM_TABS_LAST_CLOSE_TIMESTAMP> is not recorded.",
+                mPref.contains(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP));
+    }
+
+    @Test
+    public void hadNavigationInteractionOnTabClosing() {
+        mTestNative.paramHadNavigationInteraction = true;
         TabInteractionRecorder.getFromTab(mTab).onTabClosing();
 
         Assert.assertTrue("Shared pref <CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION> is not recorded.",
@@ -69,7 +84,9 @@ public class TabInteractionRecorderUnitTest {
 
     @Test
     public void noInteractionOnTabClosing() {
-        mTestNative.paramHadInteraction = false;
+        mTestNative.paramHadFormInteractionInSession = false;
+        mTestNative.paramHadFormInteractionInActivePage = false;
+        mTestNative.paramHadNavigationInteraction = false;
         TabInteractionRecorder.getFromTab(mTab).onTabClosing();
 
         Assert.assertTrue("Shared pref <CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION> is not recorded.",
@@ -84,7 +101,9 @@ public class TabInteractionRecorderUnitTest {
 
     class TestNativeInteractionRecorder implements TabInteractionRecorder.Natives {
         public boolean paramDidGetUserInteraction;
-        public boolean paramHadInteraction;
+        public boolean paramHadFormInteractionInSession;
+        public boolean paramHadFormInteractionInActivePage;
+        public boolean paramHadNavigationInteraction;
 
         @Override
         public TabInteractionRecorder getFromTab(Tab tab) {
@@ -103,13 +122,25 @@ public class TabInteractionRecorderUnitTest {
         }
 
         @Override
-        public boolean hadInteraction(long nativeTabInteractionRecorderAndroid) {
-            return paramHadInteraction;
+        public boolean hadFormInteractionInSession(long nativeTabInteractionRecorderAndroid) {
+            return paramHadFormInteractionInSession;
+        }
+
+        @Override
+        public boolean hadFormInteractionInActivePage(long nativeTabInteractionRecorderAndroid) {
+            return paramHadFormInteractionInActivePage;
+        }
+
+        @Override
+        public boolean hadNavigationInteraction(long nativeTabInteractionRecorderAndroid) {
+            return paramHadNavigationInteraction;
         }
 
         @Override
         public void reset(long nativeTabInteractionRecorderAndroid) {
-            paramHadInteraction = false;
+            paramHadFormInteractionInSession = false;
+            paramHadFormInteractionInActivePage = false;
+            paramHadNavigationInteraction = false;
             paramDidGetUserInteraction = false;
         }
     }

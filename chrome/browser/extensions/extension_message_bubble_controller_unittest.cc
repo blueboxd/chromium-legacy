@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -203,7 +203,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
                             .Set("name", std::string("Extension " + index))
                             .Set("version", "1.0")
                             .Set("manifest_version", 2)
-                            .BuildDict());
+                            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -224,8 +224,8 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
             .Set("manifest_version", 2)
             .Set("browser_action", DictionaryBuilder()
                                        .Set("default_title", "Default title")
-                                       .BuildDict())
-            .BuildDict());
+                                       .Build())
+            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -247,8 +247,8 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
                             .Set("chrome_settings_overrides",
                                  DictionaryBuilder()
                                      .Set("homepage", "http://www.google.com")
-                                     .BuildDict())
-                            .BuildDict());
+                                     .Build())
+                            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -270,11 +270,10 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
             .Set("manifest_version", 2)
             .Set("chrome_settings_overrides",
                  DictionaryBuilder()
-                     .Set("startup_pages", ListBuilder()
-                                               .Append("http://www.google.com")
-                                               .BuildList())
-                     .BuildDict())
-            .BuildDict());
+                     .Set("startup_pages",
+                          ListBuilder().Append("http://www.google.com").Build())
+                     .Build())
+            .Build());
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -295,8 +294,8 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
             .Set("version", "1.0")
             .Set("manifest_version", 2)
             .Set("chrome_url_overrides",
-                 DictionaryBuilder().Set("newtab", "Default.html").BuildDict())
-            .BuildDict());
+                 DictionaryBuilder().Set("newtab", "Default.html").Build())
+            .Build());
 
     builder.SetLocation(location);
     builder.SetID(id);
@@ -317,8 +316,8 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
             .Set("name", std::string("Extension " + index))
             .Set("version", "1.0")
             .Set("manifest_version", 2)
-            .Set("permissions", ListBuilder().Append("proxy").BuildList())
-            .BuildDict());
+            .Set("permissions", ListBuilder().Append("proxy").Build())
+            .Build());
 
     builder.SetLocation(location);
     builder.SetID(id);

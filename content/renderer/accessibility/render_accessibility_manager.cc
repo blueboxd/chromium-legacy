@@ -6,10 +6,11 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/debug/alias.h"
+#include "base/functional/bind.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/render_frame_impl.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -55,8 +56,10 @@ void RenderAccessibilityManager::SetMode(const ui::AXMode& new_mode) {
 
   if (new_mode.has_mode(ui::AXMode::kWebContents) &&
       !old_mode.has_mode(ui::AXMode::kWebContents)) {
-    render_accessibility_ =
-        std::make_unique<RenderAccessibilityImpl>(this, render_frame_);
+    render_accessibility_ = std::make_unique<RenderAccessibilityImpl>(
+        this, render_frame_,
+        base::FeatureList::IsEnabled(
+            blink::features::kSerializeAccessibilityPostLifecycle));
   } else if (!new_mode.has_mode(ui::AXMode::kWebContents) &&
              old_mode.has_mode(ui::AXMode::kWebContents)) {
     render_accessibility_.reset();

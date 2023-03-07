@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -330,15 +331,13 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest, Reload) {
   EXPECT_TRUE(NavigateToURL(shell(), url1));
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
   web_contents()->GetController().Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_TRUE(NavigateToURL(shell(), url2));
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(6));
   ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
@@ -368,8 +367,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url1));
   EXPECT_TRUE(NavigateToURL(shell(), url1_foo));
 
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
   std::string last_navigation_id =
@@ -393,8 +391,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url1_foo));
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
   ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(4));
   ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
@@ -597,8 +594,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url1));
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
   // When the page is restored from back/forward cache, there is one navigation
   // corresponding to the bfcache restore. Whereas, when the page is reloaded,
@@ -748,8 +744,7 @@ IN_PROC_BROWSER_TEST_F(RecordBackForwardCacheMetricsWithoutEnabling,
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   // 3) Go back to url1 and reload.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
 
@@ -833,8 +828,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   // 3) Go back to url1 and reload.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
 
@@ -865,8 +859,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
           2)));
 
   // 5) Go back and navigate to url3.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   RenderFrameHostImpl* rfh_url1 =
       web_contents()->GetPrimaryFrameTree().root()->current_frame_host();
 
@@ -877,8 +870,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
 
   // 6) Go back and reload.
   // Ensure that "not served" is recorded.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
 
@@ -923,8 +915,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
 
   // 3) Go back to url1 and check if the metrics are recorded. Make sure the
   // page is restored from cache.
-  shell()->web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   EXPECT_EQ(rfh_a, current_frame_host());
   EXPECT_EQ(shell()->web_contents()->GetVisibility(), Visibility::VISIBLE);
 

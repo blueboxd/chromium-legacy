@@ -54,6 +54,8 @@ String PermissionStatusToString(PermissionStatus status) {
 }
 
 String PermissionNameToString(PermissionName name) {
+  // TODO(crbug.com/1395451): Change these strings to match the JS permission
+  // strings (dashes instead of underscores).
   switch (name) {
     case PermissionName::GEOLOCATION:
       return "geolocation";
@@ -96,11 +98,16 @@ String PermissionNameToString(PermissionName name) {
     case PermissionName::STORAGE_ACCESS:
       return "storage_access";
     case PermissionName::WINDOW_MANAGEMENT:
+      if (RuntimeEnabledFeatures::WindowManagementPermissionAliasEnabled()) {
+        return "window-management";
+      }
       return "window_placement";
     case PermissionName::LOCAL_FONTS:
       return "local_fonts";
     case PermissionName::DISPLAY_CAPTURE:
       return "display_capture";
+    case PermissionName::TOP_LEVEL_STORAGE_ACCESS:
+      return "top-level-storage-access";
   }
   NOTREACHED();
   return "unknown";
@@ -154,36 +161,43 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
           script_state->GetIsolate(), raw_descriptor.V8Value(),
           exception_state);
 
-  if (exception_state.HadException())
+  if (exception_state.HadException()) {
     return nullptr;
+  }
 
   const String& name = permission->name();
-  if (name == "geolocation")
+  if (name == "geolocation") {
     return CreatePermissionDescriptor(PermissionName::GEOLOCATION);
+  }
   if (name == "camera") {
     CameraDevicePermissionDescriptor* camera_device_permission =
         NativeValueTraits<CameraDevicePermissionDescriptor>::NativeValue(
             script_state->GetIsolate(), raw_descriptor.V8Value(),
             exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
       return nullptr;
+    }
 
     return CreateVideoCapturePermissionDescriptor(
         camera_device_permission->panTiltZoom());
   }
-  if (name == "microphone")
+  if (name == "microphone") {
     return CreatePermissionDescriptor(PermissionName::AUDIO_CAPTURE);
-  if (name == "notifications")
+  }
+  if (name == "notifications") {
     return CreatePermissionDescriptor(PermissionName::NOTIFICATIONS);
-  if (name == "persistent-storage")
+  }
+  if (name == "persistent-storage") {
     return CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE);
+  }
   if (name == "push") {
     PushPermissionDescriptor* push_permission =
         NativeValueTraits<PushPermissionDescriptor>::NativeValue(
             script_state->GetIsolate(), raw_descriptor.V8Value(),
             exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
       return nullptr;
+    }
 
     // Only "userVisibleOnly" push is supported for now.
     if (!push_permission->userVisibleOnly()) {
@@ -202,8 +216,9 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
             exception_state);
     return CreateMidiPermissionDescriptor(midi_permission->sysex());
   }
-  if (name == "background-sync")
+  if (name == "background-sync") {
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_SYNC);
+  }
   if (name == "ambient-light-sensor" || name == "accelerometer" ||
       name == "gyroscope" || name == "magnetometer") {
     // ALS requires an extra flag.
@@ -227,8 +242,9 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
   }
   if (name == "clipboard-read" || name == "clipboard-write") {
     PermissionName permission_name = PermissionName::CLIPBOARD_READ;
-    if (name == "clipboard-write")
+    if (name == "clipboard-write") {
       permission_name = PermissionName::CLIPBOARD_WRITE;
+    }
 
     ClipboardPermissionDescriptor* clipboard_permission =
         NativeValueTraits<ClipboardPermissionDescriptor>::NativeValue(
@@ -240,14 +256,18 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
         /*will_be_sanitized=*/
         !clipboard_permission->allowWithoutSanitization());
   }
-  if (name == "payment-handler")
+  if (name == "payment-handler") {
     return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);
-  if (name == "background-fetch")
+  }
+  if (name == "background-fetch") {
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
-  if (name == "idle-detection")
+  }
+  if (name == "idle-detection") {
     return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
-  if (name == "periodic-background-sync")
+  }
+  if (name == "periodic-background-sync") {
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
+  }
   if (name == "screen-wake-lock") {
     return CreatePermissionDescriptor(PermissionName::SCREEN_WAKE_LOCK);
   }
@@ -274,7 +294,28 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     }
     return CreatePermissionDescriptor(PermissionName::STORAGE_ACCESS);
   }
+  if (name == "top-level-storage-access") {
+    if (!RuntimeEnabledFeatures::StorageAccessAPIEnabled() ||
+        !RuntimeEnabledFeatures::StorageAccessAPIForOriginExtensionEnabled()) {
+      exception_state.ThrowTypeError(
+          "The requestStorageAccessForOrigin API is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::TOP_LEVEL_STORAGE_ACCESS);
+  }
+  if (name == "window-management") {
+    UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                      WebFeature::kWindowManagementPermissionDescriptorUsed);
+    if (!RuntimeEnabledFeatures::WindowManagementPermissionAliasEnabled()) {
+      exception_state.ThrowTypeError(
+          "The Window Management alias is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::WINDOW_MANAGEMENT);
+  }
   if (name == "window-placement") {
+    UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
+                      WebFeature::kWindowPlacementPermissionDescriptorUsed);
     return CreatePermissionDescriptor(PermissionName::WINDOW_MANAGEMENT);
   }
   if (name == "local-fonts") {

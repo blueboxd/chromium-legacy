@@ -8,9 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -145,7 +145,7 @@ class TestBoundDelegate final : public InjectableTestDelegate {
   TestBoundDelegate() = default;
 
   // Makes this TestBoundDelegate become the RunLoop::Delegate and
-  // ThreadTaskRunnerHandle for this thread.
+  // SingleThreadTaskRunner::CurrentDefaultHandle for this thread.
   void BindToCurrentThread() {
     thread_task_runner_handle_ =
         std::make_unique<SingleThreadTaskRunner::CurrentDefaultHandle>(
@@ -599,7 +599,8 @@ INSTANTIATE_TEST_SUITE_P(Mock,
 
 TEST(RunLoopDeathTest, MustRegisterBeforeInstantiating) {
   TestBoundDelegate unbound_test_delegate_;
-  // RunLoop::RunLoop() should CHECK fetching the ThreadTaskRunnerHandle.
+  // RunLoop::RunLoop() should CHECK fetching the
+  // SingleThreadTaskRunner::CurrentDefaultHandle.
   EXPECT_DEATH_IF_SUPPORTED({ RunLoop(); }, "");
 }
 

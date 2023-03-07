@@ -33,7 +33,7 @@ class Image;
 struct VectorIcon;
 }
 
-class OmniboxControllerEmitter;
+class AutocompleteControllerEmitter;
 
 using BitmapFetchedCallback =
     base::RepeatingCallback<void(int result_index, const SkBitmap& bitmap)>;
@@ -87,7 +87,7 @@ class OmniboxClient {
       omnibox::mojom::NavigationPredictor navigation_predictor) {}
 
   virtual bookmarks::BookmarkModel* GetBookmarkModel();
-  virtual OmniboxControllerEmitter* GetOmniboxControllerEmitter();
+  virtual AutocompleteControllerEmitter* GetAutocompleteControllerEmitter();
   virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
@@ -134,6 +134,10 @@ class OmniboxClient {
   // Called to notify clients that the omnibox focus state has changed.
   virtual void OnFocusChanged(OmniboxFocusState state,
                               OmniboxFocusChangeReason reason) {}
+
+  // Called to notify the clients that the user has pasted into the omnibox, and
+  // the resulting string in the omnibox is a valid URL.
+  virtual void OnUserPastedInOmniboxResultingInValidURL();
 
   // Called when the autocomplete result has changed. Implementations that
   // support preloading (currently, prefetching or prerendering) of search

@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -117,6 +117,7 @@ BidderWorklet::BidderWorklet(
     const absl::optional<GURL>& wasm_helper_url,
     const absl::optional<GURL>& trusted_bidding_signals_url,
     const url::Origin& top_window_origin,
+    mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
     absl::optional<uint16_t> experiment_group_id)
     : v8_runner_(v8_helper->v8_runner()),
       v8_helper_(v8_helper),
@@ -142,8 +143,8 @@ BidderWorklet::BidderWorklet(
 
   v8_state_ = std::unique_ptr<V8State, base::OnTaskRunnerDeleter>(
       new V8State(v8_helper, debug_id_, script_source_url_, top_window_origin_,
-                  wasm_helper_url_, trusted_bidding_signals_url,
-                  weak_ptr_factory_.GetWeakPtr()),
+                  std::move(permissions_policy_state), wasm_helper_url_,
+                  trusted_bidding_signals_url, weak_ptr_factory_.GetWeakPtr()),
       base::OnTaskRunnerDeleter(v8_runner_));
 
   paused_ = pause_for_debugger_on_start;
@@ -186,22 +187,20 @@ bool BidderWorklet::IsKAnon(
   return true;
 }
 
-void BidderWorklet::GenerateBid(
+void BidderWorklet::BeginGenerateBid(
     mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
     mojom::KAnonymityBidMode kanon_mode,
     const url::Origin& interest_group_join_origin,
-    const absl::optional<std::string>& auction_signals_json,
-    const absl::optional<std::string>& per_buyer_signals_json,
     const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
     const absl::optional<GURL>& direct_from_seller_auction_signals,
-    const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
     uint64_t trace_id,
-    mojo::PendingAssociatedRemote<mojom::GenerateBidClient>
-        generate_bid_client) {
+    mojo::PendingAssociatedRemote<mojom::GenerateBidClient> generate_bid_client,
+    mojo::PendingAssociatedReceiver<mojom::GenerateBidFinalizer>
+        bid_finalizer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
 
   generate_bid_tasks_.emplace_front();
@@ -210,9 +209,6 @@ void BidderWorklet::GenerateBid(
       std::move(bidder_worklet_non_shared_params);
   generate_bid_task->kanon_mode = kanon_mode;
   generate_bid_task->interest_group_join_origin = interest_group_join_origin;
-  generate_bid_task->auction_signals_json = auction_signals_json;
-  generate_bid_task->per_buyer_signals_json = per_buyer_signals_json;
-  generate_bid_task->per_buyer_timeout = per_buyer_timeout;
   generate_bid_task->browser_signal_seller_origin =
       browser_signal_seller_origin;
   generate_bid_task->browser_signal_top_level_seller_origin =
@@ -228,6 +224,11 @@ void BidderWorklet::GenerateBid(
   generate_bid_task->generate_bid_client.set_disconnect_handler(
       base::BindOnce(&BidderWorklet::OnGenerateBidClientDestroyed,
                      base::Unretained(this), generate_bid_task));
+
+  // Listen to call to FinalizeGenerateBid completing arguments.
+  generate_bid_task->finalize_generate_bid_receiver_id =
+      finalize_receiver_set_.Add(this, std::move(bid_finalizer),
+                                 generate_bid_task);
 
   if (direct_from_seller_per_buyer_signals) {
     // Deleting `generate_bid_task` will destroy
@@ -266,9 +267,10 @@ void BidderWorklet::GenerateBid(
   const auto& trusted_bidding_signals_keys =
       generate_bid_task->bidder_worklet_non_shared_params
           ->trusted_bidding_signals_keys;
+  generate_bid_task->trace_wait_deps_start = base::TimeTicks::Now();
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "wait_generate_bid_deps",
+                                    trace_id);
   if (trusted_signals_request_manager_) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "request_bidding_signals",
-                                      trace_id);
     generate_bid_task->trusted_bidding_signals_request =
         trusted_signals_request_manager_->RequestBiddingSignals(
             generate_bid_task->bidder_worklet_non_shared_params->name,
@@ -278,8 +280,6 @@ void BidderWorklet::GenerateBid(
     return;
   }
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "waiting_for_bidder_script",
-                                    trace_id);
   // Deleting `generate_bid_task` will destroy `generate_bid_client` and thus
   // abort this callback, so it's safe to use Unretained(this) and
   // `generate_bid_task` here.
@@ -367,9 +367,9 @@ void BidderWorklet::ReportWin(
     report_win_task->direct_from_seller_result_auction_signals =
         DirectFromSellerSignalsRequester::Result();
   }
+  report_win_task->trace_wait_deps_start = base::TimeTicks::Now();
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "waiting_for_bidder_script",
-                                    trace_id);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "wait_report_win_deps", trace_id);
   RunReportWinIfReady(report_win_task);
 }
 
@@ -380,6 +380,21 @@ void BidderWorklet::ConnectDevToolsAgent(
       FROM_HERE,
       base::BindOnce(&V8State::ConnectDevToolsAgent,
                      base::Unretained(v8_state_.get()), std::move(agent)));
+}
+
+void BidderWorklet::FinishGenerateBid(
+    const absl::optional<std::string>& auction_signals_json,
+    const absl::optional<std::string>& per_buyer_signals_json,
+    const absl::optional<base::TimeDelta> per_buyer_timeout) {
+  GenerateBidTaskList::iterator task = finalize_receiver_set_.current_context();
+  task->auction_signals_json = auction_signals_json;
+  task->per_buyer_signals_json = per_buyer_signals_json;
+  task->per_buyer_timeout = per_buyer_timeout;
+  task->finalize_generate_bid_called = true;
+  finalize_receiver_set_.Remove(*task->finalize_generate_bid_receiver_id);
+  task->finalize_generate_bid_receiver_id = absl::nullopt;
+  task->wait_promises = base::TimeTicks::Now() - task->trace_wait_deps_start;
+  GenerateBidIfReady(task);
 }
 
 BidderWorklet::GenerateBidTask::GenerateBidTask() = default;
@@ -393,6 +408,7 @@ BidderWorklet::V8State::V8State(
     scoped_refptr<AuctionV8Helper::DebugId> debug_id,
     const GURL& script_source_url,
     const url::Origin& top_window_origin,
+    mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
     const absl::optional<GURL>& wasm_helper_url,
     const absl::optional<GURL>& trusted_bidding_signals_url,
     base::WeakPtr<BidderWorklet> parent)
@@ -402,6 +418,7 @@ BidderWorklet::V8State::V8State(
       user_thread_(base::SequencedTaskRunner::GetCurrentDefault()),
       script_source_url_(script_source_url),
       top_window_origin_(top_window_origin),
+      permissions_policy_state_(std::move(permissions_policy_state)),
       wasm_helper_url_(wasm_helper_url),
       trusted_bidding_signals_url_(trusted_bidding_signals_url) {
   DETACH_FROM_SEQUENCE(v8_sequence_checker_);
@@ -480,7 +497,8 @@ void BidderWorklet::V8State::ReportWin(
   ContextRecycler context_recycler(v8_helper_.get());
   context_recycler.AddReportBindings();
   context_recycler.AddRegisterAdBeaconBindings();
-  context_recycler.AddPrivateAggregationBindings();
+  context_recycler.AddPrivateAggregationBindings(
+      permissions_policy_state_->private_aggregation_allowed);
   ContextRecyclerScope context_recycler_scope(context_recycler);
   v8::Local<v8::Context> context = context_recycler_scope.GetContext();
 
@@ -711,9 +729,12 @@ BidderWorklet::V8State::GenerateSingleBid(
     const scoped_refptr<TrustedSignals::Result>& trusted_bidding_signals_result,
     uint64_t trace_id,
     bool restrict_to_kanon_ads) {
-  // Can't make a bid without any ads.
-  if (!bidder_worklet_non_shared_params->ads)
+  // Can't make a bid without any ads, or if we aren't permitted to spend any
+  // time on it.
+  if (!bidder_worklet_non_shared_params->ads ||
+      (per_buyer_timeout.has_value() && per_buyer_timeout.value().is_zero())) {
     return absl::nullopt;
+  }
 
   base::TimeTicks start = base::TimeTicks::Now();
 
@@ -739,7 +760,8 @@ BidderWorklet::V8State::GenerateSingleBid(
     fresh_context_recycler =
         std::make_unique<ContextRecycler>(v8_helper_.get());
     fresh_context_recycler->AddForDebuggingOnlyBindings();
-    fresh_context_recycler->AddPrivateAggregationBindings();
+    fresh_context_recycler->AddPrivateAggregationBindings(
+        permissions_policy_state_->private_aggregation_allowed);
     fresh_context_recycler->AddSetBidBindings();
     fresh_context_recycler->AddSetPriorityBindings();
     fresh_context_recycler->AddSetPrioritySignalsOverrideBindings();
@@ -1069,6 +1091,7 @@ void BidderWorklet::OnScriptDownloaded(WorkletLoader::Result worklet_script,
                        base::BindOnce(&BidderWorklet::V8State::SetWorkletScript,
                                       base::Unretained(v8_state_.get()),
                                       std::move(worklet_script)));
+  MaybeRecordCodeWait();
   RunReadyTasks();
 }
 
@@ -1100,7 +1123,23 @@ void BidderWorklet::OnWasmDownloaded(WorkletWasmLoader::Result wasm_helper,
                        base::BindOnce(&BidderWorklet::V8State::SetWasmHelper,
                                       base::Unretained(v8_state_.get()),
                                       std::move(wasm_helper)));
+  MaybeRecordCodeWait();
   RunReadyTasks();
+}
+
+void BidderWorklet::MaybeRecordCodeWait() {
+  if (!IsCodeReady()) {
+    return;
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (auto& task : generate_bid_tasks_) {
+    task.wait_code = now - task.trace_wait_deps_start;
+  }
+
+  for (auto& task : report_win_tasks_) {
+    task.wait_code = now - task.trace_wait_deps_start;
+  }
 }
 
 void BidderWorklet::RunReadyTasks() {
@@ -1129,11 +1168,6 @@ void BidderWorklet::OnTrustedBiddingSignalsDownloaded(
     scoped_refptr<TrustedSignals::Result> result,
     absl::optional<std::string> error_msg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
-
-  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "request_bidding_signals",
-                                  task->trace_id);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "waiting_for_bidder_script",
-                                    task->trace_id);
 
   const TrustedSignals::Result::PriorityVector* priority_vector = nullptr;
   if (result) {
@@ -1168,7 +1202,7 @@ void BidderWorklet::OnGenerateBidClientDestroyed(
   // deleted, as everything else, including fetching trusted bidding signals,
   // can be safely cancelled.
   if (!IsReadyToGenerateBid(*task)) {
-    generate_bid_tasks_.erase(task);
+    CleanUpBidTaskOnUserThread(task);
   } else {
     // Otherwise, there should be a pending V8 call. Try to cancel that, but if
     // it already started, it will just run and invoke the GenerateBidClient's
@@ -1183,6 +1217,8 @@ void BidderWorklet::SignalsReceivedCallback(
     GenerateBidTaskList::iterator task) {
   DCHECK(!task->signals_received_callback_invoked);
   task->signals_received_callback_invoked = true;
+  task->wait_trusted_signals =
+      base::TimeTicks::Now() - task->trace_wait_deps_start;
   GenerateBidIfReady(task);
 }
 
@@ -1193,6 +1229,12 @@ void BidderWorklet::OnDirectFromSellerPerBuyerSignalsDownloadedGenerateBid(
 
   task->direct_from_seller_result_per_buyer_signals = std::move(result);
   task->direct_from_seller_request_per_buyer_signals.reset();
+
+  // The two direct from seller signals metrics for tracing are combined since
+  // they should be roughly the same.
+  task->wait_direct_from_seller_signals =
+      std::max(task->wait_direct_from_seller_signals,
+               base::TimeTicks::Now() - task->trace_wait_deps_start);
 
   GenerateBidIfReady(task);
 }
@@ -1205,11 +1247,18 @@ void BidderWorklet::OnDirectFromSellerAuctionSignalsDownloadedGenerateBid(
   task->direct_from_seller_result_auction_signals = std::move(result);
   task->direct_from_seller_request_auction_signals.reset();
 
+  // The two direct from seller signals metrics for tracing are combined since
+  // they should be roughly the same.
+  task->wait_direct_from_seller_signals =
+      std::max(task->wait_direct_from_seller_signals,
+               base::TimeTicks::Now() - task->trace_wait_deps_start);
+
   GenerateBidIfReady(task);
 }
 
 bool BidderWorklet::IsReadyToGenerateBid(const GenerateBidTask& task) const {
   return task.signals_received_callback_invoked &&
+         task.finalize_generate_bid_called &&
          !task.direct_from_seller_request_per_buyer_signals &&
          !task.direct_from_seller_request_auction_signals && IsCodeReady();
 }
@@ -1224,8 +1273,25 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
   // true.
   DCHECK(!task->trusted_bidding_signals_request);
 
-  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "waiting_for_bidder_script",
-                                  task->trace_id);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "fledge", "wait_generate_bid_deps", task->trace_id, "data",
+      [&](perfetto::TracedValue trace_context) {
+        auto dict = std::move(trace_context).WriteDictionary();
+        if (!task->wait_code.is_zero()) {
+          dict.Add("wait_code_ms", task->wait_code.InMillisecondsF());
+        }
+        if (!task->wait_trusted_signals.is_zero()) {
+          dict.Add("wait_trusted_signals_ms",
+                   task->wait_trusted_signals.InMillisecondsF());
+        }
+        if (!task->wait_direct_from_seller_signals.is_zero()) {
+          dict.Add("wait_direct_from_seller_signals_ms",
+                   task->wait_direct_from_seller_signals.InMillisecondsF());
+        }
+        if (!task->wait_promises.is_zero()) {
+          dict.Add("wait_promises_ms", task->wait_promises.InMillisecondsF());
+        }
+      });
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "post_v8_task", task->trace_id);
 
   // Normally the PostTask below will eventually get `task` cleaned up once it
@@ -1276,6 +1342,12 @@ void BidderWorklet::OnDirectFromSellerPerBuyerSignalsDownloadedReportWin(
   task->direct_from_seller_result_per_buyer_signals = std::move(result);
   task->direct_from_seller_request_per_buyer_signals.reset();
 
+  // The two direct from seller signals metrics for tracing are combined since
+  // they should be roughly the same.
+  task->wait_direct_from_seller_signals =
+      std::max(task->wait_direct_from_seller_signals,
+               base::TimeTicks::Now() - task->trace_wait_deps_start);
+
   RunReportWinIfReady(task);
 }
 
@@ -1286,6 +1358,12 @@ void BidderWorklet::OnDirectFromSellerAuctionSignalsDownloadedReportWin(
 
   task->direct_from_seller_result_auction_signals = std::move(result);
   task->direct_from_seller_request_auction_signals.reset();
+
+  // The two direct from seller signals metrics for tracing are combined since
+  // they should be roughly the same.
+  task->wait_direct_from_seller_signals =
+      std::max(task->wait_direct_from_seller_signals,
+               base::TimeTicks::Now() - task->trace_wait_deps_start);
 
   RunReportWinIfReady(task);
 }
@@ -1300,8 +1378,18 @@ void BidderWorklet::RunReportWinIfReady(ReportWinTaskList::iterator task) {
   if (!IsReadyToReportWin(*task))
     return;
 
-  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "waiting_for_bidder_script",
-                                  task->trace_id);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "fledge", "wait_report_win_deps", task->trace_id, "data",
+      [&](perfetto::TracedValue trace_context) {
+        auto dict = std::move(trace_context).WriteDictionary();
+        if (!task->wait_code.is_zero()) {
+          dict.Add("wait_code_ms", task->wait_code.InMillisecondsF());
+        }
+        if (!task->wait_direct_from_seller_signals.is_zero()) {
+          dict.Add("wait_direct_from_seller_signals_ms",
+                   task->wait_direct_from_seller_signals.InMillisecondsF());
+        }
+      });
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "post_v8_task", task->trace_id);
 
   // Other than the callback field, no fields of `task` are needed after this
@@ -1354,12 +1442,18 @@ void BidderWorklet::DeliverBidCallbackOnUserThread(
       debug_win_report_url, set_priority.value_or(0), set_priority.has_value(),
       std::move(update_priority_signals_overrides), std::move(pa_requests),
       error_msgs);
-  generate_bid_tasks_.erase(task);
+  CleanUpBidTaskOnUserThread(task);
 }
 
 void BidderWorklet::CleanUpBidTaskOnUserThread(
     GenerateBidTaskList::iterator task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+  // Disconnect the FinalizeGenerateBid pipe, if any, since that refers
+  // to `task` (it generally will be closed already, but may not be if
+  // GenerateBidClient disconnected before FinalizeGenerateBid was called).
+  if (task->finalize_generate_bid_receiver_id.has_value()) {
+    finalize_receiver_set_.Remove(*task->finalize_generate_bid_receiver_id);
+  }
   generate_bid_tasks_.erase(task);
 }
 

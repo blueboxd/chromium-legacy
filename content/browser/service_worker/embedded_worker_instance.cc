@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -39,10 +39,10 @@
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/browser/usb_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -316,12 +316,12 @@ void EmbeddedWorkerInstance::Start(
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter_for_subresources;
 
-    network::mojom::ClientSecurityStatePtr client_security_state;
-    const network::CrossOriginEmbedderPolicy* coep = nullptr;
-    if (owner_version_->client_security_state()) {
-      client_security_state = owner_version_->client_security_state()->Clone();
-      coep = &client_security_state->cross_origin_embedder_policy;
-    }
+    network::mojom::ClientSecurityStatePtr client_security_state =
+        owner_version_->BuildClientSecurityState();
+    const network::CrossOriginEmbedderPolicy* coep =
+        client_security_state
+            ? &client_security_state->cross_origin_embedder_policy
+            : nullptr;
 
     if (coep) {
       mojo::PendingRemote<blink::mojom::ReportingObserver>

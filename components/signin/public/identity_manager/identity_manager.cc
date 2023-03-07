@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -82,7 +82,7 @@ void SetPrimaryAccount(IdentityManager* identity_manager,
     // TODO(https://crbug.com/1223364): Replace this if with a CHECK after all
     //                                  the existing users have been migrated.
     identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-        signin_metrics::ACCOUNT_REMOVED_FROM_DEVICE,
+        signin_metrics::ProfileSignout::kAccountRemovedFromDevice,
         signin_metrics::SignoutDelete::kIgnoreMetric);
   }
 

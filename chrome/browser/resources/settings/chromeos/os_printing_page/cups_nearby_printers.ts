@@ -11,11 +11,9 @@ import '../../settings_shared.css.js';
 import './cups_printer_types.js';
 import './cups_printers_browser_proxy.js';
 import './cups_printers_entry.js';
-import './cups_printers_entry_list_behavior.js';
 
-import {ListPropertyUpdateMixin, ListPropertyUpdateMixinInterface} from 'chrome://resources/cr_elements/list_property_update_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {recordSettingChange} from '../metrics_recorder.js';
 
@@ -23,17 +21,10 @@ import {getTemplate} from './cups_nearby_printers.html.js';
 import {matchesSearchTerm, sortPrinters} from './cups_printer_dialog_util.js';
 import {PrinterListEntry} from './cups_printer_types.js';
 import {CupsPrinterInfo, CupsPrintersBrowserProxyImpl, PrinterSetupResult} from './cups_printers_browser_proxy.js';
-import {CupsPrintersEntryListBehavior, CupsPrintersEntryListBehaviorInterface} from './cups_printers_entry_list_behavior.js';
+import {CupsPrintersEntryListMixin} from './cups_printers_entry_list_mixin.js';
 
 const SettingsCupsNearbyPrintersElementBase =
-    mixinBehaviors(
-        [
-          CupsPrintersEntryListBehavior,
-        ],
-        WebUiListenerMixin(ListPropertyUpdateMixin(PolymerElement))) as {
-      new (): PolymerElement & CupsPrintersEntryListBehaviorInterface &
-          ListPropertyUpdateMixinInterface & WebUiListenerMixinInterface,
-    };
+    CupsPrintersEntryListMixin(WebUiListenerMixin(PolymerElement));
 
 export class SettingsCupsNearbyPrintersElement extends
     SettingsCupsNearbyPrintersElementBase {

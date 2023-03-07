@@ -25,7 +25,6 @@
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/site_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -96,13 +95,6 @@ bool AreHttpRequestHeadersCompatible(
                      std::move(prerender_headers), trigger_type,
                      embedder_histogram_suffix));
   return false;
-}
-
-PreloadingFailureReason ToPreloadingFailureReason(PrerenderFinalStatus status) {
-  return static_cast<PreloadingFailureReason>(
-      static_cast<int>(status) +
-      static_cast<int>(
-          PreloadingFailureReason::kPreloadingFailureReasonCommonEnd));
 }
 
 }  // namespace
@@ -182,8 +174,8 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
         PreloadingTriggeringOutcome::kTriggeredButPending);
   }
 
-  scoped_refptr<SiteInstance> site_instance =
-      SiteInstance::Create(web_contents.GetBrowserContext());
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::Create(web_contents.GetBrowserContext());
   frame_tree_->Init(site_instance.get(),
                     /*renderer_initiated_creation=*/false,
                     /*main_frame_name=*/"", /*opener_for_origin=*/nullptr,
@@ -303,8 +295,11 @@ bool PrerenderHost::StartPrerendering() {
   // Just use the referrer from attributes, as NoStatePrefetch does.
   load_url_params.referrer = attributes_.referrer;
 
-  // TODO(https://crbug.com/1189034): Should we set `override_user_agent` here?
-  // Things seem to work without it.
+  // TODO(https://crbug.com/1406149, https://crbug.com/1378921): Set
+  // `override_user_agent` for Android. This field is determined on the Java
+  // side based on the URL and we should mimic Java code and set it to the
+  // correct value. After fixing this, we can remove the check for UA headers
+  // upon activation.
 
   // TODO(https://crbug.com/1132746): Set up other fields of `load_url_params`
   // as well, and add tests for them.
@@ -925,6 +920,8 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     //    activated (kActivatedBeforeStarted).
     case PrerenderFinalStatus::kTriggerDestroyed:
     case PrerenderFinalStatus::kActivatedBeforeStarted:
+    case PrerenderFinalStatus::kTabClosedByUserGesture:
+    case PrerenderFinalStatus::kTabClosedWithoutUserGesture:
       return;
     case PrerenderFinalStatus::kDestroyed:
     case PrerenderFinalStatus::kLowEndDevice:
@@ -969,6 +966,10 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kActivationNavigationParameterMismatch:
     case PrerenderFinalStatus::kActivatedInBackground:
     case PrerenderFinalStatus::kEmbedderHostDisallowed:
+    case PrerenderFinalStatus::kActivationNavigationDestroyedBeforeSuccess:
+    case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessCrashed:
+    case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled:
+    case PrerenderFinalStatus::kActivationFramePolicyNotCompatible:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as

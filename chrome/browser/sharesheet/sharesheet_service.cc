@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -225,6 +225,7 @@ void SharesheetService::ShowBubbleForTesting(
     DeliveredCallback delivered_callback,
     CloseCallback close_callback,
     int num_actions_to_add) {
+  CHECK(views::Widget::GetWidgetForNativeWindow(native_window));
   SharesheetMetrics::RecordSharesheetLaunchSource(source);
   for (int i = 0; i < num_actions_to_add; ++i) {
     share_action_cache_->AddShareActionForTesting();  // IN-TEST
@@ -347,7 +348,12 @@ void SharesheetService::OnAppIconsLoaded(
     CloseCallback close_callback,
     std::vector<TargetInfo> targets) {
   gfx::NativeWindow native_window = std::move(get_native_window_callback).Run();
-  if (!native_window) {
+  // Note that checking |native_window| is not sufficient: |widget| can be null
+  // even when |native_window| is 'true': https://crbug.com/1375887#c11
+  views::Widget* const widget =
+      views::Widget::GetWidgetForNativeWindow(native_window);
+  if (!widget) {
+    LOG(WARNING) << "Window has been closed";
     std::move(delivered_callback).Run(SharesheetResult::kErrorWindowClosed);
     return;
   }
@@ -468,6 +474,7 @@ void SharesheetService::RecordUserActionMetrics(
       case apps::AppType::kStandaloneBrowser:
       case apps::AppType::kRemote:
       case apps::AppType::kBorealis:
+      case apps::AppType::kBruschetta:
       case apps::AppType::kStandaloneBrowserChromeApp:
       case apps::AppType::kExtension:
       case apps::AppType::kStandaloneBrowserExtension:

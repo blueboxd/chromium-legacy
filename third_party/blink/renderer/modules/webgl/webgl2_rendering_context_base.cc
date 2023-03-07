@@ -546,7 +546,7 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(GLenum target,
   }
   framebuffer_binding->SetAttachmentForBoundFramebuffer(
       target, attachment, textarget, texture, level, layer, 0);
-  ApplyStencilTest();
+  ApplyDepthAndStencilTest();
 }
 
 ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(
@@ -1087,7 +1087,7 @@ void WebGL2RenderingContextBase::renderbufferStorageMultisample(
   }
   RenderbufferStorageImpl(target, samples, internalformat, width, height,
                           function_name);
-  ApplyStencilTest();
+  ApplyDepthAndStencilTest();
 }
 
 void WebGL2RenderingContextBase::ResetUnpackParameters() {
@@ -5894,9 +5894,9 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       return WebGLAny(script_state, GL_RENDERBUFFER);
     case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
       return WebGLAny(script_state, attachment_object);
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER:
-    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
       if (!attachment_object->IsTexture())
         break;
       [[fallthrough]];
@@ -5915,7 +5915,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         SynthesizeGLError(
             GL_INVALID_OPERATION, kFunctionName,
-            "COMPONENT_TYPE can't be queried for DEPTH_STENCIL_ATTACHMENT");
+            "component type cannot be queried for DEPTH_STENCIL_ATTACHMENT");
         return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       [[fallthrough]];

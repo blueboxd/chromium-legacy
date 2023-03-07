@@ -30,10 +30,11 @@
 namespace views {
 class ImageView;
 class Label;
-}
+}  // namespace views
 
 namespace ash {
 
+class HoverHighlightView;
 class NetworkDetailedNetworkView;
 
 // Implementation of NetworkListViewController.
@@ -48,13 +49,6 @@ class ASH_EXPORT NetworkListViewControllerImpl
   NetworkListViewControllerImpl& operator=(
       const NetworkListViewControllerImpl&) = delete;
   ~NetworkListViewControllerImpl() override;
-
-  void SetDefaultNetworkForTesting(
-      chromeos::network_config::mojom::NetworkStatePropertiesPtr
-          default_network);
-
-  void SetManagedNetworkPropertiesForTesting(
-      chromeos::network_config::mojom::ManagedPropertiesPtr managed_properties);
 
  protected:
   TrayNetworkStateModel* model() { return model_; }
@@ -129,6 +123,9 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // `unknown_header_`.
   size_t CreateWifiGroupHeader(size_t index, const bool is_known);
 
+  // Creates and adds the join wifi entry at the bottom of the wifi networks.
+  size_t CreateJoinWifiEntry(size_t index);
+
   // Updates Mobile data section, updates add eSIM button states and
   // calls UpdateMobileToggleAndSetStatusMessage().
   void UpdateMobileSection();
@@ -182,16 +179,6 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // already exists, it will be replaced.
   void SetConnectionWarningIcon(TriView* parent, bool use_managed_icon);
 
-  const chromeos::network_config::mojom::NetworkStateProperties*
-  GetDefaultNetwork();
-
-  // Fetches the managed properties for the network identified by `guid`
-  // asynchronously and calls `callback` with the result. The `guid` belongs
-  // either to the default network or to the connected VPN.
-  void GetManagedProperties(const std::string& guid,
-                            chromeos::network_config::mojom::CrosNetworkConfig::
-                                GetManagedPropertiesCallback callback);
-
   // Called when the managed properties for the network identified by `guid` are
   // fetched.
   void OnGetManagedPropertiesResult(
@@ -233,6 +220,7 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // Owned by views hierarchy.
   views::Label* known_header_ = nullptr;
   views::Label* unknown_header_ = nullptr;
+  HoverHighlightView* join_wifi_entry_ = nullptr;
 
   bool has_mobile_networks_;
   bool has_wifi_networks_;
@@ -246,11 +234,6 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // managed icon.
   absl::optional<bool> is_proxy_managed_;
   absl::optional<bool> is_vpn_managed_;
-
-  chromeos::network_config::mojom::ManagedPropertiesPtr
-      managed_network_properties_for_testing_ = nullptr;
-  chromeos::network_config::mojom::NetworkStatePropertiesPtr
-      default_network_for_testing_ = nullptr;
 
   NetworkDetailedNetworkView* network_detailed_network_view_;
   NetworkIdToViewMap network_id_to_view_map_;

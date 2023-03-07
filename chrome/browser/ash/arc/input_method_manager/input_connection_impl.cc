@@ -6,9 +6,8 @@
 
 #include <tuple>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/ime_keymap.h"
@@ -48,9 +47,9 @@ bool IsControlChar(const std::u16string& text) {
 }
 
 ui::TextInputClient* GetTextInputClient() {
-  ui::IMEBridge* bridge = ui::IMEBridge::Get();
+  ash::IMEBridge* bridge = ash::IMEBridge::Get();
   DCHECK(bridge);
-  ui::TextInputTarget* handler = bridge->GetInputContextHandler();
+  ash::TextInputTarget* handler = bridge->GetInputContextHandler();
   if (!handler)
     return nullptr;
   ui::TextInputClient* client = handler->GetInputMethod()->GetTextInputClient();

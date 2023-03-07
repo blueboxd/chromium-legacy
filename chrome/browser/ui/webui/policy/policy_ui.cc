@@ -12,17 +12,57 @@
 #include "chrome/browser/ui/webui/policy/policy_ui_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
-#include "components/grit/dev_ui_components_resources.h"
+#include "components/grit/policy_resources.h"
+#include "components/grit/policy_resources_map.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
+#include "components/policy/core/common/policy_logger.h"
+#include "components/version_info/version_info.h"
+#include "components/version_ui/version_handler_helper.h"
+#include "content/public/common/user_agent.h"
+#endif  // BUILDFLAG(IS_ANDROID)
+
 namespace {
 
-content::WebUIDataSource* CreatePolicyUIHtmlSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIPolicyHost);
+#if BUILDFLAG(IS_ANDROID)
+// Returns the operating system information to be displayed on
+// chrome://policy/logs page.
+std::string GetOsInfo() {
+  // The base format for the OS version and build
+  constexpr char kOSVersionAndBuildFormat[] = "%s, Version: %s";
+  return base::StringPrintf(
+      kOSVersionAndBuildFormat,
+      (content::GetAndroidOSInfo(content::IncludeAndroidBuildNumber::Include,
+                                 content::IncludeAndroidModel::Include))
+          .c_str(),
+      (base::SysInfo::OperatingSystemVersion()).c_str());
+}
+
+// Returns the version information to be displayed on the chrome://policy/logs
+// page.
+base::Value GetVersionInfo() {
+  base::Value version_info(base::Value::Type::DICT);
+
+  version_info.SetStringPath("revision", version_info::GetLastChange());
+  version_info.SetStringPath("version", version_info::GetVersionNumber());
+  version_info.SetStringPath("device_os", GetOsInfo());
+  version_info.SetPath("variations",
+                       base::Value(version_ui::GetVariationsList()));
+
+  return version_info;
+}
+#endif
+
+void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIPolicyHost);
   PolicyUIHandler::AddCommonLocalizedStringsToSource(source);
 
   static constexpr webui::LocalizedString kStrings[] = {
@@ -37,6 +77,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
     {"labelClientId", IDS_POLICY_LABEL_CLIENT_ID},
     {"labelDirectoryApiId", IDS_POLICY_LABEL_DIRECTORY_API_ID},
     {"labelError", IDS_POLICY_LABEL_ERROR},
+    {"labelWarning", IDS_POLICY_HEADER_WARNING},
     {"labelGaiaId", IDS_POLICY_LABEL_GAIA_ID},
     {"labelIsAffiliated", IDS_POLICY_LABEL_IS_AFFILIATED},
     {"labelLastCloudReportSentTimestamp",
@@ -76,6 +117,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
     {"signinProfile", IDS_POLICY_SIGNIN_PROFILE},
     {"status", IDS_POLICY_STATUS},
     {"statusErrorManagedNoPolicy", IDS_POLICY_STATUS_ERROR_MANAGED_NO_POLICY},
+    {"statusFlexOrgNoPolicy", IDS_POLICY_STATUS_FLEX_ORG_NO_POLICY},
     {"statusDevice", IDS_POLICY_STATUS_DEVICE},
     {"statusMachine", IDS_POLICY_STATUS_MACHINE},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -88,38 +130,34 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   };
   source->AddLocalizedStrings(kStrings);
 
-  source->AddResourcePath("policy.css", IDR_POLICY_CSS);
-  source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);
-  source->AddResourcePath("policy.js", IDR_POLICY_JS);
-  source->AddResourcePath("policy_conflict.html.js",
-                          IDR_POLICY_POLICY_CONFLICT_HTML_JS);
-  source->AddResourcePath("policy_conflict.js", IDR_POLICY_POLICY_CONFLICT_JS);
-  source->AddResourcePath("policy_row.html.js", IDR_POLICY_POLICY_ROW_HTML_JS);
-  source->AddResourcePath("policy_row.js", IDR_POLICY_POLICY_ROW_JS);
-  source->AddResourcePath("policy_precedence_row.html.js",
-                          IDR_POLICY_POLICY_PRECEDENCE_ROW_HTML_JS);
-  source->AddResourcePath("policy_precedence_row.js",
-                          IDR_POLICY_POLICY_PRECEDENCE_ROW_JS);
-  source->AddResourcePath("policy_table.html.js",
-                          IDR_POLICY_POLICY_TABLE_HTML_JS);
-  source->AddResourcePath("policy_table.js", IDR_POLICY_POLICY_TABLE_JS);
-  source->AddResourcePath("status_box.html.js", IDR_POLICY_STATUS_BOX_HTML_JS);
-  source->AddResourcePath("status_box.js", IDR_POLICY_STATUS_BOX_JS);
-  source->SetDefaultResource(IDR_POLICY_HTML);
+#if BUILDFLAG(IS_ANDROID)
+  source->AddBoolean(
+      "loggingEnabled",
+      policy::PolicyLogger::GetInstance()->IsPolicyLoggingEnabled());
 
-  source->EnableReplaceI18nInJS();
-  source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::TrustedTypes,
-      "trusted-types static-types;");
-  return source;
+  if (policy::PolicyLogger::GetInstance()->IsPolicyLoggingEnabled()) {
+    std::string variations_json_value;
+    base::JSONWriter::Write(GetVersionInfo(), &variations_json_value);
+
+    source->AddString("versionInfo", variations_json_value);
+  }
+
+  source->AddResourcePath("logs/", IDR_POLICY_LOGS_POLICY_LOGS_HTML);
+  source->AddResourcePath("logs", IDR_POLICY_LOGS_POLICY_LOGS_HTML);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kPolicyResources, kPolicyResourcesSize),
+      IDR_POLICY_POLICY_HTML);
+
+  webui::EnableTrustedTypesCSP(source);
 }
 
 }  // namespace
 
 PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<PolicyUIHandler>());
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
-                                CreatePolicyUIHtmlSource());
+  CreateAndAddPolicyUIHtmlSource(Profile::FromWebUI(web_ui));
 }
 
 PolicyUI::~PolicyUI() = default;

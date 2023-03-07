@@ -5,8 +5,8 @@
 #include "chrome/services/sharing/nearby/platform/input_stream_impl.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/task/sequenced_task_runner.h"
 
-namespace location {
 namespace nearby {
 namespace chrome {
 
@@ -185,4 +185,3 @@ void InputStreamImpl::DoClose(base::WaitableEvent* task_run_waitable_event) {
 
 }  // namespace chrome
 }  // namespace nearby
-}  // namespace location

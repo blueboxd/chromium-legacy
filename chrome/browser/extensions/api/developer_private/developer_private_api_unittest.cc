@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -364,7 +364,7 @@ const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
           .Set("description", "an extension");
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(manifest.BuildDict())
+          .SetManifest(manifest.Build())
           .SetLocation(mojom::ManifestLocation::kInternal)
           .SetID(id)
           .Build();
@@ -456,9 +456,8 @@ void DeveloperPrivateApiUnitTest::UpdateProfileConfigurationDevMode(
       api::DeveloperPrivateUpdateProfileConfigurationFunction>();
   base::Value::List args =
       ListBuilder()
-          .Append(
-              DictionaryBuilder().Set("inDeveloperMode", dev_mode).BuildDict())
-          .BuildList();
+          .Append(DictionaryBuilder().Set("inDeveloperMode", dev_mode).Build())
+          .Build();
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
 }
 
@@ -1242,8 +1241,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
                                .Append(DictionaryBuilder()
                                            .Set("extensionId", extension->id())
                                            .Set("type", type_string)
-                                           .BuildDict())
-                               .BuildList();
+                                           .Build())
+                               .Build();
   auto function = base::MakeRefCounted<
       api::DeveloperPrivateDeleteExtensionErrorsFunction>();
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
@@ -1254,13 +1253,13 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
 
   // Next remove errors by id.
   int error_id = error_list[0]->id();
-  args = ListBuilder()
-             .Append(DictionaryBuilder()
-                         .Set("extensionId", extension->id())
-                         .Set("errorIds",
-                              ListBuilder().Append(error_id).BuildList())
-                         .BuildDict())
-             .BuildList();
+  args =
+      ListBuilder()
+          .Append(DictionaryBuilder()
+                      .Set("extensionId", extension->id())
+                      .Set("errorIds", ListBuilder().Append(error_id).Build())
+                      .Build())
+          .Build();
   function = base::MakeRefCounted<
       api::DeveloperPrivateDeleteExtensionErrorsFunction>();
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
@@ -1268,11 +1267,11 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
   EXPECT_EQ(1u, error_console->GetErrorsForExtension(extension->id()).size());
 
   // Finally remove all errors for the extension.
-  args = ListBuilder()
-             .Append(DictionaryBuilder()
-                         .Set("extensionId", extension->id())
-                         .BuildDict())
-             .BuildList();
+  args =
+      ListBuilder()
+          .Append(
+              DictionaryBuilder().Set("extensionId", extension->id()).Build())
+          .Build();
   function = base::MakeRefCounted<
       api::DeveloperPrivateDeleteExtensionErrorsFunction>();
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
@@ -1287,7 +1286,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RepairNotBrokenExtension) {
   const Extension* extension = InstallCRX(extension_path, INSTALL_NEW);
 
   // Attempt to repair the good extension, expect failure.
-  base::Value::List args = ListBuilder().Append(extension->id()).BuildList();
+  base::Value::List args = ListBuilder().Append(extension->id()).Build();
   auto function =
       base::MakeRefCounted<api::DeveloperPrivateRepairExtensionFunction>();
   EXPECT_FALSE(RunFunction(function, args));
@@ -1317,7 +1316,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RepairPolicyExtension) {
   }
 
   // Attempt to repair the good extension, expect failure.
-  base::Value::List args = ListBuilder().Append(extension_id).BuildList();
+  base::Value::List args = ListBuilder().Append(extension_id).Build();
   auto function =
       base::MakeRefCounted<api::DeveloperPrivateRepairExtensionFunction>();
   EXPECT_FALSE(RunFunction(function, args));
@@ -1326,7 +1325,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RepairPolicyExtension) {
   // Corrupt the extension , still expect repair failure because this is a
   // policy extension.
   service()->DisableExtension(extension_id, disable_reason::DISABLE_CORRUPTED);
-  args = ListBuilder().Append(extension_id).BuildList();
+  args = ListBuilder().Append(extension_id).Build();
   function =
       base::MakeRefCounted<api::DeveloperPrivateRepairExtensionFunction>();
   EXPECT_FALSE(RunFunction(function, args));
@@ -1918,7 +1917,7 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
   scoped_refptr<const Extension> dummy_extension =
       ExtensionBuilder("dummy")
           .SetManifestKey("optional_permissions",
-                          ListBuilder().Append("tabs").BuildList())
+                          ListBuilder().Append("tabs").Build())
           .Build();
 
   TestEventRouterObserver test_observer(event_router);

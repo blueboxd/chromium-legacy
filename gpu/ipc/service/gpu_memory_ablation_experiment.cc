@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -38,8 +38,7 @@ BASE_FEATURE(kGPUMemoryAblationFeature,
 const char kGPUMemoryAblationFeatureSizeParam[] = "Size";
 
 // Image allocation parameters.
-constexpr viz::SharedImageFormat kFormat =
-    viz::SharedImageFormat::SinglePlane(viz::ResourceFormat::RGBA_8888);
+constexpr viz::SharedImageFormat kFormat = viz::SinglePlaneFormat::kRGBA_8888;
 constexpr uint32_t kUsage = SHARED_IMAGE_USAGE_DISPLAY_READ;
 
 bool GpuMemoryAblationExperiment::ExperimentSupported() {
@@ -201,14 +200,11 @@ bool GpuMemoryAblationExperiment::InitGpu(GpuChannelManager* channel_manager) {
   if (!scoped_current)
     return false;
 
-  gpu::GpuMemoryBufferFactory* gmb_factory =
-      channel_manager->gpu_memory_buffer_factory();
   factory_ = std::make_unique<SharedImageFactory>(
       channel_manager->gpu_preferences(),
       channel_manager->gpu_driver_bug_workarounds(),
       channel_manager->gpu_feature_info(), context_state_.get(),
-      channel_manager->shared_image_manager(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
+      channel_manager->shared_image_manager(), this,
       /*is_for_display_compositor=*/false);
 
   rep_factory_ = std::make_unique<SharedImageRepresentationFactory>(

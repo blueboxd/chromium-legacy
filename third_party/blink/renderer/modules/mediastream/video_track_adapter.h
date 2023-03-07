@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -42,6 +42,10 @@ class MODULES_EXPORT VideoTrackAdapter
     : public WTF::ThreadSafeRefCounted<VideoTrackAdapter> {
  public:
   using OnMutedCallback = base::RepeatingCallback<void(bool mute_state)>;
+
+  // Min delta time between two frames allowed without being dropped if a max
+  // frame rate is specified. Exposed globally for testability.
+  static constexpr int kMinTimeBetweenFramesMs = 5;
 
   VideoTrackAdapter(
       scoped_refptr<base::SequencedTaskRunner> video_task_runner,

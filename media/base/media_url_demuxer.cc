@@ -4,8 +4,9 @@
 
 #include "media/base/media_url_demuxer.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "media/base/demuxer.h"
 
@@ -69,6 +70,11 @@ void MediaUrlDemuxer::Seek(base::TimeDelta time,
                            PipelineStatusCallback status_cb) {
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(std::move(status_cb), PIPELINE_OK));
+}
+
+bool MediaUrlDemuxer::IsSeekable() const {
+  // While the demuxer itself is not seekable, the underlying player is.
+  return true;
 }
 
 void MediaUrlDemuxer::Stop() {}

@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -118,7 +118,7 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
                            .Set("version", "1.0")
                            .Set("manifest_version", 2)
                            .Set("description", "Random Ext")
-                           .BuildDict())
+                           .Build())
           .Build();
 
   content::TestWebContentsFactory factory;
@@ -139,17 +139,16 @@ TEST_F(ExtensionInstallPromptUnitTest,
        DelegatedPromptShowsOptionalPermissions) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(
-              DictionaryBuilder()
-                  .Set("name", "foo")
-                  .Set("version", "1.0")
-                  .Set("manifest_version", 2)
-                  .Set("description", "Random Ext")
-                  .Set("permissions",
-                       ListBuilder().Append("clipboardRead").BuildList())
-                  .Set("optional_permissions",
-                       ListBuilder().Append("tabs").BuildList())
-                  .BuildDict())
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "foo")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Set("description", "Random Ext")
+                           .Set("permissions",
+                                ListBuilder().Append("clipboardRead").Build())
+                           .Set("optional_permissions",
+                                ListBuilder().Append("tabs").Build())
+                           .Build())
           .Build();
 
   content::TestWebContentsFactory factory;

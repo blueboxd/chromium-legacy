@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_features.h"
@@ -443,7 +443,8 @@ class WebAppFrameToolbarBrowserTest_Borderless
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"A borderless app";
     web_app_info->display_mode = web_app::DisplayMode::kStandalone;
-    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    web_app_info->user_display_mode =
+        web_app::mojom::UserDisplayMode::kStandalone;
 
     if (uses_borderless) {
       web_app_info->display_override = {web_app::DisplayMode::kBorderless};
@@ -577,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
-                       PopupToItselfIsNotBorderless) {
+                       PopupToItselfIsBorderless) {
   InstallAndLaunchWebApp(/*uses_borderless=*/true);
   GrantWindowManagementPermission();
   ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
@@ -592,7 +593,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
       BrowserView::GetBrowserViewForBrowser(popup);
   EXPECT_TRUE(content::WaitForRenderFrameReady(
       popup_browser_view->GetActiveWebContents()->GetPrimaryMainFrame()));
-  EXPECT_FALSE(popup_browser_view->IsBorderlessModeEnabled());
+  popup_browser_view->set_isolated_web_app_true_for_testing();
+  EXPECT_TRUE(popup_browser_view->IsBorderlessModeEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
@@ -665,7 +667,8 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"A window-controls-overlay app";
     web_app_info->display_mode = web_app::DisplayMode::kStandalone;
-    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    web_app_info->user_display_mode =
+        web_app::mojom::UserDisplayMode::kStandalone;
     web_app_info->display_override = display_overrides;
 
     return helper()->InstallAndLaunchCustomWebApp(
@@ -677,7 +680,9 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
       BrowserView* browser_view) {
     helper()->SetupGeometryChangeCallback(web_contents);
     content::TitleWatcher title_watcher(web_contents, u"ongeometrychange");
-    browser_view->ToggleWindowControlsOverlayEnabled();
+    base::test::TestFuture<void> future;
+    browser_view->ToggleWindowControlsOverlayEnabled(future.GetCallback());
+    EXPECT_TRUE(future.Wait());
     std::ignore = title_watcher.WaitAndGetTitle();
   }
 

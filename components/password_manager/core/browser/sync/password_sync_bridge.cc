@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -862,6 +862,8 @@ void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const auto& [primary_key, specifics] : key_to_specifics_map) {
+    // TODO(crbug.com/1406388): consider whether the VISIT_SECRET macro in
+    // proto_visitors.h could replace this.
     specifics->set_password_value("<redacted>");
     const std::string storage_key = base::NumberToString(primary_key.value());
     for (sync_pb::PasswordSpecificsData_Notes_Note& note :
@@ -950,7 +952,8 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   sync_enabled_or_disabled_cb_.Run();
 }
 
-sync_pb::EntitySpecifics PasswordSyncBridge::TrimRemoteSpecificsForCaching(
+sync_pb::EntitySpecifics
+PasswordSyncBridge::TrimAllSupportedFieldsFromRemoteSpecifics(
     const sync_pb::EntitySpecifics& entity_specifics) const {
   DCHECK(entity_specifics.has_password());
 
@@ -976,6 +979,7 @@ PasswordSyncBridge::GetPossiblyTrimmedPasswordSpecificsData(
       .client_only_encrypted_data();
 }
 
+// TODO(crbug.com/1407925): Consider moving this logic to processor.
 bool PasswordSyncBridge::SyncMetadataCacheContainsSupportedFields(
     const syncer::EntityMetadataMap& metadata_map) const {
   for (const auto& metadata_entry : metadata_map) {
@@ -989,7 +993,8 @@ bool PasswordSyncBridge::SyncMetadataCacheContainsSupportedFields(
     parsed_specifics.ParseFromString(serialized_specifics);
 
     // Skip entities without a `password` field to avoid failing the
-    // precondition in the `TrimRemoteSpecificsForCaching` function below.
+    // precondition in the `TrimAllSupportedFieldsFromRemoteSpecifics` function
+    // below.
     if (!parsed_specifics.has_password()) {
       continue;
     }
@@ -997,7 +1002,8 @@ bool PasswordSyncBridge::SyncMetadataCacheContainsSupportedFields(
     // If `parsed_specifics` contain any supported fields, they would be cleared
     // by the trimming function.
     if (parsed_specifics.ByteSizeLong() !=
-        TrimRemoteSpecificsForCaching(parsed_specifics).ByteSizeLong()) {
+        TrimAllSupportedFieldsFromRemoteSpecifics(parsed_specifics)
+            .ByteSizeLong()) {
       return true;
     }
   }

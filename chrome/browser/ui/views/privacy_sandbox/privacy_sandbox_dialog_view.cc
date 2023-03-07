@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
@@ -30,6 +31,7 @@ constexpr int kDialogWidth = 512;
 constexpr int kM1DialogWidth = 600;
 constexpr int kDefaultConsentDialogHeight = 569;
 constexpr int kDefaultNoticeDialogHeight = 494;
+constexpr int kMinDialogHeight = 300;
 
 GURL GetDialogURL(PrivacySandboxService::PromptType prompt_type) {
   GURL base_url = GURL(chrome::kChromeUIPrivacySandboxDialogURL);
@@ -164,12 +166,14 @@ void PrivacySandboxDialogView::Close() {
 }
 
 void PrivacySandboxDialogView::ResizeNativeView(int height) {
-  int max_height = browser_->window()
-                       ->GetWebContentsModalDialogHost()
-                       ->GetMaximumDialogSize()
-                       .height();
-  web_view_->SetPreferredSize(gfx::Size(web_view_->GetPreferredSize().width(),
-                                        std::min(height, max_height)));
+  const int max_height = browser_->window()
+                             ->GetWebContentsModalDialogHost()
+                             ->GetMaximumDialogSize()
+                             .height();
+  const int target_height = std::min(height, max_height);
+  web_view_->SetPreferredSize(
+      gfx::Size(web_view_->GetPreferredSize().width(),
+                std::max(kMinDialogHeight, target_height)));
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 

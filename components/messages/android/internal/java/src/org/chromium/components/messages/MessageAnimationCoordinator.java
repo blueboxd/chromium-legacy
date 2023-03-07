@@ -60,12 +60,17 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
     public void updateWithoutStacking(
             @Nullable MessageState candidate, boolean suspended, Runnable onFinished) {
         if (mCurrentDisplayedMessage == candidate) return;
-        if (!suspended && mAnimatorSet.isStarted()) {
+        if (mAnimatorSet.isStarted()) {
+            if (suspended) {
+                // Force animation to end in order to trigger callbacks.
+                mAnimatorSet.end();
+                onFinished.run();
+            }
             return;
         }
         if (mCurrentDisplayedMessage == null) {
             mCurrentDisplayedMessage = candidate;
-            mMessageQueueDelegate.onRequestShowing(() -> {
+            mMessageQueueDelegate.onStartShowing(() -> {
                 if (mCurrentDisplayedMessage == null) {
                     return;
                 }
@@ -167,48 +172,19 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
             }
             return;
         }
-
         var currentFront = mCurrentDisplayedMessages.get(0); // Currently front.
         var currentBack = mCurrentDisplayedMessages.get(1); // Currently back.
         var nextFront = candidates.get(0); // Next front.
         var nextBack = candidates.get(1); // Next back.
-
-        // If front message is null, then the back one is definitely null.
-        assert !(nextFront == null && nextBack != null);
-        assert !(currentFront == null && currentBack != null);
-        assert !isSuspended || nextFront == null : "when suspending, all messages should be hidden";
-        if (currentFront == nextFront && currentBack == nextBack) {
-            assert currentFront != null
-                    || !mMessageQueueDelegate.isReadyForShowing()
-                : "onFinishHiding should have been executed if no message is showing.";
-            return;
-        }
-
-        if (!isSuspended && !mMessageQueueDelegate.isReadyForShowing()) {
-            // Make sure everything is ready for showing a message, unless messages are about to
-            // be removed immediately. By "showing", it does mean not just triggering a showing
-            // animation, but also holding a message view on screen.
-            // https://crbug.com/1408627: when showing a second message, it is possible the first
-            // message is still waiting for message queue delegate to be ready.
-            // Only request to show a message if not requested yet.
-            if (!mMessageQueueDelegate.isPendingShow()) {
-                mMessageQueueDelegate.onRequestShowing(onFinished);
-            }
-            return;
-        }
-
-        // Similar to above scenario, second message is about trigger another animation while first
-        // message is still waiting its animation to be triggered. Early return to avoid cancelling
-        // that animation accidentally. Second message will be added after its animation is done.
-        if (mContainer.isIsInitializingLayout()) {
-            return;
-        }
-
         // If both animators will be modified, modify FrontAnimator first, because the back message
         // relies on the first message in order to adjust its size.
         mFrontAnimator = mBackAnimator = null;
         boolean animate = !isSuspended;
 
+        // If front message is null, then the back one is definitely null.
+        assert !(nextFront == null && nextBack != null);
+        assert !(currentFront == null && currentBack != null);
+        if (currentFront == nextFront && currentBack == nextBack) return;
         if (currentFront == null) { // Implies that currently back is also null.
             recordAnimationAction(StackingAnimationAction.INSERT_AT_FRONT, nextFront);
             mFrontAnimator = nextFront.handler.show(Position.INVISIBLE, Position.FRONT);
@@ -291,7 +267,20 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
             }
         }
 
-        if (nextFront == null) {
+        if (currentFront == null) {
+            // No message is being displayed now: trigger #onStartShowing.
+            mCurrentDisplayedMessages = new ArrayList<>(candidates);
+            // Use ref because when startShowing is finished, other animation might have been
+            // triggered such that those two member variables have been mutated.
+            var frontAnimator = mFrontAnimator;
+            var backAnimator = mBackAnimator;
+            mMessageQueueDelegate.onStartShowing(() -> {
+                if (candidates.get(0) == mCurrentDisplayedMessages.get(0)
+                        && candidates.get(1) == mCurrentDisplayedMessages.get(1)) {
+                    triggerStackingAnimation(candidates, onFinished, frontAnimator, backAnimator);
+                }
+            });
+        } else if (nextFront == null) {
             // All messages will be hidden: trigger #onFinishHiding.
             Runnable runnable = () -> {
                 mMessageQueueDelegate.onFinishHiding();
@@ -300,7 +289,6 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
             };
             triggerStackingAnimation(candidates, runnable, mFrontAnimator, mBackAnimator);
         } else {
-            assert mMessageQueueDelegate.isReadyForShowing();
             mCurrentDisplayedMessages = new ArrayList<>(candidates);
             triggerStackingAnimation(candidates, onFinished, mFrontAnimator, mBackAnimator);
         }

@@ -8,7 +8,7 @@
 
 #import <memory>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/identity_test_environment.h"
 #import "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -156,7 +156,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
       // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
       DCHECK(account_mutator);
       account_mutator->ClearPrimaryAccount(
-          signin_metrics::SIGNOUT_TEST,
+          signin_metrics::ProfileSignout::kTest,
           signin_metrics::SignoutDelete::kIgnoreMetric);
     }
 

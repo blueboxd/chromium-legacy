@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
@@ -61,9 +61,6 @@ class CONTENT_EXPORT StoragePartitionImplMap
                       base::OnceClosure done);
 
   void ForEach(BrowserContext::StoragePartitionCallback callback);
-
-  // Disposes the given in-memory storage partition.
-  void DisposeInMemory(StoragePartition* partition);
 
   size_t size() const { return partitions_.size(); }
 

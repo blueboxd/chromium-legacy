@@ -6,10 +6,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/bind.h"
-#import "base/callback_helpers.h"
 #import "base/files/file_path.h"
 #import "base/format_macros.h"
+#import "base/functional/bind.h"
+#import "base/functional/callback_helpers.h"
 #import "base/location.h"
 #import "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -33,15 +33,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// When C++ exceptions are disabled, the C++ library defines `try` and
-// `catch` so as to allow exception-expecting C++ code to build properly when
-// language support for exceptions is not present.  These macros interfere
-// with the use of `@try` and `@catch` in Objective-C files such as this one.
-// Undefine these macros here, after everything has been #included, since
-// there will be no C++ uses and only Objective-C uses from this point on.
-#undef try
-#undef catch
 
 namespace {
 const NSTimeInterval kSaveDelay = 2.5;     // Value taken from Desktop Chrome.

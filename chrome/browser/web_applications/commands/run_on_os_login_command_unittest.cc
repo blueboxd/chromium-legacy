@@ -53,7 +53,7 @@ class TestOsIntegrationManager : public FakeOsIntegrationManager {
                       InstallOsHooksOptions options) override {
     if (options.os_hooks[OsHookType::kRunOnOsLogin]) {
       ScopedRegistryUpdate update(
-          &WebAppProvider::GetForTest(profile_)->sync_bridge());
+          &WebAppProvider::GetForTest(profile_)->sync_bridge_unsafe());
       update->UpdateApp(app_id)->SetRunOnOsLoginOsIntegrationState(
           RunOnOsLoginMode::kWindowed);
     }
@@ -66,7 +66,7 @@ class TestOsIntegrationManager : public FakeOsIntegrationManager {
                         UninstallOsHooksCallback callback) override {
     if (os_hooks[OsHookType::kRunOnOsLogin]) {
       ScopedRegistryUpdate update(
-          &WebAppProvider::GetForTest(profile_)->sync_bridge());
+          &WebAppProvider::GetForTest(profile_)->sync_bridge_unsafe());
       update->UpdateApp(app_id)->SetRunOnOsLoginOsIntegrationState(
           RunOnOsLoginMode::kNotRun);
     }
@@ -85,7 +85,7 @@ class RunOnOsLoginCommandTest
       public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
  public:
   RunOnOsLoginCommandTest() {
-    if (GetParam() == OsIntegrationSubManagersState::kEnabled) {
+    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
       scoped_feature_list_.InitWithFeaturesAndParameters(
           {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
           /*disabled_features=*/{});
@@ -112,7 +112,7 @@ class RunOnOsLoginCommandTest
  protected:
   WebAppRegistrar& registrar() { return provider()->registrar_unsafe(); }
 
-  WebAppSyncBridge& sync_bridge() { return provider()->sync_bridge(); }
+  WebAppSyncBridge& sync_bridge() { return provider()->sync_bridge_unsafe(); }
 
   FakeOsIntegrationManager* os_integration_manager() {
     return os_integration_manager_;
@@ -511,7 +511,7 @@ TEST_P(RunOnOsLoginCommandTest, VerifySyncWorksOnAppWithNoStateDefined) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     RunOnOsLoginCommandTest,
-    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+    ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
                       OsIntegrationSubManagersState::kDisabled),
     test::GetOsIntegrationSubManagersTestName);
 

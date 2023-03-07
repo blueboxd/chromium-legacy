@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/crash/core/common/crash_key.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -213,8 +214,7 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
       if (result == BytesConsumer::Result::kShouldWait)
         return;
       if (result == BytesConsumer::Result::kOk) {
-        // Ignore more bytes after an abort (streaming == nullptr).
-        if (available > 0 && streaming_) {
+        if (available > 0) {
           if (code_cache_state_ == CodeCacheState::kBeforeFirstByte)
             code_cache_state_ = MaybeConsumeCodeCache();
 
@@ -234,13 +234,10 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
         case BytesConsumer::Result::kShouldWait:
           NOTREACHED();
           return;
-        case BytesConsumer::Result::kOk:
+        case BytesConsumer::Result::kOk: {
           break;
+        }
         case BytesConsumer::Result::kDone: {
-          // Ignore this event if we already aborted.
-          if (!streaming_) {
-            return;
-          }
           TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "v8.wasm.compileConsumeDone");
           {
@@ -248,7 +245,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
             streaming_->Finish(HasValidCodeCache());
           }
           client_->DidFetchDataLoadedCustomFormat();
-          streaming_.reset();
           return;
         }
         case BytesConsumer::Result::kError: {
@@ -275,10 +271,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
   }
 
   void AbortFromClient() {
-    // Ignore a repeated abort request, or abort after successfully finishing.
-    if (!streaming_) {
-      return;
-    }
     auto* exception =
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError);
     ScriptState::Scope scope(script_state_);
@@ -295,7 +287,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
           ToV8Traits<DOMException>::ToV8(script_state_, exception)
               .ToLocalChecked();
       streaming_->Abort(v8_exception);
-      streaming_.reset();
     }
   }
 
@@ -303,10 +294,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
   // TODO(ahaas): replace with spec-ed error types, once spec clarifies
   // what they are.
   void AbortCompilation() {
-    // Ignore a repeated abort request, or abort after successfully finishing.
-    if (!streaming_) {
-      return;
-    }
     if (script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       streaming_->Abort(V8ThrowException::CreateTypeError(
@@ -318,7 +305,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
       // rejected.
       streaming_->Abort(v8::Local<v8::Value>());
     }
-    streaming_.reset();
   }
 
   CodeCacheState MaybeConsumeCodeCache() {
@@ -456,18 +442,37 @@ class WasmDataLoaderClient final
   Member<FetchDataLoaderForWasmStreaming> loader_;
 };
 
-// Convert an exception to an abort message for WasmStreaming. This rejects the
-// promise instead of actually throwing the exception.
-// No further methods should be called on the WasmStreaming object afterwards,
-// hence we receive the shared_ptr by reference and clear it.
-void PropagateExceptionToWasmStreaming(
-    ExceptionState& exception_state,
-    std::shared_ptr<v8::WasmStreaming>& streaming) {
-  DCHECK(exception_state.HadException());
-  streaming->Abort(exception_state.GetException());
-  streaming.reset();
-  exception_state.ClearException();
-}
+// ExceptionToAbortStreamingScope converts a possible exception to an abort
+// message for WasmStreaming instead of throwing the exception.
+//
+// All exceptions which happen in the setup of WebAssembly streaming compilation
+// have to be passed as an abort message to V8 so that V8 can reject the promise
+// associated to the streaming compilation.
+class ExceptionToAbortStreamingScope {
+  STACK_ALLOCATED();
+
+ public:
+  ExceptionToAbortStreamingScope(std::shared_ptr<v8::WasmStreaming> streaming,
+                                 ExceptionState& exception_state)
+      : streaming_(streaming), exception_state_(exception_state) {}
+
+  ExceptionToAbortStreamingScope(const ExceptionToAbortStreamingScope&) =
+      delete;
+  ExceptionToAbortStreamingScope& operator=(
+      const ExceptionToAbortStreamingScope&) = delete;
+
+  ~ExceptionToAbortStreamingScope() {
+    if (!exception_state_.HadException())
+      return;
+
+    streaming_->Abort(exception_state_.GetException());
+    exception_state_.ClearException();
+  }
+
+ private:
+  std::shared_ptr<v8::WasmStreaming> streaming_;
+  ExceptionState& exception_state_;
+};
 
 scoped_refptr<base::SingleThreadTaskRunner> GetContextTaskRunner(
     ExecutionContext& execution_context) {
@@ -509,6 +514,7 @@ void StreamFromResponseCallback(
                                  "WebAssembly", "compile");
   std::shared_ptr<v8::WasmStreaming> streaming =
       v8::WasmStreaming::Unpack(args.GetIsolate(), args.Data());
+  ExceptionToAbortStreamingScope exception_scope(streaming, exception_state);
 
   ScriptState* script_state = ScriptState::ForCurrentRealm(args);
   if (!script_state->ContextIsValid()) {
@@ -546,7 +552,6 @@ void StreamFromResponseCallback(
     exception_state.ThrowTypeError(
         "An argument must be provided, which must be a "
         "Response or Promise<Response> object");
-    PropagateExceptionToWasmStreaming(exception_state, streaming);
     return;
   }
 
@@ -554,7 +559,6 @@ void StreamFromResponseCallback(
     base::UmaHistogramEnumeration("V8.WasmStreamingInputType",
                                   WasmStreamingInputType::kResponseNotOK);
     exception_state.ThrowTypeError("HTTP status code is not ok");
-    PropagateExceptionToWasmStreaming(exception_state, streaming);
     return;
   }
 
@@ -566,7 +570,6 @@ void StreamFromResponseCallback(
                                   WasmStreamingInputType::kWrongMimeType);
     exception_state.ThrowTypeError(
         "Incorrect response MIME type. Expected 'application/wasm'.");
-    PropagateExceptionToWasmStreaming(exception_state, streaming);
     return;
   }
 
@@ -575,7 +578,6 @@ void StreamFromResponseCallback(
                                   WasmStreamingInputType::kReponseLocked);
     exception_state.ThrowTypeError(
         "Cannot compile WebAssembly.Module from an already read Response");
-    PropagateExceptionToWasmStreaming(exception_state, streaming);
     return;
   }
 
@@ -585,7 +587,6 @@ void StreamFromResponseCallback(
     // Since the status is 2xx (ok), this must be status 204 (No Content),
     // status 205 (Reset Content) or a malformed status 200 (OK).
     exception_state.ThrowWasmCompileError("Empty WebAssembly module");
-    PropagateExceptionToWasmStreaming(exception_state, streaming);
     return;
   }
 
@@ -626,11 +627,9 @@ void StreamFromResponseCallback(
         });
   }
 
-  DCHECK(!exception_state.HadException());
   FetchDataLoaderForWasmStreaming* loader =
       MakeGarbageCollected<FetchDataLoaderForWasmStreaming>(
-          url, std::move(streaming), script_state, cache_handler,
-          code_caching_callback);
+          url, streaming, script_state, cache_handler, code_caching_callback);
   response->BodyBuffer()->StartLoading(
       loader, MakeGarbageCollected<WasmDataLoaderClient>(loader),
       exception_state);

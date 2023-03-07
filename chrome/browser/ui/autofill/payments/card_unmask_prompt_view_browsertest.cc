@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -185,7 +185,7 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
       controller()->set_expected_verification_failure(
           /*allow_retry*/ name == kExpiryValidTemporaryError);
       CardUnmaskPromptViewTester::For(controller()->view())
-          ->EnterCVCAndAccept();
+          ->EnterCVCAndAccept(u"123");
     }
   }
 

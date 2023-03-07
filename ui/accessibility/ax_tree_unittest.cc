@@ -355,10 +355,10 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
 
   EXPECT_EQ(
       "AXTree title=Title\n"
-      "id=1 dialog FOCUSABLE (0, 0)-(800, 600) child_ids=2,3\n"
-      "  id=2 button (20, 20)-(200, 30)\n"
-      "  id=3 checkBox (20, 50)-(200, 30)\n",
-      dst_tree.ToString());
+      "id=1 dialog FOCUSABLE child_ids=2,3\n"
+      "  id=2 button\n"
+      "  id=3 checkBox\n",
+      dst_tree.ToString(/*verbose*/ false));
 }
 
 TEST(AXTreeTest, SerializeAXTreeUpdate) {
@@ -390,11 +390,11 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
 
   EXPECT_EQ(
       "AXTreeUpdate: root id 3\n"
-      "id=3 list (0, 0)-(0, 0) child_ids=4,5,6\n"
-      "  id=5 listItem (0, 0)-(0, 0)\n"
-      "  id=6 listItem (0, 0)-(0, 0)\n"
-      "id=7 button (0, 0)-(0, 0)\n",
-      update.ToString());
+      "id=3 list child_ids=4,5,6\n"
+      "  id=5 listItem\n"
+      "  id=6 listItem\n"
+      "id=7 button\n",
+      update.ToString(/*verbose*/ false));
 }
 
 TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
@@ -1086,7 +1086,12 @@ TEST(AXTreeTest, MultipleIgnoredChangesDoesNotBreakCache) {
 
   AXTree tree(initial_state);
   TestAXTreeObserver test_observer(&tree);
+#if DCHECK_IS_ON()
+  EXPECT_DEATH_IF_SUPPORTED(tree.GetFromId(2)->GetUnignoredChildCount(),
+                            "Called unignored method on ignored node");
+#else
   EXPECT_EQ(1u, tree.GetFromId(2)->GetUnignoredChildCount());
+#endif
 
   AXTreeUpdate update;
   update.nodes.resize(2);
@@ -1117,7 +1122,12 @@ TEST(AXTreeTest, NodeToClearUpdatesParentUnignoredCount) {
 
   AXTree tree(initial_state);
   EXPECT_EQ(2u, tree.GetFromId(1)->GetUnignoredChildCount());
+#if DCHECK_IS_ON()
+  EXPECT_DEATH_IF_SUPPORTED(tree.GetFromId(2)->GetUnignoredChildCount(),
+                            "Called unignored method on ignored node");
+#else
   EXPECT_EQ(2u, tree.GetFromId(2)->GetUnignoredChildCount());
+#endif
 
   AXTreeUpdate update;
   update.nodes.resize(1);
@@ -4720,8 +4730,8 @@ TEST(AXTreeTest, SingleUpdateDeletesNewlyCreatedChildNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea\n",
+      tree.ToString(/*verbose*/ false));
 
   // Unserialize again, but with another add child.
   tree_update.nodes.resize(8);
@@ -4733,9 +4743,9 @@ TEST(AXTreeTest, SingleUpdateDeletesNewlyCreatedChildNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2\n"
-      "  id=2 genericContainer (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2\n"
+      "  id=2 genericContainer\n",
+      tree.ToString(/*verbose*/ false));
 }
 
 // Tests a fringe scenario that may happen if multiple AXTreeUpdates are merged.
@@ -4784,11 +4794,11 @@ TEST(AXTreeTest, SingleUpdateReparentsNodeMultipleTimes) {
 
   ASSERT_TRUE(tree.Unserialize(tree_update)) << tree.error();
   EXPECT_EQ(
-      "AXTree\nid=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
-      "  id=2 list (0, 0)-(0, 0) child_ids=4\n"
-      "    id=4 listItem (0, 0)-(0, 0)\n"
-      "  id=3 list (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "AXTree\nid=1 rootWebArea child_ids=2,3\n"
+      "  id=2 list child_ids=4\n"
+      "    id=4 listItem\n"
+      "  id=3 list\n",
+      tree.ToString(/*verbose*/ false));
 
   // Unserialize again, but with another reparent.
   tree_update.nodes.resize(9);
@@ -4798,11 +4808,11 @@ TEST(AXTreeTest, SingleUpdateReparentsNodeMultipleTimes) {
 
   ASSERT_TRUE(tree.Unserialize(tree_update)) << tree.error();
   EXPECT_EQ(
-      "AXTree\nid=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
-      "  id=2 list (0, 0)-(0, 0)\n"
-      "  id=3 list (0, 0)-(0, 0) child_ids=4\n"
-      "    id=4 listItem (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "AXTree\nid=1 rootWebArea child_ids=2,3\n"
+      "  id=2 list\n"
+      "  id=3 list child_ids=4\n"
+      "    id=4 listItem\n",
+      tree.ToString(/*verbose*/ false));
 }
 
 // Tests a fringe scenario that may happen if multiple AXTreeUpdates are merged.
@@ -4831,9 +4841,9 @@ TEST(AXTreeTest, SingleUpdateIgnoresNewlyCreatedUnignoredChildNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2\n"
-      "  id=2 genericContainer IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2\n"
+      "  id=2 genericContainer IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 }
 
 // Tests a fringe scenario that may happen if multiple AXTreeUpdates are merged.
@@ -4849,8 +4859,8 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateAfterCreatingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea\n",
+      tree.ToString(/*verbose*/ false));
 
   AXTreeUpdate tree_update;
   tree_update.nodes.resize(5);
@@ -4873,10 +4883,10 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateAfterCreatingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
-      "  id=2 genericContainer IGNORED (0, 0)-(0, 0)\n"
-      "  id=3 genericContainer (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3\n"
+      "  id=2 genericContainer IGNORED\n"
+      "  id=3 genericContainer\n",
+      tree.ToString(/*verbose*/ false));
 }
 
 // Tests a fringe scenario that may happen if multiple AXTreeUpdates are merged.
@@ -4898,10 +4908,10 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3\n"
-      "  id=2 genericContainer (0, 0)-(0, 0)\n"
-      "  id=3 genericContainer IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3\n"
+      "  id=2 genericContainer\n"
+      "  id=3 genericContainer IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 
   AXTreeUpdate tree_update;
   tree_update.nodes.resize(3);
@@ -4919,8 +4929,8 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
 
   ASSERT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea\n",
+      tree.ToString(/*verbose*/ false));
 }
 
 TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
@@ -4966,11 +4976,11 @@ TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
 
   EXPECT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
-      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
-      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
-      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE\n"
+      "  id=3 button IGNORED\n"
+      "  id=4 button IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 
   //
   // Focus the first button which should change its ignored state.
@@ -4995,11 +5005,11 @@ TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
 
   EXPECT_EQ(
       "AXTree focus_id=3\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
-      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
-      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
-      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE\n"
+      "  id=3 button IGNORED\n"
+      "  id=4 button IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 
   {
     const std::vector<std::string>& change_log =
@@ -5030,11 +5040,11 @@ TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
 
   EXPECT_EQ(
       "AXTree focus_id=4\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
-      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
-      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
-      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE\n"
+      "  id=3 button IGNORED\n"
+      "  id=4 button IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 
   {
     const std::vector<std::string>& change_log =
@@ -5067,11 +5077,11 @@ TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
 
   EXPECT_EQ(
       "AXTree\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
-      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
-      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
-      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE\n"
+      "  id=3 button IGNORED\n"
+      "  id=4 button IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 
   {
     const std::vector<std::string>& change_log =
@@ -5098,11 +5108,11 @@ TEST(AXTreeTest, FocusChangeTogglesIgnoredState) {
 
   EXPECT_EQ(
       "AXTree focus_id=3\n"
-      "id=1 rootWebArea (0, 0)-(0, 0) child_ids=2,3,4\n"
-      "  id=2 textField EDITABLE (0, 0)-(0, 0)\n"
-      "  id=3 button IGNORED (0, 0)-(0, 0)\n"
-      "  id=4 button IGNORED (0, 0)-(0, 0)\n",
-      tree.ToString());
+      "id=1 rootWebArea child_ids=2,3,4\n"
+      "  id=2 textField EDITABLE\n"
+      "  id=3 button IGNORED\n"
+      "  id=4 button IGNORED\n",
+      tree.ToString(/*verbose*/ false));
 
   {
     const std::vector<std::string>& change_log =

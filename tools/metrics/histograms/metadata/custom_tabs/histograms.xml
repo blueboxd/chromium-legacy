@@ -36,7 +36,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.AutoclosedSessionDuration" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -53,7 +53,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingCheckCanceled"
-    enum="BooleanCanceled" expires_after="2023-02-09">
+    enum="BooleanCanceled" expires_after="2023-06-18">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -65,7 +65,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingCheckDuration" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingDecision"
-    enum="CustomTabsBrandingDecision" expires_after="2023-04-16">
+    enum="CustomTabsBrandingDecision" expires_after="2023-06-18">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -94,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.IsPackageNameValid" enum="BooleanValid"
-    expires_after="2023-02-09">
+    expires_after="2023-06-18">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -110,7 +110,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.NumberOfClients" units="count"
-    expires_after="2023-06-11">
+    expires_after="2023-06-18">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -172,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.CloseCause" enum="CustomTabsCloseCause"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -184,7 +184,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ConnectionStatusOnReturn.GSA"
-    enum="CustomTabsConnection" expires_after="M114">
+    enum="CustomTabsConnection" expires_after="2023-07-16">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -221,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.DetachedResourceRequest.FinalStatus"
-    enum="NetErrorCodes" expires_after="2023-04-30">
+    enum="NetErrorCodes" expires_after="2023-07-02">
   <owner>lizeb@chromium.org</owner>
   <owner>cct-team@google.com</owner>
   <summary>
@@ -258,7 +258,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.HadInteractionOnClose" enum="Boolean"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
+  <obsolete>
+    Deprecated 2022-12. Replaced by CustomTabs.HadInteractionOnClose.Form and
+    CustomTabs.HadInteractionOnClose.Navigation
+  </obsolete>
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -268,8 +272,48 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.HadInteractionOnClose.Form" enum="Boolean"
+    expires_after="2023-06-19">
+  <owner>katzz@google.com</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    This histogram records true when the current CCT has seen any form
+    interactions (e.g. text entry, drop down entry) throughout the session and
+    false if there have been no form interactions at the time of closing the
+    CCT. If the tab is restored the previous form interactions will be reset.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.HadInteractionOnClose.FormStillActive"
+    enum="Boolean" expires_after="2023-07-18">
+  <owner>katzz@google.com</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    This histogram records true when the current CCT has seen form interaction
+    (e.g. text entry, drop down entry) on the active page, and false if there
+    are no interactions in the active form, or if the interaction is reset (e.g.
+    navigation, form submission) at the time of closing the CCT.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.HadInteractionOnClose.Navigation" enum="Boolean"
+    expires_after="2023-06-19">
+  <owner>katzz@google.com</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    This histogram records true when the current CCT has interactions with the
+    web contents (e.g. touch, scroll, fling), and the active tab can go back /
+    forward and false if there have not been web contents interactions or the
+    tab cannot go back / forward at the time of closing the CCT. If the tab is
+    restored the previous form interactions will be reset.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.ImmersiveModeConfirmationsSettingConfirmed"
     enum="Boolean" expires_after="2023-05-14">
+  <obsolete>
+    Deprecated 2022-12. No longer needed.
+  </obsolete>
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -292,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IncognitoCCTCallerId" enum="IncognitoCCTCallerId"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <owner>cct-team@google.com</owner>
@@ -425,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ResizeType2" enum="CustomTabsResizeType2"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -436,7 +480,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="CustomTabs.RetainableSessionsV2.TimeBetweenLaunch{IdentifierType}"
-    units="seconds" expires_after="2023-02-12">
+    units="seconds" expires_after="2023-06-12">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -447,8 +491,9 @@ chromium-metrics-reviews@google.com.
     A CCT can be defined as retainable if 1) it is launching with the same URL
     as the most recently closed CCT; 2) it is launched from the same embedded
     app as the most recently closed CCT; 3) the most recently closed CCT had
-    user interactions. See &quot;CustomTabs.HadInteractionOnClose&quot; for
-    information on interactions.
+    user interactions. See &quot;CustomTabs.HadInteractionOnClose.Form&quot; and
+    &quot;CustomTabs.HadInteractionOnClose.Navigation&quot; for information on
+    interactions.
 
     The histogram suffix identifies whether the CCT is created with the same
     intent Uri data and for the same embedded app, launching CCT with the same
@@ -476,7 +521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.SessionDisconnectStatus"
-    enum="CustomTabsSessionDisconnectStatus" expires_after="2023-05-14">
+    enum="CustomTabsSessionDisconnectStatus" expires_after="2023-07-16">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -752,7 +797,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TrustedWebActivity.SplashScreenShown" enum="Boolean"
-    expires_after="M114">
+    expires_after="2023-07-16">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

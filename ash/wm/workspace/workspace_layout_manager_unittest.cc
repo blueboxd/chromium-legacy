@@ -38,6 +38,7 @@
 #include "ash/test/test_window_builder.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/client_controlled_state.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -52,7 +53,7 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/audio/sounds.h"
@@ -584,7 +585,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   auto insets = gfx::Insets::TLBR(0, 0, 56, 0);
   WorkAreaInsets::ForWindow(window.get())
       ->UpdateWorkAreaInsetsForTest(window.get(), gfx::Rect(), insets, insets);
-  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   const gfx::Rect kWorkAreaBounds = GetPrimaryDisplay().work_area();
@@ -619,7 +620,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
   std::unique_ptr<aura::Window> window1(
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   WindowState* window1_state = WindowState::Get(window1.get());
-  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   window1_state->OnWMEvent(&snap_left);
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -630,7 +631,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
   std::unique_ptr<aura::Window> window2(
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   WindowState* window2_state = WindowState::Get(window2.get());
-  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
   window2_state->OnWMEvent(&snap_right);
   const gfx::Rect expected_right_snapped_bounds =
       gfx::Rect(work_area.right() - work_area.width() / 2, work_area.y(),
@@ -879,6 +880,57 @@ TEST_F(WorkspaceLayoutManagerSoloTest, UnminimizeWithActivation) {
   WindowState::Get(window.get())->Activate();
   EXPECT_FALSE(WindowState::Get(window.get())->IsMinimized());
   EXPECT_TRUE(WindowState::Get(window.get())->IsActive());
+}
+
+class TestClientControlledStateDelegate
+    : public ClientControlledState::Delegate {
+ public:
+  TestClientControlledStateDelegate() = default;
+  TestClientControlledStateDelegate(const TestClientControlledStateDelegate&) =
+      delete;
+  TestClientControlledStateDelegate& operator=(
+      const TestClientControlledStateDelegate&) = delete;
+  ~TestClientControlledStateDelegate() override = default;
+
+  void HandleWindowStateRequest(WindowState* window_state,
+                                WindowStateType next_state) override {
+    window_state_request_count_++;
+  }
+
+  void HandleBoundsRequest(WindowState* window_state,
+                           WindowStateType requested_state,
+                           const gfx::Rect& bounds,
+                           int64_t display_id) override {}
+
+  int window_state_request_count() { return window_state_request_count_; }
+
+ private:
+  int window_state_request_count_{0};
+};
+
+// Tests that activation of a minimized client-controlled window requests
+// minimization of the window.
+TEST_F(WorkspaceLayoutManagerSoloTest,
+       UnminimizeClientControlledWithActivation) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  WindowState::Get(window.get())->Minimize();
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+  EXPECT_FALSE(WindowState::Get(window.get())->IsActive());
+
+  // Make the window client-controlled.
+  auto d = std::make_unique<TestClientControlledStateDelegate>();
+  auto* delegate = d.get();
+  auto state = std::make_unique<ClientControlledState>(std::move(d));
+  WindowState* window_state = WindowState::Get(window.get());
+  // Make sure that the window is minimized.
+  state->EnterNextState(window_state, WindowStateType::kMinimized);
+  window_state->SetStateObject(std::move(state));
+
+  window_state->Activate();
+  // As it's client controlled, the window isn't restored yet.
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsActive());
+  EXPECT_EQ(1, delegate->window_state_request_count());
 }
 
 // A aura::WindowObserver which sets the focus when the window becomes visible.

@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -204,22 +204,15 @@ base::OnceClosure ShowDeviceChooserDialogForExtension(
   if (browser->tab_strip_model()->GetActiveWebContents() != contents)
     return base::DoNothing();
 
-  // `GetExtensionsToolbarContainer` may return `nullptr`, for instance in
-  // extension popup windows.
-  auto* extensions_toolbar_container =
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->toolbar_button_provider()
-          ->GetExtensionsToolbarContainer();
-  if (!extensions_toolbar_container) {
-    return base::DoNothing();
-  }
-
   auto bubble = std::make_unique<ChooserBubbleUiViewDelegate>(
       browser, contents, std::move(controller));
   base::OnceClosure close_closure = bubble->MakeCloseClosure();
-  extensions_toolbar_container->ShowWidgetForExtension(
-      views::BubbleDialogDelegateView::CreateBubble(std::move(bubble)),
-      extension->id());
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(std::move(bubble));
+  BrowserView::GetBrowserViewForBrowser(browser)
+      ->toolbar_button_provider()
+      ->GetExtensionsToolbarContainer()
+      ->ShowWidgetForExtension(widget, extension->id());
   return close_closure;
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

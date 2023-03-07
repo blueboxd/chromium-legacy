@@ -8,12 +8,11 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/search/app_search_data_source.h"

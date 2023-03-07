@@ -13,10 +13,10 @@
 #include "ash/shell.h"
 #include "ash/webui/help_app_ui/help_app_untrusted_ui.h"
 #include "ash/webui/help_app_ui/url_constants.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -60,14 +60,14 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
   source->AddString("chromeOSVersion", base::SysInfo::OperatingSystemVersion());
   source->AddString("chromeVersion", chrome::kChromeVersion);
   source->AddInteger("channel", static_cast<int>(chrome::GetChannel()));
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
   // MachineStatistics may not exist for browser tests, but it is fine for these
   // to be empty strings.
   const absl::optional<base::StringPiece> customization_id =
-      provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey);
+      provider->GetMachineStatistic(system::kCustomizationIdKey);
   const absl::optional<base::StringPiece> hwid =
-      provider->GetMachineStatistic(chromeos::system::kHardwareClassKey);
+      provider->GetMachineStatistic(system::kHardwareClassKey);
   source->AddString("customizationId",
                     std::string(customization_id.value_or("")));
   source->AddString("deviceName", ui::GetChromeOSDeviceName());

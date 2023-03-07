@@ -927,7 +927,12 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         'absl::Span is banned. Use base::span instead.',
       ),
       True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+      [
+        # Needed to use QUICHE API.
+        r'services/network/web_transport\.cc',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK
+      ],
     ),
     BanRule(
       r'/\babsl::StatusOr\b',
@@ -1520,6 +1525,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/bytecode_rewriter.pydeps',
     'build/android/gyp/check_flag_expectations.pydeps',
     'build/android/gyp/compile_java.pydeps',
+    'build/android/gyp/compile_kt.pydeps',
     'build/android/gyp/compile_resources.pydeps',
     'build/android/gyp/copy_ex.pydeps',
     'build/android/gyp/create_apk_operations_script.pydeps',
@@ -1655,6 +1661,10 @@ def _IsProtoFile(input_api, file_path):
 def _IsXmlOrGrdFile(input_api, file_path):
     ext = input_api.os_path.splitext(file_path)[1]
     return ext in ('.grd', '.xml')
+
+
+def _IsMojomFile(input_api, file_path):
+    return input_api.os_path.splitext(file_path)[1] == ".mojom"
 
 
 def CheckNoUpstreamDepsOnClank(input_api, output_api):
@@ -2029,6 +2039,30 @@ def CheckNoDEPSGIT(input_api, output_api):
                 'See https://sites.google.com/a/chromium.org/dev/developers/how-tos/'
                 'get-the-code#Rolling_DEPS\n'
                 'for more information')
+        ]
+    return []
+
+
+def CheckCrosApiNeedBrowserTest(input_api, output_api):
+    """Check new crosapi should add browser test."""
+    has_new_crosapi = False
+    has_browser_test = False
+    for f in input_api.AffectedFiles():
+        path = f.LocalPath()
+        if (path.startswith('chromeos/crosapi/mojom') and
+            _IsMojomFile(input_api, path) and f.Action() == 'A'):
+            has_new_crosapi = True
+        if path.endswith('browsertest.cc') or path.endswith('browser_test.cc'):
+            has_browser_test = True
+    if has_new_crosapi and not has_browser_test:
+        return [
+            output_api.PresubmitPromptWarning(
+                'You are adding a new crosapi, but there is no file ends with '
+                'browsertest.cc file being added or modified. It is important '
+                'to add crosapi browser test coverage to avoid version '
+                ' skew issues.\n'
+                'Check //docs/lacros/test_instructions.md for more information.'
+                )
         ]
     return []
 
@@ -2867,7 +2901,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^extensions/renderer/logging_native_handler\.cc$",
             r"^fuchsia_web/common/init_logging\.cc$",
             r"^fuchsia_web/runners/common/web_component\.cc$",
-            r"^fuchsia_web/shell/.*_shell\.cc$",
+            r"^fuchsia_web/shell/.*\.cc$",
             r"^headless/app/headless_shell\.cc$",
             r"^ipc/ipc_logging\.cc$",
             r"^native_client_sdk/",
@@ -4813,14 +4847,20 @@ def CheckForTooLargeFiles(input_api, output_api):
     # to set the limit too low, but the upper limit for "normal" large
     # files seems to be 1-2 MB, with a handful around 5-8 MB, so
     # anything over 20 MB is exceptional.
-    TOO_LARGE_FILE_SIZE_LIMIT = 20 * 1024 * 1024  # 10 MB
+    TOO_LARGE_FILE_SIZE_LIMIT = 20 * 1024 * 1024
+    # Special exemption for a file that is slightly over the limit.
+    SPECIAL_FILE_SIZE_LIMIT = 25 * 1024 * 1024
+    SPECIAL_FILE_NAME = 'transport_security_state_static.json'
 
     too_large_files = []
     for f in input_api.AffectedFiles():
         # Check both added and modified files (but not deleted files).
         if f.Action() in ('A', 'M'):
             size = input_api.os_path.getsize(f.AbsoluteLocalPath())
-            if size > TOO_LARGE_FILE_SIZE_LIMIT:
+            limit = (SPECIAL_FILE_SIZE_LIMIT if
+                f.AbsoluteLocalPath().endswith(SPECIAL_FILE_NAME) else
+                TOO_LARGE_FILE_SIZE_LIMIT)
+            if size > limit:
                 too_large_files.append("%s: %d bytes" % (f.LocalPath(), size))
 
     if too_large_files:

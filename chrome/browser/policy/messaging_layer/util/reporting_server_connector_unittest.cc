@@ -8,7 +8,7 @@
 
 #include <cstddef>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector_test_util.h"
@@ -22,10 +22,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
-#endif
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -59,14 +55,6 @@ class ReportingServerConnectorTest : public ::testing::Test {
 
   policy::MockCloudPolicyClient mock_client_;
   ReportingServerConnector::TestEnvironment test_env_{&mock_client_};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Without setting up install attributes, browser_policy_connector_ash()
-  // call inside ReportingServerConnector will fail a check.
-  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_{
-      ash::StubInstallAttributes::CreateCloudManaged("test-domain",
-                                                     "FAKE-DEVICE-ID")};
-#endif
 };
 
 TEST_F(ReportingServerConnectorTest,

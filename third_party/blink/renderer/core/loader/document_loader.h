@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
@@ -400,10 +401,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return ad_auction_components_;
   }
 
-  const absl::optional<blink::FencedFrameReporting>& FencedFrameReporting()
-      const {
-    return fenced_frame_reporting_;
-  }
+  bool HasFencedFrameReporting() const { return has_fenced_frame_reporting_; }
 
   const absl::optional<FencedFrame::RedactedFencedFrameProperties>&
   FencedFrameProperties() const {
@@ -555,8 +553,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   void InitializeEmptyResponse();
 
-  bool ShouldReportTimingInfoToParent();
-
   void CommitData(BodyData& data);
   // Processes the data stored in |data_buffer_| or |decoded_data_buffer_|, used
   // to avoid appending data to the parser in a nested message loop.
@@ -653,6 +649,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   bool data_received_;
   const bool is_error_page_for_failed_navigation_;
 
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
   mojo::Remote<mojom::blink::ContentSecurityNotifier>
       content_security_notifier_;
 
@@ -664,6 +661,13 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   AtomicString origin_calculation_debug_info_;
 
   blink::BlinkStorageKey storage_key_;
+  // The storage key here is the one the browser process believes the renderer
+  // should use when binding session storage. This may differ from
+  // `storage_key_` as a deprecation trial can prevent the partitioning of
+  // session storage.
+  //
+  // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
+  blink::BlinkStorageKey session_storage_key_;
   WebNavigationType navigation_type_;
 
   DocumentLoadTiming document_load_timing_;
@@ -742,7 +746,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   CommitReason commit_reason_ = CommitReason::kRegular;
   uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
-  bool report_timing_info_to_parent_ = false;
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
   const KURL web_bundle_physical_url_;
@@ -786,12 +789,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // otherwise.
   absl::optional<Vector<KURL>> ad_auction_components_;
 
-  // If this is a navigation to a "opaque-ads" mode fenced frame, there might
-  // be associated reporting metadata. This is a map from destination type to
-  // reporting metadata which in turn is a map from the event type to the
-  // reporting url. `nullptr` otherwise.
+  // This boolean flag indicates whether there is associated reporting metadata
+  // with the fenced frame.
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  absl::optional<blink::FencedFrameReporting> fenced_frame_reporting_;
+  bool has_fenced_frame_reporting_;
 
   std::unique_ptr<ExtraData> extra_data_;
 

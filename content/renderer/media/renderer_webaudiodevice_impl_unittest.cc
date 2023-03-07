@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_glitch_info.h"
@@ -32,7 +32,7 @@ class MockAudioRendererSink : public media::AudioRendererSink {
  public:
   explicit MockAudioRendererSink() = default;
   void Initialize(const media::AudioParameters& params,
-                  RenderCallback* callback) override {
+                  media::AudioRendererSink::RenderCallback* callback) override {
     callback_ = callback;
   }
   MOCK_METHOD(void, Start, (), (override));
@@ -61,7 +61,6 @@ const blink::LocalFrameToken kFrameToken;
 
 media::AudioParameters MockGetOutputDeviceParameters(
     const blink::LocalFrameToken& frame_token,
-    const base::UnguessableToken& session_id,
     const std::string& device_id) {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::ChannelLayoutConfig::Stereo(),
@@ -75,8 +74,7 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
       media::ChannelLayout layout,
       int number_of_output_channels,
       const blink::WebAudioLatencyHint& latency_hint,
-      blink::WebAudioDevice::RenderCallback* callback,
-      const base::UnguessableToken& session_id,
+      media::AudioRendererSink::RenderCallback* callback,
       CreateSilentSinkCallback silent_sink_callback)
       : RendererWebAudioDeviceImpl(
             sink_descriptor,
@@ -84,7 +82,6 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
             number_of_output_channels,
             latency_hint,
             callback,
-            session_id,
             base::BindOnce(&MockGetOutputDeviceParameters),
             std::move(silent_sink_callback)) {}
 };
@@ -92,17 +89,19 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
 }  // namespace
 
 class RendererWebAudioDeviceImplTest
-    : public blink::WebAudioDevice::RenderCallback,
+    : public media::AudioRendererSink::RenderCallback,
       public blink::AudioDeviceFactory,
       public testing::Test {
  public:
-  MOCK_METHOD(void,
+  MOCK_METHOD(int,
               Render,
-              (const blink::WebVector<float*>& destination_data,
-               uint32_t number_of_frames,
-               double delay,
-               double delay_timestamp),
+              (base::TimeDelta delay,
+               base::TimeTicks delay_timestamp,
+               const media::AudioGlitchInfo& glitch_info,
+               media::AudioBus* dest),
               (override));
+
+  void OnRenderError() override {}
 
  protected:
   RendererWebAudioDeviceImplTest() {
@@ -119,7 +118,6 @@ class RendererWebAudioDeviceImplTest
         blink::WebString::FromUTF8(std::string()), kFrameToken);
     webaudio_device_ = std::make_unique<RendererWebAudioDeviceImplUnderTest>(
         sink_descriptor, media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this,
-        base::UnguessableToken(),
         base::BindRepeating(
             &RendererWebAudioDeviceImplTest::MockCreateSilentSink,
             // Guaranteed to be valid because |this| owns |webaudio_device_| and
@@ -136,7 +134,7 @@ class RendererWebAudioDeviceImplTest
         sink_descriptor, layout, channels,
         blink::WebAudioLatencyHint(
             blink::WebAudioLatencyHint::kCategoryInteractive),
-        this, base::UnguessableToken(),
+        this,
         base::BindRepeating(
             &RendererWebAudioDeviceImplTest::MockCreateSilentSink,
             // Guaranteed to be valid because |this| owns |webaudio_device_| and
@@ -151,7 +149,7 @@ class RendererWebAudioDeviceImplTest
         sink_descriptor, media::CHANNEL_LAYOUT_MONO, 1,
         blink::WebAudioLatencyHint(
             blink::WebAudioLatencyHint::kCategoryInteractive),
-        this, base::UnguessableToken(),
+        this,
         base::BindRepeating(
             &RendererWebAudioDeviceImplTest::MockCreateSilentSink,
             // Guaranteed to be valid because |this| owns |webaudio_device_| and
@@ -168,8 +166,7 @@ class RendererWebAudioDeviceImplTest
     scoped_refptr<media::MockAudioRendererSink> mock_sink =
         new media::MockAudioRendererSink(
             params.device_id, media::OUTPUT_DEVICE_STATUS_OK,
-            MockGetOutputDeviceParameters(frame_token, params.session_id,
-                                          params.device_id));
+            MockGetOutputDeviceParameters(frame_token, params.device_id));
 
     EXPECT_CALL(*mock_sink.get(), Start());
     EXPECT_CALL(*mock_sink.get(), Play());

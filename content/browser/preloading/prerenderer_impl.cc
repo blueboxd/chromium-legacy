@@ -54,15 +54,15 @@ struct PrerendererImpl::PrerenderInfo {
   int prerender_host_id;
 };
 
-PrerendererImpl::PrerendererImpl(content::RenderFrameHost& render_frame_host)
+PrerendererImpl::PrerendererImpl(RenderFrameHost& render_frame_host)
     : WebContentsObserver(WebContents::FromRenderFrameHost(&render_frame_host)),
       render_frame_host_(render_frame_host) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto& rfhi = static_cast<RenderFrameHostImpl&>(render_frame_host);
   registry_ = rfhi.delegate()->GetPrerenderHostRegistry()->GetWeakPtr();
 }
 PrerendererImpl::~PrerendererImpl() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CancelStartedPrerenders();
 }
 
@@ -75,7 +75,7 @@ void PrerendererImpl::PrimaryPageChanged(Page& page) {
   // deleted asynchronously, but we want to make sure to cancel prerendering
   // before the next primary page swaps in so that the next page can trigger a
   // new prerender without hitting the max number of running prerenders.
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CancelStartedPrerenders();
 }
 
@@ -211,7 +211,7 @@ bool PrerendererImpl::MaybePrerender(
   PreloadingURLMatchCallback same_url_matcher =
       PreloadingData::GetSameURLMatcher(candidate->url);
   PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
-      ToPreloadingPredictor(ContentPreloadingPredictor::kSpeculationRules),
+      content_preloading_predictor::kSpeculationRules,
       PreloadingType::kPrerender, std::move(same_url_matcher));
 
   auto [begin, end] = base::ranges::equal_range(
@@ -260,9 +260,9 @@ bool PrerendererImpl::MaybePrerender(
       candidate->url, PrerenderTriggerType::kSpeculationRule,
       /*embedder_histogram_suffix=*/"", referrer, rfhi.GetLastCommittedOrigin(),
       rfhi.GetLastCommittedURL(), rfhi.GetProcess()->GetID(),
-      rfhi.GetFrameToken(), rfhi.GetFrameTreeNodeId(),
-      rfhi.GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
-      /*url_match_predicate=*/absl::nullopt);
+      web_contents->GetWeakPtr(), rfhi.GetFrameToken(),
+      rfhi.GetFrameTreeNodeId(), rfhi.GetPageUkmSourceId(),
+      ui::PAGE_TRANSITION_LINK, /*url_match_predicate=*/absl::nullopt);
 
   // TODO(crbug.com/1354049): Handle the case where multiple speculation rules
   // have the same URL but its `target_browsing_context_name_hint` is

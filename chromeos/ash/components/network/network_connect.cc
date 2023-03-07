@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
@@ -65,13 +65,14 @@ class NetworkConnectImpl : public NetworkConnect {
                             bool enabled_state) override;
   void ShowMobileSetup(const std::string& network_id) override;
   void ShowCarrierAccountDetail(const std::string& network_id) override;
-  void ShowPortalSignin(const std::string& network_id) override;
+  void ShowPortalSignin(const std::string& network_id, Source source) override;
   void ConfigureNetworkIdAndConnect(const std::string& network_id,
                                     const base::Value& shill_properties,
                                     bool shared) override;
-  void CreateConfigurationAndConnect(base::Value* shill_properties,
+  void CreateConfigurationAndConnect(base::Value::Dict shill_properties,
                                      bool shared) override;
-  void CreateConfiguration(base::Value* shill_properties, bool shared) override;
+  void CreateConfiguration(base::Value::Dict shill_properties,
+                           bool shared) override;
 
  private:
   void ActivateCellular(const std::string& network_id);
@@ -86,7 +87,7 @@ class NetworkConnectImpl : public NetworkConnect {
   void OnConfigureSucceeded(bool connect_on_configure,
                             const std::string& service_path,
                             const std::string& network_id);
-  void CallCreateConfiguration(base::Value* properties,
+  void CallCreateConfiguration(base::Value::Dict properties,
                                bool shared,
                                bool connect_on_configure);
   void SetPropertiesFailed(const std::string& desc,
@@ -263,20 +264,21 @@ void NetworkConnectImpl::OnConfigureSucceeded(bool connect_on_configure,
   CallConnectToNetwork(network_id, check_error_state);
 }
 
-void NetworkConnectImpl::CallCreateConfiguration(base::Value* shill_properties,
-                                                 bool shared,
-                                                 bool connect_on_configure) {
+void NetworkConnectImpl::CallCreateConfiguration(
+    base::Value::Dict shill_properties,
+    bool shared,
+    bool connect_on_configure) {
   std::string profile_path;
   if (!GetNetworkProfilePath(shared, &profile_path)) {
     delegate_->ShowNetworkConnectError(
         NetworkConnectionHandler::kErrorConfigureFailed, "");
     return;
   }
-  shill_properties->SetKey(shill::kProfileProperty, base::Value(profile_path));
+  shill_properties.Set(shill::kProfileProperty, profile_path);
   NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(
-          *shill_properties,
+          base::Value(std::move(shill_properties)),
           base::BindOnce(&NetworkConnectImpl::OnConfigureSucceeded,
                          weak_factory_.GetWeakPtr(), connect_on_configure),
           base::BindOnce(&NetworkConnectImpl::OnConfigureFailed,
@@ -480,7 +482,8 @@ void NetworkConnectImpl::ShowCarrierAccountDetail(
   delegate_->ShowCarrierAccountDetail(network_id);
 }
 
-void NetworkConnectImpl::ShowPortalSignin(const std::string& network_id) {
+void NetworkConnectImpl::ShowPortalSignin(const std::string& network_id,
+                                          Source source) {
   const NetworkState* network = GetNetworkStateFromId(network_id);
   if (!network || !network->IsConnectedState() ||
       !NetworkState::StateIsPortalled(network->connection_state())) {
@@ -488,7 +491,7 @@ void NetworkConnectImpl::ShowPortalSignin(const std::string& network_id) {
                    << NetworkGuidId(network_id);
     return;
   }
-  delegate_->ShowPortalSignin(network_id);
+  delegate_->ShowPortalSignin(network_id, source);
 }
 
 void NetworkConnectImpl::ConfigureNetworkIdAndConnect(
@@ -522,16 +525,19 @@ void NetworkConnectImpl::ConfigureNetworkIdAndConnect(
                      network_id));
 }
 
-void NetworkConnectImpl::CreateConfigurationAndConnect(base::Value* properties,
-                                                       bool shared) {
+void NetworkConnectImpl::CreateConfigurationAndConnect(
+    base::Value::Dict properties,
+    bool shared) {
   NET_LOG(USER) << "CreateConfigurationAndConnect";
-  CallCreateConfiguration(properties, shared, true /* connect_on_configure */);
+  CallCreateConfiguration(std::move(properties), shared,
+                          true /* connect_on_configure */);
 }
 
-void NetworkConnectImpl::CreateConfiguration(base::Value* properties,
+void NetworkConnectImpl::CreateConfiguration(base::Value::Dict properties,
                                              bool shared) {
   NET_LOG(USER) << "CreateConfiguration";
-  CallCreateConfiguration(properties, shared, false /* connect_on_configure */);
+  CallCreateConfiguration(std::move(properties), shared,
+                          false /* connect_on_configure */);
 }
 
 }  // namespace

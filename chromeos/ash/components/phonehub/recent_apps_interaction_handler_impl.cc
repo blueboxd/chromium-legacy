@@ -8,8 +8,8 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
@@ -33,7 +33,7 @@ using HostStatusWithDevice =
 using FeatureStatesMap =
     multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap;
 
-const size_t kMaxMostRecentApps = 6;
+const size_t kMaxMostRecentApps = 5;
 const size_t kMaxSavedRecentApps = 10;
 
 // static
@@ -200,6 +200,21 @@ void RecentAppsInteractionHandlerImpl::SetStreamableApps(
   for (const auto& app : streamable_apps) {
     recent_app_metadata_list_.emplace_back(app, base::Time::FromDoubleT(0));
   }
+
+  SaveRecentAppMetadataListToPref();
+  ComputeAndUpdateUiState();
+}
+
+void RecentAppsInteractionHandlerImpl::RemoveStreamableApp(
+    const proto::App app_to_remove) {
+  recent_app_metadata_list_.erase(
+      std::remove_if(
+          recent_app_metadata_list_.begin(), recent_app_metadata_list_.end(),
+          [&app_to_remove](
+              const std::pair<Notification::AppMetadata, base::Time>& app) {
+            return app.first.package_name == app_to_remove.package_name();
+          }),
+      recent_app_metadata_list_.end());
 
   SaveRecentAppMetadataListToPref();
   ComputeAndUpdateUiState();

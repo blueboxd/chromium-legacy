@@ -5,17 +5,19 @@
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task_impl.h"
 
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/files/file_error_or.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -131,6 +133,9 @@ bool IsCrossFileSystem(Profile* profile,
 
 }  // namespace
 
+ItemProgress::ItemProgress() = default;
+ItemProgress::~ItemProgress() = default;
+
 CopyOrMoveIOTaskImpl::CopyOrMoveIOTaskImpl(
     OperationType type,
     ProgressStatus& progress,
@@ -142,7 +147,8 @@ CopyOrMoveIOTaskImpl::CopyOrMoveIOTaskImpl(
     : progress_(progress),
       profile_(profile),
       file_system_context_(file_system_context),
-      source_sizes_(progress_.sources.size()) {
+      source_sizes_(progress_.sources.size()),
+      item_progresses(progress_.sources.size()) {
   DCHECK(type == OperationType::kCopy || type == OperationType::kMove);
   if (!destination_file_names.empty()) {
     DCHECK_EQ(progress_.sources.size(), destination_file_names.size());
@@ -192,6 +198,7 @@ void CopyOrMoveIOTaskImpl::VerifyTransfer() {
 
 void CopyOrMoveIOTaskImpl::StartTransfer() {
   progress_.state = State::kInProgress;
+
   // Start the transfer by getting the file size.
   for (size_t i = 0; i < progress_.sources.size(); i++) {
     GetFileSize(i);
@@ -221,14 +228,17 @@ void CopyOrMoveIOTaskImpl::GetFileSize(size_t idx) {
   const base::FilePath& source = progress_.sources[idx].url.path();
   const base::FilePath& destination = progress_.destination_folder.path();
 
-  auto getFileMetadataCallback = base::BindOnce(
-      &GetFileMetadataOnIOThread, file_system_context_,
-      progress_.sources[idx].url,
+  constexpr auto metadata_fields =
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
       storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
-          storage::FileSystemOperation::GET_METADATA_FIELD_TOTAL_SIZE,
-      google_apis::CreateRelayCallback(
-          base::BindOnce(&CopyOrMoveIOTaskImpl::GotFileSize,
-                         weak_ptr_factory_.GetWeakPtr(), idx)));
+      storage::FileSystemOperation::GET_METADATA_FIELD_TOTAL_SIZE;
+
+  auto get_metadata_callback =
+      base::BindOnce(&GetFileMetadataOnIOThread, file_system_context_,
+                     progress_.sources[idx].url, metadata_fields,
+                     google_apis::CreateRelayCallback(
+                         base::BindOnce(&CopyOrMoveIOTaskImpl::GotFileSize,
+                                        weak_ptr_factory_.GetWeakPtr(), idx)));
 
   if (file_manager::util::IsDriveLocalPath(profile_, source) &&
       file_manager::file_tasks::IsOfficeFile(source) &&
@@ -247,14 +257,14 @@ void CopyOrMoveIOTaskImpl::GetFileSize(size_t idx) {
       drive_service->ForceReSyncFile(
           source,
           base::BindPostTask(content::GetIOThreadTaskRunner({}),
-                             std::move(getFileMetadataCallback), FROM_HERE));
+                             std::move(get_metadata_callback), FROM_HERE));
       return;
     }
     // If there is no Drive connection, we should continue as normal.
   }
 
   content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, std::move(getFileMetadataCallback));
+      FROM_HERE, std::move(get_metadata_callback));
 }
 
 // Helper function to GetFileSize() that is called when the metadata for a file
@@ -271,19 +281,22 @@ void CopyOrMoveIOTaskImpl::GotFileSize(size_t idx,
   DCHECK(idx < progress_.sources.size());
   if (error != base::File::FILE_OK) {
     progress_.sources[idx].error = error;
-    LOG(ERROR) << "Could not get size of source file: " << error;
+    LOG(ERROR) << "Could not get size of source file: error " << error << " "
+               << base::File::ErrorToString(error);
     Complete(State::kError);
     return;
   }
 
-  DCHECK_LT(files_preprocessed_, progress_.sources.size());
-  files_preprocessed_++;
   progress_.total_bytes += file_info.size;
   source_sizes_[idx] = file_info.size;
-  if (files_preprocessed_ < progress_.sources.size()) {
-    // Return early if we didn't yet get the file size for all files.
+  progress_.sources[idx].is_directory = file_info.is_directory;
+
+  // Return early if we didn't yet get the file size for all files.
+  DCHECK_LT(files_preprocessed_, progress_.sources.size());
+  if (++files_preprocessed_ < progress_.sources.size()) {
     return;
   }
+
   // Got file size for all files at this point!
   speedometer_.SetTotalBytes(progress_.total_bytes);
 
@@ -358,14 +371,15 @@ void CopyOrMoveIOTaskImpl::CopyOrMoveFile(
     size_t idx,
     base::FileErrorOr<storage::FileSystemURL> destination_result) {
   DCHECK(idx < progress_.sources.size());
+
   if (!destination_result.has_value()) {
     progress_.outputs.emplace_back(progress_.destination_folder, absl::nullopt);
     OnCopyOrMoveComplete(idx, destination_result.error());
     return;
   }
-  progress_.outputs.emplace_back(destination_result.value(), absl::nullopt);
 
-  last_progress_size_ = 0;
+  progress_.outputs.emplace_back(destination_result.value(), absl::nullopt);
+  DCHECK_EQ(idx + 1, progress_.outputs.size());
 
   const storage::FileSystemURL& source_url = progress_.sources[idx].url;
   const storage::FileSystemURL& destination_url = destination_result.value();
@@ -377,6 +391,7 @@ void CopyOrMoveIOTaskImpl::CopyOrMoveFile(
           storage::FileSystemOperation::CopyOrMoveOption::kPreserveLastModified,
           storage::FileSystemOperation::CopyOrMoveOption::
               kRemovePartiallyCopiedFilesOnError);
+
   // To ensure progress updates, force cross-filesystem I/O operations when the
   // source and the destination are on different volumes, or between My files
   // and Downloads.
@@ -415,30 +430,68 @@ CopyOrMoveIOTaskImpl::GetHookDelegate(size_t idx) {
   // current thread.
   auto progress_callback = google_apis::CreateRelayCallback(
       base::BindRepeating(&CopyOrMoveIOTaskImpl::OnCopyOrMoveProgress,
-                          weak_ptr_factory_.GetWeakPtr()));
+                          weak_ptr_factory_.GetWeakPtr(), idx));
   return std::make_unique<FileManagerCopyOrMoveHookDelegate>(progress_callback);
 }
 
 void CopyOrMoveIOTaskImpl::OnCopyOrMoveProgress(
+    size_t idx,
     FileManagerCopyOrMoveHookDelegate::ProgressType type,
     const storage::FileSystemURL& source_url,
     const storage::FileSystemURL& destination_url,
     int64_t size) {
-  // |size| is only valid for kProgress.
-  if (type != FileManagerCopyOrMoveHookDelegate::ProgressType::kProgress)
-    return;
+  const std::string destination_path = destination_url.path().AsUTF8Unsafe();
+  auto& [individual_progress, aggregate_progress] = item_progresses[idx];
 
-  progress_.bytes_transferred += size - last_progress_size_;
+  const auto log_progress = [&]() {
+    VLOG(1) << type << "\ncopy_move_src" << source_url.path()
+            << "\ncopy_move_des " << destination_url.path();
+  };
+
+  using ProgressType = FileManagerCopyOrMoveHookDelegate::ProgressType;
+  if (type != ProgressType::kProgress) {
+    switch (type) {
+      case ProgressType::kBegin:
+        log_progress();
+        individual_progress[destination_path] = 0;
+        return;
+      case ProgressType::kEndCopy:
+        log_progress();
+        individual_progress.erase(destination_path);
+        return;
+      case ProgressType::kEndMove:
+        log_progress();
+        individual_progress.erase(destination_path);
+        return;
+      case ProgressType::kEndRemoveSource:
+        log_progress();
+        return;
+      case ProgressType::kError:
+        log_progress();
+        return;
+      default:
+        NOTREACHED() << "Unknown ProgressType:" << int(type);
+        return;
+    }
+  }
+
+  // The |size| is only valid for ProgressType::kProgress.
+  DCHECK_EQ(type, ProgressType::kProgress);
+  int64_t& last_size = individual_progress.at(destination_path);
+  int64_t delta = size - last_size;
+  last_size = size;
+
+  aggregate_progress += delta;
+  progress_.bytes_transferred += delta;
   speedometer_.Update(progress_.bytes_transferred);
-  const double remaining_seconds = speedometer_.GetRemainingSeconds();
 
   // Speedometer can produce infinite result which can't be serialized to JSON
   // when sending the status via private API.
+  double remaining_seconds = speedometer_.GetRemainingSeconds();
   if (std::isfinite(remaining_seconds)) {
     progress_.remaining_seconds = remaining_seconds;
   }
 
-  last_progress_size_ = size;
   progress_callback_.Run(progress_);
 }
 
@@ -446,24 +499,44 @@ void CopyOrMoveIOTaskImpl::OnCopyOrMoveComplete(size_t idx,
                                                 base::File::Error error) {
   DCHECK(idx < progress_.sources.size());
   DCHECK(idx < progress_.outputs.size());
+
   operation_id_.reset();
+
   progress_.sources[idx].error = error;
   progress_.outputs[idx].error = error;
-  progress_.bytes_transferred += source_sizes_[idx] - last_progress_size_;
+
+  auto& [individual_progress, aggregate_progress] = item_progresses[idx];
+  individual_progress.clear();
+
+  // Some copy and move operations (depending on the source and destination
+  // filesystems) don't support progress reporting yet, so we rely on setting
+  // bytes_transferred only when each item completes. By also deducting
+  // `aggregate_progress` from bytes_transferred, we ensure that both operations
+  // that report progress and those that don't are supported.
+  progress_.bytes_transferred += source_sizes_[idx] - aggregate_progress;
 
   if (idx < progress_.sources.size() - 1) {
     progress_callback_.Run(progress_);
     GenerateDestinationURL(idx + 1);
-  } else {
-    for (const auto& source : progress_.sources) {
-      if (source.error != base::File::FILE_OK) {
-        LOG(ERROR) << "Error on complete: " << error;
-        Complete(State::kError);
-        return;
-      }
-    }
-    Complete(State::kSuccess);
+    return;
   }
+
+  // Complete: assume State::kSuccess.
+  file_manager::io_task::State complete_state = State::kSuccess;
+
+  // Look for source errors and set the complete state to State::Error if any
+  // source errors are found.
+  for (const auto& source : progress_.sources) {
+    DCHECK(source.error.has_value());
+    if (source.error != base::File::FILE_OK) {
+      LOG(ERROR) << "Error on complete: error " << source.error.value() << " "
+                 << base::File::ErrorToString(source.error.value());
+      complete_state = State::kError;
+      break;
+    }
+  }
+
+  Complete(complete_state);
 }
 
 void CopyOrMoveIOTaskImpl::SetCurrentOperationID(

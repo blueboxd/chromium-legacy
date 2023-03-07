@@ -7,14 +7,15 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/headless/headless_mode_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -440,6 +441,5 @@ bool BrowserFrame::RegenerateFrameOnThemeChange(
 }
 
 bool BrowserFrame::ShouldUseDarkTheme() const {
-  return browser_view_->browser()->profile()->IsIncognitoProfile() ||
-         browser_view_->GetIsPictureInPictureType();
+  return browser_view_->browser()->profile()->IsIncognitoProfile();
 }

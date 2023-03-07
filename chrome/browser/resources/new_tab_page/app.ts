@@ -56,7 +56,20 @@ export enum NtpElement {
   MOST_VISITED = 5,
   MIDDLE_SLOT_PROMO = 6,
   MODULE = 7,
-  CUSTOMIZE = 8,
+  CUSTOMIZE = 8,  // Obsolete
+  CUSTOMIZE_BUTTON = 9,
+  CUSTOMIZE_DIALOG = 10,
+}
+
+/**
+ * Customize Chrome entry points. This enum must match the numbering for
+ * NtpCustomizeChromeEntryPoint in enums.xml. These values are persisted to
+ * logs. Entries should not be renumbered, removed or reused.
+ */
+export enum NtpCustomizeChromeEntryPoint {
+  CUSTOMIZE_BUTTON = 0,
+  MODULE = 1,
+  URL = 2,
 }
 
 const CUSTOMIZE_URL_PARAM: string = 'customize';
@@ -65,6 +78,12 @@ const OGB_IFRAME_ORIGIN = 'chrome-untrusted://new-tab-page';
 function recordClick(element: NtpElement) {
   chrome.metricsPrivate.recordEnumerationValue(
       'NewTabPage.Click', element, Object.keys(NtpElement).length);
+}
+
+function recordCustomizeChromeOpen(element: NtpCustomizeChromeEntryPoint) {
+  chrome.metricsPrivate.recordEnumerationValue(
+      'NewTabPage.CustomizeChromeOpened', element,
+      Object.keys(NtpCustomizeChromeEntryPoint).length);
 }
 
 // Adds a <script> tag that holds the lazy loaded code.
@@ -115,10 +134,16 @@ export class AppElement extends PolymerElement {
         type: Object,
       },
 
-      showCustomizeDialog_: {
+      showCustomize_: {
         type: Boolean,
         value: () =>
             WindowProxy.getInstance().url.searchParams.has(CUSTOMIZE_URL_PARAM),
+      },
+
+      showCustomizeDialog_: {
+        type: Boolean,
+        computed:
+            'computeShowCustomizeDialog_(customizeChromeEnabled_, showCustomize_)',
       },
 
       selectedCustomizeDialogPage_: {
@@ -159,10 +184,6 @@ export class AppElement extends PolymerElement {
       customizeChromeEnabled_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('customizeChromeEnabled'),
-      },
-
-      customizeChromeSidePanelShowing_: {
-        type: Boolean,
       },
 
       logoColor_: {
@@ -279,6 +300,7 @@ export class AppElement extends PolymerElement {
   private oneGoogleBarIframePath_: string;
   private oneGoogleBarLoaded_: boolean;
   private theme_: Theme;
+  private showCustomize_: boolean;
   private showCustomizeDialog_: boolean;
   private selectedCustomizeDialogPage_: string|null;
   private showVoiceSearchOverlay_: boolean;
@@ -288,7 +310,6 @@ export class AppElement extends PolymerElement {
   private backgroundImageAttributionUrl_: string;
   private backgroundColor_: SkColor;
   private customizeChromeEnabled_: boolean;
-  private customizeChromeSidePanelShowing_: boolean;
   private logoColor_: string;
   private singleColoredLogo_: boolean;
   private realboxLensSearchEnabled_: boolean;
@@ -314,8 +335,7 @@ export class AppElement extends PolymerElement {
   private pageHandler_: PageHandlerRemote;
   private backgroundManager_: BackgroundManager;
   private setThemeListenerId_: number|null = null;
-  private customizeChromeSidePanelVisibilityChangedListener_: number|null =
-      null;
+  private setCustomizeChromeSidePanelVisibilityListener_: number|null = null;
   private eventTracker_: EventTracker = new EventTracker();
   private shouldPrintPerformance_: boolean;
   private backgroundImageLoadStartEpoch_: number;
@@ -356,10 +376,16 @@ export class AppElement extends PolymerElement {
           performance.measure('theme-set');
           this.theme_ = theme;
         });
-    this.customizeChromeSidePanelVisibilityChangedListener_ =
-        this.callbackRouter_.customizeChromeSidePanelVisibilityChanged
-            .addListener(
-                this.onCustomizeChromeSidePanelVisibilityChanged_.bind(this));
+    this.setCustomizeChromeSidePanelVisibilityListener_ =
+        this.callbackRouter_.setCustomizeChromeSidePanelVisibility.addListener(
+            (visible: boolean) => {
+              this.showCustomize_ = visible;
+            });
+    // Open Customize Chrome if there are Customize Chrome URL params.
+    if (this.showCustomize_) {
+      this.pageHandler_.setCustomizeChromeSidePanelVisible(this.showCustomize_);
+      recordCustomizeChromeOpen(NtpCustomizeChromeEntryPoint.URL);
+    }
     this.eventTracker_.add(window, 'message', (event: MessageEvent) => {
       const data = event.data;
       // Something in OneGoogleBar is sending a message that is received here.
@@ -399,7 +425,7 @@ export class AppElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(this.setThemeListenerId_!);
     this.callbackRouter_.removeListener(
-        this.customizeChromeSidePanelVisibilityChangedListener_!);
+        this.setCustomizeChromeSidePanelVisibilityListener_!);
     this.eventTracker_.removeAll();
   }
 
@@ -430,6 +456,10 @@ export class AppElement extends PolymerElement {
             this.removeScrim_ && this.showBackgroundImage_ && isNtpDarkTheme,
       });
     }
+  }
+
+  private computeShowCustomizeDialog_(): boolean {
+    return !this.customizeChromeEnabled_ && this.showCustomize_;
   }
 
   private computeBackgroundImageAttribution1_(): string {
@@ -494,18 +524,23 @@ export class AppElement extends PolymerElement {
 
   private onCustomizeClick_() {
     if (this.customizeChromeEnabled_) {
-      this.pageHandler_.showCustomizeChromeSidePanel();
+      // TODO(crbug.com/1402251): Scroll to section requested by
+      // |this.selectedCustomizeDialogPage_|.
+      // Flip customize chrome's visibility e.g. if it is closed, open it.
+      this.pageHandler_.setCustomizeChromeSidePanelVisible(
+          !this.showCustomize_);
+      if (!this.showCustomize_) {
+        recordCustomizeChromeOpen(
+            NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON);
+      }
     } else {
-      this.showCustomizeDialog_ = true;
+      this.showCustomize_ = true;
+      recordCustomizeChromeOpen(NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON);
     }
   }
 
-  private onCustomizeChromeSidePanelVisibilityChanged_(visible: boolean) {
-    this.customizeChromeSidePanelShowing_ = visible;
-  }
-
   private onCustomizeDialogClose_() {
-    this.showCustomizeDialog_ = false;
+    this.showCustomize_ = false;
     // Let customize dialog decide what page to show on next open.
     this.selectedCustomizeDialogPage_ = null;
   }
@@ -693,8 +728,12 @@ export class AppElement extends PolymerElement {
   }
 
   private onCustomizeModule_() {
-    this.showCustomizeDialog_ = true;
+    this.showCustomize_ = true;
+    if (this.customizeChromeEnabled_) {
+      this.pageHandler_.setCustomizeChromeSidePanelVisible(this.showCustomize_);
+    }
     this.selectedCustomizeDialogPage_ = CustomizeDialogPage.MODULES;
+    recordCustomizeChromeOpen(NtpCustomizeChromeEntryPoint.MODULE);
   }
 
   private printPerformanceDatum_(
@@ -758,8 +797,10 @@ export class AppElement extends PolymerElement {
           recordClick(NtpElement.MODULE);
           return;
         case $$(this, '#customizeButton'):
+          recordClick(NtpElement.CUSTOMIZE_BUTTON);
+          return;
         case $$(this, 'ntp-customize-dialog'):
-          recordClick(NtpElement.CUSTOMIZE);
+          recordClick(NtpElement.CUSTOMIZE_DIALOG);
           return;
       }
     }

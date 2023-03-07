@@ -6,7 +6,7 @@
 
 #include <tuple>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
@@ -470,10 +470,16 @@ void PrerenderTestHelper::NavigatePrimaryPage(const GURL& gurl) {
         RenderFrameHostImpl::LifecycleStateImpl::kPrerendering) {
       return ::testing::AssertionFailure() << "subframe in incorrect state";
     }
-    if (rfhi->frame_tree()->type() != FrameTree::Type::kPrerender) {
-      return ::testing::AssertionFailure() << "frame tree had incorrect type";
-    }
   }
+
+  // Make sure that all the PrerenderHost frame trees are prerendering.
+  const std::vector<FrameTree*> prerender_frame_trees =
+      registry.GetPrerenderFrameTrees();
+  std::for_each(std::begin(prerender_frame_trees),
+                std::end(prerender_frame_trees), [](auto const& frame_tree) {
+                  ASSERT_TRUE(frame_tree->is_prerendering());
+                });
+
   return ::testing::AssertionSuccess();
 }
 
@@ -555,9 +561,9 @@ ScopedPrerenderWebContentsDelegate::~ScopedPrerenderWebContentsDelegate() {
     web_contents_.get()->SetDelegate(nullptr);
 }
 
-bool ScopedPrerenderWebContentsDelegate::IsPrerender2Supported(
+PreloadingEligibility ScopedPrerenderWebContentsDelegate::IsPrerender2Supported(
     WebContents& web_contents) {
-  return true;
+  return PreloadingEligibility::kEligible;
 }
 
 }  // namespace test

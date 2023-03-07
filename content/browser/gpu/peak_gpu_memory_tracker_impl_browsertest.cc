@@ -4,8 +4,8 @@
 
 #include "content/browser/gpu/peak_gpu_memory_tracker_impl.h"
 
-#include "base/bind.h"
 #include "base/clang_profiling_buildflags.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -110,8 +110,7 @@ class TestGpuService : public viz::mojom::GpuService {
                              gpu::SurfaceHandle surface_handle,
                              CreateGpuMemoryBufferCallback callback) override {}
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              const gpu::SyncToken& sync_token) override {}
+                              int client_id) override {}
   void CopyGpuMemoryBuffer(::gfx::GpuMemoryBufferHandle buffer_handle,
                            ::base::UnsafeSharedMemoryRegion shared_memory,
                            CopyGpuMemoryBufferCallback callback) override {}

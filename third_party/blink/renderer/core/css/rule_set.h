@@ -241,7 +241,23 @@ class RuleMap {
   DISALLOW_NEW();
 
  private:
-  struct Extent;
+  // A collection of rules that are in the same bucket. Before compaction,
+  // they are scattered around in the bucket vector; after compaction,
+  // each bucket will be contiguous.
+  struct Extent {
+    Extent() : bucket_number(0) {}
+    union {
+      // [0..num_buckets). Valid before compaction.
+      unsigned bucket_number;
+
+      // Into the backing vector. Valid after compaction.
+      unsigned start_index;
+    };
+
+    // How many rules are in this bucket. Will naturally not change
+    // by compaction.
+    wtf_size_t length = 0;
+  };
 
  public:
   void Add(const AtomicString& key, const RuleData& rule_data);
@@ -293,24 +309,6 @@ class RuleMap {
   base::span<const RuleData> GetRulesFromExtent(Extent extent) const {
     return {backing.begin() + extent.start_index, extent.length};
   }
-
-  // A collection of rules that are in the same bucket. Before compaction,
-  // they are scattered around in the bucket vector; after compaction,
-  // each bucket will be contiguous.
-  struct Extent {
-    Extent() : bucket_number(0) {}
-    union {
-      // [0..num_buckets). Valid before compaction.
-      unsigned bucket_number;
-
-      // Into the backing vector. Valid after compaction.
-      unsigned start_index;
-    };
-
-    // How many rules are in this bucket. Will naturally not change
-    // by compaction.
-    wtf_size_t length = 0;
-  };
 
   HashMap<AtomicString, Extent> buckets;
 
@@ -452,8 +450,9 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   unsigned RuleCount() const { return rule_count_; }
 
   void CompactRulesIfNeeded() {
-    if (need_compaction_)
+    if (need_compaction_) {
       CompactRules();
+    }
   }
 
   bool HasSlottedRules() const {
@@ -557,8 +556,9 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
 #endif
 
   CascadeLayer* EnsureImplicitOuterLayer() {
-    if (!implicit_outer_layer_)
+    if (!implicit_outer_layer_) {
       implicit_outer_layer_ = MakeGarbageCollected<CascadeLayer>();
+    }
     return implicit_outer_layer_;
   }
 

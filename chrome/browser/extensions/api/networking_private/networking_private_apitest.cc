@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -161,11 +161,11 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   }
 
   void GetEnabledNetworkTypes(EnabledNetworkTypesCallback callback) override {
-    base::Value result(base::Value::Type::LIST);
+    base::Value::List result;
     if (!fail_) {
       result.Append(::onc::network_config::kEthernet);
     }
-    std::move(callback).Run(base::Value::ToUniquePtrValue(std::move(result)));
+    std::move(callback).Run(std::move(result));
   }
 
   void GetDeviceStateList(DeviceStateListCallback callback) override {

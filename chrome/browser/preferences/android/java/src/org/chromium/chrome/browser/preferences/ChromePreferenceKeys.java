@@ -124,7 +124,7 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix CHROME_SURVEY_DOWNLOAD_ATTEMPTS =
             new KeyPrefix("Chrome.Survey.DownloadAttempts.*");
     /**
-     * Key prefix used to indicate the timestamps when the survey info bar is displayed for a
+     * Key prefix used to indicate the timestamps when the survey prompt is displayed for a
      * certain survey.
      */
     public static final KeyPrefix CHROME_SURVEY_PROMPT_DISPLAYED_TIMESTAMP =
@@ -148,30 +148,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String COMMERCE_SUBSCRIPTIONS_CHROME_MANAGED_TIMESTAMP =
             "Chrome.CommerceSubscriptions.ChromeManagedTimestamp";
-
-    /**
-     * Saves a counter of how many continuous feature sessions in which a user has dismissed
-     * conditional tab strip.
-     */
-    public static final String CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER =
-            "Chrome.ConditionalTabStrip.ContinuousDismissCounter";
-
-    /**
-     * Saves the feature status of conditional tab strip.
-     */
-    public static final String CONDITIONAL_TAB_STRIP_FEATURE_STATUS =
-            "Chrome.ConditionalTabStrip.FeatureStatus";
-
-    /**
-     * Saves the timestamp of the last time that conditional tab strip shows.
-     */
-    public static final String CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP =
-            "Chrome.ConditionalTabStrip.LastShownTimeStamp";
-
-    /**
-     * Saves whether a user has chosen to opt-out the conditional tab strip feature.
-     */
-    public static final String CONDITIONAL_TAB_STRIP_OPT_OUT = "Chrome.ConditionalTabStrip.OptOut";
 
     /**
      * Marks that the content suggestions surface has been shown.
@@ -378,10 +354,6 @@ public final class ChromePreferenceKeys {
      * Default value is false.
      */
     public static final String FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED = "grid_tab_switcher_enabled";
-    /**
-     * Key to cache whether immersive ui mode is enabled.
-     */
-    public static final String FLAGS_CACHED_IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
     /**
      * Whether warming up network service is enabled.
      * Default value is false.
@@ -820,6 +792,10 @@ public final class ChromePreferenceKeys {
     public static final String SEARCH_WIDGET_IS_INCOGNITO_AVAILABLE =
             "org.chromium.chrome.browser.searchwidget.IS_INCOGNITO_AVAILABLE";
 
+    // Segmentation platform related prefs.
+    public static final String SEGMENTATION_FEED_ACTIVE_USER = "Chrome.Segmentation.FeedActiveUser";
+    public static final String SEGMENTATION_SHOW_QUERY_TILES = "Chrome.Segmentation.ShowQueryTiles";
+
     // Tracks which GUIDs there is an active notification for.
     public static final String SEND_TAB_TO_SELF_ACTIVE_NOTIFICATIONS =
             "send_tab_to_self.notification.active";
@@ -954,15 +930,6 @@ public final class ChromePreferenceKeys {
     public static final String VERIFIED_DIGITAL_ASSET_LINKS = "verified_digital_asset_links";
 
     public static final String VIDEO_TUTORIALS_SHARE_URL_SET = "Chrome.VideoTutorials.ShareUrls";
-    public static final String VR_EXIT_TO_2D_COUNT = "VR_EXIT_TO_2D_COUNT";
-    public static final String VR_FEEDBACK_OPT_OUT = "VR_FEEDBACK_OPT_OUT";
-
-    /**
-     * Whether VR assets component should be registered on startup.
-     * Default value is false.
-     */
-    public static final String VR_SHOULD_REGISTER_ASSETS_COMPONENT_ON_STARTUP =
-            "should_register_vr_assets_component_on_startup";
 
     /** Key for deferred recording of list of uninstalled WebAPK packages. */
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
@@ -1046,10 +1013,6 @@ public final class ChromePreferenceKeys {
                 CLOUD_MANAGEMENT_CLIENT_ID,
                 CLOUD_MANAGEMENT_DM_TOKEN,
                 COMMERCE_SUBSCRIPTIONS_CHROME_MANAGED_TIMESTAMP,
-                CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER,
-                CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
-                CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP,
-                CONDITIONAL_TAB_STRIP_OPT_OUT,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
@@ -1149,6 +1112,8 @@ public final class ChromePreferenceKeys {
                 QUERY_TILES_SHOW_SEGMENTATION_RESULT,
                 QUERY_TILES_SHOWN_ON_START_SURFACE,
                 REGULAR_TAB_COUNT,
+                SEGMENTATION_FEED_ACTIVE_USER,
+                SEGMENTATION_SHOW_QUERY_TILES,
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,

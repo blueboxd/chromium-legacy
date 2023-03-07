@@ -9,15 +9,16 @@
 #include <memory>
 
 #include "ash/webui/camera_app_ui/url_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -37,6 +38,7 @@
 #include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/services/storage/public/cpp/storage_prefs.h"
 #include "components/variations/variations_associated_data.h"
@@ -196,15 +198,29 @@ TEST_F(ChromeContentBrowserClientWindowTest, ShouldStayInParentProcessForNTP) {
       content::SiteInstance::CreateForURL(browser()->profile(),
                                           GURL("chrome-search://remote-ntp"));
   EXPECT_TRUE(client.ShouldStayInParentProcessForNTP(
-      GURL("chrome-search://remote-ntp"), site_instance.get()));
+      GURL("chrome-search://most-visited/title.html"),
+      site_instance->GetSiteURL()));
+
+  // Only the most visited tiles host is allowed to stay in the 3P NTP.
+  EXPECT_FALSE(client.ShouldStayInParentProcessForNTP(
+      GURL("chrome-search://foo/"), site_instance->GetSiteURL()));
+  EXPECT_FALSE(client.ShouldStayInParentProcessForNTP(
+      GURL("chrome://new-tab-page"), site_instance->GetSiteURL()));
 
   site_instance = content::SiteInstance::CreateForURL(
       browser()->profile(), GURL("chrome://new-tab-page"));
+
   // chrome://new-tab-page is an NTP replacing local-ntp and supports OOPIFs.
   // ShouldStayInParentProcessForNTP() should only return true for NTPs hosted
   // under the chrome-search: scheme.
   EXPECT_FALSE(client.ShouldStayInParentProcessForNTP(
-      GURL("chrome://new-tab-page"), site_instance.get()));
+      GURL("chrome://new-tab-page"), site_instance->GetSiteURL()));
+
+  // For now, we also allow chrome-search://most-visited to stay in 1P NTP,
+  // chrome://new-tab-page.  We should consider tightening this to only allow
+  // most-visited tiles to stay in 3P NTP.
+  EXPECT_TRUE(client.ShouldStayInParentProcessForNTP(
+      GURL("chrome-search://most-visited"), site_instance->GetSiteURL()));
 }
 
 TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
@@ -502,6 +518,36 @@ TEST_F(ChromeContentBrowserClientTest, HandleWebUIReverse) {
   EXPECT_TRUE(test_content_browser_client.HandleWebUIReverse(&chrome_settings,
                                                              &profile_));
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(ChromeContentBrowserClientTest, RedirectPrivacySandboxURL) {
+  base::test::ScopedFeatureList feature_list(
+      privacy_sandbox::kPrivacySandboxSettings4);
+
+  TestChromeContentBrowserClient test_content_browser_client;
+  base::HistogramTester histogram_tester;
+  const std::string histogram_name =
+      "Settings.PrivacySandbox.DeprecatedRedirect";
+
+  GURL settings_url = GURL(chrome::kChromeUISettingsURL);
+  settings_url = net::AppendQueryParameter(settings_url, "foo", "bar");
+
+  GURL::Replacements replacements;
+  replacements.SetPathStr(chrome::kPrivacySandboxSubPagePath);
+  GURL old_settings_url = settings_url.ReplaceComponents(replacements);
+
+  replacements.SetPathStr(chrome::kAdPrivacySubPagePath);
+  GURL new_settings_url = settings_url.ReplaceComponents(replacements);
+
+  test_content_browser_client.HandleWebUI(&old_settings_url, &profile_);
+  EXPECT_EQ(new_settings_url, old_settings_url);
+  histogram_tester.ExpectUniqueSample(histogram_name, true, 1);
+
+  test_content_browser_client.HandleWebUI(&new_settings_url, &profile_);
+  histogram_tester.ExpectBucketCount(histogram_name, false, 1);
+  histogram_tester.ExpectTotalCount(histogram_name, 2);
+}
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 class ChromeContentSettingsRedirectTest
@@ -1009,31 +1055,6 @@ TEST_F(ChromeContentBrowserClientSwitchTest,
   base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
   EXPECT_TRUE(
       result.HasSwitch(blink::switches::kWebSQLNonSecureContextEnabled));
-}
-
-TEST_F(ChromeContentBrowserClientSwitchTest,
-       FileSystemSyncAccessHandleAsyncInterfaceEnabledDefault) {
-  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
-  EXPECT_FALSE(result.HasSwitch(
-      switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled));
-}
-
-TEST_F(ChromeContentBrowserClientSwitchTest,
-       FileSystemSyncAccessHandleAsyncInterfaceEnabledDisabled) {
-  profile()->GetPrefs()->SetBoolean(
-      storage::kFileSystemSyncAccessHandleAsyncInterfaceEnabled, false);
-  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
-  EXPECT_FALSE(result.HasSwitch(
-      switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled));
-}
-
-TEST_F(ChromeContentBrowserClientSwitchTest,
-       FileSystemSyncAccessHandleAsyncInterfaceEnabledEnabled) {
-  profile()->GetPrefs()->SetBoolean(
-      storage::kFileSystemSyncAccessHandleAsyncInterfaceEnabled, true);
-  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
-  EXPECT_TRUE(result.HasSwitch(
-      switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled));
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

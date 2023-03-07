@@ -10,10 +10,15 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/skia_gl_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/shared_gl_fence_egl.h"
+
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+#include "gpu/command_buffer/service/shared_image/dawn_egl_image_representation.h"
+#endif
 
 namespace gpu {
 
@@ -68,8 +73,7 @@ class EGLImageBacking::GLRepresentationShared {
   }
 
   bool BeginAccess(GLenum mode) {
-    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
-        mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM) {
+    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
       if (!backing_->BeginRead(this))
         return false;
       mode_ = RepresentationAccessMode::kRead;
@@ -282,6 +286,31 @@ std::unique_ptr<SkiaImageRepresentation> EGLImageBacking::ProduceSkia(
   }
 }
 
+std::unique_ptr<DawnImageRepresentation> EGLImageBacking::ProduceDawn(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    WGPUDevice device,
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  if (backend_type == WGPUBackendType_OpenGLES) {
+    std::unique_ptr<GLTextureImageRepresentationBase> gl_representation;
+    if (use_passthrough_) {
+      gl_representation = ProduceGLTexturePassthrough(manager, tracker);
+    } else {
+      gl_representation = ProduceGLTexture(manager, tracker);
+    }
+    {
+      AutoLock auto_lock(this);
+      return std::make_unique<DawnEGLImageRepresentation>(
+          std::move(gl_representation), egl_image_.get(), manager, this,
+          tracker, device);
+    }
+  }
+#endif  // BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  return nullptr;
+}
+
 bool EGLImageBacking::BeginWrite() {
   AutoLock auto_lock(this);
 
@@ -394,7 +423,7 @@ EGLImageBacking::GenEGLImageSibling(base::span<const uint8_t> pixel_data) {
       // to create EGLImage.
       if (format_info_.supports_storage) {
         api->glTexStorage2DEXTFn(target, 1,
-                                 format_info_.storage_internal_format,
+                                 format_info_.adjusted_storage_internal_format,
                                  size().width(), size().height());
 
         if (!pixel_data.empty()) {
@@ -422,7 +451,7 @@ EGLImageBacking::GenEGLImageSibling(base::span<const uint8_t> pixel_data) {
       const EGLint egl_attrib_list[] = {EGL_GL_TEXTURE_LEVEL_KHR, 0,
                                         EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
                                         EGL_NONE};
-      egl_image_ = ui::MakeScopedEGLImage(
+      egl_image_ = gl::MakeScopedEGLImage(
           eglGetCurrentContext(), EGL_GL_TEXTURE_2D_KHR,
           reinterpret_cast<EGLClientBuffer>(service_id), egl_attrib_list);
       if (!egl_image_.get()) {

@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/base64url.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
@@ -571,8 +571,10 @@ bool GetAPIQueryPayload(const AutofillPageQueryRequest& query,
 }  // namespace
 
 struct AutofillDownloadManager::FormRequestData {
+  base::WeakPtr<Observer> observer;
   std::vector<FormSignature> form_signatures;
   RequestType request_type;
+  absl::optional<net::IsolationInfo> isolation_info;
   std::string payload;
   int num_attempts = 0;
 };
@@ -589,27 +591,21 @@ std::vector<variations::VariationID>*
     AutofillDownloadManager::active_experiments_ = nullptr;
 
 AutofillDownloadManager::AutofillDownloadManager(
-    AutofillDriver* driver,
-    Observer* observer,
+    AutofillClient* client,
     const std::string& api_key,
     IsRawMetadataUploadingEnabled is_raw_metadata_uploading_enabled,
     LogManager* log_manager)
-    : driver_(driver),
-      observer_(observer),
+    : client_(client),
       api_key_(api_key),
       log_manager_(log_manager),
       autofill_server_url_(GetAutofillServerURL()),
       throttle_reset_period_(GetThrottleResetPeriod()),
       max_form_cache_size_(kAutofillDownloadManagerMaxFormCacheSize),
       loader_backoff_(&kAutofillBackoffPolicy),
-      is_raw_metadata_uploading_enabled_(is_raw_metadata_uploading_enabled) {
-  DCHECK(observer_);
-}
+      is_raw_metadata_uploading_enabled_(is_raw_metadata_uploading_enabled) {}
 
-AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
-                                                 Observer* observer)
-    : AutofillDownloadManager(driver,
-                              observer,
+AutofillDownloadManager::AutofillDownloadManager(AutofillClient* client)
+    : AutofillDownloadManager(client,
                               kDefaultAPIKey,
                               IsRawMetadataUploadingEnabled(false),
                               /*log_manager=*/nullptr) {}
@@ -617,7 +613,9 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
 AutofillDownloadManager::~AutofillDownloadManager() = default;
 
 bool AutofillDownloadManager::StartQueryRequest(
-    const std::vector<FormStructure*>& forms) {
+    const std::vector<FormStructure*>& forms,
+    net::IsolationInfo isolation_info,
+    base::WeakPtr<Observer> observer) {
   if (!IsEnabled())
     return false;
 
@@ -652,10 +650,13 @@ bool AutofillDownloadManager::StartQueryRequest(
     return false;
   }
 
-  FormRequestData request_data;
-  request_data.form_signatures = std::move(queried_form_signatures);
-  request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
-  request_data.payload = std::move(payload);
+  FormRequestData request_data = {
+      .observer = observer,
+      .form_signatures = std::move(queried_form_signatures),
+      .request_type = AutofillDownloadManager::REQUEST_QUERY,
+      .isolation_info = std::move(isolation_info),
+      .payload = std::move(payload),
+  };
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_SENT);
 
   std::string query_data;
@@ -669,8 +670,10 @@ bool AutofillDownloadManager::StartQueryRequest(
                   }
                   return form_sigs;
                 }();
-    observer_->OnLoadedServerPredictions(std::move(query_data),
-                                         request_data.form_signatures);
+    if (request_data.observer) {
+      request_data.observer->OnLoadedServerPredictions(
+          std::move(query_data), request_data.form_signatures);
+    }
     return true;
   }
 
@@ -685,7 +688,8 @@ bool AutofillDownloadManager::StartUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     const std::string& login_form_signature,
     bool observed_submission,
-    PrefService* prefs) {
+    PrefService* prefs,
+    base::WeakPtr<Observer> observer) {
   if (!IsEnabled())
     return false;
 
@@ -729,10 +733,13 @@ bool AutofillDownloadManager::StartUploadRequest(
       return false;
     }
 
-    FormRequestData request_data;
-    request_data.form_signatures = {form.form_signature()};
-    request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
-    request_data.payload = std::move(payload);
+    FormRequestData request_data = {
+        .observer = observer,
+        .form_signatures = {form.form_signature()},
+        .request_type = AutofillDownloadManager::REQUEST_UPLOAD,
+        .isolation_info = absl::nullopt,
+        .payload = std::move(payload),
+    };
 
     DVLOG(1) << "Sending Autofill Upload Request:\n" << upload;
     LOG_AF(log_manager_) << LoggingScope::kAutofillServer
@@ -798,9 +805,15 @@ std::tuple<GURL, std::string> AutofillDownloadManager::GetRequestURLAndMethod(
 }
 
 bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      driver_->GetURLLoaderFactory();
-  DCHECK(url_loader_factory);
+  // REQUEST_UPLOADs take no IsolationInfo because Password Manager uploads when
+  // RenderFrameHostImpl::DidCommitNavigation() is called, in which case
+  // AutofillDriver::IsolationInfo() may crash because there is no committing
+  // NavigationRequest. Not setting an IsolationInfo is safe because no
+  // information about the response is passed to the renderer, or is otherwise
+  // visible to a page. See crbug/1176635#c22.
+  DCHECK(
+      (request_data.request_type == AutofillDownloadManager::REQUEST_UPLOAD) ==
+      !request_data.isolation_info);
 
   // Get the URL and method to use for this request.
   auto [request_url, method] = GetRequestURLAndMethod(request_data);
@@ -822,24 +835,19 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   // As it is shared, it is not trusted and we cannot assign trusted_params
   // to the network request.
 #if !BUILDFLAG(IS_IOS)
-  // Do not call IsolationInfo() for REQUEST_UPLOADs because Password Manager
-  // uploads when RenderFrameHostImpl::DidCommitNavigation() is called, in which
-  // case IsolationInfo() may crash because there is no committing
-  // NavigationRequest. This is safe because no information about the response
-  // is passed to the renderer, or is otherwise visible to a page.
-  // crbug/1176635#c22
-  if (request_data.request_type != AutofillDownloadManager::REQUEST_UPLOAD) {
+  if (request_data.isolation_info) {
     resource_request->trusted_params =
         network::ResourceRequest::TrustedParams();
-    resource_request->trusted_params->isolation_info = driver_->IsolationInfo();
+    resource_request->trusted_params->isolation_info =
+        *request_data.isolation_info;
   }
 #endif
 
   // Add Chrome experiment state to the request headers.
   variations::AppendVariationsHeaderUnknownSignedIn(
       request_url,
-      driver_->IsIncognito() ? variations::InIncognito::kYes
-                             : variations::InIncognito::kNo,
+      client_->IsOffTheRecord() ? variations::InIncognito::kYes
+                                : variations::InIncognito::kNo,
       resource_request.get());
 
   // Set headers specific to the API.
@@ -882,7 +890,7 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   auto* raw_simple_loader = simple_loader.get();
   url_loaders_.push_back(std::move(simple_loader));
   raw_simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory.get(),
+      client_->GetURLLoaderFactory().get(),
       base::BindOnce(&AutofillDownloadManager::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(--url_loaders_.end()),
                      std::move(request_data), AutofillTickClock::NowTicks()));
@@ -967,8 +975,11 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
              << response_code << " and error message from the server "
              << error_message;
 
-    observer_->OnServerRequestError(request_data.form_signatures.front(),
-                                    request_data.request_type, response_code);
+    if (request_data.observer) {
+      request_data.observer->OnServerRequestError(
+          request_data.form_signatures.front(), request_data.request_type,
+          response_code);
+    }
 
     LogFailingPayloadSize(request_data.request_type,
                           request_data.payload.length());
@@ -999,15 +1010,19 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
     CacheQueryRequest(request_data.form_signatures, *response_body);
     UMA_HISTOGRAM_BOOLEAN("Autofill.Query.WasInCache",
                           simple_loader->LoadedFromCache());
-    observer_->OnLoadedServerPredictions(std::move(*response_body),
-                                         request_data.form_signatures);
+    if (request_data.observer) {
+      request_data.observer->OnLoadedServerPredictions(
+          std::move(*response_body), request_data.form_signatures);
+    }
     return;
   }
 
   DCHECK_EQ(request_data.request_type, AutofillDownloadManager::REQUEST_UPLOAD);
   DVLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
 
-  observer_->OnUploadedPossibleFieldTypes();
+  if (request_data.observer) {
+    request_data.observer->OnUploadedPossibleFieldTypes();
+  }
 }
 
 void AutofillDownloadManager::InitActiveExperiments() {

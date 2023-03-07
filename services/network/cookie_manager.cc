@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -315,6 +315,15 @@ void CookieManager::SetStorageAccessGrantSettings(
   std::move(callback).Run();
 }
 
+void CookieManager::SetTopLevelStorageAccessSettings(
+    const ContentSettingsForOneType& settings,
+    SetTopLevelStorageAccessSettingsCallback callback) {
+  cookie_settings_.set_top_level_storage_access_grants(settings);
+
+  // Signal our storage update is complete.
+  std::move(callback).Run();
+}
+
 // static
 void CookieManager::ConfigureCookieSettings(
     const network::mojom::CookieManagerParams& params,
@@ -330,6 +339,8 @@ void CookieManager::ConfigureCookieSettings(
   out->set_content_settings_for_legacy_cookie_access(
       params.settings_for_legacy_cookie_access);
   out->set_storage_access_grants(params.settings_for_storage_access);
+  out->set_top_level_storage_access_grants(
+      params.settings_for_top_level_storage_access);
 }
 
 void CookieManager::CrashOnGetCookieList() {

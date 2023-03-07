@@ -7,9 +7,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -22,7 +22,6 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
@@ -50,6 +49,7 @@
 #include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
@@ -389,8 +389,7 @@ class EnrollmentOnRevenWithNoStateKeysResponse
     // disables Forced Re-Enrollment (FRE). If FRE is enabled, state keys are
     // required.
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kFirmwareTypeKey,
-        chromeos::system::kFirmwareTypeValueNonchrome);
+        system::kFirmwareTypeKey, system::kFirmwareTypeValueNonchrome);
     // When using a fresh ScopedFakeStatisticsProvider we also need to configure
     // a few entries (serial number, machine model).
     // ConfigureFakeStatisticsForZeroTouch does that for us.

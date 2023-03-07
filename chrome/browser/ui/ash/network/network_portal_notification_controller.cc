@@ -13,10 +13,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,7 +43,7 @@ namespace {
 
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
 
-std::unique_ptr<message_center::Notification> CreatePost2022Notification(
+std::unique_ptr<message_center::Notification> CreateNotification(
     const NetworkState* network,
     scoped_refptr<message_center::NotificationDelegate> delegate,
     message_center::NotifierId notifier_id,
@@ -94,30 +94,6 @@ std::unique_ptr<message_center::Notification> CreatePost2022Notification(
   return notification;
 }
 
-std::unique_ptr<message_center::Notification> CreatePre2022Notification(
-    const NetworkState* network,
-    scoped_refptr<message_center::NotificationDelegate> delegate,
-    message_center::NotifierId notifier_id,
-    bool is_wifi) {
-  std::unique_ptr<message_center::Notification> notification =
-      CreateSystemNotificationPtr(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          NetworkPortalNotificationController::kNotificationId,
-          l10n_util::GetStringUTF16(
-              is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI
-                      : IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
-          l10n_util::GetStringFUTF16(
-              is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI
-                      : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
-              base::UTF8ToUTF16(network->name())),
-          /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
-          notifier_id, message_center::RichNotificationData(),
-          std::move(delegate), kNotificationCaptivePortalIcon,
-          message_center::SystemNotificationWarningLevel::WARNING);
-  notification->set_never_timeout(true);
-  return notification;
-}
-
 void CloseNotification() {
   SystemNotificationHelper::GetInstance()->Close(
       NetworkPortalNotificationController::kNotificationId);
@@ -146,8 +122,10 @@ class NotificationDelegateImpl : public message_center::NotificationDelegate {
 void NotificationDelegateImpl::Click(
     const absl::optional<int>& button_index,
     const absl::optional<std::u16string>& reply) {
-  if (signin_controller_)
-    signin_controller_->ShowSignin();
+  if (signin_controller_) {
+    signin_controller_->ShowSignin(
+        NetworkPortalSigninController::SigninSource::kNotification);
+  }
   CloseNotification();
 }
 
@@ -244,22 +222,13 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
       NotificationCatalogName::kNetworkPortalDetector);
   bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
   std::unique_ptr<message_center::Notification> notification;
-  if (features::IsCaptivePortalUI2022Enabled()) {
-    notification = CreatePost2022Notification(
-        network, notification_delegate, notifier_id, is_wifi, portal_state);
-  } else {
-    notification = CreatePre2022Notification(network, notification_delegate,
-                                             notifier_id, is_wifi);
-  }
+  notification = CreateNotification(network, notification_delegate, notifier_id,
+                                    is_wifi, portal_state);
   return notification;
 }
 
 void NetworkPortalNotificationController::SetIgnoreNoNetworkForTesting() {
   ignore_no_network_for_testing_ = true;
-}
-
-bool NetworkPortalNotificationController::IsDialogShownForTesting() const {
-  return signin_controller_ && signin_controller_->DialogIsShown();
 }
 
 }  // namespace ash

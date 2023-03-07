@@ -7,12 +7,11 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/app_session_browser_window_handler.h"
@@ -216,6 +215,7 @@ void AppSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void AppSession::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kNewWindowsInKioskAllowed, false);
+  registry->RegisterBooleanPref(prefs::kKioskTroubleshootingToolsEnabled, false);
 }
 
 void AppSession::Init(const std::string& app_id) {

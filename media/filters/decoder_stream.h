@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -212,6 +212,9 @@ class MEDIA_EXPORT DecoderStream {
 
   // Reads a buffer from |stream_| and returns the result via OnBufferReady().
   void ReadFromDemuxerStream();
+
+  void OnBuffersRead(DemuxerStream::Status status,
+                     DemuxerStream::DecoderBufferVector buffers);
 
   // Callback for DemuxerStream::Read().
   void OnBufferReady(DemuxerStream::Status status,

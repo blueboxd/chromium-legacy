@@ -23,7 +23,6 @@
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -158,7 +157,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // represents the time it took to execute the current batch in the looper.
   WorkDetails DoWorkImpl(LazyNow* continuation_lazy_now);
 
-  void InitializeThreadTaskRunnerHandle()
+  void InitializeSingleThreadTaskRunnerCurrentDefaultHandle()
       EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
 
   // Returns the rate at which the thread controller should alternate between
@@ -184,11 +183,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   WorkDeduplicator work_deduplicator_;
 
   ThreadControllerPowerMonitor power_monitor_;
-
-  // Can only be set once (just before calling
-  // work_deduplicator_.BindToCurrentThread()). After that only read access is
-  // allowed.
-  std::unique_ptr<MessagePump> pump_;
 
   TaskAnnotator task_annotator_;
 
@@ -216,6 +210,14 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // if kBrowserPeriodicYieldingToNative finch experiment is enabled.
   base::TimeDelta periodic_yielding_to_native_interval_ =
       base::TimeDelta::Max();
+
+  // Can only be set once (just before calling
+  // work_deduplicator_.BindToCurrentThread()). After that only read access is
+  // allowed.
+  // NOTE: |pump_| accesses other members but other members should not access
+  // |pump_|. This means that it should be destroyed first. This member cannot
+  // be moved up.
+  std::unique_ptr<MessagePump> pump_;
 };
 
 }  // namespace internal

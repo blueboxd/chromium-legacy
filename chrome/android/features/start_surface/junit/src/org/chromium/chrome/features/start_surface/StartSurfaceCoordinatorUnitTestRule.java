@@ -250,16 +250,7 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
                 }, mContainerView, Color.WHITE);
 
         WindowAndroid windowAndroid = Mockito.mock(WindowAndroid.class);
-        BrowserControlsManager browserControlsManager = new BrowserControlsManager(mActivity, 0) {
-            @Override
-            protected boolean isInVr() {
-                return false;
-            }
-            @Override
-            protected void rawTopContentOffsetChangedForVr() {
-                // Intentional noop
-            }
-        };
+        BrowserControlsManager browserControlsManager = new BrowserControlsManager(mActivity, 0);
         SnackbarManager snackbarManager =
                 new SnackbarManager(mActivity, mContainerView, windowAndroid);
         TabContentManager tabContentManager = new TabContentManager(mActivity, null, false, null);
@@ -284,7 +275,7 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
                 Mockito.mock(MenuOrKeyboardActionController.class),
                 new MultiWindowModeStateDispatcherImpl(mActivity), new DummyJankTracker(),
                 new ObservableSupplierImpl<>(), new CrowButtonDelegateImpl(),
-                new BackPressManager(), mIncognitoReauthControllerSupplier);
+                new BackPressManager(), mIncognitoReauthControllerSupplier, null);
 
         Assert.assertFalse(LibraryLoader.getInstance().isLoaded());
         when(mLibraryLoader.isInitialized()).thenReturn(true);

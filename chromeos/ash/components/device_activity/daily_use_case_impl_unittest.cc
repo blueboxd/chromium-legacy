@@ -22,7 +22,6 @@ namespace psm_rlwe = private_membership::rlwe;
 
 namespace {
 
-// Initialize fake value used by the FirstActiveUseCaseImpl.
 // This secret should be of exactly length 64, since it is a 256 bit string
 // encoded as a hexadecimal.
 constexpr char kFakePsmDeviceActiveSecret[] =
@@ -49,8 +48,7 @@ class DailyUseCaseImplTest : public testing::Test {
   void SetUp() override {
     DeviceActivityController::RegisterPrefs(local_state_.registry());
 
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 
     const std::vector<psm_rlwe::RlwePlaintextId> plaintext_ids;
     daily_use_case_impl_ = std::make_unique<DailyUseCaseImpl>(
@@ -67,7 +65,7 @@ class DailyUseCaseImplTest : public testing::Test {
 
   // Fake pref service for unit testing the local state.
   TestingPrefServiceSimple local_state_;
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  system::FakeStatisticsProvider statistics_provider_;
 };
 
 TEST_F(DailyUseCaseImplTest, ValidateWindowIdFormattedCorrectly) {
@@ -77,7 +75,7 @@ TEST_F(DailyUseCaseImplTest, ValidateWindowIdFormattedCorrectly) {
       base::Time::FromString("01 Jan 2022 23:59:59 GMT", &new_daily_ts));
 
   std::string window_id =
-      daily_use_case_impl_->GenerateUTCWindowIdentifier(new_daily_ts);
+      daily_use_case_impl_->GenerateWindowIdentifier(new_daily_ts);
 
   EXPECT_EQ(window_id.size(), 8u);
   EXPECT_EQ(window_id, "20220101");
@@ -90,8 +88,8 @@ TEST_F(DailyUseCaseImplTest, SameDayTimestampsHaveSameWindowId) {
   EXPECT_TRUE(base::Time::FromString("01 Jan 2022 00:00:00 GMT", &daily_ts_1));
   EXPECT_TRUE(base::Time::FromString("01 Jan 2022 23:59:59 GMT", &daily_ts_2));
 
-  EXPECT_EQ(daily_use_case_impl_->GenerateUTCWindowIdentifier(daily_ts_1),
-            daily_use_case_impl_->GenerateUTCWindowIdentifier(daily_ts_2));
+  EXPECT_EQ(daily_use_case_impl_->GenerateWindowIdentifier(daily_ts_1),
+            daily_use_case_impl_->GenerateWindowIdentifier(daily_ts_2));
 }
 
 TEST_F(DailyUseCaseImplTest, DifferentDayTimestampsHaveDifferentWindowId) {
@@ -101,8 +99,8 @@ TEST_F(DailyUseCaseImplTest, DifferentDayTimestampsHaveDifferentWindowId) {
   EXPECT_TRUE(base::Time::FromString("01 Jan 2022 00:00:00 GMT", &daily_ts_1));
   EXPECT_TRUE(base::Time::FromString("02 Jan 2022 00:00:00 GMT", &daily_ts_2));
 
-  EXPECT_NE(daily_use_case_impl_->GenerateUTCWindowIdentifier(daily_ts_1),
-            daily_use_case_impl_->GenerateUTCWindowIdentifier(daily_ts_2));
+  EXPECT_NE(daily_use_case_impl_->GenerateWindowIdentifier(daily_ts_1),
+            daily_use_case_impl_->GenerateWindowIdentifier(daily_ts_2));
 }
 
 TEST_F(DailyUseCaseImplTest, ExpectedMetadataIsSet) {

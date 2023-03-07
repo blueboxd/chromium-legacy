@@ -12,13 +12,14 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/typed_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
@@ -972,7 +973,6 @@ void CameraDeviceDelegate::ConfigureStreams(
 
     int32_t max_yuv_width = 0, max_yuv_height = 0;
     bool is_recording_multi_stream =
-        camera_app_device &&
         camera_app_device->GetCaptureIntent() ==
             cros::mojom::CaptureIntent::VIDEO_RECORD &&
         camera_app_device->IsMultipleStreamsEnabled();
@@ -1762,6 +1762,20 @@ void CameraDeviceDelegate::DoGetPhotoState(
         }
       }
     }
+  }
+
+  // For background blur part, we only set capabilities and current
+  // configuration setting if the feature flag is enabled.
+  //
+  // https://w3c.github.io/mediacapture-extensions/#exposing-mediastreamtrack-source-background-blur-support
+  if (ash::features::IsBackgroundBlurEnabled()) {
+    callback = base::BindOnce(
+        [](VideoCaptureDevice::GetPhotoStateCallback callback,
+           media::mojom::PhotoStatePtr photo_state) {
+          CameraHalDispatcherImpl::GetInstance()->GetCameraEffects(
+              std::move(callback), std::move(photo_state));
+        },
+        std::move(callback));
   }
 
   std::move(callback).Run(std::move(photo_state));

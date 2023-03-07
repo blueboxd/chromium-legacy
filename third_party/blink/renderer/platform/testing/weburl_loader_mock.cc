@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/task/single_thread_task_runner.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
@@ -108,7 +109,7 @@ void WebURLLoaderMock::LoadSynchronously(
     absl::optional<WebURLError>& error,
     WebData& data,
     int64_t& encoded_data_length,
-    int64_t& encoded_body_length,
+    uint64_t& encoded_body_length,
     blink::WebBlobInfo& downloaded_blob,
     std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper) {

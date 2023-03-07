@@ -6,8 +6,8 @@
 #import <string>
 
 #import "base/base_paths.h"
-#import "base/bind.h"
 #import "base/files/file_path.h"
+#import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #import "base/mac/foundation_util.h"
@@ -16,6 +16,8 @@
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/task/single_thread_task_runner.h"
 #import "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/net/protocol_handler_util.h"
@@ -97,7 +99,7 @@ ACTION_P(ReturnAllowRequestAndStopNavigation, web_state) {
   dispatch_async(dispatch_get_main_queue(), ^{
     web_state->Stop();
   });
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(arg0),
                      WebStatePolicyDecider::PolicyDecision::Allow()));
@@ -2388,6 +2390,7 @@ TEST_F(WebStateObserverTest, ImmediatelyStopNavigation) {
       /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_, MockShouldAllowRequest(
                              _, RequestInfoMatch(expected_request_info), _))
+      .Times(::testing::AtMost(1))
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
@@ -2437,19 +2440,6 @@ TEST_F(WebStateObserverTest, StopFinishedNavigation) {
   // Stop the loading.
   web_state()->Stop();
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
-
-  // This test will create an unresponsive WebProcess. WebIntTest::TearDown will
-  // call ClearBrowingData, which can take a very long time with an unresponsive
-  // WebProcess. Work around this problem by force closing WKWebView via a
-  // private API.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-  web::WebStateImpl* web_state_impl =
-      static_cast<web::WebStateImpl*>(web_state());
-  WKWebView* web_view = base::mac::ObjCCast<WKWebView>(
-      web_state_impl->GetWebViewNavigationProxy());
-  [web_view performSelector:@selector(_close)];
-#pragma clang diagnostic pop
 }
 
 // Tests that iframe navigation triggers DidChangeBackForwardState.

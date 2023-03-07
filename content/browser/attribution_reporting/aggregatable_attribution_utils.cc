@@ -72,8 +72,9 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
 
     for (const auto& source_key : data.source_keys()) {
       auto bucket = buckets.find(source_key);
-      if (bucket == buckets.end())
+      if (bucket == buckets.end()) {
         continue;
+      }
 
       bucket->second |= data.key_piece();
     }
@@ -85,8 +86,9 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
   std::vector<AggregatableHistogramContribution> contributions;
   for (const auto& [key_id, key] : buckets) {
     auto value = values.find(key_id);
-    if (value == values.end())
+    if (value == values.end()) {
       continue;
+    }
 
     contributions.emplace_back(key, value->second);
   }
@@ -98,10 +100,11 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
             aggregatable_trigger_data.vec().size());
   }
 
-  DCHECK(!buckets.empty());
-  base::UmaHistogramPercentage(
-      "Conversions.AggregatableReport.DroppedKeysPercentage",
-      100 * (buckets.size() - contributions.size()) / buckets.size());
+  if (!buckets.empty()) {
+    base::UmaHistogramPercentage(
+        "Conversions.AggregatableReport.DroppedKeysPercentage",
+        100 * (buckets.size() - contributions.size()) / buckets.size());
+  }
 
   const int kExclusiveMaxHistogramValue = 101;
 

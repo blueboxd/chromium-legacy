@@ -20,10 +20,6 @@
       _accountManagerServiceObserver;
 }
 
-// Gets the Chrome identity service.
-@property(nonatomic, assign, readonly)
-    ios::ChromeIdentityService* chromeIdentityService;
-
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 
@@ -121,11 +117,6 @@
   [self.consumer itemHasChanged:item];
 }
 
-// Getter for the Chrome identity service.
-- (ios::ChromeIdentityService*)chromeIdentityService {
-  return ios::GetChromeBrowserProvider().GetChromeIdentityService();
-}
-
 #pragma mark - ChromeAccountManagerServiceObserver
 
 - (void)identityListChanged {
@@ -140,7 +131,7 @@
   }
 }
 
-- (void)identityChanged:(id<SystemIdentity>)identity {
+- (void)identityUpdated:(id<SystemIdentity>)identity {
   TableViewIdentityItem* item =
       [self.consumer tableViewIdentityItemWithGaiaID:identity.gaiaID];
   [self updateTableViewIdentityItem:item withIdentity:identity];

@@ -8,10 +8,10 @@
 #include <sys/types.h>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
 #include "base/mac/foundation_util.h"
@@ -22,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "remoting/base/string_resources.h"
@@ -89,8 +90,8 @@ bool RunHelperAsRoot(const std::string& command,
   NSString* prompt = l10n_util::GetNSStringFWithFixup(
       IDS_HOST_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  base::mac::ScopedAuthorizationRef authorization(
-      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt)));
+  base::mac::ScopedAuthorizationRef authorization =
+      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt));
   if (!authorization.get()) {
     LOG(ERROR) << "Failed to obtain authorizationRef";
     return false;
@@ -237,8 +238,9 @@ absl::optional<base::Value::Dict> DaemonControllerDelegateMac::GetConfig() {
   base::FilePath config_path(kHostConfigFilePath);
   absl::optional<base::Value::Dict> host_config(
       HostConfigFromJsonFile(config_path));
-  if (!host_config.has_value())
+  if (!host_config.has_value()) {
     return absl::nullopt;
+  }
 
   base::Value::Dict config;
   std::string* value = host_config->FindString(kHostIdConfigPath);
@@ -285,8 +287,7 @@ void DaemonControllerDelegateMac::UpdateConfig(
   }
 
   host_config->Merge(std::move(config));
-  ElevateAndSetConfig(std::move(host_config.value()),
-                      std::move(done));
+  ElevateAndSetConfig(std::move(host_config.value()), std::move(done));
 }
 
 void DaemonControllerDelegateMac::Stop(

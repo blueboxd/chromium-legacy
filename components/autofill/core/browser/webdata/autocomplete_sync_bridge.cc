@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
@@ -221,9 +221,7 @@ class SyncDifferenceTracker {
                               metadata_change_list.get());
       }
     }
-    return static_cast<syncer::SyncMetadataStoreChangeList*>(
-               metadata_change_list.get())
-        ->TakeError();
+    return change_processor->GetError();
   }
 
  private:

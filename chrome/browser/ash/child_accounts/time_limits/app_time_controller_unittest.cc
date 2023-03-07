@@ -6,8 +6,8 @@
 
 #include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/components/arc/test/fake_app_instance.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -450,7 +450,7 @@ TEST_F(AppTimeControllerTest, RestoreLastResetTime) {
                                         kOneHour / 2, base::Time::Now()));
     builder.SetResetTime(6, 0);
     profile().GetPrefs()->SetDict(prefs::kPerAppTimeLimitsPolicy,
-                                  builder.value().GetDict().Clone());
+                                  builder.value().Clone());
   }
 
   // If there was no valid last reset time stored in user pref,
@@ -532,7 +532,7 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
     builder.AddAppLimit(kApp2, blocked_app);
     builder.SetResetTime(6, 0);
     profile().GetPrefs()->SetDict(prefs::kPerAppTimeLimitsPolicy,
-                                  builder.value().GetDict().Clone());
+                                  builder.value().Clone());
   }
 
   // Enagagement is recorded at the beginning of the session when

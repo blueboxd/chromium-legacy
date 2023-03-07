@@ -9,9 +9,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/strings/stringprintf.h"
@@ -476,8 +476,10 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
           coded_size, gfx::BufferFormat::YUV_420_BIPLANAR, modifier);
   gfx::GpuMemoryBuffer* gmb_raw_ptr = gmb.get();
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes] = {
-      gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5),
-      gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 10)};
+      gpu::MailboxHolder(gpu::Mailbox::GenerateForSharedImage(),
+                         gpu::SyncToken(), 5),
+      gpu::MailboxHolder(gpu::Mailbox::GenerateForSharedImage(),
+                         gpu::SyncToken(), 10)};
   auto frame = VideoFrame::WrapExternalGpuMemoryBuffer(
       visible_rect, coded_size, std::move(gmb), mailbox_holders,
       base::DoNothing(), timestamp);
@@ -576,8 +578,8 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
                                    gpu::CommandBufferId::FromUnsafeValue(1), 1);
 
   {
-    gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {
-        gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5)};
+    gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
+        gpu::Mailbox::GenerateForSharedImage(), gpu::SyncToken(), 5)};
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
         PIXEL_FORMAT_ARGB, holders,
         base::BindOnce(&TextureCallback, &called_sync_token),

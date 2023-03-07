@@ -46,18 +46,20 @@ unsigned SimulateHashCalculation(float size) {
   font_description.SetSizeAdjust(size);
   font_description.SetAdjustedSize(size);
   bool is_unique_match = false;
-  return font_description.CacheKey(FontFaceCreationParams(), is_unique_match)
+  bool is_generic_family = false;
+  return font_description
+      .CacheKey(FontFaceCreationParams(), is_unique_match, is_generic_family)
       .GetHash();
 }
-}
+}  // namespace
 
 TEST(CSSFontFaceSourceTest, HashCollision) {
   DummyFontFaceSource font_face_source;
 
   // Even if the hash value collide, fontface cache should return different
   // value for different fonts, values determined experimentally.
-  constexpr float kEqualHashesFirst = 11410;
-  constexpr float kEqualHashesSecond = 2598;
+  constexpr float kEqualHashesFirst = 2157;
+  constexpr float kEqualHashesSecond = 534;
   EXPECT_EQ(SimulateHashCalculation(kEqualHashesFirst),
             SimulateHashCalculation(kEqualHashesSecond));
   EXPECT_NE(font_face_source.GetFontDataForSize(kEqualHashesFirst),

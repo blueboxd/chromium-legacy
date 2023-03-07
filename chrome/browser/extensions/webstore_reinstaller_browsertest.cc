@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreReinstallerBrowserTest, TestWebstoreReinstall) {
                            .Set("description", "Foo")
                            .Set("manifest_version", 2)
                            .Set("version", "1.0")
-                           .BuildDict())
+                           .Build())
           .Build();
   extension_service()->AddExtension(extension.get());
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());

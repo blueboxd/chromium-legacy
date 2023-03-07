@@ -13,11 +13,13 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,6 +42,7 @@
 #include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/history_fuzzy_provider.h"
 #include "components/omnibox/browser/history_quick_provider.h"
+#include "components/omnibox/browser/history_scoring_signals_annotator.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
@@ -507,6 +510,16 @@ AutocompleteController::AutocompleteController(
   }
 #endif
 
+  // Create URL scoring signal annotators.
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled() &&
+      base::GetFieldTrialParamByFeatureAsBool(
+          omnibox::kLogUrlScoringSignals, "enable_scoring_signals_annotators",
+          /*default_value=*/false)) {
+    url_scoring_signals_annotators_.push_back(
+        std::make_unique<HistoryScoringSignalsAnnotator>(
+            provider_client_.get()));
+  }
+
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "AutocompleteController",
       base::SingleThreadTaskRunner::GetCurrentDefault());
@@ -775,14 +788,6 @@ void AutocompleteController::AddProviderAndTriggeringLogs(
     // add for every provider.
   }
 
-  // OmniboxPedalProvider is not a "true" AutocompleteProvider and isn't
-  // included in the list of providers, though needs to report information for
-  // its field trial.  Manually call AddProviderInfo for pedals.
-  if (provider_client_->GetPedalProvider()) {
-    provider_client_->GetPedalProvider()->AddProviderInfo(
-        &logs->providers_info);
-  }
-
   // Add any features that have been triggered.
   provider_client_->GetOmniboxTriggeredFeatureService()->RecordToLogs(
       &logs->feature_triggered_in_session);
@@ -790,19 +795,6 @@ void AutocompleteController::AddProviderAndTriggeringLogs(
 
 void AutocompleteController::ResetSession() {
   search_service_worker_signal_sent_ = false;
-
-  for (const auto& provider : providers_) {
-    if (!ShouldRunProvider(provider.get()))
-      continue;
-    provider->ResetSession();
-  }
-
-  // OmniboxPedalProvider is not included in the list of providers as it's not
-  // a "true" AutocompleteProvider.  Manually call ResetSession() for pedals.
-  if (provider_client_->GetPedalProvider()) {
-    provider_client_->GetPedalProvider()->ResetSession();
-  }
-
   provider_client_->GetOmniboxTriggeredFeatureService()->ResetSession();
 }
 
@@ -828,13 +820,16 @@ void AutocompleteController::
   // character into the omnibox to when the user selected a query), whether
   // a field trial has triggered, and the current page classification to the AQS
   // parameter.
+  bool search_feature_triggered =
+      provider_client_->GetOmniboxTriggeredFeatureService()
+          ->GetFeatureTriggered(
+              OmniboxTriggeredFeatureService::Feature::kRemoteSearchFeature) ||
+      provider_client_->GetOmniboxTriggeredFeatureService()
+          ->GetFeatureTriggered(OmniboxTriggeredFeatureService::Feature::
+                                    kRemoteZeroSuggestFeature);
   const std::string experiment_stats = base::StringPrintf(
       "%" PRId64 "j%dj%d", query_formulation_time.InMilliseconds(),
-      (search_provider_ &&
-       search_provider_->field_trial_triggered_in_session()) ||
-          (zero_suggest_provider_ &&
-           zero_suggest_provider_->field_trial_triggered_in_session()),
-      input_.current_page_classification());
+      search_feature_triggered, input_.current_page_classification());
   match->search_terms_args->assisted_query_stats += "." + experiment_stats;
   // TODO(crbug.com/1247846): experiment_stats is a deprecated field. We should
   // however continue to report it for parity with what gets reported in aqs=,
@@ -913,6 +908,7 @@ void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
   TRACE_EVENT0("omnibox", "AutocompleteController::UpdateResult");
+  SCOPED_UMA_HISTOGRAM_TIMER_MICROS("Omnibox.AutocompletionTime.UpdateResult");
 
   absl::optional<AutocompleteMatch> last_default_match;
   std::u16string last_default_associated_keyword;
@@ -1047,7 +1043,7 @@ void AutocompleteController::UpdateScoringSignals() {
   // If enabled, update scoring signals of URL suggestions.
   if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
     for (const auto& annotator : url_scoring_signals_annotators_) {
-      annotator->AnnotateResult(&result_);
+      annotator->AnnotateResult(input_, &result_);
     }
   }
 }

@@ -8,13 +8,15 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/gfx/frame_data.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/overlay_plane_data.h"
@@ -24,6 +26,7 @@
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
+#include "ui/gl/presenter.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -71,7 +74,6 @@ SurfacelessGlRenderer::BufferWrapper::~BufferWrapper() {
     glDeleteFramebuffersEXT(1, &gl_fb_);
 
   if (gl_tex_) {
-    image_->ReleaseTexImage(GL_TEXTURE_2D);
     glDeleteTextures(1, &gl_tex_);
   }
 }
@@ -124,14 +126,16 @@ void SurfacelessGlRenderer::BufferWrapper::BindFramebuffer() {
 SurfacelessGlRenderer::SurfacelessGlRenderer(
     gfx::AcceleratedWidget widget,
     std::unique_ptr<PlatformWindowSurface> window_surface,
-    const scoped_refptr<gl::GLSurface>& gl_surface,
+    const scoped_refptr<gl::GLSurface>& offscreen_surface,
+    const scoped_refptr<gl::Presenter>& presenter,
     const gfx::Size& size)
     : RendererBase(widget, size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
       window_surface_(std::move(window_surface)),
-      gl_surface_(gl_surface) {}
+      gl_surface_(offscreen_surface),
+      presenter_(presenter) {}
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in
@@ -154,7 +158,7 @@ bool SurfacelessGlRenderer::Initialize() {
     return false;
   }
 
-  gl_surface_->Resize(size_, 1.f, gfx::ColorSpace(), true);
+  presenter_->Resize(size_, 1.f, gfx::ColorSpace(), true);
 
   if (!context_->MakeCurrent(gl_surface_.get())) {
     LOG(ERROR) << "Failed to make GL context current";
@@ -202,7 +206,7 @@ bool SurfacelessGlRenderer::Initialize() {
 
   disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
 
-  use_gpu_fences_ = gl_surface_->SupportsPlaneGpuFences();
+  use_gpu_fences_ = presenter_->SupportsPlaneGpuFences();
 
   // Schedule the initial render.
   PostRenderFrameTask(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));
@@ -268,7 +272,7 @@ void SurfacelessGlRenderer::RenderFrame() {
     std::unique_ptr<gl::GLFence> gl_fence =
         use_gpu_fences_ ? gl::GLFence::CreateForGpuFence() : nullptr;
 
-    gl_surface_->ScheduleOverlayPlane(
+    presenter_->ScheduleOverlayPlane(
         buffers_[back_buffer_]->image(),
         gl_fence ? gl_fence->GetGpuFence() : nullptr,
         gfx::OverlayPlaneData(
@@ -280,7 +284,7 @@ void SurfacelessGlRenderer::RenderFrame() {
 
   for (size_t i = 0; i < overlay_cnt_; ++i) {
     if (overlay_list.back().overlay_handled) {
-      gl_surface_->ScheduleOverlayPlane(
+      presenter_->ScheduleOverlayPlane(
           overlay_buffers_[i][back_buffer_]->image(), /* gpu_fence */ nullptr,
           gfx::OverlayPlaneData(
               1, gfx::OVERLAY_TRANSFORM_NONE, gfx::RectF(overlay_rect[i]),
@@ -292,10 +296,10 @@ void SurfacelessGlRenderer::RenderFrame() {
   }
 
   back_buffer_ ^= 1;
-  gl_surface_->SwapBuffersAsync(
+  presenter_->Present(
       base::BindOnce(&SurfacelessGlRenderer::PostRenderFrameTask,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::DoNothing(), gl::FrameData());
+      base::DoNothing(), gfx::FrameData());
 }
 
 void SurfacelessGlRenderer::PostRenderFrameTask(

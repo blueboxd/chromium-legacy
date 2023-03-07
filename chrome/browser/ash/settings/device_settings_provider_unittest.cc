@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
@@ -1170,20 +1170,6 @@ TEST_F(DeviceSettingsProviderTest, FeatureFlags) {
   EXPECT_EQ(expected_feature_flags, provider_->Get(kFeatureFlags)->GetList());
 }
 
-TEST_F(DeviceSettingsProviderTest, DecodeBorealisAllowed) {
-  device_policy_->payload().mutable_device_borealis_allowed()->set_allowed(
-      true);
-  BuildAndInstallDevicePolicy();
-  EXPECT_EQ(base::Value(true), *provider_->Get(kBorealisAllowedForDevice));
-}
-
-TEST_F(DeviceSettingsProviderTest, DecodeBorealisDisallowed) {
-  device_policy_->payload().mutable_device_borealis_allowed()->set_allowed(
-      false);
-  BuildAndInstallDevicePolicy();
-  EXPECT_EQ(base::Value(false), *provider_->Get(kBorealisAllowedForDevice));
-}
-
 TEST_F(DeviceSettingsProviderTest, DeviceAllowedBluetoothServices) {
   em::DeviceAllowedBluetoothServicesProto* proto =
       device_policy_->payload().mutable_device_allowed_bluetooth_services();
@@ -1295,6 +1281,21 @@ TEST_F(DeviceSettingsProviderTest, DeviceEncryptedReportingPipelineDisabled) {
   BuildAndInstallDevicePolicy();
   EXPECT_EQ(base::Value(false),
             *provider_->Get(kDeviceEncryptedReportingPipelineEnabled));
+}
+
+TEST_F(DeviceSettingsProviderTest, DevicePrintingClientNameTemplateUnset) {
+  device_policy_->payload().clear_device_printing_client_name_template();
+  BuildAndInstallDevicePolicy();
+  EXPECT_FALSE(provider_->Get(kDevicePrintingClientNameTemplate));
+}
+
+TEST_F(DeviceSettingsProviderTest, DevicePrintingClientNameTemplate) {
+  device_policy_->payload()
+      .mutable_device_printing_client_name_template()
+      ->set_value("chromebook-${DEVICE_ASSET_ID}");
+  BuildAndInstallDevicePolicy();
+  EXPECT_EQ(base::Value("chromebook-${DEVICE_ASSET_ID}"),
+            *provider_->Get(kDevicePrintingClientNameTemplate));
 }
 
 }  // namespace ash

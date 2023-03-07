@@ -233,7 +233,7 @@ void ConversationController::AddAuthenticationStateObserver(
 
 void ConversationController::OnAssistantClientCreated(
     AssistantClient* assistant_client) {
-  if (!chromeos::assistant::features::IsLibAssistantV2Enabled()) {
+  if (!assistant::features::IsLibAssistantV2Enabled()) {
     // Registers ActionModule when AssistantClient has been created but not yet
     // started.
     assistant_client->RegisterActionModule(action_module_.get());
@@ -246,7 +246,7 @@ void ConversationController::OnAssistantClientRunning(
   assistant_client_ = assistant_client;
   requests_are_allowed_ = true;
 
-  if (chromeos::assistant::features::IsLibAssistantV2Enabled()) {
+  if (assistant::features::IsLibAssistantV2Enabled()) {
     // Register the action module when all libassistant services are ready.
     // `action_module_` outlives gRPC services.
     assistant_client->RegisterActionModule(action_module_.get());
@@ -326,40 +326,6 @@ void ConversationController::StartEditReminderInteraction(
   assistant_client_->SendVoicelessInteraction(
       CreateEditReminderInteraction(client_id),
       /*description=*/std::string(), options, base::DoNothing());
-}
-
-void ConversationController::StartScreenContextInteraction(
-    ax::mojom::AssistantStructurePtr assistant_structure,
-    const std::vector<uint8_t>& screenshot) {
-  DCHECK(requests_are_allowed_)
-      << "Should not receive requests before Libassistant is running";
-  if (!assistant_client_)
-    return;
-
-  MaybeStopPreviousInteraction();
-
-  std::vector<std::string> context_protos;
-  // Screen context can have the |assistant_structure|, or |assistant_extra| and
-  // |assistant_tree| set to nullptr. This happens in the case where the screen
-  // context is coming from the metalayer or there is no active window. For this
-  // scenario, we don't create a context proto for the AssistantBundle that
-  // consists of the |assistant_extra| and |assistant_tree|.
-  if (assistant_structure && assistant_structure->assistant_extra &&
-      assistant_structure->assistant_tree) {
-    // Note: the value of |is_first_query| for screen context query is a no-op
-    // because it is not used for metalayer and "What's on my screen" queries.
-    context_protos.emplace_back(chromeos::assistant::CreateContextProto(
-        chromeos::assistant::AssistantBundle{
-            assistant_structure->assistant_extra.get(),
-            assistant_structure->assistant_tree.get()},
-        /*is_first_query=*/true));
-  }
-
-  // Note: the value of |is_first_query| for screen context query is a no-op.
-  context_protos.emplace_back(
-      chromeos::assistant::CreateContextProto(screenshot,
-                                              /*is_first_query=*/true));
-  assistant_client_->SendScreenContextRequest(context_protos);
 }
 
 void ConversationController::StopActiveInteraction(bool cancel_conversation) {
@@ -473,14 +439,6 @@ void ConversationController::OnShowText(const std::string& text) {
 }
 
 // Called from Libassistant thread.
-// Note that we should deprecate this API when the server provides a fallback.
-void ConversationController::OnShowContextualQueryFallback() {
-  // Show fallback message.
-  OnShowText(l10n_util::GetStringUTF8(
-      IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT));
-}
-
-// Called from Libassistant thread.
 void ConversationController::OnShowSuggestions(
     const std::vector<chromeos::assistant::action::Suggestion>& suggestions) {
   ENSURE_MOJOM_THREAD(&ConversationController::OnShowSuggestions, suggestions);
@@ -565,7 +523,7 @@ void ConversationController::OnInteractionStarted(
 }
 
 void ConversationController::OnInteractionFinished(
-    chromeos::assistant::AssistantInteractionResolution resolution) {
+    assistant::AssistantInteractionResolution resolution) {
   stop_interaction_closure_.reset();
 }
 

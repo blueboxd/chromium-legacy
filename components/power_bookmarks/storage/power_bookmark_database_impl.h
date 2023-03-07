@@ -6,10 +6,9 @@
 #define COMPONENTS_POWER_BOOKMARKS_STORAGE_POWER_BOOKMARK_DATABASE_IMPL_H_
 
 #include "base/files/file_path.h"
-#include "components/power_bookmarks/core/powers/power.h"
-#include "components/power_bookmarks/core/powers/power_overview.h"
+#include "components/power_bookmarks/common/power.h"
+#include "components/power_bookmarks/common/power_overview.h"
 #include "components/power_bookmarks/storage/power_bookmark_database.h"
-#include "components/power_bookmarks/storage/power_bookmark_sync_bridge.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "url/gurl.h"
@@ -23,8 +22,7 @@ constexpr base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("PowerBookmarks.db");
 
 // Holds the SQL connection for the main Power Bookmarks tables.
-class PowerBookmarkDatabaseImpl : public PowerBookmarkDatabase,
-                                  public PowerBookmarkSyncBridge::Delegate {
+class PowerBookmarkDatabaseImpl : public PowerBookmarkDatabase {
  public:
   explicit PowerBookmarkDatabaseImpl(const base::FilePath& database_dir);
   PowerBookmarkDatabaseImpl(const PowerBookmarkDatabaseImpl&) = delete;
@@ -43,22 +41,23 @@ class PowerBookmarkDatabaseImpl : public PowerBookmarkDatabase,
       const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
   std::vector<std::unique_ptr<Power>> GetPowersForSearchParams(
       const SearchParams& search_params) override;
+  std::vector<std::unique_ptr<PowerOverview>> GetPowerOverviewsForSearchParams(
+      const SearchParams& search_params) override;
   bool CreatePower(std::unique_ptr<Power> power) override;
-  bool UpdatePower(std::unique_ptr<Power> power) override;
+  std::unique_ptr<Power> UpdatePower(std::unique_ptr<Power> power) override;
   bool DeletePower(const base::GUID& guid) override;
   bool DeletePowersForURL(
       const GURL& url,
-      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
-
-  PowerBookmarkSyncMetadataDatabase* GetSyncMetadataDatabase() {
-    return sync_db_.get();
-  }
-
-  // PowerBookmarkSyncBridge::Delegate
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type,
+      std::vector<std::string>* deleted_guids = nullptr) override;
   std::vector<std::unique_ptr<Power>> GetAllPowers() override;
   std::vector<std::unique_ptr<Power>> GetPowersForGUIDs(
       const std::vector<std::string>& guids) override;
   std::unique_ptr<Power> GetPowerForGUID(const std::string& guid) override;
+  bool CreateOrMergePowerFromSync(const Power& power) override;
+  bool DeletePowerFromSync(const std::string& guid) override;
+  syncer::SyncMetadataStore* GetSyncMetadataDatabase() override;
+  std::unique_ptr<Transaction> BeginTransaction() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PowerBookmarkDatabaseImplTest,
@@ -74,6 +73,16 @@ class PowerBookmarkDatabaseImpl : public PowerBookmarkDatabase,
   absl::optional<sync_pb::PowerBookmarkSpecifics> DeserializeOrDelete(
       const std::string& data,
       const base::GUID& id);
+
+  std::vector<std::string> GetGUIDsForURL(
+      const GURL& url,
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type);
+
+  bool CreatePowerInternal(const Power& power);
+
+  bool UpdatePowerInternal(const Power& power);
+
+  bool DeletePowerInternal(const base::GUID& guid);
 
   sql::Database db_ GUARDED_BY_CONTEXT(sequence_checker_);
   sql::MetaTable meta_table_ GUARDED_BY_CONTEXT(sequence_checker_);

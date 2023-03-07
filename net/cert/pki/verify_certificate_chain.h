@@ -10,6 +10,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/parsed_certificate.h"
+#include "net/cert/pki/signature_verify_cache.h"
 #include "net/der/input.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
@@ -67,6 +68,11 @@ class NET_EXPORT VerifyCertificateChainDelegate {
   // |public_key| can be assumed to be non-null.
   virtual bool IsPublicKeyAcceptable(EVP_PKEY* public_key,
                                      CertErrors* errors) = 0;
+
+  // This is called during verification to obtain a pointer to a signature
+  // verification cache if one exists. nullptr may be returned indicating there
+  // is no verification cache.
+  virtual SignatureVerifyCache* GetVerifyCache() = 0;
 
   virtual ~VerifyCertificateChainDelegate();
 };
@@ -210,25 +216,26 @@ class NET_EXPORT VerifyCertificateChainDelegate {
 // SPKI, are checked during verification. This is the usual
 // interpretation for a "trust anchor".
 //
-// TRUSTED_ANCHOR_WITH_EXPIRATION:
+// enforce_anchor_expiry=true:
 //
 // The validity period of the root is checked, in addition to Subject and SPKI.
 //
-// TRUSTED_ANCHOR_WITH_CONSTRAINTS:
+// enforce_anchor_constraints=true:
 //
-// Only a subset of extensions and properties from the certificate are checked,
-// as described by RFC 5937.
+// Only a subset of extensions and properties from the certificate are checked.
+// In general, constraints encoded by extensions are only enforced if the
+// extension is present.
 //
 //  * Signature:             No
 //  * Validity (expiration): No
-//  * Key usage:             No
-//  * Extended key usage:    Yes (not part of RFC 5937)
-//  * Basic constraints:     Yes, but only the pathlen (CA=false is accepted)
+//  * Key usage:             Yes
+//  * Extended key usage:    Yes (required if required_key_purpose is STRICT)
+//  * Basic constraints:     Yes
 //  * Name constraints:      Yes
-//  * Certificate policies:  Not currently, TODO(crbug.com/634453)
-//  * Policy Mappings:       No
-//  * inhibitAnyPolicy:      Not currently, TODO(crbug.com/634453)
-//  * PolicyConstraints:     Not currently, TODO(crbug.com/634452)
+//  * Certificate policies:  Yes
+//  * Policy Mappings:       Yes
+//  * inhibitAnyPolicy:      Yes
+//  * PolicyConstraints:     Yes
 //
 // The presence of any other unrecognized extension marked as critical fails
 // validation.
@@ -244,6 +251,14 @@ NET_EXPORT void VerifyCertificateChain(
     InitialAnyPolicyInhibit initial_any_policy_inhibit,
     std::set<der::Input>* user_constrained_policy_set,
     CertPathErrors* errors);
+
+// Returns true if `cert` is self-signed. Returns false `cert` is not
+// self-signed or there was an error. If `errors` is non-null, it will contain
+// additional information about the problem. If `cache` is non-null, it will be
+// used to cache the signature verification step.
+NET_EXPORT bool VerifyCertificateIsSelfSigned(const ParsedCertificate& cert,
+                                              SignatureVerifyCache* cache,
+                                              CertErrors* errors);
 
 }  // namespace net
 

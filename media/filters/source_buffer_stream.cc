@@ -10,7 +10,7 @@
 #include <sstream>
 #include <string>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/demuxer_memory_limit.h"
@@ -1721,6 +1721,14 @@ Ranges<base::TimeDelta> SourceBufferStream::GetBufferedTime() const {
     ranges.Add((*itr)->GetStartTimestamp(), (*itr)->GetBufferedEndTimestamp());
   }
   return ranges;
+}
+
+base::TimeDelta SourceBufferStream::GetLowestPresentationTimestamp() const {
+  if (ranges_.empty()) {
+    return base::TimeDelta();
+  }
+
+  return ranges_.front()->GetStartTimestamp();
 }
 
 base::TimeDelta SourceBufferStream::GetHighestPresentationTimestamp() const {

@@ -10,7 +10,6 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
-#include "base/containers/flat_set.h"
 #include "base/functional/overloaded.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
@@ -18,40 +17,15 @@
 #include "base/values.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
+#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
-#include "net/base/schemeful_site.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_canon.h"
 
 namespace content {
-
-namespace {
-
-base::Value SerializeDestinations(
-    const base::flat_set<attribution_reporting::SuitableOrigin>& destinations) {
-  DCHECK(!destinations.empty());
-
-  base::flat_set<net::SchemefulSite> sites;
-  for (const auto& destination : destinations) {
-    sites.insert(net::SchemefulSite(destination));
-  }
-
-  if (sites.size() == 1)
-    return base::Value(sites.begin()->Serialize());
-
-  base::Value::List list;
-  list.reserve(sites.size());
-
-  for (const auto& site : sites) {
-    list.Append(site.Serialize());
-  }
-
-  return base::Value(std::move(list));
-}
-
-}  // namespace
 
 AttributionReport::EventLevelData::EventLevelData(
     uint64_t trigger_data,
@@ -84,10 +58,12 @@ AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
     Id id,
     base::Time initial_report_time,
     ::aggregation_service::mojom::AggregationCoordinator
-        aggregation_coordinator)
+        aggregation_coordinator,
+    absl::optional<std::string> attestation_token)
     : contributions(std::move(contributions)),
       id(id),
       initial_report_time(initial_report_time),
+      attestation_token(std::move(attestation_token)),
       aggregation_coordinator(aggregation_coordinator) {}
 
 AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
@@ -177,8 +153,7 @@ base::Value::Dict AttributionReport::ReportBody() const {
                 this->attribution_info().source.common_info();
 
             dict.Set("attribution_destination",
-                     SerializeDestinations(
-                         common_source_info.destination_origins()));
+                     common_source_info.SerializeDestinationSites());
 
             // The API denotes these values as strings; a `uint64_t` cannot be
             // put in a dict as an integer in order to be opaque to various API
@@ -198,13 +173,19 @@ base::Value::Dict AttributionReport::ReportBody() const {
             dict.Set("randomized_trigger_rate", data.randomized_trigger_rate);
 
             if (absl::optional<uint64_t> debug_key =
-                    common_source_info.debug_key())
+                    common_source_info.debug_key()) {
               dict.Set("source_debug_key", base::NumberToString(*debug_key));
+            }
 
             if (absl::optional<uint64_t> debug_key =
                     this->attribution_info().debug_key) {
               dict.Set("trigger_debug_key", base::NumberToString(*debug_key));
             }
+
+            dict.Set("scheduled_report_time",
+                     base::NumberToString(
+                         (OriginalReportTime() - base::Time::UnixEpoch())
+                             .InSeconds()));
 
             return dict;
           },
@@ -225,8 +206,9 @@ base::Value::Dict AttributionReport::ReportBody() const {
             const CommonSourceInfo& common_info =
                 this->attribution_info().source.common_info();
 
-            if (absl::optional<uint64_t> debug_key = common_info.debug_key())
+            if (absl::optional<uint64_t> debug_key = common_info.debug_key()) {
               dict.Set("source_debug_key", base::NumberToString(*debug_key));
+            }
 
             if (absl::optional<uint64_t> debug_key =
                     this->attribution_info().debug_key) {
@@ -253,17 +235,42 @@ void AttributionReport::SetExternalReportIdForTesting(
   external_report_id_ = std::move(external_report_id);
 }
 
+base::Time AttributionReport::OriginalReportTime() const {
+  return absl::visit(base::Overloaded{
+                         [this](const EventLevelData&) {
+                           return ComputeReportTime(
+                               this->attribution_info_.source.common_info(),
+                               this->attribution_info_.time);
+                         },
+                         [](const AggregatableAttributionData& data) {
+                           return data.initial_report_time;
+                         },
+                     },
+                     data_);
+}
+
 // static
 absl::optional<base::Time> AttributionReport::MinReportTime(
     absl::optional<base::Time> a,
     absl::optional<base::Time> b) {
-  if (!a.has_value())
+  if (!a.has_value()) {
     return b;
+  }
 
-  if (!b.has_value())
+  if (!b.has_value()) {
     return a;
+  }
 
   return std::min(*a, *b);
+}
+
+void AttributionReport::PopulateAdditionalHeaders(
+    net::HttpRequestHeaders& headers) const {
+  if (const auto* data = absl::get_if<AggregatableAttributionData>(&data_);
+      data && data->attestation_token.has_value()) {
+    headers.SetHeader("Sec-Attribution-Reporting-Private-State-Token",
+                      *data->attestation_token);
+  }
 }
 
 }  // namespace content

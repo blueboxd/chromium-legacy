@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "apps/launcher.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -48,6 +48,7 @@ apps::AppTypeName GetHistogrameAppType(apps::AppType app_type) {
     case apps::AppType::kStandaloneBrowserChromeApp:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
     case apps::AppType::kExtension:
     case apps::AppType::kStandaloneBrowserExtension:
       return apps::AppTypeName::kUnknown;
@@ -183,6 +184,7 @@ void AppLaunchHandler::LaunchApp(apps::AppType app_type,
     case apps::AppType::kMacOs:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
     case apps::AppType::kExtension:
     case apps::AppType::kStandaloneBrowserExtension:
       NOTREACHED();

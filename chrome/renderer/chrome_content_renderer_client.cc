@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
@@ -51,6 +51,7 @@
 #include "chrome/renderer/chrome_content_settings_agent_delegate.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
+#include "chrome/renderer/google_accounts_private_api_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/media/chrome_key_systems.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
@@ -67,7 +68,6 @@
 #include "chrome/renderer/worker_content_settings_client.h"
 #include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
-#include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -618,6 +618,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
   SyncEncryptionKeysExtension::Create(render_frame);
+  if (base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
+    GoogleAccountsPrivateApiExtension::Create(render_frame);
+  }
 
   if (render_frame->IsMainFrame())
     new webapps::WebPageMetadataAgent(render_frame);
@@ -674,11 +677,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
     PasswordGenerationAgent* password_generation_agent =
         new PasswordGenerationAgent(render_frame, password_autofill_agent,
                                     associated_interfaces);
-    autofill::AutofillAssistantAgent* autofill_assistant_agent =
-        new autofill::AutofillAssistantAgent(render_frame);
     new AutofillAgent(render_frame, password_autofill_agent,
-                      password_generation_agent, autofill_assistant_agent,
-                      associated_interfaces);
+                      password_generation_agent, associated_interfaces);
   }
 
   if (content_capture::features::IsContentCaptureEnabled()) {
@@ -1078,8 +1078,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                   blink::mojom::PreferredColorScheme::kLight);
             }
           }
-        } else if (info.name ==
-                   ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
+        } else if (info.path.value() ==
+                   ChromeContentClient::kPDFExtensionPluginPath) {
           // Report PDF load metrics. Since the PDF plugin is comprised of an
           // extension that loads a second plugin, avoid double counting by
           // ignoring the creation of the second plugin.
@@ -1110,8 +1110,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 
 #if BUILDFLAG(ENABLE_PDF)
-        if (info.name ==
-            ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
+        if (info.path.value() == ChromeContentClient::kPDFInternalPluginPath) {
           return pdf::CreateInternalPlugin(
               std::move(params), render_frame,
               std::make_unique<ChromePdfInternalPluginDelegate>());
@@ -1123,8 +1122,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case chrome::mojom::PluginStatus::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
-        if (info.name ==
-            ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
+        if (info.path.value() == ChromeContentClient::kPDFExtensionPluginPath) {
           ReportPDFLoadStatus(
               PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
 

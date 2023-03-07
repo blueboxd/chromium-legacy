@@ -9,11 +9,11 @@
 #include <limits>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -28,6 +28,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/policy/management_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -61,7 +62,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/tpm_firmware_update.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -169,8 +169,8 @@ base::FilePath FindRegulatoryLabelDir() {
   base::FilePath region_path;
   // Use the VPD region code to find the label dir.
   const absl::optional<base::StringPiece> region =
-      chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-          chromeos::system::kRegionKey);
+      ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+          ash::system::kRegionKey);
   if (region && !region->empty()) {
     region_path = GetRegulatoryLabelDirForRegion(region.value());
   }
@@ -444,22 +444,12 @@ void AboutHandler::PromoteUpdater(const base::Value::List& args) {
 }
 #endif
 
-void AboutHandler::OpenFeedbackDialogWrapper(
-    const std::string& description_template) {
+void AboutHandler::HandleOpenFeedbackDialog(const base::Value::List& args) {
+  DCHECK(args.empty());
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   chrome::OpenFeedbackDialog(browser,
-                             chrome::kFeedbackSourceMdSettingsAboutPage,
-                             description_template);
-}
-
-void AboutHandler::HandleOpenFeedbackDialog(const base::Value::List& args) {
-  if (args.empty()) {
-    OpenFeedbackDialogWrapper(/*description_template =*/std::string());
-  } else {
-    DCHECK_EQ(args.size(), 1U);
-    OpenFeedbackDialogWrapper(args.front().GetString());
-  }
+                             chrome::kFeedbackSourceMdSettingsAboutPage);
 }
 
 void AboutHandler::HandleOpenHelpPage(const base::Value::List& args) {
@@ -548,7 +538,6 @@ void AboutHandler::OnGetVersionInfoReady(std::string callback_id,
 }
 
 void AboutHandler::HandleGetFirmwareUpdateCount(const base::Value::List& args) {
-  DCHECK(base::FeatureList::IsEnabled(ash::features::kFirmwareUpdaterApp));
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
   auto* firmware_update_manager = ash::FirmwareUpdateManager::Get();

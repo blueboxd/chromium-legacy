@@ -648,6 +648,9 @@ bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
 }
 
 // Omnibox UI simplification - Uniform Suggestion Row Heights
+bool OmniboxFieldTrial::IsSquareSuggestIconEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kSquareSuggestIcons);
+}
 
 bool OmniboxFieldTrial::IsUniformRowHeightEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kUniformRowHeight);
@@ -818,26 +821,6 @@ bool IsZeroSuggestPrefetchingEnabledInContext(
   }
 }
 
-// Determines the age threshold in days for local zero-prefix suggestions.
-const base::FeatureParam<int> kOmniboxLocalZeroSuggestAgeThresholdParam(
-    &omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
-    "OmniboxLocalZeroSuggestAgeThreshold",
-    90);
-
-base::Time GetLocalHistoryZeroSuggestAgeThreshold() {
-  return (base::Time::Now() -
-          base::Days(kOmniboxLocalZeroSuggestAgeThresholdParam.Get()));
-}
-
-const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
-    &omnibox::kLocalHistorySuggestRevamp,
-    "ZeroSuggestIgnoreDuplicateVisits",
-    true);
-const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits(
-    &omnibox::kLocalHistorySuggestRevamp,
-    "PrefixSuggestIgnoreDuplicateVisits",
-    true);
-
 // Short bookmarks.
 
 bool IsShortBookmarkSuggestionsEnabled() {
@@ -985,6 +968,11 @@ const base::FeatureParam<int> kDocumentProviderMaxLowQualitySuggestions(
     "DocumentProviderMaxLowQualitySuggestions",
     100);
 
+const base::FeatureParam<bool> kDomainSuggestionsCounterfactual(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsCounterfactual",
+    false);
+
 const base::FeatureParam<int> kDomainSuggestionsTypedUrlsThreshold(
     &omnibox::kDomainSuggestions,
     "DomainSuggestionsTypedUrlsThreshold",
@@ -1025,9 +1013,28 @@ const base::FeatureParam<double> kDomainSuggestionsScoreFactor(
     "DomainSuggestionsScoreFactor",
     1);
 
+const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsAlternativeScoring",
+    false);
+
 bool IsLogUrlScoringSignalsEnabled() {
   static bool enabled =
       base::FeatureList::IsEnabled(omnibox::kLogUrlScoringSignals);
+  return enabled;
+}
+
+bool IsMlRelevanceScoringEnabled() {
+  // Check both `omnibox::kMlRelevanceScoring` and
+  // `omnibox::kUrlScoringModel` feature flags.
+  static bool enabled =
+      base::FeatureList::IsEnabled(omnibox::kMlRelevanceScoring) &&
+      IsUrlScoringModelEnabled();
+  return enabled;
+}
+
+bool IsUrlScoringModelEnabled() {
+  static bool enabled = base::FeatureList::IsEnabled(omnibox::kUrlScoringModel);
   return enabled;
 }
 

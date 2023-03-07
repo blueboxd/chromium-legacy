@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -205,7 +204,8 @@ using signin_metrics::PromoAction;
                          browser:self.browser
                             rect:targetRect
                             view:self.viewController.view
-                      withSource:signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS];
+                      withSource:signin_metrics::ProfileSignout::
+                                     kUserClickedSignoutSettings];
   __weak GoogleServicesSettingsCoordinator* weakSelf = self;
   self.signoutActionSheetCoordinator.delegate = self;
   self.signoutActionSheetCoordinator.completion = ^(BOOL success) {
@@ -223,7 +223,7 @@ using signin_metrics::PromoAction;
   [self.googleServicesSettingsViewController preventUserInteraction];
   __weak GoogleServicesSettingsCoordinator* weakSelf = self;
   self.authService->SignOut(
-      signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+      signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
       /*force_clear_browsing_data=*/NO, ^{
         if (!weakSelf) {
           return;

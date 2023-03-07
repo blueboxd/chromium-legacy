@@ -27,7 +27,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -37,6 +36,8 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
+#include "components/autofill/core/browser/metrics/payments/better_auth_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/card_unmask_flow_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
@@ -191,7 +192,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     autofill_driver_ = std::make_unique<TestAutofillDriver>();
 
     payments_client_ = new payments::TestPaymentsClient(
-        autofill_driver_->GetURLLoaderFactory(),
+        autofill_client_.GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data());
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
@@ -328,25 +329,22 @@ class CreditCardAccessManagerTest : public testing::Test {
         ->GetStrikes();
   }
 
-  base::Value GetTestRequestOptions() {
-    base::Value request_options = base::Value(base::Value::Type::DICTIONARY);
-    request_options.SetKey("challenge", base::Value(kTestChallenge));
-    request_options.SetKey("relying_party_id",
-                           base::Value(kGooglePaymentsRpid));
+  base::Value::Dict GetTestRequestOptions() {
+    base::Value::Dict request_options;
+    request_options.Set("challenge", base::Value(kTestChallenge));
+    request_options.Set("relying_party_id", base::Value(kGooglePaymentsRpid));
 
-    base::Value key_info(base::Value::Type::DICTIONARY);
-    key_info.SetKey("credential_id", base::Value(kCredentialId));
-    request_options.SetKey("key_info", base::Value(base::Value::Type::LIST));
-    request_options.FindKeyOfType("key_info", base::Value::Type::LIST)
-        ->Append(std::move(key_info));
+    base::Value::Dict key_info;
+    key_info.Set("credential_id", base::Value(kCredentialId));
+    request_options.Set("key_info", base::Value(base::Value::Type::LIST));
+    request_options.FindList("key_info")->Append(std::move(key_info));
     return request_options;
   }
 
-  base::Value GetTestCreationOptions() {
-    base::Value creation_options = base::Value(base::Value::Type::DICTIONARY);
-    creation_options.SetKey("challenge", base::Value(kTestChallenge));
-    creation_options.SetKey("relying_party_id",
-                            base::Value(kGooglePaymentsRpid));
+  base::Value::Dict GetTestCreationOptions() {
+    base::Value::Dict creation_options;
+    creation_options.Set("challenge", base::Value(kTestChallenge));
+    creation_options.Set("relying_party_id", base::Value(kGooglePaymentsRpid));
     return creation_options;
   }
 
@@ -496,7 +494,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     const CardUnmaskChallengeOption& challenge_option =
         response.card_unmask_challenge_options[selected_index];
     credit_card_access_manager_->OnUserAcceptedAuthenticationSelectionDialog(
-        challenge_option.id);
+        challenge_option.id.value());
 
     switch (challenge_option.type) {
       case CardUnmaskChallengeOptionType::kCvc: {
@@ -510,7 +508,8 @@ class CreditCardAccessManagerTest : public testing::Test {
         EXPECT_EQ(request_details->card.number(),
                   base::UTF8ToUTF16(std::string(kTestNumber)));
         EXPECT_EQ(request_details->context_token, "fake_context_token");
-        EXPECT_EQ(request_details->selected_challenge_option->id, "234");
+        EXPECT_EQ(request_details->selected_challenge_option->id.value(),
+                  "234");
         EXPECT_EQ(request_details->selected_challenge_option->type,
                   CardUnmaskChallengeOptionType::kCvc);
         break;
@@ -523,7 +522,8 @@ class CreditCardAccessManagerTest : public testing::Test {
         EXPECT_EQ(otp_authenticator_->card().record_type(),
                   CreditCard::VIRTUAL_CARD);
         EXPECT_EQ(otp_authenticator_->context_token(), "fake_context_token");
-        EXPECT_EQ(otp_authenticator_->selected_challenge_option().id, "123");
+        EXPECT_EQ(otp_authenticator_->selected_challenge_option().id.value(),
+                  "123");
         EXPECT_EQ(otp_authenticator_->selected_challenge_option().type,
                   CardUnmaskChallengeOptionType::kSmsOtp);
         EXPECT_EQ(
@@ -862,10 +862,10 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
 
   histogram_tester.ExpectUniqueSample(
       unmask_decision_histogram_name,
-      AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly, 1);
+      autofill_metrics::CardUnmaskTypeDecisionMetric::kFidoOnly, 1);
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
-      AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+      autofill_metrics::WebauthnResultMetric::kSuccess, 1);
   histogram_tester.ExpectTotalCount(
       "Autofill.BetterAuth.CardUnmaskDuration.Fido", 1);
   histogram_tester.ExpectTotalCount(
@@ -965,7 +965,7 @@ TEST_F(CreditCardAccessManagerTest,
 
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
-      AutofillMetrics::WebauthnResultMetric::kNotAllowedError, 1);
+      autofill_metrics::WebauthnResultMetric::kNotAllowedError, 1);
   histogram_tester.ExpectBucketCount(
       flow_events_fido_histogram_name,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptCompleted, 0);
@@ -1014,7 +1014,7 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
 
   histogram_tester.ExpectUniqueSample(
-      histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+      histogram_name, autofill_metrics::WebauthnResultMetric::kSuccess, 1);
   histogram_tester.ExpectTotalCount(
       "Autofill.BetterAuth.CardUnmaskDuration.Fido", 1);
   histogram_tester.ExpectTotalCount(
@@ -1105,7 +1105,7 @@ TEST_F(CreditCardAccessManagerTest,
 
       histogram_tester.ExpectUniqueSample(
           histogram_name,
-          AutofillMetrics::PreflightCallEvent::kDidNotChooseMaskedCard, 1);
+          autofill_metrics::PreflightCallEvent::kDidNotChooseMaskedCard, 1);
     }
 
     {
@@ -1122,7 +1122,7 @@ TEST_F(CreditCardAccessManagerTest,
 
       histogram_tester.ExpectUniqueSample(
           histogram_name,
-          AutofillMetrics::PreflightCallEvent::
+          autofill_metrics::PreflightCallEvent::
               kCardChosenBeforePreflightCallReturned,
           1);
       histogram_tester.ExpectTotalCount(
@@ -1152,7 +1152,7 @@ TEST_F(CreditCardAccessManagerTest,
 
       histogram_tester.ExpectUniqueSample(
           histogram_name,
-          AutofillMetrics::PreflightCallEvent::
+          autofill_metrics::PreflightCallEvent::
               kPreflightCallReturnedBeforeCardChosen,
           1);
     }
@@ -1196,7 +1196,7 @@ TEST_F(CreditCardAccessManagerTest, Metrics_LoggingTimedOutCvcFallback) {
 
     histogram_tester.ExpectUniqueSample(
         existence_perceived_latency_histogram_name,
-        AutofillMetrics::PreflightCallEvent::
+        autofill_metrics::PreflightCallEvent::
             kCardChosenBeforePreflightCallReturned,
         1);
     histogram_tester.ExpectTotalCount(perceived_latency_duration_histogram_name,
@@ -1218,7 +1218,7 @@ TEST_F(CreditCardAccessManagerTest, Metrics_LoggingTimedOutCvcFallback) {
 
     histogram_tester.ExpectUniqueSample(
         existence_perceived_latency_histogram_name,
-        AutofillMetrics::PreflightCallEvent::
+        autofill_metrics::PreflightCallEvent::
             kCardChosenBeforePreflightCallReturned,
         1);
     histogram_tester.ExpectTotalCount(perceived_latency_duration_histogram_name,
@@ -1285,10 +1285,10 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
 
   histogram_tester.ExpectUniqueSample(
       unmask_decision_histogram_name,
-      AutofillMetrics::CardUnmaskTypeDecisionMetric::kCvcThenFido, 1);
+      autofill_metrics::CardUnmaskTypeDecisionMetric::kCvcThenFido, 1);
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
-      AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+      autofill_metrics::WebauthnResultMetric::kSuccess, 1);
   histogram_tester.ExpectBucketCount(
       flow_events_histogram_name,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptCompleted, 1);
@@ -1397,7 +1397,7 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInSuccess_Android) {
   EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
 
   histogram_tester.ExpectUniqueSample(
-      histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+      histogram_name, autofill_metrics::WebauthnResultMetric::kSuccess, 1);
 }
 
 // Ensures that the failed user verification disallows enrollment.
@@ -1441,7 +1441,7 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInUserVerificationFailure) {
   EXPECT_FALSE(GetFIDOAuthenticator()->IsUserOptedIn());
 
   histogram_tester.ExpectUniqueSample(
-      histogram_name, AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
+      histogram_name, autofill_metrics::WebauthnResultMetric::kNotAllowedError,
       1);
 }
 
@@ -1590,18 +1590,18 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_EQ(0, GetStrikes());
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
-      AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+      autofill_metrics::WebauthnResultMetric::kSuccess, 1);
   histogram_tester.ExpectTotalCount(opt_in_histogram_name, 2);
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kFetchingChallenge, 1);
+      autofill_metrics::WebauthnOptInParameters::kFetchingChallenge, 1);
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kWithCreationChallenge, 1);
+      autofill_metrics::WebauthnOptInParameters::kWithCreationChallenge, 1);
   histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 1);
   histogram_tester.ExpectUniqueSample(
       promo_user_decision_histogram_name,
-      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::kAccepted, 1);
+      autofill_metrics::WebauthnOptInPromoUserDecisionMetric::kAccepted, 1);
 }
 
 // Ensures that the correct number of strikes are added when the user declines
@@ -1635,7 +1635,7 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollment_OfferDeclined_Desktop) {
   histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 1);
   histogram_tester.ExpectUniqueSample(
       promo_user_decision_histogram_name,
-      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+      autofill_metrics::WebauthnOptInPromoUserDecisionMetric::
           kDeclinedImmediately,
       1);
 }
@@ -1673,7 +1673,7 @@ TEST_F(CreditCardAccessManagerTest,
   histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 1);
   histogram_tester.ExpectUniqueSample(
       promo_user_decision_histogram_name,
-      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+      autofill_metrics::WebauthnOptInPromoUserDecisionMetric::
           kDeclinedAfterAccepting,
       1);
 }
@@ -1719,10 +1719,10 @@ TEST_F(CreditCardAccessManagerTest,
             GetStrikes());
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
-      AutofillMetrics::WebauthnResultMetric::kNotAllowedError, 1);
+      autofill_metrics::WebauthnResultMetric::kNotAllowedError, 1);
   histogram_tester.ExpectUniqueSample(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kFetchingChallenge, 1);
+      autofill_metrics::WebauthnOptInParameters::kFetchingChallenge, 1);
 }
 
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in. In
@@ -1773,14 +1773,14 @@ TEST_F(CreditCardAccessManagerTest,
 
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
-      AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+      autofill_metrics::WebauthnResultMetric::kSuccess, 1);
   histogram_tester.ExpectTotalCount(opt_in_histogram_name, 2);
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kFetchingChallenge, 1);
+      autofill_metrics::WebauthnOptInParameters::kFetchingChallenge, 1);
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kWithRequestChallenge, 1);
+      autofill_metrics::WebauthnOptInParameters::kWithRequestChallenge, 1);
 }
 
 // Ensures WebAuthn result is logged correctly for a settings page opt-in.
@@ -1812,8 +1812,8 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
 
     histogram_tester.ExpectBucketCount(
         webauthn_histogram_name,
-        did_succeed ? AutofillMetrics::WebauthnResultMetric::kSuccess
-                    : AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
+        did_succeed ? autofill_metrics::WebauthnResultMetric::kSuccess
+                    : autofill_metrics::WebauthnResultMetric::kNotAllowedError,
         1);
   }
 
@@ -1821,14 +1821,14 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
   histogram_tester.ExpectTotalCount(opt_in_histogram_name, 3);
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kFetchingChallenge, 2);
+      autofill_metrics::WebauthnOptInParameters::kFetchingChallenge, 2);
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
-      AutofillMetrics::WebauthnOptInParameters::kWithCreationChallenge, 1);
+      autofill_metrics::WebauthnOptInParameters::kWithCreationChallenge, 1);
   histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 2);
   histogram_tester.ExpectUniqueSample(
       promo_user_decision_histogram_name,
-      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::kAccepted, 2);
+      autofill_metrics::WebauthnOptInPromoUserDecisionMetric::kAccepted, 2);
 }
 
 // Ensure proper metrics are logged when user opts-out from settings page.
@@ -1881,7 +1881,7 @@ TEST_F(CreditCardAccessManagerTest,
   // CardChosenBeforePreflightCallReturned is logged to opted-out histogram.
   histogram_tester.ExpectUniqueSample(
       "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedOut",
-      AutofillMetrics::PreflightCallEvent::
+      autofill_metrics::PreflightCallEvent::
           kCardChosenBeforePreflightCallReturned,
       1);
   // No bucket count for OptIn TimedOutCvcFallback.
@@ -2001,6 +2001,19 @@ TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutFailure) {
   // Mock payments opt out failure. Local pref should be unchanged.
   OptChange(AutofillClient::PaymentsRpcResult::kPermanentFailure, false);
   EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+}
+
+// TODO(crbug.com/1409172): Extend the FIDOAuthOptChange tests to more
+// use-cases.
+TEST_F(CreditCardAccessManagerTest, FIDOAuthOptChange_OptOut) {
+  credit_card_access_manager_->FIDOAuthOptChange(/*opt_in=*/false);
+  ASSERT_TRUE(fido_authenticator_->IsOptOutCalled());
+}
+
+TEST_F(CreditCardAccessManagerTest, FIDOAuthOptChange_OptOut_OffTheRecord) {
+  personal_data().set_is_off_the_record_for_testing(/*is_off_the_record=*/true);
+  credit_card_access_manager_->FIDOAuthOptChange(/*opt_in=*/false);
+  ASSERT_FALSE(fido_authenticator_->IsOptOutCalled());
 }
 
 // TODO(crbug.com/1109296) Debug issues and re-enable this test on MacOS.
@@ -2176,7 +2189,7 @@ TEST_F(CreditCardAccessManagerTest, RiskBasedVirtualCardUnmasking_Success) {
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
-      AutofillMetrics::ServerCardUnmaskResult::kRiskBasedUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kRiskBasedUnmasked, 1);
 }
 
 #if !BUILDFLAG(IS_IOS)
@@ -2206,7 +2219,7 @@ TEST_F(CreditCardAccessManagerTest,
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.Otp",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
 }
 
 // Ensures the virtual card risk-based unmasking response is handled correctly
@@ -2283,7 +2296,7 @@ TEST_F(CreditCardAccessManagerTest,
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 2);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.Otp",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
   // TODO(crbug/1370329): Add metrics checks for Virtual Card CVC auth result.
 }
 
@@ -2362,7 +2375,7 @@ TEST_F(CreditCardAccessManagerTest,
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.Fido",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
 }
 
 // Ensures that the virtual card risk-based unmasking response is handled
@@ -2396,10 +2409,9 @@ TEST_F(
   // Mock server response with information regarding both FIDO and OTP auth.
   payments::PaymentsClient::UnmaskResponseDetails response;
   response.context_token = "fake_context_token";
-  CardUnmaskChallengeOption challenge_option{
-      .id = "123",
-      .type = CardUnmaskChallengeOptionType::kSmsOtp,
-      .challenge_info = u"fake challenge info"};
+  CardUnmaskChallengeOption challenge_option =
+      test::GetCardUnmaskChallengeOptions(
+          {CardUnmaskChallengeOptionType::kSmsOtp})[0];
   response.card_unmask_challenge_options.emplace_back(challenge_option);
   response.fido_request_options = GetTestRequestOptions();
   credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
@@ -2428,7 +2440,7 @@ TEST_F(
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.Fido",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
 }
 
 // Ensures that the virtual card risk-based unmasking response is handled
@@ -2459,7 +2471,7 @@ TEST_F(
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.Otp",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
 }
 
 // Ensures that the virtual card risk-based unmasking response is handled
@@ -2490,7 +2502,7 @@ TEST_F(
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.OtpFallbackFromFido",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationUnmasked, 1);
 }
 
 // Ensures that the virtual card risk-based unmasking response is handled
@@ -2538,7 +2550,7 @@ TEST_F(
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.Fido",
-      AutofillMetrics::ServerCardUnmaskResult::kOnlyFidoAvailableButNotOptedIn,
+      autofill_metrics::ServerCardUnmaskResult::kOnlyFidoAvailableButNotOptedIn,
       1);
 }
 
@@ -2590,7 +2602,7 @@ TEST_F(CreditCardAccessManagerTest,
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
-      AutofillMetrics::ServerCardUnmaskResult::kAuthenticationError, 1);
+      autofill_metrics::ServerCardUnmaskResult::kAuthenticationError, 1);
 }
 
 // Ensures that the virtual card risk-based unmasking response is handled
@@ -2640,7 +2652,7 @@ TEST_F(CreditCardAccessManagerTest,
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
-      AutofillMetrics::ServerCardUnmaskResult::kVirtualCardRetrievalError, 1);
+      autofill_metrics::ServerCardUnmaskResult::kVirtualCardRetrievalError, 1);
 }
 
 TEST_F(CreditCardAccessManagerTest,
@@ -2674,7 +2686,7 @@ TEST_F(CreditCardAccessManagerTest,
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
-      AutofillMetrics::ServerCardUnmaskResult::kVirtualCardRetrievalError, 1);
+      autofill_metrics::ServerCardUnmaskResult::kVirtualCardRetrievalError, 1);
 }
 
 TEST_F(CreditCardAccessManagerTest,
@@ -2717,7 +2729,7 @@ TEST_F(CreditCardAccessManagerTest,
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
-      AutofillMetrics::ServerCardUnmaskResult::kFlowCancelled, 1);
+      autofill_metrics::ServerCardUnmaskResult::kFlowCancelled, 1);
 }
 
 }  // namespace autofill

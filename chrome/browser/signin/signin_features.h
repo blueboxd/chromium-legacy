@@ -11,8 +11,6 @@
 BASE_DECLARE_FEATURE(kForYouFre);
 #endif
 
-BASE_DECLARE_FEATURE(kDelayConsentLevelUpgrade);
-
 BASE_DECLARE_FEATURE(kProcessGaiaRemoveLocalAccountHeader);
 
 BASE_DECLARE_FEATURE(kSyncPromoAfterSigninIntercept);
@@ -20,5 +18,7 @@ BASE_DECLARE_FEATURE(kSyncPromoAfterSigninIntercept);
 BASE_DECLARE_FEATURE(kSigninInterceptBubbleV2);
 
 BASE_DECLARE_FEATURE(kShowEnterpriseDialogForAllManagedAccountsSignin);
+
+BASE_DECLARE_FEATURE(kDisallowManagedProfileSignout);
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_FEATURES_H_

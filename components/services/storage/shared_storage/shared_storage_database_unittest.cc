@@ -421,6 +421,9 @@ TEST_F(SharedStorageDatabaseTest, DestroyTooNew) {
   EXPECT_EQ(OperationResult::kInitFailure,
             db_->GetEntriesForDevTools(kOrigin).result);
 
+  EXPECT_EQ(OperationResult::kInitFailure,
+            db_->ResetBudgetForDevTools(kOrigin));
+
   auto metadata = db_->GetMetadata(kOrigin);
   EXPECT_EQ(OperationResult::kInitFailure, metadata.time_result);
   EXPECT_EQ(OperationResult::kInitFailure, metadata.budget_result);
@@ -1034,12 +1037,6 @@ TEST_P(SharedStorageDatabaseParamTest, FetchOrigins) {
   for (const auto& info : db_->FetchOrigins())
     origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin3, kOrigin4));
-
-  origins.clear();
-  EXPECT_TRUE(origins.empty());
-  for (const auto& info : db_->FetchOrigins(/*exclude_empty_origins=*/false))
-    origins.push_back(info->storage_key.origin());
-  EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4));
 }
 
 TEST_P(SharedStorageDatabaseParamTest, MakeBudgetWithdrawal) {
@@ -1142,14 +1139,88 @@ TEST_P(SharedStorageDatabaseParamTest, MakeBudgetWithdrawal) {
   EXPECT_EQ(0L, db_->GetTotalNumBudgetEntriesForTesting());
 }
 
+TEST_P(SharedStorageDatabaseParamTest, ResetBudgetForDevTools) {
+  // There should be no entries in the budget table.
+  EXPECT_EQ(0L, db_->GetTotalNumBudgetEntriesForTesting());
+
+  // SQL database hasn't yet been lazy-initialized. Nevertheless, remaining
+  // budgets should be returned as the max possible.
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("http://www.example1.test"));
+  EXPECT_DOUBLE_EQ(kBitBudget, db_->GetRemainingBudget(kOrigin1).bits);
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("http://www.example2.test"));
+  EXPECT_DOUBLE_EQ(kBitBudget, db_->GetRemainingBudget(kOrigin2).bits);
+
+  // Resetting a budget in an empty uninitialized database causes no error.
+  EXPECT_EQ(OperationResult::kSuccess, db_->ResetBudgetForDevTools(kOrigin1));
+
+  // Making withdrawals will initialize the database.
+  EXPECT_EQ(OperationResult::kSuccess,
+            db_->MakeBudgetWithdrawal(kOrigin1, 1.75));
+  EXPECT_EQ(OperationResult::kSuccess,
+            db_->MakeBudgetWithdrawal(kOrigin1, 2.5));
+
+  // Advance halfway through the lookback window to separate withdrawal times.
+  clock_.Advance(base::Hours(kBudgetIntervalHours) / 2);
+
+  EXPECT_EQ(OperationResult::kSuccess,
+            db_->MakeBudgetWithdrawal(kOrigin1, 1.0));
+  EXPECT_EQ(OperationResult::kSuccess,
+            db_->MakeBudgetWithdrawal(kOrigin2, 3.4));
+
+  EXPECT_DOUBLE_EQ(kBitBudget - 1.75 - 2.5 - 1.0,
+                   db_->GetRemainingBudget(kOrigin1).bits);
+  EXPECT_DOUBLE_EQ(kBitBudget - 3.4, db_->GetRemainingBudget(kOrigin2).bits);
+  EXPECT_EQ(3L, db_->GetNumBudgetEntriesForTesting(kOrigin1));
+  EXPECT_EQ(1L, db_->GetNumBudgetEntriesForTesting(kOrigin2));
+  EXPECT_EQ(4L, db_->GetTotalNumBudgetEntriesForTesting());
+
+  // Resetting `kOrigin1`'s budget doesn't affect `kOrigin2`'s budget.
+  EXPECT_EQ(OperationResult::kSuccess, db_->ResetBudgetForDevTools(kOrigin1));
+  EXPECT_DOUBLE_EQ(kBitBudget, db_->GetRemainingBudget(kOrigin1).bits);
+  EXPECT_DOUBLE_EQ(kBitBudget - 3.4, db_->GetRemainingBudget(kOrigin2).bits);
+  EXPECT_EQ(0L, db_->GetNumBudgetEntriesForTesting(kOrigin1));
+  EXPECT_EQ(1L, db_->GetNumBudgetEntriesForTesting(kOrigin2));
+  EXPECT_EQ(1L, db_->GetTotalNumBudgetEntriesForTesting());
+
+  // Resetting an already reset budget causes no error.
+  EXPECT_EQ(OperationResult::kSuccess, db_->ResetBudgetForDevTools(kOrigin1));
+  EXPECT_DOUBLE_EQ(kBitBudget, db_->GetRemainingBudget(kOrigin1).bits);
+  EXPECT_EQ(0L, db_->GetNumBudgetEntriesForTesting(kOrigin1));
+
+  // Resetting budget for a nonexistent origin causes no error.
+  EXPECT_EQ(OperationResult::kSuccess,
+            db_->ResetBudgetForDevTools(
+                url::Origin::Create(GURL("http://www.example3.test"))));
+}
+
 TEST_P(SharedStorageDatabaseParamTest,
-       DeleteAllEntriesBeforeExpiration_CreationTimeUnchanged) {
+       InsertEntryBeforeExpiration_CreationTimeUnchanged) {
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example1.test"));
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key1", u"value1"));
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key2", u"value2"));
   EXPECT_EQ(2L, db_->Length(kOrigin1));
-  base::Time creation_time1 = db_->GetCreationTime(kOrigin1).time;
+  base::Time creation_time = db_->GetCreationTime(kOrigin1).time;
+
+  // Advance halfway to expiration time.
+  clock_.Advance(base::Days(kStalenessThresholdDays / 2.0));
+
+  // Creation time does not change when `kOrigin1` inserts a new entry before
+  // expiration.
+  EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key1", u"value1"));
+  EXPECT_EQ(2L, db_->Length(kOrigin1));
+  EXPECT_EQ(creation_time, db_->GetCreationTime(kOrigin1).time);
+}
+
+TEST_P(SharedStorageDatabaseParamTest,
+       DeleteAllEntriesBeforeExpiration_CreationTimeNotFound) {
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("http://www.example1.test"));
+  EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key1", u"value1"));
+  EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key2", u"value2"));
+  EXPECT_EQ(2L, db_->Length(kOrigin1));
 
   const url::Origin kOrigin2 =
       url::Origin::Create(GURL("http://www.example2.test"));
@@ -1157,30 +1228,23 @@ TEST_P(SharedStorageDatabaseParamTest,
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin2, u"key2", u"value2"));
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin2, u"key1", u"value1"));
   EXPECT_EQ(3L, db_->Length(kOrigin2));
-  base::Time creation_time2 = db_->GetCreationTime(kOrigin2).time;
 
-  // Creation time does not change when all of `kOrigin1`'s entries are deleted
-  // via `Delete()` before expiration.
+  // Creation time will not be found when all of `kOrigin1`'s entries are
+  // deleted via `Delete()` before expiration.
   EXPECT_EQ(OperationResult::kSuccess, db_->Delete(kOrigin1, u"key1"));
   EXPECT_EQ(OperationResult::kSuccess, db_->Delete(kOrigin1, u"key2"));
   EXPECT_EQ(0L, db_->Length(kOrigin1));
-  EXPECT_EQ(creation_time1, db_->GetCreationTime(kOrigin1).time);
+  EXPECT_EQ(OperationResult::kNotFound, db_->GetCreationTime(kOrigin1).result);
 
-  // Creation time does not change when all of `kOrigin2`'s entries are deleted
-  // via `Clear()` before expiration.
+  // Creation time will not be found when all of `kOrigin2`'s entries are
+  // deleted via `Clear()` before expiration.
   EXPECT_EQ(OperationResult::kSuccess, db_->Clear(kOrigin2));
   EXPECT_EQ(0L, db_->Length(kOrigin2));
-  EXPECT_EQ(creation_time2, db_->GetCreationTime(kOrigin2).time);
-
-  // Creation time does not change when `kOrigin1` inserts a new entry before
-  // expiration.
-  EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key1", u"value1"));
-  EXPECT_EQ(1L, db_->Length(kOrigin1));
-  EXPECT_EQ(creation_time1, db_->GetCreationTime(kOrigin1).time);
+  EXPECT_EQ(OperationResult::kNotFound, db_->GetCreationTime(kOrigin2).result);
 }
 
 TEST_P(SharedStorageDatabaseParamTest,
-       DeleteAllEntriesAfterExpiration_CreationTimeUnchanged) {
+       DeleteAllEntriesAfterExpiration_CreationTimeNotFound) {
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example1.test"));
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key1", u"value1"));
@@ -1198,24 +1262,24 @@ TEST_P(SharedStorageDatabaseParamTest,
 
   clock_.Advance(base::Days(kStalenessThresholdDays) + base::Microseconds(1));
 
-  // Creation time will remain the same when all of `kOrigin1`'s entries are
+  // Creation time will not be found when all of `kOrigin1`'s entries are
   // deleted via `Delete()` after expiration but `PurgeStale()` has not
   // yet been called.
   EXPECT_EQ(OperationResult::kSuccess, db_->Delete(kOrigin1, u"key1"));
   EXPECT_EQ(OperationResult::kSuccess, db_->Delete(kOrigin1, u"key2"));
   EXPECT_EQ(0L, db_->Length(kOrigin1));
-  EXPECT_EQ(creation_time1, db_->GetCreationTime(kOrigin1).time);
+  EXPECT_EQ(OperationResult::kNotFound, db_->GetCreationTime(kOrigin1).result);
 
-  // Creation time will remain the same when all of `kOrigin2`'s entries are
+  // Creation time will not be found when all of `kOrigin2`'s entries are
   // deleted via `Clear()` after expiration but `PurgeStale()` has not
   // yet been called.
   EXPECT_EQ(OperationResult::kSuccess, db_->Clear(kOrigin2));
   EXPECT_EQ(0L, db_->Length(kOrigin2));
-  EXPECT_EQ(creation_time2, db_->GetCreationTime(kOrigin2).time);
+  EXPECT_EQ(OperationResult::kNotFound, db_->GetCreationTime(kOrigin2).result);
 
   EXPECT_EQ(OperationResult::kSuccess, db_->PurgeStale());
 
-  // Creation times should not be found after a purge of stale origins.
+  // Creation times should still not be found after a purge of stale origins.
   EXPECT_EQ(OperationResult::kNotFound, db_->GetCreationTime(kOrigin1).result);
   EXPECT_EQ(OperationResult::kNotFound, db_->GetCreationTime(kOrigin2).result);
 
@@ -1640,7 +1704,7 @@ TEST_P(SharedStorageDatabaseParamTest, TrimMemory) {
   EXPECT_EQ(db_->Get(kOrigin4, u"key2").data, u"value2");
 }
 
-TEST_P(SharedStorageDatabaseParamTest, MaxEntriesPerOrigin) {
+TEST_P(SharedStorageDatabaseParamTest, Set_MaxEntriesPerOrigin) {
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example1.test"));
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key1", u"value1"));
@@ -1664,6 +1728,33 @@ TEST_P(SharedStorageDatabaseParamTest, MaxEntriesPerOrigin) {
 
   // There should now be capacity and the value will be set.
   EXPECT_EQ(OperationResult::kSet, db_->Set(kOrigin1, u"key6", u"value6"));
+  EXPECT_EQ(5L, db_->Length(kOrigin1));
+}
+
+TEST_P(SharedStorageDatabaseParamTest, Append_MaxEntriesPerOrigin) {
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("http://www.example1.test"));
+  EXPECT_EQ(OperationResult::kSet, db_->Append(kOrigin1, u"key1", u"value1"));
+  EXPECT_EQ(1L, db_->Length(kOrigin1));
+  EXPECT_EQ(OperationResult::kSet, db_->Append(kOrigin1, u"key2", u"value2"));
+  EXPECT_EQ(2L, db_->Length(kOrigin1));
+  EXPECT_EQ(OperationResult::kSet, db_->Append(kOrigin1, u"key3", u"value3"));
+  EXPECT_EQ(3L, db_->Length(kOrigin1));
+  EXPECT_EQ(OperationResult::kSet, db_->Append(kOrigin1, u"key4", u"value4"));
+  EXPECT_EQ(4L, db_->Length(kOrigin1));
+  EXPECT_EQ(OperationResult::kSet, db_->Append(kOrigin1, u"key5", u"value5"));
+  EXPECT_EQ(5L, db_->Length(kOrigin1));
+
+  // `kOrigin1` should have hit capacity, and hence this value will not be set.
+  EXPECT_EQ(OperationResult::kNoCapacity,
+            db_->Append(kOrigin1, u"key6", u"value6"));
+
+  EXPECT_EQ(5L, db_->Length(kOrigin1));
+  EXPECT_EQ(OperationResult::kSuccess, db_->Delete(kOrigin1, u"key5"));
+  EXPECT_EQ(4L, db_->Length(kOrigin1));
+
+  // There should now be capacity and the value will be set.
+  EXPECT_EQ(OperationResult::kSet, db_->Append(kOrigin1, u"key6", u"value6"));
   EXPECT_EQ(5L, db_->Length(kOrigin1));
 }
 

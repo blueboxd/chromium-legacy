@@ -331,8 +331,8 @@ bool HTMLFormControlElement::IsSuccessfulSubmitButton() const {
 //  4. If both 'popovershowtarget' and 'popoverhidetarget' are present and their
 //     values match, the behavior is to toggle.
 HTMLFormControlElement::PopoverTargetElement
-HTMLFormControlElement::popoverTargetElement() const {
-  const PopoverTargetElement no_element{.element = nullptr,
+HTMLFormControlElement::popoverTargetElement() {
+  const PopoverTargetElement no_element{.popover = nullptr,
                                         .action = PopoverTriggerAction::kNone,
                                         .attribute_name = g_null_name};
   if (!RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
@@ -342,33 +342,36 @@ HTMLFormControlElement::popoverTargetElement() const {
     return no_element;
   }
 
-  AtomicString idref;
+  Element* target_element;
   QualifiedName attribute_name = html_names::kPopovertoggletargetAttr;
   PopoverTriggerAction action = PopoverTriggerAction::kToggle;
-  if (FastHasAttribute(html_names::kPopovertoggletargetAttr)) {
-    idref = FastGetAttribute(html_names::kPopovertoggletargetAttr);
-  } else if (FastHasAttribute(html_names::kPopovershowtargetAttr)) {
-    idref = FastGetAttribute(html_names::kPopovershowtargetAttr);
-    action = PopoverTriggerAction::kShow;
-    attribute_name = html_names::kPopovershowtargetAttr;
+  target_element = GetElementAttribute(html_names::kPopovertoggletargetAttr);
+  if (!target_element) {
+    target_element = GetElementAttribute(html_names::kPopovershowtargetAttr);
+    if (target_element) {
+      action = PopoverTriggerAction::kShow;
+      attribute_name = html_names::kPopovershowtargetAttr;
+    }
   }
-  if (FastHasAttribute(html_names::kPopoverhidetargetAttr)) {
-    if (idref.IsNull()) {
-      idref = FastGetAttribute(html_names::kPopoverhidetargetAttr);
+  if (Element* hide_target =
+          GetElementAttribute(html_names::kPopoverhidetargetAttr)) {
+    if (!target_element) {
+      target_element = hide_target;
       action = PopoverTriggerAction::kHide;
       attribute_name = html_names::kPopoverhidetargetAttr;
-    } else if (FastGetAttribute(html_names::kPopoverhidetargetAttr) == idref) {
+    } else if (hide_target == target_element) {
       action = PopoverTriggerAction::kToggle;
       // Leave attribute_name as-is in this case.
     }
   }
-  if (idref.IsNull())
+  if (!target_element) {
     return no_element;
-  HTMLElement* popover_element =
-      DynamicTo<HTMLElement>(GetTreeScope().getElementById(idref));
-  if (!popover_element || !popover_element->HasPopoverAttribute())
+  }
+  auto* target_popover = DynamicTo<HTMLElement>(target_element);
+  if (!target_popover || !target_popover->HasPopoverAttribute()) {
     return no_element;
-  return PopoverTargetElement{.element = popover_element,
+  }
+  return PopoverTargetElement{.popover = target_popover,
                               .action = action,
                               .attribute_name = attribute_name};
 }
@@ -376,7 +379,9 @@ HTMLFormControlElement::popoverTargetElement() const {
 void HTMLFormControlElement::DefaultEventHandler(Event& event) {
   if (!IsDisabledFormControl()) {
     auto popover = popoverTargetElement();
-    if (popover.element) {
+    if (popover.popover) {
+      DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+          GetDocument().GetExecutionContext()));
       auto trigger_support = SupportsPopoverTriggering();
       DCHECK_NE(popover.action, PopoverTriggerAction::kNone);
       DCHECK_NE(trigger_support, PopoverTriggerSupport::kNone);
@@ -392,21 +397,24 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
       // popover and set focus to the previously focused element, then the
       // normal focus management code will reset focus to the clicked control.
       bool can_show =
-          popover.element->IsPopoverReady(PopoverTriggerAction::kShow) &&
+          popover.popover->IsPopoverReady(PopoverTriggerAction::kShow,
+                                          /*exception_state=*/nullptr) &&
           (popover.action == PopoverTriggerAction::kToggle ||
            popover.action == PopoverTriggerAction::kShow);
       bool can_hide =
-          popover.element->IsPopoverReady(PopoverTriggerAction::kHide) &&
+          popover.popover->IsPopoverReady(PopoverTriggerAction::kHide,
+                                          /*exception_state=*/nullptr) &&
           (popover.action == PopoverTriggerAction::kToggle ||
            popover.action == PopoverTriggerAction::kHide);
       if (event.type() == event_type_names::kDOMActivate &&
           (!Form() || !IsSuccessfulSubmitButton())) {
         if (can_hide) {
-          popover.element->HidePopoverInternal(
+          popover.popover->HidePopoverInternal(
               HidePopoverFocusBehavior::kFocusPreviousElement,
-              HidePopoverForcingLevel::kHideAfterAnimations);
+              HidePopoverForcingLevel::kHideAfterAnimations,
+              /*exception_state=*/nullptr);
         } else if (can_show) {
-          popover.element->InvokePopover(this);
+          popover.popover->InvokePopover(this);
         }
       }
     }

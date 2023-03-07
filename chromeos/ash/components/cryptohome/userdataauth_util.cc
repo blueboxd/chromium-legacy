@@ -39,8 +39,9 @@ cryptohome::MountError ReplyToMountError(
 template <typename ReplyType>
 CryptohomeErrorCode ReplyToCryptohomeError(
     const absl::optional<ReplyType>& reply) {
-  if (IsEmpty(reply))
+  if (IsEmpty(reply)) {
     return CRYPTOHOME_ERROR_MOUNT_FATAL;
+  }
   return reply->error();
 }
 
@@ -62,12 +63,6 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     ReplyToCryptohomeError(const absl::optional<StartAuthSessionReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
-    ReplyToCryptohomeError(const absl::optional<AuthenticateAuthSessionReply>&);
-template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
-    CryptohomeErrorCode
-    ReplyToCryptohomeError(const absl::optional<AddCredentialsReply>&);
-template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
-    CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<AuthenticateAuthFactorReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
@@ -78,9 +73,6 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<RemoveReply>&);
-template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
-    CryptohomeErrorCode
-    ReplyToCryptohomeError(const absl::optional<UpdateCredentialReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<CreatePersistentUserReply>&);
@@ -132,8 +124,9 @@ std::vector<cryptohome::KeyDefinition> GetKeyDataReplyToKeyDefinitions(
 
 int64_t AccountDiskUsageReplyToUsageSize(
     const absl::optional<GetAccountDiskUsageReply>& reply) {
-  if (IsEmpty(reply))
+  if (IsEmpty(reply)) {
     return -1;
+  }
 
   if (reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
     LOGIN_LOG(ERROR) << "GetAccountDiskUsage failed with error: "

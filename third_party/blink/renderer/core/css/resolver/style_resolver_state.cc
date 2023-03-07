@@ -77,14 +77,17 @@ StyleResolverState::StyleResolverState(
   if (UsesHighlightPseudoInheritance()) {
     DCHECK(originating_element_style_);
   } else {
-    if (!parent_style_)
+    if (!parent_style_) {
       parent_style_ = element_context_.ParentStyle();
-    if (!layout_parent_style_)
+    }
+    if (!layout_parent_style_) {
       layout_parent_style_ = element_context_.LayoutParentStyle();
+    }
   }
 
-  if (!layout_parent_style_)
+  if (!layout_parent_style_) {
     layout_parent_style_ = parent_style_;
+  }
 
   DCHECK(document.IsActive());
 }
@@ -116,38 +119,38 @@ scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
 
 void StyleResolverState::UpdateLengthConversionData() {
   css_to_length_conversion_data_ = CSSToLengthConversionData(
-      Style(), ParentStyle(), RootElementStyle(), GetDocument().GetLayoutView(),
+      style_builder_.InternalStyle(), ParentStyle(), RootElementStyle(),
+      GetDocument().GetLayoutView(),
       CSSToLengthConversionData::ContainerSizes(container_unit_context_),
-      StyleBuilder().EffectiveZoom());
+      StyleBuilder().EffectiveZoom(), length_conversion_flags_);
   element_style_resources_.UpdateLengthConversionData(
       &css_to_length_conversion_data_);
 }
 
 CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
-    const ComputedStyle* font_style) const {
-  float em = font_style->SpecifiedFontSize();
-  float rem = RootElementStyle() ? RootElementStyle()->SpecifiedFontSize() : 1;
-  CSSToLengthConversionData::FontSizes font_sizes(
-      em, rem, &font_style->GetFont(), font_style->EffectiveZoom());
+    const ComputedStyle* font_style) {
+  DCHECK(font_style);
+  const ComputedStyle* root_font_style = RootElementStyle();
+  CSSToLengthConversionData::FontSizes font_sizes(font_style, root_font_style);
   CSSToLengthConversionData::LineHeightSize line_height_size(
-      ParentStyle() ? *ParentStyle() : *Style());
+      ParentStyle() ? *ParentStyle() : *style_builder_.InternalStyle(),
+      root_font_style);
   CSSToLengthConversionData::ViewportSize viewport_size(
       GetDocument().GetLayoutView());
   CSSToLengthConversionData::ContainerSizes container_sizes(
       container_unit_context_);
 
-  return CSSToLengthConversionData(Style(), StyleBuilder().GetWritingMode(),
-                                   font_sizes, line_height_size, viewport_size,
-                                   container_sizes, 1);
+  return CSSToLengthConversionData(
+      StyleBuilder().GetWritingMode(), font_sizes, line_height_size,
+      viewport_size, container_sizes, 1, length_conversion_flags_);
 }
 
-CSSToLengthConversionData StyleResolverState::FontSizeConversionData() const {
+CSSToLengthConversionData StyleResolverState::FontSizeConversionData() {
   return UnzoomedLengthConversionData(ParentStyle());
 }
 
-CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData()
-    const {
-  return UnzoomedLengthConversionData(Style());
+CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData() {
+  return UnzoomedLengthConversionData(style_builder_.InternalStyle());
 }
 
 void StyleResolverState::SetParentStyle(
@@ -166,7 +169,7 @@ void StyleResolverState::LoadPendingResources() {
   if (pseudo_request_type_ == StyleRequest::kForComputedStyle ||
       (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
       (StyleBuilder().Display() == EDisplay::kNone &&
-       !GetElement().LayoutObjectIsNeeded(*Style())) ||
+       !GetElement().LayoutObjectIsNeeded(*style_builder_.InternalStyle())) ||
       StyleBuilder().IsEnsuredOutsideFlatTree()) {
     return;
   }
@@ -191,16 +194,19 @@ void StyleResolverState::SetZoom(float f) {
 
   StyleBuilder().SetZoom(f);
 
-  if (f != 1.f)
+  if (f != 1.f) {
     GetDocument().CountUse(WebFeature::kCascadedCSSZoomNotEqualToOne);
+  }
 
-  if (StyleBuilder().SetEffectiveZoom(parent_effective_zoom * f))
+  if (StyleBuilder().SetEffectiveZoom(parent_effective_zoom * f)) {
     font_builder_.DidChangeEffectiveZoom();
+  }
 }
 
 void StyleResolverState::SetEffectiveZoom(float f) {
-  if (StyleBuilder().SetEffectiveZoom(f))
+  if (StyleBuilder().SetEffectiveZoom(f)) {
     font_builder_.DidChangeEffectiveZoom();
+  }
 }
 
 void StyleResolverState::SetWritingMode(WritingMode new_writing_mode) {
@@ -224,8 +230,9 @@ CSSParserMode StyleResolverState::GetParserMode() const {
 }
 
 Element* StyleResolverState::GetAnimatingElement() const {
-  if (element_type_ == ElementType::kElement)
+  if (element_type_ == ElementType::kElement) {
     return &GetElement();
+  }
   DCHECK_EQ(ElementType::kPseudoElement, element_type_);
   return pseudo_element_;
 }
@@ -238,8 +245,9 @@ PseudoElement* StyleResolverState::GetPseudoElement() const {
 const CSSValue& StyleResolverState::ResolveLightDarkPair(
     const CSSValue& value) {
   if (const auto* pair = DynamicTo<CSSLightDarkValuePair>(value)) {
-    if (StyleBuilder().UsedColorScheme() == mojom::blink::ColorScheme::kLight)
+    if (StyleBuilder().UsedColorScheme() == mojom::blink::ColorScheme::kLight) {
       return pair->First();
+    }
     return pair->Second();
   }
   return value;
@@ -247,14 +255,16 @@ const CSSValue& StyleResolverState::ResolveLightDarkPair(
 
 void StyleResolverState::UpdateFont() {
   GetFontBuilder().CreateFont(StyleBuilder(), ParentStyle());
-  SetConversionFontSizes(
-      CSSToLengthConversionData::FontSizes(Style(), RootElementStyle()));
+  SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
+      style_builder_.InternalStyle(), RootElementStyle()));
   SetConversionZoom(StyleBuilder().EffectiveZoom());
 }
 
 void StyleResolverState::UpdateLineHeight() {
   css_to_length_conversion_data_.SetLineHeightSize(
-      CSSToLengthConversionData::LineHeightSize(*Style()));
+      CSSToLengthConversionData::LineHeightSize(
+          *style_builder_.InternalStyle(),
+          GetDocument().documentElement()->GetComputedStyle()));
 }
 
 }  // namespace blink

@@ -8,9 +8,9 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -18,10 +18,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/ui/login_display_host.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace pdf_extension_util {
 
@@ -166,13 +162,18 @@ void AddPdfViewerStrings(base::Value::Dict* dict) {
 }  // namespace
 
 std::string GetManifest() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  static constexpr char kExtensionName[] = "Chrome PDF Viewer";
+#else
+  static constexpr char kExtensionName[] = "Chromium PDF Viewer";
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
   std::string manifest_contents(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PDF_MANIFEST));
   DCHECK(manifest_contents.find(kNameTag) != std::string::npos);
-  base::ReplaceFirstSubstringAfterOffset(
-      &manifest_contents, 0, kNameTag,
-      ChromeContentClient::kPDFExtensionPluginName);
+  base::ReplaceFirstSubstringAfterOffset(&manifest_contents, 0, kNameTag,
+                                         kExtensionName);
 
   return manifest_contents;
 }
@@ -189,15 +190,16 @@ void AddStrings(PdfViewerContext context, base::Value::Dict* dict) {
   }
 }
 
-void AddAdditionalData(bool enable_annotations, base::Value::Dict* dict) {
+void AddAdditionalData(bool enable_printing,
+                       bool enable_annotations,
+                       base::Value::Dict* dict) {
   // NOTE: This function should not include any data used for $i18n{}
   // replacements. The i18n string resources should be added using AddStrings()
   // above instead.
   bool printing_enabled = true;
   bool annotations_enabled = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // For Chrome OS, enable printing only if we are not at OOBE.
-  printing_enabled = !ash::LoginDisplayHost::default_host();
+  printing_enabled = enable_printing;
   annotations_enabled = enable_annotations;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   dict->Set("printingEnabled", printing_enabled);

@@ -71,11 +71,11 @@ BASE_FEATURE(kBackForwardCacheTimeToLiveControl,
              "BackForwardCacheTimeToLiveControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Allows overriding the sizes of back/forward cache.
-// Sizes set via this feature's parameters take precedence over others.
-BASE_FEATURE(kBackForwardCacheSize,
-             "BackForwardCacheSize",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheSize);
+CONTENT_EXPORT extern const base::FeatureParam<int>
+    kBackForwardCacheSizeCacheSize;
+CONTENT_EXPORT extern const base::FeatureParam<int>
+    kBackForwardCacheSizeForegroundCacheSize;
 
 // Combines a flattened list and a tree of the reasons why each document cannot
 // enter the back/forward cache (might be empty if it can). The tree saves the
@@ -121,12 +121,11 @@ struct CONTENT_EXPORT BackForwardCacheCanStoreDocumentResultWithTree {
 //       evicts the outermost frame after
 //       `kDefaultTimeToLiveInBackForwardCacheInSeconds` seconds.
 // 2. In `performance_manager::policies::BFCachePolicy`:
-//    A. (To Launch) [Desktop-only] On moderate memory pressure, the number of
-//       entries in a visible tab's cache is pruned to
+//    A. [Desktop-only] On moderate memory pressure, the number of entries in a
+//       visible tab's cache is pruned to
 //       `ForegroundCacheSizeOnModeratePressure()`. The number in a non-visible
 //       tab is pruned to `BackgroundCacheSizeOnModeratePressure()`.
-//    B. (To Launch) [Desktop-only] On critical memory pressure, the cache is
-//       cleared.
+//    B. [Desktop-only] On critical memory pressure, the cache is cleared.
 class CONTENT_EXPORT BackForwardCacheImpl
     : public BackForwardCache,
       public RenderProcessHostInternalObserver,
@@ -624,11 +623,14 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
   }
 
   // Populate NotRestoredReasons mojom struct based on the existing tree of
-  // reason to report to the renderer. This will only partially contain
-  // cross-origin reasons. See |GetWebExposedNotRestoredReasonsInternal()| for
-  // more explanation.
+  // reason to report to the renderer.
   // This should be called only when the root document is outermost main
   // document.
+  // We have access to attributes of cross-origin iframes that are children of
+  // same-origin iframes. This method's purpose is to ensure that we only return
+  // the information that should be exposed based on origin. (i.e. we only
+  // include information iframes that are direct children of same-origin
+  // frames).
   blink::mojom::BackForwardCacheNotRestoredReasonsPtr
   GetWebExposedNotRestoredReasons();
 
@@ -697,12 +699,14 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
 
   // See |IsSameOrigin|
   const bool is_same_origin_;
+  // Whether or not the root document of this tree is the outermoust main
+  // frame's document.
+  const bool is_root_outermost_main_frame_;
   // The id, name and src attribute of the frame owner of this subtree's root
   // document.
-  // TODO(yuzus): Make them optional.
-  const std::string id_;
-  const std::string name_;
-  const std::string src_;
+  const absl::optional<std::string> id_;
+  const absl::optional<std::string> name_;
+  const absl::optional<std::string> src_;
   // See |GetUrl|
   const GURL url_;
 };

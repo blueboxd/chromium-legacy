@@ -7,10 +7,10 @@
 #include <Security/Security.h>
 
 #include "base/atomicops.h"
-#include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
@@ -20,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/timer/elapsed_timer.h"
 #include "crypto/mac_security_services_lock.h"
+#include "net/base/features.h"
 #include "net/base/hash_value.h"
 #include "net/base/network_notification_thread_mac.h"
 #include "net/cert/pki/cert_errors.h"
@@ -27,6 +28,7 @@
 #include "net/cert/pki/extended_key_usage.h"
 #include "net/cert/pki/parse_name.h"
 #include "net/cert/pki/parsed_certificate.h"
+#include "net/cert/pki/trust_store.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_apple.h"
@@ -1150,13 +1152,21 @@ void TrustStoreMac::SyncGetIssuersOf(const ParsedCertificate* cert,
   }
 }
 
-CertificateTrust TrustStoreMac::GetTrust(
-    const ParsedCertificate* cert,
-    base::SupportsUserData* debug_data) const {
+CertificateTrust TrustStoreMac::GetTrust(const ParsedCertificate* cert,
+                                         base::SupportsUserData* debug_data) {
   TrustStatus trust_status = trust_cache_->IsCertTrusted(cert, debug_data);
   switch (trust_status) {
     case TrustStatus::TRUSTED:
-      return CertificateTrust::ForTrustAnchorEnforcingExpiration();
+      if (base::FeatureList::IsEnabled(
+              features::kTrustStoreTrustedLeafSupport)) {
+        // Mac trust settings don't distinguish between trusted anchors and
+        // trusted leafs, return a trust record valid for both, which will
+        // depend on the context the certificate is encountered in.
+        return CertificateTrust::ForTrustAnchorOrLeaf()
+            .WithEnforceAnchorExpiry();
+      } else {
+        return CertificateTrust::ForTrustAnchor().WithEnforceAnchorExpiry();
+      }
     case TrustStatus::DISTRUSTED:
       return CertificateTrust::ForDistrusted();
     case TrustStatus::UNSPECIFIED:

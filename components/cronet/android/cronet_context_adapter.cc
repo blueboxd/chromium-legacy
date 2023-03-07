@@ -19,18 +19,17 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/cronet/android/buildflags.h"
@@ -217,9 +216,10 @@ void CronetContextAdapter::StopNetLog(JNIEnv* env,
   context_->StopNetLog();
 }
 
-bool CronetContextAdapter::SkipLogging(JNIEnv* env,
-                                       const JavaParamRef<jobject>& jcaller) {
-  return context_->skip_logging() ? JNI_TRUE : JNI_FALSE;
+bool CronetContextAdapter::GetEnableTelemetry(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
+  return context_->enable_telemetry() ? JNI_TRUE : JNI_FALSE;
 }
 
 int CronetContextAdapter::default_load_flags() const {

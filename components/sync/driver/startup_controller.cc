@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -25,6 +26,10 @@ namespace {
 constexpr base::TimeDelta kDefaultDeferredInitDelay = base::Seconds(10);
 
 base::TimeDelta GetDeferredInitDelay() {
+  if (base::FeatureList::IsEnabled(kDeferredSyncStartupCustomDelay)) {
+    return base::Seconds(kDeferredSyncStartupCustomDelayInSeconds.Get());
+  }
+
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (cmdline->HasSwitch(kSyncDeferredStartupTimeoutSeconds)) {
     int timeout = 0;
@@ -45,45 +50,12 @@ base::TimeDelta GetDeferredInitDelay() {
 StartupController::StartupController(
     base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
     base::RepeatingCallback<bool()> should_start,
-    base::RepeatingClosure start_engine)
+    base::OnceClosure start_engine)
     : get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
       should_start_callback_(std::move(should_start)),
-      start_engine_callback_(std::move(start_engine)),
-      bypass_deferred_startup_(false) {}
+      start_engine_callback_(std::move(start_engine)) {}
 
 StartupController::~StartupController() = default;
-
-void StartupController::Reset() {
-  bypass_deferred_startup_ = false;
-  start_up_time_ = base::Time();
-  start_engine_time_ = base::Time();
-  // Don't let previous timers affect us post-reset.
-  weak_factory_.InvalidateWeakPtrs();
-}
-
-void StartupController::StartUp(StartUpDeferredOption deferred_option) {
-  const bool first_start = start_up_time_.is_null();
-  if (first_start) {
-    start_up_time_ = base::Time::Now();
-  }
-
-  if (deferred_option == STARTUP_DEFERRED &&
-      get_preferred_data_types_callback_.Run().Has(SESSIONS)) {
-    if (first_start) {
-      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&StartupController::OnFallbackStartupTimerExpired,
-                         weak_factory_.GetWeakPtr()),
-          GetDeferredInitDelay());
-    }
-    return;
-  }
-
-  if (start_engine_time_.is_null()) {
-    start_engine_time_ = base::Time::Now();
-    start_engine_callback_.Run();
-  }
-}
 
 void StartupController::TryStart(bool force_immediate) {
   // Post a task instead of running the startup checks directly, to guarantee
@@ -99,13 +71,31 @@ void StartupController::TryStartImpl(bool force_immediate) {
     return;
   }
 
+  const bool first_start = start_up_time_.is_null();
+  if (first_start) {
+    start_up_time_ = base::Time::Now();
+  }
+
   // For performance reasons, defer the heavy lifting for sync init unless:
   //
   // - a datatype has requested an immediate start of sync, or
   // - sync needs to start up the engine immediately to provide control state
   //   and encryption information to the UI.
-  StartUp((force_immediate || bypass_deferred_startup_) ? STARTUP_IMMEDIATE
-                                                        : STARTUP_DEFERRED);
+  if (!force_immediate && !bypass_deferred_startup_ &&
+      get_preferred_data_types_callback_.Run().Has(SESSIONS)) {
+    if (first_start) {
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&StartupController::OnFallbackStartupTimerExpired,
+                         weak_factory_.GetWeakPtr()),
+          GetDeferredInitDelay());
+    }
+    return;
+  }
+
+  if (start_engine_callback_) {
+    std::move(start_engine_callback_).Run();
+  }
 }
 
 void StartupController::RecordTimeDeferred(DeferredInitTrigger trigger) {
@@ -117,7 +107,7 @@ void StartupController::RecordTimeDeferred(DeferredInitTrigger trigger) {
 }
 
 void StartupController::OnFallbackStartupTimerExpired() {
-  if (!start_engine_time_.is_null()) {
+  if (!start_engine_callback_) {
     return;
   }
 
@@ -130,7 +120,7 @@ void StartupController::OnFallbackStartupTimerExpired() {
 }
 
 StartupController::State StartupController::GetState() const {
-  if (!start_engine_time_.is_null()) {
+  if (!start_engine_callback_) {
     return State::STARTED;
   }
   if (!start_up_time_.is_null()) {
@@ -140,7 +130,7 @@ StartupController::State StartupController::GetState() const {
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
-  if (!start_engine_time_.is_null()) {
+  if (!start_engine_callback_) {
     return;
   }
 

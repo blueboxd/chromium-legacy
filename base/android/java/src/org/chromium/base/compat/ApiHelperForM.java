@@ -5,8 +5,6 @@
 package org.chromium.base.compat;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -27,7 +25,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.RequiresApi;
-import androidx.annotation.RequiresPermission;
 
 /**
  * Utility class to use new APIs that were added in M (API level 23). These need to exist in a
@@ -141,23 +138,6 @@ public final class ApiHelperForM {
         return event.getActionButton();
     }
 
-    /** See {@link AlarmManager#setExactAndAllowWhileIdle(int, long, PendingIntent) }.  */
-    @RequiresPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)
-    public static void setAlarmManagerExactAndAllowWhileIdle(AlarmManager alarmManager, int type,
-            long triggerAtMillis, PendingIntent pendingIntent) {
-        alarmManager.setExactAndAllowWhileIdle(type, triggerAtMillis, pendingIntent);
-    }
-
-    /** See {@link Display#getSupportedModes() }. */
-    public static Display.Mode[] getDisplaySupportedModes(Display display) {
-        return display.getSupportedModes();
-    }
-
-    /** See {@link Display#getMode() }. */
-    public static Display.Mode getDisplayMode(Display display) {
-        return display.getMode();
-    }
-
     /** See {@link Display.Mode#getPhysicalWidth() }. */
     public static int getModePhysicalWidth(Display.Mode mode) {
         return mode.getPhysicalWidth();
@@ -178,24 +158,8 @@ public final class ApiHelperForM {
         return powerManager.isDeviceIdleMode();
     }
 
-    /** See {@link Notification.Builder#setSmallIcon(Icon)}. */
-    public static Notification.Builder setSmallIcon(Notification.Builder builder, Icon icon) {
-        return builder.setSmallIcon(icon);
-    }
-
-    /** See {@link Icon#createWithResource(Context, int)}. */
-    public static Icon createIconWithResource(Context context, int resId) {
-        return Icon.createWithResource(context, resId);
-    }
-
     /** See {@link Context#getSystemService(Class<T>)}. */
     public static <T> T getSystemService(Context context, Class<T> serviceClass) {
         return context.getSystemService(serviceClass);
-    }
-
-    /** See {@link Notification.Action.Builder#Builder(Icon, CharSequence, PendingIntent)}. */
-    public static Notification.Action.Builder newNotificationActionBuilder(
-            Icon icon, CharSequence title, PendingIntent intent) {
-        return new Notification.Action.Builder(icon, title, intent);
     }
 }

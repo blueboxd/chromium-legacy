@@ -13,9 +13,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -205,22 +205,6 @@ std::vector<api::passwords_private::CompromiseType> GetCompromiseType(
   return types;
 }
 
-bool IsCredentialMuted(const CredentialUIEntry& entry) {
-  if (!entry.IsLeaked() && !entry.IsPhished())
-    return false;
-
-  bool is_muted = true;
-  if (entry.IsLeaked()) {
-    is_muted &=
-        entry.password_issues.at(InsecureType::kLeaked).is_muted.value();
-  }
-  if (entry.IsPhished()) {
-    is_muted &=
-        entry.password_issues.at(InsecureType::kPhished).is_muted.value();
-  }
-  return is_muted;
-}
-
 api::passwords_private::CompromisedInfo CreateCompromiseInfo(
     const CredentialUIEntry& credential) {
   api::passwords_private::CompromisedInfo compromise_info;
@@ -230,7 +214,7 @@ api::passwords_private::CompromisedInfo CreateCompromiseInfo(
         credential.GetLastLeakedOrPhishedTime().ToJsTimeIgnoringNull();
     compromise_info.elapsed_time_since_compromise =
         FormatElapsedTime(credential.GetLastLeakedOrPhishedTime());
-    compromise_info.is_muted = IsCredentialMuted(credential);
+    compromise_info.is_muted = credential.IsMuted();
   }
   compromise_info.compromise_types = GetCompromiseType(credential);
   return compromise_info;
@@ -279,6 +263,28 @@ PasswordCheckDelegate::GetInsecureCredentials() {
   }
 
   return insecure_credentials;
+}
+
+std::vector<api::passwords_private::PasswordUiEntryList>
+PasswordCheckDelegate::GetCredentialsWithReusedPassword() {
+  // Group credentials by password value.
+  std::map<std::u16string, std::vector<api::passwords_private::PasswordUiEntry>>
+      password_to_credentials;
+  for (auto& credential :
+       insecure_credentials_manager_.GetInsecureCredentialEntries()) {
+    if (credential.IsReused()) {
+      password_to_credentials[credential.password].push_back(
+          ConstructInsecureCredentialUiEntry(credential));
+    }
+  }
+  std::vector<api::passwords_private::PasswordUiEntryList> result;
+  result.reserve(password_to_credentials.size());
+  for (auto& pair : password_to_credentials) {
+    api::passwords_private::PasswordUiEntryList api_result;
+    api_result.entries = std::move(pair.second);
+    result.push_back(std::move(api_result));
+  }
+  return result;
 }
 
 bool PasswordCheckDelegate::MuteInsecureCredential(
@@ -338,7 +344,12 @@ void PasswordCheckDelegate::StartPasswordAnalyses(
   insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
       &PasswordCheckDelegate::RecordAndNotifyAboutCompletedWeakPasswordCheck,
       weak_ptr_factory_.GetWeakPtr()));
-
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign)) {
+    insecure_credentials_manager_.StartReuseCheck(
+        base::BindOnce(&PasswordCheckDelegate::NotifyPasswordCheckStatusChanged,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
   auto progress = base::MakeRefCounted<PasswordCheckProgress>();
   for (const auto& password : saved_passwords_presenter_->GetSavedPasswords())
     progress->IncrementCounts(password);

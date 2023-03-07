@@ -998,7 +998,7 @@ policies:
   997: DeviceAutofillSAMLUsername
   998: EnterpriseProfileCreationKeepBrowsingData
   999: KerberosDomainAutocomplete
-  1000: KerberosDefaultConfiguration
+  1000: KerberosCustomPrefilledConfig
   1001: UnmanagedDeviceSignalsConsentFlowEnabled
   1002: PersistentQuotaEnabled
   1003: DeviceLoginScreenContextAwareAccessSignalsAllowlist
@@ -1046,11 +1046,25 @@ policies:
   1045: LacrosSelection
   1046: UseMojoVideoDecoderForPepperAllowed
   1047: PPAPISharedImagesSwapChainAllowed
-  1048: ''
-  1049: ''
-  1050: ''
-  1051: ''
+  1048: PrivacySandboxPromptEnabled
+  1049: PrivacySandboxAdTopicsEnabled
+  1050: PrivacySandboxSiteEnabledAdsEnabled
+  1051: PrivacySandboxAdMeasurementEnabled
   1052: AppStoreRatingEnabled
+  1053: KerberosUseCustomPrefilledConfig
+  1054: DeviceHindiInscriptLayoutEnabled
+  1055: DeviceLoginScreenExtensionManifestV2Availability
+  1056: KioskTroubleshootingToolsEnabled
+  1057: ForceEnablePepperVideoDecoderDevAPI
+  1058: DomainReliabilityAllowed
+  1059: ScreensaverEnabled
+  1060: ScreensaverIdleTimeoutSeconds
+  1061: ScreensaverImageDisplayIntervalSeconds
+  1062: ScreensaverImages
+  1063: DeviceScreensaverEnabled
+  1064: DeviceScreensaverIdleTimeoutSeconds
+  1065: DeviceScreensaverImageDisplayIntervalSeconds
+  1066: DeviceScreensaverImages
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1096,3 +1110,5 @@ atomic_groups:
   42: WindowPlacementSettings
   43: LocalFontsSettings
   44: BrowserIdle
+  45: PrivacySandbox
+  46: KerberosPrefilledConfig

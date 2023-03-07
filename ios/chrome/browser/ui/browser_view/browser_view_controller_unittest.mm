@@ -28,7 +28,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
@@ -41,7 +41,6 @@
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
-#import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
@@ -213,10 +212,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
     fake_prerender_service_ = std::make_unique<FakePrerenderService>();
 
-    download_manager_coordinator_ = [[DownloadManagerCoordinator alloc]
-        initWithBaseViewController:[[UIViewController alloc] init]
-                           browser:browser_.get()];
-
     popup_menu_coordinator_ =
         [[PopupMenuCoordinator alloc] initWithBrowser:browser_.get()];
     [popup_menu_coordinator_ start];
@@ -245,8 +240,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     side_swipe_controller_ =
         [[SideSwipeController alloc] initWithBrowser:browser_.get()];
 
-    bookmark_interaction_controller_ =
-        [[BookmarkInteractionController alloc] initWithBrowser:browser_.get()];
+    bookmarks_coordinator_ =
+        [[BookmarksCoordinator alloc] initWithBrowser:browser_.get()];
 
     fullscreen_controller_ = FullscreenController::FromBrowser(browser_.get());
 
@@ -254,14 +249,12 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     dependencies.prerenderService = fake_prerender_service_.get();
     dependencies.bubblePresenter = bubble_presenter_;
     dependencies.popupMenuCoordinator = popup_menu_coordinator_;
-    dependencies.downloadManagerCoordinator = download_manager_coordinator_;
     dependencies.primaryToolbarCoordinator = primary_toolbar_coordinator_;
     dependencies.secondaryToolbarCoordinator = secondary_toolbar_coordinator_;
     dependencies.tabStripCoordinator = tab_strip_coordinator_;
     dependencies.legacyTabStripCoordinator = legacy_tab_strip_coordinator_;
     dependencies.sideSwipeController = side_swipe_controller_;
-    dependencies.bookmarkInteractionController =
-        bookmark_interaction_controller_;
+    dependencies.bookmarksCoordinator = bookmarks_coordinator_;
     dependencies.fullscreenController = fullscreen_controller_;
 
     bvc_ = [[BrowserViewController alloc] initWithBrowser:browser_.get()
@@ -277,8 +270,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   }
 
   void TearDown() override {
-    [download_manager_coordinator_ stop];
-
     [[bvc_ view] removeFromSuperview];
     [bvc_ shutdown];
 
@@ -335,14 +326,13 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   UIWindow* window_;
   SceneState* scene_state_;
   PopupMenuCoordinator* popup_menu_coordinator_;
-  DownloadManagerCoordinator* download_manager_coordinator_;
   ToolbarCoordinatorAdaptor* toolbar_coordinator_adaptor_;
   PrimaryToolbarCoordinator* primary_toolbar_coordinator_;
   SecondaryToolbarCoordinator* secondary_toolbar_coordinator_;
   TabStripCoordinator* tab_strip_coordinator_;
   TabStripLegacyCoordinator* legacy_tab_strip_coordinator_;
   SideSwipeController* side_swipe_controller_;
-  BookmarkInteractionController* bookmark_interaction_controller_;
+  BookmarksCoordinator* bookmarks_coordinator_;
   FullscreenController* fullscreen_controller_;
 };
 

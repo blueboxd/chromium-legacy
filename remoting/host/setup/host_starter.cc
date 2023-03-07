@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -202,8 +202,9 @@ void HostStarter::StartHostProcess() {
 }
 
 void HostStarter::OnLocalHostStopped() {
-  if (host_id_.empty())
+  if (host_id_.empty()) {
     host_id_ = base::GenerateGUID();
+  }
   key_pair_ = RsaKeyPair::Generate();
 
   std::string host_client_id;

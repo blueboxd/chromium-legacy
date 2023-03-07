@@ -234,9 +234,7 @@ LikelyFormFilling SendFillInformationToRenderer(
     wait_for_username_reason = WaitForUsernameReason::kInsecureOrigin;
   } else if (IsFillOnAccountSelectFeatureEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kFoasFeature;
-  } else if (observed_form.accepts_webauthn_credentials &&
-             client->GetWebAuthnCredentialsDelegateForDriver(driver)
-                 ->IsWebAuthnAutofillEnabled()) {
+  } else if (observed_form.accepts_webauthn_credentials) {
     wait_for_username_reason =
         WaitForUsernameReason::kAcceptsWebAuthnCredentials;
   }
@@ -286,9 +284,7 @@ PasswordFormFillData CreatePasswordFormFillData(
   PasswordFormFillData result;
 
   result.form_renderer_id = form_on_page.form_data.unique_renderer_id;
-  result.name = form_on_page.form_data.name;
   result.url = form_on_page.url;
-  result.action = form_on_page.action;
   result.uses_account_store = preferred_match.IsUsingAccountStore();
   result.wait_for_username = wait_for_username;
 

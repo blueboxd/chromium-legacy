@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/test_future.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -123,13 +124,13 @@ class ManagedConfigurationAPITestBase : public MixinBasedInProcessBrowserTest {
               embedded_test_server()->GetURL(conf_url).spec());
     entry.Set(ManagedConfigurationAPI::kManagedConfigurationHashKey, conf_hash);
     trusted_apps.Append(std::move(entry));
-    profile()->GetPrefs()->Set(prefs::kManagedConfigurationPerOrigin,
-                               base::Value(std::move(trusted_apps)));
+    profile()->GetPrefs()->SetList(prefs::kManagedConfigurationPerOrigin,
+                                   std::move(trusted_apps));
   }
 
   void ClearConfiguration() {
-    profile()->GetPrefs()->Set(prefs::kManagedConfigurationPerOrigin,
-                               base::ListValue());
+    profile()->GetPrefs()->SetList(prefs::kManagedConfigurationPerOrigin,
+                                   base::Value::List());
   }
 
   absl::optional<base::Value::Dict> GetValues(
@@ -203,6 +204,9 @@ IN_PROC_BROWSER_TEST_F(ManagedConfigurationAPITest,
 
 IN_PROC_BROWSER_TEST_F(ManagedConfigurationAPITest,
                        DataIsDownloadedAndPersists) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-2447f309-0b17-4b53-8879-50ca6eeebc3f");
+
   // Intentionally do not handle requests so that data has to be read from
   // disk.
   EnableTestServer({});

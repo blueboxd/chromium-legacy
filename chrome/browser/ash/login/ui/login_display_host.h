@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/public/cpp/login_accelerators.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "chrome/browser/ash/customization/customization_document.h"
@@ -152,6 +152,9 @@ class LoginDisplayHost {
   // Show the gaia dialog. If available, `account` is preloaded in the gaia
   // dialog.
   virtual void ShowGaiaDialog(const AccountId& prefilled_account) = 0;
+
+  // Whether the gaia dialog is visible.
+  virtual bool IsGaiaDialogVisibleForTesting() = 0;
 
   // Show allowlist check failed error. Happens after user completes online
   // signin but allowlist check fails.

@@ -7,11 +7,12 @@
 #include <cstring>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
@@ -1195,8 +1196,8 @@ void PepperTCPSocketMessageFilter::OpenFirewallHole(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pepper_socket_utils::OpenTCPFirewallHole(
       bind_output_ip_endpoint_,
-      base::BindOnce(&PepperTCPSocketMessageFilter::OnFirewallHoleOpened, this,
-                     context));
+      base::BindOnce(&PepperTCPSocketMessageFilter::OnFirewallHoleOpened,
+                     weak_ptr_factory_.GetWeakPtr(), context));
 }
 
 void PepperTCPSocketMessageFilter::OnFirewallHoleOpened(

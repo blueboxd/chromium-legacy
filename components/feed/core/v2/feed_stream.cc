@@ -10,12 +10,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -971,6 +971,16 @@ bool FeedStream::ShouldForceSignedOutFeedQueryRequest(
          base::TimeTicks::Now() < signed_out_for_you_refreshes_until_;
 }
 
+feedwire::ChromeSignInStatus::SignInStatus FeedStream::GetSignInStatus() const {
+  if (IsSyncOn()) {
+    return feedwire::ChromeSignInStatus::SYNCED;
+  }
+  if (IsSignedIn()) {
+    return feedwire::ChromeSignInStatus::SIGNED_IN_WITHOUT_SYNC;
+  }
+  return feedwire::ChromeSignInStatus::NOT_SIGNED_IN;
+}
+
 RequestMetadata FeedStream::GetCommonRequestMetadata(
     bool signed_in_request,
     bool allow_expired_session_id) const {
@@ -1036,6 +1046,8 @@ RequestMetadata FeedStream::GetRequestMetadata(const StreamType& stream_type,
         stream_metadata->last_server_response_time_millis(),
         stream_metadata->last_fetch_time_millis());
   }
+  // Set sign in status for request metadata
+  result.sign_in_status = GetSignInStatus();
 
   return result;
 }
@@ -1189,8 +1201,6 @@ void FeedStream::IncrementFollowedFromWebPageMenuCount() {
 }
 
 void FeedStream::ClearAll() {
-  metrics_reporter_->OnClearAll(
-      base::Time::Now() - GetLastFetchTime(StreamType(StreamKind::kForYou)));
   clear_all_in_progress_ = true;
   task_queue_.AddTask(FROM_HERE, std::make_unique<ClearAllTask>(this));
 }

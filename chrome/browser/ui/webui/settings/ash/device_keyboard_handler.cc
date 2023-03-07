@@ -7,11 +7,12 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 
 namespace {
@@ -28,22 +29,22 @@ KeyboardsStateResult GetKeyboardsState() {
   for (const ui::InputDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     switch (ui::EventRewriterChromeOS::GetDeviceType(keyboard)) {
-      case ui::EventRewriterChromeOS::kDeviceInternalKeyboard:
+      case ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard:
         result.has_launcher_key = true;
         break;
-      case ui::EventRewriterChromeOS::kDeviceExternalAppleKeyboard:
+      case ui::KeyboardCapability::DeviceType::kDeviceExternalAppleKeyboard:
         result.has_external_apple_keyboard = true;
         break;
-      case ui::EventRewriterChromeOS::kDeviceExternalChromeOsKeyboard:
+      case ui::KeyboardCapability::DeviceType::kDeviceExternalChromeOsKeyboard:
         result.has_external_chromeos_keyboard = true;
         break;
-      case ui::EventRewriterChromeOS::kDeviceExternalGenericKeyboard:
-      case ui::EventRewriterChromeOS::kDeviceExternalUnknown:
+      case ui::KeyboardCapability::DeviceType::kDeviceExternalGenericKeyboard:
+      case ui::KeyboardCapability::DeviceType::kDeviceExternalUnknown:
         result.has_external_generic_keyboard = true;
         break;
-      case ui::EventRewriterChromeOS::kDeviceHotrodRemote:
-      case ui::EventRewriterChromeOS::kDeviceVirtualCoreKeyboard:
-      case ui::EventRewriterChromeOS::kDeviceUnknown:
+      case ui::KeyboardCapability::DeviceType::kDeviceHotrodRemote:
+      case ui::KeyboardCapability::DeviceType::kDeviceVirtualCoreKeyboard:
+      case ui::KeyboardCapability::DeviceType::kDeviceUnknown:
         break;
     }
   }

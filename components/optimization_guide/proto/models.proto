@@ -175,6 +175,12 @@ enum OptimizationTarget {
   OPTIMIZATION_TARGET_OMNIBOX_ON_DEVICE_TAIL_SUGGEST = 24;
   // Target for client side phishing
   OPTIMIZATION_TARGET_CLIENT_SIDE_PHISHING = 25;
+  // Target for Omnibox URL suggestion scoring.
+  OPTIMIZATION_TARGET_OMNIBOX_URL_SCORING = 26;
+  // Target for segmentation: Segment of users who switched devices.
+  OPTIMIZATION_TARGET_SEGMENTATION_DEVICE_SWITCHER = 27;
+  // Target for segmentation: Adaptive toolbar button.
+  OPTIMIZATION_TARGET_SEGMENTATION_ADAPTIVE_TOOLBAR = 28;
 }
 
 // The model engine versions that can be used to do model inference.
@@ -209,7 +215,7 @@ enum ModelEngineVersion {
   MODEL_ENGINE_VERSION_TFLITE_2_10 = 9;
   // A model using only operations that are supported by TensorflowLite 2.11.0.
   MODEL_ENGINE_VERSION_TFLITE_2_11 = 10;
-  // A model using only operations that are supported by TensorflowLite 2.11.0.
+  // A model using only operations that are supported by TensorflowLite 2.12.0.
   MODEL_ENGINE_VERSION_TFLITE_2_12 = 11;
 }
 

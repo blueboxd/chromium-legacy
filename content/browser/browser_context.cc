@@ -15,31 +15,30 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/notreached.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/download/public/common/in_progress_download_manager.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
+#include "content/browser/child_process_host_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/site_info.h"
 #include "content/browser/storage_partition_impl_map.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -149,7 +148,7 @@ StoragePartition* BrowserContext::GetStoragePartitionForUrl(
   return GetStoragePartition(storage_partition_config, can_create);
 }
 
-void BrowserContext::ForEachStoragePartition(
+void BrowserContext::ForEachLoadedStoragePartition(
     StoragePartitionCallback callback) {
   StoragePartitionImplMap* partition_map = impl()->storage_partition_map();
   if (!partition_map)
@@ -158,16 +157,7 @@ void BrowserContext::ForEachStoragePartition(
   partition_map->ForEach(std::move(callback));
 }
 
-void BrowserContext::DisposeStoragePartition(
-    StoragePartition* storage_partition) {
-  StoragePartitionImplMap* partition_map = impl()->storage_partition_map();
-  if (!partition_map)
-    return;
-
-  partition_map->DisposeInMemory(storage_partition);
-}
-
-size_t BrowserContext::GetStoragePartitionCount() {
+size_t BrowserContext::GetLoadedStoragePartitionCount() {
   StoragePartitionImplMap* partition_map = impl()->storage_partition_map();
   return partition_map ? partition_map->size() : 0;
 }

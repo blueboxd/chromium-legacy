@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_FAKE_AFFILIATION_SERVICE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_FAKE_AFFILIATION_SERVICE_H_
 
-#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/password_form.h"
 
 namespace password_manager {
 
@@ -31,11 +31,6 @@ class FakeAffiliationService : public AffiliationService {
   void TrimCacheForFacetURI(const FacetURI& facet_uri) override;
   void TrimUnusedCache(std::vector<FacetURI> facet_uris) override;
   void GetAllGroups(GroupsCallback callback) const override;
-
-  void InjectAffiliationAndBrandingInformation(
-      std::vector<std::unique_ptr<PasswordForm>> forms,
-      AffiliationService::StrategyOnCacheMiss strategy_on_cache_miss,
-      PasswordFormsOrErrorCallback result_callback) override;
 };
 
 }  // namespace password_manager

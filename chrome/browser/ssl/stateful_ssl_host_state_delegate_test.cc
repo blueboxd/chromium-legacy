@@ -7,9 +7,9 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
@@ -959,7 +959,8 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
   const extensions::Extension* app =
       LoadAndLaunchApp(test_data_dir_.AppendASCII("platform_apps")
                            .AppendASCII("web_view")
-                           .AppendASCII("simple"));
+                           .AppendASCII("simple"),
+                       /*uses_guest_view=*/true);
   ASSERT_TRUE(app);
   auto app_windows =
       extensions::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(
@@ -983,10 +984,17 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
                                net::ERR_CERT_DATE_INVALID, storage_partition));
   EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost, storage_partition));
 
+  // Test that the exception is not carried over to the guest's embedder.
+  EXPECT_EQ(
+      content::SSLHostStateDelegate::DENIED,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                         tab->GetPrimaryMainFrame()->GetStoragePartition()));
+  EXPECT_FALSE(state->HasAllowException(
+      kWWWGoogleHost, tab->GetPrimaryMainFrame()->GetStoragePartition()));
+
   // Navigate to a non-app page and test that the exception is not carried over.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "/extensions/isolated_apps/non_app/main.html")));
+      browser(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
       state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
@@ -1010,7 +1018,8 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
   const extensions::Extension* app =
       LoadAndLaunchApp(test_data_dir_.AppendASCII("platform_apps")
                            .AppendASCII("web_view")
-                           .AppendASCII("simple"));
+                           .AppendASCII("simple"),
+                       /*uses_guest_view=*/true);
   ASSERT_TRUE(app);
   auto app_windows =
       extensions::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(
@@ -1030,10 +1039,15 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
   EXPECT_TRUE(state->IsHttpAllowedForHost(kWWWGoogleHost, storage_partition));
   EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost, storage_partition));
 
+  // Test that the exception is not carried over to the guest's embedder.
+  EXPECT_FALSE(state->IsHttpAllowedForHost(
+      kWWWGoogleHost, tab->GetPrimaryMainFrame()->GetStoragePartition()));
+  EXPECT_FALSE(state->HasAllowException(
+      kWWWGoogleHost, tab->GetPrimaryMainFrame()->GetStoragePartition()));
+
   // Navigate to a non-app page and test that the exception is not carried over.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "/extensions/isolated_apps/non_app/main.html")));
+      browser(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_FALSE(state->IsHttpAllowedForHost(
       kWWWGoogleHost, tab->GetPrimaryMainFrame()->GetStoragePartition()));
   EXPECT_FALSE(state->HasAllowException(

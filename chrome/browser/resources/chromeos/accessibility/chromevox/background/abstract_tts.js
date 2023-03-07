@@ -9,8 +9,9 @@
 
 import {LocalStorage} from '../../common/local_storage.js';
 import {Msgs} from '../common/msgs.js';
-import {TtsInterface} from '../common/tts_interface.js';
 import * as ttsTypes from '../common/tts_types.js';
+
+import {TtsInterface} from './tts_interface.js';
 
 /**
  * @typedef {{
@@ -299,9 +300,7 @@ export class AbstractTts {
         ' ';
   }
 
-  /**
-   * @override
-   */
+  /** @override */
   getDefaultProperty(property) {
     return this.propertyDefault[property];
   }
@@ -309,13 +308,6 @@ export class AbstractTts {
   /** @override */
   toggleSpeechOnOrOff() {
     return true;
-  }
-
-  /** @override */
-  resetTextToSpeechSettings() {
-    for (const [key, value] of Object.entries(this.propertyDefault)) {
-      this.ttsProperties[key] = value;
-    }
   }
 }
 

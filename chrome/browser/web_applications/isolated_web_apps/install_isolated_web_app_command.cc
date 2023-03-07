@@ -9,11 +9,11 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
@@ -35,6 +35,7 @@
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -74,8 +75,8 @@ InstallIsolatedWebAppCommand::InstallIsolatedWebAppCommand(
                                            InstallIsolatedWebAppCommandError>)>
         callback)
     : WebAppCommandTemplate<AppLock>("InstallIsolatedWebAppCommand"),
-      lock_description_(std::make_unique<AppLockDescription>(
-          base::flat_set<AppId>{isolation_info.app_id()})),
+      lock_description_(
+          std::make_unique<AppLockDescription>(isolation_info.app_id())),
       isolation_info_(isolation_info),
       isolation_data_(isolation_data),
       web_contents_(std::move(web_contents)),
@@ -104,7 +105,7 @@ void InstallIsolatedWebAppCommand::SetDataRetrieverForTesting(
 
 InstallIsolatedWebAppCommand::~InstallIsolatedWebAppCommand() = default;
 
-LockDescription& InstallIsolatedWebAppCommand::lock_description() const {
+const LockDescription& InstallIsolatedWebAppCommand::lock_description() const {
   return *lock_description_;
 }
 
@@ -218,6 +219,12 @@ InstallIsolatedWebAppCommand::CreateInstallInfoFromManifest(
                       ", origin: ", origin.Serialize()})};
   }
 
+  if (info.title.empty()) {
+    return base::unexpected(base::StrCat(
+        {"App manifest must have either 'name' or 'short_name'. manifest_url: ",
+         manifest_url.possibly_invalid_spec()}));
+  }
+
   return info;
 }
 
@@ -225,18 +232,19 @@ void InstallIsolatedWebAppCommand::OnCheckInstallabilityAndRetrieveManifest(
     blink::mojom::ManifestPtr opt_manifest,
     const GURL& manifest_url,
     bool valid_manifest_for_web_app,
-    bool is_installable) {
+    webapps::InstallableStatusCode error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!is_installable) {
-    ReportFailure("App is not installable.");
+  if (error_code != webapps::InstallableStatusCode::NO_ERROR_DETECTED) {
+    ReportFailure(base::StrCat({"App is not installable: ",
+                                webapps::GetErrorMessage(error_code), "."}));
     return;
   }
 
   // See |WebAppDataRetriever::CheckInstallabilityCallback| documentation for
   // details.
   DCHECK(valid_manifest_for_web_app)
-      << "must be true when |is_installable| is true.";
+      << "must be true when no error is detected.";
 
   if (!opt_manifest) {
     ReportFailure("Manifest is null.");

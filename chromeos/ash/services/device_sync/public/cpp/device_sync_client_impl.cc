@@ -10,7 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/base64url.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/multidevice/expiring_remote_device_cache.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
@@ -113,6 +113,16 @@ void DeviceSyncClientImpl::ForceEnrollmentNow(
 void DeviceSyncClientImpl::ForceSyncNow(
     mojom::DeviceSync::ForceSyncNowCallback callback) {
   device_sync_->ForceSyncNow(std::move(callback));
+}
+
+void DeviceSyncClientImpl::GetBetterTogetherMetadataStatus(
+    mojom::DeviceSync::GetBetterTogetherMetadataStatusCallback callback) {
+  device_sync_->GetBetterTogetherMetadataStatus(std::move(callback));
+}
+
+void DeviceSyncClientImpl::GetGroupPrivateKeyStatus(
+    mojom::DeviceSync::GetGroupPrivateKeyStatusCallback callback) {
+  device_sync_->GetGroupPrivateKeyStatus(std::move(callback));
 }
 
 multidevice::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {

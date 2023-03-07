@@ -11,6 +11,7 @@
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/network_service_instance.h"
@@ -18,7 +19,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -103,10 +103,10 @@ void PrefetchNetworkContext::CreateIsolatedURLLoaderFactory() {
       prefetch_service_->GetPrefetchServiceDelegate();
 
   auto context_params = network::mojom::NetworkContextParams::New();
-  context_params->user_agent = content::GetReducedUserAgent(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMobileUserAgent),
-      delegate ? delegate->GetMajorVersionNumber() : "");
+  context_params->user_agent =
+      GetReducedUserAgent(base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              switches::kUseMobileUserAgent),
+                          delegate ? delegate->GetMajorVersionNumber() : "");
   context_params->cert_verifier_params = GetCertVerifierParams(
       cert_verifier::mojom::CertVerifierCreationParams::New());
   context_params->cors_exempt_header_list = {kCorsExemptPurposeHeaderName};

@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -130,7 +130,8 @@ RemoveUninstalledAppsTask::RemoveUninstalledAppsTask(
     UpdaterScope scope)
     : config_(config),
       persisted_data_(
-          base::MakeRefCounted<PersistedData>(config_->GetPrefService())),
+          base::MakeRefCounted<PersistedData>(scope,
+                                              config_->GetPrefService())),
       update_client_(update_client::UpdateClientFactory(config_)),
       scope_(scope) {}
 

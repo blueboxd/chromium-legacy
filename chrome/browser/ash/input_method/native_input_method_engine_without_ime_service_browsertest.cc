@@ -49,6 +49,7 @@
 
 namespace ash {
 namespace input_method {
+
 namespace {
 
 constexpr char kEmojiData[] = "happy,😀;😃;😄";
@@ -62,7 +63,7 @@ class TestObserver : public StubInputMethodEngineObserver {
 
   void OnKeyEvent(const std::string& engine_id,
                   const ui::KeyEvent& event,
-                  ui::TextInputMethod::KeyEventDoneCallback callback) override {
+                  TextInputMethod::KeyEventDoneCallback callback) override {
     std::move(callback).Run(ui::ime::KeyEventHandledState::kNotHandled);
   }
   void OnInputMethodOptionsChanged(const std::string& engine_id) override {
@@ -99,7 +100,7 @@ class TestPersonalDataManagerObserver
 
 class KeyProcessingWaiter {
  public:
-  ui::TextInputMethod::KeyEventDoneCallback CreateCallback() {
+  TextInputMethod::KeyEventDoneCallback CreateCallback() {
     return base::BindOnce(&KeyProcessingWaiter::OnKeyEventDone,
                           base::Unretained(this));
   }
@@ -144,8 +145,8 @@ class NativeInputMethodEngineWithoutImeServiceTest
     // so just avoid it outright instead of relying on implicit luck.
     engine_ =
         NativeInputMethodEngine::CreateForTesting(/*use_ime_service=*/false);
-    ui::IMEBridge::Get()->SetInputContextHandler(&input_method_);
-    ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
+    IMEBridge::Get()->SetInputContextHandler(&input_method_);
+    IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
 
     auto observer = std::make_unique<TestObserver>();
     observer_ = observer.get();
@@ -153,7 +154,7 @@ class NativeInputMethodEngineWithoutImeServiceTest
     profile_ = browser()->profile();
     prefs_ = profile_->GetPrefs();
     prefs_->Set(::prefs::kLanguageInputMethodSpecificSettings,
-                base::DictionaryValue());
+                base::Value(base::Value::Type::DICT));
     engine_->Initialize(std::move(observer), /*extension_id=*/"", profile_);
     engine_->get_assistive_suggester_for_testing()
         ->get_emoji_suggester_for_testing()
@@ -171,8 +172,8 @@ class NativeInputMethodEngineWithoutImeServiceTest
     // observes ChromeKeyboardControllerClient, which is tied to the browser
     // lifetime.
     engine_.reset();
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
-    ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
+    IMEBridge::Get()->SetInputContextHandler(nullptr);
+    IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
@@ -235,7 +236,7 @@ class NativeInputMethodEngineWithoutImeServiceTest
   TestObserver* observer_;
 
  private:
-  ui::InputMethodAsh input_method_;
+  InputMethodAsh input_method_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -283,8 +284,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
                        DoesntSuggestWhenTheCursorIsWithinGrammarError) {
-  ui::MockIMEInputContextHandler mock_ime_input_context_handler;
-  ui::IMEBridge::Get()->SetInputContextHandler(&mock_ime_input_context_handler);
+  MockIMEInputContextHandler mock_ime_input_context_handler;
+  IMEBridge::Get()->SetInputContextHandler(&mock_ime_input_context_handler);
 
   base::HistogramTester histogram_tester;
 
@@ -316,8 +317,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
                        SuggestsWhenTheCursorIsOutsideGrammarError) {
-  ui::MockIMEInputContextHandler mock_ime_input_context_handler;
-  ui::IMEBridge::Get()->SetInputContextHandler(&mock_ime_input_context_handler);
+  MockIMEInputContextHandler mock_ime_input_context_handler;
+  IMEBridge::Get()->SetInputContextHandler(&mock_ime_input_context_handler);
 
   mock_ime_input_context_handler.AddGrammarFragments(
       {ui::GrammarFragment(gfx::Range(0, 5), "test")});
@@ -596,22 +597,27 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
                        FiresOnInputMethodOptionsChangedEvent) {
-  base::DictionaryValue settings;
-
-  // Add key will trigger event.
-  base::Value pinyin1(base::Value::Type::DICTIONARY);
-  pinyin1.SetBoolKey("foo", true);
-  settings.SetPath("pinyin", std::move(pinyin1));
-  prefs_->Set(::prefs::kLanguageInputMethodSpecificSettings, settings);
-  EXPECT_EQ(observer_->changed_engine_id(), "pinyin");
-  observer_->ClearChangedEngineId();
-
-  // Change key will trigger event.
-  base::Value pinyin2(base::Value::Type::DICTIONARY);
-  pinyin2.SetBoolKey("foo", false);
-  settings.SetPath("pinyin", std::move(pinyin2));
-  prefs_->Set(::prefs::kLanguageInputMethodSpecificSettings, settings);
-  EXPECT_EQ(observer_->changed_engine_id(), "pinyin");
+  {
+    base::Value::Dict settings;
+    // Add key will trigger event.
+    base::Value::Dict pinyin1;
+    pinyin1.Set("foo", true);
+    settings.SetByDottedPath("pinyin", std::move(pinyin1));
+    prefs_->Set(::prefs::kLanguageInputMethodSpecificSettings,
+                base::Value(std::move(settings)));
+    EXPECT_EQ(observer_->changed_engine_id(), "pinyin");
+    observer_->ClearChangedEngineId();
+  }
+  {
+    base::Value::Dict settings;
+    // Change key will trigger event.
+    base::Value::Dict pinyin2;
+    pinyin2.Set("foo", false);
+    settings.SetByDottedPath("pinyin", std::move(pinyin2));
+    prefs_->Set(::prefs::kLanguageInputMethodSpecificSettings,
+                base::Value(std::move(settings)));
+    EXPECT_EQ(observer_->changed_engine_id(), "pinyin");
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
@@ -671,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
   engine_->OnAutocorrect(u"typed", u"corrected", 0);
 
   auto* controller =
-      ((AssistiveWindowController*)(ui::IMEBridge::Get()
+      ((AssistiveWindowController*)(IMEBridge::Get()
                                         ->GetAssistiveWindowHandler()));
 
   EXPECT_FALSE(controller->GetUndoWindowForTesting());
@@ -697,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
       corrected_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(corrected_text);
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -717,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
 
   helper.WaitForSurroundingTextChanged(typed_text);
 
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -738,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
       corrected_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(corrected_text);
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -757,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
 
   helper.WaitForSurroundingTextChanged(typed_text);
 
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -779,7 +785,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
       corrected_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(corrected_text);
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -844,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
   // enabled via above ChangeInputMethod step) is effectively ignored.
   // TODO(crbug/1197005): Migrate to unit tests to avoid all such weirdness.
   engine_->Enable(input_method_id);
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
+  IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
 
   TextInputTestHelper helper(GetBrowserInputMethod());
   SetUpTextInput(helper);
@@ -854,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
       corrected_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(corrected_text);
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -941,7 +947,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
   // enabled via above ChangeInputMethod step) is effectively ignored.
   // TODO(crbug/1197005): Migrate to unit tests to avoid all such weirdness.
   engine_->Enable(input_method_id);
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
+  IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
 
   TextInputTestHelper helper(GetBrowserInputMethod());
   SetUpTextInput(helper);
@@ -951,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineWithoutImeServiceTest,
       corrected_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(corrected_text);
-  EXPECT_EQ(ui::IMEBridge::Get()
+  EXPECT_EQ(IMEBridge::Get()
                 ->GetInputContextHandler()
                 ->GetSurroundingTextInfo()
                 .surrounding_text,
@@ -1033,7 +1039,7 @@ class NativeInputMethodEngineWithoutImeServiceAssistiveOff
     // so just avoid it outright instead of relying on implicit luck.
     engine_ =
         NativeInputMethodEngine::CreateForTesting(/*use_ime_service=*/false);
-    ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
+    IMEBridge::Get()->SetCurrentEngineHandler(engine_.get());
 
     auto observer = std::make_unique<TestObserver>();
     observer_ = observer.get();
@@ -1048,8 +1054,8 @@ class NativeInputMethodEngineWithoutImeServiceAssistiveOff
     // observes ChromeKeyboardControllerClient, which is tied to the browser
     // lifetime.
     engine_.reset();
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
-    ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
+    IMEBridge::Get()->SetInputContextHandler(nullptr);
+    IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
     InProcessBrowserTest::TearDownOnMainThread();
   }
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -45,6 +45,7 @@ class URLRequestContext;
 struct WebSocketFrame;
 class WebSocketBasicHandshakeStream;
 class WebSocketHttp2HandshakeStream;
+class WebSocketHttp3HandshakeStream;
 struct NetworkTrafficAnnotationTag;
 
 // WebSocketStreamRequest is the caller's handle to the process of creation of a
@@ -66,6 +67,8 @@ class NET_EXPORT_PRIVATE WebSocketStreamRequestAPI
       WebSocketBasicHandshakeStream* handshake_stream) = 0;
   virtual void OnHttp2HandshakeStreamCreated(
       WebSocketHttp2HandshakeStream* handshake_stream) = 0;
+  virtual void OnHttp3HandshakeStreamCreated(
+      WebSocketHttp3HandshakeStream* handshake_stream) = 0;
   virtual void OnFailure(const std::string& message,
                          int net_error,
                          absl::optional<int> response_code) = 0;

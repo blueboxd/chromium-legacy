@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -27,6 +27,7 @@ class SANDBOX_POLICY_EXPORT SandboxSeccompBPF {
   struct Options {
     bool use_amd_specific_policies = false;     // For ChromiumOS.
     bool use_intel_specific_policies = false;   // For ChromiumOS.
+    bool use_virtio_specific_policies = false;  // For ChromiumOS VM.
     bool use_nvidia_specific_policies = false;  // For Linux.
 
     // Options for GPU's PreSandboxHook.

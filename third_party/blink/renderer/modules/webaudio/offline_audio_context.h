@@ -96,8 +96,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   // zero.
   using SuspendMap = HeapHashMap<size_t,
                                  Member<ScriptPromiseResolver>,
-                                 DefaultHash<size_t>,
-                                 WTF::UnsignedWithZeroKeyHashTraits<size_t>>;
+                                 IntWithZeroKeyHashTraits<size_t>>;
 
   using OfflineGraphAutoLocker = DeferredTaskHandler::OfflineGraphAutoLocker;
 
@@ -126,10 +125,8 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   base::Lock suspend_frames_lock_;
   // Holds copies of `quantized_frame` in `scheduled_suspends_` to ensure
   // a safe access from the audio thread.
-  HashSet<size_t,
-          WTF::DefaultHash<size_t>,
-          WTF::UnsignedWithZeroKeyHashTraits<size_t>>
-      scheduled_suspend_frames_ GUARDED_BY(suspend_frames_lock_);
+  HashSet<size_t, IntWithZeroKeyHashTraits<size_t>> scheduled_suspend_frames_
+      GUARDED_BY(suspend_frames_lock_);
 
   Member<ScriptPromiseResolver> complete_resolver_;
 

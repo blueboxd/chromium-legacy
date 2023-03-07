@@ -10,8 +10,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/desks/desks_util.h"
-#include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -898,6 +898,10 @@ bool Surface::UpdateDisplay(int64_t old_display, int64_t new_display) {
   }
 
   return true;
+}
+
+display::Display Surface::GetDisplay() const {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window());
 }
 
 void Surface::CommitSurfaceHierarchy(bool synchronized) {

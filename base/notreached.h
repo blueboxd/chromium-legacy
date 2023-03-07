@@ -12,14 +12,24 @@
 
 namespace logging {
 
-// Under these conditions NOTREACHED() will effectively either log or DCHECK.
-#if BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED) || DCHECK_IS_ON()
+// On DCHECK builds NOTREACHED() match the fatality of DCHECKs. When DCHECKs are
+// non-FATAL a crash report will be generated for the first NOTREACHED() that
+// hits per process.
+//
+// Outside DCHECK builds NOTREACHED() will LOG(ERROR) and also upload a crash
+// report without crashing in order to weed out prevalent NOTREACHED()s in the
+// wild before always turning NOTREACHED()s FATAL.
+//
+// TODO(crbug.com/851128): Turn NOTREACHED() FATAL and mark them [[noreturn]].
+#if CHECK_WILL_STREAM() || BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
 #define NOTREACHED()   \
   CHECK_FUNCTION_IMPL( \
       ::logging::NotReachedError::NotReached(__FILE__, __LINE__), false)
 #else
-#define NOTREACHED() EAT_CHECK_STREAM_PARAMS()
-#endif  // BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED) || DCHECK_IS_ON()
+#define NOTREACHED()                                       \
+  (true) ? ::logging::NotReachedError::TriggerNotReached() \
+         : EAT_CHECK_STREAM_PARAMS()
+#endif
 
 // The NOTIMPLEMENTED() macro annotates codepaths which have not been
 // implemented yet. If output spam is a serious concern,

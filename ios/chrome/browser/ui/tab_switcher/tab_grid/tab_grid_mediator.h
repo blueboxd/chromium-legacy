@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_menu_actions_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
 
 class Browser;
@@ -26,6 +25,8 @@ class TabRestoreService;
 // for confirmation from the tab grid.
 @protocol TabGridMediatorDelegate <NSObject>
 
+// Displays an action sheet at `anchor` confirming that selected `items` are
+// going to be closed.
 - (void)
     showCloseItemsConfirmationActionSheetWithTabGridMediator:
         (TabGridMediator*)tabGridMediator
@@ -35,6 +36,16 @@ class TabRestoreService;
                                                       anchor:(UIBarButtonItem*)
                                                                  buttonAnchor;
 
+// Displays an action sheet at `anchor` confirming that all items are going to
+// be closed or just the non-pinned ones.
+- (void)
+    showCloseAllItemsConfirmationActionSheetWithTabGridMediator:
+        (TabGridMediator*)tabGridMediator
+                                                         anchor:
+                                                             (UIBarButtonItem*)
+                                                                 buttonAnchor;
+
+// Displays a share menu for `items` at `anchor`.
 - (void)tabGridMediator:(TabGridMediator*)tabGridMediator
               shareURLs:(NSArray<URLWithTitle*>*)items
                  anchor:(UIBarButtonItem*)buttonAnchor;
@@ -47,7 +58,6 @@ class TabRestoreService;
 // Mediates between model layer and tab grid UI layer.
 @interface TabGridMediator : NSObject <GridCommands,
                                        GridImageDataSource,
-                                       GridMenuActionsDataSource,
                                        GridShareableItemsProvider,
                                        TabCollectionDragDropHandler>
 

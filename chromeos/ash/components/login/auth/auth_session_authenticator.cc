@@ -5,12 +5,12 @@
 #include "chromeos/ash/components/login/auth/auth_session_authenticator.h"
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "chromeos/ash/components/cryptohome/auth_factor.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
@@ -259,8 +259,9 @@ void AuthSessionAuthenticator::DoCompleteLogin(
     if (challenge_response_auth) {
       // We need to store a user information as it would be used by
       // CryptohomeKeyDelegateServiceProvider.
-      // Note that this might result in orphaned records in LocalState, but
-      // that should be fixed once crbug.com/1334140 is implemented.
+      // If the user creation process is interrupted, the known user record
+      // will be cleared on reboot in
+      // `MisconfiguredUserCleaner::OnCleanMisconfiguredUser`.
       steps.push_back(base::BindOnce(&AuthSessionAuthenticator::SaveKnownUser,
                                      weak_factory_.GetWeakPtr()));
       steps.push_back(
@@ -270,13 +271,11 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       steps.push_back(base::BindOnce(&AuthFactorEditor::AddContextKnowledgeKey,
                                      auth_factor_editor_->AsWeakPtr()));
     }
-    if (features::IsUseAuthFactorsEnabled()) {
-      // In addition to factors suitable for authentication, fetch a set of
-      // supported factor types for new users.
-      steps.push_back(
-          base::BindOnce(&AuthFactorEditor::GetAuthFactorsConfiguration,
-                         auth_factor_editor_->AsWeakPtr()));
-    }
+    // In addition to factors suitable for authentication, fetch a set of
+    // supported factor types for new users.
+    steps.push_back(
+        base::BindOnce(&AuthFactorEditor::GetAuthFactorsConfiguration,
+                       auth_factor_editor_->AsWeakPtr()));
     steps.push_back(
         base::BindOnce(&AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
                        weak_factory_.GetWeakPtr()));
@@ -706,18 +705,10 @@ void AuthSessionAuthenticator::RecoverEncryptedData(
   DCHECK(!is_ephemeral_mount_enforced_);
   LOGIN_LOG(USER) << "Attempting to update user password";
 
-  std::string key_label;
-  if (features::IsUseAuthFactorsEnabled()) {
-    auto* password_factor =
-        context->GetAuthFactorsData().FindOnlinePasswordFactor();
-    DCHECK(password_factor);
-    key_label = password_factor->ref().label().value();
-  } else {
-    const cryptohome::KeyDefinition* password_key_def =
-        context->GetAuthFactorsData().FindOnlinePasswordKey();
-    DCHECK(password_key_def);
-    key_label = password_key_def->label.value();
-  }
+  auto* password_factor =
+      context->GetAuthFactorsData().FindOnlinePasswordFactor();
+  DCHECK(password_factor);
+  std::string key_label = password_factor->ref().label().value();
 
   if (!context->HasReplacementKey()) {
     // Assume that there was an attempt to use the key, so it is was already

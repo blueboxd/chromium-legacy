@@ -18,11 +18,10 @@
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/configuration_refresher.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_sender.h"
 #include "chrome/browser/sync/test/integration/invalidations/fake_server_sync_invalidation_sender.h"
 #include "chrome/common/buildflags.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/test/fake_server.h"
@@ -36,6 +35,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
+#include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
 #else
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -57,6 +57,8 @@
 #define E2E_ONLY(test_name) MACRO_CONCAT(DISABLED_E2ETest, test_name)
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
+class FakeSyncGCMDriver;
+class KeyedService;
 class SyncServiceImplHarness;
 
 namespace arc {
@@ -73,7 +75,6 @@ class FakeServer;
 }  // namespace fake_server
 
 namespace syncer {
-class FCMHandler;
 class SyncServiceImpl;
 }  // namespace syncer
 
@@ -104,7 +105,7 @@ inline constexpr char kSyncPasswordForTest[] = "sync-password-for-test";
 //    username and password are ignored if this is set.
 // Other switches may modify the behavior of helper classes frequently used in
 // sync integration tests, see StatusChangeChecker for example.
-class SyncTest : public PlatformBrowserTest {
+class SyncTest : public PlatformBrowserTest, public ProfileObserver {
  public:
   // The different types of live sync tests that can be implemented.
   enum TestType {
@@ -213,11 +214,6 @@ class SyncTest : public PlatformBrowserTest {
   // tests are rewritten in a way to not use verifier.
   virtual bool UseVerifier();
 
-  // Used to determine whether to use the configuration refresher. It's used to
-  // mitigate test flakiness due to missed invalidations and download updates
-  // after SetupClients().
-  virtual bool UseConfigurationRefresher();
-
   // Initializes sync clients and profiles but does not sync any of them.
   [[nodiscard]] virtual bool SetupClients();
 
@@ -262,11 +258,6 @@ class SyncTest : public PlatformBrowserTest {
   // Triggers a sync for the given |model_types| for the Profile at |index|.
   void TriggerSyncForModelTypes(int index, syncer::ModelTypeSet model_types);
 
-  // The configuration refresher is triggering refreshes after the configuration
-  // phase is done (during start-up). Call this function before SetupSync() to
-  // avoid its effects.
-  void StopConfigurationRefresher();
-
   arc::SyncArcPackageHelper* sync_arc_helper();
 
   std::string GetCacheGuid(size_t profile_index) const;
@@ -276,6 +267,9 @@ class SyncTest : public PlatformBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
   void SetUpInProcessBrowserTestFixture() override;
+
+  // ProfileObserver implementation.
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context);
 
@@ -322,7 +316,8 @@ class SyncTest : public PlatformBrowserTest {
           profile_to_fcm_network_handler_map,
       content::BrowserContext* context);
 
-  std::unique_ptr<KeyedService> CreateSyncInvalidationsService(
+  // Creates a fake GCMProfileService to simulate sync invalidations.
+  std::unique_ptr<KeyedService> CreateGCMProfileService(
       content::BrowserContext* context);
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -359,9 +354,6 @@ class SyncTest : public PlatformBrowserTest {
   // Sets up the client-side invalidations infrastructure depending on the
   // value of |server_type_|.
   void SetUpInvalidations(int index);
-
-  // Initializes the configuration refresher.
-  void InitializeConfigurationRefresher(int index);
 
   // Internal routine for setting up sync.
   void SetupSyncInternal(SetupSyncMode setup_mode);
@@ -412,7 +404,7 @@ class SyncTest : public PlatformBrowserTest {
   // directory. Profiles are owned by the ProfileManager.
   // TODO(crbug.com/1349349): store |profiles_|, |browsers_| and |clients_| in
   // one structure.
-  std::vector<Profile*> profiles_;
+  std::vector<raw_ptr<Profile>> profiles_;
 
   // List of temporary directories that need to be deleted when the test is
   // completed, used for two-client tests with external server.
@@ -423,7 +415,7 @@ class SyncTest : public PlatformBrowserTest {
   // instance is created for each sync profile. Browser object lifetime is
   // managed by BrowserList, so we don't use a std::vector<std::unique_ptr<>>
   // here.
-  std::vector<Browser*> browsers_;
+  std::vector<raw_ptr<Browser>> browsers_;
 
   class ClosedBrowserObserver;
   std::unique_ptr<ClosedBrowserObserver> browser_list_observer_;
@@ -444,10 +436,10 @@ class SyncTest : public PlatformBrowserTest {
   std::map<const Profile*, invalidation::FCMNetworkHandler*>
       profile_to_fcm_network_handler_map_;
 
-  std::map<const Profile*, syncer::FCMHandler*> profile_to_fcm_handler_map_;
-
-  // Triggers a GetUpdates via refresh after a configuration.
-  std::unique_ptr<ConfigurationRefresher> configuration_refresher_;
+  // Used to deliver invalidations to different profiles within
+  // FakeSyncServerInvalidationSender.
+  std::map<raw_ptr<Profile>, raw_ptr<FakeSyncGCMDriver>>
+      profile_to_fake_gcm_driver_;
 
   base::CallbackListSubscription create_services_subscription_;
 
@@ -477,6 +469,11 @@ class SyncTest : public PlatformBrowserTest {
   std::unique_ptr<
       app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>
       model_updater_factory_;
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+  instance_id::ScopedUseFakeInstanceIDAndroid
+      scoped_use_fake_instance_id_android_;
 #endif
 
   std::unique_ptr<fake_server::FakeServerSyncInvalidationSender>

@@ -10,6 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/services/assistant/public/cpp/conversation_observer.h"
 #include "chromeos/ash/services/libassistant/grpc/assistant_client_observer.h"
 #include "chromeos/ash/services/libassistant/public/cpp/assistant_notification.h"
@@ -35,7 +36,7 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
     : public mojom::ConversationController,
       public AssistantClientObserver,
       public chromeos::assistant::action::AssistantActionObserver,
-      public chromeos::assistant::ConversationObserver {
+      public assistant::ConversationObserver {
  public:
   using AssistantNotification = assistant::AssistantNotification;
   using AssistantQuerySource = assistant::AssistantQuerySource;
@@ -66,9 +67,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
                      bool allow_tts) override;
   void StartVoiceInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
-  void StartScreenContextInteraction(
-      ax::mojom::AssistantStructurePtr assistant_structure,
-      const std::vector<uint8_t>& screenshot) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void RetrieveNotification(AssistantNotification notification,
                             int32_t action_index) override;
@@ -81,7 +79,6 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   void OnShowHtml(const std::string& html_content,
                   const std::string& fallback) override;
   void OnShowText(const std::string& text) override;
-  void OnShowContextualQueryFallback() override;
   void OnShowSuggestions(
       const std::vector<chromeos::assistant::action::Suggestion>& suggestions)
       override;
@@ -93,11 +90,11 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   void OnShowNotification(
       const chromeos::assistant::action::Notification& notification) override;
 
-  // chromeos::assistant::ConversationObserver:
+  // assistant::ConversationObserver:
   void OnInteractionStarted(
       const assistant::AssistantInteractionMetadata& metadata) override;
   void OnInteractionFinished(
-      chromeos::assistant::AssistantInteractionResolution resolution) override;
+      assistant::AssistantInteractionResolution resolution) override;
 
   const mojo::RemoteSet<mojom::ConversationObserver>* conversation_observers() {
     return &observers_;

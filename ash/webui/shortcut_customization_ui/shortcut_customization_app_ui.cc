@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace ash {
@@ -31,7 +31,7 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           int default_resource) {
   source->AddResourcePaths(resources);
   source->SetDefaultResource(default_resource);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_TEST_LOADER_HTML);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
   source->AddResourcePath("test_loader_util.js",
                           IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
@@ -41,6 +41,17 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appTitle", IDS_SHORTCUT_CUSTOMIZATION_APP_TITLE},
       {"keyboardSettings", IDS_SHORTCUT_CUSTOMIZATION_KEYBOARD_SETTINGS},
+      {"addShortcut", IDS_SHORTCUT_CUSTOMIZATION_ADD_SHORTCUT},
+      {"restoreDefaults", IDS_SHORTCUT_CUSTOMIZATION_RESTORE_DEFAULTS},
+      {"editDialogDone", IDS_SHORTCUT_CUSTOMIZATION_EDIT_DIALOG_DONE},
+      {"cancel", IDS_SHORTCUT_CUSTOMIZATION_CANCEL},
+      {"editViewStatusMessage",
+       IDS_SHORTCUT_CUSTOMIZATION_EDIT_VIEW_STATUS_MESSAGE},
+      {"resetAllShortcuts", IDS_SHORTCUT_CUSTOMIZATION_RESET_ALL_SHORTCUTS},
+      {"confirmResetAllShortcutsTitle",
+       IDS_SHORTCUT_CUSTOMIZATION_CONFIRM_RESET_ALL_SHORTCUTS_TITLE},
+      {"confirmResetAllShortcutsButton",
+       IDS_SHORTCUT_CUSTOMIZATION_CONFIRM_RESET_SHORTCUTS_BUTTON},
       {"categoryTabsAndWindows",
        IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_TABS_AND_WINDOWS},
       {"categoryPageAndWebBrowser",
@@ -52,11 +63,67 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
        IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_ACCESSIBILITY},
       {"categoryDebug", IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEBUG},
       {"categoryDeveloper", IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEVELOPER},
+      {"categoryEventRewriter",
+       IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_EVENT_REWRITER},
+      {"shortcutWithConflictStatusMessage",
+       IDS_SHORTCUT_CUSTOMIZATION_SHORTCUT_WITH_CONFILICT_STATUS_MESSAGE},
+      {"lockedShortcutStatusMessage",
+       IDS_SHORTCUT_CUSTOMIZATION_LOCKED_SHORTCUT_STATUS_MESSAGE},
       {"subcategoryGeneral", IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_GENERAL},
       {"subcategorySystemApps",
        IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_APPS},
       {"subcategorySystemControls",
        IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_CONTROLS},
+      {"subcategorySixPackKeys",
+       IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SIX_PACK},
+      {"iconLabelArrowDown", IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_DOWN},
+      {"iconLabelArrowLeft", IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_LEFT},
+      {"iconLabelArrowRight",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_RIGHT},
+      {"iconLabelArrowUp", IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_UP},
+      {"iconLabelAudioVolumeDown",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_DOWN},
+      {"iconLabelAudioVolumeMute",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_MUTE},
+      {"iconLabelAudioVolumeUp",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_UP},
+      {"iconLabelBrightnessDown",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_DOWN},
+      {"iconLabelBrightnessUp",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_UP},
+      {"iconLabelBrowserBack",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_BACK},
+      {"iconLabelBrowserForward",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_FORWARD},
+      {"iconLabelBrowserRefresh",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_REFRESH},
+      {"iconLabelKeyboardBacklightToggle",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BACKLIGHT_TOGGLE},
+      {"iconLabelKeyboardBrightnessUp",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_UP},
+      {"iconLabelKeyboardBrightnessDown",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_DOWN},
+      {"iconLabelLaunchApplication1",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION1},
+      {"iconLabelLaunchAssistant",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT},
+      {"iconLabelMediaPlayPause",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY_PAUSE},
+      {"iconLabelMediaTrackNext",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_NEXT},
+      {"iconLabelMediaTrackPrevious",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_PREVIOUS},
+      {"iconLabelMicrophoneMuteToggle",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MICROPHONE_MUTE_TOGGLE},
+      {"iconLabelOpenLauncher",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_LAUNCHER},
+      {"iconLabelPower", IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_POWER},
+      {"iconLabelPrintScreen",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRINT_SCREEN},
+      {"iconLabelPrivacyScreenToggle",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRIVACY_SCREEN_TOGGLE},
+      {"iconLabelZoomToggle",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ZOOM_TOGGLE},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

@@ -9,7 +9,7 @@
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,8 +58,8 @@ bool IsConfigurationError(const std::string& shill_error) {
 
 std::string GetStringFromDictionary(const absl::optional<base::Value>& dict,
                                     const std::string& key) {
-  const base::Value* v = dict ? dict->FindKey(key) : nullptr;
-  return v ? v->GetString() : std::string();
+  const std::string* v = dict ? dict->GetDict().FindString(key) : nullptr;
+  return v ? *v : std::string();
 }
 
 // Error messages based on |error_name|, not network_state->GetError().

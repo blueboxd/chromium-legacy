@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -168,8 +168,8 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
   }
   // Sort by creation order.
   std::sort(results.begin(), results.end(), [](const auto& a, const auto& b) {
-    return a.FindKey({"creationTime"})->GetDouble() <
-           b.FindKey({"creationTime"})->GetDouble();
+    return a.GetDict().FindDouble("creationTime").value() <
+           b.GetDict().FindDouble("creationTime").value();
   });
 
   ResolveJavascriptCallback(base::Value(callback_id), results);

@@ -165,6 +165,7 @@ chrome.fileManagerPrivate.DriveSyncErrorType = {
   NO_SERVER_SPACE: 'no_server_space',
   NO_SERVER_SPACE_ORGANIZATION: 'no_server_space_organization',
   NO_LOCAL_SPACE: 'no_local_space',
+  NO_SHARED_DRIVE_SPACE: 'no_shared_drive_space',
   MISC: 'misc',
 };
 
@@ -293,6 +294,7 @@ chrome.fileManagerPrivate.IOTaskState = {
   QUEUED: 'queued',
   SCANNING: 'scanning',
   IN_PROGRESS: 'in_progress',
+  PAUSED: 'paused',
   SUCCESS: 'success',
   ERROR: 'error',
   NEED_PASSWORD: 'need_password',
@@ -358,7 +360,8 @@ chrome.fileManagerPrivate.FileTaskDescriptor;
  *   title: string,
  *   iconUrl: (string|undefined),
  *   isDefault: (boolean|undefined),
- *   isGenericFileHandler: (boolean|undefined)
+ *   isGenericFileHandler: (boolean|undefined),
+ *   isDlpBlocked: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.FileTask;
@@ -512,7 +515,8 @@ chrome.fileManagerPrivate.IndividualFileTransferStatus;
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.DriveSyncErrorType,
  *   fileUrl: string,
- *   showNotification: boolean
+ *   showNotification: boolean,
+ *   sharedDrive: (string|undefined),
  * }}
  */
 chrome.fileManagerPrivate.DriveSyncErrorEvent;
@@ -577,9 +581,11 @@ chrome.fileManagerPrivate.SearchParams;
 
 /**
  * @typedef {{
+ *   rootDir: (DirectoryEntry|undefined),
  *   query: string,
  *   types: !chrome.fileManagerPrivate.SearchType,
- *   maxResults: number
+ *   maxResults: number,
+ *   timestamp: (number|undefined)
  * }}
  */
 chrome.fileManagerPrivate.SearchMetadataParams;
@@ -835,12 +841,15 @@ chrome.fileManagerPrivate.setDefaultTask = function(descriptor, entries, mimeTyp
 
 /**
  * Gets the list of tasks that can be performed over selected files. |entries|
- * Array of selected entries |callback|
+ * Array of selected entries. |sourceUrls| Array of source URLs corresponding to
+ * the entries  |callback|
  * @param {!Array<!Entry>} entries
+ * @param {!Array<string>} sourceUrls
  * @param {function((!chrome.fileManagerPrivate.ResultingTasks|undefined))}
  *     callback The list of matched file tasks for the entries.
  */
-chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
+chrome.fileManagerPrivate.getFileTasks = function(
+    entries, sourceUrls, callback) {};
 
 /**
  * Gets the MIME type of an entry.

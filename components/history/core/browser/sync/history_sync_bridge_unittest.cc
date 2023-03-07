@@ -455,8 +455,10 @@ TEST_F(HistorySyncBridgeTest, AppliesRemoteChanges) {
   EXPECT_EQ(backend()->GetURLs()[0].url(), local_url);
   EXPECT_EQ(backend()->GetURLs()[1].url(), remote_url);
   EXPECT_EQ(backend()->GetVisits()[0].url_id, backend()->GetURLs()[0].id());
+  EXPECT_FALSE(backend()->GetVisits()[0].is_known_to_sync);
   EXPECT_EQ(backend()->GetVisits()[1].url_id, backend()->GetURLs()[1].id());
   EXPECT_EQ(backend()->GetVisits()[1].originator_cache_guid, remote_cache_guid);
+  EXPECT_TRUE(backend()->GetVisits()[1].is_known_to_sync);
 }
 
 TEST_F(HistorySyncBridgeTest, MergesRemoteChanges) {
@@ -691,6 +693,12 @@ TEST_F(HistorySyncBridgeTest, UploadsNewLocalVisit) {
       ui::PAGE_TRANSITION_TYPED));
   EXPECT_FALSE(history.page_transition().forward_back());
   EXPECT_TRUE(history.page_transition().from_address_bar());
+
+  // Re-fetch the visit from the backend and verify we've marked it as
+  // `is_known_to_sync`.
+  VisitRow visit_from_backend;
+  ASSERT_TRUE(backend()->GetVisitByID(visit_row.visit_id, &visit_from_backend));
+  EXPECT_TRUE(visit_from_backend.is_known_to_sync);
 }
 
 TEST_F(HistorySyncBridgeTest, DoesNotUploadPreexistingData) {
@@ -732,6 +740,17 @@ TEST_F(HistorySyncBridgeTest, DoesNotUploadUnsyncableURLs) {
 
   // The data should *not* have been uploaded to Sync.
   EXPECT_TRUE(processor()->GetEntities().empty());
+
+  // Re-fetch these visits from the backend and verify we've NOT marked them as
+  // `is_known_to_sync`.
+  VisitRow visit_from_backend_1;
+  ASSERT_TRUE(
+      backend()->GetVisitByID(visit_row1.visit_id, &visit_from_backend_1));
+  EXPECT_FALSE(visit_from_backend_1.is_known_to_sync);
+  VisitRow visit_from_backend_2;
+  ASSERT_TRUE(
+      backend()->GetVisitByID(visit_row2.visit_id, &visit_from_backend_2));
+  EXPECT_FALSE(visit_from_backend_2.is_known_to_sync);
 }
 
 TEST_F(HistorySyncBridgeTest, DoesNotUploadWhileSyncIsPaused) {
@@ -869,6 +888,7 @@ TEST_F(HistorySyncBridgeTest, UploadsReferrerURL) {
   ASSERT_TRUE(entity2.specifics.has_history());
   const sync_pb::HistorySpecifics& history2 = entity2.specifics.history();
   EXPECT_EQ(history2.originator_referring_visit_id(), visit_row1.visit_id);
+  EXPECT_NE(history2.originator_cluster_id(), 0);
   EXPECT_EQ(history2.referrer_url(), url_row1.url());
 }
 
@@ -1175,6 +1195,7 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   EXPECT_EQ(history2.redirect_entries(0).url(), url_row3.url());
   EXPECT_EQ(history2.redirect_entries(1).url(), url_row4.url());
   EXPECT_EQ(history2.originator_referring_visit_id(), visit_row2.visit_id);
+  EXPECT_NE(history2.originator_cluster_id(), 0);
   EXPECT_TRUE(history2.redirect_chain_start_incomplete());
   EXPECT_FALSE(history2.redirect_chain_end_incomplete());
 }
@@ -1474,6 +1495,8 @@ TEST_F(HistorySyncBridgeTest, RemapsOriginatorVisitIDs) {
   ASSERT_EQ(last_row.originator_visit_id, last_visit_originator_id);
   // Make sure the opener (last visit of the chain) got remapped.
   EXPECT_EQ(last_row.opener_visit, chain_rows.back().visit_id);
+  // No originator cluster id provided.
+  EXPECT_EQ(backend()->add_visit_to_synced_cluster_count(), 0);
 }
 
 TEST_F(HistorySyncBridgeTest, RemapsLegacyRedirectChain) {
@@ -1499,6 +1522,32 @@ TEST_F(HistorySyncBridgeTest, RemapsLegacyRedirectChain) {
   // visit IDs, and thus no explicit links between the individual visits).
   VisitVector chain_rows = backend()->GetRedirectChain(chain_end_row);
   EXPECT_EQ(chain_rows.size(), 3u);
+}
+
+TEST_F(HistorySyncBridgeTest, AddsCluster) {
+  const std::string remote_cache_guid("remote_cache_guid");
+
+  const base::Time visit_time = base::Time::Now() - base::Minutes(9);
+  const std::vector<GURL> urls{GURL("https://start.chain.url"),
+                               GURL("https://middle.chain.url"),
+                               GURL("https://end.chain.url")};
+  const std::vector<VisitID> originator_visit_ids{0, 0, 0};
+  sync_pb::HistorySpecifics entity = CreateSpecifics(
+      visit_time, remote_cache_guid, urls, originator_visit_ids);
+  entity.set_originator_cluster_id(1);
+
+  // Start syncing - this should trigger the creation of local cluster IDs.
+  ApplyInitialSyncChanges({entity});
+
+  VisitRow chain_end_row;
+  ASSERT_TRUE(backend()->GetLastVisitByTime(visit_time, &chain_end_row));
+  // Make sure the chain got preserved (even though there were no originator
+  // visit IDs, and thus no explicit links between the individual visits).
+  VisitVector chain_rows = backend()->GetRedirectChain(chain_end_row);
+  EXPECT_EQ(chain_rows.size(), 3u);
+
+  // Should be called once per visit.
+  EXPECT_EQ(backend()->add_visit_to_synced_cluster_count(), 3);
 }
 
 }  // namespace

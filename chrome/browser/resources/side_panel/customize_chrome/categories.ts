@@ -17,6 +17,9 @@ export interface CategoriesElement {
   $: {
     backButton: HTMLElement,
     classicChromeTile: HTMLElement,
+    uploadImageTile: HTMLElement,
+    chromeWebStoreTile: HTMLElement,
+    chromeColorsTile: HTMLElement,
   };
 }
 
@@ -49,12 +52,26 @@ export class CategoriesElement extends PolymerElement {
 
   private onClassicChromeClick_() {
     this.pageHandler_.setClassicChromeDefaultTheme();
-    this.dispatchEvent(new Event('theme-select'));
+  }
+
+  private async onUploadImageClick_() {
+    const {success} = await this.pageHandler_.chooseLocalCustomBackground();
+    if (success) {
+      this.dispatchEvent(new Event('local-image-upload'));
+    }
+  }
+
+  private async onChromeColorsClick_() {
+    this.dispatchEvent(new Event('chrome-colors-select'));
   }
 
   private onCollectionClick_(e: DomRepeatEvent<BackgroundCollection>) {
     this.dispatchEvent(new CustomEvent<BackgroundCollection>(
         'collection-select', {detail: e.model.item}));
+  }
+
+  private onChromeWebStoreClick_() {
+    this.pageHandler_.openChromeWebStore();
   }
 
   private onBackClick_() {

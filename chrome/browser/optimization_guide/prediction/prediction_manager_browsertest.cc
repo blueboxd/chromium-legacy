@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "base/base64.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -125,20 +125,18 @@ class PredictionManagerBrowserTestBase : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitch(optimization_guide::switches::
-                          kDisableCheckingUserPermissionsForTesting);
-    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
+    cmd->AppendSwitch(switches::kDisableCheckingUserPermissionsForTesting);
+    cmd->AppendSwitchASCII(switches::kFetchHintsOverride,
                            "whatever.com,somehost.com");
     cmd->AppendSwitchASCII(
-        optimization_guide::switches::kOptimizationGuideServiceGetModelsURL,
+        switches::kOptimizationGuideServiceGetModelsURL,
         models_server_
-            ->GetURL(GURL(optimization_guide::
-                              kOptimizationGuideServiceGetModelsDefaultURL)
-                         .host(),
+            ->GetURL(GURL(kOptimizationGuideServiceGetModelsDefaultURL).host(),
                      "/")
             .spec());
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
     cmd->AppendSwitchASCII("force-variation-ids", "4");
+    cmd->AppendSwitch(switches::kDebugLoggingEnabled);
   }
 
   void SetResponseType(
@@ -248,7 +246,7 @@ class PredictionManagerBrowserTest : public testing::WithParamInterface<bool>,
         {optimization_guide::features::kOptimizationHints, {}},
         {optimization_guide::features::kRemoteOptimizationGuideFetching, {}},
         {optimization_guide::features::kOptimizationTargetPrediction,
-         {{"fetch_startup_delay_ms", "2000"}}},
+         {{"fetch_startup_delay_ms", "8000"}}},
     };
     if (ShouldEnableInstallWideModelStore()) {
       enabled_features.emplace_back(
@@ -290,8 +288,6 @@ IN_PROC_BROWSER_TEST_P(PredictionManagerBrowserTest,
   SetResponseType(
       PredictionModelsFetcherRemoteResponseType::kSuccessfulWithValidModelFile);
   base::HistogramTester histogram_tester;
-  content::NetworkConnectionChangeSimulator().SetConnectionType(
-      network::mojom::ConnectionType::CONNECTION_2G);
 
   RegisterWithKeyedService(&model_file_observer);
   RetryForHistogramUntilCountReached(
@@ -467,15 +463,9 @@ IN_PROC_BROWSER_TEST_P(PredictionManagerModelDownloadingBrowserTest,
         "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
   }
 }
-// Flaky on multiple ASAN bots. See https://crbug.com/1266318
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_TestIncognitoDoesntFetchModels \
-  DISABLED_TestIncognitoDoesntFetchModels
-#else
-#define MAYBE_TestIncognitoDoesntFetchModels TestIncognitoDoesntFetchModels
-#endif
+
 IN_PROC_BROWSER_TEST_P(PredictionManagerModelDownloadingBrowserTest,
-                       MAYBE_TestIncognitoDoesntFetchModels) {
+                       TestIncognitoDoesntFetchModels) {
   base::HistogramTester histogram_tester;
 
   SetResponseType(PredictionModelsFetcherRemoteResponseType::
@@ -719,14 +709,8 @@ IN_PROC_BROWSER_TEST_P(PredictionManagerModelDownloadingBrowserTest,
       "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
-// Flaky on multiple ASAN bots. See https://crbug.com/1266318
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_TestSwitchProfileDoesntCrash DISABLED_TestSwitchProfileDoesntCrash
-#else
-#define MAYBE_TestSwitchProfileDoesntCrash TestSwitchProfileDoesntCrash
-#endif
 IN_PROC_BROWSER_TEST_P(PredictionManagerModelDownloadingBrowserTest,
-                       MAYBE_TestSwitchProfileDoesntCrash) {
+                       TestSwitchProfileDoesntCrash) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath other_path =
       profile_manager->GenerateNextProfileDirectoryPath();

@@ -200,7 +200,6 @@ class HashTableStatsPtr<Allocator, true> final {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -208,7 +207,6 @@ class HashTable;
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -216,7 +214,6 @@ class HashTableIterator;
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -227,8 +224,7 @@ template <WeakHandlingFlag x,
           typename V,
           typename W,
           typename X,
-          typename Y,
-          typename Z>
+          typename Y>
 struct WeakProcessingHashTableHelper;
 
 typedef enum { kHashItemKnownGood } HashItemKnownGoodTag;
@@ -236,7 +232,6 @@ typedef enum { kHashItemKnownGood } HashItemKnownGoodTag;
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -244,26 +239,13 @@ class HashTableConstIterator final {
   DISALLOW_NEW();
 
  private:
-  typedef HashTable<Key,
-                    Value,
-                    Extractor,
-                    HashFunctions,
-                    Traits,
-                    KeyTraits,
-                    Allocator>
+  typedef HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>
       HashTableType;
-  typedef HashTableIterator<Key,
-                            Value,
-                            Extractor,
-                            HashFunctions,
-                            Traits,
-                            KeyTraits,
-                            Allocator>
+  typedef HashTableIterator<Key, Value, Extractor, Traits, KeyTraits, Allocator>
       iterator;
   typedef HashTableConstIterator<Key,
                                  Value,
                                  Extractor,
-                                 HashFunctions,
                                  Traits,
                                  KeyTraits,
                                  Allocator>
@@ -273,17 +255,10 @@ class HashTableConstIterator final {
   typedef typename Traits::IteratorConstGetType GetType;
   typedef const ValueType* PointerType;
 
-  friend class HashTable<Key,
-                         Value,
-                         Extractor,
-                         HashFunctions,
-                         Traits,
-                         KeyTraits,
-                         Allocator>;
+  friend class HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>;
   friend class HashTableIterator<Key,
                                  Value,
                                  Extractor,
-                                 HashFunctions,
                                  Traits,
                                  KeyTraits,
                                  Allocator>;
@@ -360,7 +335,7 @@ class HashTableConstIterator final {
     return position_;
   }
   typename Traits::IteratorConstReferenceType operator*() const {
-    return Traits::GetToReferenceConstConversion(Get());
+    return *Get();
   }
   GetType operator->() const { return Get(); }
 
@@ -421,7 +396,6 @@ class HashTableConstIterator final {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename Hash,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -429,7 +403,6 @@ std::ostream& operator<<(std::ostream& stream,
                          const HashTableConstIterator<Key,
                                                       Value,
                                                       Extractor,
-                                                      Hash,
                                                       Traits,
                                                       KeyTraits,
                                                       Allocator>& iterator) {
@@ -439,7 +412,6 @@ std::ostream& operator<<(std::ostream& stream,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -447,26 +419,13 @@ class HashTableIterator final {
   DISALLOW_NEW();
 
  private:
-  typedef HashTable<Key,
-                    Value,
-                    Extractor,
-                    HashFunctions,
-                    Traits,
-                    KeyTraits,
-                    Allocator>
+  typedef HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>
       HashTableType;
-  typedef HashTableIterator<Key,
-                            Value,
-                            Extractor,
-                            HashFunctions,
-                            Traits,
-                            KeyTraits,
-                            Allocator>
+  typedef HashTableIterator<Key, Value, Extractor, Traits, KeyTraits, Allocator>
       iterator;
   typedef HashTableConstIterator<Key,
                                  Value,
                                  Extractor,
-                                 HashFunctions,
                                  Traits,
                                  KeyTraits,
                                  Allocator>
@@ -475,13 +434,7 @@ class HashTableIterator final {
   typedef typename Traits::IteratorGetType GetType;
   typedef ValueType* PointerType;
 
-  friend class HashTable<Key,
-                         Value,
-                         Extractor,
-                         HashFunctions,
-                         Traits,
-                         KeyTraits,
-                         Allocator>;
+  friend class HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>;
 
   HashTableIterator(PointerType pos,
                     PointerType begin,
@@ -501,9 +454,7 @@ class HashTableIterator final {
   // default copy, assignment and destructor are OK
 
   GetType Get() const { return const_cast<GetType>(iterator_.Get()); }
-  typename Traits::IteratorReferenceType operator*() const {
-    return Traits::GetToReferenceConversion(Get());
-  }
+  typename Traits::IteratorReferenceType operator*() const { return *Get(); }
   GetType operator->() const { return Get(); }
 
   iterator& operator++() {
@@ -546,7 +497,6 @@ class HashTableIterator final {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename Hash,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -554,7 +504,6 @@ std::ostream& operator<<(std::ostream& stream,
                          const HashTableIterator<Key,
                                                  Value,
                                                  Extractor,
-                                                 Hash,
                                                  Traits,
                                                  KeyTraits,
                                                  Allocator>& iterator) {
@@ -586,18 +535,18 @@ struct Mover<T, Allocator, Traits, true> {
   }
 };
 
-template <typename HashFunctions, typename Traits, typename Allocator>
+template <typename KeyTraits>
 class IdentityHashTranslator {
   STATIC_ONLY(IdentityHashTranslator);
 
  public:
   template <typename T>
   static unsigned GetHash(const T& key) {
-    return HashFunctions::GetHash(key);
+    return KeyTraits::GetHash(key);
   }
   template <typename T, typename U>
   static bool Equal(const T& a, const U& b) {
-    return HashFunctions::Equal(a, b);
+    return KeyTraits::Equal(a, b);
   }
   template <typename T, typename U, typename V>
   static void Translate(T& location, U&&, V&& value) {
@@ -645,35 +594,6 @@ struct HashTableAddResult final {
 #endif
 };
 
-template <typename Value, typename Extractor, typename KeyTraits>
-struct HashTableHelper {
-  template <typename T>
-  struct AddConstToPtrType {
-    using type = T;
-  };
-  template <typename T>
-  struct AddConstToPtrType<T*> {
-    using type = const T*;
-  };
-
-  using Key = typename AddConstToPtrType<typename KeyTraits::TraitType>::type;
-
-  STATIC_ONLY(HashTableHelper);
-  static bool IsEmptyBucket(const Key& key) {
-    return IsHashTraitsEmptyValue<KeyTraits>(key);
-  }
-  static bool IsDeletedBucket(const Key& key) {
-    return KeyTraits::IsDeletedValue(key);
-  }
-  static bool IsEmptyOrDeletedBucketForKey(const Key& key) {
-    return IsEmptyBucket(key) || IsDeletedBucket(key);
-  }
-  static bool IsEmptyOrDeletedBucket(const Value& value) {
-    const Key& key = Extractor::Extract(value);
-    return IsEmptyOrDeletedBucketForKey(key);
-  }
-};
-
 template <typename HashTranslator,
           typename KeyTraits,
           bool safeToCompareToEmptyOrDeleted>
@@ -703,34 +623,21 @@ struct HashTableKeyChecker<HashTranslator, KeyTraits, true> {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 class HashTable final
-    : public ConditionalDestructor<HashTable<Key,
-                                             Value,
-                                             Extractor,
-                                             HashFunctions,
-                                             Traits,
-                                             KeyTraits,
-                                             Allocator>,
-                                   !Allocator::kIsGarbageCollected> {
+    : public ConditionalDestructor<
+          HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>,
+          !Allocator::kIsGarbageCollected> {
   DISALLOW_NEW();
 
  public:
-  typedef HashTableIterator<Key,
-                            Value,
-                            Extractor,
-                            HashFunctions,
-                            Traits,
-                            KeyTraits,
-                            Allocator>
+  typedef HashTableIterator<Key, Value, Extractor, Traits, KeyTraits, Allocator>
       iterator;
   typedef HashTableConstIterator<Key,
                                  Value,
                                  Extractor,
-                                 HashFunctions,
                                  Traits,
                                  KeyTraits,
                                  Allocator>
@@ -741,8 +648,7 @@ class HashTable final
   typedef Value ValueType;
   typedef Extractor ExtractorType;
   typedef KeyTraits KeyTraitsType;
-  typedef IdentityHashTranslator<HashFunctions, Traits, Allocator>
-      IdentityTranslatorType;
+  typedef IdentityHashTranslator<KeyTraits> IdentityTranslatorType;
   typedef HashTableAddResult<HashTable, ValueType> AddResult;
 
   HashTable();
@@ -795,14 +701,22 @@ class HashTable final
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&& value) {
     return insert<IdentityTranslatorType>(
-        Extractor::Extract(value), std::forward<IncomingValueType>(value));
+        Extractor::ExtractKey(value), std::forward<IncomingValueType>(value));
   }
 
   // A special version of insert() that finds the object by hashing and
   // comparing with some other type, to avoid the cost of type conversion if the
   // object is already in the table.
+  // HashTranslator must have the following function members:
+  //   static unsigned GetHash(const T&);
+  //   static bool Equal(const ValueType&, const T&);
+  //   static void Translate(T& location, KeyType&&, ValueType&&);
   template <typename HashTranslator, typename T, typename Extra>
   AddResult insert(T&& key, Extra&&);
+  // Similar to the above, but passes additional `unsigned hash_code`, which
+  // is computed from `HashTranslator::GetHash(key)`, to HashTranslator method
+  //   static Translate(T&, KeyType&&, ValueType&&, unsigned hash_code);
+  // to avoid recomputation of the hash code when needed in the method.
   template <typename HashTranslator, typename T, typename Extra>
   AddResult InsertPassingHashCode(T&& key, Extra&&);
 
@@ -814,6 +728,11 @@ class HashTable final
     return Contains<IdentityTranslatorType>(key);
   }
 
+  // A special version of find() that finds the object by hashing and
+  // comparing with some other type, to avoid the cost of type conversion.
+  // HashTranslator must have the following function members:
+  //   static unsigned GetHash(const T&);
+  //   static bool Equal(const ValueType&, const T&);
   template <typename HashTranslator, typename T>
   iterator Find(const T&);
   template <typename HashTranslator, typename T>
@@ -827,14 +746,14 @@ class HashTable final
   void clear();
 
   static bool IsEmptyBucket(const ValueType& value) {
-    return IsHashTraitsEmptyValue<KeyTraits>(Extractor::Extract(value));
+    return IsHashTraitsEmptyValue<KeyTraits>(Extractor::ExtractKey(value));
   }
   static bool IsDeletedBucket(const ValueType& value) {
-    return KeyTraits::IsDeletedValue(Extractor::Extract(value));
+    return IsHashTraitsDeletedValue<KeyTraits>(Extractor::ExtractKey(value));
   }
   static bool IsEmptyOrDeletedBucket(const ValueType& value) {
-    return HashTableHelper<ValueType, Extractor,
-                           KeyTraits>::IsEmptyOrDeletedBucket(value);
+    return IsHashTraitsEmptyOrDeletedValue<KeyTraits>(
+        Extractor::ExtractKey(value));
   }
 
   ValueType* Lookup(KeyPeekInType key) {
@@ -926,10 +845,19 @@ class HashTable final
 
   static void InitializeBucket(ValueType& bucket);
   static void ReinitializeBucket(ValueType& bucket);
-  static void DeleteBucket(const ValueType& bucket) {
+  static void DeleteBucket(ValueType& bucket) {
     bucket.~ValueType();
-    Traits::ConstructDeletedValue(const_cast<ValueType&>(bucket),
-                                  Allocator::kIsGarbageCollected);
+    ConstructHashTraitsDeletedValue<KeyTraits>(Extractor::ExtractKey(bucket));
+    // For GC collections the memory for the backing is zeroed when it is
+    // allocated, and the constructors may take advantage of that,
+    // especially if a GC occurs during insertion of an entry into the
+    // table. This slot is being marked deleted, but If the slot is reused
+    // at a later point, the same assumptions around memory zeroing must
+    // hold as they did at the initial allocation.  Therefore we zero the
+    // value part of the slot here for GC collections.
+    if (Allocator::kIsGarbageCollected) {
+      Extractor::ClearValue(bucket);
+    }
   }
 
   FullLookupType MakeLookupResult(ValueType* position,
@@ -1014,22 +942,20 @@ class HashTable final
             typename V,
             typename W,
             typename X,
-            typename Y,
-            typename Z>
+            typename Y>
   friend struct WeakProcessingHashTableHelper;
 };
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 inline HashTable<Key,
                  Value,
                  Extractor,
-                 HashFunctions,
+
                  Traits,
                  KeyTraits,
                  Allocator>::HashTable()
@@ -1064,14 +990,13 @@ inline unsigned CalculateCapacity(unsigned size) {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 void HashTable<Key,
                Value,
                Extractor,
-               HashFunctions,
+
                Traits,
                KeyTraits,
                Allocator>::ReserveCapacityForSize(unsigned new_size) {
@@ -1090,14 +1015,13 @@ void HashTable<Key,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
 inline Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Lookup(const T& key) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Lookup(
+    const T& key) {
   // Call the const version of Lookup<HashTranslator, T>().
   return const_cast<Value*>(
       const_cast<const HashTable*>(this)->Lookup<HashTranslator>(key));
@@ -1106,18 +1030,17 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
 inline const Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Lookup(const T& key) const {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Lookup(
+    const T& key) const {
   DCHECK(!AccessForbidden());
   DCHECK((HashTableKeyChecker<
           HashTranslator, KeyTraits,
-          HashFunctions::safe_to_compare_to_empty_or_deleted>::CheckKey(key)));
+          KeyTraits::kSafeToCompareToEmptyOrDeleted>::CheckKey(key)));
   const ValueType* table = table_;
   if (!table)
     return nullptr;
@@ -1132,9 +1055,10 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   while (true) {
     const ValueType* entry = table + i;
 
-    if (HashFunctions::safe_to_compare_to_empty_or_deleted) {
-      if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+    if (KeyTraits::kSafeToCompareToEmptyOrDeleted) {
+      if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return entry;
+      }
 
       if (IsEmptyBucket(*entry))
         return nullptr;
@@ -1143,8 +1067,9 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
         return nullptr;
 
       if (!IsDeletedBucket(*entry) &&
-          HashTranslator::Equal(Extractor::Extract(*entry), key))
+          HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return entry;
+      }
     }
     ++probe_count;
     UPDATE_PROBE_COUNTS();
@@ -1155,20 +1080,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
-inline typename HashTable<Key,
-                          Value,
-                          Extractor,
-                          HashFunctions,
-                          Traits,
-                          KeyTraits,
-                          Allocator>::LookupType
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    LookupForWriting(const T& key) {
+inline typename HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+    LookupType
+    HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+        LookupForWriting(const T& key) {
   DCHECK(!AccessForbidden());
   DCHECK(table_);
   RegisterModification();
@@ -1189,17 +1108,19 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     if (IsEmptyBucket(*entry))
       return LookupType(deleted_entry ? deleted_entry : entry, false);
 
-    if (HashFunctions::safe_to_compare_to_empty_or_deleted) {
-      if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+    if (KeyTraits::kSafeToCompareToEmptyOrDeleted) {
+      if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return LookupType(entry, true);
+      }
 
       if (IsDeletedBucket(*entry))
         deleted_entry = entry;
     } else {
-      if (IsDeletedBucket(*entry))
+      if (IsDeletedBucket(*entry)) {
         deleted_entry = entry;
-      else if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+      } else if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return LookupType(entry, true);
+      }
     }
 
     ++probe_count;
@@ -1211,20 +1132,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
-inline typename HashTable<Key,
-                          Value,
-                          Extractor,
-                          HashFunctions,
-                          Traits,
-                          KeyTraits,
-                          Allocator>::FullLookupType
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    FullLookupForWriting(const T& key) {
+inline typename HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+    FullLookupType
+    HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+        FullLookupForWriting(const T& key) {
   DCHECK(!AccessForbidden());
   DCHECK(table_);
   RegisterModification();
@@ -1245,17 +1160,19 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     if (IsEmptyBucket(*entry))
       return MakeLookupResult(deleted_entry ? deleted_entry : entry, false, h);
 
-    if (HashFunctions::safe_to_compare_to_empty_or_deleted) {
-      if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+    if (KeyTraits::kSafeToCompareToEmptyOrDeleted) {
+      if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return MakeLookupResult(entry, true, h);
+      }
 
       if (IsDeletedBucket(*entry))
         deleted_entry = entry;
     } else {
-      if (IsDeletedBucket(*entry))
+      if (IsDeletedBucket(*entry)) {
         deleted_entry = entry;
-      else if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+      } else if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return MakeLookupResult(entry, true, h);
+      }
     }
     ++probe_count;
     UPDATE_PROBE_COUNTS();
@@ -1263,105 +1180,136 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   }
 }
 
-template <bool emptyValueIsZero>
+template <typename Traits,
+          typename Allocator,
+          typename Value,
+          typename Enable = void>
 struct HashTableBucketInitializer;
 
-template <>
-struct HashTableBucketInitializer<false> {
+template <typename Traits, typename Allocator, typename Value>
+struct HashTableBucketInitializer<
+    Traits,
+    Allocator,
+    Value,
+    std::enable_if_t<!Traits::kEmptyValueIsZero>> {
   STATIC_ONLY(HashTableBucketInitializer);
-  template <typename Traits, typename Allocator, typename Value>
   static void Initialize(Value& bucket) {
     ConstructTraits<Value, Traits, Allocator>::ConstructAndNotifyElement(
         &bucket, Traits::EmptyValue());
+    DCHECK(IsHashTraitsEmptyValue<Traits>(bucket));
   }
 
-  template <typename Traits, typename Allocator, typename Value>
   static void Reinitialize(Value& bucket) {
     // Reinitialize is used when recycling a deleted bucket. For buckets for
     // which empty value is non-zero, this is forbidden during marking. Thus if
     // we get here, marking is not active and we can reuse Initialize.
     DCHECK(Allocator::template CanReuseHashTableDeletedBucket<Traits>());
-    Initialize<Traits, Allocator, Value>(bucket);
+    Initialize(bucket);
+  }
+
+  template <typename HashTable>
+  static Value* AllocateTable(unsigned size, size_t alloc_size) {
+    Value* result =
+        Allocator::template AllocateHashTableBacking<Value, HashTable>(
+            alloc_size);
+    InitializeTable(result, size);
+    return result;
+  }
+
+  static void InitializeTable(Value* table, unsigned size) {
+    for (unsigned i = 0; i < size; i++) {
+      Initialize(table[i]);
+    }
   }
 };
 
-// Specialization when the hash traits for a type indicate that the
-// representation of an empty object is all zeros (independent of whether or not
-// the object's type is considered to be trivially copyable).
-template <>
-struct HashTableBucketInitializer<true> {
+// Specialization when the hash traits for a type have kEmptyValueIsZero = true
+// which indicate that all zero bytes represent an empty object.
+template <typename Traits, typename Allocator, typename Value>
+struct HashTableBucketInitializer<Traits,
+                                  Allocator,
+                                  Value,
+                                  std::enable_if_t<Traits::kEmptyValueIsZero>> {
   STATIC_ONLY(HashTableBucketInitializer);
-  template <typename Traits, typename Allocator, typename Value>
   static void Initialize(Value& bucket) {
-    // This initializes the bucket without copying the empty value.  That
-    // makes it possible to use this with types that don't support copying.
     // The memset to 0 looks like a slow operation but is optimized by the
     // compilers.
     //
     // NOLINTNEXTLINE(bugprone-undefined-memory-manipulation)
     memset(&bucket, 0, sizeof(bucket));
+    CheckEmptyValues(&bucket, 1);
   }
 
-  template <typename Traits, typename Allocator, typename Value>
   static void Reinitialize(Value& bucket) {
-    // This initializes the bucket without copying the empty value.  That
-    // makes it possible to use this with types that don't support copying.
     // The memset to 0 looks like a slow operation but is optimized by the
     // compilers.
     if (!Allocator::kIsGarbageCollected) {
       // NOLINTNEXTLINE(bugprone-undefined-memory-manipulation)
       memset(&bucket, 0, sizeof(bucket));
-      return;
+    } else {
+      AtomicMemzero<sizeof(bucket), alignof(Value)>(&bucket);
     }
-    AtomicMemzero<sizeof(bucket), alignof(Value)>(&bucket);
+    CheckEmptyValues(&bucket, 1);
+  }
+
+  template <typename HashTable>
+  static Value* AllocateTable(unsigned size, size_t alloc_size) {
+    Value* result =
+        Allocator::template AllocateZeroedHashTableBacking<Value, HashTable>(
+            alloc_size);
+    CheckEmptyValues(result, size);
+    return result;
+  }
+
+  static void InitializeTable(Value* table, unsigned size) {
+    AtomicMemzero(table, size * sizeof(Value));
+    CheckEmptyValues(table, size);
+  }
+
+ private:
+  static void CheckEmptyValues(Value* values, unsigned size) {
+#if EXPENSIVE_DCHECKS_ARE_ON()
+    for (unsigned i = 0; i < size; i++) {
+      DCHECK(IsHashTraitsEmptyValue<Traits>(values[i]));
+    }
+#endif
   }
 };
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-inline void
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
+inline void HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
     InitializeBucket(ValueType& bucket) {
-  HashTableBucketInitializer<Traits::kEmptyValueIsZero>::template Initialize<
-      Traits, Allocator>(bucket);
+  HashTableBucketInitializer<Traits, Allocator, Value>::Initialize(bucket);
 }
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-inline void
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
+inline void HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
     ReinitializeBucket(ValueType& bucket) {
-  HashTableBucketInitializer<Traits::kEmptyValueIsZero>::template Reinitialize<
-      Traits, Allocator>(bucket);
+  HashTableBucketInitializer<Traits, Allocator, Value>::Reinitialize(bucket);
 }
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T, typename Extra>
-typename HashTable<Key,
-                   Value,
-                   Extractor,
-                   HashFunctions,
-                   Traits,
-                   KeyTraits,
-                   Allocator>::AddResult
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    insert(T&& key, Extra&& extra) {
+typename HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+    AddResult
+    HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::insert(
+        T&& key,
+        Extra&& extra) {
   DCHECK(!AccessForbidden());
   DCHECK(Allocator::IsAllocationAllowed());
   if (!table_)
@@ -1388,17 +1336,19 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     if (IsEmptyBucket(*entry))
       break;
 
-    if (HashFunctions::safe_to_compare_to_empty_or_deleted) {
-      if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+    if (KeyTraits::kSafeToCompareToEmptyOrDeleted) {
+      if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return AddResult(this, entry, false);
+      }
 
       if (IsDeletedBucket(*entry) && can_reuse_deleted_entry)
         deleted_entry = entry;
     } else {
-      if (IsDeletedBucket(*entry) && can_reuse_deleted_entry)
+      if (IsDeletedBucket(*entry) && can_reuse_deleted_entry) {
         deleted_entry = entry;
-      else if (HashTranslator::Equal(Extractor::Extract(*entry), key))
+      } else if (HashTranslator::Equal(Extractor::ExtractKey(*entry), key)) {
         return AddResult(this, entry, false);
+      }
     }
     ++probe_count;
     UPDATE_PROBE_COUNTS();
@@ -1449,20 +1399,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T, typename Extra>
-typename HashTable<Key,
-                   Value,
-                   Extractor,
-                   HashFunctions,
-                   Traits,
-                   KeyTraits,
-                   Allocator>::AddResult
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    InsertPassingHashCode(T&& key, Extra&& extra) {
+typename HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+    AddResult
+    HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+        InsertPassingHashCode(T&& key, Extra&& extra) {
   DCHECK(!AccessForbidden());
   DCHECK(Allocator::IsAllocationAllowed());
   if (!table_)
@@ -1501,18 +1445,16 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Reinsert(ValueType&& entry) {
+Value* HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Reinsert(
+    ValueType&& entry) {
   DCHECK(table_);
   RegisterModification();
-  DCHECK(!LookupForWriting(Extractor::Extract(entry)).second);
-  DCHECK(
-      !IsDeletedBucket(*(LookupForWriting(Extractor::Extract(entry)).first)));
+  DCHECK(!LookupForWriting(Extractor::ExtractKey(entry)).second);
+  DCHECK(!IsDeletedBucket(
+      *(LookupForWriting(Extractor::ExtractKey(entry)).first)));
 #if DUMP_HASHTABLE_STATS
   HashTableStats::instance().numReinserts.fetch_add(1,
                                                     std::memory_order_relaxed);
@@ -1520,7 +1462,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   stats_->numReinserts.fetch_add(1, std::memory_order_relaxed);
 #endif
-  Value* new_entry = LookupForWriting(Extractor::Extract(entry)).first;
+  Value* new_entry = LookupForWriting(Extractor::ExtractKey(entry)).first;
   Mover<ValueType, Allocator, Traits,
         Traits::template NeedsToForbidGCOnMove<>::value>::Move(std::move(entry),
                                                                *new_entry);
@@ -1531,20 +1473,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
-inline typename HashTable<Key,
-                          Value,
-                          Extractor,
-                          HashFunctions,
-                          Traits,
-                          KeyTraits,
-                          Allocator>::iterator
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Find(const T& key) {
+inline typename HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+    iterator
+    HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Find(
+        const T& key) {
   ValueType* entry = Lookup<HashTranslator>(key);
   if (!entry)
     return end();
@@ -1555,20 +1491,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
-inline typename HashTable<Key,
-                          Value,
-                          Extractor,
-                          HashFunctions,
-                          Traits,
-                          KeyTraits,
-                          Allocator>::const_iterator
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Find(const T& key) const {
+inline typename HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::
+    const_iterator
+    HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Find(
+        const T& key) const {
   const ValueType* entry = Lookup<HashTranslator>(key);
   if (!entry)
     return end();
@@ -1579,35 +1509,24 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename HashTranslator, typename T>
-bool HashTable<Key,
-               Value,
-               Extractor,
-               HashFunctions,
-               Traits,
-               KeyTraits,
-               Allocator>::Contains(const T& key) const {
+bool HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Contains(
+    const T& key) const {
   return Lookup<HashTranslator>(key);
 }
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
+
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-void HashTable<Key,
-               Value,
-               Extractor,
-               HashFunctions,
-               Traits,
-               KeyTraits,
-               Allocator>::erase(const ValueType* pos) {
+void HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::erase(
+    const ValueType* pos) {
   RegisterModification();
 #if DUMP_HASHTABLE_STATS
   HashTableStats::instance().numRemoves.fetch_add(1, std::memory_order_relaxed);
@@ -1617,7 +1536,7 @@ void HashTable<Key,
 #endif
 
   EnterAccessForbiddenScope();
-  DeleteBucket(*pos);
+  DeleteBucket(const_cast<ValueType&>(*pos));
   LeaveAccessForbiddenScope();
   ++deleted_count_;
   --key_count_;
@@ -1629,13 +1548,12 @@ void HashTable<Key,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 inline void
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    erase(iterator it) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::erase(
+    iterator it) {
   if (it == end())
     return;
   erase(it.iterator_.position_);
@@ -1644,13 +1562,12 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 inline void
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    erase(const_iterator it) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::erase(
+    const_iterator it) {
   if (it == end())
     return;
   erase(it.position_);
@@ -1659,28 +1576,24 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 inline void
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    erase(KeyPeekInType key) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::erase(
+    KeyPeekInType key) {
   erase(find(key));
 }
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    AllocateTable(unsigned size) {
-  size_t alloc_size = base::CheckMul(size, sizeof(ValueType)).ValueOrDie();
-  ValueType* result;
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::AllocateTable(
+    unsigned size) {
   // Assert that we will not use memset on things with a vtable entry.  The
   // compiler will also check this on some platforms. We would like to check
   // this on the whole value (key-value pair), but std::is_polymorphic will
@@ -1697,30 +1610,22 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       "Cannot put DISALLOW_NEW objects that "
       "have trace methods into an off-heap HashTable");
 
-  if (Traits::kEmptyValueIsZero) {
-    result = Allocator::template AllocateZeroedHashTableBacking<ValueType,
-                                                                HashTable>(
-        alloc_size);
-  } else {
-    result = Allocator::template AllocateHashTableBacking<ValueType, HashTable>(
-        alloc_size);
-    for (unsigned i = 0; i < size; i++)
-      InitializeBucket(result[i]);
-  }
-  return result;
+  size_t alloc_size = base::CheckMul(size, sizeof(ValueType)).ValueOrDie();
+  return HashTableBucketInitializer<
+      Traits, Allocator, Value>::template AllocateTable<HashTable>(size,
+                                                                   alloc_size);
 }
 
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 void HashTable<Key,
                Value,
                Extractor,
-               HashFunctions,
+
                Traits,
                KeyTraits,
                Allocator>::DeleteAllBucketsAndDeallocate(ValueType* table,
@@ -1760,13 +1665,11 @@ void HashTable<Key,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Expand(Value* entry) {
+Value* HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Expand(
+    Value* entry) {
   unsigned new_size;
   if (!table_size_) {
     new_size = KeyTraits::kMinimumTableSize;
@@ -1783,13 +1686,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    ExpandBuffer(unsigned new_table_size, Value* entry, bool& success) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::ExpandBuffer(
+    unsigned new_table_size,
+    Value* entry,
+    bool& success) {
   success = false;
   DCHECK_LT(table_size_, new_table_size);
   CHECK(Allocator::IsAllocationAllowed());
@@ -1810,12 +1714,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       new_entry = &temporary_table[i];
     if (IsEmptyOrDeletedBucket(table_[i])) {
       DCHECK_NE(&table_[i], entry);
-      if (Traits::kEmptyValueIsZero) {
-        // NOLINTNEXTLINE(bugprone-undefined-memory-manipulation)
-        memset(&temporary_table[i], 0, sizeof(ValueType));
-      } else {
-        InitializeBucket(temporary_table[i]);
-      }
+      InitializeBucket(temporary_table[i]);
     } else {
       Mover<ValueType, Allocator, Traits,
             Traits::template NeedsToForbidGCOnMove<>::value>::
@@ -1826,12 +1725,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   table_ = temporary_table;
   Allocator::template BackingWriteBarrier(&table_);
 
-  if (Traits::kEmptyValueIsZero) {
-    AtomicMemzero(original_table, new_table_size * sizeof(ValueType));
-  } else {
-    for (unsigned i = 0; i < new_table_size; i++)
-      InitializeBucket(original_table[i]);
-  }
+  HashTableBucketInitializer<Traits, Allocator, Value>::InitializeTable(
+      original_table, new_table_size);
   new_entry = RehashTo(original_table, new_table_size, new_entry);
 
   return new_entry;
@@ -1840,13 +1735,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    RehashTo(ValueType* new_table, unsigned new_table_size, Value* entry) {
+Value* HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::RehashTo(
+    ValueType* new_table,
+    unsigned new_table_size,
+    Value* entry) {
 #if DUMP_HASHTABLE_STATS
   if (table_size_ != 0) {
     HashTableStats::instance().numRehashes.fetch_add(1,
@@ -1905,13 +1800,12 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-Value*
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Rehash(unsigned new_table_size, Value* entry) {
+Value* HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Rehash(
+    unsigned new_table_size,
+    Value* entry) {
   unsigned old_table_size = table_size_;
 
 #if DUMP_HASHTABLE_STATS
@@ -1945,14 +1839,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 void HashTable<Key,
                Value,
                Extractor,
-               HashFunctions,
+
                Traits,
                KeyTraits,
                Allocator>::clear() {
@@ -1971,12 +1864,11 @@ void HashTable<Key,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    HashTable(const HashTable& other)
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::HashTable(
+    const HashTable& other)
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
@@ -2004,12 +1896,11 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    HashTable(HashTable&& other)
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::HashTable(
+    HashTable&& other)
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
@@ -2031,14 +1922,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 void HashTable<Key,
                Value,
                Extractor,
-               HashFunctions,
+
                Traits,
                KeyTraits,
                Allocator>::swap(HashTable& other) {
@@ -2081,13 +1971,12 @@ void HashTable<Key,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-operator=(const HashTable& other) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>&
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::operator=(
+    const HashTable& other) {
   HashTable tmp(other);
   swap(tmp);
   return *this;
@@ -2096,13 +1985,12 @@ operator=(const HashTable& other) {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-operator=(HashTable&& other) {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>&
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::operator=(
+    HashTable&& other) {
   swap(other);
   return *this;
 }
@@ -2111,7 +1999,6 @@ template <WeakHandlingFlag weakHandlingFlag,
           typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -2123,7 +2010,6 @@ struct WeakProcessingHashTableHelper {
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
@@ -2131,19 +2017,13 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
                                      Key,
                                      Value,
                                      Extractor,
-                                     HashFunctions,
                                      Traits,
                                      KeyTraits,
                                      Allocator> {
   STATIC_ONLY(WeakProcessingHashTableHelper);
 
-  using HashTableType = HashTable<Key,
-                                  Value,
-                                  Extractor,
-                                  HashFunctions,
-                                  Traits,
-                                  KeyTraits,
-                                  Allocator>;
+  using HashTableType =
+      HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>;
   using ValueType = typename HashTableType::ValueType;
 
   // Used for purely weak and for weak-and-strong tables (ephemerons).
@@ -2178,14 +2058,13 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Trace(VisitorDispatcher visitor) const {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::Trace(
+    VisitorDispatcher visitor) const {
   static_assert(WTF::IsWeak<ValueType>::value ||
                     IsTraceableInCollectionTrait<Traits>::value,
                 "Value should not be traced");
@@ -2195,14 +2074,14 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename Key,
           typename Value,
           typename Extractor,
-          typename HashFunctions,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
-HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    TraceTable(VisitorDispatcher visitor, const ValueType* table) const {
+HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::TraceTable(
+    VisitorDispatcher visitor,
+    const ValueType* table) const {
   if (!WTF::IsWeak<ValueType>::value) {
     // Strong HashTable.
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(
@@ -2217,8 +2096,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Allocator::template TraceHashTableBackingWeakly<ValueType, HashTable>(
         visitor, table, &table_,
         WeakProcessingHashTableHelper<WeakHandlingTrait<ValueType>::value, Key,
-                                      Value, Extractor, HashFunctions, Traits,
-                                      KeyTraits, Allocator>::Process,
+                                      Value, Extractor, Traits, KeyTraits,
+                                      Allocator>::Process,
         this);
   }
 }
@@ -2248,7 +2127,7 @@ struct HashTableConstIteratorAdapter {
     return const_cast<GetType>(SourceGetType(impl_.Get()));
   }
   typename Traits::IteratorConstReferenceType operator*() const {
-    return Traits::GetToReferenceConstConversion(Get());
+    return *Get();
   }
   GetType operator->() const { return Get(); }
 
@@ -2293,9 +2172,7 @@ struct HashTableIteratorAdapter {
   GetType Get() const {
     return const_cast<GetType>(SourceGetType(impl_.get()));
   }
-  typename Traits::IteratorReferenceType operator*() const {
-    return Traits::GetToReferenceConversion(Get());
-  }
+  typename Traits::IteratorReferenceType operator*() const { return *Get(); }
   GetType operator->() const { return Get(); }
 
   HashTableIteratorAdapter& operator++() {

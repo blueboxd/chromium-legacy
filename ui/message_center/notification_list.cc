@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
+#include "base/functional/bind.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -315,6 +315,28 @@ void NotificationList::ResetSinglePopup(const std::string& id) {
   // `shown_as_popup` should be true if quiet mode is enabled.
   state->shown_as_popup = quiet_mode_;
   state->is_read = false;
+  state->expand_state = ExpandState::DEFAULT;
+}
+
+ExpandState NotificationList::GetNotificationExpandState(
+    const std::string& id) {
+  auto iter = GetNotification(id);
+  if (iter == notifications_.end()) {
+    return ExpandState::DEFAULT;
+  }
+
+  return iter->second.expand_state;
+}
+
+void NotificationList::SetNotificationExpandState(
+    const std::string& id,
+    const ExpandState expand_state) {
+  auto iter = GetNotification(id);
+  if (iter == notifications_.end()) {
+    return;
+  }
+
+  iter->second.expand_state = expand_state;
 }
 
 NotificationDelegate* NotificationList::GetNotificationDelegate(

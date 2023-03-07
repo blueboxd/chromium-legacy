@@ -10,7 +10,7 @@
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/webui/projector_app/test/mock_app_client.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +45,7 @@ class MockSodaInstaller : public speech::SodaInstaller {
   MOCK_CONST_METHOD0(GetSodaBinaryPath, base::FilePath());
   MOCK_CONST_METHOD1(GetLanguagePath, base::FilePath(const std::string&));
   MOCK_METHOD2(InstallLanguage, void(const std::string&, PrefService*));
+  MOCK_METHOD2(UninstallLanguage, void(const std::string&, PrefService*));
   MOCK_CONST_METHOD0(GetAvailableLanguages, std::vector<std::string>());
   MOCK_METHOD1(InstallSoda, void(PrefService*));
   MOCK_METHOD1(UninstallSoda, void(PrefService*));

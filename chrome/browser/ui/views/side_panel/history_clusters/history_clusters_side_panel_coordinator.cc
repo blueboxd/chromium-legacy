@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/views/side_panel/history_clusters/history_clusters_side_panel_coordinator.h"
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -41,6 +42,16 @@ HistoryClustersSidePanelCoordinator::HistoryClustersSidePanelCoordinator(
 
 HistoryClustersSidePanelCoordinator::~HistoryClustersSidePanelCoordinator() =
     default;
+
+// static
+bool HistoryClustersSidePanelCoordinator::IsSupported(Profile* profile) {
+  auto* history_clusters_service =
+      HistoryClustersServiceFactory::GetForBrowserContext(profile);
+  return base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) &&
+         history_clusters_service &&
+         history_clusters_service->IsJourneysEnabled() &&
+         !profile->IsIncognitoProfile() && !profile->IsGuestSession();
+}
 
 void HistoryClustersSidePanelCoordinator::CreateAndRegisterEntry(
     SidePanelRegistry* global_registry) {
@@ -102,18 +113,11 @@ HistoryClustersSidePanelCoordinator::CreateHistoryClustersWebView() {
 
 void HistoryClustersSidePanelCoordinator::OnHistoryClustersPreferenceChanged() {
   auto* browser = &GetBrowser();
-  auto* global_registry = BrowserView::GetBrowserViewForBrowser(browser)
-                              ->side_panel_coordinator()
-                              ->GetGlobalSidePanelRegistry();
+  auto* global_registry =
+      SidePanelCoordinator::GetGlobalSidePanelRegistry(browser);
   if (browser->profile()->GetPrefs()->GetBoolean(
           history_clusters::prefs::kVisible)) {
-    auto* history_clusters_service =
-        HistoryClustersServiceFactory::GetForBrowserContext(browser->profile());
-    if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) &&
-        history_clusters_service &&
-        history_clusters_service->IsJourneysEnabled() &&
-        !browser->profile()->IsIncognitoProfile() &&
-        !browser->profile()->IsGuestSession()) {
+    if (IsSupported(browser->profile())) {
       HistoryClustersSidePanelCoordinator::GetOrCreateForBrowser(browser)
           ->CreateAndRegisterEntry(global_registry);
     }

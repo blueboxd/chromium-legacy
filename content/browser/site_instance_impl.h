@@ -45,6 +45,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // with the same name.
   static scoped_refptr<SiteInstanceImpl> Create(
       BrowserContext* browser_context);
+  static scoped_refptr<SiteInstanceImpl> CreateForURL(
+      BrowserContext* browser_context,
+      const GURL& url);
   static scoped_refptr<SiteInstanceImpl> CreateForGuest(
       BrowserContext* browser_context,
       const StoragePartitionConfig& partition_config);
@@ -316,6 +319,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   void ConvertToDefaultOrSetSite(const UrlInfo& url_info);
 
   // Returns whether SetSite() has been called.
+  //
+  // In some cases, the "site" is not set at SiteInstance creation time, and
+  // instead it's set lazily when a navigation response is received and
+  // SiteInstance selection is finalized. This is to support better process
+  // sharing in case the site redirects to some other site: we want to use the
+  // destination site in the SiteInstance.
   bool HasSite() const;
 
   // Returns whether there is currently a related SiteInstance (registered with

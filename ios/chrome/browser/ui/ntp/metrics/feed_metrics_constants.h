@@ -35,6 +35,13 @@ extern const int kMaxCardsInFeed;
 extern NSString* const kArticleVisitTimestampKey;
 // Stores the time elapsed on the feed when the user leaves.
 extern NSString* const kLongFeedVisitTimeAggregateKey;
+extern NSString* const kLongFollowingFeedVisitTimeAggregateKey;
+extern NSString* const kLongDiscoverFeedVisitTimeAggregateKey;
+extern NSString* const kLastUsedFeedForGoodVisitsKey;
+// Stores the last interaction time for Good Visits (NSDate).
+extern NSString* const kLastInteractionTimeForGoodVisits;
+extern NSString* const kLastInteractionTimeForDiscoverGoodVisits;
+extern NSString* const kLastInteractionTimeForFollowingGoodVisits;
 
 #pragma mark - Enums
 
@@ -52,6 +59,23 @@ enum class BrokenNTPHierarchyRelationship {
 
   // Change this to match max value.
   kMaxValue = 6,
+};
+
+// Values from enums.xml that represent the triggers where feed refreshes are
+// requested. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class FeedRefreshTrigger {
+  kOther = 0,
+  kBackgroundColdStart = 1,
+  kBackgroundWarmStart = 2,
+  kForegroundFeedStart = 3,
+  kForegroundAccountChange = 4,
+  kForegroundUserTriggered = 5,
+  kForegroundForced = 6,
+  kForegroundNotForced = 7,
+
+  // Change this to match max value.
+  kMaxValue = 7,
 };
 
 // Enum class contains values indicating the type of follow request. Ex.
@@ -236,6 +260,9 @@ extern const char kDiscoverFeedActivityLoggingEnabled[];
 // Histogram name for broken NTP view hierarchy logs.
 // TODO(crbug.com/1262536): Remove this when issue is fixed.
 extern const char kDiscoverFeedBrokenNTPHierarchy[];
+
+// Histogram name for triggers causing feed refreshes.
+extern const char kDiscoverFeedRefreshTrigger[];
 
 // Histogram name for the Feed settings when the App is being start.
 extern const char kFeedUserSettingsOnStart[];

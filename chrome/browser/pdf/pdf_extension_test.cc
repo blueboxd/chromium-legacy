@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -138,7 +139,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
-#include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/inspect/ax_api_type.h"
 #include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
 #include "ui/accessibility/platform/inspect/ax_inspect_test_helper.h"
@@ -811,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LoadInPlatformApp) {
   }
 
   extensions::ResultCatcher result_catcher;
-  ASSERT_TRUE(LoadAndLaunchApp(dir.UnpackedPath()));
+  ASSERT_TRUE(LoadAndLaunchApp(dir.UnpackedPath(), /*uses_guest_view=*/true));
   ASSERT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 
   auto* app_registry = extensions::AppWindowRegistry::Get(browser()->profile());
@@ -1008,8 +1009,7 @@ class PDFExtensionJSTest : public PDFExtensionTest {
         pak_path, ui::kScaleFactorNone);
 
     // Register the chrome://webui-test data source.
-    content::WebUIDataSource::Add(browser()->profile(),
-                                  webui::CreateWebUITestDataSource());
+    webui::CreateAndAddWebUITestDataSource(browser()->profile());
   }
 
   void RunTestsInJsModule(const std::string& filename,
@@ -2256,16 +2256,18 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
-  // Now enable accessibility globally, and assert that the PDF accessibility
-  // tree loads.
-  EnableAccessibilityForWebContents(guest_contents);
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  // Now enable accessibility globally, and assert that the PDF
+  // accessibility tree loads.
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
+  WebContents* contents = GetActiveWebContents();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
-  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(guest_contents);
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
@@ -2286,10 +2288,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_PdfAccessibilityInIframe) {
   WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
-  WebContents* guest_contents = GetOnlyGuestContents(contents);
-  ASSERT_TRUE(guest_contents);
-
-  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(guest_contents);
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
@@ -2304,23 +2303,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
   WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
-  WebContents* guest_contents = GetOnlyGuestContents(contents);
-  ASSERT_TRUE(guest_contents);
-
-  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(guest_contents);
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityWordBoundaries) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  WebContents* contents = GetActiveWebContents();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
-  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(guest_contents);
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshotForPdf(contents);
 
   bool found = false;
   for (auto& node : ax_tree.nodes) {
@@ -2345,20 +2342,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityWordBoundaries) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
+  WebContents* contents = GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(
-      GetActiveWebContents(),
+      contents,
       "document.getElementsByTagName('embed')[0].postMessage("
       "{type: 'selectAll'});"));
 
-  EnableAccessibilityForWebContents(guest_contents);
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
   ui::AXTreeUpdate ax_tree_update =
-      GetAccessibilityTreeSnapshotForPdf(guest_contents);
+      GetAccessibilityTreeSnapshotForPdf(contents);
   ui::AXTree ax_tree(ax_tree_update);
 
   // Ensure that the selection spans the beginning of the first text
@@ -2403,28 +2401,29 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
       "2 Second Section\n"
       "3";
 
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
+  WebContents* contents = GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(
-      GetActiveWebContents(),
+      contents,
       "document.getElementsByTagName('embed')[0].postMessage("
       "{type: 'selectAll'});"));
 
-  EnableAccessibilityForWebContents(guest_contents);
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
   // Find pdfRoot node in the accessibility tree.
   content::FindAccessibilityNodeCriteria find_criteria;
   find_criteria.role = ax::mojom::Role::kPdfRoot;
   ui::AXPlatformNodeDelegate* pdf_root =
-      content::FindAccessibilityNode(guest_contents, find_criteria);
+      content::FindAccessibilityNode(contents, find_criteria);
   ASSERT_TRUE(pdf_root);
 
   content::ContextMenuInterceptor context_menu_interceptor(
-      GetPluginFrame(guest_contents));
+      GetPluginFrame(guest));
 
   ContextMenuWaiter menu_waiter;
   // Invoke kShowContextMenu accessibility action on the node with the kPdfRoot
@@ -2450,11 +2449,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
 // when accessibility is enabled.  (http://crbug.com/668724)
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  WebContents* guest_contents = LoadPdfGetGuestContents(
+  MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf_private/accessibility_crash_2.pdf"));
-  ASSERT_TRUE(guest_contents);
+  ASSERT_TRUE(guest);
 
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+  WaitForAccessibilityTreeToContainNodeWithName(GetActiveWebContents(),
+                                                "Page 1");
 }
 #endif
 
@@ -2913,14 +2913,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
 
 class PDFExtensionComboBoxTest : public PDFExtensionTest {
  public:
-  // TODO(crbug.com/1261928): Prefer using LoadTestComboBoxPdfGetMimeHanderView
-  void LoadTestComboBoxPdfGetGuestContents() {
-    guest_contents_ = LoadPdfGetGuestContents(
-        embedded_test_server()->GetURL("/pdf/combobox_form.pdf"));
-    ASSERT_TRUE(guest_contents_);
-  }
-
-  MimeHandlerViewGuest* LoadTestComboBoxPdfGetMimeHanderView() {
+  MimeHandlerViewGuest* LoadTestComboBoxPdfGetMimeHandlerView() {
     return LoadPdfGetMimeHandlerView(
         embedded_test_server()->GetURL("/pdf/combobox_form.pdf"));
   }
@@ -2933,31 +2926,9 @@ class PDFExtensionComboBoxTest : public PDFExtensionTest {
   // Blink page coordinates corresponds to approximately (102, 62) in PDF user
   // space coordinates. See PDFExtensionLinkClickTest::GetLinkPosition() for
   // more information on all the coordinate systems involved.
-  // TODO(crbug.com/1261928): Prefer the MimeHandlerViewGuest overload of this
-  // method.
-  gfx::Point GetEditableComboBoxLeftPosition() {
-    return ConvertPageCoordToScreenCoord(guest_contents_, {136, 318});
-  }
-
   gfx::Point GetEditableComboBoxLeftPosition(MimeHandlerViewGuest* guest) {
     return ConvertPageCoordToScreenCoord(guest->GetGuestMainFrame(),
                                          {136, 318});
-  }
-
-  // TODO(crbug.com/1261928): Prefer the MimeHandlerViewGuest overload of this
-  // method.
-  void ClickLeftSideOfEditableComboBox() {
-    WebContents* contents = GetWebContentsForInputRouting();
-    content::SimulateMouseClickAt(contents, 0,
-                                  blink::WebMouseEvent::Button::kLeft,
-                                  GetEditableComboBoxLeftPosition());
-
-    // Make sure mouse events are sent completely before proceeding, in order to
-    // avoid races with subsequent keyboard events.
-    content::InputEventAckWaiter mouse_waiter(
-        GetPluginFrame(contents)->GetRenderWidgetHost(),
-        blink::WebInputEvent::Type::kMouseUp);
-    mouse_waiter.Wait();
   }
 
   void ClickLeftSideOfEditableComboBox(MimeHandlerViewGuest* guest) {
@@ -2970,36 +2941,6 @@ class PDFExtensionComboBoxTest : public PDFExtensionTest {
         GetPluginFrame(guest)->GetRenderWidgetHost(),
         blink::WebInputEvent::Type::kMouseUp);
     mouse_waiter.Wait();
-  }
-
-  // TODO(crbug.com/1261928): Prefer the MimeHandlerViewGuest overload of this
-  // method.
-  void TypeHello() {
-    struct KeyData {
-      char ch;
-      ui::DomCode code;
-      ui::KeyboardCode key_code;
-    };
-
-    constexpr KeyData kData[] = {
-        {'H', ui::DomCode::US_H, ui::VKEY_H},
-        {'E', ui::DomCode::US_E, ui::VKEY_E},
-        {'L', ui::DomCode::US_L, ui::VKEY_L},
-        {'L', ui::DomCode::US_L, ui::VKEY_L},
-        {'O', ui::DomCode::US_O, ui::VKEY_O},
-    };
-
-    auto* contents = GetWebContentsForInputRouting();
-    auto* rwh = GetPluginFrame(contents)->GetRenderWidgetHost();
-    for (const auto& data : kData) {
-      content::SimulateKeyPress(contents, ui::DomKey::FromCharacter(data.ch),
-                                data.code, data.key_code, /*control=*/false,
-                                /*shift=*/false, /*alt=*/false,
-                                /*command=*/false);
-      content::InputEventAckWaiter key_waiter(
-          rwh, blink::WebInputEvent::Type::kKeyUp);
-      key_waiter.Wait();
-    }
   }
 
   void TypeHello(MimeHandlerViewGuest* guest) {
@@ -3034,39 +2975,42 @@ class PDFExtensionComboBoxTest : public PDFExtensionTest {
   }
 
   // Presses the left arrow key.
-  void PressLeftArrow() {
+  void PressLeftArrow(MimeHandlerViewGuest* guest) {
+    // Make sure that the plugin frame of guest has focus.
+    ASSERT_EQ(GetActiveWebContents()->GetFocusedFrame(), GetPluginFrame(guest));
     content::SimulateKeyPressWithoutChar(
-        GetWebContentsForInputRouting(), ui::DomKey::ARROW_LEFT,
+        guest->embedder_web_contents(), ui::DomKey::ARROW_LEFT,
         ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT, false, false, false, false);
   }
 
   // Presses down shift, presses the left arrow, and lets go of shift.
-  void PressShiftLeftArrow() {
-    content::SimulateKeyPressWithoutChar(GetWebContentsForInputRouting(),
+  void PressShiftLeftArrow(MimeHandlerViewGuest* guest) {
+    // Make sure that the plugin frame of guest has focus.
+    ASSERT_EQ(GetActiveWebContents()->GetFocusedFrame(), GetPluginFrame(guest));
+    content::SimulateKeyPressWithoutChar(guest->embedder_web_contents(),
                                          ui::DomKey::ARROW_LEFT,
                                          ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT,
                                          false, /*shift=*/true, false, false);
   }
 
   // Presses the right arrow key.
-  void PressRightArrow() {
+  void PressRightArrow(MimeHandlerViewGuest* guest) {
+    // Make sure that the plugin frame of guest has focus.
+    ASSERT_EQ(GetActiveWebContents()->GetFocusedFrame(), GetPluginFrame(guest));
     content::SimulateKeyPressWithoutChar(
-        GetWebContentsForInputRouting(), ui::DomKey::ARROW_RIGHT,
+        guest->embedder_web_contents(), ui::DomKey::ARROW_RIGHT,
         ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, false, false, false);
   }
 
   // Presses down shift, presses the right arrow, and lets go of shift.
-  void PressShiftRightArrow() {
+  void PressShiftRightArrow(MimeHandlerViewGuest* guest) {
+    // Make sure that the plugin frame of guest has focus.
+    ASSERT_EQ(GetActiveWebContents()->GetFocusedFrame(), GetPluginFrame(guest));
     content::SimulateKeyPressWithoutChar(
-        GetWebContentsForInputRouting(), ui::DomKey::ARROW_RIGHT,
+        guest->embedder_web_contents(), ui::DomKey::ARROW_RIGHT,
         ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, /*shift=*/true, false,
         false);
   }
-
-  WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
-
- private:
-  raw_ptr<WebContents, DanglingUntriaged> guest_contents_ = nullptr;
 };
 
 class PDFExtensionSaveTest : public PDFExtensionComboBoxTest {
@@ -3113,7 +3057,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionSaveTest, MAYBE_Save) {
   using FileChooser = extensions::FileSystemChooseEntryFunction;
   FileChooser::SkipPickerAndAlwaysSelectPathForTest file_picker(save_path);
 
-  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHanderView();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
   ClickLeftSideOfEditableComboBox(guest);
   TypeHello(guest);
   SaveEditedPdf(guest);
@@ -3183,7 +3127,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionSaveWithPolicyTest, MAYBE_SaveWithPolicy) {
   DownloadPrefs::FromBrowserContext(profile())
       ->SkipSanitizeDownloadTargetPathForTesting();
 
-  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHanderView();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
   ClickLeftSideOfEditableComboBox(guest);
   TypeHello(guest);
   SaveEditedPdf(guest);
@@ -3213,7 +3157,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionSaveWithPolicyTest,
   DownloadPrefs::FromBrowserContext(profile())
       ->SkipSanitizeDownloadTargetPathForTesting();
 
-  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHanderView();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
   ClickLeftSideOfEditableComboBox(guest);
   TypeHello(guest);
   SaveEditedPdf(guest);
@@ -3233,7 +3177,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionSaveWithPolicyTest,
   DownloadPrefs::FromBrowserContext(profile())
       ->SkipSanitizeDownloadTargetPathForTesting();
 
-  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHanderView();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
   ClickLeftSideOfEditableComboBox(guest);
   TypeHello(guest);
   SaveEditedPdf(guest);
@@ -3278,9 +3222,10 @@ class PDFExtensionClipboardTest : public PDFExtensionComboBoxTest,
   // Sends a copy command and checks the copy/paste clipboard.
   // Note: Trying to send ctrl+c does not work correctly with
   // SimulateKeyPress(). Using IDC_COPY does not work on Mac in browser_tests.
-  void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
+  void SendCopyCommandAndCheckCopyPasteClipboard(MimeHandlerViewGuest* guest,
+                                                 const std::string& expected) {
     DoActionAndCheckClipboard(base::BindLambdaForTesting([&]() {
-                                GetWebContentsForInputRouting()->Copy();
+                                guest->embedder_web_contents()->Copy();
                               }),
                               ui::ClipboardBuffer::kCopyPaste, expected);
   }
@@ -3326,50 +3271,52 @@ class PDFExtensionClipboardTest : public PDFExtensionComboBoxTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
                        MAYBE_IndividualShiftRightArrowPresses) {
-  LoadTestComboBoxPdfGetGuestContents();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
 
   // Give the editable combo box focus.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
-  TypeHello();
+  TypeHello(guest);
 
   // Put the cursor back to the left side of the combo box.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
   // Press shift + right arrow 3 times. Letting go of shift in between.
-  auto action = base::BindLambdaForTesting([&]() { PressShiftRightArrow(); });
+  auto action =
+      base::BindLambdaForTesting([&]() { PressShiftRightArrow(guest); });
   DoActionAndCheckSelectionClipboard(action, "H");
   DoActionAndCheckSelectionClipboard(action, "HE");
   DoActionAndCheckSelectionClipboard(action, "HEL");
-  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+  SendCopyCommandAndCheckCopyPasteClipboard(guest, "HEL");
 }
 
 // TODO(crbug.com/897801): test is flaky.
 IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
                        DISABLED_IndividualShiftLeftArrowPresses) {
-  LoadTestComboBoxPdfGetGuestContents();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
 
   // Give the editable combo box focus.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
-  TypeHello();
+  TypeHello(guest);
 
   // Put the cursor back to the left side of the combo box.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
   for (int i = 0; i < 3; ++i)
-    PressRightArrow();
+    PressRightArrow(guest);
 
   // Press shift + left arrow 2 times. Letting go of shift in between.
-  auto action = base::BindLambdaForTesting([&]() { PressShiftLeftArrow(); });
+  auto action =
+      base::BindLambdaForTesting([&]() { PressShiftLeftArrow(guest); });
   DoActionAndCheckSelectionClipboard(action, "L");
   DoActionAndCheckSelectionClipboard(action, "EL");
-  SendCopyCommandAndCheckCopyPasteClipboard("EL");
+  SendCopyCommandAndCheckCopyPasteClipboard(guest, "EL");
 
   // Press shift + left arrow 2 times. Letting go of shift in between.
   DoActionAndCheckSelectionClipboard(action, "HEL");
   DoActionAndCheckSelectionClipboard(action, "HEL");
-  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+  SendCopyCommandAndCheckCopyPasteClipboard(guest, "HEL");
 }
 
 // Flaky, http://crbug.com/1121446, http://crbug.com/1350332
@@ -3381,20 +3328,20 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
                        MAYBE_CombinedShiftRightArrowPresses) {
-  LoadTestComboBoxPdfGetGuestContents();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
 
   // Give the editable combo box focus.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
-  TypeHello();
+  TypeHello(guest);
 
   // Put the cursor back to the left side of the combo box.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
   // Press shift + right arrow 3 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetWebContentsForInputRouting(), false, true, false, false);
+        guest->embedder_web_contents(), false, true, false, false);
     auto action = base::BindLambdaForTesting([&]() {
       hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
                                      ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
@@ -3403,29 +3350,29 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
     DoActionAndCheckSelectionClipboard(action, "HE");
     DoActionAndCheckSelectionClipboard(action, "HEL");
   }
-  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+  SendCopyCommandAndCheckCopyPasteClipboard(guest, "HEL");
 }
 
 // Flaky on multiple platforms (https://crbug.com/1121446)
 IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
                        DISABLED_CombinedShiftArrowPresses) {
-  LoadTestComboBoxPdfGetGuestContents();
+  MimeHandlerViewGuest* guest = LoadTestComboBoxPdfGetMimeHandlerView();
 
   // Give the editable combo box focus.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
-  TypeHello();
+  TypeHello(guest);
 
   // Put the cursor back to the left side of the combo box.
-  ClickLeftSideOfEditableComboBox();
+  ClickLeftSideOfEditableComboBox(guest);
 
   for (int i = 0; i < 3; ++i)
-    PressRightArrow();
+    PressRightArrow(guest);
 
   // Press shift + left arrow 3 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetWebContentsForInputRouting(), false, true, false, false);
+        guest->embedder_web_contents(), false, true, false, false);
     auto action = base::BindLambdaForTesting([&]() {
       hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_LEFT,
                                      ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT);
@@ -3434,12 +3381,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
     DoActionAndCheckSelectionClipboard(action, "EL");
     DoActionAndCheckSelectionClipboard(action, "HEL");
   }
-  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+  SendCopyCommandAndCheckCopyPasteClipboard(guest, "HEL");
 
   // Press shift + right arrow 2 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetWebContentsForInputRouting(), false, true, false, false);
+        guest->embedder_web_contents(), false, true, false, false);
     auto action = base::BindLambdaForTesting([&]() {
       hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
                                      ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
@@ -3447,7 +3394,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
     DoActionAndCheckSelectionClipboard(action, "EL");
     DoActionAndCheckSelectionClipboard(action, "L");
   }
-  SendCopyCommandAndCheckCopyPasteClipboard("L");
+  SendCopyCommandAndCheckCopyPasteClipboard(guest, "L");
 }
 
 // Verifies that an <embed> of size zero will still instantiate a guest and post
@@ -4486,6 +4433,13 @@ class PDFExtensionPrerenderTest : public PDFExtensionTest {
   }
 
  protected:
+  void PrerenderAndExpectCancellation(const GURL& prerender_url) {
+    content::test::PrerenderHostObserver observer(*GetActiveWebContents(),
+                                                  prerender_url);
+    prerender_helper().AddPrerenderAsync(prerender_url);
+    observer.WaitForDestroyed();
+  }
+
   content::test::PrerenderTestHelper& prerender_helper() {
     return *prerender_helper_;
   }
@@ -4494,11 +4448,10 @@ class PDFExtensionPrerenderTest : public PDFExtensionTest {
   std::unique_ptr<content::test::PrerenderTestHelper> prerender_helper_;
 };
 
-// TODO(1206312, 1205920): As of writing this test, we can attempt to prerender
-// the PDF viewer without crashing, however the viewer itself fails to load a
-// PDF. This test should be extended once that works.
-IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
-                       LoadPdfWhilePrerenderedDoesNotCrash) {
+// TODO(1205920): The PDF viewer cannot currently be prerendered correctly. This
+// tests that prerendering is cancelled. Once we're able to support this, this
+// test should be replaced with one that prerenders the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest, CancelPrerender) {
   const GURL initial_url =
       embedded_test_server()->GetURL("a.test", "/empty.html");
   const GURL pdf_url =
@@ -4506,14 +4459,59 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
   WebContents* web_contents = GetActiveWebContents();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
-  const int host_id = prerender_helper().AddPrerender(pdf_url);
-  content::RenderFrameHost* prerendered_render_frame_host =
-      prerender_helper().GetPrerenderedMainFrameHost(host_id);
-  ASSERT_TRUE(prerendered_render_frame_host);
-  ASSERT_EQ(web_contents->GetLastCommittedURL(), initial_url);
+  PrerenderAndExpectCancellation(pdf_url);
+  EXPECT_EQ(0U, GetGuestViewManager()->num_guests_created());
 
   prerender_helper().NavigatePrimaryPage(pdf_url);
   ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
+  EXPECT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
+}
+
+// TODO(1205920): The PDF viewer cannot currently be prerendered correctly. This
+// tests that prerendering is cancelled if a PDF is embedded in a prerendered
+// page. Once we're able to support this, this test should be replaced with one
+// that prerenders the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
+                       CancelPrerenderWithEmbeddedPdf) {
+  const GURL initial_url =
+      embedded_test_server()->GetURL("a.test", "/empty.html");
+  const GURL pdf_url =
+      embedded_test_server()->GetURL("a.test", "/pdf/test-iframe.html");
+  WebContents* web_contents = GetActiveWebContents();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+
+  PrerenderAndExpectCancellation(pdf_url);
+  EXPECT_EQ(0U, GetGuestViewManager()->num_guests_created());
+
+  prerender_helper().NavigatePrimaryPage(pdf_url);
+  ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
+  EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
+}
+
+// Cross-origin subframe navigations are deferred during prerendering, which
+// means that an embedded cross-site PDF will not cause the PDF viewer to be
+// created until prerender activation.
+IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
+                       PrerenderWithCrossSiteEmbeddedPdf) {
+  const GURL initial_url =
+      embedded_test_server()->GetURL("a.test", "/empty.html");
+  const GURL pdf_url = embedded_test_server()->GetURL(
+      "a.test", "/pdf/test-cross-site-iframe.html");
+  WebContents* web_contents = GetActiveWebContents();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+
+  content::test::PrerenderHostRegistryObserver registry_observer(*web_contents);
+  prerender_helper().AddPrerenderAsync(pdf_url);
+  registry_observer.WaitForTrigger(pdf_url);
+  const auto host_id = prerender_helper().GetHostForUrl(pdf_url);
+  EXPECT_NE(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  content::test::PrerenderHostObserver prerender_observer(*web_contents,
+                                                          host_id);
+  prerender_helper().NavigatePrimaryPage(pdf_url);
+  prerender_observer.WaitForActivation();
+  ASSERT_EQ(web_contents->GetLastCommittedURL(), pdf_url);
+  EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestViewCreated());
 }
 
 class PDFExtensionSubmitFormTest : public PDFExtensionTest {
@@ -4603,8 +4601,10 @@ class PDFExtensionPrerenderAndFencedFrameTest : public PDFExtensionTest {
   std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
 };
 
+// TODO(1205920): The PDF viewer cannot currently be prerendered correctly. Once
+// this is supported, this test should be re-enabled.
 IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderAndFencedFrameTest,
-                       LoadPDFInPrerender) {
+                       DISABLED_LoadPDFInPrerender) {
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
 
@@ -4755,7 +4755,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfNavigationDuringProfileShutdown) {
   {
     content::TestNavigationManager manager(guest_view->web_contents(),
                                            stream_url);
-    manager.WaitForFirstYieldAfterDidStartNavigation();
+    ASSERT_TRUE(manager.WaitForFirstYieldAfterDidStartNavigation());
   }
 
   // Now, close Incognito and destroy its profile.  This is subtle: simply

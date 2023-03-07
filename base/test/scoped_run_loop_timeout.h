@@ -7,10 +7,11 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 
@@ -87,7 +88,9 @@ class ScopedRunLoopTimeout {
   // Exposes the RunLoopTimeout to the friend tests (see above).
   static const RunLoop::RunLoopTimeout* GetTimeoutForCurrentThread();
 
-  const RunLoop::RunLoopTimeout* const nested_timeout_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION const RunLoop::RunLoopTimeout* const nested_timeout_;
   RunLoop::RunLoopTimeout run_timeout_;
 };
 

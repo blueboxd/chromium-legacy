@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #include "ui/views/controls/menu/menu_runner_impl_interface.h"
 
 @class MenuControllerCocoa;
-@class MenuControllerDelegate;
+@class MenuControllerCocoaDelegateImpl;
 
 namespace gfx {
 class RoundedCornersF;
@@ -56,7 +56,7 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
   base::scoped_nsobject<MenuControllerCocoa> menu_controller_;
 
   // The delegate for the |menu_controller_|.
-  base::scoped_nsobject<MenuControllerDelegate> menu_delegate_;
+  base::scoped_nsobject<MenuControllerCocoaDelegateImpl> menu_delegate_;
 
   // Are we in run waiting for it to return?
   bool running_ = false;

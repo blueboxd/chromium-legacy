@@ -36,6 +36,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 namespace {
 using ::absl::log_internal::AsString;
@@ -664,11 +665,15 @@ TYPED_TEST(VoidPtrLogFormatTest, NonNull) {
 }
 
 template <typename T>
-class VolatileVoidPtrLogFormatTest : public testing::Test {};
-using VolatileVoidPtrTypes = Types<volatile void *, const volatile void *>;
-TYPED_TEST_SUITE(VolatileVoidPtrLogFormatTest, VolatileVoidPtrTypes);
+class VolatilePtrLogFormatTest : public testing::Test {};
+using VolatilePtrTypes =
+    Types<volatile void*, const volatile void*, volatile char*,
+          const volatile char*, volatile signed char*,
+          const volatile signed char*, volatile unsigned char*,
+          const volatile unsigned char*>;
+TYPED_TEST_SUITE(VolatilePtrLogFormatTest, VolatilePtrTypes);
 
-TYPED_TEST(VolatileVoidPtrLogFormatTest, Null) {
+TYPED_TEST(VolatilePtrLogFormatTest, Null) {
   absl::ScopedMockLog test_sink(absl::MockLogDefault::kDisallowUnexpected);
 
   const TypeParam value = nullptr;
@@ -686,7 +691,7 @@ TYPED_TEST(VolatileVoidPtrLogFormatTest, Null) {
   LOG(INFO) << value;
 }
 
-TYPED_TEST(VolatileVoidPtrLogFormatTest, NonNull) {
+TYPED_TEST(VolatilePtrLogFormatTest, NonNull) {
   absl::ScopedMockLog test_sink(absl::MockLogDefault::kDisallowUnexpected);
 
   const TypeParam value = reinterpret_cast<TypeParam>(0xdeadbeefLL);
@@ -706,7 +711,8 @@ TYPED_TEST(VolatileVoidPtrLogFormatTest, NonNull) {
 
 template <typename T>
 class CharPtrLogFormatTest : public testing::Test {};
-using CharPtrTypes = Types<char *, const char *>;
+using CharPtrTypes = Types<char, const char, signed char, const signed char,
+                           unsigned char, const unsigned char>;
 TYPED_TEST_SUITE(CharPtrLogFormatTest, CharPtrTypes);
 
 TYPED_TEST(CharPtrLogFormatTest, Null) {
@@ -716,7 +722,7 @@ TYPED_TEST(CharPtrLogFormatTest, Null) {
   // standard library implementations choose to crash.  We take measures to log
   // something useful instead of crashing, even when that differs from the
   // standard library in use (and thus the behavior of `std::ostream`).
-  const TypeParam value = nullptr;
+  TypeParam* const value = nullptr;
 
   EXPECT_CALL(
       test_sink,
@@ -732,8 +738,8 @@ TYPED_TEST(CharPtrLogFormatTest, Null) {
 TYPED_TEST(CharPtrLogFormatTest, NonNull) {
   absl::ScopedMockLog test_sink(absl::MockLogDefault::kDisallowUnexpected);
 
-  char data[] = "value";
-  const TypeParam value = data;
+  TypeParam data[] = {'v', 'a', 'l', 'u', 'e', '\0'};
+  TypeParam* const value = data;
   auto comparison_stream = ComparisonStream();
   comparison_stream << value;
 
@@ -1702,18 +1708,18 @@ size_t MaxLogFieldLengthNoPrefix() {
   class StringLengthExtractorSink : public absl::LogSink {
    public:
     void Send(const absl::LogEntry& entry) override {
-      CHECK_EQ(size_, -1);
+      CHECK(!size_.has_value());
       CHECK_EQ(entry.text_message().find_first_not_of('x'),
                absl::string_view::npos);
-      size_ = entry.text_message().size();
+      size_.emplace(entry.text_message().size());
     }
     size_t size() const {
-      CHECK_GT(size_, 0);
-      return size_;
+      CHECK(size_.has_value());
+      return *size_;
     }
 
    private:
-    size_t size_ = -1;
+    absl::optional<size_t> size_;
   } extractor_sink;
   LOG(INFO).NoPrefix().ToSinkOnly(&extractor_sink)
       << std::string(2 * absl::log_internal::kLogMessageBufferSize, 'x');

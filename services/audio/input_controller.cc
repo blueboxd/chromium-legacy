@@ -11,8 +11,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -259,7 +259,7 @@ void InputController::MaybeSetUpAudioProcessing(
     return;
 
   int fifo_size =
-      base::FeatureList::IsEnabled(media::kChromeWideEchoCancellation)
+      media::IsChromeWideEchoCancellationEnabled()
           ? media::kChromeWideEchoCancellationProcessingFifoSize.Get()
           : 0;
 

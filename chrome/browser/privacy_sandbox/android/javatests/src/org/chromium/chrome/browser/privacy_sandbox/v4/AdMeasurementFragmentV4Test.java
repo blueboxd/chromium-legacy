@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.privacy_sandbox.v4;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -14,6 +15,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +27,7 @@ import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -42,6 +45,8 @@ import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.components.policy.test.annotations.Policies;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -56,7 +61,7 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+@EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
 public final class AdMeasurementFragmentV4Test {
     @Rule
     public ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
@@ -71,17 +76,27 @@ public final class AdMeasurementFragmentV4Test {
     public SettingsActivityTestRule<AdMeasurementFragmentV4> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(AdMeasurementFragmentV4.class);
 
+    private UserActionTester mUserActionTester;
+
+    @Before
+    public void setUp() {
+        mUserActionTester = new UserActionTester();
+    }
+
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
             prefService.clearPref(Pref.PRIVACY_SANDBOX_M1_AD_MEASUREMENT_ENABLED);
         });
+
+        mUserActionTester.tearDown();
     }
 
     private void startAdMeasuremenSettings() {
         mSettingsActivityTestRule.startSettingsActivity();
-        ViewUtils.onViewWaiting(withText(R.string.settings_ad_measurement_page_title));
+        ViewUtils.onViewWaiting(allOf(withText(R.string.settings_ad_measurement_page_title),
+                withParent(withId(R.id.action_bar))));
     }
 
     private Matcher<View> getAdMeasurementToggleMatcher() {
@@ -113,7 +128,7 @@ public final class AdMeasurementFragmentV4Test {
     public void testRenderAdMeasurement() throws IOException {
         setAdMeasurementPrefEnabled(true);
         startAdMeasuremenSettings();
-        mRenderTestRule.render(getRootView(R.string.settings_ad_measurement_page_title),
+        mRenderTestRule.render(getRootView(R.string.settings_ad_measurement_page_toggle_sub_label),
                 "ad_measurement_page_toggle_on");
     }
 
@@ -141,6 +156,8 @@ public final class AdMeasurementFragmentV4Test {
         onView(getAdMeasurementToggleMatcher()).perform(click());
 
         assertTrue(isAdMeasurementPrefEnabled());
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.AdMeasurement.Enabled"));
     }
 
     @Test
@@ -151,7 +168,27 @@ public final class AdMeasurementFragmentV4Test {
         onView(getAdMeasurementToggleMatcher()).perform(click());
 
         assertFalse(isAdMeasurementPrefEnabled());
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.AdMeasurement.Disabled"));
     }
-    // TODO(http://b/261439615): Add Managed state tests when the Privacy Sandbox policy is
-    // implemented.
+
+    @Test
+    @SmallTest
+    @Policies.Add({
+        @Policies.Item(key = "PrivacySandboxAdMeasurementEnabled", string = "false")
+        , @Policies.Item(key = "PrivacySandboxPromptEnabled", string = "false")
+    })
+    public void
+    testAdMeasurementManaged() {
+        startAdMeasuremenSettings();
+
+        // Check default state and try to press the toggle.
+        assertFalse(isAdMeasurementPrefEnabled());
+        onView(getAdMeasurementToggleMatcher()).check(matches(not(isChecked())));
+        onView(getAdMeasurementToggleMatcher()).perform(click());
+
+        // Check that the state of the pref and the toggle did not change.
+        assertFalse(isAdMeasurementPrefEnabled());
+        onView(getAdMeasurementToggleMatcher()).check(matches(not(isChecked())));
+    }
 }

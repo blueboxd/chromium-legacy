@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
@@ -396,7 +396,7 @@ void ProfileImpl::ClearRendererCache() {
 }
 
 void ProfileImpl::OnLocaleChanged() {
-  GetBrowserContext()->ForEachStoragePartition(base::BindRepeating(
+  GetBrowserContext()->ForEachLoadedStoragePartition(base::BindRepeating(
       [](const std::string& accept_language,
          content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()->SetAcceptLanguage(

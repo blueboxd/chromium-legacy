@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.os.RemoteException;
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
@@ -24,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -33,8 +33,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -48,9 +46,6 @@ public class DecoderServiceHost
         extends IDecoderServiceCallback.Stub implements DecodeVideoTask.VideoDecodingCallback {
     // A tag for logging error messages.
     private static final String TAG = "ImageDecoderHost";
-
-    // The feature param for determining whether the PhotoPicker should animate thumbnails.
-    private static final String FEATURE_PARAM_ANIMATE_THUMBNAILS = "animate_thumbnails";
 
     // The current context.
     private final Context mContext;
@@ -81,9 +76,6 @@ public class DecoderServiceHost
 
     // The number of io failures during video decoding, per batch.
     private int mFailedVideoDecodesUnknown;
-
-    // Whether animated thumbnails should be generated for video clips.
-    private boolean mAnimatedThumbnailsSupported;
 
     // A worker task for asynchronously handling video decode requests.
     private DecodeVideoTask mWorkerTask;
@@ -245,9 +237,6 @@ public class DecoderServiceHost
         }
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-        mAnimatedThumbnailsSupported =
-                PhotoPickerFeatures.PHOTO_PICKER_VIDEO_SUPPORT.getFieldTrialParamByFeatureAsBoolean(
-                        FEATURE_PARAM_ANIMATE_THUMBNAILS, false);
     }
 
     /**
@@ -284,15 +273,6 @@ public class DecoderServiceHost
         DecoderServiceParams params = new DecoderServiceParams(
                 uri, width, fullWidth, fileType, /*firstFrame=*/true, callback);
         mPendingRequests.add(params);
-
-        if (params.mFileType == PickerBitmap.TileTypes.VIDEO && mAnimatedThumbnailsSupported) {
-            // Decoding requests for videos are requests for first frames only. Add another
-            // low-priority request for decoding the rest of the frames.
-            DecoderServiceParams lowPriorityRequest =
-                    new DecoderServiceParams(params.mUri, params.mWidth, params.mFullWidth,
-                            params.mFileType, /*firstFrame=*/false, params.mCallback);
-            mPendingRequests.add(lowPriorityRequest);
-        }
 
         if (mProcessingRequest == null) dispatchNextDecodeRequest();
     }
@@ -551,12 +531,9 @@ public class DecoderServiceHost
             AssetFileDescriptor afd = null;
             try {
                 afd = mContentResolver.openAssetFileDescriptor(params.mUri, "r");
-            } catch (FileNotFoundException e) {
-                Log.e(TAG, "Unable to obtain FileDescriptor: " + e);
-                closeRequestWithError(params.mUri.getPath());
-                return;
-            } catch (IllegalStateException e) {
-                Log.e(TAG, "Invalid ContentResolver state: " + e);
+            } catch (Exception e) {
+                // FileNotFoundException, IllegalStateException, IllegalArgumentException.
+                Log.e(TAG, "Unable to obtain FileDescriptor", e);
                 closeRequestWithError(params.mUri.getPath());
                 return;
             }
@@ -574,14 +551,12 @@ public class DecoderServiceHost
         bundle.putBoolean(ImageDecoder.KEY_FULL_WIDTH, params.mFullWidth);
         try {
             mIRemoteService.decodeImage(bundle, this);
-            pfd.close();
-        } catch (RemoteException e) {
-            Log.e(TAG, "Communications failed (Remote): " + e);
-            closeRequestWithError(params.mUri.getPath());
-        } catch (IOException e) {
-            Log.e(TAG, "Communications failed (IO): " + e);
+        } catch (Exception e) {
+            // RemoteException, IOException.
+            Log.e(TAG, "IPC Failed", e);
             closeRequestWithError(params.mUri.getPath());
         }
+        StreamUtil.closeQuietly(pfd);
     }
 
     /**
@@ -604,10 +579,5 @@ public class DecoderServiceHost
     @VisibleForTesting
     public static void setStatusCallback(DecoderStatusCallback callback) {
         sStatusCallbackForTesting = callback;
-    }
-
-    @VisibleForTesting
-    void setAnimatedThumbnailsSupportedForTesting(boolean supported) {
-        mAnimatedThumbnailsSupported = supported;
     }
 }

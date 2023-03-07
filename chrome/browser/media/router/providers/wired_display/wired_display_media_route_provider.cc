@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -181,7 +181,7 @@ void WiredDisplayMediaRouteProvider::StartObservingMediaSinks(
   if (!display_observer_)
     display_observer_.emplace(this);
   sink_queries_.insert(media_source);
-  UpdateMediaSinks(media_source);
+  DiscoverSinksNow();
 }
 
 void WiredDisplayMediaRouteProvider::StopObservingMediaSinks(
@@ -214,10 +214,8 @@ void WiredDisplayMediaRouteProvider::DetachRoute(const std::string& route_id) {
 
 void WiredDisplayMediaRouteProvider::EnableMdnsDiscovery() {}
 
-void WiredDisplayMediaRouteProvider::UpdateMediaSinks(
-    const std::string& media_source) {
-  if (IsValidStandardPresentationSource(media_source))
-    media_router_->OnSinksReceived(kProviderId, media_source, GetSinks(), {});
+void WiredDisplayMediaRouteProvider::DiscoverSinksNow() {
+  NotifySinkObservers();
 }
 
 void WiredDisplayMediaRouteProvider::CreateMediaRouteController(

@@ -216,7 +216,7 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
         /*success=*/false, /*error_message=*/
         "sharedStorage.worklet.addModule() has to be called before "
         "sharedStorage.selectURL().",
-        /*opaque_url=*/{});
+        /*result_config=*/absl::nullopt);
     return;
   }
 
@@ -235,7 +235,7 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
         /*success=*/false, /*error_message=*/
         "sharedStorage.selectURL() failed because number of urn::uuid to url "
         "mappings has reached the limit.",
-        /*opaque_url=*/{});
+        /*result_config=*/absl::nullopt);
     return;
   }
 
@@ -252,9 +252,12 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
   // Assert that `urn_uuid` was not in the set before.
   DCHECK(emplace_succeeded);
 
+  FencedFrameConfig config;
+  config.urn_uuid_ = absl::make_optional(urn_uuid);
   std::move(callback).Run(
       /*success=*/true, /*error_message=*/{},
-      /*opaque_url=*/urn_uuid);
+      /*result_config=*/
+      config.RedactFor(FencedFrameEntity::kEmbedder));
 
   GetAndConnectToSharedStorageWorkletService()->RunURLSelectionOperation(
       name, urls, serialized_data,
@@ -826,12 +829,19 @@ base::TimeDelta SharedStorageWorkletHost::GetKeepAliveTimeout() const {
 
 shared_storage_worklet::mojom::SharedStorageWorkletService*
 SharedStorageWorkletHost::GetAndConnectToSharedStorageWorkletService() {
+  DCHECK(document_service_);
+
   if (!shared_storage_worklet_service_) {
+    bool private_aggregation_permissions_policy_allowed =
+        document_service_->render_frame_host().IsFeatureEnabled(
+            blink::mojom::PermissionsPolicyFeature::kPrivateAggregation);
+
     driver_->StartWorkletService(
         shared_storage_worklet_service_.BindNewPipeAndPassReceiver());
 
     shared_storage_worklet_service_->Initialize(
         shared_storage_worklet_service_client_.BindNewEndpointAndPassRemote(),
+        private_aggregation_permissions_policy_allowed,
         MaybeBindPrivateAggregationHost());
   }
 

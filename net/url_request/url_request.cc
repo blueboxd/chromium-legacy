@@ -6,15 +6,16 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/types/pass_key.h"
 #include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
@@ -285,7 +286,7 @@ base::Value URLRequest::GetStateAsValue() const {
   dict.Set("url", original_url().possibly_invalid_spec());
 
   if (url_chain_.size() > 1) {
-    base::Value list(base::Value::Type::LIST);
+    base::Value::List list;
     for (const GURL& url : url_chain_) {
       list.Append(url.possibly_invalid_spec());
     }
@@ -574,7 +575,8 @@ void URLRequest::Start() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-URLRequest::URLRequest(const GURL& url,
+URLRequest::URLRequest(base::PassKey<URLRequestContext> pass_key,
+                       const GURL& url,
                        RequestPriority priority,
                        Delegate* delegate,
                        const URLRequestContext* context,
@@ -1027,6 +1029,10 @@ void URLRequest::SetPriority(RequestPriority priority) {
                                     RequestPriorityToString(priority_));
   if (job_.get())
     job_->SetPriority(priority_);
+}
+
+void URLRequest::SetPriorityIncremental(bool priority_incremental) {
+  priority_incremental_ = priority_incremental;
 }
 
 void URLRequest::NotifyAuthRequired(

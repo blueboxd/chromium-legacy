@@ -80,7 +80,7 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   // Create the view in the bubble.
   std::unique_ptr<UnifiedSystemTrayView> CreateUnifiedQuickSettingsView();
-  std::unique_ptr<QuickSettingsView> CreateQuickSettingsView();
+  std::unique_ptr<QuickSettingsView> CreateQuickSettingsView(int max_height);
 
   // Sign out from the current user. Called from the view.
   void HandleSignOutAction();
@@ -183,6 +183,9 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   // Return true if UnifiedSystemTray is expanded.
   bool IsExpanded() const;
+
+  // Update the bubble view layout.
+  void UpdateBubble();
 
   scoped_refptr<UnifiedSystemTrayModel> model() { return model_; }
 

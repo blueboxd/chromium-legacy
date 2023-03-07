@@ -23,8 +23,20 @@ class WebState;
 
 namespace autofill {
 
-// Class that drives autofill flow on iOS. There is one instance per
-// WebContents.
+// AutofillDriverIOS drives the Autofill flow in the browser process based
+// on communication from JavaScript and from the external world.
+//
+// AutofillDriverIOS communicates with an AutofillDriverIOSBridge, which in
+// Chrome is implemented by AutofillAgent, and a BrowserAutofillManager.
+//
+// AutofillDriverIOS is associated with exactly one WebFrame, but its lifecycle
+// does *not* follow the life of that WebFrame precisely: an AutofillDriverIOS
+// survives the associated WebFrame and is destroyed only on destruction of the
+// associated WebState. This lifetime extension is done via a ref-counted
+// pointer in AutofillAgent.
+//
+// TODO(crbug.com/892612, crbug.com/1394786): Remove this workaround once life
+// cycle of AutofillDownloadManager is fixed.
 class AutofillDriverIOS : public AutofillDriver {
  public:
   ~AutofillDriverIOS() override;
@@ -40,13 +52,11 @@ class AutofillDriverIOS : public AutofillDriver {
                                                     web::WebFrame* web_frame);
 
   // AutofillDriver:
-  bool IsIncognito() const override;
   bool IsInActiveFrame() const override;
   bool IsInAnyMainFrame() const override;
   bool IsPrerendering() const override;
   bool CanShowAutofillUi() const override;
   ui::AXTreeID GetAxTreeId() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
   std::vector<FieldGlobalId> FillOrPreviewForm(
       mojom::RendererFormDataAction action,
@@ -64,6 +74,8 @@ class AutofillDriverIOS : public AutofillDriver {
       const std::u16string& value) override;
   void SendFieldsEligibleForManualFillingToRenderer(
       const std::vector<FieldGlobalId>& fields) override;
+  void SetShouldSuppressKeyboard(bool suppress) override;
+  void TriggerReparseInAllFrames() override;
 
   AutofillClient* client() { return client_; }
 

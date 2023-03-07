@@ -7,7 +7,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {ColorScheme, DynamicColorElement, emptyState, SetColorSchemePrefAction, SetStaticColorPrefAction, ThemeActionName, ThemeObserver} from 'chrome://personalization/js/personalization_app.js';
+import {ColorScheme, DynamicColorElement, emptyState, SetColorSchemeAction, SetSampleColorSchemesAction, SetStaticColorAction, ThemeActionName, ThemeObserver} from 'chrome://personalization/js/personalization_app.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import {hexColorToSkColor} from 'chrome://resources/js/color_utils.js';
@@ -48,10 +48,7 @@ suite('DynamicColorElementTest', function() {
   async function showStaticColorButtons() {
     const toggleButton = getToggleButton();
     if (toggleButton.checked) {
-      personalizationStore.expectAction(ThemeActionName.SET_COLOR_SCHEME);
-      toggleButton.click();
-      await personalizationStore.waitForAction(
-          ThemeActionName.SET_COLOR_SCHEME);
+      await clickToggleButton();
     }
     assertFalse(getStaticColorSelector().hidden);
   }
@@ -59,12 +56,17 @@ suite('DynamicColorElementTest', function() {
   async function showColorSchemeButtons() {
     const toggleButton = getToggleButton();
     if (!toggleButton.checked) {
-      personalizationStore.expectAction(ThemeActionName.SET_COLOR_SCHEME);
-      toggleButton.click();
-      await personalizationStore.waitForAction(
-          ThemeActionName.SET_COLOR_SCHEME);
+      await clickToggleButton();
     }
     assertFalse(getColorSchemeSelector().hidden);
+  }
+
+  async function clickToggleButton() {
+    // Any time the toggle button is clicked, the color scheme is set (if
+    // dynamic colors are disabled, then it is set to ColorScheme.kStatic).
+    personalizationStore.expectAction(ThemeActionName.SET_COLOR_SCHEME);
+    getToggleButton().click();
+    await personalizationStore.waitForAction(ThemeActionName.SET_COLOR_SCHEME);
   }
 
   setup(() => {
@@ -108,8 +110,19 @@ suite('DynamicColorElementTest', function() {
 
     const action =
         await personalizationStore.waitForAction(
-            ThemeActionName.SET_COLOR_SCHEME) as SetColorSchemePrefAction;
+            ThemeActionName.SET_COLOR_SCHEME) as SetColorSchemeAction;
     assertEquals(ColorScheme.kTonalSpot, action.colorScheme);
+  });
+
+  test('sets sample color schemes in store on first load', async () => {
+    personalizationStore.expectAction(ThemeActionName.SET_SAMPLE_COLOR_SCHEMES);
+
+    await initDynamicColorElement();
+
+    const action = await personalizationStore.waitForAction(
+                       ThemeActionName.SET_SAMPLE_COLOR_SCHEMES) as
+        SetSampleColorSchemesAction;
+    assertEquals(4, action.sampleColorSchemes.length);
   });
 
   test('sets color scheme data in store on changed', async () => {
@@ -122,7 +135,7 @@ suite('DynamicColorElementTest', function() {
 
     const action =
         await personalizationStore.waitForAction(
-            ThemeActionName.SET_COLOR_SCHEME) as SetColorSchemePrefAction;
+            ThemeActionName.SET_COLOR_SCHEME) as SetColorSchemeAction;
     assertEquals(colorScheme, action.colorScheme);
   });
 
@@ -136,7 +149,7 @@ suite('DynamicColorElementTest', function() {
 
     const action =
         await personalizationStore.waitForAction(
-            ThemeActionName.SET_STATIC_COLOR) as SetStaticColorPrefAction;
+            ThemeActionName.SET_STATIC_COLOR) as SetStaticColorAction;
     assertDeepEquals(staticColor, action.staticColor);
   });
 
@@ -183,9 +196,7 @@ suite('DynamicColorElementTest', function() {
     const staticColorSelector = getStaticColorSelector();
     await showColorSchemeButtons();
 
-    personalizationStore.expectAction(ThemeActionName.SET_COLOR_SCHEME);
-    toggleButton.click();
-    await personalizationStore.waitForAction(ThemeActionName.SET_COLOR_SCHEME);
+    await clickToggleButton();
 
     assertFalse(
         toggleButton.checked, 'after clicking toggle, toggle should be off');
@@ -196,9 +207,7 @@ suite('DynamicColorElementTest', function() {
         staticColorSelector.hidden,
         'when the toggle is off, the static color buttons should be visible.');
 
-    personalizationStore.expectAction(ThemeActionName.SET_COLOR_SCHEME);
-    toggleButton.click();
-    await personalizationStore.waitForAction(ThemeActionName.SET_COLOR_SCHEME);
+    await clickToggleButton();
 
     assertFalse(
         colorSchemeSelector.hidden,
@@ -269,7 +278,7 @@ suite('DynamicColorElementTest', function() {
 
     const action =
         await personalizationStore.waitForAction(
-            ThemeActionName.SET_COLOR_SCHEME) as SetColorSchemePrefAction;
+            ThemeActionName.SET_COLOR_SCHEME) as SetColorSchemeAction;
     assertTrue(!!action.colorScheme);
     assertEquals(
         Number(button.dataset['colorSchemeId']!),
@@ -289,11 +298,42 @@ suite('DynamicColorElementTest', function() {
 
     const action =
         await personalizationStore.waitForAction(
-            ThemeActionName.SET_STATIC_COLOR) as SetStaticColorPrefAction;
+            ThemeActionName.SET_STATIC_COLOR) as SetStaticColorAction;
     assertTrue(!!action.staticColor);
     assertDeepEquals(
         hexColorToSkColor(button.dataset['staticColor']!),
         personalizationStore.data.theme.staticColorSelected);
     assertEquals(button.getAttribute('aria-checked'), 'true');
+  });
+
+  test('store previous color scheme selection locally', async () => {
+    const colorScheme = ColorScheme.kExpressive;
+    themeProvider.setColorScheme(colorScheme);
+    await initDynamicColorElement();
+
+    // Toggle to show static color buttons.
+    await clickToggleButton();
+    // Toggle to show color scheme buttons again.
+    await clickToggleButton();
+
+    // The same color scheme button should be selected.
+    assertDeepEquals(
+        colorScheme, personalizationStore.data.theme.colorSchemeSelected);
+  });
+
+  test('store previous static color selection locally', async () => {
+    const staticColorHex = '#edd0e4';
+    themeProvider.setStaticColor(hexColorToSkColor(staticColorHex));
+    await initDynamicColorElement();
+
+    // Toggle to show color scheme buttons.
+    await clickToggleButton();
+    // Toggle to show static color buttons again.
+    await clickToggleButton();
+
+    // The same static color button should be selected.
+    assertDeepEquals(
+        hexColorToSkColor(staticColorHex),
+        personalizationStore.data.theme.staticColorSelected);
   });
 });

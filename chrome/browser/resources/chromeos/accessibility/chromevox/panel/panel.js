@@ -5,6 +5,7 @@
 /**
  * @fileoverview The ChromeVox panel and menus.
  */
+import {AsyncUtil} from '../../common/async_util.js';
 import {constants} from '../../common/constants.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
@@ -25,32 +26,23 @@ import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeM
 import {QueueMode} from '../common/tts_types.js';
 
 import {ISearchUI} from './i_search_ui.js';
+import {MenuManager} from './menu_manager.js';
 import {PanelInterface} from './panel_interface.js';
 import {PanelMenu, PanelNodeMenu, PanelSearchMenu} from './panel_menu.js';
 import {PanelMode, PanelModeInfo} from './panel_mode.js';
+
+const $ = (id) => document.getElementById(id);
 
 /** Class to manage the panel. */
 export class Panel extends PanelInterface {
   /** @private */
   constructor() {
     super();
-    /**
-     * The currently active menu, if any.
-     * @private {PanelMenu}
-     */
-    this.activeMenu_ = null;
-
-    /** @private {string} */
-    this.lastMenu_ = '';
-
     /** @private {!PanelMode} */
     this.mode_ = PanelMode.COLLAPSED;
 
-    /**
-     * The array of top-level menus.
-     * @private {!Array<PanelMenu>}
-     */
-    this.menus_ = [];
+    /** @private {!MenuManager} */
+    this.menuManager_ = new MenuManager();
 
     /** @private {!Object<!PanelNodeMenuId, !PanelNodeMenu>} */
     this.nodeMenuDictionary_ = {};
@@ -63,9 +55,6 @@ export class Panel extends PanelInterface {
 
     /** @private {?(function(): !Promise)} */
     this.pendingCallback_ = null;
-
-    /** @private {?PanelSearchMenu} */
-    this.searchMenu_ = null;
 
     /** @private {string} */
     this.sessionState_ = '';
@@ -89,10 +78,6 @@ export class Panel extends PanelInterface {
     this.speechElement_ = $('speech');
 
     /** @private {boolean} */
-    this.disableRestartTutorialNudgesForTesting_ = false;
-    /** @private {boolean} */
-    this.mockTouchGestureSourceForTesting_ = false;
-    /** @private {boolean} */
     this.tutorialReadyForTesting_ = false;
 
     this.initListeners_();
@@ -107,12 +92,16 @@ export class Panel extends PanelInterface {
         .addEventListener('click', () => this.onPanLeft_(), false);
     $('braille-pan-right')
         .addEventListener('click', () => this.onPanRight_(), false);
-    $('menus_button').addEventListener('mousedown', Panel.onOpenMenus, false);
-    $('options').addEventListener('click', Panel.onOptions, false);
-    $('close').addEventListener('click', Panel.onClose, false);
+    $('menus_button')
+        .addEventListener(
+            'mousedown', event => this.onOpenMenus_(event), false);
+    $('options').addEventListener('click', () => this.onOptions_(), false);
+    $('close').addEventListener('click', () => this.onClose_(), false);
 
-    document.addEventListener('keydown', Panel.onKeyDown, false);
-    document.addEventListener('mouseup', Panel.onMouseUp, false);
+    document.addEventListener(
+        'keydown', event => this.onKeyDown_(event), false);
+    document.addEventListener(
+        'mouseup', event => this.onMouseUp_(event), false);
     window.addEventListener(
         'storage', event => this.onStorageChanged_(event), false);
     window.addEventListener(
@@ -123,30 +112,30 @@ export class Panel extends PanelInterface {
     BridgeHelper.registerHandler(
         BridgeConstants.Panel.TARGET,
         BridgeConstants.Panel.Action.ADD_MENU_ITEM,
-        itemData => Panel.addNodeMenuItem(itemData));
+        itemData => this.addNodeMenuItem_(itemData));
     BridgeHelper.registerHandler(
         BridgeConstants.Panel.TARGET,
         BridgeConstants.Panel.Action.ON_CURRENT_RANGE_CHANGED,
-        () => Panel.onCurrentRangeChanged());
+        () => this.onCurrentRangeChanged_());
+    this.updateFromPrefs_();
   }
 
   /** Initialize the panel. */
   static async init() {
-    if (Panel.instance_) {
+    if (Panel.instance) {
       throw new Error('Cannot call Panel.init() more than once');
     }
 
     await LocalStorage.init();
     LocaleOutputHelper.init();
-    Panel.instance_ = new Panel();
-    PanelInterface.instance = Panel.instance_;
 
-    Panel.updateFromPrefs();
+    Panel.instance = new Panel();
+    PanelInterface.instance = Panel.instance;
+
     Msgs.addTranslatedMessagesToDom(document);
 
-    switch (location.search.slice(1)) {
-      case 'tutorial':
-        Panel.onTutorial();
+    if (location.search.slice(1) === 'tutorial') {
+      Panel.instance.onTutorial_();
     }
   }
 
@@ -155,50 +144,42 @@ export class Panel extends PanelInterface {
     this.pendingCallback_ = callback;
   }
 
-  /**
-   * Enables touch gesture mode for testing.
-   */
-  static setTouchGestureSourceForTesting() {
-    Panel.instance_.mockTouchGestureSourceForTesting_ = true;
-  }
-
-  /**
-   * Adds BackgroundBridge to the global object so that tests can mock it.
-   */
+  /** Adds BackgroundBridge to the global object so that tests can mock it. */
   static exportBackgroundBridgeForTesting() {
     window.BackgroundBridge = BackgroundBridge;
   }
 
   /**
    * Update the display based on prefs.
+   * @private
    */
-  static updateFromPrefs() {
-    if (Panel.instance_.mode_ === PanelMode.SEARCH) {
-      Panel.instance_.speechContainer_.hidden = true;
-      Panel.instance_.brailleContainer_.hidden = true;
-      Panel.instance_.searchContainer_.hidden = false;
+  updateFromPrefs_() {
+    if (this.mode_ === PanelMode.SEARCH) {
+      this.speechContainer_.hidden = true;
+      this.brailleContainer_.hidden = true;
+      this.searchContainer_.hidden = false;
       return;
     }
 
-    Panel.instance_.speechContainer_.hidden = false;
-    Panel.instance_.brailleContainer_.hidden = false;
-    Panel.instance_.searchContainer_.hidden = true;
+    this.speechContainer_.hidden = false;
+    this.brailleContainer_.hidden = false;
+    this.searchContainer_.hidden = true;
 
     if (LocalStorage.get('brailleCaptions')) {
-      Panel.instance_.speechContainer_.style.visibility = 'hidden';
-      Panel.instance_.brailleContainer_.style.visibility = 'visible';
+      this.speechContainer_.style.visibility = 'hidden';
+      this.brailleContainer_.style.visibility = 'visible';
     } else {
-      Panel.instance_.speechContainer_.style.visibility = 'visible';
-      Panel.instance_.brailleContainer_.style.visibility = 'hidden';
+      this.speechContainer_.style.visibility = 'visible';
+      this.brailleContainer_.style.visibility = 'hidden';
     }
   }
 
   /**
    * Execute a command to update the panel.
-   *
    * @param {PanelCommand} command The command to execute.
+   * @private
    */
-  static exec(command) {
+  exec_(command) {
     /**
      * Escape text so it can be safely added to HTML.
      * @param {*} str Text to be added to HTML, will be cast to string.
@@ -216,38 +197,38 @@ export class Panel extends PanelInterface {
 
     switch (command.type) {
       case PanelCommandType.CLEAR_SPEECH:
-        Panel.instance_.speechElement_.innerHTML = '';
+        this.speechElement_.innerHTML = '';
         break;
       case PanelCommandType.ADD_NORMAL_SPEECH:
-        if (Panel.instance_.speechElement_.innerHTML !== '') {
-          Panel.instance_.speechElement_.innerHTML += '&nbsp;&nbsp;';
+        if (this.speechElement_.innerHTML !== '') {
+          this.speechElement_.innerHTML += '&nbsp;&nbsp;';
         }
-        Panel.instance_.speechElement_.innerHTML +=
+        this.speechElement_.innerHTML +=
             '<span class="usertext">' + escapeForHtml(command.data) + '</span>';
         break;
       case PanelCommandType.ADD_ANNOTATION_SPEECH:
-        if (Panel.instance_.speechElement_.innerHTML !== '') {
-          Panel.instance_.speechElement_.innerHTML += '&nbsp;&nbsp;';
+        if (this.speechElement_.innerHTML !== '') {
+          this.speechElement_.innerHTML += '&nbsp;&nbsp;';
         }
-        Panel.instance_.speechElement_.innerHTML += escapeForHtml(command.data);
+        this.speechElement_.innerHTML += escapeForHtml(command.data);
         break;
       case PanelCommandType.UPDATE_BRAILLE:
-        Panel.onUpdateBraille(command.data);
+        this.onUpdateBraille_(command.data);
         break;
       case PanelCommandType.OPEN_MENUS:
-        Panel.onOpenMenus(undefined, command.data);
+        this.onOpenMenus_(undefined, String(command.data));
         break;
       case PanelCommandType.OPEN_MENUS_MOST_RECENT:
-        Panel.onOpenMenus(undefined, Panel.instance_.lastMenu_);
+        this.onOpenMenus_(undefined, this.menuManager_.lastMenu);
         break;
       case PanelCommandType.SEARCH:
-        Panel.onSearch();
+        this.onSearch_();
         break;
       case PanelCommandType.TUTORIAL:
-        Panel.onTutorial();
+        this.onTutorial_();
         break;
       case PanelCommandType.CLOSE_CHROMEVOX:
-        Panel.onClose();
+        this.onClose_();
       case PanelCommandType.ENABLE_TEST_HOOKS:
         window.Panel = Panel;
         break;
@@ -258,9 +239,10 @@ export class Panel extends PanelInterface {
    * Sets the mode, which determines the size of the panel and what objects
    *     are shown or hidden.
    * @param {PanelMode} mode The new mode.
+   * @private
    */
-  static setMode(mode) {
-    if (Panel.instance_.mode_ === mode) {
+  setMode_(mode) {
+    if (this.mode_ === mode) {
       return;
     }
 
@@ -272,28 +254,26 @@ export class Panel extends PanelInterface {
                                                   'menus_title');
     Msgs.addTranslatedMessagesToDom(document);
 
-    Panel.instance_.mode_ = mode;
+    this.mode_ = mode;
 
-    document.title = Msgs.getMsg(PanelModeInfo[Panel.instance_.mode_].title);
+    document.title = Msgs.getMsg(PanelModeInfo[this.mode_].title);
 
     // Fully qualify the path here because this function might be called with a
     // window object belonging to the background page.
-    Panel.instance_.ownerWindow_.location =
+    this.ownerWindow_.location =
         chrome.extension.getURL('chromevox/panel/panel.html') +
-        PanelModeInfo[Panel.instance_.mode_].location;
+        PanelModeInfo[this.mode_].location;
 
-    $('main').hidden =
-        (Panel.instance_.mode_ === PanelMode.FULLSCREEN_TUTORIAL);
-    $('menus_background').hidden =
-        (Panel.instance_.mode_ !== PanelMode.FULLSCREEN_MENUS);
+    $('main').hidden = (this.mode_ === PanelMode.FULLSCREEN_TUTORIAL);
+    $('menus_background').hidden = (this.mode_ !== PanelMode.FULLSCREEN_MENUS);
     // Interactive tutorial elements may not have been loaded yet.
     const iTutorialContainer = $('chromevox-tutorial-container');
     if (iTutorialContainer) {
       iTutorialContainer.hidden =
-          (Panel.instance_.mode_ !== PanelMode.FULLSCREEN_TUTORIAL);
+          (this.mode_ !== PanelMode.FULLSCREEN_TUTORIAL);
     }
 
-    Panel.updateFromPrefs();
+    this.updateFromPrefs_();
 
     // Change the orientation of the triangle next to the menus button to
     // indicate whether the menu is open or closed.
@@ -307,12 +287,13 @@ export class Panel extends PanelInterface {
   /**
    * Open / show the ChromeVox Menus.
    * @param {Event=} opt_event An optional event that triggered this.
-   * @param {*=} opt_activateMenuTitle Title msg id of menu to open.
+   * @param {string=} opt_activateMenuTitle Title msg id of menu to open.
+   * @private
    */
-  static async onOpenMenus(opt_event, opt_activateMenuTitle) {
+  async onOpenMenus_(opt_event, opt_activateMenuTitle) {
     // If the menu was already open, close it now and exit early.
-    if (Panel.instance_.mode_ !== PanelMode.COLLAPSED) {
-      Panel.setMode(PanelMode.COLLAPSED);
+    if (this.mode_ !== PanelMode.COLLAPSED) {
+      this.setMode_(PanelMode.COLLAPSED);
       return;
     }
 
@@ -324,41 +305,37 @@ export class Panel extends PanelInterface {
     }
 
     await BackgroundBridge.PanelBackground.saveCurrentNode();
-    Panel.setMode(PanelMode.FULLSCREEN_MENUS);
+    this.setMode_(PanelMode.FULLSCREEN_MENUS);
 
     const onFocusDo = async () => {
       window.removeEventListener('focus', onFocusDo);
       // Clear any existing menus and clear the callback.
-      Panel.clearMenus();
-      Panel.pendingCallback_ = null;
+      this.menuManager_.clearMenus();
+      this.pendingCallback_ = null;
 
-      const eventSourceState = await BackgroundBridge.EventSourceState.get();
-      const touchScreen =
-          (eventSourceState === EventSourceType.TOUCH_GESTURE ||
-           this.instance_.mockTouchGestureSourceForTesting_);
+      const eventSource = await BackgroundBridge.EventSource.get();
+      const touchScreen = (eventSource === EventSourceType.TOUCH_GESTURE);
 
       // Build the top-level menus.
-      const searchMenu = Panel.addSearchMenu('panel_search_menu');
-      const jumpMenu = Panel.addMenu('panel_menu_jump');
-      const speechMenu = Panel.addMenu('panel_menu_speech');
+      const searchMenu = this.addSearchMenu_('panel_search_menu');
+      const jumpMenu = this.addMenu_('panel_menu_jump');
+      const speechMenu = this.addMenu_('panel_menu_speech');
       const touchMenu =
-          touchScreen ? Panel.addMenu('panel_menu_touchgestures') : null;
-      const tabsMenu = Panel.addMenu('panel_menu_tabs');
-      const chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
-      const actionsMenu = Panel.addMenu('panel_menu_actions');
+          touchScreen ? this.addMenu_('panel_menu_touchgestures') : null;
+      const tabsMenu = this.addMenu_('panel_menu_tabs');
+      const chromevoxMenu = this.addMenu_('panel_menu_chromevox');
+      const actionsMenu = this.addMenu_('panel_menu_actions');
 
       // Add a menu item that opens the full list of ChromeBook keyboard
       // shortcuts. We want this to be at the top of the ChromeVox menu.
-      let localizedSlash = await new Promise(
-          resolve =>
-              chrome.accessibilityPrivate.getLocalizedDomKeyStringForKeyCode(
-                  KeyCode.OEM_2, resolve));
+      let localizedSlash =
+          await AsyncUtil.getLocalizedDomKeyStringForKeyCode(KeyCode.OEM_2);
       if (!localizedSlash) {
         localizedSlash = '/';
       }
       chromevoxMenu.addMenuItem(
           Msgs.getMsg('open_keyboard_shortcuts_menu'),
-          `Ctrl+Alt+${localizedSlash}`, '', '', async function() {
+          `Ctrl+Alt+${localizedSlash}`, '', '', async () => {
             EventGenerator.sendKeyPress(
                 KeyCode.OEM_2 /* forward slash */, {'ctrl': true, 'alt': true});
           });
@@ -402,14 +379,12 @@ export class Panel extends PanelInterface {
         }
         let title = Msgs.getMsg(titleMsgId);
         // Convert to title case.
-        title = title.replace(/\w\S*/g, function(word) {
-          return word.charAt(0).toUpperCase() + word.substr(1);
-        });
+        title = title.replace(
+            /\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1));
         binding.title = title;
       }
-      sortedBindings.sort(function(binding1, binding2) {
-        return binding1.title.localeCompare(binding2.title);
-      });
+      sortedBindings.sort(
+          (binding1, binding2) => binding1.title.localeCompare(binding2.title));
 
       // Insert items from the bindings into the menus.
       const sawBindingSet = {};
@@ -469,9 +444,8 @@ export class Panel extends PanelInterface {
           touchGestureItems.push({titleText, gestureText, command});
         }
 
-        touchGestureItems.sort(function(item1, item2) {
-          return item1.titleText.localeCompare(item2.titleText);
-        });
+        touchGestureItems.sort(
+            (item1, item2) => item1.titleText.localeCompare(item2.titleText));
 
         for (const item of touchGestureItems) {
           touchMenu.addMenuItem(
@@ -484,36 +458,24 @@ export class Panel extends PanelInterface {
       // Add all open tabs to the Tabs menu.
       const data = await BackgroundBridge.PanelBackground.getTabMenuData();
       for (const menuInfo of data) {
-        tabsMenu.addMenuItem(menuInfo.title, '', '', '', async function() {
+        tabsMenu.addMenuItem(menuInfo.title, '', '', '', async () => {
           BackgroundBridge.PanelBackground.focusTab(
               menuInfo.windowId, menuInfo.tabId);
         });
       }
 
-      if (Panel.instance_.sessionState_ !== 'IN_SESSION') {
+      if (this.sessionState_ !== 'IN_SESSION') {
         tabsMenu.disable();
-        // Disable commands that contain the property 'denyOOBE'.
-        for (let i = 0; i < Panel.instance_.menus_.length; ++i) {
-          const menu = Panel.instance_.menus_[i];
-          for (let j = 0; j < menu.items.length; ++j) {
-            const item = menu.items[j];
-            if (CommandStore.denySignedOut(
-                    /** @type {!Command} */ (item.element.id))) {
-              item.disable();
-            }
-          }
-        }
+        this.menuManager_.denySignedOut();
       }
 
       // Add a menu item that disables / closes ChromeVox.
       chromevoxMenu.addMenuItem(
           Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', '', '',
-          async function() {
-            Panel.onClose();
-          });
+          async () => this.onClose_());
 
       for (const menuData of ALL_PANEL_MENU_NODE_DATA) {
-        Panel.addNodeMenu(menuData);
+        this.addNodeMenu_(menuData);
       }
       await BackgroundBridge.PanelBackground.createAllNodeMenuBackgrounds(
           opt_activateMenuTitle);
@@ -545,17 +507,11 @@ export class Panel extends PanelInterface {
       }
 
       // Activate either the specified menu or the search menu.
-      // Search menu can be null, since it is hidden behind a flag.
-      let selectedMenu =
-          Panel.instance_.searchMenu_ || Panel.instance_.menus_[0];
-      for (let i = 0; i < Panel.instance_.menus_.length; i++) {
-        if (Panel.instance_.menus_[i].menuMsg === opt_activateMenuTitle) {
-          selectedMenu = Panel.instance_.menus_[i];
-        }
-      }
+      const selectedMenu =
+          this.menuManager_.getSelectedMenu(opt_activateMenuTitle);
 
-      const activateFirstItem = (selectedMenu !== Panel.instance_.searchMenu_);
-      Panel.activateMenu(selectedMenu, activateFirstItem);
+      const activateFirstItem = (selectedMenu !== this.menuManager_.searchMenu);
+      this.activateMenu_(selectedMenu, activateFirstItem);
     };
 
     // The panel does not get focus immediately when we request to be full
@@ -568,60 +524,49 @@ export class Panel extends PanelInterface {
     }
   }
 
-  /** Open incremental search. */
-  static async onSearch() {
-    Panel.setMode(PanelMode.SEARCH);
-    Panel.clearMenus();
-    Panel.pendingCallback_ = null;
-    Panel.updateFromPrefs();
-    await ISearchUI.init(Panel.instance_.searchInput_);
-  }
-
   /**
-   * Clear any previous menus. The menus are all regenerated each time the
-   * menus are opened.
+   * Open incremental search.
+   * @private
    */
-  static clearMenus() {
-    while (Panel.instance_.menus_.length) {
-      const menu = Panel.instance_.menus_.pop();
-      $('menu-bar').removeChild(menu.menuBarItemElement);
-      $('menus_background').removeChild(menu.menuContainerElement);
-    }
-    if (Panel.instance_.activeMenu_) {
-      Panel.instance_.lastMenu_ = Panel.instance_.activeMenu_.menuMsg;
-    }
-    Panel.instance_.activeMenu_ = null;
+  async onSearch_() {
+    this.setMode_(PanelMode.SEARCH);
+    this.menuManager_.clearMenus();
+    this.pendingCallback_ = null;
+    this.updateFromPrefs_();
+    await ISearchUI.init(this.searchInput_);
   }
 
   /**
    * Create a new menu with the given name and add it to the menu bar.
    * @param {string} menuMsg The msg id of the new menu to add.
    * @return {!PanelMenu} The menu just created.
+   * @private
    */
-  static addMenu(menuMsg) {
+  addMenu_(menuMsg) {
     const menu = new PanelMenu(menuMsg);
     $('menu-bar').appendChild(menu.menuBarItemElement);
-    menu.menuBarItemElement.addEventListener('mouseover', function() {
-      Panel.activateMenu(menu, true /* activateFirstItem */);
-    }, false);
     menu.menuBarItemElement.addEventListener(
-        'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, menu), false);
+        'mouseover',
+        () => this.activateMenu_(menu, true /* activateFirstItem */), false);
+    menu.menuBarItemElement.addEventListener(
+        'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event), false);
     $('menus_background').appendChild(menu.menuContainerElement);
-    Panel.instance_.menus_.push(menu);
+    this.menuManager_.menus.push(menu);
     return menu;
   }
 
   /**
    * Updates the content shown on the virtual braille display.
    * @param {*=} data The data sent through the PanelCommand.
+   * @private
    */
-  static onUpdateBraille(data) {
+  onUpdateBraille_(data) {
     const groups = data.groups;
     const cols = data.cols;
     const rows = data.rows;
     const sideBySide = LocalStorage.get('brailleSideBySide');
 
-    const addBorders = function(event) {
+    const addBorders = event => {
       const cell = event.target;
       if (cell.tagName === 'TD') {
         cell.className = 'highlighted-cell';
@@ -631,7 +576,7 @@ export class Panel extends PanelInterface {
       }
     };
 
-    const removeBorders = function(event) {
+    const removeBorders = event => {
       const cell = event.target;
       if (cell.tagName === 'TD') {
         cell.className = 'unhighlighted-cell';
@@ -641,7 +586,7 @@ export class Panel extends PanelInterface {
       }
     };
 
-    const routeCursor = function(event) {
+    const routeCursor = event => {
       const cell = event.target;
       if (cell.tagName === 'TD') {
         const displayPosition = parseInt(cell.id.split('-')[0], 10);
@@ -656,19 +601,18 @@ export class Panel extends PanelInterface {
       }
     };
 
-    Panel.instance_.brailleContainer_.addEventListener('mouseover', addBorders);
-    Panel.instance_.brailleContainer_.addEventListener(
-        'mouseout', removeBorders);
-    Panel.instance_.brailleContainer_.addEventListener('click', routeCursor);
+    this.brailleContainer_.addEventListener('mouseover', addBorders);
+    this.brailleContainer_.addEventListener('mouseout', removeBorders);
+    this.brailleContainer_.addEventListener('click', routeCursor);
 
     // Clear the tables.
-    let rowCount = Panel.instance_.brailleTableElement_.rows.length;
+    let rowCount = this.brailleTableElement_.rows.length;
     for (let i = 0; i < rowCount; i++) {
-      Panel.instance_.brailleTableElement_.deleteRow(0);
+      this.brailleTableElement_.deleteRow(0);
     }
-    rowCount = Panel.instance_.brailleTableElement2_.rows.length;
+    rowCount = this.brailleTableElement2_.rows.length;
     for (let i = 0; i < rowCount; i++) {
-      Panel.instance_.brailleTableElement2_.deleteRow(0);
+      this.brailleTableElement2_.deleteRow(0);
     }
 
     let row1;
@@ -685,13 +629,13 @@ export class Panel extends PanelInterface {
           break;
         }
         rowCount++;
-        row1 = Panel.instance_.brailleTableElement_.insertRow(-1);
+        row1 = this.brailleTableElement_.insertRow(-1);
         if (sideBySide) {
           // Side by side.
-          row2 = Panel.instance_.brailleTableElement2_.insertRow(-1);
+          row2 = this.brailleTableElement2_.insertRow(-1);
         } else {
           // Interleaved.
-          row2 = Panel.instance_.brailleTableElement_.insertRow(-1);
+          row2 = this.brailleTableElement_.insertRow(-1);
         }
       }
 
@@ -717,13 +661,13 @@ export class Panel extends PanelInterface {
             break;
           }
           rowCount++;
-          row1 = Panel.instance_.brailleTableElement_.insertRow(-1);
+          row1 = this.brailleTableElement_.insertRow(-1);
           if (sideBySide) {
             // Side by side.
-            row2 = Panel.instance_.brailleTableElement2_.insertRow(-1);
+            row2 = this.brailleTableElement2_.insertRow(-1);
           } else {
             // Interleaved.
-            row2 = Panel.instance_.brailleTableElement_.insertRow(-1);
+            row2 = this.brailleTableElement_.insertRow(-1);
           }
           const bottomCell2 = row2.insertCell(-1);
           bottomCell2.id = i + '-brailleCell2';
@@ -755,38 +699,42 @@ export class Panel extends PanelInterface {
   /**
    * Create a new node menu with the given name and add it to the menu bar.
    * @param {!PanelNodeMenuData} menuData The title/predicate for the new menu.
+   * @private
    */
-  static addNodeMenu(menuData) {
+  addNodeMenu_(menuData) {
     const menu = new PanelNodeMenu(menuData.titleId);
     $('menu-bar').appendChild(menu.menuBarItemElement);
-    menu.menuBarItemElement.addEventListener('mouseover', () => {
-      Panel.activateMenu(menu, true /* activateFirstItem */);
-    });
     menu.menuBarItemElement.addEventListener(
-        'mouseup', event => Panel.onMouseUpOnMenuTitle_(menu, event));
+        'mouseover',
+        () => this.activateMenu_(menu, true /* activateFirstItem */));
+    menu.menuBarItemElement.addEventListener(
+        'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event));
     $('menus_background').appendChild(menu.menuContainerElement);
-    Panel.instance_.menus_.push(menu);
-    Panel.instance_.nodeMenuDictionary_[menuData.menuId] = menu;
+    this.menuManager_.menus.push(menu);
+    this.nodeMenuDictionary_[menuData.menuId] = menu;
   }
 
-  /** @param {!PanelNodeMenuItemData} itemData */
-  static addNodeMenuItem(itemData) {
-    Panel.instance_.nodeMenuDictionary_[itemData.menuId].addItemFromData(
-        itemData);
+  /**
+   * @param {!PanelNodeMenuItemData} itemData
+   * @private
+   */
+  addNodeMenuItem_(itemData) {
+    this.nodeMenuDictionary_[itemData.menuId].addItemFromData(itemData);
   }
 
   /**
    * Create a new search menu with the given name and add it to the menu bar.
    * @param {string} menuMsg The msg id of the new menu to add.
    * @return {!PanelMenu} The menu just created.
+   * @private
    */
-  static addSearchMenu(menuMsg) {
-    Panel.instance_.searchMenu_ = new PanelSearchMenu(menuMsg);
-    // Add event listerns to search bar.
-    Panel.instance_.searchMenu_.searchBar.addEventListener(
-        'input', Panel.onSearchBarQuery, false);
-    Panel.instance_.searchMenu_.searchBar.addEventListener(
-        'mouseup', function(event) {
+  addSearchMenu_(menuMsg) {
+    this.menuManager_.searchMenu = new PanelSearchMenu(menuMsg);
+    // Add event listeners to search bar.
+    this.menuManager_.searchMenu.searchBar.addEventListener(
+        'input', event => this.onSearchBarQuery_(event), false);
+    this.menuManager_.searchMenu.searchBar.addEventListener(
+        'mouseup', event => {
           // Clicking in the panel causes us to either activate an item or close
           // the menus altogether. Prevent that from happening if we click the
           // search bar.
@@ -794,69 +742,73 @@ export class Panel extends PanelInterface {
           event.stopPropagation();
         }, false);
 
-    $('menu-bar').appendChild(Panel.instance_.searchMenu_.menuBarItemElement);
-    Panel.instance_.searchMenu_.menuBarItemElement.addEventListener(
-        'mouseover', function(event) {
-          Panel.activateMenu(
-              Panel.instance_.searchMenu_, false /* activateFirstItem */);
-        }, false);
-    Panel.instance_.searchMenu_.menuBarItemElement.addEventListener(
+    $('menu-bar').appendChild(this.menuManager_.searchMenu.menuBarItemElement);
+    this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
+        'mouseover',
+        () => this.activateMenu_(
+            this.menuManager_.searchMenu, false /* activateFirstItem */),
+        false);
+    this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
         'mouseup',
-        Panel.onMouseUpOnMenuTitle_.bind(this, Panel.instance_.searchMenu_),
+        event =>
+            this.onMouseUpOnMenuTitle_(this.menuManager_.searchMenu, event),
         false);
     $('menus_background')
-        .appendChild(Panel.instance_.searchMenu_.menuContainerElement);
-    Panel.instance_.menus_.push(Panel.instance_.searchMenu_);
-    return Panel.instance_.searchMenu_;
+        .appendChild(this.menuManager_.searchMenu.menuContainerElement);
+    this.menuManager_.menus.push(this.menuManager_.searchMenu);
+    return this.menuManager_.searchMenu;
   }
 
   /**
    * Activate a menu, which implies hiding the previous active menu.
    * @param {PanelMenu} menu The new menu to activate.
    * @param {boolean} activateFirstItem Whether or not we should activate the
-   *     menu's
-   * first item.
+   *     menu's first item.
+   * @private
    */
-  static activateMenu(menu, activateFirstItem) {
-    if (menu === Panel.instance_.activeMenu_) {
+  activateMenu_(menu, activateFirstItem) {
+    if (menu === this.menuManager_.activeMenu) {
       return;
     }
 
-    if (Panel.instance_.activeMenu_) {
-      Panel.instance_.activeMenu_.deactivate();
-      Panel.instance_.activeMenu_ = null;
+    if (this.menuManager_.activeMenu) {
+      this.menuManager_.activeMenu.deactivate();
+      this.menuManager_.activeMenu = null;
     }
 
-    Panel.instance_.activeMenu_ = menu;
-    Panel.pendingCallback_ = null;
+    this.menuManager_.activeMenu = menu;
+    this.pendingCallback_ = null;
 
-    if (Panel.instance_.activeMenu_) {
-      Panel.instance_.activeMenu_.activate(activateFirstItem);
+    if (this.menuManager_.activeMenu) {
+      this.menuManager_.activeMenu.activate(activateFirstItem);
     }
   }
 
   /**
    * Sets the index of the current active menu to be 0.
+   * @private
    */
-  static scrollToTop() {
-    Panel.instance_.activeMenu_.scrollToTop();
+  scrollToTop_() {
+    this.menuManager_.activeMenu.scrollToTop();
   }
 
   /**
    * Sets the index of the current active menu to be the last index.
+   * @private
    */
-  static scrollToBottom() {
-    Panel.instance_.activeMenu_.scrollToBottom();
+  scrollToBottom_() {
+    this.menuManager_.activeMenu.scrollToBottom();
   }
 
   /**
    * Advance the index of the current active menu by |delta|.
    * @param {number} delta The number to add to the active menu index.
+   * @private
    */
-  static advanceActiveMenuBy(delta) {
+  advanceActiveMenuBy_(delta) {
     let activeIndex = -1;
-    for (let i = 0; i < Panel.instance_.menus_.length; i++) {
-      if (Panel.instance_.activeMenu_ === Panel.instance_.menus_[i]) {
+    for (let i = 0; i < this.menuManager_.menus.length; i++) {
+      if (this.menuManager_.activeMenu === this.menuManager_.menus[i]) {
         activeIndex = i;
         break;
       }
@@ -864,23 +816,23 @@ export class Panel extends PanelInterface {
 
     if (activeIndex >= 0) {
       activeIndex += delta;
-      activeIndex = (activeIndex + Panel.instance_.menus_.length) %
-          Panel.instance_.menus_.length;
+      activeIndex = (activeIndex + this.menuManager_.menus.length) %
+          this.menuManager_.menus.length;
     } else {
       if (delta >= 0) {
         activeIndex = 0;
       } else {
-        activeIndex = Panel.instance_.menus_.length - 1;
+        activeIndex = this.menuManager_.menus.length - 1;
       }
     }
 
-    activeIndex = Panel.findEnabledMenuIndex_(activeIndex, delta > 0 ? 1 : -1);
+    activeIndex = this.findEnabledMenuIndex_(activeIndex, delta > 0 ? 1 : -1);
     if (activeIndex === -1) {
       return;
     }
 
-    Panel.activateMenu(
-        Panel.instance_.menus_[activeIndex], true /* activateFirstItem */);
+    this.activateMenu_(
+        this.menuManager_.menus[activeIndex], true /* activateFirstItem */);
   }
 
   /**
@@ -888,11 +840,12 @@ export class Panel extends PanelInterface {
    * @param {number} startIndex
    * @param {number} delta
    * @return {number} The index of the enabled menu. -1 if not found.
+   * @private
    */
-  static findEnabledMenuIndex_(startIndex, delta) {
-    const endIndex = (delta > 0) ? Panel.instance_.menus_.length : -1;
+  findEnabledMenuIndex_(startIndex, delta) {
+    const endIndex = (delta > 0) ? this.menuManager_.menus.length : -1;
     while (startIndex !== endIndex) {
-      if (Panel.instance_.menus_[startIndex].enabled) {
+      if (this.menuManager_.menus[startIndex].enabled) {
         return startIndex;
       }
       startIndex += delta;
@@ -903,10 +856,11 @@ export class Panel extends PanelInterface {
   /**
    * Advance the index of the current active menu item by |delta|.
    * @param {number} delta The number to add to the active menu item index.
+   * @private
    */
-  static advanceItemBy(delta) {
-    if (Panel.instance_.activeMenu_) {
-      Panel.instance_.activeMenu_.advanceItemBy(delta);
+  advanceItemBy_(delta) {
+    if (this.menuManager_.activeMenu) {
+      this.menuManager_.activeMenu.advanceItemBy(delta);
     }
   }
 
@@ -916,9 +870,10 @@ export class Panel extends PanelInterface {
    * and if the mouse was released over a menu item, execute that item's
    * callback.
    * @param {Event} event The mouse event.
+   * @private
    */
-  static onMouseUp(event) {
-    if (!Panel.instance_.activeMenu_) {
+  onMouseUp_(event) {
+    if (!this.menuManager_.activeMenu) {
       return;
     }
 
@@ -933,11 +888,11 @@ export class Panel extends PanelInterface {
       target = target.parentElement;
     }
 
-    if (target && Panel.instance_.activeMenu_) {
-      Panel.pendingCallback_ =
-          Panel.instance_.activeMenu_.getCallbackForElement(target);
+    if (target && this.menuManager_.activeMenu) {
+      this.pendingCallback_ =
+          this.menuManager_.activeMenu.getCallbackForElement(target);
     }
-    PanelInterface.instance.closeMenusAndRestoreFocus();
+    this.closeMenusAndRestoreFocus();
   }
 
   /**
@@ -947,8 +902,8 @@ export class Panel extends PanelInterface {
    * @param {Event} mouseUpEvent The mouseup event.
    * @private
    */
-  static onMouseUpOnMenuTitle_(menu, mouseUpEvent) {
-    Panel.activateMenu(menu, true /* activateFirstItem */);
+  onMouseUpOnMenuTitle_(menu, mouseUpEvent) {
+    this.activateMenu_(menu, true /* activateFirstItem */);
     mouseUpEvent.preventDefault();
     mouseUpEvent.stopPropagation();
   }
@@ -957,15 +912,16 @@ export class Panel extends PanelInterface {
    * Called when a key is pressed. Handle arrow keys to navigate the menus,
    * Esc to close, and Enter/Space to activate an item.
    * @param {Event} event The key event.
+   * @private
    */
-  static onKeyDown(event) {
+  onKeyDown_(event) {
     if (event.key === 'Escape' &&
-        Panel.instance_.mode_ === PanelMode.FULLSCREEN_TUTORIAL) {
-      Panel.setMode(PanelMode.COLLAPSED);
+        this.mode_ === PanelMode.FULLSCREEN_TUTORIAL) {
+      this.setMode_(PanelMode.COLLAPSED);
       return;
     }
 
-    if (!Panel.instance_.activeMenu_) {
+    if (!this.menuManager_.activeMenu) {
       return;
     }
 
@@ -977,8 +933,8 @@ export class Panel extends PanelInterface {
     // If left/right arrow are pressed, we should adjust the search bar's
     // cursor. We only want to advance the active menu if we are at the
     // beginning/end of the search bar's contents.
-    if (Panel.instance_.searchMenu_ &&
-        event.target === Panel.instance_.searchMenu_.searchBar) {
+    if (this.menuManager_.searchMenu &&
+        event.target === this.menuManager_.searchMenu.searchBar) {
       switch (event.key) {
         case 'ArrowLeft':
         case 'ArrowRight':
@@ -998,36 +954,36 @@ export class Panel extends PanelInterface {
 
     switch (event.key) {
       case 'ArrowLeft':
-        Panel.advanceActiveMenuBy(-1);
+        this.advanceActiveMenuBy_(-1);
         break;
       case 'ArrowRight':
-        Panel.advanceActiveMenuBy(1);
+        this.advanceActiveMenuBy_(1);
         break;
       case 'ArrowUp':
-        Panel.advanceItemBy(-1);
+        this.advanceItemBy_(-1);
         break;
       case 'ArrowDown':
-        Panel.advanceItemBy(1);
+        this.advanceItemBy_(1);
         break;
       case 'Escape':
-        PanelInterface.instance.closeMenusAndRestoreFocus();
+        this.closeMenusAndRestoreFocus();
         break;
       case 'PageUp':
-        Panel.advanceItemBy(10);
+        this.advanceItemBy_(10);
         break;
       case 'PageDown':
-        Panel.advanceItemBy(-10);
+        this.advanceItemBy_(-10);
         break;
       case 'Home':
-        Panel.scrollToTop();
+        this.scrollToTop_();
         break;
       case 'End':
-        Panel.scrollToBottom();
+        this.scrollToBottom_();
         break;
       case 'Enter':
       case ' ':
-        Panel.pendingCallback_ = Panel.getCallbackForCurrentItem();
-        PanelInterface.instance.closeMenusAndRestoreFocus();
+        this.pendingCallback_ = this.getCallbackForCurrentItem_();
+        this.closeMenusAndRestoreFocus();
         break;
       default:
         // Don't mark this event as handled.
@@ -1040,49 +996,52 @@ export class Panel extends PanelInterface {
 
   /**
    * Open the ChromeVox Options.
+   * @private
    */
-  static onOptions() {
+  onOptions_() {
     chrome.runtime.openOptionsPage();
-    Panel.setMode(PanelMode.COLLAPSED);
+    this.setMode_(PanelMode.COLLAPSED);
   }
 
   /**
    * Exit ChromeVox.
+   * @private
    */
-  static onClose() {
+  onClose_() {
     // Change the url fragment to 'close', which signals the native code
     // to exit ChromeVox.
-    Panel.instance_.ownerWindow_.location =
+    this.ownerWindow_.location =
         chrome.extension.getURL('chromevox/panel/panel.html') + '#close';
   }
 
   /**
    * Get the callback for whatever item is currently selected.
-   * @return {Function} The callback for the current item.
+   * @return {?Function} The callback for the current item.
+   * @private
    */
-  static getCallbackForCurrentItem() {
-    if (Panel.instance_.activeMenu_) {
-      return Panel.instance_.activeMenu_.getCallbackForCurrentItem();
+  getCallbackForCurrentItem_() {
+    if (this.menuManager_.activeMenu) {
+      return this.menuManager_.activeMenu.getCallbackForCurrentItem();
     }
     return null;
   }
 
   /** @override */
   async closeMenusAndRestoreFocus() {
-    const pendingCallback = Panel.pendingCallback_;
-    Panel.pendingCallback_ = null;
+    const pendingCallback = this.pendingCallback_;
+    this.pendingCallback_ = null;
 
     // Prepare the watcher before close the panel so that the watcher won't miss
     // panel collapse signal.
     await BackgroundBridge.PanelBackground.setPanelCollapseWatcher;
 
     // Make sure all menus are cleared to avoid bogus output when we re-open.
-    Panel.clearMenus();
+    this.menuManager_.clearMenus();
 
     // Make sure we're not in full-screen mode.
-    Panel.setMode(PanelMode.COLLAPSED);
+    this.setMode_(PanelMode.COLLAPSED);
 
-    Panel.instance_.activeMenu_ = null;
+    this.menuManager_.activeMenu = null;
 
     await BackgroundBridge.PanelBackground.waitForPanelCollapse();
 
@@ -1092,15 +1051,18 @@ export class Panel extends PanelInterface {
     BackgroundBridge.PanelBackground.clearSavedNode();
   }
 
-  /** Open the tutorial. */
-  static onTutorial() {
+  /**
+   * Open the tutorial.
+   * @private
+   */
+  onTutorial_() {
     chrome.chromeosInfoPrivate.isTabletModeEnabled(enabled => {
       // Use tablet mode to decide the medium for the tutorial.
       const medium = enabled ? constants.InteractionMedium.TOUCH :
                                constants.InteractionMedium.KEYBOARD;
       if (!$('chromevox-tutorial')) {
         let curriculum = null;
-        if (Panel.instance_.sessionState_ ===
+        if (this.sessionState_ ===
             chrome.loginState.SessionState.IN_OOBE_SCREEN) {
           // We currently support two mediums: keyboard and touch, which is why
           // we can decide the curriculum using a ternary statement.
@@ -1108,13 +1070,13 @@ export class Panel extends PanelInterface {
               'quick_orientation' :
               'touch_orientation';
         }
-        Panel.createITutorial(curriculum, medium);
+        this.createITutorial_(curriculum, medium);
       }
 
-      Panel.setMode(PanelMode.FULLSCREEN_TUTORIAL);
-      if (Panel.instance_.tutorial_ && Panel.instance_.tutorial_.show) {
-        Panel.instance_.tutorial_.medium = medium;
-        Panel.instance_.tutorial_.show();
+      this.setMode_(PanelMode.FULLSCREEN_TUTORIAL);
+      if (this.tutorial_ && this.tutorial_.show) {
+        this.tutorial_.medium = medium;
+        this.tutorial_.show();
       }
     });
   }
@@ -1123,8 +1085,9 @@ export class Panel extends PanelInterface {
    * Creates a <chromevox-tutorial> element and adds it to the dom.
    * @param {(string|null)} curriculum
    * @param {constants.InteractionMedium} medium
+   * @private
    */
-  static createITutorial(curriculum, medium) {
+  createITutorial_(curriculum, medium) {
     const tutorialScript = document.createElement('script');
     tutorialScript.src =
         '../../common/tutorial/components/chromevox_tutorial.js';
@@ -1143,7 +1106,7 @@ export class Panel extends PanelInterface {
     tutorialElement.medium = medium;
     tutorialContainer.appendChild(tutorialElement);
     document.body.appendChild(tutorialContainer);
-    Panel.instance_.tutorial_ = tutorialElement;
+    this.tutorial_ = tutorialElement;
 
     // Add listeners. These are custom events fired from custom components.
     const backgroundPage = chrome.extension.getBackgroundPage();
@@ -1151,7 +1114,7 @@ export class Panel extends PanelInterface {
     $('chromevox-tutorial').addEventListener('closetutorial', async evt => {
       // Ensure UserActionMonitor is destroyed before closing tutorial.
       await BackgroundBridge.UserActionMonitor.destroy();
-      Panel.onCloseTutorial();
+      this.onCloseTutorial_();
     });
     $('chromevox-tutorial').addEventListener('requestspeech', evt => {
       /**
@@ -1177,9 +1140,8 @@ export class Panel extends PanelInterface {
           const actions = evt.detail.actions;
           await BackgroundBridge.UserActionMonitor.create(actions);
           await BackgroundBridge.UserActionMonitor.destroy();
-          if (Panel.instance_.tutorial_ &&
-              Panel.instance_.tutorial_.showNextLesson) {
-            Panel.instance_.tutorial_.showNextLesson();
+          if (this.tutorial_ && this.tutorial_.showNextLesson) {
+            this.tutorial_.showNextLesson();
           }
         });
     $('chromevox-tutorial')
@@ -1200,20 +1162,23 @@ export class Panel extends PanelInterface {
       backgroundPage['ChromeVox']['earcons']['cancelEarcon'](earconId);
     });
     $('chromevox-tutorial').addEventListener('readyfortesting', () => {
-      Panel.instance_.tutorialReadyForTesting_ = true;
+      this.tutorialReadyForTesting_ = true;
     });
     $('chromevox-tutorial').addEventListener('openUrl', async evt => {
       const url = evt.detail.url;
       // Ensure UserActionMonitor is destroyed before closing tutorial.
       await BackgroundBridge.UserActionMonitor.destroy();
-      Panel.onCloseTutorial();
+      this.onCloseTutorial_();
       chrome.tabs.create({url});
     });
   }
 
-  /** Close the tutorial. */
-  static onCloseTutorial() {
-    Panel.setMode(PanelMode.COLLAPSED);
+  /**
+   * Close the tutorial.
+   * @private
+   */
+  onCloseTutorial_() {
+    this.setMode_(PanelMode.COLLAPSED);
   }
 
   /**
@@ -1221,21 +1186,22 @@ export class Panel extends PanelInterface {
    * with items that match the search bar's contents.
    * Note: we ignore PanelNodeMenu items and items without shortcuts.
    * @param {Event} event The input event.
+   * @private
    */
-  static onSearchBarQuery(event) {
-    if (!Panel.instance_.searchMenu_) {
-      throw Error('Panel.instance_.searchMenu_ must be defined');
+  onSearchBarQuery_(event) {
+    if (!this.menuManager_.searchMenu) {
+      throw Error('MenuManager.searchMenu_ must be defined');
     }
     const query = event.target.value.toLowerCase();
-    Panel.instance_.searchMenu_.clear();
+    this.menuManager_.searchMenu.clear();
     // Show the search results menu.
-    Panel.activateMenu(
-        Panel.instance_.searchMenu_, false /* activateFirstItem */);
+    this.activateMenu_(
+        this.menuManager_.searchMenu, false /* activateFirstItem */);
     // Populate.
     if (query) {
-      for (let i = 0; i < Panel.instance_.menus_.length; ++i) {
-        const menu = Panel.instance_.menus_[i];
-        if (menu === Panel.instance_.searchMenu_ ||
+      for (let i = 0; i < this.menuManager_.menus.length; ++i) {
+        const menu = this.menuManager_.menus[i];
+        if (menu === this.menuManager_.searchMenu ||
             menu instanceof PanelNodeMenu) {
           continue;
         }
@@ -1252,25 +1218,24 @@ export class Panel extends PanelInterface {
                Msgs.getMsg('panel_menu_item_none').toLowerCase()) &&
               item.enabled;
           if (match) {
-            Panel.instance_.searchMenu_.copyAndAddMenuItem(item);
+            this.menuManager_.searchMenu.copyAndAddMenuItem(item);
           }
         }
       }
     }
 
-    if (Panel.instance_.searchMenu_.items.length === 0) {
-      Panel.instance_.searchMenu_.addMenuItem(
+    if (this.menuManager_.searchMenu.items.length === 0) {
+      this.menuManager_.searchMenu.addMenuItem(
           Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
     }
-    Panel.instance_.searchMenu_.activateItem(0);
+    this.menuManager_.searchMenu.activateItem(0);
   }
 
-  static onCurrentRangeChanged() {
-    if (Panel.instance_.mode_ === PanelMode.FULLSCREEN_TUTORIAL) {
-      if (Panel.instance_.tutorial_ &&
-          Panel.instance_.tutorial_.restartNudges &&
-          !Panel.instance_.disableRestartTutorialNudgesForTesting_) {
-        Panel.instance_.tutorial_.restartNudges();
+  /** @private */
+  onCurrentRangeChanged_() {
+    if (this.mode_ === PanelMode.FULLSCREEN_TUTORIAL) {
+      if (this.tutorial_ && this.tutorial_.restartNudges) {
+        this.tutorial_.restartNudges();
       }
     }
   }
@@ -1303,7 +1268,7 @@ export class Panel extends PanelInterface {
   /** @private */
   onMessage_(message) {
     const command = JSON.parse(message.data);
-    Panel.exec(/** @type {PanelCommand} */ (command));
+    this.exec_(/** @type {PanelCommand} */ (command));
   }
 
   /** @private */
@@ -1319,7 +1284,7 @@ export class Panel extends PanelInterface {
   /** @private */
   onStorageChanged_(event) {
     if (event.key === 'brailleCaptions') {
-      Panel.updateFromPrefs();
+      this.updateFromPrefs_();
     }
   }
 
@@ -1340,16 +1305,7 @@ Panel.ACTION_TO_MSG_ID = {
   longClick: 'force_long_click_on_current_item',
 };
 
-/**
- * Shortcut for document.getElementById.
- * @param {string} id of the element.
- * @return {Element} with the id.
- */
-function $(id) {
-  return document.getElementById(id);
-}
-
 window.addEventListener('load', async () => await Panel.init(), false);
 
-/** @private {Panel} */
-Panel.instance_;
+/** @type {Panel} */
+Panel.instance;

@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_split.h"
@@ -59,11 +59,6 @@ namespace {
 // Minimum number of characters of the typed password to display a minimized
 // version of the generation popup.
 constexpr int kMinCharsForMinimizedPopup = 6;
-
-bool IsPasswordGenerationSuggestionsPreviewEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordGenerationPreviewOnHover);
-}
 
 }  // namespace
 
@@ -376,16 +371,12 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 
 void PasswordGenerationPopupControllerImpl::SelectionCleared() {
   PasswordSelected(false);
-  if (IsPasswordGenerationSuggestionsPreviewEnabled()) {
-    driver_->ClearPreviewedForm();
-  }
+  driver_->ClearPreviewedForm();
 }
 
 void PasswordGenerationPopupControllerImpl::SetSelected() {
   PasswordSelected(true);
-  if (IsPasswordGenerationSuggestionsPreviewEnabled()) {
-    driver_->PreviewGenerationSuggestion(current_generated_password_);
-  }
+  driver_->PreviewGenerationSuggestion(current_generated_password_);
 }
 
 #if !BUILDFLAG(IS_ANDROID)

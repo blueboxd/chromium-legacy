@@ -8,11 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/display/display_util.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -362,7 +362,7 @@ void RenderWidgetHostViewChildFrame::InitAsPopup(
   NOTREACHED();
 }
 
-void RenderWidgetHostViewChildFrame::UpdateCursor(const WebCursor& cursor) {
+void RenderWidgetHostViewChildFrame::UpdateCursor(const ui::Cursor& cursor) {
   if (frame_connector_)
     frame_connector_->UpdateCursor(cursor);
 }

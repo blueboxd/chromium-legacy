@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/close_button.h"
@@ -24,8 +25,8 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "chromeos/ui/wm/features.h"
@@ -50,7 +51,11 @@ constexpr int kCloseButtonMargin = 8;
 
 constexpr int kMinDeskNameViewWidth = 56;
 
-constexpr int kPreviewFocusRingRadius = 6;
+constexpr int kPreviewFocusRingRadiusOld = 6;
+
+// TODO(conniekxu): After CrOS Next is launched, remove
+// `kPreviewFocusRingRadiusOld`.
+constexpr int kPreviewFocusRingRadius = 10;
 
 gfx::Rect ConvertScreenRect(views::View* view, const gfx::Rect& screen_rect) {
   gfx::Point origin = screen_rect.origin();
@@ -120,7 +125,10 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
 
   views::FocusRing* preview_focus_ring = views::FocusRing::Get(desk_preview_);
   views::InstallRoundRectHighlightPathGenerator(
-      desk_preview_, gfx::Insets(kFocusRingHaloInset), kPreviewFocusRingRadius);
+      desk_preview_, gfx::Insets(kFocusRingHaloInset),
+      features::IsJellyrollEnabled() ? kPreviewFocusRingRadius
+                                     : kPreviewFocusRingRadiusOld);
+
   preview_focus_ring->SetHasFocusPredicate([&](views::View* view) {
     return (owner_bar_->dragged_item_over_bar() &&
             IsPointOnMiniView(

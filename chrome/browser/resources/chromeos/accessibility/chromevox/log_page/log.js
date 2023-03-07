@@ -5,176 +5,197 @@
 /**
  * @fileoverview ChromeVox log page.
  */
-
 import {BackgroundBridge} from '../common/background_bridge.js';
 import {BaseLog, LogType, SerializableLog} from '../common/log_types.js';
 
-/**
- * Class to manage the log page.
- */
+const FILTER_CLASS = 'log-filter';
+const FILTER_CONTAINER_ID = 'logFilters';
+const LOG_LIST_ID = 'logList';
+
+/** Class to manage the log page. */
 export class LogPage {
+  constructor() {
+    this.initPage_();
+  }
+
   static async init() {
-    /** Create filter checkboxes. */
+    LogPage.instance = new LogPage();
+    await LogPage.instance.update();
+  }
+
+  /**
+   * @param {!SerializableLog} log
+   * @private
+   */
+  addLogToPage_(log) {
+    const div = document.getElementById(LOG_LIST_ID);
+    const p = document.createElement('p');
+
+    const typeName = document.createElement('span');
+    typeName.textContent = log.logType;
+    typeName.className = 'log-type-tag';
+    p.appendChild(typeName);
+
+    const timeStamp = document.createElement('span');
+    timeStamp.textContent = this.formatTimeStamp_(log.date);
+    timeStamp.className = 'log-time-tag';
+    p.appendChild(timeStamp);
+
+    /** Add hide tree button when logType is tree. */
+    if (log.logType === LogType.TREE) {
+      const toggle = document.createElement('label');
+      const toggleCheckbox = document.createElement('input');
+      toggleCheckbox.type = 'checkbox';
+      toggleCheckbox.checked = true;
+      toggleCheckbox.onclick = event => textWrapper.hidden =
+          !event.target.checked;
+
+      const toggleText = document.createElement('span');
+      toggleText.textContent = 'show tree';
+      toggle.appendChild(toggleCheckbox);
+      toggle.appendChild(toggleText);
+      p.appendChild(toggle);
+    }
+
+    /** textWrapper should be in block scope, not function scope. */
+    const textWrapper = document.createElement('pre');
+    textWrapper.textContent = log.value;
+    textWrapper.className = 'log-text';
+    p.appendChild(textWrapper);
+
+    div.appendChild(p);
+  }
+
+  /**
+   * @param {!LogType} type
+   * @return {string}
+   * @private
+   */
+  checkboxId_(type) {
+    return type + 'Filter';
+  }
+
+  /**
+   * @param {!LogType} type
+   * @param {boolean} checked
+   * @private
+   */
+  createFilterCheckbox_(type, checked) {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.id = this.checkboxId_(type);
+    input.type = 'checkbox';
+    input.classList.add(FILTER_CLASS);
+    input.checked = checked;
+    input.addEventListener('click', () => this.updateUrlParams_());
+    label.appendChild(input);
+
+    const span = document.createElement('span');
+    span.textContent = type;
+    label.appendChild(span);
+
+    document.getElementById(FILTER_CONTAINER_ID).appendChild(label);
+  }
+
+  /** @private */
+  getDownloadFileName_() {
+    const date = new Date();
+    return [
+      'chromevox_logpage',
+      date.getMonth() + 1,
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+    ].join('_') +
+        '.txt';
+  }
+
+  /** @private */
+  initPage_() {
+    const params = new URLSearchParams(location.search);
     for (const type of Object.values(LogType)) {
-      const label = document.createElement('label');
-      const input = document.createElement('input');
-      input.id = type + 'Filter';
-      input.type = 'checkbox';
-      input.classList.add('log-filter');
-      label.appendChild(input);
-
-      const span = document.createElement('span');
-      span.textContent = type;
-      label.appendChild(span);
-
-      document.getElementById('logFilters').appendChild(label);
+      const enabled =
+          (params.get(type) === String(true) || params.get(type) === null);
+      this.createFilterCheckbox_(type, enabled);
     }
 
     const clearLogButton = document.getElementById('clearLog');
-    clearLogButton.onclick = async function(event) {
-      await BackgroundBridge.LogStore.clearLog();
-      location.reload();
-    };
+    clearLogButton.onclick = () => this.onClear_();
 
-    const params = new URLSearchParams(location.search);
-    for (const type of Object.values(LogType)) {
-      const typeFilter = type + 'Filter';
-      LogPage.setFilterTypeEnabled(typeFilter, params.get(typeFilter));
-    }
     const saveLogButton = document.getElementById('saveLog');
-    saveLogButton.onclick = LogPage.saveLogEvent;
+    saveLogButton.onclick = event => this.onSave_(event);
+  }
 
-    const checkboxes = document.getElementsByClassName('log-filter');
-    const filterEventListener = function(event) {
-      const target = event.target;
-      LogPage.setFilterTypeEnabled(target.id, String(target.checked));
-      location.search = LogPage.createUrlParams();
-    };
-    for (let i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].onclick = filterEventListener;
-    }
+  /**
+   * @param {!LogType} type
+   * @private
+   */
+  isEnabled_(type) {
+    return document.getElementById(this.checkboxId_(type)).checked;
+  }
 
-    await LogPage.update();
+  /**
+   * @param {Element} log
+   * @private
+   */
+  logToString_(log) {
+    const logText = [];
+    logText.push(log.querySelector('.log-type-tag').textContent);
+    logText.push(log.querySelector('.log-time-tag').textContent);
+    logText.push(log.querySelector('.log-text').textContent);
+    return logText.join(' ');
+  }
+
+  /** @private */
+  async onClear_() {
+    await BackgroundBridge.LogStore.clearLog();
+    location.reload();
   }
 
   /**
    * When saveLog button is clicked this function runs.
    * Save the current log appeared in the page as a plain text.
    * @param {Event} event
+   * @private
    */
-  static saveLogEvent(event) {
+  onSave_(event) {
     let outputText = '';
     const logs = document.querySelectorAll('#logList p');
-    for (let i = 0; i < logs.length; i++) {
-      const logText = [];
-      logText.push(logs[i].querySelector('.log-type-tag').textContent);
-      logText.push(logs[i].querySelector('.log-time-tag').textContent);
-      logText.push(logs[i].querySelector('.log-text').textContent);
-      outputText += logText.join(' ') + '\n';
+    for (const log of logs) {
+      outputText += this.logToString_(log) + '\n';
     }
 
     const a = document.createElement('a');
-    const date = new Date();
-    a.download =
-        [
-          'chromevox_logpage',
-          date.getMonth() + 1,
-          date.getDate(),
-          date.getHours(),
-          date.getMinutes(),
-          date.getSeconds(),
-        ].join('_') +
-        '.txt';
+    a.download = this.getDownloadFileName_();
     a.href = 'data:text/plain; charset=utf-8,' + encodeURI(outputText);
     a.click();
   }
 
-  /**
-   * Update the states of checkboxes and
-   * update logs.
-   */
-  static async update() {
-    for (const type of Object.values(LogType)) {
-      const typeFilter = type + 'Filter';
-      const element = document.getElementById(typeFilter);
-      element.checked = LogPage.urlPrefs_[typeFilter];
+  /** Update the logs. */
+  async update() {
+    const logs = await BackgroundBridge.LogStore.getLogs();
+    if (!logs) {
+      return;
     }
 
-    const log = await BackgroundBridge.LogStore.getLogs();
-    LogPage.updateLog(log, document.getElementById('logList'));
-  }
-
-  /**
-   * Updates the log section.
-   * @param {Array<!SerializableLog>} log Array of logs to record.
-   * @param {Element} div
-   */
-  static updateLog(log, div) {
-    for (let i = 0; i < log.length; i++) {
-      if (!LogPage.urlPrefs_[log[i].logType + 'Filter']) {
-        continue;
+    for (const log of logs) {
+      if (this.isEnabled_(log.logType)) {
+        this.addLogToPage_(log);
       }
-
-      const p = document.createElement('p');
-      const typeName = document.createElement('span');
-      typeName.textContent = log[i].logType;
-      typeName.className = 'log-type-tag';
-      const timeStamp = document.createElement('span');
-      timeStamp.textContent = LogPage.formatTimeStamp(log[i].date);
-      timeStamp.className = 'log-time-tag';
-      /** textWrapper should be in block scope, not function scope. */
-      const textWrapper = document.createElement('pre');
-      textWrapper.textContent = log[i].value;
-      textWrapper.className = 'log-text';
-
-      p.appendChild(typeName);
-      p.appendChild(timeStamp);
-
-      /** Add hide tree button when logType is tree. */
-      if (log[i].logType === LogType.TREE) {
-        const toggle = document.createElement('label');
-        const toggleCheckbox = document.createElement('input');
-        toggleCheckbox.type = 'checkbox';
-        toggleCheckbox.checked = true;
-        toggleCheckbox.onclick = function(event) {
-          textWrapper.hidden = !event.target.checked;
-        };
-        const toggleText = document.createElement('span');
-        toggleText.textContent = 'show tree';
-        toggle.appendChild(toggleCheckbox);
-        toggle.appendChild(toggleText);
-        p.appendChild(toggle);
-      }
-
-      p.appendChild(textWrapper);
-      div.appendChild(p);
     }
   }
 
   /**
-   * Update urlPrefs_. Set true if checked is null.
-   * @param {string} typeFilter
-   * @param {?string} checked
+   * Update the URL parameter based on the checkboxes.
+   * @private
    */
-  static setFilterTypeEnabled(typeFilter, checked) {
-    if (checked == null || checked === 'true') {
-      LogPage.urlPrefs_[typeFilter] = true;
-    } else {
-      LogPage.urlPrefs_[typeFilter] = false;
-    }
-  }
-
-  /**
-   * Create URL parameter based on LogPage.urlPrefs_.
-   * @return {string}
-   */
-  static createUrlParams() {
+  updateUrlParams_() {
     const urlParams = [];
     for (const type of Object.values(LogType)) {
-      const typeFilter = type + 'Filter';
-      urlParams.push(typeFilter + '=' + LogPage.urlPrefs_[typeFilter]);
+      urlParams.push(type + 'Filter=' + LogPage.instance.isEnabled_(type));
     }
-    return '?' + urlParams.join('&');
+    location.search = '?' + urlParams.join('&');
   }
 
   /**
@@ -183,8 +204,9 @@ export class LogPage {
    * milliseconds order time stamp is required.
    * @param {!Date} date
    * @return {!string}
+   * @private
    */
-  static formatTimeStamp(date) {
+  formatTimeStamp_(date) {
     let time = date.getTime();
     time -= date.getTimezoneOffset() * 1000 * 60;
     let timeStr =
@@ -197,13 +219,28 @@ export class LogPage {
 }
 
 /**
- * Store the preferences of filters.
- * @type {Object<string, boolean>}
- * @private
+ * @param {!LogType} type
+ * @return {string}
  */
-LogPage.urlPrefs_ = {};
+function checkboxId(type) {
+  return type + 'Filter';
+}
+/**
+ * @param {string} id
+ * @return {!LogType}
+ */
+function logTypeFromId(id) {
+  const type = id.slice(0, -6);
+  if (!Object.values(LogType).includes(type)) {
+    throw new Error('Log page checkbox IDs must be a LogType + "Filter"');
+  }
+  return /** @type {!LogType} */ (type);
+}
 
 
 document.addEventListener('DOMContentLoaded', async function() {
   await LogPage.init();
 }, false);
+
+/** @type {LogPage} */
+LogPage.instance;

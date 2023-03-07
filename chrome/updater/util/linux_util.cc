@@ -6,11 +6,11 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util/posix_util.h"
 #include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -42,13 +42,18 @@ base::FilePath GetExecutableRelativePath() {
   return base::FilePath(kExecutableName);
 }
 
-absl::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
-  if (!path) {
-    return absl::nullopt;
-  }
+absl::optional<base::FilePath> GetBaseInstallDirectory(UpdaterScope scope) {
+  absl::optional<base::FilePath> path = GetApplicationDataDirectory(scope);
+  return path ? absl::optional<base::FilePath>(
+                    path->Append(GetUpdaterFolderName()))
+              : absl::nullopt;
+}
 
-  return path->AppendASCII(kExecutableName);
+absl::optional<base::FilePath> GetUpdateServiceLauncherPath(
+    UpdaterScope scope) {
+  absl::optional<base::FilePath> path = GetBaseInstallDirectory(scope);
+  return path ? absl::optional<base::FilePath>(path->AppendASCII(kLauncherName))
+              : absl::nullopt;
 }
 
 }  // namespace updater

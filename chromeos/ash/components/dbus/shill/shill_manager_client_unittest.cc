@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -154,13 +154,13 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   writer.CloseContainer(&type_dict_writer);
 
   // Create the expected value.
-  base::Value property_dict_value(base::Value::Type::DICTIONARY);
-  property_dict_value.SetKey(shill::kGeoMacAddressProperty,
-                             base::Value("01:23:45:67:89:AB"));
-  base::Value type_entry_value(base::Value::Type::LIST);
-  type_entry_value.Append(std::move(property_dict_value));
-  base::Value type_dict_value(base::Value::Type::DICTIONARY);
-  type_dict_value.SetKey("wifi", std::move(type_entry_value));
+  base::Value::Dict property_dict;
+  property_dict.Set(shill::kGeoMacAddressProperty, "01:23:45:67:89:AB");
+  base::Value::List type_entry_list;
+  type_entry_list.Append(std::move(property_dict));
+  base::Value::Dict type_dict;
+  type_dict.Set("wifi", std::move(type_entry_list));
+  base::Value type_dict_value(std::move(type_dict));
 
   // Set expectations.
   PrepareForMethodCall(shill::kGetNetworksForGeolocation,
@@ -328,8 +328,14 @@ TEST_F(ShillManagerClientTest, GetService) {
 }
 
 TEST_F(ShillManagerClientTest, SetTetheringEnabled) {
+  const char kEnabledResult[] = "success";
+
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendString(kEnabledResult);
+
+  // Set expectation.
   PrepareForMethodCall(shill::kSetTetheringEnabledFunction,
                        base::BindRepeating(&ExpectBoolArgument, true),
                        response.get());
@@ -338,7 +344,12 @@ TEST_F(ShillManagerClientTest, SetTetheringEnabled) {
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
   client_->SetTetheringEnabled(
-      /*enabled=*/true, run_loop.QuitClosure(), mock_error_callback.Get());
+      /*enabled=*/true,
+      base::BindLambdaForTesting([&](const std::string& enabled_result) {
+        EXPECT_EQ(kEnabledResult, enabled_result);
+        run_loop.QuitClosure();
+      }),
+      mock_error_callback.Get());
 
   // Run the message loop.
   run_loop.RunUntilIdle();

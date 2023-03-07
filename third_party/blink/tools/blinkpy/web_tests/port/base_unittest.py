@@ -883,6 +883,12 @@ class PortTest(LoggingTestCase):
             sorted(port.tests(['virtual/virtual_wpt_dom/'])),
             dom_wpt + ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
 
+        all_virtual_console = set([
+            'virtual/virtual_console/external/wpt/console/console-is-a-namespace.any.html',
+            'virtual/virtual_console/external/wpt/console/console-is-a-namespace.any.worker.html'
+        ])
+        self.assertLessEqual(all_virtual_console, set(port.tests()))
+
     def test_virtual_test_paths(self):
         port = self.make_port(with_tests=True)
         add_manifest_to_mock_filesystem(port)
@@ -1183,6 +1189,30 @@ class PortTest(LoggingTestCase):
             rt_path, "foo<meta name=fuzzy content=\"ref.html:0;1-200\">bar")
         result = port.get_wpt_fuzzy_metadata("passes/reftest.html")
         self.assertEqual(result, ([0, 0], [4, 800]))
+
+    def test_get_wpt_fuzzy_metadata_for_wpt_test(self):
+        port = self.make_port(with_tests=True)
+        add_manifest_to_mock_filesystem(port)
+        result = port.get_wpt_fuzzy_metadata(
+            'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'
+        )
+        self.assertEqual(result, ([0, 255], [0, 200]))
+        result = port.get_wpt_fuzzy_metadata(
+            'external/wpt/dom/ranges/Range-attributes.html')
+        self.assertEqual(result, (None, None))
+
+    def test_get_wpt_fuzzy_metadata_for_wpt_test_with_dsf(self):
+        port = self.make_port(with_tests=True)
+        add_manifest_to_mock_filesystem(port)
+        port.args_for_test = unittest.mock.MagicMock(
+            return_value=['--force-device-scale-factor=2'])
+        result = port.get_wpt_fuzzy_metadata(
+            'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'
+        )
+        self.assertEqual(result, ([0, 255], [0, 800]))
+        result = port.get_wpt_fuzzy_metadata(
+            'external/wpt/dom/ranges/Range-attributes.html')
+        self.assertEqual(result, (None, None))
 
     def test_get_file_path_for_wpt_test(self):
         port = self.make_port(with_tests=True)

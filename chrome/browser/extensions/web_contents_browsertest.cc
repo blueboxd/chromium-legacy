@@ -4,7 +4,7 @@
 
 #include <map>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageNavigation) {
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
         extension->id(),
         base::StringPrintf(kScript, target_url.spec().c_str())));
-    navigation_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(navigation_observer.WaitForNavigationFinished());
     EXPECT_FALSE(navigation_observer.was_committed());
     EXPECT_EQ(extension->GetResourceURL("background.html"),
               background_contents->GetLastCommittedURL());
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageNavigation) {
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
         extension->id(),
         base::StringPrintf(kScript, target_url.spec().c_str())));
-    navigation_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(navigation_observer.WaitForNavigationFinished());
     EXPECT_TRUE(navigation_observer.was_committed());
     EXPECT_EQ(target_url, background_contents->GetLastCommittedURL());
   }
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageNavigation) {
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
         extension->id(),
         base::StringPrintf(kScript, target_url.spec().c_str())));
-    navigation_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(navigation_observer.WaitForNavigationFinished());
     EXPECT_TRUE(navigation_observer.was_committed());
     EXPECT_EQ(target_url, background_contents->GetLastCommittedURL());
   }

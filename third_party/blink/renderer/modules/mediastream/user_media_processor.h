@@ -8,9 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -155,7 +156,7 @@ class MODULES_EXPORT UserMediaProcessor
                            TiltConstraintRequestPanTiltZoomPermission);
   FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
                            ZoomConstraintRequestPanTiltZoomPermission);
-  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest, MultiDeviceOnStreamGenerated);
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest, MultiDeviceOnStreamsGenerated);
   class RequestInfo;
   using LocalStreamSources = HeapVector<Member<MediaStreamSource>>;
 
@@ -163,11 +164,11 @@ class MODULES_EXPORT UserMediaProcessor
                      blink::mojom::blink::MediaStreamRequestResult result,
                      blink::mojom::blink::GetOpenDeviceResponsePtr response);
 
-  void OnStreamGenerated(int32_t request_id,
-                         blink::mojom::blink::MediaStreamRequestResult result,
-                         const String& label,
-                         mojom::blink::StreamDevicesSetPtr stream_devices_set,
-                         bool pan_tilt_zoom_allowed);
+  void OnStreamsGenerated(int32_t request_id,
+                          blink::mojom::blink::MediaStreamRequestResult result,
+                          const String& label,
+                          mojom::blink::StreamDevicesSetPtr stream_devices_set,
+                          bool pan_tilt_zoom_allowed);
 
   void GotAllVideoInputFormatsForDevice(
       UserMediaRequest* user_media_request,

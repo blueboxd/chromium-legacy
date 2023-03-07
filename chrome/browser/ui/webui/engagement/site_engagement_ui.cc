@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -95,8 +95,8 @@ class SiteEngagementDetailsProviderImpl
 SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
   // Set up the chrome://site-engagement/ source.
-  std::unique_ptr<content::WebUIDataSource> source(
-      content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUISiteEngagementHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://webui-test 'self';");
@@ -104,7 +104,6 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
   source->AddResourcePath("site_engagement_details.mojom-webui.js",
                           IDR_SITE_ENGAGEMENT_DETAILS_MOJOM_WEBUI_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(SiteEngagementUI)

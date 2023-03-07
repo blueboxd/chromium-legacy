@@ -17,16 +17,15 @@
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands/win_key_rotation_command.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/mock_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate.h"
-#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/rotate_util.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::_;
 using testing::Invoke;
@@ -45,7 +44,7 @@ HRESULT MockRunGoogleUpdateElevatedCommandFn(
     HttpResponseCode upload_response_code,
     const wchar_t* command,
     const std::vector<std::string>& args,
-    DWORD* return_code) {
+    absl::optional<DWORD>* return_code) {
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   CHECK(args.size() == 3);
   cmd_line.AppendSwitchASCII(switches::kRotateDTKey, args[0]);
@@ -60,18 +59,33 @@ HRESULT MockRunGoogleUpdateElevatedCommandFn(
                                  base::OnceCallback<void(int)> callback) {
             std::move(callback).Run(upload_response_code);
           }));
-  *return_code = enterprise_connectors::RotateDeviceTrustKey(
-                     enterprise_connectors::KeyRotationManager::Create(
-                         std::move(mock_network_delegate)),
-                     cmd_line, install_static::GetChromeChannel())
-                     ? installer::InstallStatus::ROTATE_DTKEY_SUCCESS
-                     : installer::InstallStatus::ROTATE_DTKEY_FAILED;
+  const auto result = enterprise_connectors::RotateDeviceTrustKey(
+      enterprise_connectors::KeyRotationManager::Create(
+          std::move(mock_network_delegate)),
+      cmd_line, install_static::GetChromeChannel());
+  switch (result) {
+    case enterprise_connectors::KeyRotationResult::kSucceeded:
+      *return_code = installer::ROTATE_DTKEY_SUCCESS;
+      break;
+    case enterprise_connectors::KeyRotationResult::kInsufficientPermissions:
+      *return_code = installer::ROTATE_DTKEY_FAILED_PERMISSIONS;
+      break;
+    case enterprise_connectors::KeyRotationResult::kFailedKeyConflict:
+      *return_code = installer::ROTATE_DTKEY_FAILED_CONFLICT;
+      break;
+    case enterprise_connectors::KeyRotationResult::kFailed:
+    default:
+      *return_code = installer::ROTATE_DTKEY_FAILED;
+      break;
+  }
+
   return S_OK;
 }
 
 DeviceTrustTestEnvironmentWin::DeviceTrustTestEnvironmentWin()
     : DeviceTrustTestEnvironment("device_trust_test_environment_win",
-                                 kSuccessCode) {
+                                 kSuccessCode),
+      install_details_(true) {
   registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
   KeyRotationCommandFactory::SetFactoryInstanceForTesting(this);
 }
@@ -82,8 +96,7 @@ DeviceTrustTestEnvironmentWin::~DeviceTrustTestEnvironmentWin() {
 
 std::unique_ptr<KeyRotationCommand>
 DeviceTrustTestEnvironmentWin::CreateCommand(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    PrefService* local_prefs) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   if (!worker_thread_.IsRunning()) {
     // Make sure the worker thread is running. Its task runner can be reused for
     // all created commands, and its destruction will be handled automatically.
@@ -96,19 +109,15 @@ DeviceTrustTestEnvironmentWin::CreateCommand(
       worker_thread_.task_runner());
 }
 
-void DeviceTrustTestEnvironmentWin::SetUploadResult(
-    HttpResponseCode upload_response_code) {
-  upload_response_code_ = upload_response_code;
+void DeviceTrustTestEnvironmentWin::SetUpExistingKey() {
+  auto trust_level = BPKUR::CHROME_BROWSER_HW_KEY;
+  auto key_pair = key_persistence_delegate_->CreateKeyPair();
+  EXPECT_TRUE(key_persistence_delegate_->StoreKeyPair(
+      trust_level, key_pair->key()->GetWrappedKey()));
 }
 
-void DeviceTrustTestEnvironmentWin::SetUpExistingKey() {
-  auto* factory = KeyPersistenceDelegateFactory::GetInstance();
-  auto trust_level = BPKUR::CHROME_BROWSER_HW_KEY;
-  std::unique_ptr<KeyPersistenceDelegate> win_key_persistence_delegate =
-      factory->CreateKeyPersistenceDelegate();
-  auto key_pair = win_key_persistence_delegate->CreateKeyPair();
-  EXPECT_TRUE(win_key_persistence_delegate->StoreKeyPair(
-      trust_level, key_pair->key()->GetWrappedKey()));
+std::vector<uint8_t> DeviceTrustTestEnvironmentWin::GetWrappedKey() {
+  return key_persistence_delegate_->LoadKeyPair()->key()->GetWrappedKey();
 }
 
 }  // namespace enterprise_connectors

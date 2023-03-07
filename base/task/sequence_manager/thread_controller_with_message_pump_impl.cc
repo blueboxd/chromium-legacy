@@ -21,7 +21,6 @@
 #include "base/task/sequence_manager/tasks.h"
 #include "base/task/task_features.h"
 #include "base/threading/hang_watcher.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
@@ -123,8 +122,8 @@ ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
 }
 
 ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
-  // Destructors of MessagePump::Delegate and ThreadTaskRunnerHandle
-  // will do all the clean-up.
+  // Destructors of MessagePump::Delegate and
+  // SingleThreadTaskRunner::CurrentDefaultHandle will do all the clean-up.
   // ScopedSetSequenceLocalStorageMapForCurrentThread destructor will
   // de-register the current thread as a sequence.
 
@@ -167,7 +166,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
   {
     base::internal::CheckedAutoLock task_runner_lock(task_runner_lock_);
     if (task_runner_)
-      InitializeThreadTaskRunnerHandle();
+      InitializeSingleThreadTaskRunnerCurrentDefaultHandle();
   }
   if (work_deduplicator_.BindToCurrentThread() ==
       ShouldScheduleWork::kScheduleImmediate) {
@@ -238,13 +237,14 @@ void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
   if (associated_thread_->IsBound()) {
     DCHECK(associated_thread_->IsBoundToCurrentThread());
     // Thread task runner handle will be created in BindToCurrentThread().
-    InitializeThreadTaskRunnerHandle();
+    InitializeSingleThreadTaskRunnerCurrentDefaultHandle();
   }
 }
 
-void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
-  // Only one ThreadTaskRunnerHandle can exist at any time,
-  // so reset the old one.
+void ThreadControllerWithMessagePumpImpl::
+    InitializeSingleThreadTaskRunnerCurrentDefaultHandle() {
+  // Only one SingleThreadTaskRunner::CurrentDefaultHandle can exist at any
+  // time, so reset the old one.
   main_thread_only().thread_task_runner_handle.reset();
   main_thread_only().thread_task_runner_handle =
       std::make_unique<SingleThreadTaskRunner::CurrentDefaultHandle>(

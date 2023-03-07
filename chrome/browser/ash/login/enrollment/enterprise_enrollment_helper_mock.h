@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +36,7 @@ class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
   MOCK_METHOD2(UpdateDeviceAttributes,
                void(const std::string& asset_id, const std::string& location));
   MOCK_METHOD1(ClearAuth, void(base::OnceClosure callback));
+  MOCK_METHOD(bool, InProgress, (), (const, override));
 };
 
 }  // namespace ash

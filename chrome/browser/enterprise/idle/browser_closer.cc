@@ -11,7 +11,6 @@
 #include "base/check_is_test.h"
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -80,6 +79,10 @@ base::CallbackListSubscription BrowserCloser::ShowDialogAndCloseBrowsers(
 void BrowserCloser::DismissDialogForTesting() {
   CHECK_IS_TEST();
   OnDialogDismissedByUser();
+}
+
+bool BrowserCloser::IsDialogOpenForTesting() const {
+  return bool(dialog_);
 }
 
 void BrowserCloser::OnDialogExpired() {

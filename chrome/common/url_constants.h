@@ -35,6 +35,9 @@ extern const char kAccessCodeCastLearnMoreURL[];
 // dialog shown when a user enables the feature.
 extern const char kAccessibilityLabelsLearnMoreURL[];
 
+// "Learn more" URL for Ad Privacy.
+extern const char kAdPrivacyLearnMoreURL[];
+
 // "Learn more" URL for when profile settings are automatically reset.
 extern const char kAutomaticSettingsResetLearnMoreURL[];
 
@@ -155,6 +158,9 @@ extern const char kExtensionControlledSettingLearnMoreURL[];
 
 // URL used to indicate that an extension resource load request was invalid.
 extern const char kExtensionInvalidRequestURL[];
+
+// "Learn more" URL for first party sets.
+extern const char kFirstPartySetsLearnMoreURL[];
 
 // Url to a blogpost about Flash deprecation.
 extern const char kFlashDeprecationLearnMoreURL[];
@@ -408,6 +414,12 @@ extern const char kGoogleEulaOnlineURLPath[];
 
 // The URL path to Online Chrome and Chrome OS terms of service.
 extern const char kCrosEulaOnlineURLPath[];
+
+// The URL path to online ARC++ terms of service.
+extern const char kArcTosOnlineURLPath[];
+
+// The URL path to online privacy policy.
+extern const char kPrivacyPolicyOnlineURLPath[];
 
 // The URL for the "learn more" link for TPM firmware update.
 extern const char kTPMFirmwareUpdateLearnMoreURL[];

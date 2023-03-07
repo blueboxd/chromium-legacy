@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -92,10 +92,6 @@ gpu::MailboxManager* SkiaOutputSurfaceDependencyImpl::GetMailboxManager() {
   return gpu_service_impl_->mailbox_manager();
 }
 
-gpu::ImageFactory* SkiaOutputSurfaceDependencyImpl::GetGpuImageFactory() {
-  return gpu_service_impl_->gpu_image_factory();
-}
-
 bool SkiaOutputSurfaceDependencyImpl::IsOffscreen() {
   return surface_handle_ == gpu::kNullSurfaceHandle;
 }
@@ -109,8 +105,13 @@ scoped_refptr<gl::Presenter> SkiaOutputSurfaceDependencyImpl::CreatePresenter(
     gl::GLSurfaceFormat format) {
   DCHECK(!IsOffscreen());
 
-  return gpu::ImageTransportSurface::CreatePresenter(
+  auto presenter = gpu::ImageTransportSurface::CreatePresenter(
       GetSharedContextState()->display(), stub, surface_handle_, format);
+  if (presenter &&
+      GetGpuDriverBugWorkarounds().rely_on_implicit_sync_for_swap_buffers) {
+    presenter->SetRelyOnImplicitSync();
+  }
+  return presenter;
 }
 
 scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(

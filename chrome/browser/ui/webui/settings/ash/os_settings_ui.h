@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler_factory.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
-#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/ash/search/user_action_recorder.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
@@ -23,6 +22,7 @@
 #include "chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-forward.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-forward.h"
+#include "chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "content/public/browser/webui_config.h"
 #include "content/public/common/url_constants.h"
@@ -30,16 +30,21 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/app_management/app_management.mojom-forward.h"
+#include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
+namespace ui {
+class ColorChangeHandler;
+}  // namespace ui
+
 namespace ash::settings {
 
 namespace mojom {
 class SearchHandler;
-}
+}  // namespace mojom
 
 class OSSettingsUI;
 
@@ -145,6 +150,11 @@ class OSSettingsUI : public ui::MojoWebUIController {
   void BindInterface(
       mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver);
 
+  // Binds to the Jelly dynamic color Mojo
+  void BindInterface(
+      mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
+          receiver);
+
  private:
   base::TimeTicks time_when_opened_;
 
@@ -153,6 +163,9 @@ class OSSettingsUI : public ui::MojoWebUIController {
   std::unique_ptr<mojom::UserActionRecorder> user_action_recorder_;
   std::unique_ptr<AppManagementPageHandlerFactory>
       app_management_page_handler_factory_;
+
+  // This handler notifies the WebUI when the color provider changes.
+  std::unique_ptr<ui::ColorChangeHandler> color_provider_handler_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

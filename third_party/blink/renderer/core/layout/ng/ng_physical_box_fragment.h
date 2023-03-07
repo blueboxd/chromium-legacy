@@ -214,8 +214,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   // Returns the layout-overflow for this fragment.
   const PhysicalRect LayoutOverflow() const {
-    if (is_legacy_layout_root_)
+    if (is_legacy_layout_root_ && !GetLayoutObject()->IsLayoutReplaced()) {
       return To<LayoutBox>(GetLayoutObject())->PhysicalLayoutOverflowRect();
+    }
     if (!HasLayoutOverflow())
       return {{}, Size()};
     return *ComputeLayoutOverflowAddress();
@@ -304,12 +305,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   PhysicalRect ScrollableOverflow(TextHeightType height_type) const;
   PhysicalRect ScrollableOverflowFromChildren(TextHeightType height_type) const;
-
-  OverflowClipAxes GetOverflowClipAxes() const {
-    if (const auto* layout_object = GetLayoutObject())
-      return layout_object->GetOverflowClipAxes();
-    return kNoOverflowClip;
-  }
 
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment

@@ -4,8 +4,12 @@
 
 #include "content/renderer/pepper/resource_creation_impl.h"
 
+#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/common/content_switches_internal.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/ppb_audio_impl.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
@@ -22,7 +26,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/command_line.h"
-#include "base/win/windows_version.h"
 #endif
 
 using ppapi::InputEventData;
@@ -30,6 +33,25 @@ using ppapi::PPB_InputEvent_Shared;
 using ppapi::StringVar;
 
 namespace content {
+
+namespace {
+
+// Returns whether the PPB_VideoDecoder(Dev) API is enabled. The API is enabled
+// iff either:
+// (a) the relevant base::Feature is set, or
+// (b) the relevant "force-enable" switch is passed on the command line (this
+// overrides the value of the base::Feature).
+bool IsVideoDecoderDevAPIEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceEnablePepperVideoDecoderDevAPI)) {
+    return true;
+  }
+
+  return base::FeatureList::IsEnabled(
+      features::kSupportPepperVideoDecoderDevAPI);
+}
+
+}  // namespace
 
 ResourceCreationImpl::ResourceCreationImpl(PepperPluginInstanceImpl* instance) {
 }
@@ -113,18 +135,17 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
                                                   const PP_Size* size,
                                                   PP_Bool init_to_zero) {
 #if BUILDFLAG(IS_WIN)
-  // If Win32K lockdown mitigations are enabled for Windows 8 and beyond,
-  // we use the SIMPLE image data type as the PLATFORM image data type
+  // We use the SIMPLE image data type as the PLATFORM image data type
   // calls GDI functions to create DIB sections etc which fail in Win32K
   // lockdown mode.
-  if (base::win::GetVersion() >= base::win::Version::WIN8)
-    return CreateImageDataSimple(instance, format, size, init_to_zero);
-#endif
+  return CreateImageDataSimple(instance, format, size, init_to_zero);
+#else
   return PPB_ImageData_Impl::Create(instance,
                                     ppapi::PPB_ImageData_Shared::PLATFORM,
                                     format,
                                     *size,
                                     init_to_zero);
+#endif
 }
 
 PP_Resource ResourceCreationImpl::CreateImageDataSimple(
@@ -289,7 +310,12 @@ PP_Resource ResourceCreationImpl::CreateVideoDecoderDev(
     PP_Instance instance,
     PP_Resource graphics3d_id,
     PP_VideoDecoder_Profile profile) {
-  return PPB_VideoDecoder_Impl::Create(instance, graphics3d_id, profile);
+  if (IsVideoDecoderDevAPIEnabled()) {
+    return create_video_decoder_dev_impl_callback_.Run(instance, graphics3d_id,
+                                                       profile);
+  }
+
+  return 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoEncoder(PP_Instance instance) {

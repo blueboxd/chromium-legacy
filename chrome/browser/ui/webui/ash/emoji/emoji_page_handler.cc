@@ -10,7 +10,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
+#include "content/public/browser/storage_partition.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -76,7 +78,7 @@ class EmojiObserver : public ui::InputMethodObserver {
       // Can't use this->ime_ either as it may not be active, want to ensure
       // that we get the active IME.
       ui::InputMethod* input_method =
-          ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+          IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
 
       if (!input_method) {
         return;
@@ -128,7 +130,11 @@ EmojiPageHandler::EmojiPageHandler(
     : receiver_(this, std::move(receiver)),
       webui_controller_(webui_controller),
       incognito_mode_(incognito_mode),
-      no_text_field_(no_text_field) {}
+      no_text_field_(no_text_field) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  url_loader_factory_ = profile->GetDefaultStoragePartition()
+                            ->GetURLLoaderFactoryForBrowserProcess();
+}
 
 EmojiPageHandler::~EmojiPageHandler() {}
 
@@ -150,10 +156,6 @@ void EmojiPageHandler::IsIncognitoTextField(
 
 void EmojiPageHandler::GetFeatureList(GetFeatureListCallback callback) {
   std::vector<emoji_picker::mojom::Feature> enabled_features;
-  if (base::FeatureList::IsEnabled(features::kImeSystemEmojiPickerExtension)) {
-    enabled_features.push_back(
-        emoji_picker::mojom::Feature::EMOJI_PICKER_EXTENSION);
-  }
   if (base::FeatureList::IsEnabled(
           features::kImeSystemEmojiPickerSearchExtension)) {
     enabled_features.push_back(
@@ -167,6 +169,30 @@ void EmojiPageHandler::GetFeatureList(GetFeatureListCallback callback) {
   std::move(callback).Run(enabled_features);
 }
 
+void EmojiPageHandler::GetCategories(GetCategoriesCallback callback) {
+  gif_tenor_api_fetcher_.FetchCategories(std::move(callback),
+                                         url_loader_factory_);
+}
+
+void EmojiPageHandler::GetFeaturedGifs(const absl::optional<std::string>& pos,
+                                       GetFeaturedGifsCallback callback) {
+  gif_tenor_api_fetcher_.FetchFeaturedGifs(std::move(callback),
+                                           url_loader_factory_, pos);
+}
+
+void EmojiPageHandler::SearchGifs(const std::string& query,
+                                  const absl::optional<std::string>& pos,
+                                  SearchGifsCallback callback) {
+  gif_tenor_api_fetcher_.FetchGifSearch(std::move(callback),
+                                        url_loader_factory_, query, pos);
+}
+
+void EmojiPageHandler::GetGifsByIds(const std::vector<std::string>& ids,
+                                    GetGifsByIdsCallback callback) {
+  gif_tenor_api_fetcher_.FetchGifsByIds(std::move(callback),
+                                        url_loader_factory_, ids);
+}
+
 void EmojiPageHandler::InsertEmoji(const std::string& emoji_to_insert,
                                    bool is_variant,
                                    int16_t search_length) {
@@ -177,7 +203,7 @@ void EmojiPageHandler::InsertEmoji(const std::string& emoji_to_insert,
   // e.g. JS has mutated the web page while emoji picker was open, so check
   // that a valid input client is available as part of inserting the emoji.
   ui::InputMethod* input_method =
-      ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+      IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
   if (!input_method) {
     DLOG(WARNING) << "no input_method found";
     CopyEmojiToClipboard(emoji_to_insert);

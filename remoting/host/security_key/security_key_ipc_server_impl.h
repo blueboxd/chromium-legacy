@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -23,12 +23,12 @@
 
 namespace base {
 class TimeDelta;
-}  // base
+}  // namespace base
 
 namespace IPC {
 class Channel;
 class Message;
-}  // IPC
+}  // namespace IPC
 
 namespace mojo {
 class IsolatedConnection;

@@ -13,9 +13,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
 #include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -30,8 +30,8 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -896,10 +896,10 @@ TEST_F(ShimlessRmaServiceTest, SelectNetworkTurnsOnWiFi) {
 
   // Simulate disabling WiFi.
   network_state_handler()->SetTechnologyEnabled(
-      chromeos::NetworkTypePattern::WiFi(), /*enabled=*/false,
+      NetworkTypePattern::WiFi(), /*enabled=*/false,
       network_handler::ErrorCallback());
-  EXPECT_FALSE(network_state_handler()->IsTechnologyEnabled(
-      chromeos::NetworkTypePattern::WiFi()));
+  EXPECT_FALSE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 
   // Initialize current state.
   shimless_rma_provider_->GetCurrentState(
@@ -918,8 +918,8 @@ TEST_F(ShimlessRmaServiceTest, SelectNetworkTurnsOnWiFi) {
   run_loop.RunUntilIdle();
 
   // After transitioning to the select network page, WiFi should be enabled.
-  EXPECT_TRUE(network_state_handler()->IsTechnologyEnabled(
-      chromeos::NetworkTypePattern::WiFi()));
+  EXPECT_TRUE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 }
 
 TEST_F(ShimlessRmaServiceTest, GetCurrentState) {

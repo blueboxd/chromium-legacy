@@ -82,12 +82,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(features::kPrivateNetworkAccessRespectPreflightResults),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(blink::features::kPrefersColorSchemeClientHintHeader),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(blink::features::kPrefersReducedMotionClientHintHeader),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kClientHintsMetaHTTPEquivAcceptCH),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
@@ -104,6 +98,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kPendingBeaconAPI),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(net::features::kThirdPartyStoragePartitioning),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
     // Overrides for --enable-experimental-cookie-features.
@@ -134,11 +131,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     // Overrides for headless
     {::switches::kHeadless, std::cref(blink::features::kPaintHolding),
      base::FeatureList::OVERRIDE_DISABLE_FEATURE},
-
-    // Override for --force-major-version-to-minor.
-    {switches::kForceMajorVersionToMinorPosition,
-     std::cref(blink::features::kForceMajorVersionInMinorPositionInUserAgent),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
     // Override for --durable-client-hints-cache.
     {switches::kDurableClientHintsCache,

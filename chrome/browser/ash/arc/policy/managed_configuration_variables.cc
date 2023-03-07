@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/user_manager/user.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/re2/src/re2/stringpiece.h"
 
@@ -77,9 +78,9 @@ std::string DeviceAnnotatedLocation(
 }
 
 std::string DeviceSerialNumber() {
-  return std::string(chromeos::system::StatisticsProvider::GetInstance()
-                         ->GetMachineID()
-                         .value_or(""));
+  return std::string(
+      ash::system::StatisticsProvider::GetInstance()->GetMachineID().value_or(
+          ""));
 }
 
 // Map associating known variables to functions that return the corresponding

@@ -13,9 +13,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"  // for FileAccessProvider
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/string_compare.h"
 #include "base/memory/raw_ptr.h"
 #include "base/posix/safe_strerror.h"
@@ -90,8 +90,8 @@ struct DictionaryIdComparator {
       : collator_(collator) {}
 
   bool operator()(const base::Value& a, const base::Value& b) const {
-    DCHECK(a.type() == base::Value::Type::DICTIONARY);
-    DCHECK(b.type() == base::Value::Type::DICTIONARY);
+    DCHECK(a.type() == base::Value::Type::DICT);
+    DCHECK(b.type() == base::Value::Type::DICT);
     const base::Value::Dict& a_dict = a.GetDict();
     const base::Value::Dict& b_dict = b.GetDict();
     std::u16string a_str;

@@ -12,9 +12,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/lru_cache.h"
 #include "base/containers/queue.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -75,9 +75,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   bool IsDecoding() const override;
   void InitiateFlush() override;
   void CompleteFlush() override;
+  void RestartStream() override;
   void ChangeResolution(gfx::Size pic_size,
                         gfx::Rect visible_rect,
-                        size_t num_codec_reference_frames) override;
+                        size_t num_codec_reference_frames,
+                        uint8_t bit_depth) override;
   void OutputFrame(scoped_refptr<VideoFrame> frame,
                    const gfx::Rect& visible_rect,
                    const VideoColorSpace& color_space,
@@ -139,7 +141,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   // Return CroStatus::Codes::kFailedToChangeResolution if other error occurs.
   CroStatus SetupOutputFormat(const gfx::Size& size,
                               const gfx::Rect& visible_rect,
-                              size_t num_codec_reference_frames);
+                              size_t num_codec_reference_frames,
+                              uint8_t bit_depth);
 
   // Start streaming V4L2 input and (if |start_output_queue| is true) output
   // queues. Attempt to start |device_poll_thread_| after streaming starts.
@@ -157,7 +160,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecoder
   // Return CroStatus::Codes::kFailedToChangeResolution if any error occurs.
   CroStatus ContinueChangeResolution(const gfx::Size& pic_size,
                                      const gfx::Rect& visible_rect,
-                                     size_t num_codec_reference_frames);
+                                     size_t num_codec_reference_frames,
+                                     uint8_t bit_depth);
   void OnChangeResolutionDone(CroStatus status);
 
   // Change the state and check the state transition is valid.

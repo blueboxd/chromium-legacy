@@ -97,6 +97,7 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/pref_names.h"
+#include "components/domain_reliability/domain_reliability_prefs.h"
 #include "components/embedder_support/origin_trials/origin_trial_prefs.h"
 #include "components/enterprise/browser/identifiers/identifiers_prefs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -108,6 +109,7 @@
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator.h"
 #include "components/language/core/browser/language_prefs.h"
+#include "components/lens/buildflags.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/metrics/demographics/user_demographics.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -118,7 +120,6 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
-#include "components/origin_trials/browser/prefservice_persistence_provider.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
@@ -321,6 +322,7 @@
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/bluetooth/debug_logs_manager.h"
+#include "chrome/browser/ash/bluetooth/hats_bluetooth_revamp_trigger_impl.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
@@ -398,6 +400,7 @@
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
@@ -723,6 +726,9 @@ const char kLoadCryptoTokenExtension[] =
     "extensions.load_cryptotoken_extension";
 #endif
 
+// Deprecated 10/2022.
+const char kOriginTrialPrefKey[] = "origin_trials.persistent_trials";
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Deprecated 07/2022.
 // The name of a boolean pref that determines whether we can show the folder
@@ -804,6 +810,29 @@ const char kAutofillAssistantTriggerScriptsEnabled[] =
 const char kAutofillAssistantTriggerScriptsIsFirstTimeUser[] =
     "autofill_assistant.trigger_scripts.is_first_time_user";
 
+// Deprecated 12/2022.
+const char kAutofillWalletImportStorageCheckboxState[] =
+    "autofill.wallet_import_storage_checkbox_state";
+
+// Deprecated 01/2023
+const char kSendDownloadToCloudPref[] =
+    "enterprise_connectors.send_download_to_cloud";
+
+#if BUILDFLAG(IS_MAC)
+const char kDeviceTrustDisableKeyCreationPref[] =
+    "enterprise_connectors.device_trust.disable_key_creation";
+#endif  // BUILDFLAG(IS_MAC)
+
+// Deprecated 01/2023.
+const char kFileSystemSyncAccessHandleAsyncInterfaceEnabled[] =
+    "policy.file_system_sync_access_handle_async_interface_enabled";
+
+// Deprecated 01/2023.
+#if !BUILDFLAG(IS_ANDROID)
+const char kMediaRouterTabMirroringSources[] =
+    "media_router.tab_mirroring_sources";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -872,6 +901,13 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
   // Deprecated 11/2022.
   registry->RegisterDictionaryPref(kLocalConsentsDictionary);
+
+  // Deprecated 01/2023.
+  registry->RegisterListPref(kSendDownloadToCloudPref);
+
+#if BUILDFLAG(IS_MAC)
+  registry->RegisterBooleanPref(kDeviceTrustDisableKeyCreationPref, false);
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1060,6 +1096,9 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kSuggestedContentInfoDismissedInLauncher,
                                 false);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  // Deprecated 10/2022.
+  registry->RegisterDictionaryPref(kOriginTrialPrefKey,
+                                   PrefRegistry::LOSSY_PREF);
 
   // Deprecated 11/2022.
   registry->RegisterBooleanPref(kAutofillAssistantEnabled, true);
@@ -1067,6 +1106,19 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kAutofillAssistantTriggerScriptsEnabled, true);
   registry->RegisterBooleanPref(kAutofillAssistantTriggerScriptsIsFirstTimeUser,
                                 true);
+
+  // Deprecated 12/2022.
+  registry->RegisterBooleanPref(kAutofillWalletImportStorageCheckboxState,
+                                true);
+
+  // Deprecated 01/2023.
+  registry->RegisterBooleanPref(
+      kFileSystemSyncAccessHandleAsyncInterfaceEnabled, false);
+
+  // Deprecated 01/2023.
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterListPref(kMediaRouterTabMirroringSources);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace
@@ -1084,6 +1136,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeMetricsServiceClient::RegisterPrefs(registry);
   chrome::enterprise_util::RegisterLocalStatePrefs(registry);
   component_updater::RegisterPrefs(registry);
+  domain_reliability::RegisterPrefs(registry);
   embedder_support::OriginTrialPrefs::RegisterPrefs(registry);
   enterprise_reporting::RegisterLocalStatePrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
@@ -1234,6 +1287,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
       registry);
   extensions::login_api::RegisterLocalStatePrefs(registry);
   ::onc::RegisterPrefs(registry);
+  metrics::structured::ChromeStructuredMetricsRecorder::RegisterLocalStatePrefs(
+      registry);
   policy::ActiveDirectoryDeviceStateUploader::RegisterLocalStatePrefs(registry);
   policy::ActiveDirectoryMigrationManager::RegisterLocalStatePrefs(registry);
   policy::AdbSideloadingAllowanceModePolicyHandler::RegisterPrefs(registry);
@@ -1262,7 +1317,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_MAC)
   confirm_quit::RegisterLocalState(registry);
   QuitWithAppsController::RegisterPrefs(registry);
-  enterprise_connectors::RegisterLocalPrefs(registry);
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
   AppShimRegistry::Get()->RegisterLocalPrefs(registry);
 #endif
@@ -1358,7 +1412,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   NotifierStateTracker::RegisterProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
   optimization_guide::prefs::RegisterProfilePrefs(registry);
-  origin_trials::PrefServicePersistenceProvider::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
   performance_manager::user_tuning::prefs::RegisterProfilePrefs(registry);
@@ -1549,6 +1602,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::bluetooth::DebugLogsManager::RegisterPrefs(registry);
   ash::bluetooth_config::BluetoothPowerControllerImpl::RegisterProfilePrefs(
       registry);
+  ash::HatsBluetoothRevampTriggerImpl::RegisterProfilePrefs(registry);
   ash::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   ash::CupsPrintersManager::RegisterProfilePrefs(registry);
   ash::device_sync::RegisterProfilePrefs(registry);
@@ -1649,13 +1703,16 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RegisterBrowserViewProfilePrefs(registry);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP)
   registry->RegisterBooleanPref(
       prefs::kLensRegionSearchEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kLensDesktopNTPSearchEnabled, true);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(
       webauthn::pref_names::kRemoteProxiedRequestsAllowed, false);
-  registry->RegisterBooleanPref(prefs::kLensDesktopNTPSearchEnabled, true);
 
   // When in RTL mode, the side panel should default to the left of the screen.
   // Otherwise, the side panel should default to the right side of the screen.
@@ -1686,6 +1743,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
   registry->RegisterTimePref(prefs::kDIPSTimerLastUpdate, base::Time());
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityPdfOcrAlwaysActive, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -1805,6 +1868,12 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   // Added 11/2022.
   local_state->ClearPref(kLocalConsentsDictionary);
+
+  // Added 01/2023
+  local_state->ClearPref(kSendDownloadToCloudPref);
+#if BUILDFLAG(IS_MAC)
+  local_state->ClearPref(kDeviceTrustDisableKeyCreationPref);
+#endif  // BUILDFLAG(IS_MAC)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
@@ -2065,7 +2134,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(IS_ANDROID)
   feed::MigrateObsoleteProfilePrefsOct_2022(profile_prefs);
 #endif  // BUILDFLAG(IS_ANDROID)
-  profile_prefs->ClearPref(origin_trials::kOriginTrialPrefKey);
+  profile_prefs->ClearPref(kOriginTrialPrefKey);
 
   // Once this migration is complete, the tracked preference
   // `kGoogleServicesLastAccountIdDeprecated` can be removed.
@@ -2099,6 +2168,17 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 12/2022.
   profile_prefs->ClearPref(
       reading_list::prefs::kDeprecatedReadingListHasUnseenEntries);
+
+  // Added 12/2022.
+  profile_prefs->ClearPref(kAutofillWalletImportStorageCheckboxState);
+
+  // Added 01/2023.
+  profile_prefs->ClearPref(kFileSystemSyncAccessHandleAsyncInterfaceEnabled);
+
+  // Added 01/2023.
+#if !BUILDFLAG(IS_ANDROID)
+  profile_prefs->ClearPref(kMediaRouterTabMirroringSources);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

@@ -19,6 +19,8 @@
 
 @property(nonatomic, assign) NSUInteger occurrencesAcrossBrowserStates;
 
+@property(nonatomic, strong) NSDictionary<NSString*, NSNumber*>* preferenceMap;
+
 @end
 
 @implementation PushNotificationAccountContext
@@ -56,11 +58,11 @@
 
 - (BOOL)addAccount:(NSString*)gaiaID {
   ChromeBrowserState* chromeBrowserState = [self chromeBrowserStateFrom:gaiaID];
-  if (!chromeBrowserState)
+  if (!chromeBrowserState) {
     return NO;
+  }
 
-  return [self addAccount:gaiaID
-         withBrowserState:[self chromeBrowserStateFrom:gaiaID]];
+  return [self addAccount:gaiaID withBrowserState:chromeBrowserState];
 }
 
 - (BOOL)removeAccount:(NSString*)gaiaID {
@@ -129,11 +131,12 @@
   BrowserStateInfoCache* infoCache =
       _chromeBrowserStateManager->GetBrowserStateInfoCache();
   const size_t numberOfBrowserStates = infoCache->GetNumberOfBrowserStates();
+
   for (size_t i = 0; i < numberOfBrowserStates; i++) {
     NSString* browserStateGaiaID =
         base::SysUTF8ToNSString(infoCache->GetGAIAIdOfBrowserStateAtIndex(i));
 
-    if (gaiaID == browserStateGaiaID) {
+    if ([gaiaID isEqualToString:browserStateGaiaID]) {
       base::FilePath path = infoCache->GetPathOfBrowserStateAtIndex(i);
       return _chromeBrowserStateManager->GetBrowserState(path);
     }

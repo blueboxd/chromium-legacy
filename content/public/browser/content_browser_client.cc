@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -171,8 +171,7 @@ bool ContentBrowserClient::ShouldLockProcessToSite(
   return true;
 }
 
-bool ContentBrowserClient::DoesWebUISchemeRequireProcessLock(
-    base::StringPiece scheme) {
+bool ContentBrowserClient::DoesWebUIUrlRequireProcessLock(const GURL& url) {
   return true;
 }
 
@@ -236,7 +235,7 @@ bool ContentBrowserClient::CanCommitURL(RenderProcessHost* process_host,
 
 bool ContentBrowserClient::ShouldStayInParentProcessForNTP(
     const GURL& url,
-    SiteInstance* parent_site_instance) {
+    const GURL& parent_site_url) {
   return false;
 }
 
@@ -513,6 +512,15 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
 bool ContentBrowserClient::IsSharedStorageAllowed(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* rfh,
+    const url::Origin& top_frame_origin,
+    const url::Origin& accessing_origin) {
+  // TODO(crbug.com/1325103): Change this to false and override in
+  // relevant content_browsertests and web_tests.
+  return true;
+}
+
+bool ContentBrowserClient::IsSharedStorageSelectURLAllowed(
+    content::BrowserContext* browser_context,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
   // TODO(crbug.com/1325103): Change this to false and override in
@@ -1041,6 +1049,13 @@ FontAccessDelegate* ContentBrowserClient::GetFontAccessDelegate() {
   return nullptr;
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+SmartCardDelegate* ContentBrowserClient::GetSmartCardDelegate(
+    BrowserContext* browser_context) {
+  return nullptr;
+}
+#endif
+
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,
@@ -1406,5 +1421,14 @@ bool ContentBrowserClient::IsFileSystemURLNavigationAllowed(
     const GURL& url) {
   return false;
 }
+
+#if BUILDFLAG(IS_MAC)
+base::FilePath ContentBrowserClient::GetChildProcessPath(
+    int child_flags,
+    const base::FilePath& helpers_path) {
+  NOTIMPLEMENTED();
+  return base::FilePath();
+}
+#endif
 
 }  // namespace content

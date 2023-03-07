@@ -11,13 +11,12 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc.mojom-forward.h"
 #include "ipc/ipc_channel_handle.h"

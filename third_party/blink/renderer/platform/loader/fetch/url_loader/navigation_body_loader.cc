@@ -4,12 +4,14 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/navigation_body_loader.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
@@ -32,6 +34,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/ced/src/compact_enc_det/compact_enc_det.h"
 
@@ -142,13 +145,13 @@ class NavigationBodyLoader::OffThreadBodyReader : public BodyReader {
     DCHECK(reader_task_runner_->RunsTasksInCurrentSequence());
   }
 
-  std::vector<DataChunk> TakeData(size_t max_data_to_process) {
+  Vector<DataChunk> TakeData(size_t max_data_to_process) {
     DCHECK(IsMainThread());
     base::AutoLock lock(lock_);
     if (max_data_to_process == 0)
       return std::move(data_chunks_);
 
-    std::vector<DataChunk> data;
+    Vector<DataChunk> data;
     size_t data_processed = 0;
     while (!data_chunks_.empty() && data_processed < max_data_to_process) {
       data.emplace_back(std::move(data_chunks_.front()));
@@ -281,7 +284,7 @@ class NavigationBodyLoader::OffThreadBodyReader : public BodyReader {
   bool background_callback_set_ = false;
   Client::ProcessBackgroundDataCallback process_background_data_callback_
       GUARDED_BY(lock_);
-  std::vector<DataChunk> data_chunks_ GUARDED_BY(lock_);
+  Vector<DataChunk> data_chunks_ GUARDED_BY(lock_);
 };
 
 void NavigationBodyLoader::OffThreadBodyReaderDeleter::operator()(

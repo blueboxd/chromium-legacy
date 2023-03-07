@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_INSTALL_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_INSTALL_TASK_H_
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/external_install_options.h"
@@ -16,7 +16,6 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -52,7 +51,6 @@ class ExternallyManagedAppInstallTask {
   explicit ExternallyManagedAppInstallTask(
       Profile* profile,
       WebAppUrlLoader* url_loader,
-      WebAppRegistrar* registrar,
       WebAppUiManager* ui_manager,
       WebAppInstallFinalizer* install_finalizer,
       WebAppCommandScheduler* command_scheduler,
@@ -92,55 +90,39 @@ class ExternallyManagedAppInstallTask {
 
   // result_callback could be called synchronously or asynchronously.
   void InstallPlaceholder(content::WebContents* web_contents,
-                          ResultCallback result_callback);
-
-  void FetchCustomIcon(const GURL& url,
-                       content::WebContents* web_contents,
-                       int retries_left,
-                       ResultCallback callback);
-
-  void OnCustomIconFetched(int retries_left,
-                           content::WebContents* web_contents,
-                           ResultCallback callback,
-                           int id,
-                           int http_status_code,
-                           const GURL& image_url,
-                           const std::vector<SkBitmap>& bitmaps,
-                           const std::vector<gfx::Size>& sizes);
-
-  void FinalizePlaceholderInstall(
-      ResultCallback callback,
-      absl::optional<std::reference_wrapper<const std::vector<SkBitmap>>>
-          bitmaps);
+                          ResultCallback result_callback,
+                          absl::optional<AppId> app_id);
 
   void UninstallPlaceholderApp(content::WebContents* web_contents,
-                               ResultCallback result_callback);
+                               ResultCallback result_callback,
+                               absl::optional<AppId> app_id);
   void OnPlaceholderUninstalled(content::WebContents* web_contents,
                                 ResultCallback result_callback,
                                 webapps::UninstallResultCode code);
   void ContinueWebAppInstall(content::WebContents* web_contents,
                              ResultCallback result_callback);
-  void OnWebAppInstalled(bool is_placeholder,
-                         bool offline_install,
-                         ResultCallback result_callback,
-                         const AppId& app_id,
-                         webapps::InstallResultCode code);
-  void OnWebAppInstalledWithHooksErrors(bool is_placeholder,
-                                        bool offline_install,
-                                        ResultCallback result_callback,
-                                        const AppId& app_id,
-                                        webapps::InstallResultCode code,
-                                        OsHooksErrors os_hooks_errors);
+  void OnWebAppInstalledAndReplaced(bool is_placeholder,
+                                    bool offline_install,
+                                    ResultCallback result_callback,
+                                    const AppId& app_id,
+                                    webapps::InstallResultCode code,
+                                    bool did_uninstall_and_replace);
+
+  void OnUninstallAndReplaced(bool uninstall_and_replace_triggered);
   void TryAppInfoFactoryOnFailure(
       ResultCallback result_callback,
       ExternallyManagedAppManager::InstallResult result);
 
+  void GetPlaceholderAppId(
+      const GURL& install_url,
+      WebAppManagement::Type source_type,
+      base::OnceCallback<void(absl::optional<AppId>)> callback);
+
   const raw_ptr<Profile> profile_;
   const raw_ptr<WebAppUrlLoader, DanglingUntriaged> url_loader_;
-  const raw_ptr<WebAppRegistrar> registrar_;
+  const raw_ptr<WebAppUiManager> ui_manager_;
   const raw_ptr<WebAppInstallFinalizer> install_finalizer_;
   const raw_ptr<WebAppCommandScheduler> command_scheduler_;
-  const raw_ptr<WebAppUiManager> ui_manager_;
 
   ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 

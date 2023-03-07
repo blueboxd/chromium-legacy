@@ -16,8 +16,25 @@ enum class MultitaskMenuEntryType {
   kFrameSizeButtonHover = 0,
   kFrameSizeButtonLongPress = 1,
   kFrameSizeButtonLongTouch = 2,
-  kMaxValue = kFrameSizeButtonLongTouch,
+  kGestureFling = 3,
+  kGestureScroll = 4,
+  kAccel = 5,
+  kMaxValue = kAccel,
 };
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// MultitaskMenuActionType in /src/tools/metrics/histograms/enums.xml.
+enum class MultitaskMenuActionType {
+  kHalfSplitButton = 0,
+  kFullscreenButton = 1,
+  kPartialSplitButton = 2,
+  kFloatButton = 3,
+  kMaxValue = kFloatButton,
+};
+
+constexpr char kPartialSplitDurationHistogramName[] =
+    "Ash.Window.PartialSplitDuration";
 
 // Used to record when the user partial splits to one third.
 constexpr char kPartialSplitOneThirdUserAction[] =
@@ -30,9 +47,13 @@ constexpr char kPartialSplitTwoThirdsUserAction[] =
 // Gets the proper histogram name based on whether the user is in tablet mode or
 // not.
 std::string GetEntryTypeHistogramName();
+std::string GetActionTypeHistogramName();
 
 // Records the method the user used to show the multitask menu.
 void RecordMultitaskMenuEntryType(MultitaskMenuEntryType entry_type);
+
+// Records the action the user took within the multitask menu.
+void RecordMultitaskMenuActionType(MultitaskMenuActionType action_type);
 
 }  // namespace chromeos
 

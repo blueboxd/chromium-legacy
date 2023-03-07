@@ -7,11 +7,14 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 mojom("mojom") {
   sources = [
+    "eligibility_error.mojom",
     "os_support.mojom",
+    "registration_type.mojom",
     "source_registration_error.mojom",
     "trigger_registration_error.mojom",
   ]
   webui_module_path = "/"
+  generate_java = true
 }
 
 component("attribution_reporting") {
@@ -24,6 +27,8 @@ component("attribution_reporting") {
     "aggregation_keys.h",
     "bounded_list.h",
     "constants.h",
+    "eligibility.cc",
+    "eligibility.h",
     "event_trigger_data.cc",
     "event_trigger_data.h",
     "filters.cc",
@@ -36,6 +41,8 @@ component("attribution_reporting") {
     "source_registration.h",
     "suitable_origin.cc",
     "suitable_origin.h",
+    "trigger_attestation.cc",
+    "trigger_attestation.h",
     "trigger_registration.cc",
     "trigger_registration.h",
   ]
@@ -64,12 +71,14 @@ source_set("unit_tests") {
     "aggregatable_values_unittest.cc",
     "aggregation_keys_unittest.cc",
     "bounded_list_unittest.cc",
+    "eligibility_unittest.cc",
     "event_trigger_data_unittest.cc",
     "filters_unittest.cc",
     "os_registration_unittest.cc",
     "parsing_utils_unittest.cc",
     "source_registration_unittest.cc",
     "suitable_origin_unittest.cc",
+    "trigger_attestation_unittest.cc",
     "trigger_registration_unittest.cc",
   ]
 
@@ -135,10 +144,23 @@ fuzzer_test("trigger_registration_fuzzer") {
       "//components/attribution_reporting/trigger_registration_fuzzer_corpus"
 }
 
+fuzzer_test("parse_eligible_header_fuzzer") {
+  sources = [ "parse_eligible_header_fuzzer.cc" ]
+  deps = [
+    ":attribution_reporting",
+    "//base",
+    "//base:i18n",
+  ]
+
+  seed_corpus =
+      "//components/attribution_reporting/parse_eligible_header_fuzzer_corpus/"
+}
+
 mojom("registration_mojom") {
   sources = [ "registration.mojom" ]
 
   generate_java = true
+  webui_module_path = "/"
 
   deps = [
     "//components/aggregation_service:mojom",
@@ -209,6 +231,13 @@ mojom("registration_mojom") {
           mojom = "attribution_reporting.mojom.AggregatableTriggerData"
           cpp = "::attribution_reporting::AggregatableTriggerData"
           forward_declaration = "namespace attribution_reporting { struct AggregatableTriggerData; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.TriggerAttestation"
+          cpp = "::attribution_reporting::TriggerAttestation"
+          forward_declaration =
+              "namespace attribution_reporting { class TriggerAttestation; }"
+          move_only = true
         },
         {
           mojom = "attribution_reporting.mojom.TriggerRegistration"

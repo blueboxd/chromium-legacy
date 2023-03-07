@@ -19,6 +19,14 @@ class AXTreeManagerMap;
 // Abstract interface for a class that owns an AXTree and manages its
 // connections to other AXTrees in the same page or desktop (parent and child
 // trees).
+//
+// Note, the tree manager may be created for a tree which has unknown (not
+// valid) tree id. A such tree is not registered with the tree map and thus
+// cannot be retrieved from the map. When the tree gets data and tree id, then
+// it is registered in the map automatically (see OnTreeDataChanged callback
+// notification). The mechanism implements the tree id data integrirty between
+// the tree map and trees, also it doesn't allow to register two different trees
+// with unknown IDs.
 class AX_EXPORT AXTreeManager : public AXTreeObserver {
  public:
   static AXTreeManager* FromID(const AXTreeID& ax_tree_id);
@@ -61,8 +69,15 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // Returns nullptr if |node_id| is not found.
   virtual AXNode* GetNode(const AXNodeID node_id) const;
 
+  // Returns true if the manager has a tree with a valid (not unknown) ID.
+  bool HasValidTreeID() const {
+    return ax_tree_ && ax_tree_->GetAXTreeID() != ui::AXTreeIDUnknown();
+  }
+
   // Returns the tree id of the tree managed by this AXTreeManager.
-  AXTreeID GetTreeID() const;
+  AXTreeID GetTreeID() const {
+    return ax_tree_ ? ax_tree_->GetAXTreeID() : ui::AXTreeIDUnknown();
+  }
 
   // Returns the AXTreeData for the tree managed by this AXTreeManager.
   const AXTreeData& GetTreeData() const;
@@ -91,7 +106,6 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // `AXTreeManagerMap`.
   void WillBeRemovedFromMap();
 
-  const AXTreeID& ax_tree_id() const { return ax_tree_id_; }
   AXTree* ax_tree() const { return ax_tree_.get(); }
 
   const AXEventGenerator& event_generator() const { return event_generator_; }
@@ -118,7 +132,6 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
  protected:
   AXTreeManager();
   explicit AXTreeManager(std::unique_ptr<AXTree> tree);
-  explicit AXTreeManager(const AXTreeID& tree_id, std::unique_ptr<AXTree> tree);
 
   virtual AXTreeManager* GetParentManager() const;
 
@@ -149,7 +162,6 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // once when this subtree is first connected.
   bool connected_to_parent_tree_node_;
 
-  AXTreeID ax_tree_id_;
   std::unique_ptr<AXTree> ax_tree_;
 
   AXEventGenerator event_generator_;

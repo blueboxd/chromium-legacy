@@ -34,14 +34,11 @@ class MODULES_EXPORT UDPWritableStreamWrapper final
   void ErrorStream(int32_t error_code) override;
   bool HasPendingWrite() const override;
   void Trace(Visitor*) const override;
-
- protected:
-  // WritableStreamWrapper:
   void OnAbortSignal() override;
   ScriptPromise Write(ScriptValue chunk, ExceptionState&) override;
 
  private:
-  // Callback for DirectUDPSocket::Send().
+  // Callback for RestrictedUDPSocket::Send().
   void OnSend(int32_t result);
 
   CloseOnceCallback on_close_;

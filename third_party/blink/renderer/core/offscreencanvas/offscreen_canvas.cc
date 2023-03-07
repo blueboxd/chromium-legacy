@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
@@ -285,7 +286,7 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
       IsPaintable()
           ? MakeGarbageCollected<ImageBitmap>(this, crop_rect, options)
           : nullptr,
-      exception_state);
+      options, exception_state);
 }
 
 bool OffscreenCanvas::IsOpaque() const {

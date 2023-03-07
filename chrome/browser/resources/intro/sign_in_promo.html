@@ -7,24 +7,27 @@
     --card-background-color: var(--google-grey-50);
     --card-bottom-padding: 28px;
     --card-description-color: var(--cr-secondary-text-color);
-    --card-description-font-size: 1.08em;
+    --card-description-font-size: 0.81rem;
     --card-horizontal-padding: 24px;
-    --card-title-font-size: 1.25em;
+    --card-title-font-size: 0.94rem;
     --card-top-padding: 24px;
     --card-width: 188px;
+    --disclaimer-border-color: var(--google-grey-200);
+    --disclaimer-color: var(--google-grey-700);
     --gap-between-cards: 12px;
     --icon-color: var(--google-blue-600);
-    --left-background-image-url: url(images/left_background.svg);
+    --icon-container-color: var(--google-grey-100);
+    --left-background-image-url: url(left_illustration.svg);
     --product-logo-margin-top: 50px;
     --product-logo-size: 90px;
-    --right-background-image-url: url(images/right_background.svg);
+    --right-background-image-url: url(right_illustration.svg);
     /* This is a dummy value, we set the actual one in javascript using
     "setTranslationHeightToAlignLogoAndAnimation" */
     --safe-zone-animation-translation-height: 0;
     --scrollbar-background: var(--google-grey-100);
     --scrollbar-width: 4px;
-    --subtitle-font-size: 1.67em;
-    --title-font-size: 3em;
+    --subtitle-font-size: 1.25rem;
+    --title-font-size: 2.25rem;
     --title-line-height: 44px;
     color: var(--cr-primary-text-color);
     font-family: 'Google Sans', arial, sans-serif;
@@ -35,20 +38,23 @@
       --card-background-color: var(--google-grey-800);
       --card-description-color: white;
       --icon-color: var(--google-blue-300);
-      --left-background-image-url: url(images/left_background_dark_mode.svg);
-      --right-background-image-url: url(images/right_background_dark_mode.svg);
+      --icon-container-color: var(--google-grey-700);
+      --disclaimer-border-color: var(--google-grey-600);
+      --disclaimer-color: var(--google-grey-100);
+      --left-background-image-url: url(left_illustration_dark.svg);
+      --right-background-image-url: url(right_illustration_dark.svg);
       --scrollbar-background: var(--google-grey-800);
     }
   }
 
   @media screen and ((max-width: 780px) or (max-height: 600px)) {
     :host {
-      --card-description-font-size: 1em;
-      --card-title-font-size: 1.08em;
+      --card-description-font-size: 0.75rem;
+      --card-title-font-size: 0.81rem;
       --card-width: 152px;
-      --title-font-size: 2em;
+      --title-font-size: 1.5rem;
       --title-line-height: 32px;
-      --subtitle-font-size: 1.25em;
+      --subtitle-font-size: 0.94rem;
       --product-logo-size: 60px;
     }
   }
@@ -130,7 +136,11 @@
   }
 
   .fade-in {
-    animation: fade-in-animation 500ms 1 ease-in-out;
+    animation: fade-in-animation 500ms ease-in-out;
+  }
+
+  .fast-fade-in {
+    animation: fade-in-animation 300ms ease-in-out;
   }
 
   #contentArea {
@@ -167,34 +177,44 @@
 
   .benefit-card-description {
     color: var(--card-description-color);
+    font-family: Roboto, arial, sans-serif;
     font-size: var(--card-description-font-size);
     font-weight: 400;
     line-height: 20px;
   }
 
-  #buttonContainer {
+  #buttonRow {
     bottom: 0;
     display: flex;
-    flex-direction: row;
-    gap: 12px;
     height: var(--btn-container-height);
     justify-content: flex-end;
     position: fixed;
     width: 100vw;
   }
 
+  #buttonContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 0 var(--btn-margin);
+  }
+
+  <if expr="is_win">
+  #buttonContainer {
+    flex-flow: row-reverse;
+  }
+  </if>
+
   #buttonContainer > cr-button {
-    font-size: 1.08em;
+    font-size: 0.75rem;
     margin-top: var(--btn-margin);
     min-width: 133px;
   }
 
-  #buttonContainer > cr-button:last-child {
-    margin-inline-end: var(--btn-margin);
-  }
-
   #subtitle {
     color: var(--cr-secondary-text-color);
+    font-family: Roboto, arial, sans-serif;
     font-size: var(--subtitle-font-size);
     font-weight: 400;
     line-height: 24px;
@@ -215,6 +235,7 @@
   }
 
   .background-image {
+    max-width: 320px;
     position: fixed;
     top: 0;
     width: var(--background-image-width);
@@ -222,7 +243,6 @@
 
   #left-background-image {
     animation-duration: 500ms;
-    animation-iteration-count: 1;
     animation-name: left-background-slide-animation, fade-in-animation;
     content: var(--left-background-image-url);
     left: 0;
@@ -231,14 +251,13 @@
 
   #right-background-image {
     animation-duration: 500ms;
-    animation-iteration-count: 1;
     animation-name: right-background-slide-animation, fade-in-animation;
     content: var(--right-background-image-url);
     right: 0;
   }
 
   #safeZone {
-    animation: safe-zone-transition-animation 500ms 1 ease-in-out;
+    animation: safe-zone-transition-animation 500ms ease-in-out;
     box-sizing: border-box;
     display: flex;
     height: calc(100% - var(--btn-container-height));
@@ -248,8 +267,53 @@
     width: 100vw;
   }
 
-  #buttonContainer.division-line {
+  #buttonRow.division-line {
     border-top: var(--cr-separator-line);
+  }
+
+  #managedDeviceDisclaimer {
+    align-items: center;
+    border: 1px solid var(--disclaimer-border-color);
+    border-radius: 8px;
+    color: var(--disclaimer-color);
+    display: inline-flex;
+    flex-direction: row;
+    margin-inline: auto;
+    margin-top: 32px;
+    max-width: 780px;
+    padding-block: 12px;
+    padding-inline-end: 18px;
+  }
+
+  #managedDeviceDisclaimer.hidden {
+    display: none;
+  }
+
+  #managedDeviceDisclaimer.temporarily-hidden {
+    visibility: hidden;
+  }
+
+  #managedDeviceDisclaimer > p {
+    flex-grow: 1;
+    font-family: Roboto, Cantarell, Arial, sans-serif;
+    margin-block: 0;
+    text-align: start;
+  }
+
+  #icon-container {
+    --icon-container-size: 28px;
+    background-color: var(--icon-container-color);
+    border-radius: 50%;
+    height: var(--icon-container-size);
+    margin-inline: 16px;
+    width: var(--icon-container-size);
+  }
+
+  #icon-container iron-icon {
+    --iron-icon-width: 16px;
+    --iron-icon-height: 16px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 </style>
 
@@ -270,11 +334,26 @@
         </div>
       </template>
     </div>
+    <div class$="[[getDisclaimerVisibilityClass_(isDeviceManaged_, managedDeviceDisclaimer_)]]"
+      id="managedDeviceDisclaimer">
+      <div id="icon-container">
+        <iron-icon icon="cr:domain"></iron-icon>
+      </div>
+      <p>
+        [[managedDeviceDisclaimer_]]
+      </p>
+    </div>
   </div>
 </div>
 
-<div class="fade-in" id="buttonContainer">
-  <cr-button id="declineSignInButton" on-click="onContinueWithoutAccountClick_">$i18n{declineSignInButtonTitle}</cr-button>
-  <cr-button class="action-button" id="acceptSignInButton" on-click="onContinueWithAccountClick_">$i18n{acceptSignInButtonTitle}
-  </cr-button>
+<div class="fade-in" id="buttonRow">
+  <div id="buttonContainer">
+    <cr-button id="declineSignInButton"
+      disabled="[[areButtonsDisabled_(isDeviceManaged_, managedDeviceDisclaimer_)]]"
+      on-click="onContinueWithoutAccountClick_">$i18n{declineSignInButtonTitle}</cr-button>
+    </cr-button>
+    <cr-button class="action-button" id="acceptSignInButton"
+      disabled="[[areButtonsDisabled_(isDeviceManaged_, managedDeviceDisclaimer_)]]"
+      on-click="onContinueWithAccountClick_">$i18n{acceptSignInButtonTitle}</cr-button>
+  </div>
 </div>

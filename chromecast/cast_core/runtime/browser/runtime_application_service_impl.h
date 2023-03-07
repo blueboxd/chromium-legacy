@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/task/sequenced_task_runner.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "chromecast/cast_core/grpc/grpc_server.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "components/cast_receiver/browser/public/embedder_application.h"
 #include "components/cast_receiver/browser/public/runtime_application.h"
 #include "components/cast_receiver/common/public/status.h"
@@ -71,8 +73,10 @@ class RuntimeApplicationServiceImpl : public cast_receiver::EmbedderApplication,
       std::vector<std::string> hosts) override;
   content::WebContents* GetWebContents() override;
   cast_receiver::ContentWindowControls* GetContentWindowControls() override;
+#if !BUILDFLAG(IS_CAST_DESKTOP_BUILD)
   cast_receiver::StreamingConfigManager* GetStreamingConfigManager() override;
-  void LoadPage(const GURL& url) override;
+#endif
+  void NavigateToPage(const GURL& url) override;
 
  private:
   // Gets the current |message_port_service_|, attempting to create it if it
@@ -136,7 +140,6 @@ class RuntimeApplicationServiceImpl : public cast_receiver::EmbedderApplication,
   void InnerContentsCreated(CastWebContents* inner_contents,
                             CastWebContents* outer_contents) override;
 
-  std::unique_ptr<cast_receiver::RuntimeApplication> const runtime_application_;
   const cast::common::ApplicationConfig config_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -167,6 +170,9 @@ class RuntimeApplicationServiceImpl : public cast_receiver::EmbedderApplication,
   absl::optional<std::string> cast_media_service_grpc_endpoint_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  std::unique_ptr<cast_receiver::RuntimeApplication> const runtime_application_;
+
   base::WeakPtrFactory<RuntimeApplicationServiceImpl> weak_factory_{this};
 };
 

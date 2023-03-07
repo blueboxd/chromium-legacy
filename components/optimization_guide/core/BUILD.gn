@@ -35,6 +35,7 @@ static_library("entities") {
     "//base",
     "//third_party/abseil-cpp:absl",
   ]
+  deps = [ ":features" ]
 }
 
 static_library("model_executor") {
@@ -89,6 +90,7 @@ static_library("model_executor") {
 mojom("interfaces") {
   sources = [ "optimization_guide_common.mojom" ]
   webui_module_path = "/"
+  use_typescript_sources = true
   public_deps = [ "//mojo/public/mojom/base" ]
 }
 
@@ -153,8 +155,6 @@ static_library("core") {
     "hints_manager.h",
     "hints_processing_util.cc",
     "hints_processing_util.h",
-    "local_page_entities_metadata_provider.cc",
-    "local_page_entities_metadata_provider.h",
     "memory_hint.cc",
     "memory_hint.h",
     "model_handler.h",
@@ -375,7 +375,6 @@ source_set("unit_tests") {
     "hints_manager_unittest.cc",
     "hints_processing_util_unittest.cc",
     "insertion_ordered_set_unittest.cc",
-    "local_page_entities_metadata_provider_unittest.cc",
     "model_handler_unittest.cc",
     "model_util_unittest.cc",
     "noisy_metrics_recorder_unittest.cc",

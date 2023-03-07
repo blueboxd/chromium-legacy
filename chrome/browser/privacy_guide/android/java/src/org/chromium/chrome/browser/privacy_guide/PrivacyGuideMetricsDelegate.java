@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.privacy_guide;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
@@ -17,19 +19,19 @@ class PrivacyGuideMetricsDelegate {
     /**
      * Initial state of the MSBB when {@link MSBBFragment} is created.
      */
-    private Boolean mInitialMsbbState;
+    private @Nullable Boolean mInitialMsbbState;
     /**
-     * Initial state of History Sync when {@link SyncFragment} is created.
+     * Initial state of History Sync when {@link HistorySyncFragment} is created.
      */
-    private boolean mInitialHistorySyncState;
+    private @Nullable Boolean mInitialHistorySyncState;
     /**
      * Initial state of the Safe Browsing when {@link SafeBrowsingFragment} is created.
      */
-    private @SafeBrowsingState int mInitialSafeBrowsingState;
+    private @Nullable @SafeBrowsingState Integer mInitialSafeBrowsingState;
     /**
      * Initial mode of the Cookies Control when {@link CookiesFragment} is created.
      */
-    private @CookieControlsMode int mInitialCookiesControlMode;
+    private @Nullable @CookieControlsMode Integer mInitialCookiesControlMode;
 
     /**
      * A method to record metrics on the next click of {@link MSBBFragment}
@@ -62,11 +64,13 @@ class PrivacyGuideMetricsDelegate {
     }
 
     /**
-     * A method to record metrics on the next click of {@link SyncFragment}.
+     * A method to record metrics on the next click of {@link HistorySyncFragment}.
      */
-    private void recordMetricsOnNextForSyncCard() {
-        boolean currentValue = PrivacyGuideUtils.isHistorySyncEnabled();
+    private void recordMetricsOnNextForHistorySyncCard() {
+        assert mInitialHistorySyncState != null : "Initial state of History Sync not set.";
 
+        boolean currentValue = PrivacyGuideUtils.isHistorySyncEnabled();
+        @PrivacyGuideSettingsStates
         int stateChange;
 
         if (mInitialHistorySyncState && currentValue) {
@@ -82,9 +86,9 @@ class PrivacyGuideMetricsDelegate {
         // Record histogram comparing |mInitialHistorySyncState| and |currentValue|
         RecordHistogram.recordEnumeratedHistogram("Settings.PrivacyGuide.SettingsStates",
                 stateChange, PrivacyGuideSettingsStates.MAX_VALUE);
-        // Record user action for clicking the next button on the Sync card
+        // Record user action for clicking the next button on the History Sync card
         RecordUserAction.record("Settings.PrivacyGuide.NextClickHistorySync");
-        // Record histogram for clicking the next button on the Sync card
+        // Record histogram for clicking the next button on the History Sync card
         RecordHistogram.recordEnumeratedHistogram("Settings.PrivacyGuide.NextNavigation",
                 PrivacyGuideInteractions.HISTORY_SYNC_NEXT_BUTTON,
                 PrivacyGuideInteractions.MAX_VALUE);
@@ -94,6 +98,8 @@ class PrivacyGuideMetricsDelegate {
      * A method to record metrics on the next click of {@link SafeBrowsingFragment}
      */
     private void recordMetricsOnNextForSafeBrowsingCard() {
+        assert mInitialSafeBrowsingState != null : "Initial state of Safe Browsing not set.";
+
         @SafeBrowsingState
         int currentValue = PrivacyGuideUtils.getSafeBrowsingState();
 
@@ -101,6 +107,7 @@ class PrivacyGuideMetricsDelegate {
                 mInitialSafeBrowsingState == SafeBrowsingState.ENHANCED_PROTECTION;
         boolean isEndStateEnhance = currentValue == SafeBrowsingState.ENHANCED_PROTECTION;
 
+        @PrivacyGuideSettingsStates
         int stateChange;
 
         if (isStartStateEnhance && isEndStateEnhance) {
@@ -128,6 +135,8 @@ class PrivacyGuideMetricsDelegate {
      * A method to record metrics on the next click of {@link CookiesFragment}
      */
     private void recordMetricsOnNextForCookiesCard() {
+        assert mInitialCookiesControlMode != null : "Initial mode of Cookie Control not set.";
+
         @CookieControlsMode
         int currentValue = PrivacyGuideUtils.getCookieControlsMode();
 
@@ -135,6 +144,7 @@ class PrivacyGuideMetricsDelegate {
                 mInitialCookiesControlMode == CookieControlsMode.INCOGNITO_ONLY;
         boolean isEndStateBlock3PIncognito = currentValue == CookieControlsMode.INCOGNITO_ONLY;
 
+        @PrivacyGuideSettingsStates
         int stateChange;
 
         if (isInitialStateBlock3PIncognito && isEndStateBlock3PIncognito) {
@@ -169,7 +179,7 @@ class PrivacyGuideMetricsDelegate {
                 mInitialMsbbState = PrivacyGuideUtils.isMsbbEnabled();
                 break;
             }
-            case PrivacyGuideFragment.FragmentType.SYNC: {
+            case PrivacyGuideFragment.FragmentType.HISTORY_SYNC: {
                 mInitialHistorySyncState = PrivacyGuideUtils.isHistorySyncEnabled();
                 break;
             }
@@ -198,8 +208,8 @@ class PrivacyGuideMetricsDelegate {
                 recordMetricsOnNextForMSBBCard();
                 break;
             }
-            case PrivacyGuideFragment.FragmentType.SYNC: {
-                recordMetricsOnNextForSyncCard();
+            case PrivacyGuideFragment.FragmentType.HISTORY_SYNC: {
+                recordMetricsOnNextForHistorySyncCard();
                 break;
             }
             case PrivacyGuideFragment.FragmentType.SAFE_BROWSING: {
@@ -247,9 +257,9 @@ class PrivacyGuideMetricsDelegate {
 
     /**
      * A method to record metrics on the History Sync toggle change of the Privacy Guide's {@link
-     * SyncFragment}.
+     * HistorySyncFragment}.
      */
-    static void recordMetricsOnSyncChange(boolean isHistorySyncOn) {
+    static void recordMetricsOnHistorySyncChange(boolean isHistorySyncOn) {
         if (isHistorySyncOn) {
             RecordUserAction.record("Settings.PrivacyGuide.ChangeHistorySyncOn");
         } else {
@@ -299,7 +309,7 @@ class PrivacyGuideMetricsDelegate {
      */
     static void recordMetricsOnBackForCard(@PrivacyGuideFragment.FragmentType int fragmentType) {
         switch (fragmentType) {
-            case PrivacyGuideFragment.FragmentType.SYNC: {
+            case PrivacyGuideFragment.FragmentType.HISTORY_SYNC: {
                 RecordUserAction.record("Settings.PrivacyGuide.BackClickHistorySync");
                 break;
             }

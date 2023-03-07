@@ -693,8 +693,8 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
   base::PathService::Get(SHELL_DIR_USER_DATA, &path);
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager =
       metrics::MetricsStateManager::Create(
-          local_state_.get(), &enabled_state_provider, std::wstring(),
-          path.AppendASCII("Local State"), metrics::StartupVisibility::kUnknown,
+          local_state_.get(), &enabled_state_provider, std::wstring(), path,
+          metrics::StartupVisibility::kUnknown,
           {
               .force_benchmarking_mode =
                   base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -736,7 +736,7 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
       content::GetSwitchDependentFeatureOverrides(*command_line),
       std::move(feature_list), metrics_state_manager.get(),
       &platform_field_trials, &safe_seed_manager,
-      /*low_entropy_source_value=*/absl::nullopt);
+      /*add_entropy_source_to_variations_ids=*/false);
 }
 
 absl::optional<blink::ParsedPermissionsPolicy>

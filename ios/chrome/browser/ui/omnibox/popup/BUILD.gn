@@ -6,28 +6,7 @@ import("//build/config/ios/swift_source_set.gni")
 
 swift_source_set("popup_swift") {
   bridge_header = "popup_swift_bridge.h"
-  sources = [
-    "omnibox_popup_view_provider.swift",
-    "shared/blurred_background.swift",
-    "shared/fake_omnibox_icon.swift",
-    "shared/gradient_text_view.swift",
-    "shared/omnibox_pedal.swift",
-    "shared/omnibox_text.swift",
-    "shared/popup_empty_space_view.swift",
-    "shared/popup_image.swift",
-    "shared/popup_match.swift",
-    "shared/popup_match_image_view.swift",
-    "shared/popup_match_row_action_button.swift",
-    "shared/popup_match_row_view.swift",
-    "shared/popup_match_trailing_button.swift",
-    "shared/popup_model.swift",
-    "shared/popup_ui_configuration.swift",
-    "shared/popup_ui_variation.swift",
-    "shared/popup_view.swift",
-    "shared/popup_visible_suggestion_count.swift",
-    "shared/pressed_preference_key_button_style.swift",
-    "shared/self_sizing_list.swift",
-  ]
+  sources = [ "shared/omnibox_pedal.swift" ]
 
   deps = [
     ":popup_ui_protocols",
@@ -96,13 +75,13 @@ source_set("popup") {
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/default_promo",
     "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",
+    "//ios/chrome/browser/ui/main:layout_guide_util",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/ntp:util",
@@ -118,6 +97,7 @@ source_set("popup") {
     "//ios/chrome/browser/ui/omnibox/resources:pedal_safety_check",
     "//ios/chrome/browser/ui/omnibox/resources:pedal_settings",
     "//ios/chrome/browser/ui/sharing",
+    "//ios/chrome/browser/ui/sharing/activity_services",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
@@ -199,7 +179,6 @@ source_set("popup_ui") {
     "//ios/chrome/common/ui/elements:elements",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
     "//ui/base",
     "//url",

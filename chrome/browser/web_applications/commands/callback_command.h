@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 
@@ -33,7 +33,7 @@ class CallbackCommand : public WebAppCommandTemplate<LockType> {
 
   void StartWithLock(std::unique_ptr<LockType> lock) override;
 
-  LockDescription& lock_description() const override;
+  const LockDescription& lock_description() const override;
 
   base::Value ToDebugValue() const override;
 

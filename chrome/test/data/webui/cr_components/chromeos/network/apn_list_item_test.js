@@ -79,20 +79,6 @@ suite('ApnListItemTest', function() {
         apnListItem.i18n('NetworkHealthStateConnected'), subLabel.innerText);
   });
 
-  test('Check if auto detected label is shown', async function() {
-    apnListItem.isAutoDetected = false;
-    await flushTasks();
-
-    const subLabel = apnListItem.shadowRoot.querySelector('#autoDetected');
-    assertTrue(!!subLabel);
-    assertTrue(subLabel.hasAttribute('hidden'));
-    apnListItem.isAutoDetected = true;
-    await flushTasks();
-
-    assertFalse(subLabel.hasAttribute('hidden'));
-    assertEquals(apnListItem.i18n('apnAutoDetected'), subLabel.innerText);
-  });
-
   test('Check if APN three dot menu shows', async function() {
     await openThreeDotMenu();
     assertTrue(apnListItem.$.dotsMenu.open);
@@ -214,7 +200,12 @@ suite('ApnListItemTest', function() {
       async function() {
         apnListItem.apn = TEST_APN_EVENT_DATA.apn;
         apnListItem.guid = TEST_APN_EVENT_DATA.guid;
-        apnListItem.isAutoDetected = true;
+
+        const subLabel = apnListItem.shadowRoot.querySelector('#autoDetected');
+        assertTrue(!!subLabel);
+        assertFalse(subLabel.hasAttribute('hidden'));
+        assertEquals(apnListItem.i18n('apnAutoDetected'), subLabel.innerText);
+
         let apnDetailsClickedEvent =
             eventToPromise('show-apn-detail-dialog', window);
         assertTrue(!!apnListItem.$.detailsButton);
@@ -225,12 +216,96 @@ suite('ApnListItemTest', function() {
         assertEquals(TEST_APN_EVENT_DATA.mode, eventData.detail.mode);
 
         // Case: the apn list item is not auto detected
+        apnListItem.apn = {
+          name: TEST_APN_EVENT_DATA.apn.name,
+          id: '1',
+        };
+        assertTrue(subLabel.hasAttribute('hidden'));
+
         apnDetailsClickedEvent =
             eventToPromise('show-apn-detail-dialog', window);
-        apnListItem.isAutoDetected = false;
         apnListItem.$.detailsButton.click();
         eventData = await apnDetailsClickedEvent;
         assertEquals(TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
         assertEquals(ApnDetailDialogMode.EDIT, eventData.detail.mode);
       });
+
+  test('Test if disable/remove warning event is fired.', async function() {
+    const guid = 'cellular_guid';
+    let promptShowEvent = eventToPromise('show-error-toast', window);
+    await openThreeDotMenu();
+    const getDisableButton = () =>
+        apnListItem.$.dotsMenu.querySelector('#disableButton');
+    const getRemoveButton = () =>
+        apnListItem.$.dotsMenu.querySelector('#removeButton');
+    const createApn = () => {
+      return {
+        accessPointName: 'name1',
+        id: '1',
+        state: ApnState.kEnabled,
+      };
+    };
+
+    apnListItem.shouldDisallowDisablingRemoving = true;
+    apnListItem.apn = createApn();
+    mojoApi_.setNetworkTypeEnabledState(NetworkType.kCellular, true);
+    const props = OncMojo.getDefaultManagedProperties(
+        NetworkType.kCellular, guid, 'cellular');
+
+    props.typeProperties.cellular = {customApnList: [createApn()]};
+    mojoApi_.setManagedPropertiesForTest(props);
+    await flushTasks();
+    getDisableButton().click();
+    let eventData = await promptShowEvent;
+    let managedProps = await mojoApi_.getManagedProperties(guid);
+    assertEquals(
+        ApnState.kEnabled,
+        managedProps.result.typeProperties.cellular.customApnList[0].state);
+    assertEquals(
+        apnListItem.i18n('apnWarningPromptForDisableRemove'), eventData.detail);
+    promptShowEvent = eventToPromise('show-error-toast', window);
+    getRemoveButton().click();
+    eventData = await promptShowEvent;
+    managedProps = await mojoApi_.getManagedProperties(guid);
+    assertEquals(
+        1, managedProps.result.typeProperties.cellular.customApnList.length);
+    assertEquals(
+        apnListItem.i18n('apnWarningPromptForDisableRemove'), eventData.detail);
+  });
+
+  test('Test if enable warning event is fired.', async function() {
+    const guid = 'cellular_guid';
+    const promptShowEvent = eventToPromise('show-error-toast', window);
+    await openThreeDotMenu();
+    const getEnableButton = () =>
+        apnListItem.$.dotsMenu.querySelector('#enableButton');
+    const createApn = () => {
+      return {
+        accessPointName: 'name1',
+        id: '1',
+        state: ApnState.kDisabled,
+      };
+    };
+
+    apnListItem.shouldDisallowEnabling = true;
+    apnListItem.apn = createApn();
+    mojoApi_.setNetworkTypeEnabledState(NetworkType.kCellular, true);
+    const props = OncMojo.getDefaultManagedProperties(
+        NetworkType.kCellular, guid, 'cellular');
+
+    props.typeProperties.cellular = {customApnList: [createApn()]};
+    mojoApi_.setManagedPropertiesForTest(props);
+    await flushTasks();
+    getEnableButton().click();
+    const eventData = await promptShowEvent;
+    const managedProps = await mojoApi_.getManagedProperties(guid);
+    assertEquals(
+        ApnState.kDisabled,
+        managedProps.result.typeProperties.cellular.customApnList[0].state);
+    // TODO(b/162365553): Add string to chromeos_string when it is approved by
+    // writers.
+    assertEquals(
+        `Can't enable this APN. Add a default APN to attach to.`,
+        eventData.detail);
+  });
 });

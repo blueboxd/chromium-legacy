@@ -10,10 +10,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -34,7 +34,7 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/ash/login/test/feature_parameter_interface.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -51,6 +51,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
@@ -68,6 +69,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
@@ -186,7 +188,7 @@ constexpr char kDeviceTrustAttestationFunnelStep[] =
     "Enterprise.DeviceTrust.Attestation.Funnel";
 
 // A FakeUserDataAuthClient that stores the salted and hashed secret passed
-// to MountEx().
+// to AddAuthFactor().
 class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
  public:
   SecretInterceptingFakeUserDataAuthClient();
@@ -196,16 +198,8 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
   SecretInterceptingFakeUserDataAuthClient& operator=(
       const SecretInterceptingFakeUserDataAuthClient&) = delete;
 
-  // Key-based API for AuthSessions.
-  // TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
-  void AuthenticateAuthSession(
-      const ::user_data_auth::AuthenticateAuthSessionRequest& request,
-      AuthenticateAuthSessionCallback callback) override;
-
   void AddAuthFactor(const ::user_data_auth::AddAuthFactorRequest& request,
                      AddAuthFactorCallback callback) override;
-  void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
-                      AddCredentialsCallback callback) override;
 
   const std::string& salted_hashed_secret() { return salted_hashed_secret_; }
 
@@ -215,24 +209,6 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
 
 SecretInterceptingFakeUserDataAuthClient::
     SecretInterceptingFakeUserDataAuthClient() = default;
-
-// Key-based API for AuthSessions.
-// TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
-void SecretInterceptingFakeUserDataAuthClient::AuthenticateAuthSession(
-    const ::user_data_auth::AuthenticateAuthSessionRequest& request,
-    AuthenticateAuthSessionCallback callback) {
-  salted_hashed_secret_ = request.authorization().key().secret();
-  FakeUserDataAuthClient::AuthenticateAuthSession(request, std::move(callback));
-}
-
-// Key-based API for AuthSessions.
-// TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
-void SecretInterceptingFakeUserDataAuthClient::AddCredentials(
-    const ::user_data_auth::AddCredentialsRequest& request,
-    AddCredentialsCallback callback) {
-  salted_hashed_secret_ = request.authorization().key().secret();
-  FakeUserDataAuthClient::AddCredentials(request, std::move(callback));
-}
 
 void SecretInterceptingFakeUserDataAuthClient::AddAuthFactor(
     const ::user_data_auth::AddAuthFactorRequest& request,
@@ -387,22 +363,15 @@ class SamlTestBase : public OobeBaseTest {
   FakeSamlIdpMixin fake_saml_idp_mixin_{&mixin_host_, &fake_gaia_};
 };
 
-// The first value of the parameter runs the tests with
-// kUseAuthFactors feature and the second value with
-// kCheckPasswordsAgainstCryptohomeHelper
-class SamlTestWithFeatures
-    : public SamlTestBase,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+// This test is run with both variants of CheckPasswordsAgainstCryptohomeHelper
+// feature.
+class SamlTestWithFeatures : public SamlTestBase,
+                             public testing::WithParamInterface<bool> {
  public:
   SamlTestWithFeatures() {
     std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
-    if (std::get<0>(GetParam())) {
-      enabled_features.push_back(features::kUseAuthFactors);
-    } else {
-      disabled_features.push_back(features::kUseAuthFactors);
-    }
-    if (std::get<1>(GetParam())) {
+    if (GetParam()) {
       enabled_features.push_back(
           features::kCheckPasswordsAgainstCryptohomeHelper);
     } else {
@@ -416,11 +385,7 @@ class SamlTestWithFeatures
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// The first value of the parameter runs the tests with
-// UseAuthFactors feature.
-class ImprovedScrapingTestBase
-    : public SamlTestBase,
-      public testing::WithParamInterface<std::tuple<bool>> {
+class ImprovedScrapingTestBase : public SamlTestBase {
  public:
   ImprovedScrapingTestBase();
 
@@ -436,11 +401,6 @@ ImprovedScrapingTestBase::ImprovedScrapingTestBase() = default;
 void ImprovedScrapingTestBase::SetFeatures(bool enable_improved_scraping) {
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
-  if (std::get<0>(GetParam())) {
-    enabled_features.push_back(features::kUseAuthFactors);
-  } else {
-    disabled_features.push_back(features::kUseAuthFactors);
-  }
   if (enable_improved_scraping) {
     enabled_features.push_back(
         features::kCheckPasswordsAgainstCryptohomeHelper);
@@ -588,11 +548,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, CredentialPassingAPI) {
                     FakeCryptohomeMiscClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
-  EXPECT_TRUE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_TRUE(user_manager::KnownUser(g_browser_process->local_state())
+                  .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                      saml_test_users::kFirstUserCorpExampleComEmail,
+                      kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
@@ -637,11 +596,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures,
                     FakeCryptohomeMiscClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
-  EXPECT_TRUE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_TRUE(user_manager::KnownUser(g_browser_process->local_state())
+                  .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                      saml_test_users::kFirstUserCorpExampleComEmail,
+                      kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
@@ -688,11 +646,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedSingle) {
 
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(user_manager::KnownUser(g_browser_process->local_state())
+                   .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                       saml_test_users::kFirstUserCorpExampleComEmail,
+                       kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -733,15 +690,14 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedDynamic) {
   SigninFrameJS().TapOn("Submit");
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(user_manager::KnownUser(g_browser_process->local_state())
+                   .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                       saml_test_users::kFirstUserCorpExampleComEmail,
+                       kFirstSAMLUserGaiaId)));
 }
 
 // Tests the multiple password scraped flow.
-IN_PROC_BROWSER_TEST_P(SamlTestWithoutImprovedScraping, ScrapedMultiple) {
+IN_PROC_BROWSER_TEST_F(SamlTestWithoutImprovedScraping, ScrapedMultiple) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
@@ -763,11 +719,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithoutImprovedScraping, ScrapedMultiple) {
   SendConfirmPassword("password1");
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(user_manager::KnownUser(g_browser_process->local_state())
+                   .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                       saml_test_users::kFirstUserCorpExampleComEmail,
+                       kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -786,7 +741,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithoutImprovedScraping, ScrapedMultiple) {
 }
 
 // Tests the multiple password scraped flow.
-IN_PROC_BROWSER_TEST_P(SamlTestWithImprovedScraping, ScrapedMultiple) {
+IN_PROC_BROWSER_TEST_F(SamlTestWithImprovedScraping, ScrapedMultiple) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
@@ -800,11 +755,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithImprovedScraping, ScrapedMultiple) {
 
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(user_manager::KnownUser(g_browser_process->local_state())
+                   .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                       saml_test_users::kFirstUserCorpExampleComEmail,
+                       kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -845,11 +799,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedNone) {
   SetManualPasswords("Test1", "Test1");
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(
-      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
-          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
-              saml_test_users::kFirstUserCorpExampleComEmail,
-              kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(user_manager::KnownUser(g_browser_process->local_state())
+                   .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+                       saml_test_users::kFirstUserCorpExampleComEmail,
+                       kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -913,7 +866,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures,
   WaitForSigninScreen();
 }
 
-IN_PROC_BROWSER_TEST_P(SamlTestWithoutImprovedScraping, PasswordConfirmFlow) {
+IN_PROC_BROWSER_TEST_F(SamlTestWithoutImprovedScraping, PasswordConfirmFlow) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
   StartSamlAndWaitForIdpPageLoad(
@@ -1601,6 +1554,45 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLClosaAndReopen) {
   test::WaitForPrimaryUserSessionStart();
 }
 
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SamlToGaiaChange) {
+  ShowGAIALoginForm();
+  LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
+                kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  EXPECT_TRUE(known_user.IsUsingSAML(AccountId::FromUserEmailGaiaId(
+      saml_test_users::kFirstUserCorpExampleComEmail, kFirstSAMLUserGaiaId)));
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  ASSERT_TRUE(user);
+  EXPECT_TRUE(user->using_saml());
+}
+
+// Verifies that when SAML user changes IdP to GAIA we detect it correctly and
+// update corresponding flags in the local state and in user session.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SamlToGaiaChange) {
+  // Change user IdP to GAIA.
+  fake_gaia_.fake_gaia()->RemoveSamlIdpForUser(
+      saml_test_users::kFirstUserCorpExampleComEmail);
+
+  // Log in without SAML.
+  LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetView<GaiaScreenHandler>()
+      ->ShowSigninScreenForTest(saml_test_users::kFirstUserCorpExampleComEmail,
+                                "password", "[]");
+  test::WaitForPrimaryUserSessionStart();
+
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  EXPECT_FALSE(known_user.IsUsingSAML(AccountId::FromUserEmailGaiaId(
+      saml_test_users::kFirstUserCorpExampleComEmail, kFirstSAMLUserGaiaId)));
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  ASSERT_TRUE(user);
+  EXPECT_FALSE(user->using_saml());
+}
+
 // Ensure that the permission status of getUserMedia requests from SAML login
 // pages is controlled by the kLoginVideoCaptureAllowedUrls pref rather than the
 // underlying user content setting.
@@ -1977,7 +1969,14 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, EmptyPolicy) {
 
 // Verify that device attestation is not available when device is not enterprise
 // enrolled.
-IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
+// TODO(crbug.com/1407565): Re-enable when no longer flaky.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_NotEnterpriseEnrolledError DISABLED_NotEnterpriseEnrolledError
+#else
+#define MAYBE_NotEnterpriseEnrolledError NotEnterpriseEnrolledError
+#endif
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest,
+                       MAYBE_NotEnterpriseEnrolledError) {
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
 
   StartSamlAndWaitForIdpPageLoad(
@@ -2142,30 +2141,13 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
 }
 
-class SAMLDeviceTrustTest
-    : public SAMLDeviceAttestationTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+// Similar to SamlTestWithFeatures, this class runs for all possible scenarios
+// of the features kDeviceTrustConnectorEnabled &
+// kLoginScreenDeviceTrustConnectorEnabled.
+class SAMLDeviceTrustTest : public SAMLDeviceAttestationTest,
+                            public FeatureAsParameterInterface<2> {
  public:
   SAMLDeviceTrustTest() {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-    if (std::get<0>(GetParam())) {
-      enabled_features.push_back(
-          enterprise_connectors::kDeviceTrustConnectorEnabled);
-    } else {
-      disabled_features.push_back(
-          enterprise_connectors::kDeviceTrustConnectorEnabled);
-    }
-
-    if (std::get<1>(GetParam())) {
-      enabled_features.push_back(
-          features::kLoginScreenDeviceTrustConnectorEnabled);
-    } else {
-      disabled_features.push_back(
-          features::kLoginScreenDeviceTrustConnectorEnabled);
-    }
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     device_state_.SetState(
         DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
   }
@@ -2187,11 +2169,13 @@ class SAMLDeviceTrustTest
   }
 
   bool login_screen_device_trust_enabled() {
-    return std::get<0>(GetParam()) && std::get<1>(GetParam());
+    return IsFeatureEnabledInThisTestCase(
+               enterprise_connectors::kDeviceTrustConnectorEnabled) &&
+           IsFeatureEnabledInThisTestCase(
+               features::kLoginScreenDeviceTrustConnectorEnabled);
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -2337,26 +2321,21 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceTrustEnrolledTest, PolicyTwoEntriesSuccess) {
   ExpectDeviceTrustSuccessful(login_screen_device_trust_enabled());
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SamlTestWithFeatures,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
-INSTANTIATE_TEST_SUITE_P(All,
-                         SamlTestWithImprovedScraping,
-                         ::testing::Combine(::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(All, SamlTestWithFeatures, ::testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SamlTestWithoutImprovedScraping,
-                         ::testing::Combine(::testing::Bool()));
+const auto kDeviceTrustFeatureVariations =
+    FeatureAsParameterInterface<2>::Generator(
+        {&enterprise_connectors::kDeviceTrustConnectorEnabled,
+         &features::kLoginScreenDeviceTrustConnectorEnabled});
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SAMLDeviceTrustTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
+                         testing::ValuesIn(kDeviceTrustFeatureVariations),
+                         FeatureAsParameterInterface<2>::ParamInfoToString);
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SAMLDeviceTrustEnrolledTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
+                         testing::ValuesIn(kDeviceTrustFeatureVariations),
+                         FeatureAsParameterInterface<2>::ParamInfoToString);
 
 }  // namespace ash

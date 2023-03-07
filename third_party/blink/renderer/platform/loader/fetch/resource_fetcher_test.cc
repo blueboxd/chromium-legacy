@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
@@ -1355,6 +1356,33 @@ TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
         RenderBlockingBehavior::kNonBlocking, false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kLowest);
+  }
+}
+
+TEST_F(ResourceFetcherTest, PriorityIncremental) {
+  auto& properties = *MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = CreateFetcher(properties);
+
+  // Check all of the resource types that are NOT supposed to be loaded
+  // incrementally
+  ResourceType res_not_incremental[] = {
+      ResourceType::kCSSStyleSheet, ResourceType::kScript, ResourceType::kFont,
+      ResourceType::kXSLStyleSheet, ResourceType::kManifest};
+  for (auto& res_type : res_not_incremental) {
+    const bool incremental = fetcher->ShouldLoadIncrementalForTesting(res_type);
+    EXPECT_EQ(incremental, false);
+  }
+
+  // Check all of the resource types that ARE supposed to be loaded
+  // incrementally
+  ResourceType res_incremental[] = {
+      ResourceType::kImage,       ResourceType::kRaw,
+      ResourceType::kSVGDocument, ResourceType::kLinkPrefetch,
+      ResourceType::kTextTrack,   ResourceType::kAudio,
+      ResourceType::kVideo,       ResourceType::kSpeculationRules};
+  for (auto& res_type : res_incremental) {
+    const bool incremental = fetcher->ShouldLoadIncrementalForTesting(res_type);
+    EXPECT_EQ(incremental, true);
   }
 }
 

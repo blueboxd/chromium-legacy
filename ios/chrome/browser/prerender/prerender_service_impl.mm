@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/prerender/preload_controller.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -79,16 +79,6 @@ bool PrerenderServiceImpl::MaybeLoadPrerenderedURL(
   }
 
   DCHECK_NE(WebStateList::kInvalidIndex, web_state_list->active_index());
-
-  web::NavigationManager* active_navigation_manager =
-      web_state_list->GetActiveWebState()->GetNavigationManager();
-  int lastIndex = active_navigation_manager->GetLastCommittedItemIndex();
-  UMA_HISTOGRAM_COUNTS_100("Prerender.PrerenderLoadedOnIndex", lastIndex);
-
-  BOOL onFirstNTP =
-      IsVisibleURLNewTabPage(web_state_list->GetActiveWebState()) &&
-      lastIndex == 0;
-  UMA_HISTOGRAM_BOOLEAN("Prerender.PrerenderLoadedOnFirstNTP", onFirstNTP);
 
   loading_prerender_ = true;
   web_state_list->ReplaceWebStateAt(web_state_list->active_index(),

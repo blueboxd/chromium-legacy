@@ -9,7 +9,7 @@
 #include <ostream>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
 class GURL;
@@ -92,7 +93,7 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
 
   ~InstallIsolatedWebAppCommand() override;
 
-  LockDescription& lock_description() const override;
+  const LockDescription& lock_description() const override;
 
   base::Value ToDebugValue() const override;
 
@@ -123,7 +124,7 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
       blink::mojom::ManifestPtr opt_manifest,
       const GURL& manifest_url,
       bool valid_manifest_for_web_app,
-      bool is_installable);
+      webapps::InstallableStatusCode error_code);
   base::expected<WebAppInstallInfo, std::string> CreateInstallInfoFromManifest(
       const blink::mojom::Manifest& manifest,
       const GURL& manifest_url);

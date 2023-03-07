@@ -174,7 +174,6 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
 
  protected:
   std::unique_ptr<TestAppHomePageHandler> GetAppHomePageHandler() {
-    AddBlankTabAndShow(browser());
     content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     test_web_ui_.set_web_contents(contents);
@@ -201,18 +200,17 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
   }
 
   scoped_refptr<const extensions::Extension> InstallTestExtensionApp() {
-    base::DictionaryValue manifest;
-    manifest.SetString(extensions::manifest_keys::kName, kTestAppName);
-    manifest.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
-    manifest.SetString(extensions::manifest_keys::kApp, "true");
-    manifest.SetString(extensions::manifest_keys::kPlatformAppBackgroundPage,
-                       std::string());
+    base::Value::Dict manifest;
+    manifest.SetByDottedPath(extensions::manifest_keys::kName, kTestAppName);
+    manifest.SetByDottedPath(extensions::manifest_keys::kVersion, "0.0.0.0");
+    manifest.SetByDottedPath(
+        extensions::manifest_keys::kPlatformAppBackgroundPage, std::string());
 
     std::string error;
     scoped_refptr<extensions::Extension> extension =
         extensions::Extension::Create(
             base::FilePath(), extensions::mojom::ManifestLocation::kUnpacked,
-            manifest.GetDict(), 0, &error);
+            manifest, 0, &error);
 
     extension_service()->AddExtension(extension.get());
     return extension;
@@ -467,9 +465,25 @@ IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, SetRunOnOsLoginMode) {
   loop.Run();
   EXPECT_EQ(web_app::RunOnOsLoginMode::kWindowed,
             web_app::WebAppProvider::GetForWebApps(profile())
-                ->registrar()
+                ->registrar_unsafe()
                 .GetAppRunOnOsLoginMode(installed_app_id)
                 .value);
+}
+
+IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, HandleLaunchDeprecatedApp) {
+  std::unique_ptr<TestAppHomePageHandler> page_handler =
+      GetAppHomePageHandler();
+  EXPECT_CALL(page_, AddApp(MatchAppName(kTestAppName)))
+      .Times(testing::AtLeast(1));
+  scoped_refptr<const extensions::Extension> extension =
+      InstallTestExtensionApp();
+  page_handler->Wait();
+
+  auto waiter = views::NamedWidgetShownWaiter(
+      views::test::AnyWidgetTestPasskey{}, "DeprecatedAppsDialogView");
+  page_handler->LaunchApp(extension->id(), 2, nullptr);
+  // Launch deprecated app will show deprecated apps dialog view.
+  EXPECT_NE(waiter.WaitIfNeededAndGet(), nullptr);
 }
 
 }  // namespace webapps

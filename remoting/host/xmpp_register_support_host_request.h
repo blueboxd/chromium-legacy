@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -52,6 +52,7 @@ class XmppRegisterSupportHostRequest : public RegisterSupportHostRequest,
   // RegisterSupportHostRequest implementation.
   void StartRequest(SignalStrategy* signal_strategy,
                     scoped_refptr<RsaKeyPair> key_pair,
+                    const std::string& authorized_helper,
                     RegisterCallback callback) override;
 
   // HostStatusObserver implementation.
@@ -82,6 +83,7 @@ class XmppRegisterSupportHostRequest : public RegisterSupportHostRequest,
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string directory_bot_jid_;
   RegisterCallback callback_;
+  std::string authorized_helper_;
 
   std::unique_ptr<IqSender> iq_sender_;
   std::unique_ptr<IqRequest> request_;

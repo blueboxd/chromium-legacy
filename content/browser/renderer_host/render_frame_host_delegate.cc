@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
@@ -195,6 +195,14 @@ PrerenderHostRegistry* RenderFrameHostDelegate::GetPrerenderHostRegistry() {
 
 bool RenderFrameHostDelegate::IsAllowedToGoToEntryAtOffset(int32_t offset) {
   return true;
+}
+
+bool RenderFrameHostDelegate::IsJavaScriptDialogShowing() const {
+  return false;
+}
+
+bool RenderFrameHostDelegate::ShouldIgnoreUnresponsiveRenderer() {
+  return false;
 }
 
 }  // namespace content

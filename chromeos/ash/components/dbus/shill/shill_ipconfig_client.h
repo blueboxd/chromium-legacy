@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "chromeos/ash/components/dbus/shill/shill_client_helper.h"
 
 namespace base {
@@ -33,10 +33,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillIPConfigClient {
    public:
     // Adds an IPConfig entry.
     virtual void AddIPConfig(const std::string& ip_config_path,
-                             const base::Value& properties) = 0;
+                             base::Value::Dict properties) = 0;
 
    protected:
-    virtual ~TestInterface() {}
+    virtual ~TestInterface() = default;
   };
 
   // Creates and initializes the global instance. |bus| must not be null.

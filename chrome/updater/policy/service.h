@@ -5,11 +5,10 @@
 #ifndef CHROME_UPDATER_POLICY_SERVICE_H_
 #define CHROME_UPDATER_POLICY_SERVICE_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -82,7 +81,17 @@ class PolicyStatus {
 class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
  public:
   using PolicyManagerVector =
-      std::vector<std::unique_ptr<PolicyManagerInterface>>;
+      std::vector<scoped_refptr<PolicyManagerInterface>>;
+  using PolicyManagerNameMap =
+      base::flat_map<std::string, scoped_refptr<PolicyManagerInterface>>;
+  struct PolicyManagers {
+    PolicyManagers(PolicyManagerVector manager_vector,
+                   PolicyManagerNameMap manager_name_map);
+    ~PolicyManagers();
+
+    PolicyManagerVector vector;
+    PolicyManagerNameMap name_map;
+  };
 
   explicit PolicyService(PolicyManagerVector managers);
   explicit PolicyService(scoped_refptr<ExternalConstants> external_constants);
@@ -132,11 +141,13 @@ class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
   void FetchPoliciesDone(
       base::OnceCallback<void(int)> callback,
       int result,
-      std::unique_ptr<PolicyManagerInterface> dm_policy_manager);
+      scoped_refptr<PolicyManagerInterface> dm_policy_manager);
 
   // List of policy providers in descending order of priority. All managed
   // providers should be ahead of non-managed providers.
-  PolicyManagerVector policy_managers_;
+  // Also contains a named map indexed by `source()` for all the policy
+  // managers.
+  PolicyManagers policy_managers_;
 
   const scoped_refptr<ExternalConstants> external_constants_;
   const scoped_refptr<PolicyFetcher> policy_fetcher_;

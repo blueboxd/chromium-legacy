@@ -19,11 +19,11 @@
 #include "android_webview/browser/variations/variations_seed_loader.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/proto/aw_variations_seed.pb.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
@@ -260,8 +260,8 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   // Populate FieldTrialList.
   // If you update this, consider whether "WebViewEnvironment" in
   // components/variations/variations_seed_processor_unittest.cc needs updates.
-  // Passing null low_entropy_source_value to suppress adding the VariationsId
-  // for it. TODO(b/183955043): Re-evaluate if this is necessary.
+  // TODO(b/263797385): Re-evaluate if we can add entropy source id to
+  // variations ids for WebView or not.
   variations_field_trial_creator_->SetUpFieldTrials(
       variation_ids,
       command_line->GetSwitchValueASCII(
@@ -269,7 +269,7 @@ void AwFeatureListCreator::SetUpFieldTrials() {
       GetSwitchDependentFeatureOverrides(*command_line),
       std::move(feature_list), metrics_client->metrics_state_manager(),
       aw_field_trials_.get(), &ignored_safe_seed_manager,
-      /*low_entropy_source_value=*/absl::nullopt);
+      /*add_entropy_source_to_variations_ids=*/false);
 }
 
 }  // namespace android_webview

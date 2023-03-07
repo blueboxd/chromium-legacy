@@ -28,7 +28,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/passthrough_abstract_texture_impl.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
@@ -37,6 +37,10 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "gpu/command_buffer/service/passthrough_abstract_texture_impl.h"
+#endif
 
 namespace gl {
 class GLFence;
@@ -50,8 +54,8 @@ namespace gles2 {
 
 class ContextGroup;
 class GPUTracer;
-class MultiDrawManager;
 class PassthroughAbstractTextureImpl;
+class MultiDrawManager;
 class GLES2ExternalFramebuffer;
 
 struct MappedBuffer {
@@ -386,7 +390,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
                                               uint32_t texture_target,
                                               gl::GLImage* image) override;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
                                              uint32_t texture_target,
                                              gl::GLImage* image) override;
@@ -414,6 +418,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   // Allow unittests to inspect internal state tracking
   friend class GLES2DecoderPassthroughTestBase;
 
+#if !BUILDFLAG(IS_ANDROID)
   // Attaches |image| to the texture referred to by |client_texture_id|, marking
   // the image as needing on-demand binding by the decoder if
   // |can_bind_to_sampler| is false and as not needing on-demand binding by the
@@ -423,6 +428,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
                          uint32_t texture_target,
                          gl::GLImage* image,
                          bool can_bind_to_sampler);
+#endif
 
   const char* GetCommandName(unsigned int command_id) const;
 
@@ -518,15 +524,15 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   error::Error CheckSwapBuffersResult(gfx::SwapResult result,
                                       const char* function_name);
 
-  // Textures can be marked as needing binding only on Android/Windows/Mac, so
-  // all functionality related to binding textures is relevant only on those
+  // Textures can be marked as needing binding only on Windows/Mac, so all
+  // functionality related to binding textures is relevant only on those
   // platforms.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-  // Issue BindTexImage / CopyTexImage calls for |passthrough_texture|, if
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  // Issue BindTexImage calls for |passthrough_texture|, if
   // they're pending.
   void BindOnePendingImage(GLenum target, TexturePassthrough* texture);
 
-  // Issue BindTexImage / CopyTexImage calls for any GLImages that
+  // Issue BindTexImage calls for any GLImages that
   // requested it in BindImage, and are currently bound to textures that
   // are bound to samplers (i.e., are in |textures_pending_binding_|).
   void BindPendingImagesForSamplers();
@@ -598,6 +604,26 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
 
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kFirstGLES2Command];
+
+  // Creates lazily and holds a SharedContextState on a GLContext that is in the
+  // same share group as the command decoder's context. This is done so that
+  // skia operations can be performed on textures from the context and not worry
+  // about state tracking.
+  class LazySharedContextState {
+   public:
+    explicit LazySharedContextState(GLES2DecoderPassthroughImpl* impl);
+    ~LazySharedContextState();
+
+    SharedContextState* shared_context_state() {
+      return shared_context_state_.get();
+    }
+
+   private:
+    raw_ptr<GLES2DecoderPassthroughImpl> impl_ = nullptr;
+    scoped_refptr<SharedContextState> shared_context_state_;
+  };
+
+  std::unique_ptr<LazySharedContextState> lazy_context_;
 
   // The GLApi to make the gl calls on.
   raw_ptr<gl::GLApi> api_ = nullptr;
@@ -680,7 +706,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
       bound_textures_;
 
   // [target, texture unit, texture] where texture has a bound GLImage that
-  // requires bind / copy before draw.
+  // requires binding before draw.
   struct TexturePendingBinding {
     TexturePendingBinding(GLenum target,
                           GLuint unit,
@@ -696,7 +722,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
     GLuint unit;
     base::WeakPtr<TexturePassthrough> texture;
   };
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   std::vector<TexturePendingBinding> textures_pending_binding_;
 #endif
 

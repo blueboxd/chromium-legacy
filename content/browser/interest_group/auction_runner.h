@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_auction.h"
@@ -150,9 +150,16 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
 
   // AbortableAdAuction implementation.
   void ResolvedPromiseParam(
-      blink::mojom::AuctionAdConfigAuctionIdPtr auction,
+      blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
       blink::mojom::AuctionAdConfigField field,
       const absl::optional<std::string>& json_value) override;
+  void ResolvedPerBuyerSignalsPromise(
+      blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+      const absl::optional<base::flat_map<url::Origin, std::string>>&
+          per_buyer_signals) override;
+  void ResolvedBuyerTimeoutsPromise(
+      blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+      const blink::AuctionConfig::BuyerTimeouts& buyer_timeouts) override;
   void Abort() override;
 
   // Fails the auction, invoking `callback_` and prevents any future calls into
@@ -185,7 +192,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       RunAuctionCallback callback);
 
   // Tells `auction_` to start the loading interest groups phase.
-  void StartAuctionIfReady();
+  void StartAuction();
 
   // Invoked asynchronously by `auction_` once all interest groups have loaded.
   // Fails the auction if `success` is false. Otherwise, starts the bidding and
@@ -211,6 +218,12 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // auction.
   void UpdateInterestGroupsPostAuction();
 
+  // Notify relevant InterestGroupAuctions of progress in resolving promises in
+  // config, as appropriate. Manages `promise_fields_in_auction_config_`.
+  void NotifyPromiseResolved(
+      const blink::mojom::AuctionAdConfigAuctionId* auction_id,
+      blink::AuctionConfig* config);
+
   const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
 
   // ClientSecurityState built from the frame that issued the auction request;
@@ -233,6 +246,9 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   std::unique_ptr<blink::AuctionConfig> owned_auction_config_;
 
   RunAuctionCallback callback_;
+
+  // Number of fields in `owned_auction_config_` that are promises; decremented
+  // as they get resolved.
   int promise_fields_in_auction_config_;
 
   InterestGroupAuction auction_;

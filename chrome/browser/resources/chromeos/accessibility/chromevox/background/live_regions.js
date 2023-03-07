@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Implements support for live regions in ChromeVox Next.
+ * @fileoverview Implements support for live regions in ChromeVox.
  */
 import {AutomationUtil} from '../../common/automation_util.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {QueueMode, TtsCategory} from '../common/tts_types.js';
 
-import {ChromeVoxState} from './chromevox_state.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {Output} from './output/output.js';
 import {OutputCustomEvent} from './output/output_types.js';
 
@@ -49,7 +49,7 @@ export class LiveRegions {
 
     chrome.automation.addTreeChangeObserver(
         TreeChangeObserverFilter.LIVE_REGION_TREE_CHANGES,
-        this.onTreeChange.bind(this));
+        treeChange => this.onTreeChange(treeChange));
   }
 
   static init() {
@@ -161,7 +161,7 @@ export class LiveRegions {
     // Queue live regions coming from background tabs.
     let hostView = AutomationUtil.getTopLevelRoot(node);
     hostView = hostView ? hostView.parent : null;
-    const currentRange = ChromeVoxState.instance.currentRange;
+    const currentRange = ChromeVoxRange.current;
     const forceQueue = !hostView || !hostView.state.focused ||
         (currentRange && currentRange.start.node.root !== node.root) ||
         node.containerLiveStatus === 'polite';
@@ -220,7 +220,7 @@ export class LiveRegions {
       return false;
     }
 
-    const currentRange = ChromeVoxState.instance.currentRange;
+    const currentRange = ChromeVoxRange.current;
     if (currentRange && currentRange.start.node.root === node.root) {
       return false;
     }

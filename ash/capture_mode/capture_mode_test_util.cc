@@ -22,6 +22,7 @@
 #include "base/files/file_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
@@ -176,6 +177,21 @@ bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
   return sibling_index > 0 && children[sibling_index - 1] == layer;
 }
 
+void SetDeviceScaleFactor(float dsf) {
+  auto* display_manager = Shell::Get()->display_manager();
+  const auto display_id = display_manager->GetDisplayAt(0).id();
+  display_manager->UpdateZoomFactor(display_id, dsf);
+  auto* controller = CaptureModeController::Get();
+  if (controller->is_recording_in_progress()) {
+    CaptureModeTestApi().FlushRecordingServiceForTesting();
+    auto* test_delegate = static_cast<TestCaptureModeDelegate*>(
+        controller->delegate_for_testing());
+    // Consume any pending video frame from before changing the DSF prior to
+    // proceeding.
+    test_delegate->RequestAndWaitForVideoFrame();
+  }
+}
+
 // -----------------------------------------------------------------------------
 // ProjectorCaptureModeIntegrationHelper:
 
@@ -190,8 +206,10 @@ void ProjectorCaptureModeIntegrationHelper::SetUp() {
   auto* projector_controller = ProjectorController::Get();
   projector_controller->SetClient(&projector_client_);
   ON_CALL(projector_client_, StopSpeechRecognition)
-      .WillByDefault(testing::Invoke(
-          []() { ProjectorController::Get()->OnSpeechRecognitionStopped(); }));
+      .WillByDefault(testing::Invoke([]() {
+        ProjectorController::Get()->OnSpeechRecognitionStopped(
+            /*forced=*/false);
+      }));
 
   // Simulate the availability of speech recognition.
   SpeechRecognitionAvailability availability;

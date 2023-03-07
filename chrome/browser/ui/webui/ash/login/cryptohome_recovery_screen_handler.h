@@ -24,6 +24,15 @@ class CryptohomeRecoveryScreenView
 
   // Shows the contents of the screen.
   virtual void Show() = 0;
+
+  // Shows the recovery succeeded message.
+  virtual void OnRecoverySucceeded() = 0;
+
+  // Shows the recovery failed message.
+  virtual void OnRecoveryFailed() = 0;
+
+  // Shows the reauth required message when there's no reauth proof token.
+  virtual void ShowReauthNotification() = 0;
 };
 
 class CryptohomeRecoveryScreenHandler : public CryptohomeRecoveryScreenView,
@@ -43,6 +52,9 @@ class CryptohomeRecoveryScreenHandler : public CryptohomeRecoveryScreenView,
  private:
   // CryptohomeRecoveryScreenView
   void Show() override;
+  void OnRecoverySucceeded() override;
+  void OnRecoveryFailed() override;
+  void ShowReauthNotification() override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

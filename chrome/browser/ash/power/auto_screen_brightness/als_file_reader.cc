@@ -4,15 +4,16 @@
 
 #include "chrome/browser/ash/power/auto_screen_brightness/als_file_reader.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/power/auto_screen_brightness/utils.h"
 #include "content/public/browser/browser_thread.h"

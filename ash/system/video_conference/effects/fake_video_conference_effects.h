@@ -9,13 +9,18 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_delegate.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
 
 namespace gfx {
 struct VectorIcon;
 }  // namespace gfx
 
-namespace ash::fake_video_conference {
+namespace ash {
+
+class FakeVideoConferenceTrayController;
+
+namespace fake_video_conference {
 
 // A convenience base class, for creating a delegate that hosts the simplest
 // type of effect there is i.e. a toggle with only one state.
@@ -32,17 +37,20 @@ class SimpleToggleEffect : public VcEffectsDelegate {
   SimpleToggleEffect(const SimpleToggleEffect&) = delete;
   SimpleToggleEffect& operator=(const SimpleToggleEffect&) = delete;
 
-  ~SimpleToggleEffect() override = default;
+  ~SimpleToggleEffect() override;
 
   // VcEffectsDelegate:
-  int GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(int effect_id, int value) override;
+  absl::optional<int> GetEffectState(int effect_id) override;
+  void OnEffectControlActivated(absl::optional<int> effect_id,
+                                absl::optional<int> state) override;
 
   int num_activations_for_testing() { return num_activations_for_testing_; }
 
  private:
   // Number of times the control has been activated, used by unit tests.
   int num_activations_for_testing_ = 0;
+
+  base::WeakPtrFactory<SimpleToggleEffect> weak_factory_{this};
 };
 
 // Delegates that host a series of "fake" effects used in unit tests and the
@@ -137,17 +145,24 @@ class ASH_EXPORT ShaggyFurEffect : public VcEffectsDelegate {
   ~ShaggyFurEffect() override;
 
   // VcEffectsDelegate:
-  int GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(int effect_id, int value) override;
+  absl::optional<int> GetEffectState(int effect_id) override;
+  void OnEffectControlActivated(absl::optional<int> effect_id,
+                                absl::optional<int> state) override;
 
-  // Returns the number of times the button/state for `value` has been
-  // activated.
-  int GetNumActivationsForTesting(int value);
+  // Returns the number of times the button for `state` has been activated.
+  int GetNumActivationsForTesting(int state);
 
  private:
+  // Adds a `std::unique_ptr<VcEffectState>` to `effect`.
+  void AddStateToEffect(VcHostedEffect* effect,
+                        int state_value,
+                        std::u16string label_text);
+
   // Number of times each value has been clicked, one count for each value in
   // `FurShagginess`.
   std::vector<int> num_activations_for_testing_;
+
+  base::WeakPtrFactory<ShaggyFurEffect> weak_factory_{this};
 };
 
 class ASH_EXPORT SuperCutnessEffect : public VcEffectsDelegate {
@@ -168,19 +183,64 @@ class ASH_EXPORT SuperCutnessEffect : public VcEffectsDelegate {
   ~SuperCutnessEffect() override;
 
   // VcEffectsDelegate:
-  int GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(int effect_id, int value) override;
+  absl::optional<int> GetEffectState(int effect_id) override;
+  void OnEffectControlActivated(absl::optional<int> effect_id,
+                                absl::optional<int> state) override;
 
-  // Returns the number of times the button/state for `value` has been
-  // activated.
-  int GetNumActivationsForTesting(int value);
+  // Returns the number of times the button for `state` has been activated.
+  int GetNumActivationsForTesting(int state);
+
+  void set_has_invalid_effect_state_for_testing(bool has_invalid_state) {
+    has_invalid_effect_state_for_testing_ = has_invalid_state;
+  }
+  bool has_invalid_effect_state_for_testing() {
+    return has_invalid_effect_state_for_testing_;
+  }
 
  private:
+  // Adds a `std::unique_ptr<VcEffectState>` to `effect`.
+  void AddStateToEffect(VcHostedEffect* effect,
+                        int state_value,
+                        std::u16string label_text);
+
   // Number of times each value has been clicked, one count for each value in
   // `HowCute`.
   std::vector<int> num_activations_for_testing_;
+
+  // Set to 'true' for testing the case where a valid effect state cannot be
+  // obtained.
+  bool has_invalid_effect_state_for_testing_;
+
+  base::WeakPtrFactory<SuperCutnessEffect> weak_factory_{this};
 };
 
-}  // namespace ash::fake_video_conference
+// A simple residence for any fake effects used for testing. For all of these
+// fake effects to be registered, the feature `VcControlsUiFakeEffects` must be
+// enabled.
+class EffectRepository {
+ public:
+  explicit EffectRepository(FakeVideoConferenceTrayController* controller);
+
+  EffectRepository(const EffectRepository&) = delete;
+  EffectRepository& operator=(const EffectRepository&) = delete;
+
+  ~EffectRepository();
+
+ private:
+  FakeVideoConferenceTrayController* controller_;
+  std::unique_ptr<CatEarsEffect> cat_ears_;
+  std::unique_ptr<DogFurEffect> dog_fur_;
+  std::unique_ptr<SpaceshipEffect> spaceship_;
+  std::unique_ptr<OfficeBunnyEffect> office_bunny_;
+  std::unique_ptr<CalmForestEffect> calm_forest_;
+  std::unique_ptr<StylishKitchenEffect> stylish_kitchen_;
+  std::unique_ptr<GreenhouseEffect> greenhouse_;
+  std::unique_ptr<ShaggyFurEffect> shaggy_fur_;
+  std::unique_ptr<SuperCutnessEffect> super_cuteness_;
+};
+
+}  // namespace fake_video_conference
+
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_VIDEO_CONFERENCE_EFFECTS_FAKE_VIDEO_CONFERENCE_EFFECTS_H_

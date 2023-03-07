@@ -12,6 +12,8 @@
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/download/public/background_service/background_download_service.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
@@ -27,6 +29,7 @@
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/download/background_service/background_download_service_factory.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/push_notification/push_notification_delegate.h"
 #import "ios/chrome/browser/push_notification/push_notification_util.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
@@ -62,6 +65,9 @@ const int kMainIntentCheckDelay = 1;
   NSSet<UISceneSession*>* _sceneSessionsToDiscard;
   // Delegate that handles delivered push notification workflow.
   PushNotificationDelegate* _pushNotificationDelegate;
+  // YES if the application was able to successfully register itself with APNS
+  // and obtain its APNS token.
+  BOOL _didRegisterDeviceWithAPNS;
 }
 
 // YES if application:didFinishLaunchingWithOptions: was called. Used to
@@ -144,19 +150,6 @@ const int kMainIntentCheckDelay = 1;
          selector:@selector(firstSceneWillEnterForeground:)
              name:UIApplicationWillEnterForegroundNotification
            object:nil];
-
-  if (IsPriceNotificationsEnabled()) {
-    UNUserNotificationCenter* center =
-        UNUserNotificationCenter.currentNotificationCenter;
-    center.delegate = _pushNotificationDelegate;
-
-    [PushNotificationUtil
-        getPermissionSettings:^(UNNotificationSettings* settings) {
-          if (settings.authorizationStatus == UNAuthorizationStatusAuthorized) {
-            [PushNotificationUtil registerDeviceWithAPNS];
-          }
-        }];
-  }
 
   return requiresHandling;
 }
@@ -242,6 +235,7 @@ const int kMainIntentCheckDelay = 1;
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken {
   // This method is invoked by iOS on the successful registration of the app to
   // APNS and retrieval of the device's APNS token.
+  _didRegisterDeviceWithAPNS = YES;
   [_pushNotificationDelegate applicationDidRegisterWithAPNS:deviceToken];
 }
 
@@ -356,9 +350,13 @@ const int kMainIntentCheckDelay = 1;
         if (!appStartupFromExternalIntent) {
           base::RecordAction(base::UserMetricsAction("IOSOpenByMainIntent"));
         } else {
+          [self notifyFETAppStartupFromExternalIntent];
           base::RecordAction(base::UserMetricsAction("IOSOpenByViewIntent"));
         }
       });
+
+  [self registerDeviceForPushNotifications];
+
   [_appState applicationWillEnterForeground:UIApplication.sharedApplication
                             metricsMediator:_metricsMediator
                                memoryHelper:_memoryHelper];
@@ -407,6 +405,39 @@ const int kMainIntentCheckDelay = 1;
 
 - (MainController*)mainController {
   return _mainController;
+}
+
+#pragma mark - Private
+
+// Registers the device with APNS to enable receiving push notifications to the
+// device. In addition, the function sets the UNUserNotificationCenter's
+// delegate which enables the application to display push notifications that
+// were received while Chrome was open.
+- (void)registerDeviceForPushNotifications {
+  if (!_didRegisterDeviceWithAPNS && IsPriceNotificationsEnabled()) {
+    UNUserNotificationCenter* center =
+        UNUserNotificationCenter.currentNotificationCenter;
+    center.delegate = _pushNotificationDelegate;
+
+    [PushNotificationUtil registerDeviceWithAPNS];
+  }
+}
+
+// Notifies the FET that the app has launched from external intent (i.e. through
+// the share sheet), which is an eligibility criterion for the default browser
+// blue dot promo.
+- (void)notifyFETAppStartupFromExternalIntent {
+  ChromeBrowserState* browserState =
+      _mainController.interfaceProvider.mainInterface.browserState;
+
+  // OTR browsers are ignored because they can sometimes cause a nullptr tracker
+  // to be returned from the tracker factory.
+  if (!browserState || browserState->IsOffTheRecord()) {
+    return;
+  }
+
+  feature_engagement::TrackerFactory::GetForBrowserState(browserState)
+      ->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
 }
 
 @end

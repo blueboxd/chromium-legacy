@@ -19,13 +19,14 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/color_util.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -38,7 +39,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -141,8 +141,6 @@ constexpr base::TimeDelta kClearPasswordAfterDelay = base::Seconds(30);
 // Delay after which the password gets back to hidden state, for security.
 constexpr base::TimeDelta kHidePasswordAfterDelay = base::Seconds(5);
 
-constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
-
 struct FrameParams {
   FrameParams(int duration_in_ms, float opacity_param)
       : duration(base::Milliseconds(duration_in_ms)), opacity(opacity_param) {}
@@ -235,11 +233,6 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
     set_placeholder_font_list(font_list_visible_);
     SetObscuredGlyphSpacing(kPasswordGlyphSpacing);
     SetBorder(nullptr);
-
-    // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-    // able to submit accessibility checks, but this focusable View needs to
-    // add a name so that the screen reader knows what to announce.
-    SetProperty(views::kSkipAccessibilityPaintChecks, true);
   }
   LoginTextfield(const LoginTextfield&) = delete;
   LoginTextfield& operator=(const LoginTextfield&) = delete;
@@ -255,21 +248,24 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
 
   // views::Textfield:
   void OnBlur() override {
-    if (on_blur_closure_)
+    if (on_blur_closure_) {
       on_blur_closure_.Run();
+    }
     views::Textfield::OnBlur();
   }
 
   // views::Textfield:
   void OnFocus() override {
-    if (on_focus_closure_)
+    if (on_focus_closure_) {
       on_focus_closure_.Run();
+    }
     views::Textfield::OnFocus();
   }
 
   void AboutToRequestFocusFromTabTraversal(bool reverse) override {
-    if (!GetText().empty())
+    if (!GetText().empty()) {
       SelectAll(/*reversed=*/false);
+    }
   }
 
   void UpdateFontListAndCursor() {
@@ -375,8 +371,9 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
     // else, we need to abort the current opacity animation and set back the
     // opacity to 100%. This can be done by destroying the layer that we do not
     // use anymore.
-    if (layer())
+    if (layer()) {
       DestroyLayer();
+    }
 
     const gfx::VectorIcon* icon = &kLockScreenEasyUnlockCloseIcon;
     const auto* color_provider = AshColorProvider::Get();
@@ -501,8 +498,9 @@ class LoginPasswordView::AlternateIconsView : public views::View {
     shown_after->SetVisible(false);
 
     // Do not alternate between icons if ChromeVox is enabled.
-    if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
+    if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
       return;
+    }
 
     std::unique_ptr<ui::LayerAnimationSequence> opacity_sequence =
         std::make_unique<ui::LayerAnimationSequence>();
@@ -708,8 +706,9 @@ void LoginPasswordView::SetEasyUnlockIcon(
     const std::u16string& accessibility_label) {
   // Do not update EasyUnlockIconState if the Smart Lock revamp is enabled since
   // it will be removed post launch.
-  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
     return;
+  }
 
   // Update icon.
   easy_unlock_icon_->SetEasyUnlockIcon(icon_state, accessibility_label);
@@ -718,14 +717,16 @@ void LoginPasswordView::SetEasyUnlockIcon(
   bool has_icon = icon_state != EasyUnlockIconState::NONE;
   // We do not want to schedule a new animation when the user switches from an
   // account to another.
-  if (should_show_easy_unlock_ == has_icon)
+  if (should_show_easy_unlock_ == has_icon) {
     return;
+  }
   should_show_easy_unlock_ = has_icon;
   HandleLeftIconsVisibilities(false /*handling_capslock*/);
 }
 
-void LoginPasswordView::SetAccessibleName(const std::u16string& name) {
-  textfield_->SetAccessibleName(name);
+void LoginPasswordView::OnAccessibleNameChanged(
+    const std::u16string& new_name) {
+  textfield_->SetAccessibleName(new_name);
 }
 
 void LoginPasswordView::SetFocusEnabledForTextfield(bool enable) {
@@ -736,8 +737,9 @@ void LoginPasswordView::SetFocusEnabledForTextfield(bool enable) {
 void LoginPasswordView::SetDisplayPasswordButtonVisible(bool visible) {
   display_password_button_->SetVisible(visible);
   // Only start the timer if the display password button is enabled.
-  if (visible)
+  if (visible) {
     clear_password_timer_.Reset();
+  }
 }
 
 void LoginPasswordView::Reset() {
@@ -750,8 +752,9 @@ void LoginPasswordView::Reset() {
 }
 
 void LoginPasswordView::InsertNumber(int value) {
-  if (textfield_->GetReadOnly())
+  if (textfield_->GetReadOnly()) {
     return;
+  }
 
   if (!textfield_->HasFocus()) {
     // RequestFocus on textfield to activate cursor.
@@ -785,10 +788,6 @@ void LoginPasswordView::SetReadOnly(bool read_only) {
 
 bool LoginPasswordView::IsReadOnly() const {
   return textfield_->GetReadOnly();
-}
-
-const char* LoginPasswordView::GetClassName() const {
-  return kLoginPasswordViewName;
 }
 
 gfx::Size LoginPasswordView::CalculatePreferredSize() const {
@@ -840,26 +839,31 @@ void LoginPasswordView::ContentsChanged(views::Textfield* sender,
   on_password_text_changed_.Run(new_contents.empty() /*is_empty*/);
 
   // If the password is currently revealed.
-  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL)
+  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL) {
     hide_password_timer_.Reset();
+  }
 
   // The display password button could be hidden by user policy.
-  if (display_password_button_->GetVisible())
+  if (display_password_button_->GetVisible()) {
     clear_password_timer_.Reset();
+  }
 }
 
 // Implements swapping active user with arrow keys
 bool LoginPasswordView::HandleKeyEvent(views::Textfield* sender,
                                        const ui::KeyEvent& key_event) {
   // Treat the password field as normal if it has text
-  if (!textfield_->GetText().empty())
+  if (!textfield_->GetText().empty()) {
     return false;
+  }
 
-  if (key_event.type() != ui::ET_KEY_PRESSED)
+  if (key_event.type() != ui::ET_KEY_PRESSED) {
     return false;
+  }
 
-  if (key_event.is_repeat())
+  if (key_event.is_repeat()) {
     return false;
+  }
 
   switch (key_event.key_code()) {
     case ui::VKEY_LEFT:
@@ -880,8 +884,9 @@ void LoginPasswordView::UpdateUiState() {
   // Disabling the submit button will make it lose focus. The previous focusable
   // view will be the password textfield, which is more expected than the user
   // drop down button.
-  if (!enable_buttons && submit_button_->HasFocus())
+  if (!enable_buttons && submit_button_->HasFocus()) {
     RequestFocus();
+  }
   submit_button_->SetEnabled(enable_buttons);
   display_password_button_->SetEnabled(enable_buttons);
 }
@@ -938,8 +943,9 @@ void LoginPasswordView::HandleLeftIconsVisibilities(bool handling_capslock) {
 
 void LoginPasswordView::SubmitPassword() {
   DCHECK(IsPasswordSubmittable());
-  if (textfield_->GetReadOnly())
+  if (textfield_->GetReadOnly()) {
     return;
+  }
   SetReadOnly(true);
   on_submit_.Run(textfield_->GetText());
 }
@@ -950,5 +956,8 @@ void LoginPasswordView::SetCapsLockHighlighted(bool highlight) {
       kLockScreenCapsLockIcon, highlight ? kColorAshIconColorPrimary
                                          : kColorAshIconPrimaryDisabledColor));
 }
+
+BEGIN_METADATA(LoginPasswordView, views::View)
+END_METADATA
 
 }  // namespace ash

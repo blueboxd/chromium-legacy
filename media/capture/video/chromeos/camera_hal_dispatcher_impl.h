@@ -19,6 +19,7 @@
 #include "base/observer_list_types.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "base/unguessable_token.h"
@@ -275,6 +276,11 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   // Sets what should be the initial camera effects state when the camera
   // server is registered.
   void SetInitialCameraEffects(cros::mojom::EffectsConfigPtr config);
+
+  // Called by `camera_device_delegate` to get the current applied camera
+  // effects.
+  void GetCameraEffects(VideoCaptureDevice::GetPhotoStateCallback callback,
+                        media::mojom::PhotoStatePtr photo_state);
 
  private:
   friend struct base::DefaultSingletonTraits<CameraHalDispatcherImpl>;

@@ -10,12 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
-#include "base/containers/span.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/memory/ref_counted.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -31,8 +28,11 @@
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #endif
 
+class Profile;
+
 namespace base {
 class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace gfx {
@@ -40,87 +40,9 @@ class ImageSkia;
 }
 
 namespace web_app {
-
-#if BUILDFLAG(IS_LINUX)
-struct LinuxFileRegistration {
-  std::string xdg_command;
-  std::string file_contents;
-};
-#endif
-
-// This class is used across multiple different sequenced task runners:
-// - Created on the UI thread.
-// - Accessed & sometimes modified by the shortcut task runner.
-// - Accessed by the UI thread.
-// It is up to the user to ensure thread safety of this struct through
-// ordering guarantees.
-struct ShortcutOverrideForTesting
-    : public base::RefCountedThreadSafe<ShortcutOverrideForTesting> {
- public:
-  // Destroying this class blocks the thread until all users of
-  // GetShortcutOverrideForTesting() have completed.
-  struct BlockingRegistration {
-    BlockingRegistration();
-    ~BlockingRegistration();
-
-    scoped_refptr<ShortcutOverrideForTesting> shortcut_override;
-  };
-
-  ShortcutOverrideForTesting(const ShortcutOverrideForTesting&) = delete;
-
-  // Overrides applicable directories for shortcut integration and returns an
-  // object that:
-  // 1) Contains the directories.
-  // 2) Keeps the override active until the object is destroyed.
-  // 3) DCHECK-fails on destruction if any of the shortcut directories / os
-  //    hooks are NOT cleanup by the test. This ensures that trybots don't have
-  //    old test artifacts on them that can make future tests flaky.
-  // All installs that occur during the lifetime of the
-  // ShortcutOverrideForTesting MUST be uninstalled before it is
-  // destroyed.
-  // The returned value, on destruction, will block until all usages of the
-  // GetShortcutOverrideForTesting() are destroyed.
-  static std::unique_ptr<BlockingRegistration> OverrideForTesting(
-      const base::FilePath& base_path = base::FilePath());
-
-#if BUILDFLAG(IS_WIN)
-  base::ScopedTempDir desktop;
-  base::ScopedTempDir application_menu;
-  base::ScopedTempDir quick_launch;
-  base::ScopedTempDir startup;
-#elif BUILDFLAG(IS_MAC)
-  base::ScopedTempDir chrome_apps_folder;
-  std::map<base::FilePath, bool> startup_enabled;
-#elif BUILDFLAG(IS_LINUX)
-  base::ScopedTempDir desktop;
-  base::ScopedTempDir startup;
-  std::vector<LinuxFileRegistration> linux_file_registration;
-  // std::string xdg_mime_install_cmd;
-  // std::string mime_types_file_contents;
-#endif
-
-  // Records all registration events for a given app id & protocol list. Due to
-  // simplification on the OS-side, unregistrations are not recorded, and
-  // instead this list can be checked for an empty registration.
-  std::vector<std::tuple<AppId, std::vector<std::string>>>
-      protocol_scheme_registrations;
-
- private:
-  friend class base::RefCountedThreadSafe<ShortcutOverrideForTesting>;
-
-  explicit ShortcutOverrideForTesting(const base::FilePath& base_path);
-  ~ShortcutOverrideForTesting();
-
-  // |on_destruction| has it's closure set only once (when BlockingRegistration
-  // is destroyed) and executed when ShortcutOverrideForTesting is destroyed.
-  // The destructor of BlockingRegistration explicitly sets this closure with a
-  // global lock, then destroys the object, then waits on the closure, so it is
-  // thread-compatible.
-  base::ScopedClosureRunner on_destruction;
-};
-
-// Returns an active shortcut override for testing, if there is one.
-scoped_refptr<ShortcutOverrideForTesting> GetShortcutOverrideForTesting();
+namespace proto {
+class WebAppOsIntegrationState;
+}
 
 // Represents the info required to create a shortcut for an app.
 struct ShortcutInfo {
@@ -166,6 +88,13 @@ struct ShortcutInfo {
   // instance on the same thread.
   SEQUENCE_CHECKER(sequence_checker_);
 };
+
+std::unique_ptr<ShortcutInfo> BuildShortcutInfoWithoutFavicon(
+    const AppId& app_id,
+    const GURL& start_url,
+    const base::FilePath& profile_path,
+    const std::string& profile_name,
+    const proto::WebAppOsIntegrationState& state);
 
 // This specifies a folder in the system applications menu (e.g the Start Menu
 // on Windows).
@@ -313,7 +242,7 @@ void PostShortcutIOTaskAndReplyWithResult(
 // runner that permits access to COM libraries. Shortcut tasks typically deal
 // with ensuring Profile changes are reflected on disk, so shutdown is always
 // blocked so that an inconsistent shortcut state is not left on disk.
-scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner();
+scoped_refptr<base::SequencedTaskRunner> GetShortcutIOTaskRunner();
 
 base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info);
 

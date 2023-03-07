@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "chrome/browser/ui/views/extensions/extensions_menu_base_view.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_view_controller.h"
 #include "extensions/common/extension_features.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/layout/layout_provider.h"
@@ -21,7 +21,9 @@ ExtensionsMenuCoordinator::~ExtensionsMenuCoordinator() {
   Hide();
 }
 
-void ExtensionsMenuCoordinator::Show(views::View* anchor_view) {
+void ExtensionsMenuCoordinator::Show(
+    views::View* anchor_view,
+    ExtensionsContainer* extensions_container) {
   DCHECK(base::FeatureList::IsEnabled(
       extensions_features::kExtensionsMenuAccessControl));
   auto bubble_delegate = std::make_unique<views::BubbleDialogDelegate>(
@@ -35,9 +37,14 @@ void ExtensionsMenuCoordinator::Show(views::View* anchor_view) {
   bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
   bubble_delegate->SetEnableArrowKeyTraversal(true);
 
-  auto* contents_view = bubble_delegate->SetContentsView(
-      std::make_unique<ExtensionsMenuBaseView>(browser_));
-  bubble_tracker_.SetView(contents_view);
+  auto* bubble_contents = bubble_delegate->SetContentsView(
+      views::Builder<views::View>().SetUseDefaultFillLayout(true).Build());
+  bubble_contents->View::AddObserver(this);
+  bubble_tracker_.SetView(bubble_contents);
+
+  controller_ = std::make_unique<ExtensionsMenuViewController>(
+      browser_, extensions_container, bubble_contents, bubble_delegate.get());
+  controller_->OpenMainPage();
 
   views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate))->Show();
 }
@@ -60,4 +67,9 @@ bool ExtensionsMenuCoordinator::IsShowing() const {
 
 views::Widget* ExtensionsMenuCoordinator::GetExtensionsMenuWidget() {
   return IsShowing() ? bubble_tracker_.view()->GetWidget() : nullptr;
+}
+
+void ExtensionsMenuCoordinator::OnViewIsDeleting(views::View* observed_view) {
+  // Reset the controller to keep 1:1 lifetime with the view.
+  controller_.reset();
 }

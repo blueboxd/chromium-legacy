@@ -16,7 +16,6 @@
 #import "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #import "components/password_manager/core/browser/password_manager_constants.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_google_chrome_strings.h"
@@ -125,21 +124,15 @@ bool IsUpdateInfobar(PasswordInfobarType infobar_type) {
 using password_manager::PasswordFormManagerForUI;
 
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
-    NSString* user_email,
-    bool is_sync_user,
+    absl::optional<std::string> account_to_store_password,
     bool password_update,
     std::unique_ptr<PasswordFormManagerForUI> form_to_save)
     : form_to_save_(std::move(form_to_save)),
-      is_sync_user_(is_sync_user),
       infobar_type_(password_update
                         ? PasswordInfobarType::kPasswordInfobarTypeUpdate
                         : PasswordInfobarType::kPasswordInfobarTypeSave),
-      user_email_(user_email),
-      password_update_(password_update) {
-  if (is_sync_user) {
-    DCHECK([user_email_ length]);
-  }
-}
+      account_to_store_password_(account_to_store_password),
+      password_update_(password_update) {}
 
 IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
     // If by any reason this delegate gets dealloc before the Infobar is
@@ -159,21 +152,6 @@ IOSChromeSavePasswordInfoBarDelegate::FromInfobarDelegate(
              : nullptr;
 }
 
-NSString* IOSChromeSavePasswordInfoBarDelegate::GetDetailsMessageText() const {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::
-              kIOSEnablePasswordManagerBrandingUpdate)) {
-    return is_sync_user_ ? l10n_util::GetNSString(IDS_SAVE_PASSWORD_FOOTER)
-                         : @"";
-  }
-
-  return is_sync_user_
-             ? l10n_util::GetNSStringF(
-                   IDS_SAVE_PASSWORD_FOOTER_DISPLAYING_USER_EMAIL,
-                   base::SysNSStringToUTF16(user_email_))
-             : l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORD_FOOTER_NOT_SYNCING);
-}
-
 NSString* IOSChromeSavePasswordInfoBarDelegate::GetUserNameText() const {
   return base::SysUTF16ToNSString(
       form_to_save_->GetPendingCredentials().username_value);
@@ -186,6 +164,11 @@ NSString* IOSChromeSavePasswordInfoBarDelegate::GetPasswordText() const {
 
 NSString* IOSChromeSavePasswordInfoBarDelegate::GetURLHostText() const {
   return base::SysUTF8ToNSString(form_to_save_->GetURL().host());
+}
+
+absl::optional<std::string>
+IOSChromeSavePasswordInfoBarDelegate::GetAccountToStorePassword() const {
+  return account_to_store_password_;
 }
 
 bool IOSChromeSavePasswordInfoBarDelegate::ShouldExpire(

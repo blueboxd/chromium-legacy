@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/offscreen_tab.h"
 #include "components/media_router/common/media_route.h"
@@ -60,7 +60,7 @@ class TestMediaRouteProvider : public mojom::MediaRouteProvider,
   void StopListeningForRouteMessages(const std::string& route_id) override;
   void DetachRoute(const std::string& route_id) override;
   void EnableMdnsDiscovery() override;
-  void UpdateMediaSinks(const std::string& media_source) override;
+  void DiscoverSinksNow() override;
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,

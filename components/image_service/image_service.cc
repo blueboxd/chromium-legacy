@@ -44,6 +44,11 @@ class FetchJobManager {
     std::vector<Request> requests;
     for (auto& cluster : clusters_) {
       for (auto& visit : cluster.visits) {
+        // Only fetch URL-keyed metadata for visits known to sync.
+        if (!visit.annotated_visit.visit_row.is_known_to_sync) {
+          continue;
+        }
+
         // Only tag search visits for now.
         const auto& search_terms =
             visit.annotated_visit.content_annotations.search_terms;
@@ -177,9 +182,10 @@ class ImageService::SuggestEntityImageURLFetcher {
     for (const auto& result : results.suggest_results) {
       // TODO(tommycli): `entity_id_` is not used yet, because it's always
       // empty right now.
-      if (result.image_url().is_valid() &&
+      GURL url(result.entity_info().image_url());
+      if (url.is_valid() &&
           base::i18n::ToLower(result.match_contents()) == search_query_) {
-        return std::move(callback_).Run(result.image_url());
+        return std::move(callback_).Run(std::move(url));
       }
     }
 

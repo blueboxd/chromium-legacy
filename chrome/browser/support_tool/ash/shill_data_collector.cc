@@ -4,10 +4,10 @@
 
 #include "chrome/browser/support_tool/ash/shill_data_collector.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
@@ -366,7 +366,7 @@ void ShillDataCollector::ExportCollectedDataWithPII(
   // Only masks shill::kNameProperty in the top levels of devices and services.
   if (!pii_types_to_keep.count(feedback::PIIType::kSSID)) {
     for (auto entry : *shill_log_.FindDict(kNetworkServices)) {
-      std::string log_name = chromeos::NetworkPathId(entry.first);  // Not PII
+      std::string log_name = ash::NetworkPathId(entry.first);  // Not PII
       entry.second.GetDict().Set(shill::kNameProperty, log_name);
     }
     for (auto entry : *shill_log_.FindDict(kNetworkDevices))

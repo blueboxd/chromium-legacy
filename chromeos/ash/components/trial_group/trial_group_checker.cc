@@ -4,7 +4,7 @@
 
 #include "chromeos/ash/components/trial_group/trial_group_checker.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -13,6 +13,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -58,13 +59,14 @@ void TrialGroupChecker::OnRequestComplete(
     return;
   }
 
-  base::Value* member_status = membership_info->FindKey("membership_info");
-  if (member_status == nullptr || !member_status->is_int()) {
+  absl::optional<int> member_status =
+      membership_info->GetDict().FindInt("membership_info");
+  if (!member_status) {
     std::move(callback_).Run(false);
     return;
   }
 
-  bool is_member = (member_status->GetInt() == kIsMember);
+  bool is_member = (member_status.value() == kIsMember);
   std::move(callback_).Run(is_member);
 }
 
@@ -79,8 +81,8 @@ TrialGroupChecker::Status TrialGroupChecker::LookUpMembership(
 
   std::string upload_data;
   {
-    base::DictionaryValue request;
-    request.SetIntKey("group", static_cast<int>(group_id_));
+    base::Value::Dict request;
+    request.Set("group", static_cast<int>(group_id_));
     base::JSONWriter::Write(request, &upload_data);
   }
 
@@ -97,6 +99,10 @@ TrialGroupChecker::Status TrialGroupChecker::LookUpMembership(
           }
           policy {
             cookies_allowed: NO
+            policy_exception_justification:
+              "Only relevant for internal testing by Google employees. "
+              "Opt-out is not possible on ChromeOS currently per "
+              "go/finch-dogfood#chrome-os."
           }
       )");
 

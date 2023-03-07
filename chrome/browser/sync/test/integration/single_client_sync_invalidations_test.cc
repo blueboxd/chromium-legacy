@@ -9,6 +9,8 @@
 #include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/device_info_helper.h"
+#include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -16,6 +18,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
@@ -29,7 +32,6 @@
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "content/public/test/browser_test.h"
-#include "content/public/test/test_launcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +40,7 @@ namespace {
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::ServerBookmarksEqualityChecker;
+using syncer::ModelType;
 using testing::AllOf;
 using testing::ElementsAre;
 using testing::IsEmpty;
@@ -46,8 +49,8 @@ using testing::NotNull;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
-const char kSyncedBookmarkURL[] = "http://www.mybookmark.com";
-const char kSyncedBookmarkTitle[] = "Title";
+constexpr char kSyncedBookmarkURL[] = "http://www.mybookmark.com";
+constexpr char kSyncedBookmarkTitle[] = "Title";
 
 syncer::ModelTypeSet DefaultInterestedDataTypes() {
   return Difference(syncer::ProtocolTypes(), syncer::CommitOnlyTypes());
@@ -82,7 +85,7 @@ MATCHER_P(InterestedDataTypesAre, expected_data_types, "") {
                                     .device_info()
                                     .invalidation_fields()
                                     .interested_data_type_ids()) {
-    syncer::ModelType data_type =
+    ModelType data_type =
         syncer::GetModelTypeFromSpecificsFieldNumber(field_number);
     if (!syncer::IsRealDataType(data_type)) {
       return false;
@@ -98,7 +101,7 @@ MATCHER_P(InterestedDataTypesContain, expected_data_types, "") {
                                     .device_info()
                                     .invalidation_fields()
                                     .interested_data_type_ids()) {
-    syncer::ModelType data_type =
+    ModelType data_type =
         syncer::GetModelTypeFromSpecificsFieldNumber(field_number);
     if (!syncer::IsRealDataType(data_type)) {
       return false;
@@ -122,12 +125,75 @@ MATCHER_P(HasInstanceIdToken, expected_token, "") {
              .instance_id_token() == expected_token;
 }
 
+sync_pb::DataTypeProgressMarker GetProgressMarkerForType(
+    const sync_pb::GetUpdatesMessage& gu_message,
+    ModelType type) {
+  for (const sync_pb::DataTypeProgressMarker& progress_marker :
+       gu_message.from_progress_marker()) {
+    if (progress_marker.data_type_id() ==
+        syncer::GetSpecificsFieldNumberFromModelType(type)) {
+      return progress_marker;
+    }
+  }
+  return sync_pb::DataTypeProgressMarker();
+}
+
+class GetUpdatesFailureChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit GetUpdatesFailureChecker(syncer::SyncServiceImpl* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    syncer::SyncCycleSnapshot last_cycle_snapshot =
+        service()->GetLastCycleSnapshotForDebugging();
+
+    *os << "Waiting for GetUpdates error, current result: \""
+        << last_cycle_snapshot.model_neutral_state()
+               .last_download_updates_result.ToString()
+        << "\".";
+
+    return last_cycle_snapshot.model_neutral_state()
+        .last_download_updates_result.IsActualError();
+  }
+};
+
+// Waits for a successful GetUpdates request containing a notification for the
+// given |type|.
+class NotificationHintChecker
+    : public fake_server::FakeServerMatchStatusChecker {
+ public:
+  explicit NotificationHintChecker(ModelType type) : type_(type) {}
+
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for a notification hint for "
+        << syncer::ModelTypeToDebugString(type_) << ".";
+
+    sync_pb::ClientToServerMessage last_get_updates;
+    if (!fake_server()->GetLastGetUpdatesMessage(&last_get_updates)) {
+      *os << "No GetUpdates request received yet.";
+    }
+
+    sync_pb::DataTypeProgressMarker progress_marker =
+        GetProgressMarkerForType(last_get_updates.get_updates(), type_);
+    if (progress_marker.data_type_id() !=
+        syncer::GetSpecificsFieldNumberFromModelType(type_)) {
+      *os << "Last GetUpdates does not contain progress marker for "
+          << syncer::ModelTypeToDebugString(type_) << ".";
+    }
+
+    return !progress_marker.get_update_triggers().notification_hint().empty();
+  }
+
+ private:
+  const ModelType type_;
+};
+
 // This class helps to count the number of GU_TRIGGER events for the |type|
 // since the object has been created.
 class GetUpdatesTriggeredObserver : public fake_server::FakeServer::Observer {
  public:
   GetUpdatesTriggeredObserver(fake_server::FakeServer* fake_server,
-                              syncer::ModelType type)
+                              ModelType type)
       : fake_server_(fake_server), type_(type) {
     fake_server_->AddObserver(this);
   }
@@ -162,7 +228,7 @@ class GetUpdatesTriggeredObserver : public fake_server::FakeServer::Observer {
 
  private:
   const raw_ptr<fake_server::FakeServer> fake_server_;
-  const syncer::ModelType type_;
+  const ModelType type_;
 
   size_t num_nudged_get_updates_for_data_type_ = 0;
 };
@@ -184,7 +250,7 @@ sync_pb::DeviceInfoSpecifics CreateDeviceInfoSpecifics(
       fcm_registration_token);
   sync_pb::InvalidationSpecificFields* mutable_invalidation_fields =
       specifics.mutable_invalidation_fields();
-  for (syncer::ModelType type : interested_data_types) {
+  for (ModelType type : interested_data_types) {
     mutable_invalidation_fields->add_interested_data_type_ids(
         syncer::GetSpecificsFieldNumberFromModelType(type));
   }
@@ -200,10 +266,6 @@ class SingleClientSyncInvalidationsTestBase : public SyncTest {
     override_features_.InitWithFeatures(enabled_features, disabled_features);
   }
 
-  // Disable configuration refresher to make it sure that clients receive
-  // invalidations correctly during browser startup.
-  bool UseConfigurationRefresher() override { return false; }
-
  private:
   base::test::ScopedFeatureList override_features_;
 };
@@ -213,7 +275,7 @@ class SingleClientWithSyncSendInterestedDataTypesTest
  public:
   SingleClientWithSyncSendInterestedDataTypesTest()
       : SingleClientSyncInvalidationsTestBase(
-            /*enabled_features=*/{syncer::kSyncSendInterestedDataTypes},
+            /*enabled_features=*/{},
             /*disabled_features=*/{
                 syncer::kUseSyncInvalidations,
                 syncer::kUseSyncInvalidationsForWalletAndOffer}) {}
@@ -253,8 +315,8 @@ class SingleClientWithUseSyncInvalidationsTest
  public:
   SingleClientWithUseSyncInvalidationsTest()
       : SingleClientSyncInvalidationsTestBase(
-            /*enabled_features=*/{syncer::kSyncSendInterestedDataTypes,
-                                  syncer::kUseSyncInvalidations},
+            /*enabled_features=*/{syncer::kUseSyncInvalidations,
+                                  syncer::kSyncPersistInvalidations},
             /*disabled_features=*/{
                 syncer::kUseSyncInvalidationsForWalletAndOffer}) {}
 
@@ -473,8 +535,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
                                              .device_info()
                                              .last_updated_timestamp();
 
-  GetUpdatesTriggeredObserver observer(GetFakeServer(),
-                                       syncer::ModelType::AUTOFILL);
+  GetUpdatesTriggeredObserver observer(GetFakeServer(), ModelType::AUTOFILL);
   ASSERT_TRUE(SetupClients());
   ASSERT_THAT(server_device_infos_before,
               ElementsAre(HasCacheGuid(GetLocalCacheGuid())));
@@ -530,6 +591,76 @@ IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
       bookmarks_helper::BookmarksGUIDChecker(/*profile=*/0, bookmark_guid)
           .Wait());
 }
+
+IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
+                       PRE_PersistBookmarkInvalidation) {
+  ASSERT_TRUE(SetupSync());
+
+  GetFakeServer()->SetHttpError(net::HTTP_UNAUTHORIZED);
+
+  // Simulate a server-side change which generates an invalidation.
+  InjectSyncedBookmark(GetFakeServer());
+  ASSERT_TRUE(GetUpdatesFailureChecker(GetSyncService(0)).Wait());
+
+  // Verify that the invalidation was used during the last sync cycle, but since
+  // the GetUpdates request was not successful, the invalidation should still be
+  // persisted on the client
+  sync_pb::ClientToServerMessage last_get_updates;
+  ASSERT_TRUE(GetFakeServer()->GetLastGetUpdatesMessage(&last_get_updates));
+  sync_pb::DataTypeProgressMarker progress_marker = GetProgressMarkerForType(
+      last_get_updates.get_updates(), syncer::BOOKMARKS);
+  ASSERT_THAT(progress_marker.get_update_triggers().notification_hint(),
+              Not(IsEmpty()));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
+                       PersistBookmarkInvalidation) {
+  ASSERT_TRUE(SetupClients()) << "SetupClient() failed.";
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+
+  // TODO(crbug/1365292): Persisted invaldiations are loaded in
+  // ModelTypeWorker::ctor(), but sync cycle is not scheduled. New sync cycle
+  // has to be triggered right after we loaded persisted invalidations.
+  GetSyncService(0)->TriggerRefresh({syncer::BOOKMARKS});
+  EXPECT_TRUE(NotificationHintChecker(syncer::BOOKMARKS).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
+                       PRE_PersistDeviceInfoInvalidation) {
+  const std::string kRemoteDeviceCacheGuid = "other_cache_guid";
+  const std::string kRemoteFCMRegistrationToken = "other_fcm_token";
+  ASSERT_TRUE(SetupSync());
+
+  GetFakeServer()->SetHttpError(net::HTTP_UNAUTHORIZED);
+
+  // Simulate a server-side change which generates an invalidation.
+  InjectDeviceInfoEntityToServer(kRemoteDeviceCacheGuid,
+                                 DefaultInterestedDataTypes(),
+                                 kRemoteFCMRegistrationToken);
+  ASSERT_TRUE(GetUpdatesFailureChecker(GetSyncService(0)).Wait());
+
+  // Verify that the invalidation was used during the last sync cycle, but since
+  // the GetUpdates request was not successful, the invalidation should still be
+  // persisted on the client.
+  sync_pb::ClientToServerMessage last_get_updates;
+  ASSERT_TRUE(GetFakeServer()->GetLastGetUpdatesMessage(&last_get_updates));
+  sync_pb::DataTypeProgressMarker progress_marker = GetProgressMarkerForType(
+      last_get_updates.get_updates(), syncer::DEVICE_INFO);
+  ASSERT_THAT(progress_marker.get_update_triggers().notification_hint(),
+              Not(IsEmpty()));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
+                       PersistDeviceInfoInvalidation) {
+  ASSERT_TRUE(SetupClients()) << "SetupClient() failed.";
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+
+  // TODO(crbug/1365292): Persisted invaldiations are loaded in
+  // ModelTypeWorker::ctor(), but sync cycle is not scheduled. New sync cycle
+  // has to be triggered right after we loaded persisted invalidations.
+  GetSyncService(0)->TriggerRefresh({syncer::DEVICE_INFO});
+  EXPECT_TRUE(NotificationHintChecker(syncer::DEVICE_INFO).Wait());
+}
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
@@ -537,8 +668,7 @@ class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
  public:
   SingleClientWithUseSyncInvalidationsForWalletAndOfferTest()
       : SingleClientSyncInvalidationsTestBase(
-            /*enabled_features=*/{syncer::kSyncSendInterestedDataTypes,
-                                  syncer::kUseSyncInvalidations,
+            /*enabled_features=*/{syncer::kUseSyncInvalidations,
                                   syncer::
                                       kUseSyncInvalidationsForWalletAndOffer},
             /*disabled_features=*/{}) {}
@@ -677,6 +807,7 @@ IN_PROC_BROWSER_TEST_F(
   // Sign in again.
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_TRUE(GetClient(0)->AwaitInvalidationsStatus(/*expected_status=*/true));
   ASSERT_TRUE(SyncInvalidationsServiceFactory::GetForProfile(GetProfile(0))
                   ->GetFCMRegistrationToken());
   const std::string new_token =
@@ -692,51 +823,5 @@ IN_PROC_BROWSER_TEST_F(
                   .Wait());
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-class SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes
-    : public SyncTest {
- public:
-  SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes()
-      : SyncTest(SINGLE_CLIENT) {
-    features_override_.InitWithFeatureState(
-        syncer::kSyncSendInterestedDataTypes, !content::IsPreTest());
-  }
-
-  // Disable configuration refresher to make it sure that clients receive
-  // invalidations correctly during browser startup.
-  bool UseConfigurationRefresher() override { return false; }
-
-  std::string GetLocalCacheGuid() {
-    syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
-    return prefs.GetCacheGuid();
-  }
-
- private:
-  base::test::ScopedFeatureList features_override_;
-};
-
-// PRE_* tests aren't supported on Android browser tests.
-#if !BUILDFLAG(IS_ANDROID)
-IN_PROC_BROWSER_TEST_F(
-    SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes,
-    PRE_ShouldResendDeviceInfoWithInterestedDataTypes) {
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(ServerDeviceInfoMatchChecker(
-                  UnorderedElementsAre(HasCacheGuid(GetLocalCacheGuid())))
-                  .Wait());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes,
-    ShouldResendDeviceInfoWithInterestedDataTypes) {
-  ASSERT_TRUE(SetupClients());
-  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
-
-  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
-                  ElementsAre(InterestedDataTypesContain(syncer::NIGORI)))
-                  .Wait());
-}
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace

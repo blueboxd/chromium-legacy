@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_APPS_APP_PRELOAD_SERVICE_WEB_APP_PRELOAD_INSTALLER_H_
 #define CHROME_BROWSER_APPS_APP_PRELOAD_SERVICE_WEB_APP_PRELOAD_INSTALLER_H_
 
+#include <memory>
+
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +15,10 @@
 #include "components/webapps/browser/install_result_code.h"
 
 class Profile;
+
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
 
 namespace apps {
 
@@ -42,6 +48,10 @@ class WebAppPreloadInstaller {
  private:
   void InstallAppImpl(PreloadAppDefinition app,
                       WebAppPreloadInstalledCallback callback);
+  void OnManifestRetrieved(PreloadAppDefinition app,
+                           WebAppPreloadInstalledCallback callback,
+                           std::unique_ptr<network::SimpleURLLoader> url_loader,
+                           std::unique_ptr<std::string> response);
   void OnAppInstalled(WebAppPreloadInstalledCallback callback,
                       const web_app::AppId& app_id,
                       webapps::InstallResultCode code);

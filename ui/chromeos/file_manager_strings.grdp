@@ -428,21 +428,30 @@
     An error occured during installation of your Linux application.
   </message>
 
-  <message name="IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME" desc="The name of the direcotry which stores files recovered from Google Drive directory when the locally stored Google Drive data is found to be broken.">
+  <message name="IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME" desc="The name of the directory which stores files recovered from Google Drive directory when the locally stored Google Drive data is found to be broken.">
     Recovered files from Google Drive
   </message>
 
-  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE" desc="Message of the conflict dialog shown when a file transfer operation is conflicted.">
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE" desc="Message shown in the conflict dialog when a file transfer operation is conflicted.">
     A file named "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" already exists. Do you want to replace it with the one you're moving?
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_FOLDER_MESSAGE" desc="Message shown in the conflict dialog when a folder transfer operation is conflicted.">
+    A folder named "<ph name="FILENAME">$1<ex>Downloads</ex></ph>" already exists. Do you want to replace it with the one you're moving?
   </message>
   <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_BOTH" desc="Label of a button to keep both entries after the file transfer operation.">
     Keep both
   </message>
-  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE" desc="Label of a button to replace the old entry with the new entry.">
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE" desc="Label of a button to replace an entry with the source entry.">
     Replace
   </message>
   <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_APPLY_TO_ALL" desc="Label of checkbox in the conflict dialog box to apply the user selection to all entries.">
     Apply to all
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_ALL" desc="Label of a button to keep all entries after the file transfer operation. The 'Apply to all' checkbox is selected.">
+    Keep all
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE_ALL" desc="Label of a button to replace all entries with the source entries. The 'Apply to all' checkbox is selected.">
+    Replace all
   </message>
 
   <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
@@ -710,6 +719,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE_ORGANIZATION" desc="File Manager status message shown when the drive sync is failed because the user's organization runs out the space in Google Drive server.">
     Your organization requires more storage to complete the upload.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_DATA_DIR_MISSING" desc="Don't translate yet; this message is not final. System notification displayed when the Google Drive cache file were removed while the user was logged out.">
+    Your Google Drive cache was cleared.
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_ORGANIZATION_STORAGE_FULL" desc="File Manager menu storage meter message indicating the user's organization has run out of quota.">
     Org storage full
@@ -1242,6 +1254,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
     You have run out of space
+  </message>
+  <message name="IDS_FILE_BROWSER_SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE" desc="Message informing the user that there is not enough space on a specific shared drive.">
+    Files can't be uploaded because "<ph name="SHARED_DRIVE_NAME">$1<ex>Shared team documents</ex></ph>" doesn't have enough storage.
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_CANNOT_REACH" desc="Message informing the user that Google Drive can not be reached at this moment.">
     Google Drive cannot be reached at this time.

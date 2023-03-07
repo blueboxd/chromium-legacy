@@ -9,10 +9,18 @@
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager.h"
 #include "ash/system/video_conference/video_conference_media_state.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "chromeos/crosapi/mojom/video_conference.mojom-forward.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace ash {
+
+using MediaApps = std::vector<crosapi::mojom::VideoConferenceMediaAppInfoPtr>;
 
 // Controller that will act as a "bridge" between VC apps management and the VC
 // UI layers. The singleton instance is constructed immediately before and
@@ -27,11 +35,24 @@ class ASH_EXPORT VideoConferenceTrayController
    public:
     ~Observer() override = default;
 
+    // Called when the state of `has_media_app` within
+    // `VideoConferenceMediaState` is changed.
+    virtual void OnHasMediaAppStateChange(bool has_media_app) = 0;
+
+    // Called when the state of camera permission is changed.
+    virtual void OnCameraPermissionStateChange(bool has_permission) = 0;
+
+    // Called when the state of microphone permission is changed.
+    virtual void OnMicrophonePermissionStateChange(bool has_permission) = 0;
+
     // Called when the state of camera capturing is changed.
     virtual void OnCameraCapturingStateChange(bool is_capturing) = 0;
 
     // Called when the state of microphone capturing is changed.
     virtual void OnMicrophoneCapturingStateChange(bool is_capturing) = 0;
+
+    // Called when the state of screen sharing is changed.
+    virtual void OnScreenSharingStateChange(bool is_capturing_screen) = 0;
   };
 
   VideoConferenceTrayController();
@@ -55,8 +76,21 @@ class ASH_EXPORT VideoConferenceTrayController
   // Sets the state for microphone mute. Virtual for testing/mocking.
   virtual void SetMicrophoneMuted(bool muted) = 0;
 
+  // Returns asynchronously a vector of media apps that will be displayed in the
+  // "Return to app" panel of the bubble. Virtual for testing/mocking.
+  virtual void GetMediaApps(
+      base::OnceCallback<void(MediaApps)> ui_callback) = 0;
+
+  // Brings the app with the given `id` to the foreground.
+  virtual void ReturnToApp(const base::UnguessableToken& id) = 0;
+
   // Updates the tray UI with the given `VideoConferenceMediaState`.
   void UpdateWithMediaState(VideoConferenceMediaState state);
+
+  // Handles device usage from a VC app while the device is system disabled.
+  void HandleDeviceUsedWhileDisabled(
+      crosapi::mojom::VideoConferenceMediaDevice device,
+      const std::u16string& app_name);
 
   // media::CameraPrivacySwitchObserver:
   void OnCameraSWPrivacySwitchStateChanged(
@@ -66,6 +100,10 @@ class ASH_EXPORT VideoConferenceTrayController
   void OnInputMuteChanged(
       bool mute_on,
       CrasAudioHandler::InputMuteChangeMethod method) override;
+
+  // CrasAudioHandler::AudioObserver:
+  // Pop up a toast when speaking on mute is detected.
+  void OnSpeakOnMuteDetected() override;
 
   VideoConferenceTrayEffectsManager& effects_manager() {
     return effects_manager_;
@@ -81,6 +119,9 @@ class ASH_EXPORT VideoConferenceTrayController
 
   // Registered observers.
   base::ObserverList<Observer> observer_list_;
+
+  // The last time speak-on-mute notification showed.
+  absl::optional<base::TimeTicks> last_speak_on_mute_notification_time_;
 };
 
 }  // namespace ash

@@ -18,8 +18,8 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/files/file.h"
+#include "base/functional/callback.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -144,6 +144,10 @@ class CAPTURE_EXPORT VideoCaptureDevice
     };
 
     virtual ~Client() {}
+
+    // The configuration of the VideoCaptureDevice has changed.
+    // TODO(crbug.com/1338665): Add VideoCaptureDevice::Client implementation.
+    virtual void OnCaptureConfigurationChanged() {}
 
     // Captured a new video frame, data for which is pointed to by |data|.
     //

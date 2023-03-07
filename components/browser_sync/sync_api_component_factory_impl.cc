@@ -6,9 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
@@ -31,6 +32,7 @@
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
@@ -367,12 +369,28 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
             dump_stack));
   }
 
-  // Reading list sync is enabled by default only on iOS. Register unless
-  // Reading List or Reading List Sync is explicitly disabled.
+  // Register reading list unless explicitly disabled.
   if (!disabled_types.Has(syncer::READING_LIST) &&
       reading_list::switches::IsReadingListEnabled()) {
-    controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
-        syncer::READING_LIST));
+    // The transport-mode delegate may or may not be null depending on
+    // platform and feature toggle state.
+    syncer::ModelTypeControllerDelegate* delegate_for_transport_mode =
+        sync_client_->GetReadingListModel()
+            ->GetSyncControllerDelegateForTransportMode()
+            .get();
+
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::READING_LIST,
+        /*delegate_for_full_sync_mode=*/
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            sync_client_->GetReadingListModel()
+                ->GetSyncControllerDelegate()
+                .get()),
+        /*delegate_for_transport_mode=*/
+        delegate_for_transport_mode
+            ? std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                  delegate_for_transport_mode)
+            : nullptr));
   }
 
   if (!disabled_types.Has(syncer::USER_EVENTS)) {
@@ -466,13 +484,6 @@ SyncApiComponentFactoryImpl::CreateForwardingControllerDelegate(
     syncer::ModelType type) {
   return std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
       sync_client_->GetControllerDelegateForModelType(type).get());
-}
-
-std::unique_ptr<ModelTypeController>
-SyncApiComponentFactoryImpl::CreateModelTypeControllerForModelRunningOnUIThread(
-    syncer::ModelType type) {
-  return std::make_unique<ModelTypeController>(
-      type, CreateForwardingControllerDelegate(type));
 }
 
 std::unique_ptr<ModelTypeController>

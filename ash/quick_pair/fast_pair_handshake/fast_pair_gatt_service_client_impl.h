@@ -11,8 +11,8 @@
 
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_gatt_service_client.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -113,6 +113,9 @@ class FastPairGattServiceClientImpl : public FastPairGattServiceClient {
   // Attempt to create a GATT connection with the device. This method may be
   // called multiple times.
   void AttemptGattConnection();
+  void CreateGattConnection();
+  void CoolOffBeforeCreateGattConnection();
+  void OnGattServiceDiscoveryTimeout();
 
   // Callback from the adapter's call to create GATT connection.
   void OnGattConnection(
@@ -166,6 +169,7 @@ class FastPairGattServiceClientImpl : public FastPairGattServiceClient {
   void OnWriteAccountKeyError(
       device::BluetoothGattService::GattErrorCode error);
 
+  base::OneShotTimer gatt_connect_after_disconnect_cool_off_timer_;
   base::OneShotTimer gatt_service_discovery_timer_;
   base::OneShotTimer passkey_notify_session_timer_;
   base::OneShotTimer keybased_notify_session_timer_;

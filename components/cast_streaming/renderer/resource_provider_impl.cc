@@ -4,8 +4,9 @@
 
 #include "components/cast_streaming/renderer/resource_provider_impl.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/cast_streaming/public/cast_streaming_url.h"
 #include "components/cast_streaming/public/features.h"

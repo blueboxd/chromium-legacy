@@ -17,12 +17,12 @@ ChromeVoxBackgroundTtsTest = class extends ChromeVoxE2ETest {
     await importModule(
         'CommandHandlerInterface',
         '/chromevox/background/command_handler_interface.js');
-    await importModule('PrimaryTts', '/chromevox/background/tts_background.js');
+    await importModule('PrimaryTts', '/chromevox/background/primary_tts.js');
     await importModule(
         ['QueueMode', 'TtsSpeechProperties'], '/chromevox/common/tts_types.js');
     await importModule('LocalStorage', '/common/local_storage.js');
 
-    window.tts = new PrimaryTts();
+    globalThis.tts = new PrimaryTts();
   }
 
   expectUtteranceQueueIsLike(expectedObjects) {
@@ -118,7 +118,7 @@ TEST_F('ChromeVoxBackgroundTtsTest', 'UpdateVoice', function() {
     if (task.setup) {
       task.setup();
     }
-    tts.updateVoice_(task.testVoice, this.newCallback(function(actualVoice) {
+    tts.updateVoice(task.testVoice, this.newCallback(function(actualVoice) {
       assertEquals(task.expectedVoice, actualVoice);
       flushNextTask();
     }));

@@ -14,6 +14,8 @@ enum StylusWritingGestureAction {
   DELETE_TEXT,
   ADD_SPACE_OR_TEXT,
   REMOVE_SPACES,
+  SPLIT_OR_MERGE,
+  SELECT_TEXT,
 };
 
 // This enum defines the different granularities which can be used when applying a gesture.

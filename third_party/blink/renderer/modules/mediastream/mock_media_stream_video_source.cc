@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
@@ -22,9 +22,6 @@ MockMediaStreamVideoSource::MockMediaStreamVideoSource(
     bool respond_to_request_refresh_frame)
     : MediaStreamVideoSource(scheduler::GetSingleThreadTaskRunnerForTesting()),
       respond_to_request_refresh_frame_(respond_to_request_refresh_frame),
-      max_requested_height_(0),
-      max_requested_width_(0),
-      max_requested_frame_rate_(0.0),
       attempted_to_start_(false) {}
 
 MockMediaStreamVideoSource::MockMediaStreamVideoSource(

@@ -32,7 +32,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -180,10 +180,6 @@ history::DownloadRow GetDownloadRow(download::DownloadItem* item) {
   download.by_ext_id = by_ext_id;
   download.by_ext_name = by_ext_name;
   download.download_slice_info = history::GetHistoryDownloadSliceInfos(*item);
-  auto& reroute_info = item->GetRerouteInfo();
-  if (reroute_info.IsInitialized()) {
-    download.reroute_info_serialized = reroute_info.SerializeAsString();
-  }
   TruncatedDataUrlAtTheEndIfNeeded(&download.url_chain);
   return download;
 }
@@ -205,9 +201,9 @@ ShouldUpdateHistoryResult ShouldUpdateHistory(
   // rename it. If Chrome is killed before committing the history here,
   // that temporary file will still get permanently left.
   // See http://crbug.com/664677.
-  if (previous == nullptr || previous->current_path != current.current_path ||
-      previous->reroute_info_serialized != current.reroute_info_serialized)
+  if (previous == nullptr || previous->current_path != current.current_path) {
     return ShouldUpdateHistoryResult::UPDATE_IMMEDIATELY;
+  }
 
   // Ignore url_chain, referrer, site_url, http_method, mime_type,
   // original_mime_type, start_time, id, and guid. These fields don't change.
@@ -386,11 +382,6 @@ void DownloadHistory::LoadHistoryDownloads(
         history::ToContentDownloadInterruptReason(row.interrupt_reason);
     std::vector<GURL> url_chain = row.url_chain;
     TruncatedDataUrlAtTheEndIfNeeded(&url_chain);
-    download::DownloadItemRerouteInfo reroute_info;
-    if (row.reroute_info_serialized.empty() ||
-        !reroute_info.ParseFromString(row.reroute_info_serialized)) {
-      reroute_info.Clear();
-    }
 
     // If the serialized EmbedderDownloadData is not present in DownloadRow,
     // use the site URL to grab the appropriate StoragePartitionConfig to use
@@ -419,8 +410,7 @@ void DownloadHistory::LoadHistoryDownloads(
         history_download_state,
         history::ToContentDownloadDangerType(row.danger_type), history_reason,
         row.opened, row.last_access_time, row.transient,
-        history::ToContentReceivedSlices(row.download_slice_info),
-        reroute_info);
+        history::ToContentReceivedSlices(row.download_slice_info));
     // DownloadManager returns a nullptr if it decides to remove the download
     // permanently.
     if (item == nullptr) {

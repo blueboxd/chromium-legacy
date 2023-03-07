@@ -9,10 +9,10 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
@@ -31,6 +31,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace chromeos {
+
 namespace {
 
 using ::testing::Optional;
@@ -44,8 +46,6 @@ const char kExternalCrxPath[] = "/local/path/to/extension.crx";
 const char kExternalCrxVersion[] = "1.2.3.4";
 
 }  // namespace
-
-namespace chromeos {
 
 class ExternalCacheImplTest : public testing::Test,
                               public ExternalCacheDelegate {
@@ -113,22 +113,20 @@ class ExternalCacheImplTest : public testing::Test,
     return dir.Append(id + "-" + version + ".crx");
   }
 
-  base::DictionaryValue CreateEntryWithUpdateUrl(bool from_webstore) {
-    base::DictionaryValue entry;
-    entry.SetStringKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                       from_webstore
-                           ? extension_urls::GetWebstoreUpdateUrl().spec()
-                           : kNonWebstoreUpdateUrl);
-    return entry;
+  base::Value CreateEntryWithUpdateUrl(bool from_webstore) {
+    base::Value::Dict entry;
+    entry.Set(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+              from_webstore ? extension_urls::GetWebstoreUpdateUrl().spec()
+                            : kNonWebstoreUpdateUrl);
+    return base::Value(std::move(entry));
   }
 
-  base::DictionaryValue CreateEntryWithExternalCrx() {
-    base::DictionaryValue entry;
-    entry.SetStringKey(extensions::ExternalProviderImpl::kExternalCrx,
-                       kExternalCrxPath);
-    entry.SetStringKey(extensions::ExternalProviderImpl::kExternalVersion,
-                       kExternalCrxVersion);
-    return entry;
+  base::Value CreateEntryWithExternalCrx() {
+    base::Value::Dict entry;
+    entry.Set(extensions::ExternalProviderImpl::kExternalCrx, kExternalCrxPath);
+    entry.Set(extensions::ExternalProviderImpl::kExternalVersion,
+              kExternalCrxVersion);
+    return base::Value(std::move(entry));
   }
 
  private:
@@ -142,7 +140,7 @@ class ExternalCacheImplTest : public testing::Test,
   absl::optional<base::Value::Dict> prefs_;
   std::set<extensions::ExtensionId> deleted_extension_files_;
 
-  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 };
 
 TEST_F(ExternalCacheImplTest, Basic) {

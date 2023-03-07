@@ -14,13 +14,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -50,7 +50,7 @@ namespace updater {
 namespace {
 
 std::wstring GetTaskName(UpdaterScope scope) {
-  return TaskScheduler::CreateInstance()->FindFirstTaskName(
+  return TaskScheduler::CreateInstance(scope)->FindFirstTaskName(
       GetTaskNamePrefix(scope));
 }
 
@@ -66,15 +66,14 @@ std::wstring CreateRandomTaskName(UpdaterScope scope) {
 
 bool RegisterWakeTask(const base::CommandLine& run_command,
                       UpdaterScope scope) {
-  auto task_scheduler = TaskScheduler::CreateInstance();
+  auto task_scheduler = TaskScheduler::CreateInstance(scope);
 
   std::wstring task_name = GetTaskName(scope);
   if (!task_name.empty()) {
     // Update the currently installed scheduled task.
     if (task_scheduler->RegisterTask(
-            scope, task_name.c_str(), GetTaskDisplayName(scope).c_str(),
-            run_command, TaskScheduler::TriggerType::TRIGGER_TYPE_HOURLY,
-            true)) {
+            task_name.c_str(), GetTaskDisplayName(scope).c_str(), run_command,
+            TaskScheduler::TriggerType::TRIGGER_TYPE_HOURLY, true)) {
       VLOG(1) << "RegisterWakeTask succeeded." << task_name;
       return true;
     } else {
@@ -92,8 +91,8 @@ bool RegisterWakeTask(const base::CommandLine& run_command,
   DCHECK(!task_scheduler->IsTaskRegistered(task_name.c_str()));
 
   if (task_scheduler->RegisterTask(
-          scope, task_name.c_str(), GetTaskDisplayName(scope).c_str(),
-          run_command, TaskScheduler::TriggerType::TRIGGER_TYPE_HOURLY, true)) {
+          task_name.c_str(), GetTaskDisplayName(scope).c_str(), run_command,
+          TaskScheduler::TriggerType::TRIGGER_TYPE_HOURLY, true)) {
     VLOG(1) << "RegisterWakeTask succeeded: " << task_name;
     return true;
   }
@@ -103,7 +102,7 @@ bool RegisterWakeTask(const base::CommandLine& run_command,
 }
 
 void UnregisterWakeTask(UpdaterScope scope) {
-  auto task_scheduler = TaskScheduler::CreateInstance();
+  auto task_scheduler = TaskScheduler::CreateInstance(scope);
 
   const std::wstring task_name = GetTaskName(scope);
   if (task_name.empty()) {
@@ -194,6 +193,7 @@ std::vector<CLSID> GetActiveServers(UpdaterScope scope) {
       return {
           __uuidof(UpdaterSystemClass),
           __uuidof(GoogleUpdate3WebSystemClass),
+          __uuidof(GoogleUpdate3WebServiceClass),
           __uuidof(PolicyStatusSystemClass),
           __uuidof(ProcessLauncherClass),
       };

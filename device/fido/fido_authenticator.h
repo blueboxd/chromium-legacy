@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/span.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -262,6 +262,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
       const std::vector<LargeBlobKey>& large_blob_keys,
       absl::optional<pin::TokenResponse> pin_uv_auth_token,
       LargeBlobReadCallback callback);
+  // Removes all stored large blobs that conform to the large blob CBOR
+  // structure without a corresponding discoverable credential.
+  virtual void GarbageCollectLargeBlob(
+      const pin::TokenResponse& pin_uv_auth_token,
+      base::OnceCallback<void(CtapDeviceResponseCode)> callback);
 
   // GetAlgorithms returns the list of supported COSEAlgorithmIdentifiers, or
   // |nullopt| if this is unknown and thus all requests should be tried in case
@@ -302,13 +307,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual bool SupportsEnterpriseAttestation() const;
   virtual bool SupportsCredBlobOfSize(size_t num_bytes) const;
   virtual bool SupportsDevicePublicKey() const;
+  virtual bool SupportsLargeBlobs() const;
   virtual const absl::optional<AuthenticatorSupportedOptions>& Options()
       const = 0;
   virtual absl::optional<FidoTransportProtocol> AuthenticatorTransport()
       const = 0;
-  virtual bool IsInPairingMode() const = 0;
-  virtual bool IsPaired() const = 0;
-  virtual bool RequiresBlePairingPin() const = 0;
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;
 };
 

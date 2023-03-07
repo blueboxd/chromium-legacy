@@ -13,9 +13,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
@@ -42,6 +42,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -49,7 +50,6 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/base_search_provider.h"
-#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
@@ -131,8 +131,8 @@ AutocompleteControllerAndroid::AutocompleteControllerAndroid(
           AutocompleteClassifier::DefaultOmniboxProviders())} {
   autocomplete_controller_->AddObserver(this);
 
-  OmniboxControllerEmitter* emitter =
-      OmniboxControllerEmitter::GetForBrowserContext(profile_);
+  AutocompleteControllerEmitter* emitter =
+      AutocompleteControllerEmitter::GetForBrowserContext(profile_);
   if (emitter)
     autocomplete_controller_->AddObserver(emitter);
 }
@@ -357,7 +357,8 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       OmniboxEventProto::PageClassification(j_page_classification),
       base::Milliseconds(elapsed_time_since_first_modified), completed_length,
       now - autocomplete_controller_->last_time_default_match_changed(),
-      autocomplete_controller_->result(), match.destination_url);
+      autocomplete_controller_->result(), match.destination_url,
+      profile_->IsOffTheRecord());
   autocomplete_controller_->AddProviderAndTriggeringLogs(&log);
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #include "chrome/browser/ash/extensions/external_cache_delegate.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -86,6 +86,11 @@ void TestExternalCache::PutExternalExtension(
     PutExternalExtensionCallback callback) {
   AddEntryToCrxCache(id, crx_file_path.value(), version);
   std::move(callback).Run(id, true);
+}
+
+void TestExternalCache::SetBackoffPolicy(
+    absl::optional<net::BackoffEntry::Policy> new_backoff_policy) {
+  backoff_policy_ = new_backoff_policy;
 }
 
 bool TestExternalCache::SimulateExtensionDownloadFinished(

@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -534,8 +534,7 @@ int ProofVerifierChromium::Job::CheckCTCompliance() {
           cert_verify_result.is_issued_by_known_root,
           cert_verify_result.public_key_hashes,
           cert_verify_result.verified_cert.get(), cert_.get(),
-          cert_verify_result.scts, cert_verify_result.policy_compliance,
-          proof_verifier_->network_anonymization_key_);
+          cert_verify_result.scts, cert_verify_result.policy_compliance);
 
   if (sct_auditing_delegate_) {
     sct_auditing_delegate_->MaybeEnqueueReport(

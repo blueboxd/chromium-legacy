@@ -8,15 +8,16 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/overloaded.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
@@ -737,6 +738,15 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     if (absl::holds_alternative<TabStrip::Visibility>(tab_strip.home_tab)) {
       mutable_tab_strip->set_home_tab_visibility(TabStripVisibilityToProto(
           absl::get<TabStrip::Visibility>(tab_strip.home_tab)));
+    } else {
+      auto* mutable_home_tab_params =
+          mutable_tab_strip->mutable_home_tab_params();
+      absl::optional<std::vector<blink::Manifest::ImageResource>> icons =
+          absl::get<blink::Manifest::HomeTabParams>(tab_strip.home_tab).icons;
+      for (const auto& image_resource : *icons) {
+        *(mutable_home_tab_params->add_icons()) =
+            AppImageResourceToProto(image_resource);
+      }
     }
 
     if (absl::holds_alternative<TabStrip::Visibility>(
@@ -755,9 +765,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
-  if (web_app.current_os_integration_states().has_value()) {
-    local_data->mutable_current_os_integration_states();
-  }
+  *local_data->mutable_current_os_integration_states() =
+      web_app.current_os_integration_states();
 
   if (web_app.app_size_in_bytes().has_value())
     local_data->set_app_size_in_bytes(web_app.app_size_in_bytes().value());
@@ -1375,7 +1384,14 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       tab_strip.home_tab = ProtoToTabStripVisibility(
           local_data.tab_strip().home_tab_visibility());
     } else {
-      tab_strip.home_tab = blink::Manifest::HomeTabParams();
+      absl::optional<std::vector<blink::Manifest::ImageResource>> icons =
+          ParseAppImageResource(
+              "WebApp", local_data.tab_strip().home_tab_params().icons());
+      blink::Manifest::HomeTabParams home_tab_params;
+      if (!icons->empty()) {
+        home_tab_params.icons = std::move(*icons);
+      }
+      tab_strip.home_tab = std::move(home_tab_params);
     }
 
     if (local_data.tab_strip().has_new_tab_button_visibility()) {

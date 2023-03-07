@@ -71,9 +71,17 @@ class AutofillSuggestionGenerator {
       bool& with_offer,
       autofill_metrics::CardMetadataLoggingContext& metadata_logging_context);
 
+  // Returns the local and server cards ordered by the Autofill ranking. The
+  // cards which are expired and disused aren't included if
+  // |suppress_disused_cards| is true.
+  static std::vector<CreditCard*> GetOrderedCardsToSuggest(
+      // PersonalDataManager* personal_data,
+      AutofillClient* autofill_client,
+      bool suppress_disused_cards);
+
   // Generates suggestions for all available IBANs.
   static std::vector<Suggestion> GetSuggestionsForIBANs(
-      const std::vector<IBAN*>& ibans);
+      const std::vector<const IBAN*>& ibans);
 
   // Converts the vector of promo code offers that is passed in to a vector of
   // suggestions that can be displayed to the user for a promo code field.

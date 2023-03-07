@@ -65,8 +65,11 @@ enum class TriggerHelpUIResult {
   // Display of help UI is locked.
   FAILURE_DISPLAY_LOCK = 13,
 
+  // Groups conditions are not satisfied.
+  FAILURE_GROUPS_PRECONDITION_UNMET = 14,
+
   // Last entry for the enum.
-  COUNT = 14,
+  COUNT = 15,
 };
 
 // Used in the metrics to track the configuration parsing event.
@@ -134,8 +137,14 @@ enum class ConfigParsingEvent {
   // Fails to parse the blocking parameters.
   FAILURE_BLOCKING_PARSE = 18,
 
+  // Fails to pare the groups parameter.
+  FAILURE_GROUPS_PARSE = 19,
+
+  // Fails to parse the groups parameter groups list.
+  FAILURE_GROUPS_UNKNOWN_GROUP = 20,
+
   // Last entry for the enum.
-  COUNT = 19,
+  COUNT = 21,
 };
 
 // Used in metrics to track database states. Each type will match to a suffix

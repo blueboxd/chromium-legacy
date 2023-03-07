@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/printing/cups_print_job.h"
 #include "chrome/browser/ash/printing/cups_print_job_manager.h"
@@ -137,11 +137,6 @@ void FakeCupsPrintJobManager::ChangePrintJobState(CupsPrintJob* job) {
       base::BindOnce(&FakeCupsPrintJobManager::ChangePrintJobState,
                      weak_ptr_factory_.GetWeakPtr(), job),
       base::Milliseconds(3000));
-}
-
-// static
-CupsPrintJobManager* CupsPrintJobManager::CreateInstance(Profile* profile) {
-  return new FakeCupsPrintJobManager(profile);
 }
 
 }  // namespace ash

@@ -30,6 +30,9 @@ extern const char kFeatureAccessTokenAuth[];
 // to act as a signaling proxy).
 extern const char kFeatureDelegatedSignaling[];
 
+// Indicates that the host supports setting an authorized helper.
+extern const char kFeatureAuthorizedHelper[];
+
 // Sent from the client to the host to begin the connection process.
 extern const char kConnectMessage[];
 // Connect message parameters.
@@ -45,6 +48,7 @@ extern const char kTerminateUponInput[];
 extern const char kUseElevatedHost[];
 extern const char kUseSignalingProxy[];
 extern const char kIceConfig[];
+extern const char kAuthorizedHelper[];
 // Response sent back to the client after the Connect message has been handled.
 extern const char kConnectResponse[];
 
@@ -93,7 +97,6 @@ extern const char kIq[];
 // Generic message sent from the host to the client when an error occurs.
 extern const char kErrorMessage[];
 extern const char kErrorMessageCode[];
-extern const char kErrorMessageDescription[];
 
 // Sent from the host when there is a change in the NAT traversal policies.
 extern const char kNatPolicyChangedMessage[];

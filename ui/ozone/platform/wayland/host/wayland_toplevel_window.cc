@@ -123,13 +123,6 @@ bool WaylandToplevelWindow::CreateShellToplevel() {
   return true;
 }
 
-void WaylandToplevelWindow::ApplyPendingBounds() {
-  if (has_pending_configures()) {
-    DCHECK(shell_toplevel_);
-    WaylandWindow::ApplyPendingBounds();
-  }
-}
-
 void WaylandToplevelWindow::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& pointer_location_in_px) {
@@ -391,10 +384,11 @@ bool WaylandToplevelWindow::IsScreenCoordinatesEnabled() const {
 }
 
 void WaylandToplevelWindow::UpdateWindowScale(bool update_bounds) {
-  auto old_scale = window_scale();
+  auto old_scale = applied_state().window_scale;
   WaylandWindow::UpdateWindowScale(update_bounds);
-  if (old_scale == window_scale())
+  if (old_scale == applied_state().window_scale) {
     return;
+  }
 
   // Update min/max size in DIP if buffer scale is updated.
   SizeConstraintsChanged();
@@ -452,6 +446,7 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   const bool did_active_change = is_active_ != window_states.is_activated;
   is_active_ = window_states.is_activated;
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // The tiled state affects the window geometry, so apply it here.
   if (window_states.tiled_edges != tiled_state_) {
     // This configure changes the decoration insets.  We should adjust the
@@ -459,12 +454,8 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
     tiled_state_ = window_states.tiled_edges;
     delegate()->OnWindowTiledStateChanged(window_states.tiled_edges);
   }
+#endif  // IS_LINUX || IS_CHROMEOS_LACROS
 
-  // Rather than call SetBounds here for every configure event, just save the
-  // most recent bounds, and have WaylandConnection call ApplyPendingBounds
-  // when it has finished processing events. We may get many configure events
-  // in a row during an interactive resize, and only the last one matters.
-  //
   // Width or height set to 0 means that we should decide on width and height by
   // ourselves, but we don't want to set them to anything else. Use restored
   // bounds size or the current bounds iff the current state is normal (neither
@@ -515,8 +506,6 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
 
   if (did_active_change)
     delegate()->OnActivationChanged(is_active_);
-
-  state_change_in_transit_ = false;
 }
 
 void WaylandToplevelWindow::SetBoundsInPixels(const gfx::Rect& bounds) {
@@ -539,35 +528,20 @@ void WaylandToplevelWindow::SetOrigin(const gfx::Point& origin) {
 }
 
 void WaylandToplevelWindow::HandleSurfaceConfigure(uint32_t serial) {
-  ProcessPendingBoundsDip(serial);
+  ProcessPendingConfigureState(serial);
 }
 
-void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px) {
-  WaylandWindow::UpdateVisualSize(size_px);
-
+void WaylandToplevelWindow::OnSequencePoint(int64_t seq) {
   if (!shell_toplevel_)
     return;
 
-  if (!ProcessVisualSizeUpdate(size_px)) {
-    // Early-out if shell surface is still not configure at this point, which
-    // indicates it is not mapped yet, which should happen in an upcoming frame.
-    if (!shell_toplevel()->IsConfigured())
-      return;
-
-    if (set_geometry_on_next_frame_) {
-      auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / window_scale());
-      SetWindowGeometry(size_dip);
-      set_geometry_on_next_frame_ = false;
-    }
-  }
-
-  // UpdateVisualSize() indicates a frame update, which means we can forward new
-  // bounds now. Apply the latest pending_configure.
-  ApplyPendingBounds();
+  ProcessSequencePoint(seq);
+  MaybeApplyLatestStateRequest(/*force=*/false);
 }
 
 bool WaylandToplevelWindow::OnInitialize(
-    PlatformWindowInitProperties properties) {
+    PlatformWindowInitProperties properties,
+    State* state) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto token = base::UnguessableToken::Create();
   window_unique_id_ =
@@ -626,11 +600,6 @@ void WaylandToplevelWindow::SetWindowGeometry(gfx::Size size_dip) {
 
 void WaylandToplevelWindow::AckConfigure(uint32_t serial) {
   shell_toplevel()->AckConfigure(serial);
-}
-
-void WaylandToplevelWindow::UpdateDecorations() {
-  if (!state_change_in_transit_)
-    set_geometry_on_next_frame_ = true;
 }
 
 void WaylandToplevelWindow::PropagateBufferScale(float new_scale) {
@@ -772,14 +741,17 @@ void WaylandToplevelWindow::EndMoveLoop() {
 }
 
 void WaylandToplevelWindow::StartWindowDraggingSessionIfNeeded(
+    ui::mojom::DragEventSource event_source,
     bool allow_system_drag) {
   DCHECK(connection()->window_drag_controller());
-  // If extended drag is not available, WaylandDataDragManager is used instead
-  // of WaylandWindowDragManager.
-  if (!allow_system_drag ||
-      connection()->window_drag_controller()->IsExtendedDragAvailable()) {
-    connection()->window_drag_controller()->StartDragSession();
+  // If extended drag is not available and |allow_system_drag| is set, this is
+  // no-op and WaylandDataDragController is assumed to be used instead. i.e:
+  // Fallback to a simpler window drag UX based on regular system drag-and-drop.
+  if (!connection()->window_drag_controller()->IsExtendedDragAvailable() &&
+      allow_system_drag) {
+    return;
   }
+  connection()->window_drag_controller()->StartDragSession(this, event_source);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -787,7 +759,7 @@ void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
   if (shell_toplevel_ && shell_toplevel_->SupportsTopLevelImmersiveStatus()) {
     shell_toplevel_->SetUseImmersiveMode(status);
   } else if (IsSupportedOnAuraSurface(
-          ZAURA_SURFACE_SET_FULLSCREEN_MODE_SINCE_VERSION)) {
+                 ZAURA_SURFACE_SET_FULLSCREEN_MODE_SINCE_VERSION)) {
     auto mode = status ? ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE
                        : ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN;
     zaura_surface_set_fullscreen_mode(aura_surface(), mode);
@@ -987,10 +959,7 @@ void WaylandToplevelWindow::TriggerStateChanges() {
     shell_toplevel_->UnSetMaximized();
   }
 
-  state_change_in_transit_ = (previous_state_ != state_);
-
   delegate()->OnWindowStateChanged(previous_state_, state_);
-
   connection()->Flush();
 }
 
@@ -1128,7 +1097,7 @@ void WaylandToplevelWindow::SetInitialWorkspace() {
 }
 
 void WaylandToplevelWindow::UpdateWindowMask() {
-  std::vector<gfx::Rect> region{gfx::Rect({}, visual_size_px())};
+  std::vector<gfx::Rect> region{gfx::Rect({}, latched_state().size_px)};
   root_surface()->set_opaque_region(
       opaque_region_px_.has_value() ? &*opaque_region_px_
                                     : (IsOpaqueWindow() ? &region : nullptr));

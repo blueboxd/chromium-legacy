@@ -20,7 +20,6 @@
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
@@ -163,8 +162,7 @@ void RecordAutocompleteMatchMetric(SearchBoxTextMatch match_type) {
 
 class SearchBoxView::FocusRingLayer : public ui::Layer, ui::LayerDelegate {
  public:
-  explicit FocusRingLayer(SearchBoxView* search_box_view)
-      : Layer(ui::LAYER_TEXTURED), search_box_view_(search_box_view) {
+  FocusRingLayer() : Layer(ui::LAYER_TEXTURED) {
     SetName("search_box/FocusRing");
     SetFillsBoundsOpaquely(false);
     set_delegate(this);
@@ -172,6 +170,14 @@ class SearchBoxView::FocusRingLayer : public ui::Layer, ui::LayerDelegate {
   FocusRingLayer(const FocusRingLayer&) = delete;
   FocusRingLayer& operator=(const FocusRingLayer&) = delete;
   ~FocusRingLayer() override {}
+
+  void SetColor(SkColor color) {
+    if (color == color_) {
+      return;
+    }
+    color_ = color;
+    SchedulePaint(gfx::Rect(size()));
+  }
 
  private:
   // views::LayerDelegate:
@@ -188,8 +194,7 @@ class SearchBoxView::FocusRingLayer : public ui::Layer, ui::LayerDelegate {
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(AppListColorProvider::Get()->GetFocusRingColor(
-        search_box_view_->GetWidget()));
+    flags.setColor(color_);
     flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
     flags.setStrokeWidth(kSearchBoxFocusRingWidth);
     canvas->DrawRoundRect(draw_bounds, kSearchBoxFocusRingCornerRadius, flags);
@@ -199,7 +204,7 @@ class SearchBoxView::FocusRingLayer : public ui::Layer, ui::LayerDelegate {
     SchedulePaint(gfx::Rect(size()));
   }
 
-  SearchBoxView* const search_box_view_;
+  SkColor color_ = gfx::kPlaceholderColor;
 };
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
@@ -289,7 +294,6 @@ void SearchBoxView::OnActiveAppListModelsChanged(AppListModel* model,
 
   ResetForShow();
   UpdateSearchIcon();
-  OnWallpaperColorsChanged();
   ShowAssistantChanged();
 }
 
@@ -315,8 +319,9 @@ void SearchBoxView::UpdateKeyboardVisibility() {
 void SearchBoxView::HandleQueryChange(const std::u16string& query,
                                       bool initiated_by_user) {
   // Randomly select a new placeholder text when we get an empty new query.
-  if (query.empty() && features::IsProductivityLauncherEnabled())
+  if (query.empty()) {
     UpdatePlaceholderTextAndAccessibleName();
+  }
 
   MaybeSetAutocompleteGhostText(std::u16string(), std::u16string());
 
@@ -387,10 +392,9 @@ void SearchBoxView::UpdatePlaceholderTextStyle() {
                                  : gfx::Canvas::TEXT_ALIGN_LEFT)
           : gfx::Canvas::TEXT_ALIGN_CENTER);
   // Fullscreen launcher uses custom colors (dark-on-light by default).
-  search_box()->set_placeholder_text_color(
-      GetWidget()->GetColorProvider()->GetColor(
-          is_search_box_active() ? kColorAshTextColorSecondary
-                                 : kColorAshTextColorPrimary));
+  search_box()->set_placeholder_text_color(GetColorProvider()->GetColor(
+      is_search_box_active() ? kColorAshTextColorSecondary
+                             : kColorAshTextColorPrimary));
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
@@ -416,7 +420,8 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
       gfx::Point icon_origin;
       views::View::ConvertPointToTarget(search_icon(), this, &icon_origin);
       PaintFocusBar(canvas, gfx::Point(0, icon_origin.y()),
-                    /*height=*/GetSearchBoxIconSize(), GetWidget());
+                    /*height=*/GetSearchBoxIconSize(),
+                    GetColorProvider()->GetColor(ui::kColorAshFocusRing));
     }
   }
 }
@@ -436,8 +441,9 @@ const char* SearchBoxView::GetClassName() const {
 
 void SearchBoxView::OnThemeChanged() {
   SearchBoxViewBase::OnThemeChanged();
+
   const SkColor button_icon_color =
-      GetWidget()->GetColorProvider()->GetColor(kColorAshButtonIconColor);
+      GetColorProvider()->GetColor(kColorAshButtonIconColor);
   close_button()->SetImage(
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(views::kIcCloseIcon, GetSearchBoxIconSize(),
@@ -446,7 +452,18 @@ void SearchBoxView::OnThemeChanged() {
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(chromeos::kAssistantIcon, GetSearchBoxIconSize(),
                             button_icon_color));
-  OnWallpaperColorsChanged();
+
+  if (focus_ring_layer_) {
+    focus_ring_layer_->SetColor(
+        GetColorProvider()->GetColor(ui::kColorAshFocusRing));
+  }
+
+  UpdateSearchIcon();
+  UpdatePlaceholderTextStyle();
+  UpdateTextColor();
+
+  UpdateBackgroundColor(GetBackgroundColorForState(current_app_list_state_));
+  SchedulePaint();
 }
 
 void SearchBoxView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -454,17 +471,22 @@ void SearchBoxView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     focus_ring_layer_->SetBounds(bounds());
 }
 
+void SearchBoxView::AddedToWidget() {
+  // Creating the search box focus ring relies on its parent layer which only
+  // exists after widget initialization.
+  if (!is_app_list_bubble_) {
+    focus_ring_layer_ = std::make_unique<FocusRingLayer>();
+    focus_ring_layer_->SetColor(
+        GetColorProvider()->GetColor(ui::kColorAshFocusRing));
+    layer()->parent()->Add(focus_ring_layer_.get());
+    layer()->parent()->StackAtBottom(focus_ring_layer_.get());
+    UpdateSearchBoxFocusPaint();
+  }
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
-}
-
-void SearchBoxView::MaybeCreateFocusRing() {
-  if (!is_app_list_bubble_) {
-    focus_ring_layer_ = std::make_unique<FocusRingLayer>(this);
-    layer()->parent()->Add(focus_ring_layer_.get());
-    layer()->parent()->StackAtBottom(focus_ring_layer_.get());
-  }
 }
 
 void SearchBoxView::RecordSearchBoxActivationHistogram(
@@ -506,16 +528,6 @@ void SearchBoxView::OnSearchBoxActiveChanged(bool active) {
                                                  true /* default_selection */);
   } else {
     result_selection_controller_->ClearSelection();
-  }
-
-  // Remove accessibility hint for classic launcher when search box is active
-  // because there are no apps to navigate to.
-  if (!features::IsProductivityLauncherEnabled()) {
-    if (active) {
-      search_box()->SetAccessibleName(std::u16string());
-    } else {
-      UpdatePlaceholderTextAndAccessibleName();
-    }
   }
 
   delegate_->ActiveChanged(this);
@@ -637,16 +649,6 @@ SkColor SearchBoxView::GetBackgroundColorForState(AppListState state) const {
 
   return app_list_widget->GetColorProvider()->GetColor(
       kColorAshShieldAndBase80);
-}
-
-void SearchBoxView::OnWallpaperColorsChanged() {
-  UpdateSearchIcon();
-  UpdatePlaceholderTextStyle();
-  UpdateTextColor();
-
-  UpdateBackgroundColor(GetBackgroundColorForState(current_app_list_state_));
-
-  SchedulePaint();
 }
 
 void SearchBoxView::ProcessAutocomplete(
@@ -783,15 +785,11 @@ bool SearchBoxView::HasValidQuery() {
 }
 
 int SearchBoxView::GetSearchBoxIconSize() {
-  if (features::IsProductivityLauncherEnabled())
-    return kBubbleLauncherSearchBoxIconSize;
-  return kClassicSearchBoxIconSize;
+  return kBubbleLauncherSearchBoxIconSize;
 }
 
 int SearchBoxView::GetSearchBoxButtonSize() {
-  if (features::IsProductivityLauncherEnabled())
-    return kBubbleLauncherSearchBoxButtonSizeDip;
-  return kClassicSearchBoxButtonSizeDip;
+  return kBubbleLauncherSearchBoxButtonSizeDip;
 }
 
 void SearchBoxView::CloseButtonPressed() {
@@ -812,7 +810,7 @@ void SearchBoxView::UpdateSearchIcon() {
       search_engine_is_google ? google_icon : kSearchEngineNotGoogleIcon;
   SetSearchIconImage(gfx::CreateVectorIcon(
       icon, GetSearchBoxIconSize(),
-      GetWidget()->GetColorProvider()->GetColor(kColorAshButtonIconColor)));
+      GetColorProvider()->GetColor(kColorAshButtonIconColor)));
 }
 
 bool SearchBoxView::IsValidAutocompleteText(

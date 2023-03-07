@@ -12,8 +12,8 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -158,7 +158,7 @@ void InstallDelegatedFrameHostClient(
 
 const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
     1,
-    base::UnguessableToken::Deserialize(2, 3));
+    base::UnguessableToken::CreateForTesting(2, 3));
 
 std::string GetMessageNames(
     const MockWidgetInputHandler::MessageVector& events) {

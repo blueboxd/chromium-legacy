@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -19,8 +20,9 @@ class LogRouter;
 
 namespace content {
 class BrowserContext;
-class WebUIDataSource;
 }  // namespace content
+
+class Profile;
 
 namespace autofill {
 
@@ -29,8 +31,8 @@ constexpr char kCacheResetDone[] =
     "cache reset.";
 constexpr char kCacheResetAlreadyInProgress[] = "Reset already in progress";
 
-content::WebUIDataSource* CreateInternalsHTMLSource(
-    const std::string& source_name);
+void CreateAndAddInternalsHTMLSource(Profile* profile,
+                                     const std::string& source_name);
 
 // Class that wipes responses from the Autofill server from the HTTP cache.
 class AutofillCacheResetter : public content::BrowsingDataRemover::Observer {
@@ -48,7 +50,9 @@ class AutofillCacheResetter : public content::BrowsingDataRemover::Observer {
   // Implements content::BrowsingDataRemover::Observer.
   void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
 
-  content::BrowsingDataRemover* remover_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION content::BrowsingDataRemover* remover_;
   Callback callback_;
 };
 

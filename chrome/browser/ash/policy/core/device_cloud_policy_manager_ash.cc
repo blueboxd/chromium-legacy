@@ -12,14 +12,15 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/attestation_policy_observer.h"
 #include "chrome/browser/ash/attestation/enrollment_certificate_uploader_impl.h"
@@ -301,7 +302,7 @@ void DeviceCloudPolicyManagerAsh::NotifyGotRegistry() {
 void DeviceCloudPolicyManagerAsh::CreateStatusUploader(
     ManagedSessionService* managed_session_service) {
   auto collector = std::make_unique<DeviceStatusCollector>(
-      local_state_, chromeos::system::StatisticsProvider::GetInstance(),
+      local_state_, ash::system::StatisticsProvider::GetInstance(),
       managed_session_service);
 
   status_uploader_ = std::make_unique<StatusUploader>(

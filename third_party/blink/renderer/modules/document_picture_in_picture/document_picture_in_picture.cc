@@ -54,6 +54,13 @@ ScriptPromise DocumentPictureInPicture::requestWindow(
     return ScriptPromise();
   }
 
+  if (dom_window->GetFrame() && !dom_window->GetFrame()->IsMainFrame()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "Opening a PiP window from iframe is not allowed");
+    return ScriptPromise();
+  }
+
   if (dom_window->IsPictureInPictureWindow()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
@@ -72,11 +79,12 @@ ScriptPromise DocumentPictureInPicture::requestWindow(
   auto* document = dom_window->document();
   DCHECK(document);
 
+  auto promise = resolver->Promise();
   PictureInPictureControllerImpl::From(*document)
       .CreateDocumentPictureInPictureWindow(script_state, *dom_window, options,
                                             resolver, exception_state);
 
-  return resolver->Promise();
+  return promise;
 }
 
 DOMWindow* DocumentPictureInPicture::window(ScriptState* script_state) const {

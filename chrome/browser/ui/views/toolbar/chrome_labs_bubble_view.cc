@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/about_flags.h"
@@ -79,8 +80,12 @@ class ChromeLabsFooter : public views::View {
   }
 
  private:
-  views::MdTextButton* restart_button_;
-  views::Label* restart_label_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION views::MdTextButton* restart_button_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION views::Label* restart_label_;
 };
 
 BEGIN_METADATA(ChromeLabsFooter, views::View)
@@ -104,7 +109,7 @@ ChromeLabsBubbleView::ChromeLabsBubbleView(ChromeLabsButton* anchor_view)
   // `kAlertDialog` which would tell screen readers to announce all contents of
   // the bubble when it opens and previous accessibility feedback said that
   // behavior was confusing.
-  SetAccessibleRole(ax::mojom::Role::kDialog);
+  SetAccessibleWindowRole(ax::mojom::Role::kDialog);
 
   // TODO(crbug.com/1259763): Currently basing this off what extension menu uses
   // for sizing as suggested as an initial fix by UI. Discuss a more formal

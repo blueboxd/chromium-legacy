@@ -29,7 +29,7 @@
 namespace gfx {
 class SizeF;
 class Vector2dF;
-}
+}  // namespace gfx
 
 namespace blink {
 
@@ -37,6 +37,7 @@ class ComputedStyle;
 class SVGElement;
 class SVGLength;
 class UnzoomedLength;
+struct LengthPoint;
 
 enum class SVGLengthMode { kWidth, kHeight, kOther };
 
@@ -63,16 +64,13 @@ class CORE_EXPORT SVGLengthContext {
                                      const SVGLength& y,
                                      const SVGLength& width,
                                      const SVGLength& height);
-  static gfx::PointF ResolvePoint(const SVGElement*,
-                                  SVGUnitTypes::SVGUnitType,
-                                  const SVGLength& x,
-                                  const SVGLength& y);
-  static float ResolveLength(const SVGElement*,
-                             SVGUnitTypes::SVGUnitType,
-                             const SVGLength&);
   gfx::Vector2dF ResolveLengthPair(const Length& x_length,
                                    const Length& y_length,
                                    const ComputedStyle&) const;
+
+  Length ConvertToLength(const SVGLength&) const;
+  LengthPoint ConvertToLengthPoint(const SVGLength& x,
+                                   const SVGLength& y) const;
 
   float ConvertValueToUserUnits(float,
                                 SVGLengthMode,
@@ -90,24 +88,13 @@ class CORE_EXPORT SVGLengthContext {
                               const ComputedStyle&,
                               float dimension);
 
-  bool DetermineViewport(gfx::SizeF&) const;
+  gfx::SizeF ResolveViewport() const;
+  float ViewportDimension(SVGLengthMode) const;
   float ResolveValue(const CSSPrimitiveValue&, SVGLengthMode) const;
 
  private:
   float ValueForLength(const Length&, float zoom, SVGLengthMode) const;
   static float ValueForLength(const Length&, float zoom, float dimension);
-
-  float ConvertValueFromUserUnitsToEXS(float value) const;
-  float ConvertValueFromEXSToUserUnits(float value) const;
-
-  float ConvertValueFromUserUnitsToCHS(float value) const;
-  float ConvertValueFromCHSToUserUnits(float value) const;
-
-  float ConvertValueFromUserUnitsToICS(float value) const;
-  float ConvertValueFromICSToUserUnits(float value) const;
-
-  float ConvertValueFromUserUnitsToLHS(float value) const;
-  float ConvertValueFromLHSToUserUnits(float value) const;
 
   const SVGElement* context_;
 };

@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
@@ -31,7 +31,6 @@ class Presenter;
 namespace gpu {
 
 class GpuDriverBugWorkarounds;
-class ImageFactory;
 class ImageTransportSurfaceDelegate;
 class MailboxManager;
 class SharedContextState;
@@ -78,8 +77,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual const gpu::GpuPreferences& GetGpuPreferences() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() = 0;
   virtual gpu::MailboxManager* GetMailboxManager() = 0;
-  // May return null.
-  virtual gpu::ImageFactory* GetGpuImageFactory() = 0;
   // Note it is possible for IsOffscreen to be false and GetSurfaceHandle to
   // return kNullSurfaceHandle.
   virtual bool IsOffscreen() = 0;

@@ -27,6 +27,7 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/test_wallpaper_controller_client.h"
+#include "ash/wallpaper/test_wallpaper_drivefs_delegate.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -35,7 +36,6 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -391,6 +391,10 @@ class WallpaperControllerTest : public AshTestBase {
                       custom_wallpaper_dir_.GetPath(), policy_wallpaper);
     client_.ResetCounts();
     controller_->SetClient(&client_);
+    std::unique_ptr<TestWallpaperDriveFsDelegate> drivefs_delegate =
+        std::make_unique<TestWallpaperDriveFsDelegate>();
+    drivefs_delegate_ = drivefs_delegate.get();
+    controller_->SetDriveFsDelegate(std::move(drivefs_delegate));
     client_.set_fake_files_id_for_account_id(kAccountId1, kWallpaperFilesId1);
     client_.set_fake_files_id_for_account_id(kAccountId2, kWallpaperFilesId2);
   }
@@ -711,12 +715,15 @@ class WallpaperControllerTest : public AshTestBase {
   base::HistogramTester histogram_tester_;
 
   TestWallpaperControllerClient client_;
+  raw_ptr<TestWallpaperDriveFsDelegate> drivefs_delegate_;
   std::unique_ptr<TestImageDownloader> test_image_downloader_;
 
   const AccountId kChildAccountId =
       AccountId::FromUserEmailGaiaId(kChildEmail, kChildEmail);
 
  private:
+  // TODO(esum): Use ash::InProcessImageDecoder here instead and exercise actual
+  // decoding in these tests.
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
@@ -1209,14 +1216,14 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
 
   // Verify that the wallpaper with |url| is available offline, and the returned
   // file name should not contain the small wallpaper suffix.
-  run_loop = std::make_unique<base::RunLoop>();
-  controller_->GetOfflineWallpaperList(base::BindLambdaForTesting(
-      [&run_loop](const std::vector<std::string>& url_list) {
-        EXPECT_EQ(1U, url_list.size());
-        EXPECT_EQ(GURL(kDummyUrl).ExtractFileName(), url_list[0]);
-        run_loop->Quit();
-      }));
-  run_loop->Run();
+  //
+  // The ThreadPool must be flushed to ensure that the online wallpaper is saved
+  // to disc before checking the test expectation below. Ideally, we'd wait for
+  // an explicit event, but the production code does not need this and it's not
+  // worthwhile to add something to the API just for tests.
+  RunAllTasksUntilIdle();
+  EXPECT_TRUE(base::PathExists(online_wallpaper_dir_.GetPath().Append(
+      GURL(kDummyUrl).ExtractFileName())));
 }
 
 TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
@@ -1435,7 +1442,7 @@ TEST_F(WallpaperControllerTest, SetThirdPartyWallpaper) {
       base::FilePath(kWallpaperFilesId1).Append(kFileName1).value(), layout,
       WallpaperType::kCustomized, base::Time::Now().LocalMidnight());
   EXPECT_TRUE(wallpaper_info.MatchesSelection(expected_wallpaper_info));
-  EXPECT_EQ(kAccountId1, client_.get_save_wallpaper_to_drive_fs_account_id());
+  EXPECT_EQ(kAccountId1, drivefs_delegate_->get_save_wallpaper_account_id());
 }
 
 TEST_F(WallpaperControllerTest, SetThirdPartyWallpaper_NonactiveUser) {
@@ -3414,7 +3421,7 @@ TEST_F(WallpaperControllerTest, SetCustomWallpaper) {
       base::FilePath(kWallpaperFilesId1).Append(kFileName1).value(), layout,
       WallpaperType::kCustomized, base::Time::Now().LocalMidnight());
   EXPECT_TRUE(wallpaper_info.MatchesSelection(expected_wallpaper_info));
-  EXPECT_EQ(kAccountId1, client_.get_save_wallpaper_to_drive_fs_account_id());
+  EXPECT_EQ(kAccountId1, drivefs_delegate_->get_save_wallpaper_account_id());
 
   // Now set another custom wallpaper for |kUser1|. Verify that the on-screen
   // wallpaper doesn't change since |kUser1| is not active, but wallpaper info
@@ -3821,7 +3828,7 @@ TEST_F(WallpaperControllerTest, MigrateCustomWallpaper) {
   ClearLogin();
 
   SimulateUserLogin(kAccountId1);
-  EXPECT_EQ(kAccountId1, client_.get_save_wallpaper_to_drive_fs_account_id());
+  EXPECT_EQ(kAccountId1, drivefs_delegate_->get_save_wallpaper_account_id());
 }
 
 TEST_F(WallpaperControllerTest, OnGoogleDriveMounted) {
@@ -3830,7 +3837,7 @@ TEST_F(WallpaperControllerTest, OnGoogleDriveMounted) {
 
   SimulateUserLogin(kAccountId1);
   controller_->SyncLocalAndRemotePrefs(kAccountId1);
-  EXPECT_EQ(kAccountId1, client_.get_save_wallpaper_to_drive_fs_account_id());
+  EXPECT_EQ(kAccountId1, drivefs_delegate_->get_save_wallpaper_account_id());
 }
 
 TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_WallpaperIsntCustom) {
@@ -3838,7 +3845,7 @@ TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_WallpaperIsntCustom) {
   pref_manager_->SetLocalWallpaperInfo(kAccountId1, local_info);
 
   controller_->SyncLocalAndRemotePrefs(kAccountId1);
-  EXPECT_TRUE(client_.get_save_wallpaper_to_drive_fs_account_id().empty());
+  EXPECT_TRUE(drivefs_delegate_->get_save_wallpaper_account_id().empty());
 }
 
 TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_AlreadySynced) {
@@ -3856,11 +3863,11 @@ TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_AlreadySynced) {
                                          /*file_path=*/"", image);
   RunAllTasksUntilIdle();
 
-  client_.ResetCounts();
+  drivefs_delegate_->Reset();
 
   // Should not reupload image if it has already been synced.
   controller_->SyncLocalAndRemotePrefs(kAccountId1);
-  EXPECT_FALSE(client_.get_save_wallpaper_to_drive_fs_account_id().is_valid());
+  EXPECT_FALSE(drivefs_delegate_->get_save_wallpaper_account_id().is_valid());
 }
 
 TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_OldLocalInfo) {
@@ -3876,9 +3883,7 @@ TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_OldLocalInfo) {
   SimulateUserLogin(kAccountId1);
 
   controller_->SyncLocalAndRemotePrefs(kAccountId1);
-  EXPECT_FALSE(client_.get_save_wallpaper_to_drive_fs_account_id().is_valid());
-  // This is called by WallpaperController::HandleCustomWallpaperSyncedIn.
-  EXPECT_EQ(client_.get_wallpaper_path_from_drive_fs_account_id(), kAccountId1);
+  EXPECT_FALSE(drivefs_delegate_->get_save_wallpaper_account_id().is_valid());
 }
 
 TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_NewLocalInfo) {
@@ -3895,7 +3900,7 @@ TEST_F(WallpaperControllerTest, OnGoogleDriveMounted_NewLocalInfo) {
   SimulateUserLogin(kAccountId1);
 
   controller_->SyncLocalAndRemotePrefs(kAccountId1);
-  EXPECT_EQ(kAccountId1, client_.get_save_wallpaper_to_drive_fs_account_id());
+  EXPECT_EQ(kAccountId1, drivefs_delegate_->get_save_wallpaper_account_id());
 }
 
 TEST_F(WallpaperControllerTest,
@@ -4125,74 +4130,51 @@ TEST_F(WallpaperControllerTest,
   EXPECT_TRUE(actual.MatchesSelection(expected));
 }
 
-TEST_F(WallpaperControllerTest, SetOnlineWallpaperIfExists) {
+TEST_F(WallpaperControllerTest, SetOnlineWallpaperWithoutInternet) {
   SetBypassDecode();
-  gfx::ImageSkia image = CreateImage(640, 480, kWallpaperColor);
-  WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER_CROPPED;
   std::vector<OnlineWallpaperVariant> variants;
   variants.emplace_back(kAssetId, GURL(kDummyUrl),
                         backdrop::Image::IMAGE_TYPE_UNKNOWN);
   SimulateUserLogin(kAccountId1);
 
-  // Verify that calling |SetOnlineWallpaperIfExists| without providing image
-  // data fails.
-  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
-  ClearWallpaperCount();
-  const OnlineWallpaperParams& params = OnlineWallpaperParams(
-      kAccountId1, kAssetId, GURL(kDummyUrl),
-      TestWallpaperControllerClient::kDummyCollectionId, layout,
-      /*preview_mode=*/false, /*from_user=*/true,
-      /*daily_refresh_enabled=*/false, kUnitId, variants);
-  controller_->SetOnlineWallpaperIfExists(
-      params, base::BindLambdaForTesting([&run_loop](bool file_exists) {
-        EXPECT_FALSE(file_exists);
-        run_loop->Quit();
-      }));
-  run_loop->Run();
-  EXPECT_EQ(0, GetWallpaperCount());
-
   // Set an online wallpaper with image data. Verify that the wallpaper is set
   // successfully.
+  const OnlineWallpaperParams& params =
+      OnlineWallpaperParams(kAccountId1, kAssetId, GURL(kDummyUrl),
+                            TestWallpaperControllerClient::kDummyCollectionId,
+                            WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/false, kUnitId, variants);
   ClearWallpaperCount();
   controller_->SetOnlineWallpaper(params, base::DoNothing());
   RunAllTasksUntilIdle();
-  EXPECT_EQ(1, GetWallpaperCount());
-  EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
-  // Verify that the user wallpaper info is updated.
-  WallpaperInfo wallpaper_info;
-  EXPECT_TRUE(
-      pref_manager_->GetUserWallpaperInfo(kAccountId1, &wallpaper_info));
-  WallpaperInfo expected_wallpaper_info = WallpaperInfo(params);
-  EXPECT_TRUE(wallpaper_info.MatchesSelection(expected_wallpaper_info));
+  ASSERT_EQ(1, GetWallpaperCount());
+  ASSERT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
 
   // Change the on-screen wallpaper to a different one. (Otherwise the
   // subsequent calls will be no-op since we intentionally prevent reloading the
   // same wallpaper.)
   ClearWallpaperCount();
   controller_->SetDecodedCustomWallpaper(
-      kAccountId1, kFileName1, layout,
+      kAccountId1, kFileName1, WALLPAPER_LAYOUT_CENTER_CROPPED,
       /*preview_mode=*/false, base::DoNothing(),
       /*file_path=*/"", CreateImage(640, 480, kWallpaperColor));
   RunAllTasksUntilIdle();
-  EXPECT_EQ(1, GetWallpaperCount());
-  EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kCustomized);
+  ASSERT_EQ(1, GetWallpaperCount());
+  ASSERT_EQ(controller_->GetWallpaperType(), WallpaperType::kCustomized);
 
-  // Attempt to set an online wallpaper via |SetOnlineWallpaperIfExists| without
-  // providing the image data. Verify it succeeds this time because
-  // |SetOnlineWallpaper| has saved the file.
+  // Attempt to set the same online wallpaper without internet. Verify it
+  // still succeeds because the previous call to |SetOnlineWallpaper()| has
+  // saved the file.
+  test_image_downloader_->set_should_fail(true);
   ClearWallpaperCount();
-  run_loop = std::make_unique<base::RunLoop>();
-  controller_->SetOnlineWallpaperIfExists(
-      OnlineWallpaperParams(kAccountId1, kAssetId, GURL(kDummyUrl),
-                            TestWallpaperControllerClient::kDummyCollectionId,
-                            layout,
-                            /*preview_mode=*/false, /*from_user=*/true,
-                            /*daily_refresh_enabled=*/false, kUnitId, variants),
-      base::BindLambdaForTesting([&run_loop](bool file_exists) {
+  base::RunLoop run_loop;
+  controller_->SetOnlineWallpaper(
+      params, base::BindLambdaForTesting([&run_loop](bool file_exists) {
         EXPECT_TRUE(file_exists);
-        run_loop->Quit();
+        run_loop.Quit();
       }));
-  run_loop->Run();
+  run_loop.Run();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
 }

@@ -19,8 +19,6 @@ namespace gl {
 
 GLImageD3D::GLImageD3D(const gfx::Size& size,
                        unsigned internal_format,
-                       unsigned data_type,
-                       const gfx::ColorSpace& color_space,
                        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
                        size_t array_slice,
                        size_t plane_index,
@@ -28,12 +26,10 @@ GLImageD3D::GLImageD3D(const gfx::Size& size,
     : GLImage(),
       size_(size),
       internal_format_(internal_format),
-      data_type_(data_type),
       texture_(std::move(texture)),
       array_slice_(array_slice),
       plane_index_(plane_index),
       swap_chain_(std::move(swap_chain)) {
-  GLImage::SetColorSpace(color_space);
   DCHECK(texture_);
 }
 
@@ -71,10 +67,6 @@ GLImage::Type GLImageD3D::GetType() const {
   return Type::D3D;
 }
 
-GLImage::BindOrCopy GLImageD3D::ShouldBindOrCopy() {
-  return GLImage::BIND;
-}
-
 void* GLImageD3D::GetEGLImage() const {
   return egl_image_;
 }
@@ -83,34 +75,10 @@ gfx::Size GLImageD3D::GetSize() {
   return size_;
 }
 
-unsigned GLImageD3D::GetInternalFormat() {
-  return internal_format_;
-}
-
-unsigned GLImageD3D::GetDataType() {
-  return data_type_;
-}
-
 bool GLImageD3D::BindTexImage(unsigned target) {
   DCHECK_NE(egl_image_, EGL_NO_IMAGE_KHR);
   glEGLImageTargetTexture2DOES(target, egl_image_);
   return glGetError() == static_cast<GLenum>(GL_NO_ERROR);
-}
-
-bool GLImageD3D::CopyTexImage(unsigned target) {
-  return false;
-}
-
-bool GLImageD3D::CopyTexSubImage(unsigned target,
-                                 const gfx::Point& offset,
-                                 const gfx::Rect& rect) {
-  return false;
-}
-
-void GLImageD3D::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                              uint64_t process_tracing_id,
-                              const std::string& dump_name) {
-  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace gl

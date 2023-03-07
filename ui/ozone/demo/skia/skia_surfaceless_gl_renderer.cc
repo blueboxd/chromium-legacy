@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
@@ -96,7 +96,7 @@ class SurfacelessSkiaGlRenderer::BufferWrapper {
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   gfx::Size size_;
 
-  scoped_refptr<gl::GLImage> image_;
+  scoped_refptr<gl::GLImageNativePixmap> image_;
   unsigned int gl_tex_ = 0;
   sk_sp<SkSurface> sk_surface_;
 };
@@ -105,7 +105,6 @@ SurfacelessSkiaGlRenderer::BufferWrapper::BufferWrapper() = default;
 
 SurfacelessSkiaGlRenderer::BufferWrapper::~BufferWrapper() {
   if (gl_tex_) {
-    image_->ReleaseTexImage(GL_TEXTURE_2D);
     glDeleteTextures(1, &gl_tex_);
   }
 }
@@ -154,15 +153,17 @@ bool SurfacelessSkiaGlRenderer::BufferWrapper::Initialize(
 SurfacelessSkiaGlRenderer::SurfacelessSkiaGlRenderer(
     gfx::AcceleratedWidget widget,
     std::unique_ptr<PlatformWindowSurface> window_surface,
-    const scoped_refptr<gl::GLSurface>& gl_surface,
+    const scoped_refptr<gl::GLSurface>& offscreen_surface,
+    const scoped_refptr<gl::Presenter>& presenter,
     const gfx::Size& size)
     : SkiaGlRenderer(widget,
                      std::move(window_surface),
-                     std::move(gl_surface),
+                     std::move(offscreen_surface),
                      size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
-                           ->CreateOverlayCandidates(widget)) {}
+                           ->CreateOverlayCandidates(widget)),
+      presenter_(presenter) {}
 
 SurfacelessSkiaGlRenderer::~SurfacelessSkiaGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in
@@ -173,6 +174,8 @@ SurfacelessSkiaGlRenderer::~SurfacelessSkiaGlRenderer() {
 bool SurfacelessSkiaGlRenderer::Initialize() {
   if (!SkiaGlRenderer::Initialize())
     return false;
+
+  presenter_->Resize(size_, 1.f, gfx::ColorSpace(), true);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kPartialPrimaryPlane))
@@ -252,7 +255,7 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
 
   if (!disable_primary_plane_) {
     CHECK(overlay_list.front().overlay_handled);
-    gl_surface_->ScheduleOverlayPlane(
+    presenter_->ScheduleOverlayPlane(
         buffers_[back_buffer_]->image(), /* gpu_fence */ nullptr,
         gfx::OverlayPlaneData(
             0, gfx::OVERLAY_TRANSFORM_NONE, gfx::RectF(primary_plane_rect_),
@@ -264,7 +267,7 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
   }
 
   if (overlay_buffer_[0] && overlay_list.back().overlay_handled) {
-    gl_surface_->ScheduleOverlayPlane(
+    presenter_->ScheduleOverlayPlane(
         overlay_buffer_[back_buffer_]->image(), /* gpu_fence */ nullptr,
         gfx::OverlayPlaneData(
             1, gfx::OVERLAY_TRANSFORM_NONE, gfx::RectF(overlay_rect),
@@ -276,10 +279,10 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
   }
 
   back_buffer_ ^= 1;
-  gl_surface_->SwapBuffersAsync(
+  presenter_->Present(
       base::BindOnce(&SurfacelessSkiaGlRenderer::PostRenderFrameTask,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::DoNothing(), gl::FrameData());
+      base::DoNothing(), gfx::FrameData());
 }
 
 void SurfacelessSkiaGlRenderer::PostRenderFrameTask(

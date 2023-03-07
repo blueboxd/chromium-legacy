@@ -109,6 +109,10 @@ base::Time ReportTimeAtWindow(const CommonSourceInfo& source,
   return ReportTimeFromDeadline(source.source_time(), deadline);
 }
 
+base::Time LastTriggerTimeForReportTime(base::Time report_time) {
+  return report_time - kWindowDeadlineOffset;
+}
+
 std::string SerializeAttributionJson(base::ValueView body, bool pretty_print) {
   int options = pretty_print ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0;
 
@@ -144,15 +148,17 @@ bool AttributionFilterDataMatch(const attribution_reporting::FilterData& source,
         }
 
         auto source_filter = source.filter_values().find(trigger_filter.first);
-        if (source_filter == source.filter_values().end())
+        if (source_filter == source.filter_values().end()) {
           return true;
+        }
 
         // Desired behavior is to treat any empty set of values as a single
         // unique value itself. This means:
         //  - x:[] match x:[] is false when negated, and true otherwise.
         //  - x:[1,2,3] match x:[] is true when negated, and false otherwise.
-        if (trigger_filter.second.empty())
+        if (trigger_filter.second.empty()) {
           return negated != source_filter->second.empty();
+        }
 
         bool has_intersection = base::ranges::any_of(
             trigger_filter.second, [&](const std::string& value) {

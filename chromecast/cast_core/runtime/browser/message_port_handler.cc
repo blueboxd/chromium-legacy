@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/cast/message_port/platform_message_port.h"
 #include "components/cast_receiver/browser/public/message_port_service.h"
@@ -183,9 +184,6 @@ void MessagePortHandler::ForwardMessageNow(cast::web::Message message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!message.has_request() || !has_outstanding_request_);
   bool was_request = message.has_request();
-  if (was_request) {
-    DLOG_CHANNEL(INFO) << "Sending message: " << message.request().data();
-  }
 
   auto call = core_app_stub_->CreateCall<
       cast::v2::CoreMessagePortApplicationServiceStub::PostMessage>(

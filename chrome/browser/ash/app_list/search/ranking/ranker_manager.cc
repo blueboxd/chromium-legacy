@@ -9,12 +9,15 @@
 #include "chrome/browser/ash/app_list/search/ranking/continue_ranker.h"
 #include "chrome/browser/ash/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ash/app_list/search/ranking/ftrl_ranker.h"
+#include "chrome/browser/ash/app_list/search/ranking/keyword_ranker.h"
 #include "chrome/browser/ash/app_list/search/ranking/mrfu_ranker.h"
 #include "chrome/browser/ash/app_list/search/ranking/query_highlighter.h"
 #include "chrome/browser/ash/app_list/search/ranking/removed_results.pb.h"
 #include "chrome/browser/ash/app_list/search/ranking/removed_results_ranker.h"
 #include "chrome/browser/ash/app_list/search/ranking/score_normalizing_ranker.h"
 #include "chrome/browser/ash/app_list/search/ranking/util.h"
+#include "chrome/browser/ash/app_list/search/search_controller.h"
+#include "chrome/browser/ash/app_list/search/search_features.h"
 #include "chrome/browser/ash/app_list/search/util/score_normalizer.h"
 #include "chrome/browser/ash/app_list/search/util/score_normalizer.pb.h"
 #include "chrome/browser/profiles/profile.h"
@@ -100,6 +103,10 @@ RankerManager::RankerManager(Profile* profile, SearchController* controller) {
       PersistentProto<MrfuCacheProto>(
           state_dir.AppendASCII("mrfu_categories.pb"), kStandardWriteDelay)));
 
+  if (search_features::IsLauncherKeywordExtractionScoringEnabled()) {
+    AddRanker(std::make_unique<KeywordRanker>());
+  }
+
   // 5. Result post-processing.
   // Nb. the best match ranker relies on score normalization, and the answer
   // ranker relies on the best match ranker.
@@ -112,31 +119,36 @@ RankerManager::~RankerManager() {}
 void RankerManager::Start(const std::u16string& query,
                           ResultsMap& results,
                           CategoriesList& categories) {
-  for (auto& ranker : rankers_)
+  for (auto& ranker : rankers_) {
     ranker->Start(query, results, categories);
+  }
 }
 
 void RankerManager::UpdateResultRanks(ResultsMap& results,
                                       ProviderType provider) {
-  for (auto& ranker : rankers_)
+  for (auto& ranker : rankers_) {
     ranker->UpdateResultRanks(results, provider);
+  }
 }
 
 void RankerManager::UpdateCategoryRanks(const ResultsMap& results,
                                         CategoriesList& categories,
                                         ProviderType provider) {
-  for (auto& ranker : rankers_)
+  for (auto& ranker : rankers_) {
     ranker->UpdateCategoryRanks(results, categories, provider);
+  }
 }
 
 void RankerManager::Train(const LaunchData& launch) {
-  for (auto& ranker : rankers_)
+  for (auto& ranker : rankers_) {
     ranker->Train(launch);
+  }
 }
 
 void RankerManager::Remove(ChromeSearchResult* result) {
-  for (auto& ranker : rankers_)
+  for (auto& ranker : rankers_) {
     ranker->Remove(result);
+  }
 }
 
 void RankerManager::AddRanker(std::unique_ptr<Ranker> ranker) {
@@ -144,8 +156,9 @@ void RankerManager::AddRanker(std::unique_ptr<Ranker> ranker) {
 }
 
 void RankerManager::OnBurnInPeriodElapsed() {
-  for (auto& ranker : rankers_)
+  for (auto& ranker : rankers_) {
     ranker->OnBurnInPeriodElapsed();
+  }
 }
 
 }  // namespace app_list

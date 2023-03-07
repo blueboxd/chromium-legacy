@@ -6,22 +6,21 @@
 
 #include "base/functional/bind.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/chromeos/office_web_app/office_web_app.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
-#include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/types_util.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace ash::cloud_upload {
 
-using ash::file_system_provider::ProvidedFileSystemInfo;
 using ash::file_system_provider::ProviderId;
 using ash::file_system_provider::Service;
 
@@ -30,12 +29,14 @@ CloudUploadPageHandler::CloudUploadPageHandler(
     Profile* profile,
     mojom::DialogArgsPtr args,
     mojo::PendingReceiver<mojom::PageHandler> pending_page_handler,
-    RespondAndCloseCallback callback)
+    RespondWithUserActionAndCloseCallback user_action_callback,
+    RespondWithLocalTaskAndCloseCallback local_task_callback)
     : profile_{profile},
       web_ui_{web_ui},
       dialog_args_{std::move(args)},
       receiver_{this, std::move(pending_page_handler)},
-      callback_{std::move(callback)} {}
+      user_action_callback_{std::move(user_action_callback)},
+      local_task_callback_{std::move(local_task_callback)} {}
 
 CloudUploadPageHandler::~CloudUploadPageHandler() = default;
 
@@ -56,31 +57,11 @@ void CloudUploadPageHandler::GetDialogArgs(GetDialogArgsCallback callback) {
 
 void CloudUploadPageHandler::IsOfficeWebAppInstalled(
     IsOfficeWebAppInstalledCallback callback) {
-  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
-          profile_)) {
-    std::move(callback).Run(false);
-    return;
-  }
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  bool installed = false;
-  proxy->AppRegistryCache().ForOneApp(
-      web_app::kMicrosoftOfficeAppId,
-      [&installed](const apps::AppUpdate& update) {
-        installed = apps_util::IsInstalled(update.Readiness());
-      });
-  std::move(callback).Run(installed);
+  std::move(callback).Run(CloudUploadDialog::IsOfficeWebAppInstalled(profile_));
 }
 
 void CloudUploadPageHandler::InstallOfficeWebApp(
     InstallOfficeWebAppCallback callback) {
-  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
-  if (provider == nullptr) {
-    // TODO(b/259869338): This means that web apps are managed in Lacros, so we
-    // need to add a crosapi to install the web app.
-    std::move(callback).Run(false);
-    return;
-  }
-
   auto wrapped_callback = base::BindOnce(
       [](InstallOfficeWebAppCallback callback,
          webapps::InstallResultCode result_code) {
@@ -88,19 +69,28 @@ void CloudUploadPageHandler::InstallOfficeWebApp(
       },
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 
-  // Web apps are managed in Ash.
-  chromeos::InstallMicrosoft365(profile_, std::move(wrapped_callback));
+  if (web_app::WebAppProvider::GetForWebApps(profile_)) {
+    // Web apps are managed in Ash.
+    chromeos::InstallMicrosoft365(profile_, std::move(wrapped_callback));
+  } else {
+    // Web apps are managed in Lacros.
+    crosapi::mojom::WebAppProviderBridge* web_app_provider_bridge =
+        crosapi::CrosapiManager::Get()
+            ->crosapi_ash()
+            ->web_app_service_ash()
+            ->GetWebAppProviderBridge();
+    if (!web_app_provider_bridge) {
+      std::move(wrapped_callback)
+          .Run(webapps::InstallResultCode::kWebAppProviderNotReady);
+      return;
+    }
+    web_app_provider_bridge->InstallMicrosoft365(std::move(wrapped_callback));
+  }
 }
 
 void CloudUploadPageHandler::IsODFSMounted(IsODFSMountedCallback callback) {
-  Service* service = Service::Get(profile_);
-  ProviderId provider_id = ProviderId::CreateFromExtensionId(
-      file_manager::file_tasks::kODFSExtensionId);
-  std::vector<ProvidedFileSystemInfo> file_systems =
-      service->GetProvidedFileSystemInfoList(provider_id);
-
   // Assume any file system mounted by ODFS is the correct one.
-  std::move(callback).Run(!file_systems.empty());
+  std::move(callback).Run(CloudUploadDialog::IsODFSMounted(profile_));
 }
 
 void CloudUploadPageHandler::SignInToOneDrive(
@@ -115,20 +105,28 @@ void CloudUploadPageHandler::SignInToOneDrive(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CloudUploadPageHandler::RespondAndClose(mojom::UserAction action) {
-  if (callback_) {
-    std::move(callback_).Run(action);
+void CloudUploadPageHandler::RespondWithUserActionAndClose(
+    mojom::UserAction action) {
+  if (user_action_callback_) {
+    std::move(user_action_callback_).Run(action);
+  }
+}
+
+void CloudUploadPageHandler::RespondWithLocalTaskAndClose(int task_position) {
+  if (local_task_callback_) {
+    std::move(local_task_callback_).Run(task_position);
   }
 }
 
 void CloudUploadPageHandler::SetOfficeAsDefaultHandler() {
   using file_manager::file_tasks::kActionIdOpenInOffice;
 
-  file_manager::file_tasks::SetWordFileHandler(profile_, kActionIdOpenInOffice);
-  file_manager::file_tasks::SetExcelFileHandler(profile_,
-                                                kActionIdOpenInOffice);
-  file_manager::file_tasks::SetPowerPointFileHandler(profile_,
-                                                     kActionIdOpenInOffice);
+  file_manager::file_tasks::SetWordFileHandlerToFilesSWA(profile_,
+                                                         kActionIdOpenInOffice);
+  file_manager::file_tasks::SetExcelFileHandlerToFilesSWA(
+      profile_, kActionIdOpenInOffice);
+  file_manager::file_tasks::SetPowerPointFileHandlerToFilesSWA(
+      profile_, kActionIdOpenInOffice);
   file_manager::file_tasks::SetOfficeSetupComplete(profile_);
 }
 

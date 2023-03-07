@@ -297,6 +297,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::HAND_INPUT:
     case XRSessionFeature::SECONDARY_VIEWS:
     case XRSessionFeature::LAYERS:
+    case XRSessionFeature::FRONT_FACING:
       // Not recording metrics for these features currently.
       break;
   }
@@ -421,6 +422,15 @@ const String XRSession::visibilityState() const {
     case XRVisibilityState::HIDDEN:
       return "hidden";
   }
+}
+
+Vector<String> XRSession::enabledFeatures() const {
+  Vector<String> enabled_features;
+  for (const auto& feature : enabled_features_) {
+    enabled_features.push_back(XRSessionFeatureToString(feature));
+  }
+
+  return enabled_features;
 }
 
 XRAnchorSet* XRSession::TrackedAnchors() const {
@@ -614,9 +624,6 @@ ScriptPromise XRSession::requestReferenceSpace(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(reference_space);
-
-  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ReferenceSpace.Succeeded",
-                            requested_type);
 
   return promise;
 }

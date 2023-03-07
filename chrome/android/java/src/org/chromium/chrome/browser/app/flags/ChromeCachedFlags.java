@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.PartialCustomTabHeightStrategy;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
@@ -26,8 +25,6 @@ import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotif
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
-import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
-import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
@@ -74,10 +71,9 @@ public class ChromeCachedFlags {
         // Workaround for crbug.com/1223545: Do not use Arrays.asList().
         List<CachedFlag> featuresToCache = new ArrayList<CachedFlag>() {
             {
-                add(ChromeFeatureList.sAndroidAuxiliarySearch);
-                add(ChromeFeatureList.sAnonymousUpdateChecks);
                 add(ChromeFeatureList.sAppMenuMobileSiteOption);
                 add(ChromeFeatureList.sBackGestureRefactorAndroid);
+                add(ChromeFeatureList.sBaselineGm3SurfaceColors);
                 add(ChromeFeatureList.sCctAutoTranslate);
                 add(ChromeFeatureList.sCctBrandTransparency);
                 add(ChromeFeatureList.sCctFeatureUsage);
@@ -86,16 +82,12 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctIntentFeatureOverrides);
                 add(ChromeFeatureList.sCctRemoveRemoteViewIds);
                 add(ChromeFeatureList.sCctResizable90MaximumHeight);
-                add(ChromeFeatureList.sCctResizableAllowResizeByUserGesture);
-                add(ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons);
-                add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
                 add(ChromeFeatureList.sCctResizableSideSheet);
                 add(ChromeFeatureList.sCctRetainableStateInMemory);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
-                add(ChromeFeatureList.sConditionalTabStripAndroid);
                 add(ChromeFeatureList.sCommerceCoupons);
                 add(ChromeFeatureList.sCriticalPersistedTabData);
                 add(ChromeFeatureList.sDiscoverMultiColumn);
@@ -106,12 +98,11 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sFeedLoadingPlaceholder);
                 add(ChromeFeatureList.sFoldableJankFix);
                 add(ChromeFeatureList.sGridTabSwitcherForTablets);
-                add(ChromeFeatureList.sImmersiveUiMode);
+                add(ChromeFeatureList.sHideNonDisplayableAccountEmail);
                 add(ChromeFeatureList.sIncognitoReauthenticationForAndroid);
                 add(ChromeFeatureList.sInstanceSwitcher);
                 add(ChromeFeatureList.sInstantStart);
                 add(ChromeFeatureList.sInterestFeedV2);
-                add(ChromeFeatureList.sNewWindowAppMenu);
                 add(ChromeFeatureList.sOmniboxMatchToolbarAndStatusBarColor);
                 add(ChromeFeatureList.sOmniboxModernizeVisualUpdate);
                 add(ChromeFeatureList.sOmniboxMostVisitedTilesAddRecycledViewPool);
@@ -153,9 +144,6 @@ public class ChromeCachedFlags {
                         add(BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION);
                         add(ChimeFeatures.ALWAYS_REGISTER);
                         add(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING);
-                        add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT);
-                        add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD);
-                        add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS);
                         add(FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION);
                         add(FilePersistedTabDataStorage.DELAY_SAVES_UNTIL_DEFERRED_STARTUP_PARAM);
                         add(OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE);
@@ -163,8 +151,6 @@ public class ChromeCachedFlags {
                         add(OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX);
                         add(OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN);
                         add(PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL);
-                        add(PartialCustomTabHeightStrategy.LOG_IMMERSIVE_MODE_CONFIRMATIONS);
-                        add(ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS);
                         add(CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES);
                         add(CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST);
                         add(CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY);
@@ -197,7 +183,6 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST);
                         add(TabUiFeatureUtilities.ENABLE_TAB_GROUP_SHARING);
                         add(TabUiFeatureUtilities.ZOOMING_MIN_MEMORY);
-                        add(TabUiFeatureUtilities.ZOOMING_MIN_SDK);
                         add(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);

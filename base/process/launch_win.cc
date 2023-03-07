@@ -17,10 +17,10 @@
 #include <ios>
 #include <limits>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/debug/activity_tracker.h"
 #include "base/debug/stack_trace.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process/environment_internal.h"
@@ -347,15 +347,6 @@ Process LaunchProcess(const CommandLine::StringType& cmdline,
     startup_info->hStdInput = options.stdin_handle;
     startup_info->hStdOutput = options.stdout_handle;
     startup_info->hStdError = options.stderr_handle;
-  }
-
-  if (options.job_handle) {
-    // If this code is run under a debugger, the launched process is
-    // automatically associated with a job object created by the debugger.
-    // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this on Windows
-    // releases that do not support nested jobs.
-    if (win::GetVersion() < win::Version::WIN8)
-      flags |= CREATE_BREAKAWAY_FROM_JOB;
   }
 
   if (options.force_breakaway_from_job_)

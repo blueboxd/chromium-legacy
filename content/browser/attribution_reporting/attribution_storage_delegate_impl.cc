@@ -14,8 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/attribution_default_random_generator.h"
-#include "content/browser/attribution_reporting/attribution_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/combinatorics.h"
@@ -30,32 +28,25 @@ std::unique_ptr<AttributionStorageDelegate>
 AttributionStorageDelegateImpl::CreateForTesting(
     AttributionNoiseMode noise_mode,
     AttributionDelayMode delay_mode,
-    const AttributionConfig& config,
-    std::unique_ptr<AttributionRandomGenerator> rng) {
-  return base::WrapUnique(new AttributionStorageDelegateImpl(
-      noise_mode, delay_mode, config, std::move(rng)));
+    const AttributionConfig& config) {
+  return base::WrapUnique(
+      new AttributionStorageDelegateImpl(noise_mode, delay_mode, config));
 }
 
 AttributionStorageDelegateImpl::AttributionStorageDelegateImpl(
     AttributionNoiseMode noise_mode,
     AttributionDelayMode delay_mode)
-    : AttributionStorageDelegateImpl(
-          noise_mode,
-          delay_mode,
-          AttributionConfig(),
-          std::make_unique<AttributionDefaultRandomGenerator>()) {}
+    : AttributionStorageDelegateImpl(noise_mode,
+                                     delay_mode,
+                                     AttributionConfig()) {}
 
 AttributionStorageDelegateImpl::AttributionStorageDelegateImpl(
     AttributionNoiseMode noise_mode,
     AttributionDelayMode delay_mode,
-    const AttributionConfig& config,
-    std::unique_ptr<AttributionRandomGenerator> rng)
+    const AttributionConfig& config)
     : AttributionStorageDelegate(config),
       noise_mode_(noise_mode),
-      delay_mode_(delay_mode),
-      rng_(std::move(rng)) {
-  DCHECK(rng_);
-
+      delay_mode_(delay_mode) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -95,7 +86,7 @@ base::Time AttributionStorageDelegateImpl::GetAggregatableReportTime(
       switch (noise_mode_) {
         case AttributionNoiseMode::kDefault:
           return trigger_time + config_.aggregate_limit.min_delay +
-                 rng_->RandDouble() * config_.aggregate_limit.delay_span;
+                 base::RandDouble() * config_.aggregate_limit.delay_span;
         case AttributionNoiseMode::kNone:
           return trigger_time + config_.aggregate_limit.min_delay +
                  config_.aggregate_limit.delay_span;
@@ -138,7 +129,7 @@ void AttributionStorageDelegateImpl::ShuffleReports(
 
   switch (noise_mode_) {
     case AttributionNoiseMode::kDefault:
-      rng_->RandomShuffle(reports);
+      base::RandomShuffle(reports.begin(), reports.end());
       break;
     case AttributionNoiseMode::kNone:
       break;
@@ -157,7 +148,7 @@ AttributionStorageDelegateImpl::GetRandomizedResponse(
       DCHECK_GE(randomized_trigger_rate, 0);
       DCHECK_LE(randomized_trigger_rate, 1);
 
-      return rng_->RandDouble() < randomized_trigger_rate
+      return base::RandDouble() < randomized_trigger_rate
                  ? absl::make_optional(GetRandomFakeReports(source))
                  : absl::nullopt;
     }
@@ -178,7 +169,7 @@ AttributionStorageDelegateImpl::GetRandomFakeReports(
           NumReportWindows(source.source_type()));
 
   // Subtract 1 because `AttributionRandomGenerator::RandInt()` is inclusive.
-  const int sequence_index = rng_->RandInt(0, num_combinations - 1);
+  const int sequence_index = base::RandInt(0, num_combinations - 1);
 
   return GetFakeReportsForSequenceIndex(source, sequence_index);
 }
@@ -208,8 +199,9 @@ AttributionStorageDelegateImpl::GetFakeReportsForSequenceIndex(
   // c = the maximum number of reports for a source
   // d = the trigger data cardinality for a source
   for (int num_bars : bars_preceding_each_star) {
-    if (num_bars == 0)
+    if (num_bars == 0) {
       continue;
+    }
 
     auto result = std::div(num_bars - 1, trigger_data_cardinality);
 
@@ -217,9 +209,16 @@ AttributionStorageDelegateImpl::GetFakeReportsForSequenceIndex(
     DCHECK_GE(trigger_data, 0);
     DCHECK_LT(trigger_data, trigger_data_cardinality);
 
+    base::Time report_time =
+        ReportTimeAtWindow(source, /*window_index=*/result.quot);
+    base::Time trigger_time = LastTriggerTimeForReportTime(report_time);
+
+    DCHECK_EQ(ComputeReportTime(source, trigger_time), report_time);
+
     fake_reports.push_back({
         .trigger_data = static_cast<uint64_t>(trigger_data),
-        .report_time = ReportTimeAtWindow(source, /*window_index=*/result.quot),
+        .trigger_time = trigger_time,
+        .report_time = report_time,
     });
   }
   return fake_reports;

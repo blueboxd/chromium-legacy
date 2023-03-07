@@ -115,10 +115,6 @@ void SecurePaymentConfirmationDialogView::ShowDialog(
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
 
-  // observer_for_test_ is used in views browsertests.
-  if (observer_for_test_)
-    observer_for_test_->OnDialogOpened();
-
   // ui_observer_for_test_ is used in platform browsertests.
   if (ui_observer_for_test_)
     ui_observer_for_test_->OnUIDisplayed();
@@ -193,20 +189,26 @@ void SecurePaymentConfirmationDialogView::OnModelUpdated() {
   UpdateLabelView(DialogViewID::INSTRUMENT_VALUE, model_->instrument_value());
 
   // Update the instrument icon only if it's changed
-  if (model_->instrument_icon() &&
-      (model_->instrument_icon() != instrument_icon_ ||
-       model_->instrument_icon()->getGenerationID() !=
-           instrument_icon_generation_id_)) {
-    instrument_icon_generation_id_ =
-        model_->instrument_icon()->getGenerationID();
-    gfx::ImageSkia image =
-        gfx::ImageSkia::CreateFrom1xBitmap(*model_->instrument_icon())
-            .DeepCopy();
-
-    static_cast<views::ImageView*>(
-        GetViewByID(static_cast<int>(DialogViewID::INSTRUMENT_ICON)))
-        ->SetImage(image);
+  if (model_->instrument_icon()) {
+    auto* image_view = static_cast<views::ImageView*>(
+        GetViewByID(static_cast<int>(DialogViewID::INSTRUMENT_ICON)));
+    if (model_->instrument_icon() != instrument_icon_ ||
+        model_->instrument_icon()->getGenerationID() !=
+            instrument_icon_generation_id_) {
+      instrument_icon_generation_id_ =
+          model_->instrument_icon()->getGenerationID();
+      gfx::ImageSkia image =
+          gfx::ImageSkia::CreateFrom1xBitmap(*model_->instrument_icon())
+              .DeepCopy();
+      image_view->SetImage(image);
+    }
+    if (model_->instrument_icon()->drawsNothing()) {
+      image_view->SetImage(ui::ImageModel::FromVectorIcon(
+          kCreditCardIcon, ui::kColorDialogForeground,
+          kSecurePaymentConfirmationInstrumentIconDefaultWidthPx));
+    }
   }
+
   instrument_icon_ = model_->instrument_icon();
 
   UpdateLabelView(DialogViewID::TOTAL_LABEL, model_->total_label());
@@ -416,21 +418,6 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
   row->AddChildView(std::move(value_text));
 
   return row;
-}
-
-void SecurePaymentConfirmationDialogView::OnThemeChanged() {
-  View::OnThemeChanged();
-  // If we're using the default credit card icon, it is able to respond
-  // to theme changes (e.g., dark mode). Caller-provided icons are not
-  // responsive.
-  if (instrument_icon_ && instrument_icon_->drawsNothing()) {
-    static_cast<views::ImageView*>(
-        GetViewByID(static_cast<int>(DialogViewID::INSTRUMENT_ICON)))
-        ->SetImage(gfx::CreateVectorIcon(
-            kCreditCardIcon,
-            kSecurePaymentConfirmationInstrumentIconDefaultWidthPx,
-            GetColorProvider()->GetColor(ui::kColorDialogForeground)));
-  }
 }
 
 BEGIN_METADATA(SecurePaymentConfirmationDialogView, views::DialogDelegateView)

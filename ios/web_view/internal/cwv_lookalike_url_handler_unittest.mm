@@ -4,9 +4,9 @@
 
 #import "ios/web_view/internal/cwv_lookalike_url_handler_internal.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
@@ -43,7 +43,7 @@ class CWVLookalikeURLHandlerTest : public PlatformTest {
       base::OnceCallback<void(NSString*)> callback) {
     auto url_info = std::make_unique<LookalikeUrlContainer::LookalikeUrlInfo>(
         safe_url, request_url,
-        LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
+        lookalikes::LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
     return
         [[CWVLookalikeURLHandler alloc] initWithWebState:&web_state_
                                         lookalikeURLInfo:std::move(url_info)

@@ -4,16 +4,16 @@
 
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
@@ -24,12 +24,6 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
-
-namespace {
-
-constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
-
-}  // anonymous namespace
 
 class GpuDelegateImpl : public MailboxVideoFrameConverter::GpuDelegate {
  public:
@@ -74,9 +68,8 @@ class GpuDelegateImpl : public MailboxVideoFrameConverter::GpuDelegate {
     DCHECK(shared_image_stub);
 
     if (!shared_image_stub->CreateSharedImage(
-            mailbox, gpu::kPlatformVideoFramePoolClientId, std::move(handle),
-            format, plane, size, color_space, surface_origin, alpha_type,
-            usage)) {
+            mailbox, std::move(handle), format, plane, size, color_space,
+            surface_origin, alpha_type, usage)) {
       return base::NullCallback();
     }
 
@@ -299,9 +292,20 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
     return;
   input_frame_queue_.pop();
 
+  DCHECK_EQ(frame->format(), origin_frame->format());
+  auto buffer_format = VideoPixelFormatToGfxBufferFormat(frame->format());
+  if (!buffer_format) {
+    return;
+  }
+
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+
   mailbox_holders[0] =
-      gpu::MailboxHolder(mailbox, gpu::SyncToken(), kTextureTarget);
+      gpu::MailboxHolder(mailbox, gpu::SyncToken(),
+                         gpu::NativeBufferNeedsPlatformSpecificTextureTarget(
+                             *buffer_format, gfx::BufferPlane::DEFAULT)
+                             ? gpu::GetPlatformSpecificTextureTarget()
+                             : GL_TEXTURE_2D);
 
   VideoFrame::ReleaseMailboxCB release_mailbox_cb = base::BindOnce(
       [](scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,

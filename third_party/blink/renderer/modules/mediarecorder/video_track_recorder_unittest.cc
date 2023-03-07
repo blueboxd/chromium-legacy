@@ -7,6 +7,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
@@ -25,6 +27,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/video_frame_utils.h"
@@ -78,6 +81,8 @@ constexpr media::VideoCodec MediaVideoCodecFromCodecId(
       return media::VideoCodec::kVP8;
     case VideoTrackRecorder::CodecId::kVp9:
       return media::VideoCodec::kVP9;
+// Note: The H264 tests in this file are written explicitly for OpenH264 and
+// will fail for hardware encoders that aren't 1 in 1 out.
 #if BUILDFLAG(RTC_USE_H264)
     case VideoTrackRecorder::CodecId::kH264:
       return media::VideoCodec::kH264;
@@ -121,6 +126,12 @@ class VideoTrackRecorderTest
         .Times(testing::AnyNumber());
     EXPECT_CALL(*mock_source_, OnCapturingLinkSecured(_))
         .Times(testing::AnyNumber());
+    EXPECT_CALL(*mock_source_, GetCropVersion())
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(Return(0));
+    EXPECT_CALL(*mock_source_, SetCanDiscardAlpha(_))
+        .Times(testing::AnyNumber());
+
     auto platform_track = std::make_unique<MediaStreamVideoTrack>(
         mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true /* enabled */);
@@ -134,7 +145,9 @@ class VideoTrackRecorderTest
     EXPECT_TRUE(scheduler::GetSingleThreadTaskRunnerForTesting()
                     ->BelongsToCurrentThread());
 
-    ON_CALL(*platform_, GetGpuFactories()).WillByDefault(Return(nullptr));
+    EXPECT_CALL(*platform_, GetGpuFactories())
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(Return(nullptr));
   }
 
   VideoTrackRecorderTest(const VideoTrackRecorderTest&) = delete;
@@ -160,8 +173,9 @@ class VideoTrackRecorderTest
         ConvertToBaseOnceCallback(CrossThreadBindOnce(
             &VideoTrackRecorderTest::OnSourceReadyStateEnded,
             CrossThreadUnretained(this))),
-        0u /* bits_per_second */,
-        scheduler::GetSingleThreadTaskRunnerForTesting());
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
+            &VideoTrackRecorderTest::OnFailed, CrossThreadUnretained(this))),
+        0u /* bits_per_second */);
   }
 
   MOCK_METHOD0(OnSourceReadyStateEnded, void());
@@ -181,16 +195,39 @@ class VideoTrackRecorderTest
                                                   capture_time);
   }
 
+  void OnFailed() { FAIL(); }
   void OnError() { video_track_recorder_->OnError(); }
 
   bool CanEncodeAlphaChannel() {
-    return video_track_recorder_->encoder_->CanEncodeAlphaChannel();
+    bool result;
+    base::WaitableEvent finished;
+    video_track_recorder_->encoder_.PostTaskWithThisObject(CrossThreadBindOnce(
+        [](base::WaitableEvent* finished, bool* out_result,
+           VideoTrackRecorder::Encoder* encoder) {
+          *out_result = encoder->CanEncodeAlphaChannel();
+          finished->Signal();
+        },
+        CrossThreadUnretained(&finished), CrossThreadUnretained(&result)));
+    finished.Wait();
+    return result;
   }
 
-  bool HasEncoderInstance() { return video_track_recorder_->encoder_.get(); }
+  bool HasEncoderInstance() const {
+    return !video_track_recorder_->encoder_.is_null();
+  }
 
   uint32_t NumFramesInEncode() {
-    return video_track_recorder_->encoder_->num_frames_in_encode_->count();
+    uint32_t count;
+    base::WaitableEvent finished;
+    video_track_recorder_->encoder_.PostTaskWithThisObject(CrossThreadBindOnce(
+        [](base::WaitableEvent* finished, uint32_t* out_count,
+           VideoTrackRecorder::Encoder* encoder) {
+          *out_count = encoder->num_frames_in_encode_->count();
+          finished->Signal();
+        },
+        CrossThreadUnretained(&finished), CrossThreadUnretained(&count)));
+    finished.Wait();
+    return count;
   }
 
   ScopedTestingPlatformSupport<MockTestingPlatform> platform_;
@@ -289,7 +326,6 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
       .WillOnce(DoAll(SaveArg<1>(&first_frame_encoded_data),
                       SaveArg<2>(&first_frame_encoded_alpha)));
 
-  // Send another Video Frame.
   const base::TimeTicks timeticks_later = base::TimeTicks::Now();
   base::StringPiece second_frame_encoded_data;
   base::StringPiece second_frame_encoded_alpha;
@@ -298,7 +334,6 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
       .WillOnce(DoAll(SaveArg<1>(&second_frame_encoded_data),
                       SaveArg<2>(&second_frame_encoded_alpha)));
 
-  // Send another Video Frame and expect only an OnEncodedVideo() callback.
   const gfx::Size frame_size2(frame_size.width() + kTrackRecorderTestSizeDiff,
                               frame_size.height());
   const scoped_refptr<media::VideoFrame> video_frame2 = CreateFrameForTest(
@@ -450,19 +485,21 @@ TEST_F(VideoTrackRecorderTest, HandlesOnError) {
       media::VideoFrame::CreateBlackFrame(frame_size);
 
   InSequence s;
-  EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true)).Times(1);
+  base::RunLoop run_loop1;
+  EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true))
+      .WillOnce(RunClosure(run_loop1.QuitClosure()));
   Encode(video_frame, base::TimeTicks::Now());
+  run_loop1.Run();
 
   EXPECT_TRUE(HasEncoderInstance());
   OnError();
   EXPECT_FALSE(HasEncoderInstance());
 
-  base::RunLoop run_loop;
+  base::RunLoop run_loop2;
   EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true))
-      .Times(1)
-      .WillOnce(RunClosure(run_loop.QuitClosure()));
+      .WillOnce(RunClosure(run_loop2.QuitClosure()));
   Encode(video_frame, base::TimeTicks::Now());
-  run_loop.Run();
+  run_loop2.Run();
 
   Mock::VerifyAndClearExpectations(this);
 }
@@ -573,8 +610,7 @@ class VideoTrackRecorderPassthroughTest
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &VideoTrackRecorderPassthroughTest::OnEncodedVideo,
             CrossThreadUnretained(this))),
-        ConvertToBaseOnceCallback(CrossThreadBindOnce([] {})),
-        scheduler::GetSingleThreadTaskRunnerForTesting());
+        ConvertToBaseOnceCallback(CrossThreadBindOnce([] {})));
   }
 
   MOCK_METHOD5(OnEncodedVideo,

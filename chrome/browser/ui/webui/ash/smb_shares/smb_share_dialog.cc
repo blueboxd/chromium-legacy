@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
@@ -62,8 +62,8 @@ void SmbShareDialog::GetDialogSize(gfx::Size* size) const {
 
 SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUISmbShareHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUISmbShareHost);
 
   source->DisableTrustedTypesCSP();
 
@@ -92,8 +92,6 @@ SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
 
   web_ui->AddMessageHandler(std::make_unique<SmbHandler>(
       Profile::FromWebUI(web_ui), base::DoNothing()));
-
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 SmbShareDialogUI::~SmbShareDialogUI() = default;

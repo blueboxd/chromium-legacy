@@ -58,9 +58,8 @@ class LocalFrameView;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  public:
-  using BlinkAXEventIntentsSet = HashCountedSet<BlinkAXEventIntent,
-                                                BlinkAXEventIntentHash,
-                                                BlinkAXEventIntentHashTraits>;
+  using BlinkAXEventIntentsSet =
+      HashCountedSet<BlinkAXEventIntent, BlinkAXEventIntentHashTraits>;
 
   static AXObjectCache* Create(Document&, const ui::AXMode&);
 
@@ -96,9 +95,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   // Removes AXObject backed by passed-in object, if there is one.
   virtual void Remove(AccessibleNode*) = 0;
-  // Returns true if the AXObject is removed.
-  virtual bool Remove(LayoutObject*) = 0;
-  virtual void Remove(const Node*) = 0;
+  virtual void Remove(LayoutObject*) = 0;
+  virtual void Remove(Node*) = 0;
   virtual void Remove(Document*) = 0;
   virtual void Remove(AbstractInlineTextBox*) = 0;
 

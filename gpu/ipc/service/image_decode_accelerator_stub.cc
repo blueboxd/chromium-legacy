@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
@@ -308,9 +308,9 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     // SurfaceHandle was used to create the original buffers).
     gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
     if (!channel_->shared_image_stub()->CreateSharedImage(
-            mailbox, channel_->client_id(), std::move(plane_handle),
-            plane_format, gfx::BufferPlane::DEFAULT, plane_size,
-            gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
+            mailbox, std::move(plane_handle), plane_format,
+            gfx::BufferPlane::DEFAULT, plane_size, gfx::ColorSpace(),
+            kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
             SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION)) {
       DLOG(ERROR) << "Could not create SharedImage";
       return;

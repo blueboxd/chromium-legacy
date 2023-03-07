@@ -248,6 +248,19 @@ _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2 = PerfSuite(
         ['blink_perf.display_locking', 'jetstream2'])
 
 
+def _sync_performance_tests(estimated_runtime=110,
+                            path=None,
+                            additional_flags=None):
+  if not additional_flags:
+    additional_flags = []
+  flags = ['--test-launcher-jobs=1', '--test-launcher-retry-limit=0']
+  flags.extend(additional_flags)
+  return ExecutableConfig('sync_performance_tests',
+                          path=path,
+                          flags=flags,
+                          estimated_runtime=estimated_runtime)
+
+
 def _base_perftests(estimated_runtime=270, path=None, additional_flags=None):
   if not additional_flags:
     additional_flags = []
@@ -338,7 +351,7 @@ _PB_IMAGE_PATHS = {
 }
 
 _FUCHSIA_IMAGE_DIR = '../../third_party/fuchsia-sdk/images-internal/%s/%s'
-_COMMON_FUCHSIA_ARGS = ['-d', '--os-check=check']
+_COMMON_FUCHSIA_ARGS = ['-d', '--os-check=update']
 for board, path_parts in _IMAGE_PATHS.items():
   image_dir = _FUCHSIA_IMAGE_DIR % path_parts
   FUCHSIA_EXEC_ARGS[board] = _COMMON_FUCHSIA_ARGS + [
@@ -357,7 +370,10 @@ for board, pb_name in _PB_IMAGE_PATHS.items():
   FUCHSIA_EXEC_CONFIGS[board] = frozenset([
       _base_perftests(900,
                       path='bin/run_base_perftests',
-                      additional_flags=FUCHSIA_EXEC_ARGS[board])
+                      additional_flags=FUCHSIA_EXEC_ARGS[board]),
+      _sync_performance_tests(900,
+                              path='bin/run_sync_performance_tests',
+                              additional_flags=FUCHSIA_EXEC_ARGS[board]),
   ])
 
 _LINUX_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
@@ -400,6 +416,11 @@ _MAC_M1_MINI_2020_BENCHMARK_CONFIGS = PerfSuite(
         'blink_perf.display_locking',
         'v8.runtime_stats.top_25',
     ])
+_MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream2'),
+    _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('rendering.desktop'),
+])
 _MAC_M1_MINI_2020_EXECUTABLE_CONFIGS = frozenset([
     _base_perftests(300),
     _dawn_perf_tests(330),
@@ -605,10 +626,9 @@ MAC_M1_MINI_2020 = PerfPlatform(
 MAC_M1_MINI_2020_PGO = PerfPlatform(
     'mac-m1_mini_2020-perf-pgo',
     'Mac M1 Mini 2020',
-    _MAC_M1_MINI_2020_BENCHMARK_CONFIGS,
-    26,
-    'mac',
-    executables=_MAC_M1_MINI_2020_EXECUTABLE_CONFIGS)
+    _MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS,
+    4,
+    'mac')
 
 # Win
 WIN_10_LOW_END = PerfPlatform(
@@ -703,7 +723,7 @@ ANDROID_PIXEL4A_POWER_PGO = PerfPlatform(
     'android-pixel4a_power-perf-pgo', 'Android QD4A.200102.001.A1',
     _ANDROID_PIXEL4A_POWER_BENCHMARK_CONFIGS, 12, 'android')
 ANDROID_GO_WEMBLEY = PerfPlatform('android-go-wembley-perf',
-                                  'Android 9131443',
+                                  'Android U',
                                   _ANDROID_GO_WEMBLEY_BENCHMARK_CONFIGS, 2,
                                   'android')
 ANDROID_NEW_PIXEL = PerfPlatform('android-new-pixel-perf',

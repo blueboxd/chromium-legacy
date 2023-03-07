@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 
 #import "base/strings/utf_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/credential_utils.h"
@@ -70,6 +71,12 @@ PasswordCheckState ConvertBulkCheckState(State state) {
   }
   NOTREACHED();
   return PasswordCheckState::kIdle;
+}
+
+// Returns true if the Password Checkup feature flag is enabled.
+bool IsPasswordCheckupEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kIOSPasswordCheckup);
 }
 }  // namespace
 
@@ -141,21 +148,52 @@ base::Time IOSChromePasswordCheckManager::GetLastPasswordCheckTime() const {
 }
 
 std::vector<CredentialUIEntry>
-IOSChromePasswordCheckManager::GetUnmutedCompromisedCredentials() const {
-  std::vector<CredentialUIEntry> compromised_crendentials =
+IOSChromePasswordCheckManager::GetInsecureCredentials() const {
+  std::vector<CredentialUIEntry> insecure_crendentials =
       insecure_credentials_manager_.GetInsecureCredentialEntries();
 
-  // Only filter out the muted compromised credentials if the flag is enabled.
-  if (base::FeatureList::IsEnabled(
+  // Only filter out the muted compromised credentials if the
+  // kIOSPasswordCheckup flag is disabled and the kMuteCompromisedPasswords flag
+  // is enabled. When kIOSPasswordCheckup is enabled, we want to get all the
+  // insecure credentials, not only the compromised and unmuted ones.
+  if (!IsPasswordCheckupEnabled() &&
+      base::FeatureList::IsEnabled(
           password_manager::features::kMuteCompromisedPasswords)) {
-    base::EraseIf(compromised_crendentials, [](const auto& credential) {
-      return (credential.IsLeaked() &&
-              credential.password_issues.at(InsecureType::kLeaked).is_muted) ||
-             (credential.IsPhished() &&
-              credential.password_issues.at(InsecureType::kPhished).is_muted);
-    });
+    base::EraseIf(insecure_crendentials,
+                  [](const auto& credential) { return credential.IsMuted(); });
   }
-  return compromised_crendentials;
+  return insecure_crendentials;
+}
+
+WarningType IOSChromePasswordCheckManager::GetWarningOfHighestPriority() const {
+  std::vector<CredentialUIEntry> insecure_credentials =
+      insecure_credentials_manager_.GetInsecureCredentialEntries();
+
+  bool has_reused_passwords = false;
+  bool has_weak_passwords = false;
+  bool has_muted_warnings = false;
+
+  for (const auto& credential : insecure_credentials) {
+    if (credential.IsMuted()) {
+      has_muted_warnings = true;
+    } else if (credential.IsPhished() || credential.IsLeaked()) {
+      return WarningType::kCompromisedPasswordsWarning;
+    } else if (credential.IsReused()) {
+      has_reused_passwords = true;
+    } else if (credential.IsWeak()) {
+      has_weak_passwords = true;
+    }
+  }
+
+  if (has_reused_passwords) {
+    return WarningType::kReusedPasswordsWarning;
+  } else if (has_weak_passwords) {
+    return WarningType::kWeakPasswordsWarning;
+  } else if (has_muted_warnings) {
+    return WarningType::kDismissedWarningsWarning;
+  }
+
+  return WarningType::kNoInsecurePasswordsWarning;
 }
 
 void IOSChromePasswordCheckManager::OnSavedPasswordsChanged() {
@@ -187,7 +225,7 @@ void IOSChromePasswordCheckManager::OnStateChanged(State state) {
     if (is_check_running_) {
       const base::TimeDelta elapsed = base::Time::Now() - start_time_;
       if (elapsed < kDelay) {
-        base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(&IOSChromePasswordCheckManager::
                                NotifyPasswordCheckStatusChanged,

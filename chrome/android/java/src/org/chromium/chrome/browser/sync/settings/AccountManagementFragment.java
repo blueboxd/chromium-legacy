@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.ui.signin.SignOutDialogCoordinator;
 import org.chromium.chrome.browser.ui.signin.SignOutDialogCoordinator.Listener;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
+import org.chromium.components.browser_ui.settings.CustomDividerFragment;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.prefs.PrefService;
@@ -64,7 +66,7 @@ import java.util.List;
  * Note: This can be triggered from a web page, e.g. a GAIA sign-in page.
  */
 public class AccountManagementFragment extends PreferenceFragmentCompat
-        implements Listener, SignInStateObserver, ProfileDataCache.Observer {
+        implements Listener, SignInStateObserver, ProfileDataCache.Observer, CustomDividerFragment {
     private static final String TAG = "AcctManagementPref";
 
     private static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
@@ -117,10 +119,13 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setDivider(null);
-
         // Disable animations of preference changes (crbug.com/986401).
         getListView().setItemAnimator(null);
+    }
+
+    @Override
+    public boolean hasDivider() {
+        return false;
     }
 
     @Override
@@ -167,9 +172,10 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             return;
         }
 
-        String fullName = mProfileDataCache.getProfileDataOrDefault(mSignedInAccountName)
-                                  .getFullNameOrEmail();
-        getActivity().setTitle(fullName);
+        DisplayableProfileData profileData =
+                mProfileDataCache.getProfileDataOrDefault(mSignedInAccountName);
+        getActivity().setTitle(SyncSettingsUtils.getDisplayableFullNameOrEmailWithPreference(
+                profileData, getContext(), SyncSettingsUtils.TitlePreference.FULL_NAME));
 
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.ADD_EDU_ACCOUNT_FROM_ACCOUNT_SETTINGS_FOR_SUPERVISED_USERS)) {
@@ -348,9 +354,12 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     private Preference createAccountPreference(Account account) {
         Preference accountPreference = new Preference(getStyledContext());
         accountPreference.setLayoutResource(R.layout.account_management_account_row);
-        accountPreference.setTitle(account.name);
-        accountPreference.setIcon(
-                mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
+
+        DisplayableProfileData profileData =
+                mProfileDataCache.getProfileDataOrDefault(account.name);
+        accountPreference.setTitle(SyncSettingsUtils.getDisplayableFullNameOrEmailWithPreference(
+                profileData, getContext(), SyncSettingsUtils.TitlePreference.EMAIL));
+        accountPreference.setIcon(profileData.getImage());
 
         accountPreference.setOnPreferenceClickListener(SyncSettingsUtils.toOnClickListener(
                 this, () -> SigninUtils.openSettingsForAccount(getActivity(), account)));

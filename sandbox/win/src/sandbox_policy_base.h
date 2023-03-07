@@ -82,6 +82,8 @@ class ConfigBase final : public TargetConfig {
                                     const wchar_t* handle_name) override;
   ResultCode SetDisconnectCsrss() override;
   void SetDesktop(Desktop desktop) override;
+  void SetFilterEnvironment(bool filter) override;
+  bool GetEnvironmentFiltered() override;
 
  private:
   // Can call Freeze()
@@ -139,6 +141,7 @@ class ConfigBase final : public TargetConfig {
   size_t memory_limit_;
   uint32_t ui_exceptions_;
   Desktop desktop_;
+  bool filter_environment_;
 
   // Object in charge of generating the low level policy. Will be reset() when
   // Freeze() is called.
@@ -187,11 +190,9 @@ class PolicyBase final : public TargetPolicy {
   ResultCode DropActiveProcessLimit();
 
   // Creates the two tokens with the levels specified in a previous call to
-  // SetTokenLevel(). Also creates a lowbox token if specified based on the
-  // lowbox SID.
+  // SetTokenLevel().
   ResultCode MakeTokens(base::win::ScopedHandle* initial,
-                        base::win::ScopedHandle* lockdown,
-                        base::win::ScopedHandle* lowbox);
+                        base::win::ScopedHandle* lockdown);
 
   // Applies the sandbox to |target| and takes ownership. Internally a
   // call to TargetProcess::Init() is issued.

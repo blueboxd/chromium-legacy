@@ -126,10 +126,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_flattener.h"
@@ -490,6 +489,7 @@ void MetricsService::OnApplicationNotIdle() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
   is_in_foreground_ = false;
+  reporting_service_.SetIsInForegound(false);
   if (!keep_recording_in_background) {
     rotation_scheduler_->Stop();
     reporting_service_.Stop();
@@ -503,11 +503,11 @@ void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
   // backgrounded.
   delegating_provider_.OnAppEnterBackground();
 
-  // At this point, there's no way of knowing when the process will be
-  // killed, so this has to be treated similar to a shutdown, closing and
-  // persisting all logs. Unlinke a shutdown, the state is primed to be ready
-  // to continue logging and uploading if the process does return.
-  if (recording_active() && state_ >= SENDING_LOGS) {
+  // At this point, there's no way of knowing when the process will be killed,
+  // so this has to be treated similar to a shutdown, closing and persisting all
+  // logs. Unlike a shutdown, the state is primed to be ready to continue
+  // logging and uploading if the process does return.
+  if (recording_active() && !IsTooEarlyToCloseLog()) {
     base::UmaHistogramBoolean(
         "UMA.MetricsService.PendingOngoingLogOnBackgrounded",
         pending_ongoing_log_);
@@ -521,10 +521,11 @@ void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
 
 void MetricsService::OnAppEnterForeground(bool force_open_new_log) {
   is_in_foreground_ = true;
+  reporting_service_.SetIsInForegound(true);
   state_manager_->LogHasSessionShutdownCleanly(false);
   StartSchedulerIfNecessary();
 
-  if (force_open_new_log && recording_active() && state_ >= SENDING_LOGS) {
+  if (force_open_new_log && recording_active() && !IsTooEarlyToCloseLog()) {
     base::UmaHistogramBoolean(
         "UMA.MetricsService.PendingOngoingLogOnForegrounded",
         pending_ongoing_log_);
@@ -1014,8 +1015,9 @@ void MetricsService::MaybeCleanUpAndStoreFinalizedLog(
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage() {
-  if (state_ < SENDING_LOGS)
-    return;  // We didn't and still don't have time to get plugin list etc.
+  if (IsTooEarlyToCloseLog()) {
+    return;
+  }
 
   base::UmaHistogramBoolean("UMA.MetricsService.PendingOngoingLog",
                             pending_ongoing_log_);
@@ -1340,6 +1342,17 @@ void MetricsService::UpdateLastLiveTimestampTask() {
 
   // Schecule the next update.
   StartUpdatingLastLiveTimestamp();
+}
+
+bool MetricsService::IsTooEarlyToCloseLog() {
+  // When kMetricsServiceAllowEarlyLogClose is enabled, start closing logs as
+  // soon as the first log is opened (|state_| is set to INIT_TASK_SCHEDULED
+  // when the first log is opened, see OpenNewLog()). Otherwise, only start
+  // closing logs when logs have started being sent.
+  return base::FeatureList::IsEnabled(
+             features::kMetricsServiceAllowEarlyLogClose)
+             ? state_ < INIT_TASK_SCHEDULED
+             : state_ < SENDING_LOGS;
 }
 
 // static

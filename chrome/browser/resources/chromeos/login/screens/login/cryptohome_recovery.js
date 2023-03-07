@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../../components/oobe_icons.m.js';
-import '../../components/common_styles/oobe_common_styles.m.js';
-import '../../components/common_styles/oobe_dialog_host_styles.m.js';
+import '../../components/oobe_icons.html.js';
+import '../../components/common_styles/oobe_common_styles.css.js';
+import '../../components/common_styles/oobe_dialog_host_styles.css.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
 import '../../components/dialogs/oobe_loading_dialog.js';
 
 import {loadTimeData} from '//resources/ash/common/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
-import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
+import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
+import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
 
 /**
@@ -22,6 +22,9 @@ import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/beha
  */
 const CryptohomeRecoveryUIState = {
   LOADING: 'loading',
+  DONE: 'done',
+  ERROR: 'error',
+  REAUTH_NOTIFICATION: 'reauth-notification',
 };
 
 /**
@@ -47,7 +50,16 @@ class CryptohomeRecovery extends CryptohomeRecoveryBase {
   }
 
   static get properties() {
-    return {};
+    return {
+      /**
+       * Whether the page is being rendered in dark mode.
+       * @private {boolean}
+       */
+      isDarkModeActive_: {
+        type: Boolean,
+        value: false,
+      },
+    };
   }
 
   defaultUIStep() {
@@ -58,6 +70,14 @@ class CryptohomeRecovery extends CryptohomeRecoveryBase {
     return CryptohomeRecoveryUIState;
   }
 
+  get EXTERNAL_API() {
+    return [
+      'onRecoverySucceeded',
+      'onRecoveryFailed',
+      'showReauthNotification',
+    ];
+  }
+
   /** @override */
   ready() {
     super.ready();
@@ -65,10 +85,74 @@ class CryptohomeRecovery extends CryptohomeRecoveryBase {
   }
 
   // Invoked just before being shown. Contains all the data for the screen.
-  onBeforeShow(data) {}
+  onBeforeShow(data) {
+    this.reset();
+  }
 
   reset() {
     this.setUIStep(CryptohomeRecoveryUIState.LOADING);
+  }
+
+  /**
+   * Called when Cryptohome recovery succeeded.
+   */
+  onRecoverySucceeded() {
+    this.setUIStep(CryptohomeRecoveryUIState.DONE);
+  }
+
+  /**
+   * Called when Cryptohome recovery failed.
+   */
+  onRecoveryFailed() {
+    this.setUIStep(CryptohomeRecoveryUIState.ERROR);
+  }
+
+  /**
+   * Shows a reauth required message when there's no reauth proof token.
+   */
+  showReauthNotification() {
+    this.setUIStep(CryptohomeRecoveryUIState.REAUTH_NOTIFICATION);
+  }
+
+  /**
+   * Enter old password button click handler.
+   * @private
+   */
+  onOldPasswordEntered_() {
+    this.userActed('enter-old-password');
+  }
+
+  /**
+   * Retry button click handler.
+   * @private
+   */
+  onRetry_() {
+    this.userActed('retry');
+  }
+
+  /**
+   * Done button click handler.
+   * @private
+   */
+  onDone_() {
+    this.userActed('done');
+  }
+
+  /**
+   * Click handler for the next button on the reauth notification screen.
+   * @private
+   */
+  onReauthButtonClicked_() {
+    this.userActed('reauth');
+  }
+
+  /**
+   * Returns the src of the illustration.
+   * @private
+   */
+  getImageSource_() {
+    return this.isDarkModeActive_ ? 'images/security_lock_dark.svg' :
+                                    'images/security_lock_light.svg';
   }
 }
 

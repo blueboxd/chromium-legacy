@@ -5,7 +5,9 @@
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
+#include "sandbox/policy/switches.h"
 
 namespace ash::assistant::features {
 
@@ -52,7 +54,7 @@ BASE_FEATURE(kDisableVoiceMatch,
 
 BASE_FEATURE(kEnableLibAssistantSandbox,
              "LibAssistantSandbox",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLibAssistantV2,
              "LibAssistantV2",
@@ -106,6 +108,11 @@ bool IsWaitSchedulingEnabled() {
 }
 
 bool IsLibAssistantSandboxEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          sandbox::policy::switches::kNoSandbox)) {
+    return false;
+  }
+
   return IsLibAssistantV2Enabled() ||
          base::FeatureList::IsEnabled(kEnableLibAssistantSandbox);
 }

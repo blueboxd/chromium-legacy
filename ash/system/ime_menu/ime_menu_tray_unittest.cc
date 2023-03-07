@@ -34,9 +34,8 @@
 #include "ui/events/event.h"
 #include "ui/views/controls/label.h"
 
-using base::UTF8ToUTF16;
-
 namespace ash {
+
 namespace {
 
 const int kEmojiButtonId = 1;
@@ -77,10 +76,8 @@ class ImeMenuTrayTest : public AshTestBase,
     std::vector<base::test::FeatureRef> disabled_features;
     if (GetParam()) {
       enabled_features.push_back(features::kQsRevamp);
-      enabled_features.push_back(features::kQsRevampWip);
     } else {
       disabled_features.push_back(features::kQsRevamp);
-      disabled_features.push_back(features::kQsRevampWip);
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     AshTestBase::SetUp();
@@ -155,8 +152,8 @@ class ImeMenuTrayTest : public AshTestBase,
 
   // Focuses in the given type of input context.
   void FocusInInputContext(ui::TextInputType input_type) {
-    ui::IMEBridge::Get()->SetCurrentInputContext(
-        ui::TextInputMethod::InputContext(input_type));
+    IMEBridge::Get()->SetCurrentInputContext(
+        TextInputMethod::InputContext(input_type));
   }
 
   bool MenuHasOnScreenKeyboardToggle() const {

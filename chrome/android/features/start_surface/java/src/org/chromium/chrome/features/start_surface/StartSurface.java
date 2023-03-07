@@ -196,12 +196,6 @@ public interface StartSurface {
     boolean onBackPressed();
 
     /**
-     * Enable recording the first meaningful paint event of StartSurface.
-     * @param activityCreateTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
-     */
-    void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs);
-
-    /**
      * @return The current {@link StartSurfaceState}.
      */
     @StartSurfaceState
@@ -226,10 +220,24 @@ public interface StartSurface {
      */
     void setSnackbarParentView(ViewGroup parentView);
 
+    @Deprecated
     /*
      * Returns whether start surface homepage is showing.
+     *
+     * TODO(1347089): Removes this test after the refactoring is enabled by default. This function
+     * is only used by {@link TabSwitcherAndStartSurfaceLayout} which will go away after the
+     * refactoring. This API add an additional check of {@link StartSurfaceState#SHOWING_PREVIOUS}
+     * to prevent shrinking animation when returns to Start surface from a Tab.
+     * See crbug.com/1248680.
      */
     boolean isShowingStartSurfaceHomepage();
+
+    /*
+     * Returns whether start surface homepage is showing. Compared with
+     * isShowingStartSurfaceHomepage(), this API only checks state
+     * {@link StartSurfaceState#SHOWN_HOMEPAGE} when the refactoring is disabled.
+     */
+    boolean isHomepageShown();
 
     /**
      * Returns the TabListDelegate implementation that can be used to access the Tab list of the

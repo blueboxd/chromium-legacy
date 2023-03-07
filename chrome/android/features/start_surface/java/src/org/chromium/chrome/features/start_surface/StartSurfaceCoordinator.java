@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -227,6 +228,7 @@ public class StartSurfaceCoordinator implements StartSurface {
      * @param backPressManager {@link BackPressManager} to handle back press.
      * @param incognitoReauthControllerSupplier {@link OneshotSupplier<IncognitoReauthController>}
      *         to detect pending re-auth when tab switcher is shown.
+     * @param tabSwitcherClickHandler The {@link OnClickListener} for the tab switcher button.
      */
     public StartSurfaceCoordinator(@NonNull Activity activity,
             @NonNull ScrimCoordinator scrimCoordinator,
@@ -249,7 +251,8 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier,
             @NonNull CrowButtonDelegate crowButtonDelegate, BackPressManager backPressManager,
-            @NonNull OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier) {
+            @NonNull OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
+            @NonNull OnClickListener tabSwitcherClickHandler) {
         mConstructedTimeNs = SystemClock.elapsedRealtimeNanos();
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
@@ -286,7 +289,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                     browserControlsManager, tabCreatorManager, menuOrKeyboardActionController,
                     containerView, shareDelegateSupplier, multiWindowModeStateDispatcher,
                     scrimCoordinator, /* rootView= */ containerView, dynamicResourceLoaderSupplier,
-                    snackbarManager, modalDialogManager, incognitoReauthControllerSupplier);
+                    snackbarManager, modalDialogManager, incognitoReauthControllerSupplier,
+                    backPressManager);
             mTabSwitcherCustomViewManagerSupplier.set(
                     mTabSwitcher.getTabSwitcherCustomViewManager());
         } else {
@@ -310,8 +314,9 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
                 this::isActivityFinishingOrDestroyed, excludeQueryTiles,
                 startSurfaceOneshotSupplier, hadWarmStart, jankTracker, initializeMVTilesRunnable,
-                mParentTabSupplier, logoContainerView, backPressManager, feedPlaceholderParentView,
-                mActivityLifecycleDispatcher);
+                mParentTabSupplier, logoContainerView,
+                mTabSwitcher == null ? backPressManager : null, feedPlaceholderParentView,
+                mActivityLifecycleDispatcher, tabSwitcherClickHandler);
 
         startSurfaceOneshotSupplier.set(this);
     }
@@ -506,12 +511,10 @@ public class StartSurfaceCoordinator implements StartSurface {
 
     @Override
     public boolean onBackPressed() {
+        if (mTabSwitcher != null) {
+            return mTabSwitcher.onBackPressed();
+        }
         return mStartSurfaceMediator.onBackPressed();
-    }
-
-    @Override
-    public void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {
-        mStartSurfaceMediator.enableRecordingFirstMeaningfulPaint(activityCreateTimeMs);
     }
 
     @Override
@@ -537,6 +540,11 @@ public class StartSurfaceCoordinator implements StartSurface {
     @Override
     public boolean isShowingStartSurfaceHomepage() {
         return mStartSurfaceMediator.isShowingStartSurfaceHomepage();
+    }
+
+    @Override
+    public boolean isHomepageShown() {
+        return mStartSurfaceMediator.isHomepageShown();
     }
 
     @Override

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
@@ -88,16 +88,15 @@ class PasswordManager : public PasswordManagerInterface {
       autofill::FormRendererId form_id,
       autofill::FieldRendererId generation_element,
       autofill::password_generation::PasswordGenerationType type) override;
+  void OnPresaveGeneratedPassword(
+      PasswordManagerDriver* driver,
+      const autofill::FormData& form,
+      const std::u16string& generated_password) override;
 
   PasswordManagerClient* GetClient() override;
 #if BUILDFLAG(IS_IOS)
   void OnSubframeFormSubmission(PasswordManagerDriver* driver,
                                 const autofill::FormData& form_data) override;
-  void PresaveGeneratedPassword(
-      PasswordManagerDriver* driver,
-      const autofill::FormData& form,
-      const std::u16string& generated_password,
-      autofill::FieldRendererId generation_element) override;
   void UpdateStateOnUserInput(PasswordManagerDriver* driver,
                               autofill::FormRendererId form_id,
                               autofill::FieldRendererId field_id,
@@ -123,12 +122,6 @@ class PasswordManager : public PasswordManagerInterface {
       const autofill::FormData& form_data,
       autofill::FieldRendererId generation_element_id,
       const std::u16string& password);
-
-  // Presaves the form with generated password. |driver| is needed to find the
-  // matched form manager.
-  void OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
-                                  const autofill::FormData& form,
-                                  const std::u16string& generated_password);
 
   // Stops treating a password as generated. |driver| is needed to find the
   // matched form manager.
@@ -213,26 +206,11 @@ class PasswordManager : public PasswordManagerInterface {
   // Notifies that Credential Management API function store() is called.
   void NotifyStorePasswordCalled();
 
-  // Resets pending credentials.
-  void ResetPendingCredentials();
-
   // Returns true if a form manager is processing a password update.
   bool IsFormManagerPendingPasswordUpdate() const;
 
-  // Returns true if password manager has recorded a submitted manager.
-  bool HasSubmittedManager() const;
-
-  // Returns true if the password manager has recorded a submitted form
-  // and the new password in that form is the same as the old one.
-  bool HasSubmittedManagerWithSamePassword() const;
-
   // Returns the submitted PasswordForm if there exists one.
-  // TODO (crbug.com/1310169): Eliminate "HasSubmittedManager".
   absl::optional<PasswordForm> GetSubmittedCredentials();
-
-  // Saves the current submitted password to the disk. Password manager must
-  // have a submitted manager.
-  void SaveSubmittedManager();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

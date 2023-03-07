@@ -29,7 +29,6 @@
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
@@ -39,15 +38,11 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
@@ -58,6 +53,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
@@ -83,7 +79,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 }  // namespace
 
 @interface ContentSuggestionsCoordinator () <
-    ContentSuggestionsHeaderCommands,
     ContentSuggestionsMenuProvider,
     ContentSuggestionsViewControllerAudience> {
   // Observer bridge for mediator to listen to
@@ -92,14 +87,15 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 }
 @property(nonatomic, strong)
     ContentSuggestionsViewController* contentSuggestionsViewController;
-@property(nonatomic, strong)
-    ContentSuggestionsMediator* contentSuggestionsMediator;
 @property(nonatomic, strong) ActionSheetCoordinator* alertCoordinator;
 @property(nonatomic, assign) BOOL contentSuggestionsEnabled;
 // Authentication Service for the user's signed-in state.
 @property(nonatomic, assign) AuthenticationService* authService;
 // Coordinator in charge of handling sharing use cases.
 @property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
+// Redefined to not be readonly.
+@property(nonatomic, strong)
+    ContentSuggestionsMediator* contentSuggestionsMediator;
 
 @end
 
@@ -107,7 +103,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
 - (void)start {
   DCHECK(self.browser);
-  DCHECK(self.ntpMediator);
   if (self.started) {
     // Prevent this coordinator from being started twice in a row
     return;
@@ -178,21 +173,16 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
     self.contentSuggestionsMediator.consumer =
         self.contentSuggestionsViewController;
-
-    self.ntpMediator.suggestionsMediator = self.contentSuggestionsMediator;
-    [self.ntpMediator setUp];
 }
 
 - (void)stop {
-  [self.ntpMediator shutdown];
-  self.ntpMediator = nil;
-  // Reset the observer bridge object before setting
-  // `contentSuggestionsMediator` nil.
-  if (_startSurfaceObserver) {
+    // Reset the observer bridge object before setting
+    // `contentSuggestionsMediator` nil.
+    if (_startSurfaceObserver) {
     StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
         ->RemoveObserver(_startSurfaceObserver.get());
     _startSurfaceObserver.reset();
-  }
+    }
   [self.contentSuggestionsMediator disconnect];
   self.contentSuggestionsMediator = nil;
   self.contentSuggestionsViewController = nil;
@@ -240,12 +230,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
               .window.rootViewController.view safeAreaInsets];
 }
 
-#pragma mark - ContentSuggestionsHeaderCommands
-
-- (void)updateForHeaderSizeChange {
-  [self.ntpDelegate updateFeedLayout];
-}
-
 #pragma mark - Public methods
 
 - (UIView*)view {
@@ -254,14 +238,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
 - (void)reload {
   [self.contentSuggestionsMediator reloadAllData];
-}
-
-- (void)locationBarDidBecomeFirstResponder {
-  [self.ntpMediator locationBarDidBecomeFirstResponder];
-}
-
-- (void)locationBarDidResignFirstResponder {
-  [self.ntpMediator locationBarDidResignFirstResponder];
 }
 
 #pragma mark - ContentSuggestionsMenuProvider

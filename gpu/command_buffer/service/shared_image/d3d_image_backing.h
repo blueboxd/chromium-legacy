@@ -68,7 +68,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
 
   static std::unique_ptr<D3DImageBacking> CreateFromSwapChainBuffer(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -88,7 +88,8 @@ class GPU_GLES2_EXPORT D3DImageBacking
       SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
-      scoped_refptr<gles2::TexturePassthrough> gl_texture);
+      scoped_refptr<gles2::TexturePassthrough> gl_texture,
+      size_t array_slice);
 
   // Helper used by D3D11VideoDecoder to create backings directly.
   static std::vector<std::unique_ptr<SharedImageBacking>>
@@ -109,7 +110,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
   // SharedImageBacking implementation.
   SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool UploadFromMemory(const SkPixmap& pixmap) override;
+  bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps) override;
   bool ReadbackToMemory(SkPixmap& pixmap) override;
   bool PresentSwapChain() override;
   std::unique_ptr<DawnImageRepresentation> ProduceDawn(
@@ -118,10 +119,6 @@ class GPU_GLES2_EXPORT D3DImageBacking
       WGPUDevice device,
       WGPUBackendType backend_type,
       std::vector<WGPUTextureFormat> view_formats) override;
-  void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDumpGuid client_guid,
-                    base::trace_event::ProcessMemoryDump* pmd,
-                    uint64_t client_tracing_id) override;
 
   bool BeginAccessD3D11(bool write_access);
   void EndAccessD3D11();
@@ -130,6 +127,8 @@ class GPU_GLES2_EXPORT D3DImageBacking
   WGPUTexture BeginAccessDawn(WGPUDevice device, WGPUTextureUsage usage);
   void EndAccessDawn(WGPUDevice device, WGPUTexture texture);
 #endif
+
+  absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage();
 
   scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state_for_testing()
       const {
@@ -197,7 +196,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
       SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
-      scoped_refptr<gles2::TexturePassthrough> gl_texture,
+      std::vector<scoped_refptr<gles2::TexturePassthrough>> gl_textures,
       scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state = nullptr,
       GLenum texture_target = GL_TEXTURE_2D,
       size_t array_slice = 0u,
@@ -220,7 +219,7 @@ class GPU_GLES2_EXPORT D3DImageBacking
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture_;
 
   // Can be null for backings owned by non-GL producers e.g. WebGPU.
-  scoped_refptr<gles2::TexturePassthrough> gl_texture_;
+  std::vector<scoped_refptr<gles2::TexturePassthrough>> gl_textures_;
 
   // Holds DXGI shared handle and the keyed mutex if present.  Can be shared
   // between plane shared image backings of a multi-plane texture, or between

@@ -37,8 +37,7 @@ DeviceActiveUseCase::DeviceActiveUseCase(
       psm_use_case_(psm_use_case),
       local_state_(local_state),
       psm_delegate_(std::move(psm_delegate)),
-      statistics_provider_(
-          chromeos::system::StatisticsProvider::GetInstance()) {
+      statistics_provider_(system::StatisticsProvider::GetInstance()) {
   DCHECK(psm_delegate_);
   DCHECK(local_state_);
 }
@@ -82,7 +81,7 @@ absl::optional<std::string> DeviceActiveUseCase::GetWindowIdentifier() const {
 }
 
 bool DeviceActiveUseCase::SetWindowIdentifier(base::Time ts) {
-  std::string window_id = GenerateUTCWindowIdentifier(ts);
+  std::string window_id = GenerateWindowIdentifier(ts);
   psm_id_ = GeneratePsmIdentifier(window_id);
 
   // Check if |psm_id_| is generated.
@@ -112,6 +111,13 @@ DeviceActiveUseCase::GetPsmIdentifier() const {
   return psm_id_;
 }
 
+std::string DeviceActiveUseCase::GenerateWindowIdentifier(base::Time ts) const {
+  base::Time::Exploded exploded;
+  ts.UTCExplode(&exploded);
+  return base::StringPrintf("%04d%02d%02d", exploded.year, exploded.month,
+                            exploded.day_of_month);
+}
+
 bool DeviceActiveUseCase::SavePsmIdToDateMap(base::Time ts) {
   DCHECK(psm_id_.has_value());
   psm_id_to_date_.clear();
@@ -137,7 +143,7 @@ bool DeviceActiveUseCase::SetPsmIdentifiersToImport(base::Time ts) {
   // Clear previous values of id's to import.
   new_import_data_.clear();
 
-  std::string window_id = GenerateUTCWindowIdentifier(ts);
+  std::string window_id = GenerateWindowIdentifier(ts);
   FresnelImportData import_data = FresnelImportData();
   import_data.set_window_identifier(window_id);
   import_data.set_plaintext_id(psm_id_.value().sensitive_id());
@@ -182,8 +188,8 @@ bool DeviceActiveUseCase::IsDevicePingRequired(base::Time new_ping_ts) const {
   // new, powerwashed, recovered, or a RMA device.
   base::Time prev_ping_ts = GetLastKnownPingTimestamp();
 
-  std::string prev_ping_window_id = GenerateUTCWindowIdentifier(prev_ping_ts);
-  std::string new_ping_window_id = GenerateUTCWindowIdentifier(new_ping_ts);
+  std::string prev_ping_window_id = GenerateWindowIdentifier(prev_ping_ts);
+  std::string new_ping_window_id = GenerateWindowIdentifier(new_ping_ts);
 
   // Safety check to avoid against clock drift, or unexpected timestamps.
   // Check should make sure that we are not reporting window id's for
@@ -208,23 +214,10 @@ void DeviceActiveUseCase::SetPsmRlweClient(
   psm_rlwe_client_ = std::move(status_or_client.value());
 }
 
-bool DeviceActiveUseCase::EncryptPsmValueAsCiphertext(base::Time ts) {
-  (void)ts;
-  NOTREACHED();
-  return false;
-}
-
-base::Time DeviceActiveUseCase::DecryptPsmValueAsTimestamp(
-    std::string ciphertext) const {
-  (void)ciphertext;
-  NOTREACHED();
-  return base::Time::UnixEpoch();
-}
-
-std::string DeviceActiveUseCase::FormatUTCDateString(base::Time ts) {
+std::string DeviceActiveUseCase::FormatPTDateString(base::Time ts) {
   base::Time::Exploded exploded;
   ts.UTCExplode(&exploded);
-  return base::StringPrintf("%04d-%02d-%02d %02d:%02d:%02d.%03d UTC",
+  return base::StringPrintf("%04d-%02d-%02d %02d:%02d:%02d.%03d GMT",
                             exploded.year, exploded.month,
                             exploded.day_of_month,
                             /* hour */ 0,
@@ -248,7 +241,6 @@ DeviceActiveUseCase::GeneratePsmIdentifier(
       base::JoinString({psm_use_case, window_id.value()}, "|");
 
   // |psm_id_str| represents a 64 byte hex encoded value by default.
-  // However for the first active use case, this value is a 32 byte string.
   std::string psm_id_str =
       GetDigestString(psm_device_active_secret_, unhashed_psm_id);
 
@@ -269,8 +261,7 @@ std::string DeviceActiveUseCase::GetFullHardwareClass() const {
   // Default |full_hardware_class| to kHardwareClassKeyNotFound if retrieval
   // from machine statistics fails.
   const absl::optional<base::StringPiece> full_hardware_class =
-      statistics_provider_->GetMachineStatistic(
-          chromeos::system::kHardwareClassKey);
+      statistics_provider_->GetMachineStatistic(system::kHardwareClassKey);
   return std::string(full_hardware_class.value_or(kHardwareClassKeyNotFound));
 }
 

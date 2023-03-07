@@ -21,8 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BookmarkPromoController ()<SigninPromoViewConsumer,
-                                      IdentityManagerObserverBridgeDelegate> {
+@interface BookmarkPromoController () <SigninPromoViewConsumer,
+                                       IdentityManagerObserverBridgeDelegate> {
   bool _isIncognito;
   ChromeBrowserState* _browserState;
   std::unique_ptr<signin::IdentityManagerObserverBridge>
@@ -98,8 +98,9 @@
 
 - (void)updateShouldShowSigninPromo {
   self.shouldShowSigninPromo = NO;
-  if (_isIncognito)
+  if (_isIncognito) {
     return;
+  }
 
   DCHECK(_browserState);
   AuthenticationService* authenticationService =

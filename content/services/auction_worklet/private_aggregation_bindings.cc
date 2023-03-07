@@ -228,8 +228,11 @@ ParseForEventContribution(v8::Isolate* isolate,
 }  // namespace
 
 PrivateAggregationBindings::PrivateAggregationBindings(
-    AuctionV8Helper* v8_helper)
-    : v8_helper_(v8_helper) {}
+    AuctionV8Helper* v8_helper,
+    bool private_aggregation_permissions_policy_allowed)
+    : v8_helper_(v8_helper),
+      private_aggregation_permissions_policy_allowed_(
+          private_aggregation_permissions_policy_allowed) {}
 
 PrivateAggregationBindings::~PrivateAggregationBindings() = default;
 
@@ -255,14 +258,16 @@ void PrivateAggregationBindings::FillInGlobalTemplate(
       v8_helper_->CreateStringFromLiteral("sendHistogramReport"),
       send_histogram_report_template);
 
-  v8::Local<v8::FunctionTemplate> report_contribution_for_event_template =
-      v8::FunctionTemplate::New(
-          v8_helper_->isolate(),
-          &PrivateAggregationBindings::ReportContributionForEvent, v8_this);
-  report_contribution_for_event_template->RemovePrototype();
-  private_aggregation_template->Set(
-      v8_helper_->CreateStringFromLiteral("reportContributionForEvent"),
-      report_contribution_for_event_template);
+  if (content::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
+    v8::Local<v8::FunctionTemplate> report_contribution_for_event_template =
+        v8::FunctionTemplate::New(
+            v8_helper_->isolate(),
+            &PrivateAggregationBindings::ReportContributionForEvent, v8_this);
+    report_contribution_for_event_template->RemovePrototype();
+    private_aggregation_template->Set(
+        v8_helper_->CreateStringFromLiteral("reportContributionForEvent"),
+        report_contribution_for_event_template);
+  }
 
   v8::Local<v8::FunctionTemplate> enable_debug_mode_template =
       v8::FunctionTemplate::New(v8_helper_->isolate(),
@@ -330,7 +335,9 @@ void PrivateAggregationBindings::SendHistogramReport(
           v8::External::Cast(*args.Data())->Value());
 
   content::mojom::AggregatableReportHistogramContributionPtr contribution =
-      worklet_utils::ParseSendHistogramReportArguments(gin::Arguments(args));
+      worklet_utils::ParseSendHistogramReportArguments(
+          gin::Arguments(args),
+          bindings->private_aggregation_permissions_policy_allowed_);
   if (contribution.is_null()) {
     // Indicates an exception was thrown.
     return;
@@ -389,7 +396,9 @@ void PrivateAggregationBindings::EnableDebugMode(
           v8::External::Cast(*args.Data())->Value());
 
   worklet_utils::ParseAndApplyEnableDebugModeArguments(
-      gin::Arguments(args), bindings->debug_mode_details_);
+      gin::Arguments(args),
+      bindings->private_aggregation_permissions_policy_allowed_,
+      bindings->debug_mode_details_);
 }
 
 std::vector<auction_worklet::mojom::PrivateAggregationForEventRequestPtr>

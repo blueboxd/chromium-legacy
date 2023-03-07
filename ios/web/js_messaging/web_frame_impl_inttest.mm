@@ -6,7 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/js_messaging/java_script_content_world.h"
@@ -128,68 +128,6 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return called;
-  }));
-}
-
-// Tests that the main WebFrame is passed to the callback when sending a
-// JS -> native message.
-TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
-  ASSERT_TRUE(LoadHtml("<p>"));
-  __block bool command_received = false;
-  // The callback doesn't care about any of the parameters not related to
-  // frames.
-  auto callback = base::BindRepeating(
-      ^(const base::Value& /* json */, const GURL& /* origin_url */,
-        bool /* user_is_interacting */, WebFrame* sender_frame) {
-        command_received = true;
-        EXPECT_TRUE(sender_frame->IsMainFrame());
-        EXPECT_EQ(web_state()->GetWebFramesManager()->GetMainWebFrame(),
-                  sender_frame);
-      });
-
-  auto subscription =
-      web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 1;
-  }));
-
-  base::Value message_dict(base::Value::Type::DICTIONARY);
-  message_dict.SetKey("command",
-                      base::Value("senderFrameTestCommand.mainframe"));
-  std::vector<base::Value> params;
-  params.push_back(std::move(message_dict));
-  CallJavaScriptFunction("message.invokeOnHost", params);
-
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return command_received;
-  }));
-}
-
-// Tests that an iframe WebFrame is passed to the callback when sending a
-// JS -> native message.
-TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
-  ASSERT_TRUE(LoadHtml("<p><iframe>"));
-  __block bool command_received = false;
-  // The callback doesn't care about any of the parameters not related to
-  // frames.
-  auto callback = base::BindRepeating(
-      ^(const base::Value& /* json */, const GURL& /* origin_url */,
-        bool /* user_is_interacting */, WebFrame* sender_frame) {
-        command_received = true;
-        EXPECT_FALSE(sender_frame->IsMainFrame());
-        EXPECT_EQ(GetChildWebFrameForWebState(web_state()), sender_frame);
-      });
-
-  auto subscription =
-      web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
-  }));
-  ExecuteJavaScript(
-      @"window.frames[0].__gCrWeb.message.invokeOnHost({'command':'"
-      @"senderFrameTestCommand.iframe'});");
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return command_received;
   }));
 }
 

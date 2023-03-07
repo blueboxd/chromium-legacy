@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/clock.h"
@@ -29,6 +29,7 @@ class CloudPolicyCore;
 class CloudPolicyStore;
 
 POLICY_EXPORT extern const char kPolicyDescriptionKey[];
+POLICY_EXPORT extern const char kFlexOrgWarningKey[];
 
 // The following constants identify top-level keys in the dictionary returned by
 // PolicyStatusProvider.

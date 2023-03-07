@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
@@ -255,6 +255,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
 
   // Enable or disable vsync callback based on whether begin frames are needed.
   virtual void SetGpuVSyncEnabled(bool enabled);
+
+  virtual void SetVSyncDisplayID(int64_t display_id) {}
 
   // When the device is rotated, the scene prepared by the UI is in the logical
   // screen space as seen by the user. However, attempting to scanout a buffer

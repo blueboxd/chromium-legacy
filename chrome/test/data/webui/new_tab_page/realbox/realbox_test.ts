@@ -6,7 +6,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://new-tab-page/new_tab_page.js';
 
 import {$$, BrowserProxyImpl, decodeString16, MetricsReporterImpl, mojoString16, RealboxBrowserProxy, RealboxElement, RealboxIconElement, RealboxMatchElement} from 'chrome://new-tab-page/new_tab_page.js';
-import {AutocompleteMatch, NavigationPredictor} from 'chrome://new-tab-page/omnibox.mojom-webui.js';
+import {AutocompleteMatch, NavigationPredictor} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PageMetricsCallbackRouter} from 'chrome://resources/js/metrics_reporter/metrics_reporter.mojom-webui.js';
@@ -128,7 +128,6 @@ suite('NewTabPageRealboxTest', () => {
 
   suiteSetup(() => {
     loadTimeData.overrideValues({
-      realboxMatchOmniboxTheme: true,
       realboxSeparator: ' - ',
     });
   });
@@ -158,14 +157,6 @@ suite('NewTabPageRealboxTest', () => {
     assertStyle(
         iconElement.$.icon, 'background-image',
         getFaviconForPageURL(destinationUrl, false, '', 32, true));
-    assertStyle(iconElement.$.icon, '-webkit-mask-image', 'none');
-  }
-
-  function assertIconBackgroundImageUrl(
-      iconElement: RealboxIconElement, url: string) {
-    assertStyle(
-        iconElement.$.icon, 'background-image',
-        `url("chrome://new-tab-page/${url}")`);
     assertStyle(iconElement.$.icon, '-webkit-mask-image', 'none');
   }
 
@@ -217,14 +208,18 @@ suite('NewTabPageRealboxTest', () => {
   test('realbox default Google G icon', async () => {
     // Arrange.
     loadTimeData.overrideValues({
-      realboxDefaultIcon: 'realbox/icons/google_g.svg',
+      realboxDefaultIcon:
+          '//resources/cr_components/omnibox/icons/google_g.svg',
     });
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     realbox = document.createElement('ntp-realbox');
     document.body.appendChild(realbox);
 
     // Assert.
-    assertIconBackgroundImageUrl(realbox.$.icon, 'realbox/icons/google_g.svg');
+    assertStyle(
+        realbox.$.icon.$.icon, 'background-image',
+        `url("chrome://resources/cr_components/omnibox/icons/google_g.svg")`);
+    assertStyle(realbox.$.icon.$.icon, '-webkit-mask-image', 'none');
 
     // Restore.
     loadTimeData.overrideValues({
@@ -273,7 +268,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Left click does not query autocomplete when matches are showing.
@@ -328,7 +323,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Tabbing into input does not query autocomplete when matches are showing.
@@ -394,7 +389,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Arrow up/down keys do not query autocomplete when matches are showing.
@@ -449,7 +444,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Arrow up/down keys do not query autocomplete when matches are showing.
@@ -627,7 +622,7 @@ suite('NewTabPageRealboxTest', () => {
 
     assertEquals('listbox', realbox.$.matches.getAttribute('role'));
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
     verifyMatch(matches[0]!, matchEls[0]!);
     verifyMatch(matches[1]!, matchEls[1]!);
@@ -665,7 +660,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
     verifyMatch(matches[0]!, matchEls[0]!);
 
@@ -752,7 +747,7 @@ suite('NewTabPageRealboxTest', () => {
     assertFalse(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(0, matchEls.length);
   });
 
@@ -770,7 +765,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     let matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     realbox.$.input.value += 'll';
@@ -785,7 +780,7 @@ suite('NewTabPageRealboxTest', () => {
     assertFalse(areMatchesShowing());
 
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(0, matchEls.length);
 
     realbox.$.input.value += 'o';
@@ -800,7 +795,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
   });
 
@@ -924,7 +919,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // First match is selected.
@@ -971,7 +966,7 @@ suite('NewTabPageRealboxTest', () => {
         assertTrue(areMatchesShowing());
 
         let matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(2, matchEls.length);
 
         // Select the first match.
@@ -1001,7 +996,7 @@ suite('NewTabPageRealboxTest', () => {
 
         // First match is still selected.
         matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(2, matchEls.length);
         assertTrue(matchEls[0]!.classList.contains(Classes.SELECTED));
         // Input is not cleared.
@@ -1049,7 +1044,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // First match is not selected.
@@ -1086,7 +1081,7 @@ suite('NewTabPageRealboxTest', () => {
         assertTrue(areMatchesShowing());
 
         let matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(2, matchEls.length);
 
         // Select the first match.
@@ -1116,7 +1111,7 @@ suite('NewTabPageRealboxTest', () => {
 
         // Matches are cleared.
         matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(0, matchEls.length);
         // Input is cleared (zero-prefix case).
         assertEquals('', realbox.$.input.value);
@@ -1160,7 +1155,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // First match is selected.
@@ -1229,7 +1224,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // First match is selected.
@@ -1273,7 +1268,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Right clicks are ignored.
@@ -1347,7 +1342,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     assertEquals(
@@ -1371,7 +1366,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Select the second match.
@@ -1434,7 +1429,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
     // First match is selected.
     assertTrue(matchEls[0]!.classList.contains(Classes.SELECTED));
@@ -1498,7 +1493,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // By pressing 'Enter' on the button.
@@ -1545,7 +1540,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     let matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
 
     // First match is not selected.
@@ -1571,7 +1566,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
 
     // First match is not selected.
@@ -1616,7 +1611,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
 
     // First match is selected.
@@ -1642,7 +1637,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     let matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Select the second match.
@@ -1684,7 +1679,7 @@ suite('NewTabPageRealboxTest', () => {
 
     // Matches are cleared.
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(0, matchEls.length);
     // Input is cleared.
     assertEquals('', realbox.$.input.value);
@@ -1700,7 +1695,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Pressing 'Escape' when no matches are selected closes the dropdown.
@@ -1718,7 +1713,7 @@ suite('NewTabPageRealboxTest', () => {
 
     // Matches are cleared.
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(0, matchEls.length);
   });
 
@@ -1737,7 +1732,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     let arrowDownEvent = new KeyboardEvent('keydown', {
@@ -1839,7 +1834,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
 
     const focusIndicator = matchEls[0]!.$['focus-indicator'];
 
@@ -2067,7 +2062,7 @@ suite('NewTabPageRealboxTest', () => {
         assertTrue(areMatchesShowing());
 
         const matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(2, matchEls.length);
         assertIconMaskImageUrl(matchEls[0]!.$.icon, 'clock.svg');
         assertFavicon(matchEls[1]!.$.icon, matches[1]!.destinationUrl.url);
@@ -2177,7 +2172,7 @@ suite('NewTabPageRealboxTest', () => {
         assertTrue(areMatchesShowing());
 
         const matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(2, matchEls.length);
         assertFavicon(matchEls[0]!.$.icon, matches[0]!.destinationUrl.url);
         assertIconMaskImageUrl(matchEls[1]!.$.icon, 'clock.svg');
@@ -2222,7 +2217,8 @@ suite('NewTabPageRealboxTest', () => {
 
         assertEquals(
             matchEls[1]!.$.icon.$.image.getAttribute('src'),
-            `chrome://image?${matches[1]!.imageUrl}`);
+            `//image?staticEncode=true&encodeType=webp&url=${
+                matches[1]!.imageUrl}`);
 
         // Mock image finishing loading, which should remove the temporary
         // background color.
@@ -2284,7 +2280,7 @@ suite('NewTabPageRealboxTest', () => {
 
     // The first match is showing. The second match is initially hidden.
     let matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
 
     // The suggestion group header and the toggle button are visible.
@@ -2322,7 +2318,7 @@ suite('NewTabPageRealboxTest', () => {
 
     // Second match is visible.
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
 
     // Hide the second match by clicking the toggle button.
@@ -2337,7 +2333,7 @@ suite('NewTabPageRealboxTest', () => {
 
     // Second match is hidden.
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
 
     testProxy.handler.reset();
@@ -2352,7 +2348,7 @@ suite('NewTabPageRealboxTest', () => {
         1, testProxy.handler.getCallCount('toggleSuggestionGroupIdVisibility'));
     // Second match is visible again.
     matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(2, matchEls.length);
   });
 
@@ -2381,7 +2377,7 @@ suite('NewTabPageRealboxTest', () => {
         assertTrue(areMatchesShowing());
 
         const matchEls =
-            realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+            realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
         assertEquals(2, matchEls.length);
 
         // Select the first match.
@@ -2431,7 +2427,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     assertEquals(1, matchEls.length);
 
     verifyMatch(matches[0]!, matchEls[0]!);
@@ -2480,7 +2476,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     verifyMatch(matches[0]!, matchEls[0]!);
 
     // Separator is not displayed
@@ -2524,10 +2520,10 @@ suite('NewTabPageRealboxTest', () => {
     await testProxy.callbackRouterRemote.$.flushForTesting();
     assertTrue(areMatchesShowing());
 
-    const matchEl = $$(realbox.$.matches, 'ntp-realbox-match')!;
+    const matchEl = $$(realbox.$.matches, 'cr-realbox-match')!;
     verifyMatch(matches[0]!, matchEl);
 
-    const pedalEl = $$($$(matchEl, 'ntp-realbox-action')!, '.contents')!;
+    const pedalEl = $$($$(matchEl, 'cr-realbox-action')!, '.contents')!;
 
     assertEquals(
         pedalEl.querySelector<HTMLImageElement>('#action-icon')!.src,
@@ -2576,11 +2572,11 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
     verifyMatch(matches[0]!, matchEls[0]!);
     verifyMatch(matches[1]!, matchEls[1]!);
 
-    const pedalEl = $$($$(matchEls[1]!, 'ntp-realbox-action')!, '.contents')!;
+    const pedalEl = $$($$(matchEls[1]!, 'cr-realbox-action')!, '.contents')!;
 
     assertEquals(
         pedalEl.querySelector<HTMLImageElement>('#action-icon')!.src,
@@ -2650,7 +2646,7 @@ suite('NewTabPageRealboxTest', () => {
     assertTrue(areMatchesShowing());
 
     const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('ntp-realbox-match');
+        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
 
     const mouseDown = new MouseEvent('mousedown', {
       bubbles: true,
@@ -2663,97 +2659,6 @@ suite('NewTabPageRealboxTest', () => {
     await testProxy.handler.whenCalled('onNavigationLikely').then((args) => {
       assertEquals(0, args.line);
       assertEquals(NavigationPredictor.kMouseDown, args.navigationPredictor);
-    });
-  });
-
-  suite('Lens search', () => {
-    test('Lens search button does not show by default', () => {
-      // Assert
-      const lensButton =
-          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      assertFalse(!!lensButton);
-    });
-
-    test('Lens search button is visible when feature is flipped', async () => {
-      // Arrange.
-      loadTimeData.overrideValues({
-        realboxLensSearch: true,
-      });
-      document.body.innerHTML = window.trustedTypes!.emptyHTML;
-      realbox = document.createElement('ntp-realbox');
-      document.body.appendChild(realbox);
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-
-      // Assert
-      const lensButton =
-          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      assertTrue(!!lensButton);
-    });
-
-    test('clicking Lens search button hides matches', async () => {
-      // Arrange.
-      loadTimeData.overrideValues({
-        realboxLensSearch: true,
-      });
-      document.body.innerHTML = window.trustedTypes!.emptyHTML;
-      realbox = document.createElement('ntp-realbox');
-      document.body.appendChild(realbox);
-
-      // Act.
-      realbox.$.input.value = 'hello';
-      realbox.$.input.dispatchEvent(new InputEvent('input'));
-
-      const matches = [
-        createSearchMatch({
-          allowedToBeDefaultMatch: true,
-        }),
-        createUrlMatch(),
-      ];
-      testProxy.callbackRouterRemote.autocompleteResultChanged({
-        input: mojoString16(realbox.$.input.value.trimStart()),
-        matches,
-        suggestionGroupsMap: {},
-      });
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-      assertTrue(areMatchesShowing());
-
-      // Act.
-      const lensButton =
-          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      lensButton.click();
-
-      // Assert.
-      assertFalse(areMatchesShowing());
-
-      // Restore.
-      loadTimeData.overrideValues({
-        realboxLensSearch: false,
-      });
-    });
-
-    test('clicking Lens search button sends Lens search event', async () => {
-      // Arrange.
-      loadTimeData.overrideValues({
-        realboxLensSearch: true,
-      });
-      document.body.innerHTML = window.trustedTypes!.emptyHTML;
-      realbox = document.createElement('ntp-realbox');
-      document.body.appendChild(realbox);
-      const whenOpenLensSearch = eventToPromise('open-lens-search', realbox);
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-
-      // Act.
-      const lensButton =
-        realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      lensButton.click();
-
-      // Assert.
-      await whenOpenLensSearch;
-
-      // Restore.
-      loadTimeData.overrideValues({
-        realboxLensSearch: false,
-      });
     });
   });
 });

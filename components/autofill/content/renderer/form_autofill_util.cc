@@ -818,15 +818,17 @@ bool InferLabelForElement(const WebFormControlElement& element,
   if (InferLabelFromPrevious(element, label, label_source))
     return true;
 
-  // If we didn't find a label, check for placeholder text.
-  std::u16string inferred_label = InferLabelFromPlaceholder(element);
-  if (IsLabelValid(inferred_label)) {
-    label_source = FormFieldData::LabelSource::kPlaceHolder;
-    label = std::move(inferred_label);
-    return true;
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillAlwaysParsePlaceholders)) {
+    std::u16string inferred_label = InferLabelFromPlaceholder(element);
+    if (IsLabelValid(inferred_label)) {
+      label_source = FormFieldData::LabelSource::kPlaceHolder;
+      label = std::move(inferred_label);
+      return true;
+    }
   }
 
-  inferred_label = InferLabelFromOverlayingSuccessor(element);
+  std::u16string inferred_label = InferLabelFromOverlayingSuccessor(element);
   if (IsLabelValid(inferred_label)) {
     label_source = FormFieldData::LabelSource::kOverlayingLabel;
     label = std::move(inferred_label);
@@ -1396,12 +1398,33 @@ void MatchLabelsAndFields(
       field_data = iter->first;
     }
 
+    // Skip `label` if we could not find an associated form control.
     if (!field_data)
       continue;
 
     std::u16string label_text = FindChildText(label);
-    if (label_text.empty())
-      continue;
+    if (label_text.empty()) {
+      if (label.HasAttribute(*kFor)) {
+        continue;
+      }
+      DCHECK(!control.IsNull() && control.IsFormControlElement());
+      // An associated form control was found, but the `label` does not have a
+      // for-attribute, so the form control must be a descendant of the `label`.
+      // Since `FindChildText()` stops at autofillable elements, the
+      // `label_text` can be empty if the "text" is declared behind the <input>.
+      // For example:
+      // <label>
+      //  <input>
+      //  text
+      // </label>
+      // Thus, consider text behind the <input> as a fallback.
+      // Since associated labels are counted as `kFor`, the source is ignored.
+      FormFieldData::LabelSource irrelevant_source;
+      if (!InferLabelFromNext(control.To<WebFormControlElement>(), label_text,
+                              irrelevant_source)) {
+        continue;
+      }
+    }
 
     // Concatenate labels because some sites might have multiple label
     // candidates.
@@ -1411,7 +1434,8 @@ void MatchLabelsAndFields(
     field_data->label_source = FormFieldData::LabelSource::kFor;
     base::UmaHistogramEnumeration(kAssignedLabelSourceHistogram, label_source);
 
-    if (label_source == AssignedLabelSource::kName) {
+    if (label_source == AssignedLabelSource::kName &&
+        base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
       // Add a DevTools issue informing the developer that the `label`'s for-
       // attribute is pointing to the name of a field, even though the ID should
       // be used.
@@ -1420,6 +1444,54 @@ void MatchLabelsAndFields(
           blink::mojom::GenericIssueErrorType::kFormLabelForNameError,
           label.GetDevToolsNodeId());
     }
+  }
+}
+
+//  Emits a devtools issue if two or more inputs tags have the same id
+//  attribute.
+void MaybeEmitDuplicateIdForInputIssue(
+    const WebVector<WebFormControlElement>& control_elements) {
+  base::flat_map<WebString, int> id_count;
+
+  for (const WebFormControlElement& element : control_elements) {
+    if (IsAutofillableElement(element) && !element.GetIdAttribute().IsEmpty()) {
+      id_count[element.GetIdAttribute()]++;
+    }
+  }
+
+  for (const WebFormControlElement& element : control_elements) {
+    if (IsAutofillableElement(element) &&
+        id_count[element.GetIdAttribute()] > 1) {
+      element.GetDocument().GetFrame()->AddGenericIssue(
+          blink::mojom::GenericIssueErrorType::kFormDuplicateIdForInputError,
+          element.GetDevToolsNodeId());
+    }
+  }
+}
+
+// Emits a devtools issue if an input tag has no associated label, meaning
+// neither a label tag, nor an aria-label attribute nor an aria-labelledby
+// attribute.
+void MaybeEmitInputWithNoLabelIssue(
+    const WebVector<WebFormControlElement>& control_elements,
+    FormData* form,
+    const std::vector<bool>& fields_extracted) {
+  for (size_t element_index = 0, field_index = 0;
+       element_index < control_elements.size(); ++element_index) {
+    if (!fields_extracted[element_index]) {
+      continue;
+    }
+
+    FormFieldData& field = form->fields[field_index++];
+    if (!field.label.empty() || !field.aria_label.empty()) {
+      continue;
+    }
+
+    const WebFormControlElement& control_element =
+        control_elements[element_index];
+    control_element.GetDocument().GetFrame()->AddGenericIssue(
+        blink::mojom::GenericIssueErrorType::kFormInputWithNoLabelError,
+        control_element.GetDevToolsNodeId());
   }
 }
 
@@ -1452,6 +1524,10 @@ bool FormOrFieldsetsToFormData(
   DCHECK(form->child_frames.empty());
   DCHECK(!optional_field || form_control_element);
   DCHECK(!form_element || fieldsets.empty());
+
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
+    MaybeEmitDuplicateIdForInputIssue(control_elements);
+  }
 
   // Extracts fields from |control_elements| into `form->fields` and sets
   // `form->child_frames[i].predecessor` to the field index of the last field
@@ -1545,6 +1621,10 @@ bool FormOrFieldsetsToFormData(
       for (const WebElement& fieldset : fieldsets)
         MatchLabelsAndFields(fieldset, field_set);
     }
+  }
+
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
+    MaybeEmitInputWithNoLabelIssue(control_elements, form, fields_extracted);
   }
 
   // Infers field labels from other tags or <labels> without for="...".
@@ -1677,6 +1757,21 @@ std::string GetAutocompleteAttribute(const WebElement& element) {
     return "x-max-data-length-exceeded";
   }
   return autocomplete_attribute;
+}
+
+bool HasAutocompleteAttribute(const WebElement& element) {
+  static base::NoDestructor<WebString> kAutocomplete("autocomplete");
+  return element.HasAttribute(*kAutocomplete);
+}
+
+void ValidateAutocompleteAttributeForElement(const WebElement& element) {
+  std::string autocomplete_attribute = GetAutocompleteAttribute(element);
+  if (HasAutocompleteAttribute(element) && autocomplete_attribute.empty()) {
+    element.GetDocument().GetFrame()->AddGenericIssue(
+        blink::mojom::GenericIssueErrorType::
+            kFormAutocompleteAttributeEmptyError,
+        element.GetDevToolsNodeId());
+  }
 }
 
 void FindFormElementUpShadowRoots(const WebElement& element,
@@ -2007,6 +2102,11 @@ void WebFormControlElementToFormField(
   field->max_length =
       IsTextInput(input_element) ? input_element.MaxLength() : 0;
   field->autocomplete_attribute = GetAutocompleteAttribute(element);
+
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
+    ValidateAutocompleteAttributeForElement(element);
+  }
+
   field->parsed_autocomplete = ParseAutocompleteAttribute(
       field->autocomplete_attribute, field->max_length);
   if (base::EqualsCaseInsensitiveASCII(element.GetAttribute(*kRole).Utf16(),
@@ -2051,6 +2151,7 @@ void WebFormControlElementToFormField(
       field->name = field->name_attribute.empty() ? field->id_attribute
                                                   : field->name_attribute;
     }
+    ValidateAutocompleteAttributeForElement(element);
     if (field->autocomplete_attribute.empty()) {
       field->autocomplete_attribute = GetAutocompleteAttribute(host);
       field->parsed_autocomplete = ParseAutocompleteAttribute(

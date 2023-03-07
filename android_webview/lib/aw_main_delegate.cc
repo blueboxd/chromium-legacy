@@ -24,10 +24,10 @@
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/functional/bind.h"
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
@@ -232,16 +232,8 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
       features.DisableIfNotSet(::features::kDefaultANGLEVulkan);
     }
 
-    if (cl->HasSwitch(switches::kWebViewMPArchFencedFrames)) {
-      features.EnableIfNotSetWithParameter(blink::features::kFencedFrames,
-                                           "implementation_type", "mparch");
-      features.EnableIfNotSet(blink::features::kSharedStorageAPI);
-      features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
-    }
-
-    if (cl->HasSwitch(switches::kWebViewShadowDOMFencedFrames)) {
-      features.EnableIfNotSetWithParameter(blink::features::kFencedFrames,
-                                           "implementation_type", "shadow_dom");
+    if (cl->HasSwitch(switches::kWebViewFencedFrames)) {
+      features.EnableIfNotSet(blink::features::kFencedFrames);
       features.EnableIfNotSet(blink::features::kSharedStorageAPI);
       features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
     }
@@ -271,10 +263,6 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
 
     // TODO(https://crbug.com/1012899): WebXR is not yet supported on WebView.
     features.DisableIfNotSet(::features::kWebXr);
-
-    features.DisableIfNotSet(::features::kWebXrArModule);
-
-    features.DisableIfNotSet(device::features::kWebXrHitTest);
 
     // TODO(https://crbug.com/1312827): Digital Goods API is not yet supported
     // on WebView.

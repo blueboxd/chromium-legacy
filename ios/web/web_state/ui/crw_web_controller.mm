@@ -6,7 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/json/string_escape.h"
@@ -25,7 +25,7 @@
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/common/url_util.h"
 #import "ios/web/download/crw_web_view_download.h"
-#import "ios/web/find_in_page/find_in_page_manager_impl.h"
+#import "ios/web/find_in_page/java_script_find_in_page_manager_impl.h"
 #import "ios/web/history_state_util.h"
 #import "ios/web/js_features/scroll_helper/scroll_helper_java_script_feature.h"
 #import "ios/web/js_messaging/crw_js_window_id_manager.h"
@@ -82,6 +82,10 @@ using web::WebStateImpl;
 
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
+
+namespace {
+char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
+}  // namespace
 
 // TODO(crbug.com/1174560): Allow usage of iOS15 interactionState on iOS 14 SDK
 // based builds.
@@ -289,7 +293,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::BrowserState* browserState = _webStateImpl->GetBrowserState();
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
-    web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
+    web::JavaScriptFindInPageManagerImpl::CreateForWebState(_webStateImpl);
     web::TextFragmentsManagerImpl::CreateForWebState(_webStateImpl);
 
     if (base::FeatureList::IsEnabled(
@@ -1054,6 +1058,34 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   handler(download);
 }
 
+- (BOOL)findInteractionSupported {
+  if (@available(iOS 16, *)) {
+    // The `findInteraction` property only exists for iOS 16 or later, if there
+    // is a web view.
+    return self.webView != nil;
+  }
+
+  return false;
+}
+
+- (void)setFindInteractionEnabled:(BOOL)enabled {
+  if (@available(iOS 16, *)) {
+    self.webView.findInteractionEnabled = enabled;
+  }
+}
+
+- (BOOL)findInteractionEnabled {
+  if (@available(iOS 16, *)) {
+    return self.webView.findInteractionEnabled;
+  }
+
+  return NO;
+}
+
+- (UIFindInteraction*)findInteraction API_AVAILABLE(ios(16)) {
+  return self.webView.findInteraction;
+}
+
 #pragma mark - JavaScript
 
 - (void)injectWindowID {
@@ -1783,7 +1815,7 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
                        forWebState:(web::WebState*)webState {
   CRWWebController* webController =
-      static_cast<web::WebStateImpl*>(webState)->GetWebController();
+      web::WebStateImpl::FromWebState(webState)->GetWebController();
   DCHECK(!webController || webState->HasOpener());
 
   [webController ensureWebViewCreatedWithConfiguration:configuration];
@@ -1911,9 +1943,14 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
 - (void)fullscreenStateDidChange {
 #if defined(__IPHONE_16_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_16_0
   if (@available(iOS 16.0, *)) {
-    [_containerView updateWebViewContentViewFullscreenState:
-                        CrFullscreenStateFromWKFullscreenState(
-                            self.webView.fullscreenState)];
+    CrFullscreenState fullScreenState =
+        CrFullscreenStateFromWKFullscreenState(self.webView.fullscreenState);
+    [_containerView updateWebViewContentViewFullscreenState:fullScreenState];
+    // Update state for `fullscreenModeOn` so that we can expose the current
+    // status of fullscreen mode through different interfaces.
+    _webPageInFullscreenMode =
+        fullScreenState == CrFullscreenState::kInFullscreen;
+    base::UmaHistogramEnumeration(kFullScreenStateHistogram, fullScreenState);
   }
 #endif  // defined (__IPHONE_16_0)
 }

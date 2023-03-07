@@ -3,26 +3,29 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 /**
  * Test fixture for SmartStickyMode.
  */
-ChromeVoxSmartStickyModeTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxSmartStickyModeTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
 
     // Alphabetical based on file path.
     await importModule(
+        'ChromeVoxRange', '/chromevox/background/chromevox_range.js');
+    await importModule(
         'ChromeVoxState', '/chromevox/background/chromevox_state.js');
     await importModule('ChromeVoxPrefs', '/chromevox/background/prefs.js');
     await importModule(
         'SmartStickyMode', '/chromevox/background/smart_sticky_mode.js');
+    await importModule('EarconId', '/chromevox/common/earcon_id.js');
     await importModule('CursorRange', '/common/cursors/range.js');
     this.ssm_ = new SmartStickyMode();
     // Deregister from actual range changes.
-    ChromeVoxState.removeObserver(this.ssm_);
+    ChromeVoxRange.removeObserver(this.ssm_);
     assertFalse(this.ssm_.didTurnOffStickyMode_);
   }
 
@@ -85,9 +88,9 @@ AX_TEST_F(
       // Mix in calls to turn on / off sticky mode while moving the range
       // around.
       this.assertDidTurnOffForNode(input);
-      this.ssm_.onStickyModeCommand(CursorRange.fromNode(input));
+      this.ssm_.onStickyModeCommand_(CursorRange.fromNode(input));
       this.assertDidNotTurnOffForNode(input);
-      this.ssm_.onStickyModeCommand(CursorRange.fromNode(input));
+      this.ssm_.onStickyModeCommand_(CursorRange.fromNode(input));
       this.assertDidNotTurnOffForNode(input);
       this.assertDidNotTurnOffForNode(input.firstChild);
       this.assertDidNotTurnOffForNode(p);
@@ -99,20 +102,20 @@ AX_TEST_F(
       // Mix in more sticky mode user commands and move to related nodes.
       this.assertDidTurnOffForNode(contenteditable);
       this.assertDidTurnOffForNode(ul2);
-      this.ssm_.onStickyModeCommand(CursorRange.fromNode(ul2));
+      this.ssm_.onStickyModeCommand_(CursorRange.fromNode(ul2));
       this.assertDidNotTurnOffForNode(ul2);
       this.assertDidNotTurnOffForNode(ul2.firstChild);
       this.assertDidNotTurnOffForNode(contenteditable);
-      this.ssm_.onStickyModeCommand(CursorRange.fromNode(input));
+      this.ssm_.onStickyModeCommand_(CursorRange.fromNode(input));
       this.assertDidNotTurnOffForNode(ul2);
       this.assertDidNotTurnOffForNode(ul2.firstChild);
       this.assertDidNotTurnOffForNode(contenteditable);
 
       // Finally, verify sticky mode isn't impacted on non-editables.
       this.assertDidNotTurnOffForNode(p);
-      this.ssm_.onStickyModeCommand(CursorRange.fromNode(p));
+      this.ssm_.onStickyModeCommand_(CursorRange.fromNode(p));
       this.assertDidNotTurnOffForNode(p);
-      this.ssm_.onStickyModeCommand(CursorRange.fromNode(p));
+      this.ssm_.onStickyModeCommand_(CursorRange.fromNode(p));
       this.assertDidNotTurnOffForNode(p);
     });
 
@@ -165,12 +168,12 @@ AX_TEST_F(
       mockFeedback.call(doCmd('toggleStickyMode'))
           .expectSpeech('Sticky mode enabled')
           .call(doCmd('nextObject'))
-          .expectEarcon(Earcon.SMART_STICKY_MODE_OFF)
+          .expectEarcon(EarconId.SMART_STICKY_MODE_OFF)
           .expectSpeech('Sticky mode disabled')
           .expectSpeech('Edit text')
           .call(() => assertFalse(ChromeVoxPrefs.isStickyModeOn()))
           .call(doCmd('nextObject'))
-          .expectEarcon(Earcon.SMART_STICKY_MODE_ON)
+          .expectEarcon(EarconId.SMART_STICKY_MODE_ON)
           .expectSpeech('Sticky mode enabled')
           .expectSpeech('Button')
           .call(() => assertTrue(ChromeVoxPrefs.isStickyModeOn()));

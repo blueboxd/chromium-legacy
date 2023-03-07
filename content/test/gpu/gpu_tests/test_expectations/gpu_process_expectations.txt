@@ -106,25 +106,19 @@ crbug.com/1084794 [ chromeos ] GpuProcess_swiftshader_for_webgl [ Skip ]
 # Seems to kill the system UI/otherwise make the device unusable.
 crbug.com/1294065 [ android android-shield-android-tv ] GpuProcess_visibility [ Skip ]
 
+# SwiftShader is disabled on Mac M1
+crbug.com/1378476 [ mac mac-arm64 ] GpuProcess_swiftshader_for_webgl [ Skip ]
+
 ###################
 # Failures/Flakes #
 ###################
 # Non-"Skip" expectations go here to suppress regular flakes/failures.
 
 # Dual-GPU problem with SkiaRenderer.
-crbug.com/1170840 [ mac amd renderer-skia-gl ] GpuProcess_mac_webgl_terminated_high_performance [ Failure ]
-
-# Fuchsia flakes.
+crbug.com/1170840 [ amd-0x6821 mac renderer-skia-gl ] GpuProcess_mac_webgl_terminated_high_performance [ Failure ]
 
 # Started crashing with passthrough field trial.
-crbug.com/1099576 [ mac amd ] GpuProcess_mac_webgl_backgrounded_high_performance [ Failure ]
-crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performance [ Failure ]
-
-# canvas2d flakily crashes, which then affects the following test.
-# finder:disable-stale Nature of crash causes stale result finder to remove these
-crbug.com/1383609 [ android android-sm-a235m ] GpuProcess_canvas2d [ Failure ]
-crbug.com/1383609 [ android android-sm-a235m ] GpuProcess_css3d [ Failure ]
-# finder:enable-stale
+crbug.com/1099576 [ amd-0x6821 mac ] GpuProcess_mac_webgl_backgrounded_high_performance [ Failure ]
 
 crbug.com/1384930 [ android android-sm-a135m ] GpuProcess_visibility [ RetryOnFailure ]
 

@@ -13,9 +13,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/observer_list_types.h"
 #include "base/task/task_runner.h"
@@ -377,10 +377,5 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::DebugDaemonClient;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_DEBUG_DAEMON_DEBUG_DAEMON_CLIENT_H_

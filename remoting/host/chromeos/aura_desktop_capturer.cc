@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "remoting/host/chromeos/ash_proxy.h"
@@ -24,8 +24,9 @@ const char kUmaKeyForCapturerDestroyed[] =
 
 std::unique_ptr<webrtc::DesktopFrame>
 ToDesktopFrame(int dpi, gfx::Point origin, absl::optional<SkBitmap> bitmap) {
-  if (!bitmap)
+  if (!bitmap) {
     return nullptr;
+  }
 
   std::unique_ptr<webrtc::DesktopFrame> frame(SkiaBitmapDesktopFrame::Create(
       std::make_unique<SkBitmap>(std::move(bitmap.value()))));
@@ -106,8 +107,9 @@ bool AuraDesktopCapturer::GetSourceList(SourceList* sources) {
 }
 
 bool AuraDesktopCapturer::SelectSource(SourceId id) {
-  if (!ash_.GetDisplayForId(id))
+  if (!ash_.GetDisplayForId(id)) {
     return false;
+  }
 
   source_display_id_ = id;
   return true;

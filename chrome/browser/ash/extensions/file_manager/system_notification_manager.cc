@@ -7,7 +7,7 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -21,7 +21,7 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -415,6 +415,16 @@ SystemNotificationManager::MakeDriveSyncErrorNotification(
         message = l10n_util::GetStringFUTF16(
             IDS_FILE_BROWSER_SYNC_MISC_ERROR,
             util::GetDisplayableFileName16(file_url));
+        notification = CreateNotification(id, title, message);
+        break;
+      case file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SHARED_DRIVE_SPACE:
+        if (!sync_error.shared_drive.has_value()) {
+          DLOG(WARNING) << "No shared drive provided for error notification";
+          break;
+        }
+        message = l10n_util::GetStringFUTF16(
+            IDS_FILE_BROWSER_SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE,
+            base::UTF8ToUTF16(sync_error.shared_drive.value()));
         notification = CreateNotification(id, title, message);
         break;
       default:

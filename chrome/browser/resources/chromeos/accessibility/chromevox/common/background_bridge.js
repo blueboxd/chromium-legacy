@@ -98,12 +98,12 @@ BackgroundBridge.ChromeVoxPrefs = {
   },
 };
 
-BackgroundBridge.ChromeVoxState = {
+BackgroundBridge.ChromeVoxRange = {
   /** @return {!Promise} */
   async clearCurrentRange() {
     return BridgeHelper.sendMessage(
-        BridgeConstants.ChromeVoxState.TARGET,
-        BridgeConstants.ChromeVoxState.Action.CLEAR_CURRENT_RANGE);
+        BridgeConstants.ChromeVoxRange.TARGET,
+        BridgeConstants.ChromeVoxRange.Action.CLEAR_CURRENT_RANGE);
   },
 };
 
@@ -120,7 +120,7 @@ BackgroundBridge.CommandHandler = {
   },
 };
 
-BackgroundBridge.EventSourceState = {
+BackgroundBridge.EventSource = {
   /**
    * Gets the current event source.
    * TODO(accessibility): this type is ES6; replace once possible.
@@ -128,8 +128,8 @@ BackgroundBridge.EventSourceState = {
    */
   async get() {
     return BridgeHelper.sendMessage(
-        BridgeConstants.EventSourceState.TARGET,
-        BridgeConstants.EventSourceState.Action.GET);
+        BridgeConstants.EventSource.TARGET,
+        BridgeConstants.EventSource.Action.GET);
   },
 };
 

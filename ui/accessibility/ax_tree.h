@@ -202,7 +202,7 @@ class AX_EXPORT AXTree {
   }
 
   // Return a multi-line indented string representation, for logging.
-  std::string ToString() const;
+  std::string ToString(bool verbose = true) const;
 
   // A string describing the error from an unsuccessful Unserialize,
   // for testing and debugging.
@@ -267,9 +267,10 @@ class AX_EXPORT AXTree {
 
   // Accumulate errors as there can be more than one before Chrome is crashed
   // via AccessibilityFatalError();
-  // In an AX_FAIL_FAST_BUILD, will assert/crash immediately.
+  // In an AX_FAIL_FAST_BUILD or if |is_fatal|, will assert/crash immediately.
   void RecordError(const AXTreeUpdateState& update_state,
-                   std::string new_error);
+                   std::string new_error,
+                   bool is_fatal = false);
 
   AXNode* CreateNode(AXNode* parent,
                      AXNodeID id,

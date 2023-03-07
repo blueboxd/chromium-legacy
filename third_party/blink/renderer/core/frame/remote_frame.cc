@@ -255,6 +255,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   auto params = mojom::blink::OpenURLParams::New();
   params->url = url;
   params->initiator_origin = request.RequestorOrigin();
+  params->initiator_base_url = frame_request.GetRequestorBaseURL();
   params->post_body =
       blink::GetRequestBodyForWebURLRequest(WrappedResourceRequest(request));
   DCHECK_EQ(!!params->post_body, request.HttpMethod().Utf8() == "POST");
@@ -386,8 +387,9 @@ const RemoteSecurityContext* RemoteFrame::GetSecurityContext() const {
 }
 
 bool RemoteFrame::ShouldClose() {
-  // TODO(nasko): Implement running the beforeunload handler in the actual
-  // LocalFrame running in a different process and getting back a real result.
+  // TODO(crbug.com/1407078): Implement running the beforeunload handler in the
+  // actual LocalFrame running in a different process and getting back a real
+  // result.
   return true;
 }
 
@@ -419,9 +421,14 @@ void RemoteFrame::AddResourceTimingFromChild(
   HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(Owner());
   DCHECK(owner_element);
 
+  if (!owner_element->HasPendingFallbackTimingInfo()) {
+    return;
+  }
+
   DOMWindowPerformance::performance(*owner_element->GetDocument().domWindow())
       ->AddResourceTiming(std::move(timing), owner_element->localName(),
                           owner_element->GetDocument().GetExecutionContext());
+  owner_element->DidReportResourceTiming();
 }
 
 void RemoteFrame::DidStartLoading() {
@@ -1092,12 +1099,14 @@ void RemoteFrame::CreateRemoteChild(
     const absl::optional<FrameToken>& opener_frame_token,
     mojom::blink::TreeScopeType tree_scope_type,
     mojom::blink::FrameReplicationStatePtr replication_state,
+    mojom::blink::FrameOwnerPropertiesPtr owner_properties,
     bool is_loading,
     const base::UnguessableToken& devtools_frame_token,
     mojom::blink::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces) {
   Client()->CreateRemoteChild(
       token, opener_frame_token, tree_scope_type, std::move(replication_state),
-      is_loading, devtools_frame_token, std::move(remote_frame_interfaces));
+      std::move(owner_properties), is_loading, devtools_frame_token,
+      std::move(remote_frame_interfaces));
 }
 
 }  // namespace blink

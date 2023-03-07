@@ -41,9 +41,8 @@ class CORE_EXPORT ScopedCSSName : public GarbageCollected<ScopedCSSName> {
   }
 
   unsigned GetHash() const {
-    unsigned hash = WTF::AtomicStringHash::GetHash(name_);
-    WTF::AddIntToHash(
-        hash, WTF::PtrHash<const TreeScope>::GetHash(tree_scope_.Get()));
+    unsigned hash = WTF::GetHash(name_);
+    WTF::AddIntToHash(hash, WTF::GetHash(tree_scope_.Get()));
     return hash;
   }
 
@@ -97,27 +96,26 @@ namespace WTF {
 // HeapHashSet<Member<ScopedCSSName>>) that hashes the ScopedCSSNames directly
 // instead of the wrapper pointers.
 
-template <typename ScopedCSSNameWrapperPtr>
-struct ScopedCSSNameWrapperPtrHash {
-  STATIC_ONLY(ScopedCSSNameWrapperPtrHash);
-  static unsigned GetHash(const ScopedCSSNameWrapperPtr& name) {
-    return name->GetHash();
-  }
-  static bool Equal(const ScopedCSSNameWrapperPtr& a,
-                    const ScopedCSSNameWrapperPtr& b) {
+template <typename ScopedCSSNameWrapperType>
+struct ScopedCSSNameWrapperPtrHashTraits
+    : MemberHashTraits<ScopedCSSNameWrapperType> {
+  using TraitType =
+      typename MemberHashTraits<ScopedCSSNameWrapperType>::TraitType;
+  static unsigned GetHash(const TraitType& name) { return name->GetHash(); }
+  static bool Equal(const TraitType& a, const TraitType& b) {
     return base::ValuesEquivalent(a, b);
   }
   // Set this flag to 'false', otherwise Equal above will see gibberish values
   // that aren't safe to call ValuesEquivalent on.
-  static const bool safe_to_compare_to_empty_or_deleted = false;
+  static constexpr bool kSafeToCompareToEmptyOrDeleted = false;
 };
 
 template <>
-struct DefaultHash<blink::Member<blink::ScopedCSSName>>
-    : ScopedCSSNameWrapperPtrHash<blink::Member<blink::ScopedCSSName>> {};
+struct HashTraits<blink::Member<blink::ScopedCSSName>>
+    : ScopedCSSNameWrapperPtrHashTraits<blink::ScopedCSSName> {};
 template <>
-struct DefaultHash<blink::Member<const blink::ScopedCSSName>>
-    : ScopedCSSNameWrapperPtrHash<blink::Member<const blink::ScopedCSSName>> {};
+struct HashTraits<blink::Member<const blink::ScopedCSSName>>
+    : ScopedCSSNameWrapperPtrHashTraits<const blink::ScopedCSSName> {};
 
 }  // namespace WTF
 

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
-#include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -37,7 +37,6 @@
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
@@ -64,15 +63,13 @@
 #include "chromeos/startup/browser_params_proxy.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS)
 namespace {
+
+#if BUILDFLAG(IS_CHROMEOS)
 constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
-}
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-namespace {
-
 // SystemWebAppDelegate provides menu.
 class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
  public:
@@ -95,9 +92,19 @@ class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
  private:
   raw_ptr<const ash::SystemWebAppDelegate> system_app_;
 };
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+base::OnceClosure& IconLoadCallbackForTesting() {
+  static base::NoDestructor<base::OnceClosure> callback;
+  return *callback;
+}
+
+base::OnceClosure& ManifestUpdateAppliedCallbackForTesting() {
+  static base::NoDestructor<base::OnceClosure> callback;
+  return *callback;
+}
 
 }  // namespace
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace web_app {
 
@@ -161,7 +168,7 @@ void WebAppBrowserController::ToggleWindowControlsOverlayEnabled(
 
   provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
       "WebAppBrowserController::ToggleWindowControlsOverlayEnabled",
-      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id()}),
+      std::make_unique<AppLockDescription>(app_id()),
       base::BindOnce(
           [](base::OnceClosure on_complete, const AppId& app_id,
              AppLock& lock) {
@@ -220,7 +227,7 @@ bool WebAppBrowserController::AlwaysShowToolbarInFullscreen() const {
 void WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen() {
   provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
       "WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen",
-      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id()}),
+      std::make_unique<AppLockDescription>(app_id()),
       base::BindOnce(
           [](const AppId& app_id, AppLock& lock) {
             lock.sync_bridge().SetAlwaysShowToolbarInFullscreen(
@@ -289,13 +296,22 @@ void WebAppBrowserController::OnWebAppUninstalled(
     chrome::CloseWindow(browser());
 }
 
-void WebAppBrowserController::OnWebAppInstallManagerDestroyed() {
-  install_manager_observation_.Reset();
+void WebAppBrowserController::OnWebAppManifestUpdated(
+    const AppId& updated_app_id,
+    base::StringPiece old_name) {
+  if (updated_app_id == app_id()) {
+    UpdateThemePack();
+    app_icon_.reset();
+    browser()->window()->UpdateTitleBar();
+
+    if (ManifestUpdateAppliedCallbackForTesting()) {
+      std::move(ManifestUpdateAppliedCallbackForTesting()).Run();
+    }
+  }
 }
 
-void WebAppBrowserController::SetReadIconCallbackForTesting(
-    base::OnceClosure callback) {
-  callback_for_testing_ = std::move(callback);
+void WebAppBrowserController::OnWebAppInstallManagerDestroyed() {
+  install_manager_observation_.Reset();
 }
 
 ui::ImageModel WebAppBrowserController::GetWindowAppIcon() const {
@@ -502,6 +518,16 @@ bool WebAppBrowserController::IsInstalled() const {
   return registrar().IsInstalled(app_id());
 }
 
+void WebAppBrowserController::SetIconLoadCallbackForTesting(
+    base::OnceClosure callback) {
+  IconLoadCallbackForTesting() = std::move(callback);
+}
+
+void WebAppBrowserController::SetManifestUpdateAppliedCallbackForTesting(
+    base::OnceClosure callback) {
+  ManifestUpdateAppliedCallbackForTesting() = std::move(callback);
+}
+
 void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
   SetAppPrefsForWebContents(contents);
@@ -553,8 +579,9 @@ void WebAppBrowserController::OnLoadIcon(apps::IconValuePtr icon_value) {
 
   if (auto* contents = web_contents())
     contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-  if (callback_for_testing_)
-    std::move(callback_for_testing_).Run();
+  if (IconLoadCallbackForTesting()) {
+    std::move(IconLoadCallbackForTesting()).Run();
+  }
 }
 
 void WebAppBrowserController::OnReadIcon(IconPurpose purpose, SkBitmap bitmap) {
@@ -570,8 +597,9 @@ void WebAppBrowserController::OnReadIcon(IconPurpose purpose, SkBitmap bitmap) {
       ui::ImageModel::FromImageSkia(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
   if (auto* contents = web_contents())
     contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-  if (callback_for_testing_)
-    std::move(callback_for_testing_).Run();
+  if (IconLoadCallbackForTesting()) {
+    std::move(IconLoadCallbackForTesting()).Run();
+  }
 }
 
 void WebAppBrowserController::PerformDigitalAssetLinkVerification(

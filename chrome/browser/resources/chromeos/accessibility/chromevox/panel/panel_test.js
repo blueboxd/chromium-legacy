@@ -15,10 +15,15 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
 
     // Alphabetical based on file path.
     await importModule(
+        'ChromeVoxRange', '/chromevox/background/chromevox_range.js');
+    await importModule(
         'ChromeVoxState', '/chromevox/background/chromevox_state.js');
     await importModule(
         'CommandHandlerInterface',
         '/chromevox/background/command_handler_interface.js');
+    await importModule('EventSource', '/chromevox/background/event_source.js');
+    await importModule(
+        'EventSourceType', '/chromevox/common/event_source_type.js');
     await importModule(
         'LocaleOutputHelper', '/chromevox/common/locale_output_helper.js');
     await importModule(
@@ -26,6 +31,9 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
         '/chromevox/common/panel_command.js');
     await importModule('CursorRange', '/common/cursors/range.js');
     await importModule('LocalStorage', '/common/local_storage.js');
+
+    globalThis.Gesture = chrome.accessibilityPrivate.Gesture;
+    globalThis.RoleType = chrome.automation.RoleType;
   }
 
   fireMockEvent(key) {
@@ -34,7 +42,7 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
       obj.preventDefault = function() {};
       obj.stopPropagation = function() {};
       obj.key = key;
-      this.getPanel().onKeyDown(obj);
+      this.getPanel().instance.onKeyDown_(obj);
     }.bind(this);
   }
 
@@ -43,7 +51,7 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
       const evt = {};
       evt.target = {};
       evt.target.value = query;
-      this.getPanel().onSearchBarQuery(evt);
+      this.getPanel().instance.onSearchBarQuery_(evt);
     }.bind(this);
   }
 
@@ -52,24 +60,24 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
     // to wait until an update has been made. Swap in our hook, wait, then
     // restore after.
     const makeAssertions = () => {
-      const menu = this.getPanel().instance_.activeMenu_;
+      const menu = this.getPanel().instance.menuManager_.activeMenu_;
       assertEquals(menuMsg, menu.menuMsg);
     };
 
     return new Promise(resolve => {
       const Panel = this.getPanel();
-      const original = Panel.activateMenu;
-      Panel.activateMenu = (menu, activateFirstItem) => {
+      const original = Panel.instance.activateMenu_.bind(Panel.instance);
+      Panel.instance.activateMenu_ = (menu, activateFirstItem) => {
         original(menu, activateFirstItem);
         makeAssertions();
-        Panel.activateMenu = original;
+        Panel.instance.activateMenu_ = original;
         resolve();
       };
     });
   }
 
   assertActiveMenuItem(menuMsg, menuItemTitle, opt_menuItemShortcut) {
-    const menu = this.getPanel().instance_.activeMenu_;
+    const menu = this.getPanel().instance.menuManager_.activeMenu_;
     const menuItem = menu.items_[menu.activeIndex_];
     assertEquals(menuMsg, menu.menuMsg);
     assertEquals(menuItemTitle, menuItem.menuItemTitle);
@@ -79,14 +87,18 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
   }
 
   assertActiveSearchMenuItem(menuItemTitle) {
-    const searchMenu = this.getPanel().instance_.searchMenu_;
+    const searchMenu = this.getPanel().instance.menuManager_.searchMenu;
     const activeIndex = searchMenu.activeIndex_;
     const activeItem = searchMenu.items_[activeIndex];
     assertEquals(menuItemTitle, activeItem.menuItemTitle);
   }
 
+  enableTouchMode() {
+    EventSource.set(EventSourceType.TOUCH_GESTURE);
+  }
+
   isMenuTitleMessage(menuTitleMessage) {
-    const menu = this.getPanel().instance_.activeMenu_;
+    const menu = this.getPanel().instance.menuManager_.activeMenu_;
     return menuTitleMessage === menu.menuMsg;
   }
 
@@ -233,7 +245,7 @@ AX_TEST_F('ChromeVoxPanelTest', 'ActionsMenu', async function() {
 AX_TEST_F('ChromeVoxPanelTest', 'ActionsMenuLongClick', async function() {
   await this.runWithLoadedTree(this.linksDoc);
   // Get the node that will be checked for actions.
-  const activeNode = ChromeVoxState.instance.currentRange.start.node;
+  const activeNode = ChromeVoxRange.current.start.node;
   // Override the standard actions to have long click.
   Object.defineProperty(activeNode, 'standardActions', {
     value: ['longClick'],
@@ -286,7 +298,7 @@ AX_TEST_F(
     'ChromeVoxPanelTest', 'TouchGesturesMenuAvailableWhenInTouchMode',
     async function() {
       await this.runWithLoadedTree(this.linksDoc);
-      this.getPanel().setTouchGestureSourceForTesting();
+      this.enableTouchMode();
       new PanelCommand(PanelCommandType.OPEN_MENUS).send();
       await this.waitForMenu('panel_search_menu');
 

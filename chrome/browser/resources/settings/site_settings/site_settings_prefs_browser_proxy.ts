@@ -300,12 +300,10 @@ export interface SiteSettingsPrefsBrowserProxy {
    * origin.
    * @param chooserType The chooser exception type
    * @param origin The origin to look up the permission for.
-   * @param embeddingOrigin the embedding origin to look up.
    * @param exception The exception to revoke permission for.
    */
   resetChooserExceptionForSite(
-      chooserType: ChooserType, origin: string, embeddingOrigin: string,
-      exception: Object): void;
+      chooserType: ChooserType, origin: string, exception: Object): void;
 
   /**
    * Sets the category permission for a given origin (expressed as primary and
@@ -498,6 +496,12 @@ export interface SiteSettingsPrefsBrowserProxy {
    * @param numCookies The number of cookies.
    */
   getNumCookiesString(numCookies: number): Promise<string>;
+
+  /**
+   * Gets the extension name for a given extension id.
+   * @param id The extension id.
+   */
+  getExtensionName(id: string): Promise<string>;
 }
 
 export class SiteSettingsPrefsBrowserProxyImpl implements
@@ -557,11 +561,9 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
   }
 
   resetChooserExceptionForSite(
-      chooserType: ChooserType, origin: string, embeddingOrigin: string,
-      exception: Object) {
+      chooserType: ChooserType, origin: string, exception: Object) {
     chrome.send(
-        'resetChooserExceptionForSite',
-        [chooserType, origin, embeddingOrigin, exception]);
+        'resetChooserExceptionForSite', [chooserType, origin, exception]);
   }
 
   setCategoryPermissionForPattern(
@@ -692,6 +694,10 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
 
   getNumCookiesString(numCookies: number) {
     return sendWithPromise('getNumCookiesString', numCookies);
+  }
+
+  getExtensionName(id: string) {
+    return sendWithPromise('getExtensionName', id);
   }
 
   static getInstance(): SiteSettingsPrefsBrowserProxy {

@@ -22,15 +22,15 @@ public class CreatorMediator {
     private Context mContext;
     private Creator mCreator;
     private byte[] mWebFeedId;
-    private String mTitle;
-    private String mUrl;
     private PropertyModel mCreatorModel;
-    private boolean mFollowState;
+    private final CreatorSnackbarController mCreatorSnackbarController;
 
-    CreatorMediator(Context context, PropertyModel creatorModel) {
+    CreatorMediator(Context context, PropertyModel creatorModel,
+            CreatorSnackbarController creatorSnackbarController) {
         mContext = context;
         mCreatorModel = creatorModel;
         mWebFeedId = mCreatorModel.get(CreatorProperties.WEB_FEED_ID_KEY);
+        mCreatorSnackbarController = creatorSnackbarController;
         getCreator();
 
         // Set Follow OnClick Action
@@ -44,6 +44,8 @@ public class CreatorMediator {
                     if (result.requestStatus == SUCCESS) {
                         mCreatorModel.set(CreatorProperties.IS_FOLLOWED_KEY, true);
                     }
+                    mCreatorSnackbarController.showSnackbarForFollow(
+                            result.requestStatus, mCreatorModel.get(CreatorProperties.TITLE_KEY));
                 });
     }
 
@@ -53,6 +55,8 @@ public class CreatorMediator {
                     if (result.requestStatus == SUCCESS) {
                         mCreatorModel.set(CreatorProperties.IS_FOLLOWED_KEY, false);
                     }
+                    mCreatorSnackbarController.showSnackbarForUnfollow(
+                            result.requestStatus, mCreatorModel.get(CreatorProperties.TITLE_KEY));
                 });
     }
 

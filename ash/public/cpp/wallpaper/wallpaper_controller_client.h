@@ -10,8 +10,8 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 
 class AccountId;
@@ -41,16 +41,6 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
   virtual void FetchDailyRefreshWallpaper(
       const std::string& collection_id,
       DailyWallpaperUrlFetchedCallback callback) = 0;
-
-  // TODO(b/245611754) move to `WallpaperDriveFsDelegate`.
-  virtual void SaveWallpaperToDriveFs(
-      const AccountId& account_id,
-      const base::FilePath& origin,
-      base::OnceCallback<void(bool)> wallpaper_saved_callback) = 0;
-
-  // TODO(b/245611754) move to `WallpaperDriveFsDelegate`.
-  virtual base::FilePath GetWallpaperPathFromDriveFs(
-      const AccountId& account_id) = 0;
 
   virtual void GetFilesId(
       const AccountId& account_id,

@@ -8,10 +8,10 @@
 #include <string>
 
 #include "ash/constants/ash_features.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/ash/borealis/borealis_disk_manager.h"
 #include "chrome/browser/ash/borealis/borealis_features.h"
 #include "chrome/browser/ash/borealis/borealis_launch_options.h"
-#include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
@@ -127,6 +126,20 @@ CreateDiskImage::CreateDiskImage() : BorealisTask("CreateDiskImage") {}
 CreateDiskImage::~CreateDiskImage() = default;
 
 void CreateDiskImage::RunInternal(BorealisContext* context) {
+  ash::ConciergeClient::Get()->WaitForServiceToBeAvailable(
+      base::BindOnce(&CreateDiskImage::OnConciergeAvailable,
+                     weak_factory_.GetWeakPtr(), context));
+}
+
+void CreateDiskImage::OnConciergeAvailable(BorealisContext* context,
+                                           bool is_available) {
+  if (!is_available) {
+    context->set_disk_path({});
+    Complete(BorealisStartupResult::kDiskImageFailed,
+             "Concierge service is not available");
+    return;
+  }
+
   vm_tools::concierge::CreateDiskImageRequest request;
   request.set_vm_name(context->vm_name());
   request.set_cryptohome_id(
@@ -194,8 +207,9 @@ namespace {
 
 absl::optional<base::File> MaybeOpenFile(
     absl::optional<base::FilePath> file_path) {
-  if (!file_path)
+  if (!file_path) {
     return absl::nullopt;
+  }
 
   base::File file(file_path.value(), base::File::FLAG_OPEN |
                                          base::File::FLAG_READ |

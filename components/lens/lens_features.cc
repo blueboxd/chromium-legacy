@@ -22,10 +22,6 @@ BASE_FEATURE(kLensSearchOptimizations,
              "LensSearchOptimizations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kLensSearchImageInScreenshotSharing,
-             "LensSearchImageInScreenshotSharing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableLatencyLogging,
              "LensImageLatencyLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -33,10 +29,6 @@ BASE_FEATURE(kEnableLatencyLogging,
 BASE_FEATURE(kEnableRegionSearchKeyboardShortcut,
              "LensEnableRegionSearchKeyboardShortcut",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableRegionSearchOnPdfViewer,
-             "LensEnableRegionSearchOnPdfViewer",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableImageSearchSidePanelFor3PDse,
              "EnableImageSearchSidePanelFor3PDse",
@@ -74,15 +66,11 @@ constexpr base::FeatureParam<int> kMaxAreaForRegionSearch{
 constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
     &kLensImageCompression, "dimensions-max-pixels", 1000};
 
-const base::FeatureParam<bool> kUseSidePanelForScreenshotSharing{
-    &kLensSearchImageInScreenshotSharing,
-    "use-side-panel-for-screenshot-sharing", false};
-
-const base::FeatureParam<bool> kEnablePersistentBubble{
-    &kLensSearchImageInScreenshotSharing, "enable-persistent-bubble", false};
-
 const base::FeatureParam<bool> kEnableLensFullscreenSearch{
     &kLensSearchOptimizations, "enable-lens-fullscreen-search", true};
+
+const base::FeatureParam<bool> kLensContextMenuUseAlternateText{
+    &kLensSearchOptimizations, "use-lens-context-menu-alternate-text", false};
 
 const base::FeatureParam<bool> kUseWebpInImageSearch{
     &kLensImageFormatOptimizations, "use-webp-image-search", true};
@@ -151,25 +139,14 @@ bool IsLensSidePanelEnabledForRegionSearch() {
   return IsLensSidePanelEnabled() && !IsLensFullscreenSearchEnabled();
 }
 
-bool IsLensInScreenshotSharingEnabled() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchImageInScreenshotSharing);
-}
-
-// Does not check if kLensSearchImageInScreenshotSharing is enabled because this
-// method is not called if kLensSearchImageInScreenshotSharing is false
-bool UseSidePanelForScreenshotSharing() {
-  return kUseSidePanelForScreenshotSharing.Get();
-}
-
-// Does not check if kLensSearchImageInScreenshotSharing is enabled because this
-// method is not called if kLensSearchImageInScreenshotSharing is false
-bool EnablePersistentBubble() {
-  return kEnablePersistentBubble.Get();
-}
-
 bool IsLensRegionSearchStaticPageEnabled() {
   return base::FeatureList::IsEnabled(kLensRegionSearchStaticPage);
+}
+
+bool UseLensContextMenuItemAlternateText() {
+  return base::FeatureList::IsEnabled(kLensStandalone) &&
+         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
+         kLensContextMenuUseAlternateText.Get();
 }
 
 bool IsWebpForImageSearchEnabled() {

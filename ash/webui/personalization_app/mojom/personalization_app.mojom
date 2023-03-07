@@ -7,6 +7,7 @@ module ash.personalization_app.mojom;
 import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "url/mojom/url.mojom";
 
@@ -96,6 +97,9 @@ struct GooglePhotosAlbum {
 
     // URL to the bytes of the album's displayed cover photo.
     url.mojom.Url preview;
+
+    // Latest modification timestamp used to sort albums.
+    mojo_base.mojom.Time timestamp;
 };
 
 // Represents the server-provided response to a Google Photos albums request.
@@ -236,6 +240,15 @@ interface WallpaperProvider {
     FetchGooglePhotosAlbums(string? resume_token) =>
         (FetchGooglePhotosAlbumsResponse response);
 
+    // Fetch the list of albums shared with the user or shared by the user in
+    // Google Photos. Albums with no photo assets will not be returned. On
+    // error, |response.albums| will be absent. |response.resume_token| will
+    // be present when there are more results to fetch; |resume_token| will
+    // be present when this is a follow-up query to one that indicated there
+    // were more results to fetch.
+    FetchGooglePhotosSharedAlbums(string? resume_token) =>
+        (FetchGooglePhotosAlbumsResponse response);
+
     // Fetch whether the user is allowed to access Google Photos data.
     FetchGooglePhotosEnabled() => (GooglePhotosEnablementState state);
 
@@ -324,12 +337,21 @@ interface WallpaperProvider {
     CancelPreviewWallpaper();
 };
 
+// Color scheme options used to generate the system UI's color palette.
 enum ColorScheme {
   kStatic = 0,
   kTonalSpot = 1,
   kNeutral = 2,
   kExpressive = 3,
   kVibrant = 4,
+};
+
+// Samples of a color scheme for the tri-color scheme preview.
+struct SampleColorScheme {
+  ColorScheme scheme;
+  skia.mojom.SkColor primary;
+  skia.mojom.SkColor secondary;
+  skia.mojom.SkColor tertiary;
 };
 
 // Receives information whenever there are theme related changes such as color
@@ -373,6 +395,9 @@ interface ThemeProvider {
 
   // Retrieves the static seed color for dynamic color.
   GetStaticColor() => (skia.mojom.SkColor? static_color);
+
+  // Generate samples of all the color schemes.
+  GenerateSampleColorSchemes() => (array<SampleColorScheme> sample_color_schemes);
 
   // Returns whether color mode auto scheduler is enabled.
   IsColorModeAutoScheduleEnabled() => (bool enabled);

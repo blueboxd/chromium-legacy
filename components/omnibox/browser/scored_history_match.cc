@@ -23,8 +23,6 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
-#include "components/omnibox/common/omnibox_features.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
 
@@ -144,8 +142,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     bool is_url_bookmarked,
     size_t num_matching_pages,
     bool is_highly_visited_host,
-    base::Time now)
-    : raw_score(0) {
+    base::Time now) {
   // Initialize HistoryMatch fields. TODO(tommycli): Merge these two classes.
   url_info = row;
   input_location = 0;
@@ -276,21 +273,50 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     }
   }
 
+  // Calculate the score per `topicality_score`, `frequency_score`, and
+  // `specificity_score`.
   const float topicality_score =
       GetTopicalityScore(terms_vector.size(), gurl, adjustments,
                          terms_to_word_starts_offsets, word_starts);
   const float frequency_score = GetFrequency(now, is_url_bookmarked, visits);
   const float specificity_score =
       GetDocumentSpecificityScore(num_matching_pages);
+  raw_score_before_domain_boosting =
+      base::saturated_cast<int>(GetFinalRelevancyScore(
+          topicality_score, frequency_score, specificity_score, 1));
 
+  // Calculate the score considering `domain_score` as well (if enabled).
   static float domain_suggestions_score_factor =
       OmniboxFieldTrial::kDomainSuggestionsScoreFactor.Get();
   DCHECK_GE(domain_suggestions_score_factor, 1);
   const float domain_score =
       is_highly_visited_host ? domain_suggestions_score_factor : 1;
+  raw_score_after_domain_boosting =
+      domain_score > 1 ? base::saturated_cast<int>(GetFinalRelevancyScore(
+                             topicality_score, frequency_score,
+                             specificity_score, domain_score))
+                       : raw_score_before_domain_boosting;
+  DCHECK(domain_score > 1 ? raw_score_before_domain_boosting <=
+                                raw_score_after_domain_boosting
+                          : raw_score_before_domain_boosting ==
+                                raw_score_after_domain_boosting);
 
-  raw_score = base::saturated_cast<int>(GetFinalRelevancyScore(
-      topicality_score, frequency_score, specificity_score, domain_score));
+  // Calculate the score using an alternative domain scoring (if enabled).
+  static bool domain_suggestions_alternative_scoring =
+      OmniboxFieldTrial::kDomainSuggestionsAlternativeScoring.Get();
+  if (is_highly_visited_host && domain_suggestions_alternative_scoring) {
+    raw_score_after_domain_boosting =
+        std::max(GetDomainRelevancyScore(now), raw_score_after_domain_boosting);
+  }
+
+  // If the domain suggestions feature is CF enabled, use the un-boosted score;
+  // if non-CF enabled, use the boosted score; and if disabled, it doesn't
+  // matter as the scores are equal.
+  static const bool domain_suggestions_counterfactual =
+      OmniboxFieldTrial::kDomainSuggestionsCounterfactual.Get();
+  raw_score = domain_suggestions_counterfactual
+                  ? raw_score_before_domain_boosting
+                  : raw_score_after_domain_boosting;
 
   if (also_do_hup_like_scoring_ && likely_can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
@@ -449,6 +475,50 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
 }
 
 // static
+size_t ScoredHistoryMatch::ComputeTotalMatchLength(
+    const WordStarts& terms_to_word_starts_offsets,
+    const TermMatches& matches,
+    const WordStarts& word_starts,
+    size_t num_words_to_allow) {
+  int total_match_length = 0;
+  auto next_word_starts = word_starts.begin();
+  auto end_word_starts = word_starts.end();
+  size_t word_num = 0;
+  for (const auto& match : matches) {
+    // Calculate the offset in the title string where the meaningful (word) part
+    // of the term starts.  This takes into account times when a term starts
+    // with punctuation such as "/foo".
+    const size_t term_word_offset =
+        match.offset + terms_to_word_starts_offsets[match.term_num];
+    // Advance next_word_starts until it's >= the position of the term we're
+    // considering (adjusted for where the word begins within the term).
+    while ((next_word_starts != end_word_starts) &&
+           (*next_word_starts < term_word_offset)) {
+      ++next_word_starts;
+      ++word_num;
+    }
+
+    // Only count up to the number of allowed words.
+    if (word_num >= num_words_to_allow) {
+      break;
+    }
+    total_match_length += match.length;
+  }
+  return total_match_length;
+}
+
+// static
+size_t ScoredHistoryMatch::CountUniqueMatchTerms(
+    const TermMatches& term_matches) {
+  // Find unique `term_num`s in term_matches
+  std::set<int> unique_term_nums;
+  for (const auto& match : term_matches) {
+    unique_term_nums.insert(match.term_num);
+  }
+  return unique_term_nums.size();
+}
+
+// static
 void ScoredHistoryMatch::Init() {
   static bool initialized = false;
 
@@ -526,7 +596,6 @@ float ScoredHistoryMatch::GetTopicalityScore(
   int32_t total_host_match_length = 0;
   int32_t total_path_match_length = 0;
   int32_t total_query_or_ref_match_length = 0;
-  int32_t total_title_match_length = 0;
 
   for (const auto& url_match : url_matches) {
     // Calculate the offset in the URL string where the meaningful (word) part
@@ -592,30 +661,15 @@ float ScoredHistoryMatch::GetTopicalityScore(
     total_url_match_length += url_match.length;
   }
   // Now do the analogous loop over all matches in the title.
-  next_word_starts = word_starts.title_word_starts_.begin();
-  end_word_starts = word_starts.title_word_starts_.end();
-  size_t word_num = 0;
   title_matches = FilterTermMatchesByWordStarts(
       title_matches, terms_to_word_starts_offsets,
       word_starts.title_word_starts_, 0, std::string::npos, true);
-  for (const auto& title_match : title_matches) {
-    // Calculate the offset in the title string where the meaningful (word) part
-    // of the term starts.  This takes into account times when a term starts
-    // with punctuation such as "/foo".
-    const size_t term_word_offset =
-        title_match.offset + terms_to_word_starts_offsets[title_match.term_num];
-    // Advance next_word_starts until it's >= the position of the term we're
-    // considering (adjusted for where the word begins within the term).
-    while ((next_word_starts != end_word_starts) &&
-           (*next_word_starts < term_word_offset)) {
-      ++next_word_starts;
-      ++word_num;
-    }
-    if (word_num >= num_title_words_to_allow_)
-      break;  // only count the first ten words
-    term_scores[title_match.term_num] += 8;
-    total_title_match_length += title_match.length;
-  }
+
+  size_t total_title_match_length = ComputeTotalMatchLength(
+      terms_to_word_starts_offsets, title_matches,
+      word_starts.title_word_starts_, num_title_words_to_allow_);
+  IncrementTitleMatchTermScores(terms_to_word_starts_offsets,
+                                word_starts.title_word_starts_, &term_scores);
 
   if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
     scoring_signals.set_total_url_match_length(total_url_match_length);
@@ -625,21 +679,10 @@ float ScoredHistoryMatch::GetTopicalityScore(
         total_query_or_ref_match_length);
     scoring_signals.set_total_title_match_length(total_title_match_length);
 
-    // The number of matching input terms is determined by finding the count of
-    // unique `term_num`s in the vector of TermMatches.  This is done after all
-    // filtering of discarded matches is done, and then recorded to
-    // `scoring_signals`.
-    const auto count_unique_term_nums = [&](const TermMatches& term_matches) {
-      std::set<int> unique_term_nums;
-      for (const auto& match : term_matches) {
-        unique_term_nums.insert(match.term_num);
-      }
-      return unique_term_nums.size();
-    };
     scoring_signals.set_num_input_terms_matched_by_title(
-        count_unique_term_nums(title_matches));
+        CountUniqueMatchTerms(title_matches));
     scoring_signals.set_num_input_terms_matched_by_url(
-        count_unique_term_nums(url_matches));
+        CountUniqueMatchTerms(url_matches));
   }
 
   // TODO(mpearson): Restore logic for penalizing out-of-order matches.
@@ -665,6 +708,36 @@ float ScoredHistoryMatch::GetTopicalityScore(
     return 0.0;
 
   return final_topicality_score;
+}
+
+void ScoredHistoryMatch::IncrementTitleMatchTermScores(
+    const WordStarts& terms_to_word_starts_offsets,
+    const WordStarts& title_word_starts,
+    std::vector<int>* term_scores) {
+  auto next_word_starts = title_word_starts.begin();
+  auto end_word_starts = title_word_starts.end();
+  size_t word_num = 0;
+  for (const auto& title_match : title_matches) {
+    // Calculate the offset in the title string where the meaningful (word) part
+    // of the term starts.  This takes into account times when a term starts
+    // with punctuation such as "/foo".
+    const size_t term_word_offset =
+        title_match.offset + terms_to_word_starts_offsets[title_match.term_num];
+    // Advance next_word_starts until it's >= the position of the term we're
+    // considering (adjusted for where the word begins within the term).
+    while ((next_word_starts != end_word_starts) &&
+           (*next_word_starts < term_word_offset)) {
+      ++next_word_starts;
+      ++word_num;
+    }
+    if (word_num >= num_title_words_to_allow_) {
+      break;  // only count the first ten words
+    }
+    if (term_scores &&
+        term_scores->size() > static_cast<size_t>(title_match.term_num)) {
+      (*term_scores)[title_match.term_num] += 8;
+    }
+  }
 }
 
 float ScoredHistoryMatch::GetRecencyScore(int last_visit_days_ago) const {
@@ -828,4 +901,33 @@ ScoredHistoryMatch::GetHQPBucketsFromString(const std::string& buckets_str) {
     hqp_buckets.push_back(bucket);
   }
   return hqp_buckets;
+}
+
+int ScoredHistoryMatch::GetDomainRelevancyScore(base::Time now) const {
+  // Domain scores consider only the last visit time as they're intended for
+  // pages the user hasn't yet visited many times. The goal is to score them
+  // highly enough to surface but not so high they constantly displace
+  // traditional suggestions. Otherwise, for inputs matching a highly visited
+  // domain, domain suggestions would overwhelm all other suggestions. Besides,
+  // if scored conservatively, they'll still be boosted by traditional scores
+  // after they're selected.
+
+  // For simplicity, score them linearly: 1000 - 80 / day.
+  // 80 because (1000-200) / (10-0) = 80.
+  constexpr int max_score = 1000;
+  constexpr int min_score = 200;
+  constexpr auto demote_start = base::Days(0);
+  constexpr auto demote_end = base::Days(10);
+
+  auto elapsed = now - url_info.last_visit();
+
+  // If visited more recently than `demote_start`, return `max_score`.
+  if (elapsed <= demote_start)
+    return max_score;
+  // If visited less recently than `demote_end`, return 0 (not `min_score`).
+  if (elapsed >= demote_end)
+    return 0;
+  // Otherwise, linearly interpolate `max_score` and `min_score`.
+  return max_score - (elapsed - demote_start) / (demote_end - demote_start) *
+                         (max_score - min_score);
 }

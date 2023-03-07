@@ -82,7 +82,7 @@ NetworkPortalSigninController::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void NetworkPortalSigninController::ShowSignin() {
+void NetworkPortalSigninController::ShowSignin(SigninSource source) {
   GURL url;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
@@ -92,14 +92,12 @@ void NetworkPortalSigninController::ShowSignin() {
     url = GURL(captive_portal::CaptivePortalDetector::kDefaultURL);
 
   SigninMode mode = GetSigninMode();
-  NET_LOG(EVENT) << "Show signin mode: " << mode;
+  NET_LOG(EVENT) << "Show signin mode: " << mode << " from: " << source;
   base::UmaHistogramEnumeration("Network.NetworkPortalSigninMode", mode);
+  base::UmaHistogramEnumeration("Network.NetworkPortalSigninSource", source);
   switch (mode) {
     case SigninMode::kSigninDialog:
       ShowDialog(ProfileHelper::GetSigninProfile(), url);
-      break;
-    case SigninMode::kSingletonTab:
-      ShowSingletonTab(ProfileManager::GetActiveUserProfile(), url);
       break;
     case SigninMode::kNormalTab:
       ShowTab(ProfileManager::GetActiveUserProfile(), url);
@@ -108,7 +106,8 @@ void NetworkPortalSigninController::ShowSignin() {
       ShowTab(GetOTROrActiveProfile(), url);
       break;
     }
-    case SigninMode::kIncognitoDialog: {
+    case SigninMode::kIncognitoDialogDisabled:
+    case SigninMode::kIncognitoDialogParental: {
       ShowDialog(GetOTROrActiveProfile(), url);
       break;
     }
@@ -135,17 +134,6 @@ NetworkPortalSigninController::GetSigninMode() const {
     return SigninMode::kSigninDialog;
   }
 
-  if (!ash::features::IsCaptivePortalUI2022Enabled()) {
-    if (profile->GetPrefs()->GetBoolean(
-            prefs::kCaptivePortalAuthenticationIgnoresProxy)) {
-      // If allowed, use an incognito dialog to ignore any proxies.
-      return SigninMode::kSigninDialog;
-    }
-    return SigninMode::kSingletonTab;
-  }
-
-  NET_LOG(DEBUG) << "GetSigninMode: 2022 UI Enabled";
-
   // This pref defaults to true but may be set to false by policy.
   // Note: Generally we always want to show the portal signin UI in an incognito
   // tab to avoid providing cookies, see b/245578628 for details.
@@ -155,15 +143,25 @@ NetworkPortalSigninController::GetSigninMode() const {
     return SigninMode::kNormalTab;
   }
 
-  if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
-      IncognitoModePrefs::Availability::kDisabled) {
-    // Show an incognito tab to ignore any proxies if available.
-    return SigninMode::kIncognitoTab;
+  IncognitoModePrefs::Availability availability;
+  IncognitoModePrefs::IntToAvailability(
+      profile->GetPrefs()->GetInteger(prefs::kIncognitoModeAvailability),
+      &availability);
+  if (availability == IncognitoModePrefs::Availability::kDisabled) {
+    // Use a dialog to prevent navigation and use an OTR profile due to
+    // Incognito browsing disabled by policy preference.
+    return SigninMode::kIncognitoDialogDisabled;
   }
 
-  // Otherwise use a dialog to prevent navigation and use an OTR profile if
-  // available.
-  return SigninMode::kIncognitoDialog;
+  if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
+      IncognitoModePrefs::Availability::kDisabled) {
+    // Use a dialog to prevent navigation and use an OTR profile due to
+    // Incognito browsing disabled by parental controls.
+    return SigninMode::kIncognitoDialogParental;
+  }
+
+  // Show an incognito tab to ignore any proxies.
+  return SigninMode::kIncognitoTab;
 }
 
 void NetworkPortalSigninController::CloseSignin() {
@@ -220,17 +218,37 @@ std::ostream& operator<<(
     case NetworkPortalSigninController::SigninMode::kSigninDialog:
       stream << "Signin Dialog";
       break;
-    case NetworkPortalSigninController::SigninMode::kSingletonTab:
-      stream << "Singleton Tab";
-      break;
     case NetworkPortalSigninController::SigninMode::kNormalTab:
       stream << "Normal Tab";
       break;
     case NetworkPortalSigninController::SigninMode::kIncognitoTab:
-      stream << "Incognito Tab";
+      stream << "OTR Tab";
       break;
-    case NetworkPortalSigninController::SigninMode::kIncognitoDialog:
-      stream << "Incognito Dialog";
+    case NetworkPortalSigninController::SigninMode::kIncognitoDialogDisabled:
+      stream << "OTR Dialog (Disabled)";
+      break;
+    case NetworkPortalSigninController::SigninMode::kIncognitoDialogParental:
+      stream << "OTR Dialog (Parental)";
+      break;
+  }
+  return stream;
+}
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const NetworkPortalSigninController::SigninSource& signin_source) {
+  switch (signin_source) {
+    case NetworkPortalSigninController::SigninSource::kNotification:
+      stream << "Notification";
+      break;
+    case NetworkPortalSigninController::SigninSource::kSettings:
+      stream << "Settings";
+      break;
+    case NetworkPortalSigninController::SigninSource::kQuickSettings:
+      stream << "Quick Settings";
+      break;
+    case NetworkPortalSigninController::SigninSource::kErrorPage:
+      stream << "Error page";
       break;
   }
   return stream;

@@ -26,12 +26,12 @@
 #include "chrome/browser/ash/app_list/search/help_app_provider.h"
 #include "chrome/browser/ash/app_list/search/help_app_zero_state_provider.h"
 #include "chrome/browser/ash/app_list/search/keyboard_shortcut_provider.h"
+#include "chrome/browser/ash/app_list/search/local_images/local_image_search_provider.h"
 #include "chrome/browser/ash/app_list/search/omnibox/omnibox_lacros_provider.h"
 #include "chrome/browser/ash/app_list/search/omnibox/omnibox_provider.h"
 #include "chrome/browser/ash/app_list/search/os_settings_provider.h"
 #include "chrome/browser/ash/app_list/search/personalization_provider.h"
 #include "chrome/browser/ash/app_list/search/search_controller.h"
-#include "chrome/browser/ash/app_list/search/search_controller_impl.h"
 #include "chrome/browser/ash/app_list/search/search_features.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -49,8 +49,7 @@ namespace app_list {
 
 namespace {
 
-// Maximum number of results to show in each mixer group.
-
+// Maximum number of results to show for the given type.
 constexpr size_t kMaxAppShortcutResults = 4;
 constexpr size_t kMaxPlayStoreResults = 12;
 
@@ -61,15 +60,15 @@ std::unique_ptr<SearchController> CreateSearchController(
     AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller,
     ash::AppListNotifier* notifier) {
-  std::unique_ptr<SearchController> controller;
-  controller = std::make_unique<SearchControllerImpl>(
+  auto controller = std::make_unique<SearchController>(
       model_updater, list_controller, notifier, profile);
+  controller->Initialize();
 
   // Add search providers.
   controller->AddProvider(std::make_unique<AppSearchProvider>(
       controller->GetAppSearchDataSource()));
   controller->AddProvider(std::make_unique<AppZeroStateProvider>(
-      controller->GetAppSearchDataSource(), model_updater));
+      controller->GetAppSearchDataSource()));
 
   if (crosapi::browser_util::IsLacrosEnabled()) {
     controller->AddProvider(std::make_unique<OmniboxLacrosProvider>(
@@ -86,6 +85,10 @@ std::unique_ptr<SearchController> CreateSearchController(
   if (!profile->IsGuestSession()) {
     controller->AddProvider(std::make_unique<FileSearchProvider>(profile));
     controller->AddProvider(std::make_unique<DriveSearchProvider>(profile));
+    if (search_features::IsLauncherImageSearchEnabled()) {
+      controller->AddProvider(
+          std::make_unique<LocalImageSearchProvider>(profile));
+    }
   }
 
   if (app_list_features::IsLauncherPlayStoreSearchEnabled()) {

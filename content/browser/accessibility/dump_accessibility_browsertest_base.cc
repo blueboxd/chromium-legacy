@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -267,7 +266,7 @@ void DumpAccessibilityTestBase::WaitForExpectedText() {
     VLOG(1) << "Top of WaitForExpectedText() loop";
     // Check to see if the @WAIT-FOR text has appeared yet.
     bool all_wait_for_strings_found = true;
-    std::string tree_dump = DumpUnfilteredAccessibilityTreeAsString();
+    std::string tree_dump = DumpTreeAsString();
     for (const auto& str : scenario_.wait_for) {
       if (tree_dump.find(str) == std::string::npos) {
         VLOG(1) << "Still waiting on this text to be found: " << str;

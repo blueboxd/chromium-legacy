@@ -13,11 +13,11 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/stack_container.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -27,6 +27,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -214,11 +215,14 @@ static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T051 == 39,
               "ConnectionInfo enum is stable");
 static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_RFC_V1 == 40,
               "ConnectionInfo enum is stable");
-static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_1 == 41,
+static_assert(
+    net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_QUIC_2_DRAFT_1 == 41,
+    "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_8 == 42,
               "ConnectionInfo enum is stable");
 // The following assert needs to be changed every time a new value is added.
 // It exists to prevent us from forgetting to add new values above.
-static_assert(net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS == 42,
+static_assert(net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS == 43,
               "Please add new values above and update this assert");
 
 // Copy headers out of a cache entry and into a protobuf. The callback is
@@ -526,7 +530,7 @@ int64_t CalculateSideDataPadding(
       base::Time::FromInternalValue(response->response_time());
 
   return storage::ComputeStableResponsePadding(
-      bucket_locator.storage_key.origin(), url, response_time,
+      bucket_locator.storage_key, url, response_time,
       response->request_method(), side_data_size);
 }
 
@@ -1786,9 +1790,6 @@ void CacheStorageCache::Put(blink::mojom::FetchAPIRequestPtr request,
                             ErrorCallback callback) {
   DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
 
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AllWritesResponseType",
-                            response->response_type);
-
   auto put_context = cache_entry_handler_->CreatePutContext(
       std::move(request), std::move(response), trace_id);
   auto id = scheduler_->CreateId();
@@ -2624,9 +2625,6 @@ void CacheStorageCache::InitGotCacheSizeAndPadding(
                     backend_ && backend_state_ == BACKEND_UNINITIALIZED)
                        ? BACKEND_OPEN
                        : BACKEND_CLOSED;
-
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult",
-                            cache_create_error);
 
   if (cache_observer_)
     cache_observer_->CacheSizeUpdated(this);

@@ -145,6 +145,10 @@ struct StructTraits<crosapi::mojom::IconKeyDataView, apps::IconKeyPtr> {
     return r->icon_effects;
   }
 
+  static bool raw_icon_updated(const apps::IconKeyPtr& r) {
+    return r->raw_icon_updated;
+  }
+
   static bool Read(crosapi::mojom::IconKeyDataView, apps::IconKeyPtr* out);
 };
 
@@ -153,13 +157,6 @@ struct EnumTraits<crosapi::mojom::InstallReason, apps::InstallReason> {
   static crosapi::mojom::InstallReason ToMojom(apps::InstallReason input);
   static bool FromMojom(crosapi::mojom::InstallReason input,
                         apps::InstallReason* output);
-};
-
-template <>
-struct EnumTraits<crosapi::mojom::OptionalBool, apps::mojom::OptionalBool> {
-  static crosapi::mojom::OptionalBool ToMojom(apps::mojom::OptionalBool input);
-  static bool FromMojom(crosapi::mojom::OptionalBool input,
-                        apps::mojom::OptionalBool* output);
 };
 
 template <>
@@ -275,6 +272,10 @@ struct StructTraits<crosapi::mojom::IconValueDataView, apps::IconValuePtr> {
 
   static bool is_placeholder_icon(const apps::IconValuePtr& r) {
     return r->is_placeholder_icon;
+  }
+
+  static bool is_maskable_icon(const apps::IconValuePtr& r) {
+    return r->is_maskable_icon;
   }
 
   static bool Read(crosapi::mojom::IconValueDataView, apps::IconValuePtr* out);

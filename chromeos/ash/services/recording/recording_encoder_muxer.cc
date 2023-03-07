@@ -4,13 +4,14 @@
 
 #include "chromeos/ash/services/recording/recording_encoder_muxer.h"
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "chromeos/ash/services/recording/recording_service_constants.h"
 #include "media/base/audio_codecs.h"
@@ -255,6 +256,7 @@ void RecordingEncoderMuxer::InitializeVideoEncoder(
   video_encoder_ = std::make_unique<media::VpxVideoEncoder>();
   video_encoder_->Initialize(
       media::VP8PROFILE_ANY, video_encoder_options,
+      /*info_cb=*/base::DoNothing(),
       base::BindRepeating(&RecordingEncoderMuxer::OnVideoEncoderOutput,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&RecordingEncoderMuxer::OnVideoEncoderInitialized,

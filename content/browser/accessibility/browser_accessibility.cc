@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/containers/contains.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,6 +31,14 @@
 #include "ui/strings/grit/ax_strings.h"
 
 namespace content {
+
+#if DCHECK_IS_ON()
+static int browser_accessibility_count = 0;
+static bool has_dumped_possible_leak = false;
+// If there are more than 10 million objects alive at once, dump.
+// It is likely to be a leak if we have > 100 tabs x 10000 objects.
+constexpr int kDumpBrowserAccessibilityLeakNumObjects = 10000000;
+#endif
 
 #if !BUILDFLAG(HAS_PLATFORM_ACCESSIBILITY_SUPPORT)
 // static
@@ -55,9 +64,20 @@ BrowserAccessibility::BrowserAccessibility(BrowserAccessibilityManager* manager,
   DCHECK(manager);
   DCHECK(node);
   DCHECK(node->IsDataValid());
+#if DCHECK_IS_ON()
+  if (++browser_accessibility_count > kDumpBrowserAccessibilityLeakNumObjects &&
+      !has_dumped_possible_leak) {
+    NOTREACHED();
+    has_dumped_possible_leak = true;
+  }
+#endif
 }
 
-BrowserAccessibility::~BrowserAccessibility() = default;
+BrowserAccessibility::~BrowserAccessibility() {
+#if DCHECK_IS_ON()
+  --browser_accessibility_count;
+#endif
+}
 
 namespace {
 
@@ -94,16 +114,15 @@ bool BrowserAccessibility::IsValid() const {
   if (input_type != "text" && input_type != "search")
     return true;  // Not a plain text field, just consider it valid.
 
-  if (InternalChildCount()) {
-    // If the atomic text field is aria-hidden then all its descendants are
-    // ignored.
-    //   See the dump tree test AccessibilityAriaHiddenFocusedInput.
-    //
-    // TODO(accessibility): We need to fix this by pruning the tree and removing
-    // the native text field if it is aria-hidden.
-    return IsInvisibleOrIgnored() || GetTextFieldInnerEditorElement(*this);
+  // If the atomic text field is aria-hidden then all its descendants are
+  // ignored. See the dump tree test AccessibilityAriaHiddenFocusedInput.
+  // TODO(accessibility): We need to fix this by pruning the tree and removing
+  // the native text field if it is aria-hidden.
+  if (IsInvisibleOrIgnored() || !InternalGetFirstChild()) {
+    return true;
   }
-  return true;
+
+  return GetTextFieldInnerEditorElement(*this);
 }
 
 void BrowserAccessibility::OnDataChanged() {
@@ -690,10 +709,6 @@ BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
   return this;
 }
 
-bool BrowserAccessibility::IsRootWebAreaForPresentationalIframe() const {
-  return node()->IsRootWebAreaForPresentationalIframe();
-}
-
 bool BrowserAccessibility::IsClickable() const {
   return GetData().IsClickable();
 }
@@ -1062,10 +1077,11 @@ BrowserAccessibility::PlatformChildIterator::operator++() {
   return *this;
 }
 
-BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator
 BrowserAccessibility::PlatformChildIterator::operator++(int) {
+  BrowserAccessibility::PlatformChildIterator previous_state = *this;
   ++platform_iterator;
-  return *this;
+  return previous_state;
 }
 
 BrowserAccessibility::PlatformChildIterator&
@@ -1074,10 +1090,11 @@ BrowserAccessibility::PlatformChildIterator::operator--() {
   return *this;
 }
 
-BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator
 BrowserAccessibility::PlatformChildIterator::operator--(int) {
+  BrowserAccessibility::PlatformChildIterator previous_state = *this;
   --platform_iterator;
-  return *this;
+  return previous_state;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::get() const {
@@ -1107,13 +1124,11 @@ BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::operator->()
   return platform_iterator.get();
 }
 
-std::unique_ptr<ui::AXPlatformNodeDelegate::ChildIterator>
-BrowserAccessibility::ChildrenBegin() {
+std::unique_ptr<ui::ChildIterator> BrowserAccessibility::ChildrenBegin() {
   return std::make_unique<PlatformChildIterator>(PlatformChildrenBegin());
 }
 
-std::unique_ptr<ui::AXPlatformNodeDelegate::ChildIterator>
-BrowserAccessibility::ChildrenEnd() {
+std::unique_ptr<ui::ChildIterator> BrowserAccessibility::ChildrenEnd() {
   return std::make_unique<PlatformChildIterator>(PlatformChildrenEnd());
 }
 
@@ -1177,14 +1192,6 @@ BrowserAccessibility::GetTargetForNativeAccessibilityEvent() {
   if (!root_delegate)
     return gfx::kNullAcceleratedWidget;
   return root_delegate->AccessibilityGetAcceleratedWidget();
-}
-
-absl::optional<int> BrowserAccessibility::GetTableAriaColCount() const {
-  return node()->GetTableAriaColCount();
-}
-
-absl::optional<int> BrowserAccessibility::GetTableAriaRowCount() const {
-  return node()->GetTableAriaRowCount();
 }
 
 ui::AXPlatformNode* BrowserAccessibility::GetTableCaption() const {

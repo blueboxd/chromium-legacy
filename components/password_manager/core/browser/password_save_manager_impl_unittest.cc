@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -169,8 +170,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
  public:
-  MockAutofillDownloadManager()
-      : AutofillDownloadManager(nullptr, &fake_observer) {}
+  MockAutofillDownloadManager() : AutofillDownloadManager(nullptr) {}
   MockAutofillDownloadManager(const MockAutofillDownloadManager&) = delete;
   MockAutofillDownloadManager& operator=(const MockAutofillDownloadManager&) =
       delete;
@@ -182,17 +182,9 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
                const autofill::ServerFieldTypeSet&,
                const std::string&,
                bool,
-               PrefService*),
+               PrefService*,
+               base::WeakPtr<Observer>),
               (override));
-
- private:
-  class StubObserver : public AutofillDownloadManager::Observer {
-    void OnLoadedServerPredictions(
-        std::string response,
-        const std::vector<autofill::FormSignature>& form_signatures) override {}
-  };
-
-  StubObserver fake_observer;
 };
 
 }  // namespace
@@ -607,7 +599,6 @@ TEST_P(PasswordSaveManagerImplTest, ResetPendingCredentials) {
   // Check that save manager is in None state.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_FALSE(password_save_manager_impl()->HasGeneratedPassword());
 }
 
@@ -728,7 +719,6 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   PasswordForm updated_form;
@@ -843,7 +833,6 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   CheckPendingCredentials(
       expected, password_save_manager_impl()->GetPendingCredentials());
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 }
 
@@ -911,7 +900,6 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
-  EXPECT_TRUE(password_save_manager_impl()->IsSamePassword());
 }
 
 TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
@@ -962,7 +950,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
 
   EXPECT_CALL(*mock_autofill_download_manager(),
               StartUploadRequest(UploadedAutofillTypesAre(expected_types),
-                                 false, _, _, true, nullptr));
+                                 false, _, _, true, nullptr, _));
 
   // Check that the password which was chosen by the user is saved.
   PasswordForm saved_form;
@@ -1211,7 +1199,6 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   // Check that the password is updated in the stored credential.
@@ -1225,6 +1212,39 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
   EXPECT_TRUE(
       ArePasswordFormUniqueKeysEqual(saved_http_auth_form, updated_form));
   EXPECT_EQ(new_password, updated_form.password_value);
+}
+
+TEST_P(PasswordSaveManagerImplTest, IncrementTimesUsedWhenHTMLFormSubmissions) {
+  PasswordForm saved_credential = saved_match_;
+  saved_credential.times_used_in_html_form = 5;
+  saved_credential.scheme = PasswordForm::Scheme::kHtml;
+  SetNonFederatedAndNotifyFetchCompleted({&saved_credential});
+
+  password_save_manager_impl()->CreatePendingCredentials(
+      saved_credential, &observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  EXPECT_CALL(*mock_profile_form_saver(),
+              Update(Field(&PasswordForm::times_used_in_html_form, 6), _, _));
+  password_save_manager_impl()->Save(&observed_form_, saved_credential);
+}
+
+TEST_P(PasswordSaveManagerImplTest, DontIncrementTimesUsedWhenBasicHTTPAuth) {
+  fetcher()->set_scheme(PasswordForm::Scheme::kBasic);
+  PasswordForm saved_credential = saved_match_;
+  saved_credential.times_used_in_html_form = 0;
+  saved_credential.scheme = PasswordForm::Scheme::kBasic;
+  SetNonFederatedAndNotifyFetchCompleted({&saved_credential});
+
+  password_save_manager_impl()->CreatePendingCredentials(
+      saved_credential, &observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  EXPECT_CALL(*mock_profile_form_saver(),
+              Update(Field(&PasswordForm::times_used_in_html_form, 0), _, _));
+  password_save_manager_impl()->Save(&observed_form_, saved_credential);
 }
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -1315,7 +1335,6 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInAccountStoreOnly) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1340,7 +1359,6 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1355,8 +1373,9 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
   // equal except the |moving_blocked_for_list|. The reason for that is:
   // 1. |moving_blocked_for_list| is the most probable field to have different
   //    values since it's always empty in the account store.
-  // 2. Other fields (e.g. |times_used|) are less critical and should be fine if
-  //    the value in one store overrides the value in the other one.
+  // 2. Other fields (e.g. |times_used_in_html_form|) are less critical and
+  //    should be fine if the value in one store overrides the value in the
+  //    other one.
 
   SetAccountStoreEnabled(/*is_enabled=*/true);
 
@@ -1379,20 +1398,19 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   // Both stores should be updated in the following ways:
   // 1. |password_value| is updated.
-  // 2. |times_used| is incremented.
+  // 2. |times_used_in_html_form| is incremented.
   // 3. |date_last_used| is updated.
   // 4. |in_store| field is irrelevant since it's not persisted.
   // 5. The rest of fields are taken arbitrarily from one store.
   PasswordForm expected_profile_updated_form(saved_match_in_profile_store);
   expected_profile_updated_form.password_value =
       parsed_submitted_form_.password_value;
-  expected_profile_updated_form.times_used++;
+  expected_profile_updated_form.times_used_in_html_form++;
   expected_profile_updated_form.date_last_used =
       password_save_manager_impl()->GetPendingCredentials().date_last_used;
   expected_profile_updated_form.in_store =
@@ -1401,7 +1419,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
   PasswordForm expected_account_updated_form(saved_match_in_account_store);
   expected_account_updated_form.password_value =
       parsed_submitted_form_.password_value;
-  expected_account_updated_form.times_used++;
+  expected_account_updated_form.times_used_in_html_form++;
   expected_account_updated_form.date_last_used =
       password_save_manager_impl()->GetPendingCredentials().date_last_used;
   expected_account_updated_form.in_store =
@@ -1419,7 +1437,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
   SetAccountStoreEnabled(/*is_enabled=*/true);
 
   // Set different values for the fields that should be preserved per store
-  // (namely: date_created, times_used, moving_blocked_for_list)
+  // (namely: date_created, times_used_in_html_form, moving_blocked_for_list)
   PasswordForm saved_match_in_profile_store(saved_match_);
   saved_match_in_profile_store.username_value =
       parsed_submitted_form_.username_value;
@@ -1428,14 +1446,14 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
   saved_match_in_profile_store.date_created =
       base::Time::Now() - base::Days(10);
-  saved_match_in_profile_store.times_used = 10;
+  saved_match_in_profile_store.times_used_in_html_form = 10;
   saved_match_in_profile_store.moving_blocked_for_list.push_back(
       autofill::GaiaIdHash::FromGaiaId("email@gmail.com"));
 
   PasswordForm saved_match_in_account_store(saved_match_in_profile_store);
   saved_match_in_account_store.in_store = PasswordForm::Store::kAccountStore;
   saved_match_in_account_store.date_created = base::Time::Now();
-  saved_match_in_account_store.times_used = 5;
+  saved_match_in_account_store.times_used_in_html_form = 5;
   saved_match_in_account_store.moving_blocked_for_list.clear();
 
   SetNonFederatedAndNotifyFetchCompleted(
@@ -1448,21 +1466,20 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
 
   // No save or update prompts should be shown.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_TRUE(password_save_manager_impl()->IsSamePassword());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
 
   // We still should update both credentials to update the |date_last_used| and
-  // |times_used|. Note that |in_store| is irrelevant since it's not persisted.
-  // All other fields should be preserved.
+  // |times_used_in_html_form|. Note that |in_store| is irrelevant since it's
+  // not persisted. All other fields should be preserved.
   PasswordForm expected_profile_update_form(saved_match_in_profile_store);
-  expected_profile_update_form.times_used++;
+  expected_profile_update_form.times_used_in_html_form++;
   expected_profile_update_form.date_last_used =
       password_save_manager_impl()->GetPendingCredentials().date_last_used;
   expected_profile_update_form.in_store =
       password_save_manager_impl()->GetPendingCredentials().in_store;
 
   PasswordForm expected_account_update_form(saved_match_in_account_store);
-  expected_account_update_form.times_used++;
+  expected_account_update_form.times_used_in_html_form++;
   expected_account_update_form.date_last_used =
       password_save_manager_impl()->GetPendingCredentials().date_last_used;
   expected_account_update_form.in_store =

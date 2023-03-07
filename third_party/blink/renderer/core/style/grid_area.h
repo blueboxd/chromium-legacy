@@ -164,17 +164,16 @@ struct GridSpan {
 
   template <typename T>
   GridSpan(T start_line, T end_line, GridSpanType type) : type_(type) {
-    const int grid_max_tracks = RuntimeEnabledFeatures::LayoutNGEnabled()
-                                    ? kGridMaxTracks
-                                    : kLegacyGridMaxTracks;
+    const int grid_max_tracks = kGridMaxTracks;
     start_line_ =
         ClampTo<int>(start_line, -grid_max_tracks, grid_max_tracks - 1);
     end_line_ = ClampTo<int>(end_line, start_line_ + 1, grid_max_tracks);
 
 #if DCHECK_IS_ON()
     DCHECK_LT(start_line_, end_line_);
-    if (type == kTranslatedDefinite)
+    if (type == kTranslatedDefinite) {
       DCHECK_GE(start_line_, 0);
+    }
 #endif
   }
 
@@ -200,10 +199,11 @@ struct GridArea {
   }
 
   void SetSpan(const GridSpan& span, GridTrackSizingDirection track_direction) {
-    if (track_direction == kForColumns)
+    if (track_direction == kForColumns) {
       columns = span;
-    else
+    } else {
       rows = span;
+    }
   }
 
   wtf_size_t StartLine(GridTrackSizingDirection track_direction) const {

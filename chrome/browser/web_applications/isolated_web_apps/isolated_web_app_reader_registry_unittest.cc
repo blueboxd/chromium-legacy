@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/test/signed_web_bundle_utils.h"
@@ -30,6 +31,7 @@
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
+#include "components/web_package/signed_web_bundles/signed_web_bundle_integrity_block.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.h"
 #include "components/web_package/test_support/mock_web_bundle_parser_factory.h"
 #include "content/public/common/content_features.h"
@@ -65,7 +67,7 @@ class FakeIsolatedWebAppValidator : public IsolatedWebAppValidator {
 
   void ValidateIntegrityBlock(
       const web_package::SignedWebBundleId& web_bundle_id,
-      const std::vector<web_package::Ed25519PublicKey>& public_key_stack,
+      const web_package::SignedWebBundleIntegrityBlock& integrity_block,
       base::OnceCallback<void(absl::optional<std::string>)> callback) override {
     std::move(callback).Run(integrity_block_error_);
   }
@@ -204,7 +206,7 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
 };
 
 using ReadResult =
-    base::expected<IsolatedWebAppReaderRegistry::Response,
+    base::expected<IsolatedWebAppResponseReader::Response,
                    IsolatedWebAppReaderRegistry::ReadResponseError>;
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
@@ -232,13 +234,13 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
 
   histogram_tester.ExpectBucketCount(
       "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
           kSuccess,
       1);
 
   std::string response_body = ReadAndFulfillResponseBody(
       result->head()->payload_length,
-      base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
+      base::BindOnce(&IsolatedWebAppResponseReader::Response::ReadBody,
                      base::Unretained(&*result)));
   EXPECT_EQ(kResponseBody, response_body);
 }
@@ -262,7 +264,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest,
 
   std::string response_body = ReadAndFulfillResponseBody(
       result->head()->payload_length,
-      base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
+      base::BindOnce(&IsolatedWebAppResponseReader::Response::ReadBody,
                      base::Unretained(&*result)));
   EXPECT_EQ(kResponseBody, response_body);
 }
@@ -292,7 +294,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest,
   base::test::TestFuture<net::Error> error_future;
   ReadResponseBody(
       result->head()->payload_length,
-      base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
+      base::BindOnce(&IsolatedWebAppResponseReader::Response::ReadBody,
                      base::Unretained(&*result)),
       error_future.GetCallback());
   EXPECT_EQ(net::ERR_FAILED, error_future.Take());
@@ -437,10 +439,10 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
 
 class IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest
     : public IsolatedWebAppReaderRegistryTest,
-      public ::testing::WithParamInterface<std::pair<
-          web_package::mojom::BundleParseErrorType,
-          IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus>> {
-};
+      public ::testing::WithParamInterface<
+          std::pair<web_package::mojom::BundleParseErrorType,
+                    IsolatedWebAppResponseReaderFactory::
+                        ReadIntegrityBlockAndMetadataStatus>> {};
 
 TEST_P(IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest,
        TestIntegrityBlockParserError) {
@@ -476,16 +478,17 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_pair(
             web_package::mojom::BundleParseErrorType::kParserInternalError,
-            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
-                kIntegrityBlockParserInternalError),
-        std::make_pair(
-            web_package::mojom::BundleParseErrorType::kVersionError,
-            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
-                kIntegrityBlockParserVersionError),
-        std::make_pair(
-            web_package::mojom::BundleParseErrorType::kFormatError,
-            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
-                kIntegrityBlockParserFormatError)));
+            IsolatedWebAppResponseReaderFactory::
+                ReadIntegrityBlockAndMetadataStatus::
+                    kIntegrityBlockParserInternalError),
+        std::make_pair(web_package::mojom::BundleParseErrorType::kVersionError,
+                       IsolatedWebAppResponseReaderFactory::
+                           ReadIntegrityBlockAndMetadataStatus::
+                               kIntegrityBlockParserVersionError),
+        std::make_pair(web_package::mojom::BundleParseErrorType::kFormatError,
+                       IsolatedWebAppResponseReaderFactory::
+                           ReadIntegrityBlockAndMetadataStatus::
+                               kIntegrityBlockParserFormatError)));
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlockContents) {
   base::HistogramTester histogram_tester;
@@ -516,7 +519,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlockContents) {
 
   histogram_tester.ExpectBucketCount(
       "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
           kIntegrityBlockValidationError,
       1);
 }
@@ -557,7 +560,7 @@ TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
 
   histogram_tester.ExpectBucketCount(
       "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
           kSignatureVerificationError,
       1);
 }
@@ -573,10 +576,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 class IsolatedWebAppReaderRegistryMetadataParserErrorTest
     : public IsolatedWebAppReaderRegistryTest,
-      public ::testing::WithParamInterface<std::pair<
-          web_package::mojom::BundleParseErrorType,
-          IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus>> {
-};
+      public ::testing::WithParamInterface<
+          std::pair<web_package::mojom::BundleParseErrorType,
+                    IsolatedWebAppResponseReaderFactory::
+                        ReadIntegrityBlockAndMetadataStatus>> {};
 
 TEST_P(IsolatedWebAppReaderRegistryMetadataParserErrorTest,
        TestMetadataParserError) {
@@ -613,16 +616,17 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_pair(
             web_package::mojom::BundleParseErrorType::kParserInternalError,
-            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
-                kMetadataParserInternalError),
-        std::make_pair(
-            web_package::mojom::BundleParseErrorType::kVersionError,
-            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
-                kMetadataParserVersionError),
-        std::make_pair(
-            web_package::mojom::BundleParseErrorType::kFormatError,
-            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
-                kMetadataParserFormatError)));
+            IsolatedWebAppResponseReaderFactory::
+                ReadIntegrityBlockAndMetadataStatus::
+                    kMetadataParserInternalError),
+        std::make_pair(web_package::mojom::BundleParseErrorType::kVersionError,
+                       IsolatedWebAppResponseReaderFactory::
+                           ReadIntegrityBlockAndMetadataStatus::
+                               kMetadataParserVersionError),
+        std::make_pair(web_package::mojom::BundleParseErrorType::kFormatError,
+                       IsolatedWebAppResponseReaderFactory::
+                           ReadIntegrityBlockAndMetadataStatus::
+                               kMetadataParserFormatError)));
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
   base::HistogramTester histogram_tester;
@@ -651,7 +655,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
 
   histogram_tester.ExpectBucketCount(
       "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
           kMetadataValidationError,
       1);
 }
@@ -770,7 +774,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestConcurrentRequests) {
 
     std::string response_body = ReadAndFulfillResponseBody(
         result->head()->payload_length,
-        base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
+        base::BindOnce(&IsolatedWebAppResponseReader::Response::ReadBody,
                        base::Unretained(&*result)));
     EXPECT_EQ(kResponseBody, response_body);
   }
@@ -783,7 +787,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestConcurrentRequests) {
 
     std::string response_body = ReadAndFulfillResponseBody(
         result->head()->payload_length,
-        base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
+        base::BindOnce(&IsolatedWebAppResponseReader::Response::ReadBody,
                        base::Unretained(&*result)));
     EXPECT_EQ(kResponseBody, response_body);
   }
@@ -805,7 +809,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestConcurrentRequests) {
 
     std::string response_body = ReadAndFulfillResponseBody(
         result->head()->payload_length,
-        base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
+        base::BindOnce(&IsolatedWebAppResponseReader::Response::ReadBody,
                        base::Unretained(&*result)));
     EXPECT_EQ(kResponseBody, response_body);
   }

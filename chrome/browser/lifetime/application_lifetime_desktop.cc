@@ -5,8 +5,8 @@
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 
-#include "base/bind.h"
 #include "base/callback_list.h"
+#include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/threading/hang_watcher.h"
@@ -278,6 +278,7 @@ base::CallbackListSubscription AddClosingAllBrowsersCallback(
 
 void MarkAsCleanShutdown() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  LogMarkAsCleanShutdown();
   // Tracks profiles that have pending write of the exit type.
   std::set<Profile*> pending_profiles;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

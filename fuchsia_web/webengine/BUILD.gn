@@ -183,7 +183,6 @@ component("web_engine_core") {
   assert_no_deps = _disallowed_deps
 
   deps = [
-    ":context_provider",
     ":switches",
     ":web_engine_export_from_implementation",
     "//base",
@@ -318,6 +317,7 @@ component("web_engine_core") {
     "browser/navigation_policy_throttle.h",
     "browser/theme_manager.cc",
     "browser/theme_manager.h",
+    "browser/trace_event.h",
     "browser/url_request_rewrite_type_converters.cc",
     "browser/url_request_rewrite_type_converters.h",
     "browser/web_engine_browser_context.cc",
@@ -398,6 +398,7 @@ source_set("context_provider") {
 source_set("switches") {
   visibility += [
     "//fuchsia_web/shell:cast_streaming_shell_exe",
+    "//fuchsia_web/webinstance_host:webinstance_host",
     "//fuchsia_web/webinstance_host:webinstance_host_v1",
   ]
   deps = [ "//base" ]
@@ -423,7 +424,7 @@ executable("web_engine_exe") {
 }
 
 source_set("webui_resources") {
-  data = [ "$root_gen_dir/ui/resources/webui_generated_resources.pak" ]
+  data = [ "$root_gen_dir/ui/resources/webui_resources.pak" ]
   deps = [ "//ui/resources" ]
 }
 
@@ -511,6 +512,7 @@ fuchsia_package("web_engine_with_webui") {
   # TODO(fxbug.dev/100944): Add appropriate visibility when fixed.
   deps = [
     ":context_provider_v1_with_webui_component",
+    ":web_instance_component",
     ":web_instance_component_cfv1",
     ":webui_resources",
   ]

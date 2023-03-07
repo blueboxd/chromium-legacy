@@ -5,10 +5,10 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -68,7 +68,7 @@ class UserCloudExternalDataManagerTest : public LoginPolicyTestBase {
   }
 
   std::string external_data_;
-  std::unique_ptr<base::DictionaryValue> metadata_;
+  base::Value metadata_;
 };
 
 IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
   ASSERT_TRUE(profile);
 
   std::string value;
-  ASSERT_TRUE(base::JSONWriter::Write(*metadata_, &value));
+  ASSERT_TRUE(base::JSONWriter::Write(metadata_, &value));
   enterprise_management::CloudPolicySettings policy;
   policy.mutable_wallpaperimage()->set_value(value);
   user_policy_helper()->SetPolicyAndWait(policy, profile);
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const PolicyMap::Entry* policy_entry = policies.Get(key::kWallpaperImage);
   ASSERT_TRUE(policy_entry);
-  EXPECT_EQ(*metadata_, *policy_entry->value(base::Value::Type::DICT));
+  EXPECT_EQ(metadata_, *policy_entry->value(base::Value::Type::DICT));
   ASSERT_TRUE(policy_entry->external_data_fetcher);
 
   base::RunLoop run_loop;

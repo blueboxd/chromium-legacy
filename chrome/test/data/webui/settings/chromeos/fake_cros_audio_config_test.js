@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {crosAudioConfigMojomWebui, fakeCrosAudioConfig} from 'chrome://os-settings/chromeos/os_settings.js';
-import {assertDeepEquals, assertFalse} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {MockController, MockMethod} from 'chrome://webui-test/mock_controller.js';
 
 suite('FakeCrosAudioConfig', function() {
@@ -100,7 +100,8 @@ suite('FakeCrosAudioConfig', function() {
           ],
         };
         onPropertiesUpdated.addExpectation(updateActiveOutputDevice);
-        crosAudioConfig.setActiveDevice(fakeCrosAudioConfig.defaultFakeSpeaker);
+        crosAudioConfig.setActiveDevice(
+            fakeCrosAudioConfig.defaultFakeSpeaker.id);
 
         mockController.verifyMocks();
       });
@@ -117,7 +118,7 @@ suite('FakeCrosAudioConfig', function() {
       ],
     };
     onPropertiesUpdated.addExpectation(updateActiveInputDevice);
-    crosAudioConfig.setActiveDevice(fakeCrosAudioConfig.fakeBluetoothMic);
+    crosAudioConfig.setActiveDevice(fakeCrosAudioConfig.fakeBluetoothMic.id);
 
     mockController.verifyMocks();
   });
@@ -167,16 +168,75 @@ suite('FakeCrosAudioConfig', function() {
         onPropertiesUpdated.calls_[2][0].inputMuteState);
   });
 
-  test('VerifySetInputVolumeTriggersMatchingPropertyUpdate', () => {
-    const expectedVolumePercent = 32;
+  test('VerifySetInputGainTriggersMatchingPropertyUpdate', () => {
+    const expectedGainPercent = 32;
     /** @type {AudioSystemProperties} */
     const updatedProperties = {
       ...defaultProperties,
-      inputVolumePercent: expectedVolumePercent,
+      inputGainPercent: expectedGainPercent,
     };
     onPropertiesUpdated.addExpectation(updatedProperties);
-    crosAudioConfig.setInputVolumePercent(expectedVolumePercent);
+    crosAudioConfig.setInputGainPercent(expectedGainPercent);
 
     mockController.verifyMocks();
   });
+
+  test(
+      'VerifySetNoiseCancellationEnabledTriggersMatchingPropertyUpdate', () => {
+        /** @type {AudioDevice} */
+        const ncSupportedNotEnabled = fakeCrosAudioConfig.createAudioDevice(
+            fakeCrosAudioConfig.fakeInternalFrontMic, /*isActive=*/ true);
+        ncSupportedNotEnabled.noiseCancellationState =
+            fakeCrosAudioConfig.AudioEffectState.NOT_ENABLED;
+
+        /** @type {AudioSystemProperties} */
+        const defaultNoiseCancellation = {
+          ...defaultProperties,
+          inputDevices: [ncSupportedNotEnabled],
+        };
+        crosAudioConfig.setAudioSystemProperties(defaultNoiseCancellation);
+        assertDeepEquals(
+            defaultNoiseCancellation, onPropertiesUpdated.calls_[1][0]);
+        crosAudioConfig.setNoiseCancellationEnabled(/*enabled=*/ true);
+
+        /** @type {AudioDevice} */
+        const ncSupportedEnabled = fakeCrosAudioConfig.createAudioDevice(
+            fakeCrosAudioConfig.fakeInternalFrontMic, /*isActive=*/ true);
+        ncSupportedEnabled.noiseCancellationState =
+            fakeCrosAudioConfig.AudioEffectState.ENABLED;
+
+        /** @type {AudioSystemProperties} */
+        const enabledNoiseCancellation = {
+          ...defaultNoiseCancellation,
+          inputDevices: [ncSupportedEnabled],
+        };
+        assertDeepEquals(
+            enabledNoiseCancellation, onPropertiesUpdated.calls_[2][0]);
+
+        crosAudioConfig.setNoiseCancellationEnabled(/*enabled=*/ false);
+        assertDeepEquals(
+            defaultNoiseCancellation, onPropertiesUpdated.calls_[2][0]);
+      });
+
+  test(
+      'VerifySetNoiseCancellationEnabledDoesNotUpdateUnsupportedDevice', () => {
+        /** @type {AudioDevice} */
+        const ncNotSupported = fakeCrosAudioConfig.createAudioDevice(
+            fakeCrosAudioConfig.fakeInternalFrontMic, /*isActive=*/ true);
+        ncNotSupported.noiseCancellationState =
+            fakeCrosAudioConfig.AudioEffectState.NOT_SUPPORTED;
+
+        /** @type {AudioSystemProperties} */
+        const noNoiseCancellation = {
+          ...defaultProperties,
+          inputDevices: [ncNotSupported],
+        };
+        crosAudioConfig.setAudioSystemProperties(noNoiseCancellation);
+        assertDeepEquals(noNoiseCancellation, onPropertiesUpdated.calls_[1][0]);
+        const expectedCallCount = 2;
+        assertEquals(expectedCallCount, onPropertiesUpdated.calls_.length);
+        crosAudioConfig.setNoiseCancellationEnabled(/*enabled=*/ true);
+        crosAudioConfig.setNoiseCancellationEnabled(/*enabled=*/ false);
+        assertEquals(expectedCallCount, onPropertiesUpdated.calls_.length);
+      });
 });

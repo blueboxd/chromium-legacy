@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -33,7 +34,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
@@ -89,7 +90,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void TearDown() override {
     if (context_ && !context_->IsInMemoryContext()) {
-      IndexedDBFactoryImpl* factory = context_->GetIDBFactory();
+      IndexedDBFactory* factory = context_->GetIDBFactory();
 
       // Loop through all open storage keys, and force close them, and request
       // the deletion of the leveldb state. Once the states are no longer
@@ -155,8 +156,8 @@ class IndexedDBFactoryTest : public testing::Test {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        callbacks, db_callbacks,
-        transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
+        callbacks, db_callbacks, transaction_id,
+        IndexedDBDatabaseMetadata::NO_VERSION,
         std::move(create_transaction_callback));
 
     // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -165,7 +166,8 @@ class IndexedDBFactoryTest : public testing::Test {
       callbacks->CallOnUpgradeNeeded(
           base::BindLambdaForTesting([&]() { loop.Quit(); }));
       factory()->Open(name, std::move(connection), bucket_locator,
-                      context()->GetDataPath(bucket_locator));
+                      context()->GetDataPath(bucket_locator),
+                      CreateTestClientStateWrapper());
       loop.Run();
     }
 
@@ -196,10 +198,18 @@ class IndexedDBFactoryTest : public testing::Test {
     loop.Run();
   }
 
+  scoped_refptr<IndexedDBClientStateCheckerWrapper>
+  CreateTestClientStateWrapper() {
+    mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+        remote;
+    return base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
+        std::move(remote));
+  }
+
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
 
-  IndexedDBFactoryImpl* factory() const { return context_->GetIDBFactory(); }
+  IndexedDBFactory* factory() const { return context_->GetIDBFactory(); }
 
   base::test::TaskEnvironment* task_environment() const {
     return task_environment_.get();
@@ -751,11 +761,12 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesConnections) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks,
-      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      callbacks, db_callbacks, transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
   factory()->Open(u"db", std::move(connection), bucket_locator,
-                  context()->GetDataPath(bucket_locator));
+                  context()->GetDataPath(bucket_locator),
+                  CreateTestClientStateWrapper());
   RunPostedTasks();
 
   // Now simulate shutdown, which should clear all factories.
@@ -821,11 +832,12 @@ TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks,
-      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      callbacks, db_callbacks, transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
   factory()->Open(u"db", std::move(connection), bucket_locator,
-                  context()->GetDataPath(bucket_locator));
+                  context()->GetDataPath(bucket_locator),
+                  CreateTestClientStateWrapper());
   EXPECT_FALSE(callbacks->connection());
   RunPostedTasks();
   EXPECT_TRUE(callbacks->connection());
@@ -855,8 +867,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks,
-      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
+      callbacks, db_callbacks, transaction_id,
+      IndexedDBDatabaseMetadata::NO_VERSION,
       std::move(create_transaction_callback));
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -865,7 +877,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
     callbacks->CallOnUpgradeNeeded(
         base::BindLambdaForTesting([&]() { loop.Quit(); }));
     factory()->Open(u"db", std::move(connection), bucket_locator,
-                    context()->GetDataPath(bucket_locator));
+                    context()->GetDataPath(bucket_locator),
+                    CreateTestClientStateWrapper());
     loop.Run();
   }
 
@@ -895,8 +908,8 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks,
-      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
+      callbacks, db_callbacks, transaction_id,
+      IndexedDBDatabaseMetadata::NO_VERSION,
       std::move(create_transaction_callback));
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -905,7 +918,8 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
     callbacks->CallOnUpgradeNeeded(
         base::BindLambdaForTesting([&]() { loop.Quit(); }));
     factory()->Open(u"db", std::move(connection), bucket_locator,
-                    context()->GetDataPath(bucket_locator));
+                    context()->GetDataPath(bucket_locator),
+                    CreateTestClientStateWrapper());
     loop.Run();
   }
 
@@ -1098,7 +1112,8 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
       /*transaction_id=*/1, /*version=*/1,
       std::move(create_transaction_callback));
   factory()->Open(name, std::move(connection), bucket_locator,
-                  context()->GetDataPath(bucket_locator));
+                  context()->GetDataPath(bucket_locator),
+                  CreateTestClientStateWrapper());
   EXPECT_TRUE(callbacks->error_called());
   base::RunLoop().RunUntilIdle();
 
@@ -1174,7 +1189,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
       callbacks->CallOnUpgradeNeeded(
           base::BindLambdaForTesting([&]() { loop.Quit(); }));
       factory()->Open(db_name, std::move(connection), bucket_locator,
-                      context()->GetDataPath(bucket_locator));
+                      context()->GetDataPath(bucket_locator),
+                      CreateTestClientStateWrapper());
       loop.Run();
     }
     EXPECT_TRUE(callbacks->upgrade_called());
@@ -1202,10 +1218,11 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        failed_open_callbacks, db_callbacks2,
-        transaction_id, db_version, std::move(create_transaction_callback));
+        failed_open_callbacks, db_callbacks2, transaction_id, db_version,
+        std::move(create_transaction_callback));
     factory()->Open(db_name, std::move(connection), bucket_locator,
-                    context()->GetDataPath(bucket_locator));
+                    context()->GetDataPath(bucket_locator),
+                    CreateTestClientStateWrapper());
     EXPECT_TRUE(factory()->IsDatabaseOpen(bucket_locator, db_name));
     RunPostedTasks();
     EXPECT_TRUE(failed_open_callbacks->saw_error());
@@ -1249,8 +1266,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto pending_connection = std::make_unique<IndexedDBPendingConnection>(
-        callbacks, db_callbacks,
-        transaction_id,
+        callbacks, db_callbacks, transaction_id,
         /*version=*/1, std::move(create_transaction_callback));
 
     {
@@ -1267,7 +1283,8 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
 
       this->factory()->Open(u"test_db", std::move(pending_connection),
                             bucket_locator,
-                            context()->GetDataPath(bucket_locator));
+                            context()->GetDataPath(bucket_locator),
+                            CreateTestClientStateWrapper());
       loop.Run();
 
       // If an upgrade was requested, then commit the upgrade transaction.

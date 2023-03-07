@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
 
@@ -93,7 +93,9 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object,
   // DoneWaiting can be synchronously called from RegisterWaitForSingleObject,
   // so set up all state now.
   callback_ = BindRepeating(&ObjectWatcher::Signal, weak_factory_.GetWeakPtr(),
-                            base::UnsafeDanglingUntriaged(delegate));
+                            // For all non-test usages, the delegate's lifetime
+                            // exceeds object_watcher's. This should be safe.
+                            delegate);
   object_ = object;
 
   if (!RegisterWaitForSingleObject(&wait_object_, object, DoneWaiting, this,

@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/cancelable_callback.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -83,9 +83,12 @@ class PasswordStore : public PasswordStoreInterface {
   bool IsAbleToSavePasswords() const override;
   void AddLogin(const PasswordForm& form,
                 base::OnceClosure completion = base::DoNothing()) override;
-  void UpdateLogin(const PasswordForm& form) override;
-  void UpdateLoginWithPrimaryKey(const PasswordForm& new_form,
-                                 const PasswordForm& old_primary_key) override;
+  void UpdateLogin(const PasswordForm& form,
+                   base::OnceClosure completion = base::DoNothing()) override;
+  void UpdateLoginWithPrimaryKey(
+      const PasswordForm& new_form,
+      const PasswordForm& old_primary_key,
+      base::OnceClosure completion = base::DoNothing()) override;
   void RemoveLogin(const PasswordForm& form) override;
   void RemoveLoginsByURLAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,

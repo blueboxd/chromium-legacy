@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/chromeos_buildflags.h"
 #include "components/feedback/pii_types.h"
@@ -96,6 +97,12 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // ASCII letters and digits, plus the dash/hyphen character. The dash cannot
     // appear first or last
     {"Serial", "(\"attested_device_id\"=\")([^-][0-9a-zA-Z-]+[^-])(\")",
+     PIIType::kSerial},
+    // PSM identifier is a 4-character brand code, which can be encoded as 8 hex
+    // digits, followed by a slash ('/') and a serial number.
+    {"PSM ID",
+     "(?i)(PSM.*\\b)((?:[a-z]{4}|[0-9a-f]{8})\\/"
+     "[0-9a-z\\-.:\\/\\\\\\x00-\\x09\\x0B-\\x1F]+)(\\b)",
      PIIType::kSerial},
 
     // GAIA IDs

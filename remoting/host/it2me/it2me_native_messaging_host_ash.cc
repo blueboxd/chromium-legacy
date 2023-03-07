@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -26,11 +26,12 @@ namespace {
 bool ShouldSuppressNotifications(
     const mojom::SupportSessionParams& params,
     const absl::optional<ChromeOsEnterpriseParams>& enterprise_params) {
-  if (enterprise_params)
+  if (enterprise_params) {
     return enterprise_params.value().suppress_notifications;
+  }
 
-    // On non-debug builds, do not allow setting this value through the Mojom
-    // API.
+  // On non-debug builds, do not allow setting this value through the Mojom
+  // API.
 #if !defined(NDEBUG)
   return params.suppress_notifications;
 #else
@@ -41,11 +42,12 @@ bool ShouldSuppressNotifications(
 bool ShouldSuppressUserDialog(
     const mojom::SupportSessionParams& params,
     const absl::optional<ChromeOsEnterpriseParams>& enterprise_params) {
-  if (enterprise_params)
+  if (enterprise_params) {
     return enterprise_params.value().suppress_user_dialogs;
+  }
 
-    // On non-debug builds, do not allow setting this value through the Mojom
-    // API.
+  // On non-debug builds, do not allow setting this value through the Mojom
+  // API.
 #if !defined(NDEBUG)
   return params.suppress_user_dialogs;
 #else
@@ -56,11 +58,12 @@ bool ShouldSuppressUserDialog(
 bool ShouldTerminateUponInput(
     const mojom::SupportSessionParams& params,
     const absl::optional<ChromeOsEnterpriseParams>& enterprise_params) {
-  if (enterprise_params)
+  if (enterprise_params) {
     return enterprise_params.value().terminate_upon_input;
+  }
 
-    // On non-debug builds, do not allow setting this value through the Mojom
-    // API.
+  // On non-debug builds, do not allow setting this value through the Mojom
+  // API.
 #if !defined(NDEBUG)
   return params.terminate_upon_input;
 #else
@@ -71,14 +74,16 @@ bool ShouldTerminateUponInput(
 bool ShouldCurtainLocalUserSession(
     const mojom::SupportSessionParams& params,
     const absl::optional<ChromeOsEnterpriseParams>& enterprise_params) {
-  if (!base::FeatureList::IsEnabled(features::kEnableCrdAdminRemoteAccess))
+  if (!base::FeatureList::IsEnabled(features::kEnableCrdAdminRemoteAccess)) {
     return false;
+  }
 
-  if (enterprise_params)
+  if (enterprise_params) {
     return enterprise_params.value().curtain_local_user_session;
+  }
 
-    // On non-debug builds, do not allow setting this value through the Mojom
-    // API.
+  // On non-debug builds, do not allow setting this value through the Mojom
+  // API.
 #if !defined(NDEBUG)
   return params.curtain_local_user_session;
 #else
@@ -142,6 +147,9 @@ void It2MeNativeMessageHostAsh::Connect(
   message.Set(kCurtainLocalUserSession,
               ShouldCurtainLocalUserSession(*params, enterprise_params));
   message.Set(kIsEnterpriseAdminUser, enterprise_params.has_value());
+  if (params->authorized_helper.has_value()) {
+    message.Set(kAuthorizedHelper, *params->authorized_helper);
+  }
 
   std::string message_json;
   base::JSONWriter::Write(message, &message_json);

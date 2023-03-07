@@ -15,6 +15,7 @@ import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -22,11 +23,14 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.compat.ApiHelperForQ;
 
+import java.lang.reflect.UndeclaredThrowableException;
+
 /**
  * Class used to forward view, input events down to native.
  */
 @JNINamespace("ui")
 public class EventForwarder {
+    private static final String TAG = "EventForwarder";
     private final boolean mIsDragDropEnabled;
 
     private long mNativeEventForwarder;
@@ -84,15 +88,6 @@ public class EventForwarder {
     @CalledByNative
     private void destroy() {
         mNativeEventForwarder = 0;
-    }
-
-    // Returns the scaling being applied to the event's source. Typically only used for VR when
-    // drawing Android UI to a texture.
-    private float getEventSourceScaling() {
-        return EventForwarderJni.get()
-                .getJavaWindowAndroid(mNativeEventForwarder, EventForwarder.this)
-                .getDisplay()
-                .getAndroidUIScaling();
     }
 
     private boolean hasTouchEventOffset() {
@@ -185,8 +180,6 @@ public class EventForwarder {
             float secondPointerX = pointerCount > 1 ? event.getX(1) : 0;
             float secondPointerY = pointerCount > 1 ? event.getY(1) : 0;
 
-            float scale = getEventSourceScaling();
-
             int gestureClassification = 0;
             if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 gestureClassification = ApiHelperForQ.getClassification(event);
@@ -194,15 +187,14 @@ public class EventForwarder {
 
             final boolean consumed = EventForwarderJni.get().onTouchEvent(mNativeEventForwarder,
                     EventForwarder.this, event, oldestEventTime, eventAction, pointerCount,
-                    event.getHistorySize(), event.getActionIndex(), event.getX() / scale,
-                    event.getY() / scale, secondPointerX / scale, secondPointerY / scale,
-                    event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
-                    touchMajor[0] / scale, touchMajor[1] / scale, touchMinor[0] / scale,
-                    touchMinor[1] / scale, event.getOrientation(),
+                    event.getHistorySize(), event.getActionIndex(), event.getX(), event.getY(),
+                    secondPointerX, secondPointerY, event.getPointerId(0),
+                    pointerCount > 1 ? event.getPointerId(1) : -1, touchMajor[0], touchMajor[1],
+                    touchMinor[0], touchMinor[1], event.getOrientation(),
                     pointerCount > 1 ? event.getOrientation(1) : 0,
                     event.getAxisValue(MotionEvent.AXIS_TILT),
                     pointerCount > 1 ? event.getAxisValue(MotionEvent.AXIS_TILT, 1) : 0,
-                    event.getRawX() / scale, event.getRawY() / scale, event.getToolType(0),
+                    event.getRawX(), event.getRawY(), event.getToolType(0),
                     pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
                     gestureClassification, event.getButtonState(), event.getMetaState(),
                     isTouchHandleEvent);
@@ -274,12 +266,10 @@ public class EventForwarder {
             int eventAction = event.getActionMasked();
             if (eventAction == MotionEvent.ACTION_HOVER_ENTER) {
                 if (mLastMouseButtonState == MotionEvent.BUTTON_PRIMARY) {
-                    float scale = getEventSourceScaling();
                     EventForwarderJni.get().onMouseEvent(mNativeEventForwarder, EventForwarder.this,
-                            event.getEventTime(), MotionEvent.ACTION_BUTTON_RELEASE,
-                            event.getX() / scale, event.getY() / scale, event.getPointerId(0),
-                            event.getPressure(0), event.getOrientation(0),
-                            event.getAxisValue(MotionEvent.AXIS_TILT, 0),
+                            event.getEventTime(), MotionEvent.ACTION_BUTTON_RELEASE, event.getX(),
+                            event.getY(), event.getPointerId(0), event.getPressure(0),
+                            event.getOrientation(0), event.getAxisValue(MotionEvent.AXIS_TILT, 0),
                             MotionEvent.BUTTON_PRIMARY, event.getButtonState(),
                             event.getMetaState(), event.getToolType(0));
                 }
@@ -330,10 +320,8 @@ public class EventForwarder {
             return true;
         }
 
-        float scale = getEventSourceScaling();
-
         EventForwarderJni.get().onMouseEvent(mNativeEventForwarder, EventForwarder.this,
-                event.getEventTime(), eventAction, event.getX() / scale, event.getY() / scale,
+                event.getEventTime(), eventAction, event.getX(), event.getY(),
                 event.getPointerId(0), event.getPressure(0), event.getOrientation(0),
                 event.getAxisValue(MotionEvent.AXIS_TILT, 0), getMouseEventActionButton(event),
                 event.getButtonState(), event.getMetaState(), event.getToolType(0));
@@ -382,15 +370,24 @@ public class EventForwarder {
             return mimeTypes != null && mimeTypes.length > 0 && mIsDragDropEnabled;
         }
 
-        StringBuilder content = new StringBuilder("");
+        String content = "";
         if (event.getAction() == DragEvent.ACTION_DROP) {
-            // TODO(hush): obtain dragdrop permissions, when dragging files into Chrome/WebView is
-            // supported. Not necessary to do so for now, because only text dragging is supported.
-            ClipData clipData = event.getClipData();
-            final int itemCount = clipData.getItemCount();
-            for (int i = 0; i < itemCount; i++) {
-                ClipData.Item item = clipData.getItemAt(i);
-                content.append(item.coerceToStyledText(containerView.getContext()));
+            try {
+                StringBuilder contentBuilder = new StringBuilder("");
+                ClipData clipData = event.getClipData();
+                final int itemCount = clipData.getItemCount();
+                for (int i = 0; i < itemCount; i++) {
+                    ClipData.Item item = clipData.getItemAt(i);
+                    contentBuilder.append(item.coerceToStyledText(containerView.getContext()));
+                }
+                content = contentBuilder.toString();
+            } catch (UndeclaredThrowableException e) {
+                // When dropped item is not successful for whatever reason, catch before we crash.
+                // While ClipData.Item does capture most common failures, there could be exceptions
+                // that's wrapped by Chrome classes (e.g. ServiceTracingProxyProvider) which changed
+                // the exception signiture. See crbug.com/1406777.
+                Log.e(TAG, "Parsing clip data content failed.", e.getMessage());
+                content = "";
             }
         }
 
@@ -403,11 +400,8 @@ public class EventForwarder {
         float screenX = x + locationOnScreen[0];
         float screenY = y + locationOnScreen[1];
 
-        float scale = getEventSourceScaling();
-
         EventForwarderJni.get().onDragEvent(mNativeEventForwarder, EventForwarder.this,
-                event.getAction(), x / scale, y / scale, screenX / scale, screenY / scale,
-                mimeTypes, content.toString());
+                event.getAction(), x, y, screenX, screenY, mimeTypes, content);
         return true;
     }
 

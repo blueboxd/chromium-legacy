@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
@@ -204,9 +204,10 @@ enum class CredentialManagerGetResult {
   kAutoSignIn = 8,
   // No credentials are returned in incognito mode.
   kNoneIncognito = 9,
-  // No credentials are returned while autofill_assistant is running.
-  kNoneAutofillAssistant = 10,
-  kMaxValue = kNoneAutofillAssistant,
+  // No credentials are returned while autofill_assistant is running. Deprecated
+  // as part of autofill_assistant removal.
+  // kNoneAutofillAssistant = 10,
+  kMaxValue = kNoneIncognito,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -805,18 +806,10 @@ void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
                                     bool does_primary_account_exists,
                                     bool is_signed_in);
 
-// Log the result of the password edit action.
-void LogPasswordEditResult(IsUsernameChanged password_changed,
-                           IsPasswordChanged username_changed);
-
 // Log the user interaction events when creating a new credential from settings.
 void LogUserInteractionsWhenAddingCredentialFromSettings(
     AddCredentialFromSettingsUserInteractions
         add_credential_from_settings_user_interaction);
-
-// Log how the user interaction with the note field in password add / edit
-// dialogs.
-void LogPasswordNoteActionInSettings(PasswordNoteAction action);
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to

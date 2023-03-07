@@ -5,9 +5,9 @@
 #include "content/test/navigation_simulator_impl.h"
 
 #include <utility>
-#include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
@@ -1302,7 +1302,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
     static_cast<NavigationControllerImpl&>(web_contents_->GetController())
         .GoToOffsetFromRenderer(
             session_history_offset_, render_frame_host_,
-            /*soft_navigation_heuristic_task_id=*/absl::nullopt);
+            /*soft_navigation_heuristics_task_id=*/absl::nullopt);
     request_ = render_frame_host_->frame_tree_node()->navigation_request();
     return true;
   }

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ash/system_logs/shill_log_source.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -169,12 +169,12 @@ void ShillLogSource::OnGetIPConfig(const std::string& device_path,
 void ShillLogSource::AddIPConfig(const std::string& device_path,
                                  const std::string& ip_config_path,
                                  const base::Value& properties) {
-  base::Value* device = devices_.FindKey(device_path);
+  base::Value::Dict* device = devices_.GetDict().FindDict(device_path);
   DCHECK(device);
-  base::Value* ip_configs = device->FindDictKey(shill::kIPConfigsProperty);
+  base::Value::Dict* ip_configs = device->FindDict(shill::kIPConfigsProperty);
   DCHECK(ip_configs);
-  ip_configs->SetKey(ip_config_path,
-                     ScrubAndExpandProperties(ip_config_path, properties));
+  ip_configs->Set(ip_config_path,
+                  ScrubAndExpandProperties(ip_config_path, properties));
 }
 
 void ShillLogSource::OnGetService(const std::string& service_path,
@@ -214,8 +214,9 @@ base::Value ShillLogSource::ScrubAndExpandProperties(
                               base::CompareCase::SENSITIVE)) {
     // Only mask "Address" in the top level Device dictionary, not globally
     // (which would mask IPConfigs which get anonymized separately).
-    if (dict.FindKey(shill::kAddressProperty))
+    if (dict.GetDict().contains(shill::kAddressProperty)) {
       dict.SetStringKey(shill::kNameProperty, kMaskedString);
+    }
   }
 
   ScrubDictionary(&dict);

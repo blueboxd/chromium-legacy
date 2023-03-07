@@ -4,8 +4,8 @@
 
 #include "components/download/public/common/in_progress_download_manager.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/download/database/download_db_entry.h"
@@ -70,8 +70,8 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->danger_type, in_progress_info->interrupt_reason,
       in_progress_info->paused, in_progress_info->metered, false, base::Time(),
       in_progress_info->transient, in_progress_info->received_slices,
-      in_progress_info->reroute_info, in_progress_info->range_request_from,
-      in_progress_info->range_request_to, std::move(download_entry));
+      in_progress_info->range_request_from, in_progress_info->range_request_to,
+      std::move(download_entry));
 }
 
 void OnUrlDownloadHandlerCreated(
@@ -698,7 +698,7 @@ void InProgressDownloadManager::AddInProgressDownloadForTest(
 void InProgressDownloadManager::CancelUrlDownload(
     UrlDownloadHandlerID downloader,
     bool user_cancel) {
-  OnUrlDownloadStopped(downloader);
+  OnUrlDownloadStopped(reinterpret_cast<UrlDownloadHandlerID>(downloader));
 }
 
 }  // namespace download

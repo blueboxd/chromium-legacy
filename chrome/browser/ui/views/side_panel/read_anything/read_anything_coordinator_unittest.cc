@@ -31,13 +31,12 @@ class ReadAnythingCoordinatorTest : public TestWithBrowserView {
  public:
   void SetUp() override {
     base::test::ScopedFeatureList features;
-    features.InitWithFeatures(
-        {features::kUnifiedSidePanel, features::kReadAnything}, {});
+    features.InitWithFeatures({features::kReadAnything}, {});
     TestWithBrowserView::SetUp();
 
     side_panel_coordinator_ = browser_view()->side_panel_coordinator();
     side_panel_registry_ =
-        side_panel_coordinator_->GetGlobalSidePanelRegistry();
+        SidePanelCoordinator::GetGlobalSidePanelRegistry(browser());
     read_anything_coordinator_ =
         ReadAnythingCoordinator::GetOrCreateForBrowser(browser());
   }

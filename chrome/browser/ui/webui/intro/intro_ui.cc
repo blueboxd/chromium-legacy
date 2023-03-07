@@ -5,16 +5,20 @@
 #include "chrome/browser/ui/webui/intro/intro_ui.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/intro/intro_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/intro_resources.h"
 #include "chrome/grit/intro_resources_map.h"
+#include "chrome/grit/signin_resources.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/grit/chromium_strings.h"
@@ -22,7 +26,6 @@
 #endif
 
 namespace {
-
 void AddStrings(content::WebUIDataSource* html_source) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -41,7 +44,6 @@ void AddStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 #endif
 }
-
 }  // namespace
 
 IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
@@ -57,13 +59,32 @@ IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
 
   AddStrings(source);
 
+  // TODO(crbug.com/1409028): Replace this function by a call to
+  // chrome::GetDeviceManagerIdentity()
+  bool is_device_managed =
+      chrome::ShouldDisplayManagedUi(Profile::FromWebUI(web_ui));
+  source->AddBoolean("isDeviceManaged", is_device_managed);
+
   source->AddResourcePath("product-logo.svg", IDR_PRODUCT_LOGO_SVG);
   source->AddResourcePath("product-logo-animation.svg",
                           IDR_PRODUCT_LOGO_ANIMATION_SVG);
+  source->AddResourcePath(
+      "left_illustration.svg",
+      IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_LEFT_ILLUSTRATION_SVG);
+  source->AddResourcePath(
+      "left_illustration_dark.svg",
+      IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_LEFT_ILLUSTRATION_DARK_SVG);
+  source->AddResourcePath(
+      "right_illustration.svg",
+      IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_RIGHT_ILLUSTRATION_SVG);
+  source->AddResourcePath(
+      "right_illustration_dark.svg",
+      IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_RIGHT_ILLUSTRATION_DARK_SVG);
 
   // Unretained ok: `this` owns the handler.
-  web_ui->AddMessageHandler(std::make_unique<IntroHandler>(base::BindRepeating(
-      &IntroUI::HandleSigninChoice, base::Unretained(this))));
+  web_ui->AddMessageHandler(std::make_unique<IntroHandler>(
+      base::BindRepeating(&IntroUI::HandleSigninChoice, base::Unretained(this)),
+      is_device_managed));
 }
 
 IntroUI::~IntroUI() = default;

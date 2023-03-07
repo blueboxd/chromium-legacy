@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/download/confirm_download_replacing_overlay.h"
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/overlays/public/common/confirmation/confirmation_overlay_response_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -23,16 +23,16 @@ OVERLAY_USER_DATA_SETUP_IMPL(ConfirmDownloadReplacingRequest);
 
 void ConfirmDownloadReplacingRequest::CreateAuxiliaryData(
     base::SupportsUserData* user_data) {
-  const std::vector<alert_overlays::ButtonConfig> buttons{
-      alert_overlays::ButtonConfig(GetNSString(IDS_OK),
-                                   kDownloadReplaceActionName),
-      alert_overlays::ButtonConfig(GetNSString(IDS_CANCEL),
-                                   kDownloadDoNotReplaceActionName,
-                                   UIAlertActionStyleCancel)};
+  const std::vector<std::vector<alert_overlays::ButtonConfig>> buttons{
+      {alert_overlays::ButtonConfig(GetNSString(IDS_OK),
+                                    kDownloadReplaceActionName)},
+      {alert_overlays::ButtonConfig(GetNSString(IDS_CANCEL),
+                                    kDownloadDoNotReplaceActionName,
+                                    UIAlertActionStyleCancel)}};
   alert_overlays::AlertRequest::CreateForUserData(
       user_data, GetNSString(IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION),
       GetNSString(IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION_MESSAGE),
       /*accessibility_identifier=*/nil,
       /*text_fields=*/nil, buttons,
-      GetConfirmationResponseConverter(/*confirm_button_index=*/0));
+      GetConfirmationResponseConverter(/*confirm_button_row_index=*/0));
 }

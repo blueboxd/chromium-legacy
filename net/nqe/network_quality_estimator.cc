@@ -10,9 +10,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
@@ -1316,7 +1316,7 @@ void NetworkQualityEstimator::NotifyObserversOfRTTOrThroughputComputed() const {
 }
 
 void NetworkQualityEstimator::NotifyEffectiveConnectionTypeObserverIfPresent(
-    EffectiveConnectionTypeObserver* observer) const {
+    MayBeDangling<EffectiveConnectionTypeObserver> observer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!effective_connection_type_observer_list_.HasObserver(observer))
@@ -1333,7 +1333,7 @@ void NetworkQualityEstimator::NotifyEffectiveConnectionTypeObserverIfPresent(
 }
 
 void NetworkQualityEstimator::NotifyPeerToPeerConnectionsCountObserverIfPresent(
-    PeerToPeerConnectionsCountObserver* observer) const {
+    MayBeDangling<PeerToPeerConnectionsCountObserver> observer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!peer_to_peer_type_observer_list_.HasObserver(observer))

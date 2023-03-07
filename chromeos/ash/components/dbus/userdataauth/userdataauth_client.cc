@@ -8,7 +8,7 @@
 
 #include <google/protobuf/message_lite.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
@@ -204,29 +204,6 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
       const ::user_data_auth::StartAuthSessionRequest& request,
       StartAuthSessionCallback callback) override {
     CallProtoMethod(::user_data_auth::kStartAuthSession,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
-  void AuthenticateAuthSession(
-      const ::user_data_auth::AuthenticateAuthSessionRequest& request,
-      AuthenticateAuthSessionCallback callback) override {
-    CallProtoMethod(::user_data_auth::kAuthenticateAuthSession,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
-  void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
-                      AddCredentialsCallback callback) override {
-    CallProtoMethod(::user_data_auth::kAddCredentials,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
-  void UpdateCredential(
-      const ::user_data_auth::UpdateCredentialRequest& request,
-      UpdateCredentialCallback callback) override {
-    CallProtoMethod(::user_data_auth::kUpdateCredential,
                     ::user_data_auth::kUserDataAuthInterface, request,
                     std::move(callback));
   }

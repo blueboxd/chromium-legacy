@@ -5,6 +5,7 @@
 #include "ash/system/network/network_info_bubble.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/constants/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,7 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
@@ -24,9 +25,8 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace {
 
-using chromeos::network_config::CrosNetworkConfigTestHelper;
+namespace {
 
 const char kIPv4ConfigPath[] = "/ipconfig/stub_ipv4_config";
 const char kIPv6ConfigPath[] = "/ipconfig/stub_ipv6_config";
@@ -130,27 +130,28 @@ class NetworkInfoBubbleTest : public AshTestBase {
   }
 
   void AddDefaultNetworkWithIPAddresses() {
-    base::DictionaryValue ipv4;
-    ipv4.SetKey(shill::kAddressProperty, base::Value(kIpv4Address));
-    ipv4.SetKey(shill::kMethodProperty, base::Value(shill::kTypeIPv4));
+    base::Value::Dict ipv4;
+    ipv4.Set(shill::kAddressProperty, kIpv4Address);
+    ipv4.Set(shill::kMethodProperty, shill::kTypeIPv4);
 
-    base::DictionaryValue ipv6;
-    ipv6.SetKey(shill::kAddressProperty, base::Value(kIpv6Address));
-    ipv6.SetKey(shill::kMethodProperty, base::Value(shill::kTypeIPv6));
+    base::Value::Dict ipv6;
+    ipv6.Set(shill::kAddressProperty, kIpv6Address);
+    ipv6.Set(shill::kMethodProperty, shill::kTypeIPv6);
 
     network_config_helper_.network_state_helper().ip_config_test()->AddIPConfig(
-        kIPv4ConfigPath, ipv4);
+        kIPv4ConfigPath, std::move(ipv4));
     network_config_helper_.network_state_helper().ip_config_test()->AddIPConfig(
-        kIPv6ConfigPath, ipv6);
+        kIPv6ConfigPath, std::move(ipv6));
 
-    base::ListValue ip_configs;
+    base::Value::List ip_configs;
     ip_configs.Append(kIPv4ConfigPath);
     ip_configs.Append(kIPv6ConfigPath);
 
     network_config_helper_.network_state_helper()
         .device_test()
         ->SetDeviceProperty(kStubWiFiDevicePath, shill::kIPConfigsProperty,
-                            ip_configs, /*notify_changed=*/true);
+                            base::Value(std::move(ip_configs)),
+                            /*notify_changed=*/true);
 
     network_config_helper_.network_state_helper().service_test()->AddService(
         kWiFiServicePath, kWiFiServiceGuid, kWiFiServiceName, shill::kTypeWifi,
@@ -191,7 +192,7 @@ class NetworkInfoBubbleTest : public AshTestBase {
   FakeNetworkInfoBubbleDelegate* fake_delegate() { return &fake_delegate_; }
 
  private:
-  CrosNetworkConfigTestHelper network_config_helper_;
+  network_config::CrosNetworkConfigTestHelper network_config_helper_;
   FakeNetworkInfoBubbleDelegate fake_delegate_;
   NetworkInfoBubble* network_info_bubble_ = nullptr;
   base::test::ScopedFeatureList feature_list_;

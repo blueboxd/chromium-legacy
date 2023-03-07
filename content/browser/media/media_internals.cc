@@ -10,10 +10,10 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -497,7 +497,7 @@ void MediaInternals::SendGeneralAudioInformation() {
       GetContentClient()->browser()->ShouldSandboxAudioService());
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
   std::string chrome_wide_echo_cancellation_value_string =
-      base::FeatureList::IsEnabled(media::kChromeWideEchoCancellation)
+      media::IsChromeWideEchoCancellationEnabled()
           ? base::StrCat(
                 {"Enabled, processing_fifo_size = ",
                  base::NumberToString(

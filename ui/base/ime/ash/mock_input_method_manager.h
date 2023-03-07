@@ -8,13 +8,12 @@
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/ash/input_method_manager.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/base/ime/virtual_keyboard_controller_observer.h"
 
 namespace ash {
 namespace input_method {
+
 class ImeKeyboard;
 
 // The mock InputMethodManager for testing.
@@ -32,7 +31,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) MockInputMethodManager
     scoped_refptr<InputMethodManager::State> Clone() const override;
     void AddInputMethodExtension(const std::string& extension_id,
                                  const InputMethodDescriptors& descriptors,
-                                 ui::TextInputMethod* instance) override;
+                                 TextInputMethod* instance) override;
     void RemoveInputMethodExtension(const std::string& extension_id) override;
     void ChangeInputMethod(const std::string& input_method_id,
                            bool show_message) override;

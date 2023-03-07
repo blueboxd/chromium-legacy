@@ -1,7 +1,13 @@
 <style>
   #title {
+    align-items: center;
+    display: flex;
     font-weight: bold;
-    margin-bottom: 20px;
+    height: 48px;
+  }
+
+  accelerator-row:not(:last-of-type) {
+    border-bottom: var(--cr-separator-line);
   }
 
   #rowList {
@@ -16,7 +22,6 @@
     <template id="list" is="dom-repeat" items="[[accelRowDataArray]]">
       <accelerator-row
           accelerator-infos="[[item.acceleratorInfos]]"
-          accelerator-text="TODO(cambickel) add text from mojo when implemented"
           action="[[item.layoutInfo.action]]"
           description="[[item.layoutInfo.description]]"
           layout-style="[[item.layoutInfo.style]]"

@@ -69,6 +69,7 @@ public class PrivacySandboxDialogNoticeEEAV4
 
         mMoreButton.setOnClickListener(this);
         setOnShowListener(this);
+        setCancelable(false);
 
         mScrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
             if (!mScrollView.canScrollVertically(ScrollView.FOCUS_DOWN)) {
@@ -98,6 +99,7 @@ public class PrivacySandboxDialogNoticeEEAV4
             PrivacySandboxSettingsBaseFragment.launchPrivacySandboxSettings(
                     getContext(), mSettingsLauncher, PrivacySandboxReferrer.PRIVACY_SANDBOX_NOTICE);
         } else if (id == R.id.more_button) {
+            PrivacySandboxBridge.promptActionOccurred(PromptAction.NOTICE_MORE_BUTTON_CLICKED);
             if (mScrollView.canScrollVertically(ScrollView.FOCUS_DOWN)) {
                 mScrollView.post(() -> { mScrollView.pageScroll(ScrollView.FOCUS_DOWN); });
             } else {

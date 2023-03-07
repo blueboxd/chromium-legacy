@@ -12,14 +12,15 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
@@ -60,6 +61,7 @@
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/base/ui_base_features.h"
@@ -262,6 +264,10 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
     uint64_t parent_ns_view_id) {
   // Destroy the previous remote accessibility element.
   remote_window_accessible_.reset();
+
+  // Reset `ns_view_` before resetting `remote_ns_view_` to avoid dangling
+  // pointers. `ns_view_` gets reinitialized later in this method.
+  ns_view_ = nullptr;
 
   // Disconnect from the previous bridge (this will have the effect of
   // destroying the associated bridge), and close the receiver (to allow it
@@ -576,12 +582,12 @@ bool RenderWidgetHostViewMac::IsMouseLocked() {
   return mouse_locked_;
 }
 
-void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
+void RenderWidgetHostViewMac::UpdateCursor(const ui::Cursor& cursor) {
   GetCursorManager()->UpdateCursor(this, cursor);
 }
 
-void RenderWidgetHostViewMac::DisplayCursor(const WebCursor& cursor) {
-  ns_view_->DisplayCursor(cursor.cursor());
+void RenderWidgetHostViewMac::DisplayCursor(const ui::Cursor& cursor) {
+  ns_view_->DisplayCursor(cursor);
 }
 
 CursorManager* RenderWidgetHostViewMac::GetCursorManager() {

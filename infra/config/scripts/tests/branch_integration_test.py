@@ -54,60 +54,32 @@ class BranchIntegrationTest(unittest.TestCase):
             "project_title": "Chromium MXX",
             "ref": "refs/branch-heads/YYYY",
             "chrome_project": "chrome-mXX",
-            "is_main": false,
-            "platforms": {
-                "android": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                },
-                "cros": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                },
-                "fuchsia": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                },
-                "ios": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                },
-                "linux": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                },
-                "mac": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                },
-                "windows": {
-                    "description": "beta/stable",
-                    "sheriff_rotation": "chrome_browser_release"
-                }
-            }
+            "branch_types": [
+                "standard"
+            ]
         }
         """))
 
-  def test_enable_platform_parse_args_fails_when_missing_required_args(self):
-    result = self._execute_branch_py(['enable-platform'])
+  def test_set_type_fails_when_missing_required_args(self):
+    result = self._execute_branch_py(['set-type'])
     self.assertNotEqual(result.returncode, 0)
-    self.assertIn(
-        'the following arguments are required: platform, --description',
-        result.stderr)
+    self.assertIn('the following arguments are required: --type', result.stderr)
 
-  def test_enable_platform_rewrites_settings_json(self):
+  def test_set_type_fails_for_invalid_type(self):
+    result = self._execute_branch_py(['set-type', '--type', 'foo'])
+    self.assertNotEqual(result.returncode, 0)
+    self.assertIn("invalid choice: 'foo'", str(result.stderr))
+
+  def test_set_type_rewrites_settings_json(self):
     with open(self._settings_json, 'w') as f:
       settings = {
           "project": "chromium-mXX",
           "project_title": "Chromium MXX",
-          "ref": "refs/branch-heads/YYYY",
-          "is_main": True
+          "ref": "refs/branch-heads/YYYY"
       }
       json.dump(settings, f)
 
-    result = self._execute_branch_py([
-        'enable-platform', 'fake-platform', '--description', 'fake-description'
-    ])
+    result = self._execute_branch_py(['set-type', '--type', 'cros-lts'])
     self.assertEqual(result.returncode, 0,
                      (f'subprocess failed\n***COMMAND***\n{result.args}\n'
                       f'***STDERR***\n{result.stderr}\n'))
@@ -121,53 +93,9 @@ class BranchIntegrationTest(unittest.TestCase):
                 "project": "chromium-mXX",
                 "project_title": "Chromium MXX",
                 "ref": "refs/branch-heads/YYYY",
-                "is_main": false,
-                "platforms": {
-                    "fake-platform": {
-                        "description": "fake-description"
-                    }
-                }
-            }
-            """))
-
-  def test_enable_platform_with_sheriff_rotation_rewrites_settings_json(self):
-    with open(self._settings_json, 'w') as f:
-      settings = {
-          "project": "chromium-mXX",
-          "project_title": "Chromium MXX",
-          "ref": "refs/branch-heads/YYYY",
-          "is_main": True
-      }
-      json.dump(settings, f)
-
-    result = self._execute_branch_py([
-        'enable-platform',
-        'fake-platform',
-        '--description',
-        'fake-description',
-        '--sheriff-rotation',
-        'fake-sheriff-rotation',
-    ])
-    self.assertEqual(result.returncode, 0,
-                     (f'subprocess failed\n***COMMAND***\n{result.args}\n'
-                      f'***STDERR***\n{result.stderr}\n'))
-
-    with open(self._settings_json) as f:
-      settings = f.read()
-    self.assertEqual(
-        settings,
-        textwrap.dedent("""\
-            {
-                "project": "chromium-mXX",
-                "project_title": "Chromium MXX",
-                "ref": "refs/branch-heads/YYYY",
-                "is_main": false,
-                "platforms": {
-                    "fake-platform": {
-                        "description": "fake-description",
-                        "sheriff_rotation": "fake-sheriff-rotation"
-                    }
-                }
+                "branch_types": [
+                    "cros-lts"
+                ]
             }
             """))
 

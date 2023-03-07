@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/cursor/cursor_factory.h"
@@ -109,9 +110,6 @@ class OzonePlatformFlatland : public OzonePlatform,
               std::move(parent_token));
     }
 
-    // TODO(fxbug.dev/93998): Add a hook for the RootPresenter equivalent of
-    // Flatland to ui::fuchsia::InitializeViewTokenAndPresentView() create a
-    // window.
     CHECK(properties.view_creation_token.value.is_valid());
     return std::make_unique<FlatlandWindow>(window_manager_.get(), delegate,
                                             std::move(properties));

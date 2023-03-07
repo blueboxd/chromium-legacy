@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://read-later.top-chrome/shared/sp_empty_state.js';
+import 'chrome://read-later.top-chrome/shared/sp_heading.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
@@ -79,11 +81,6 @@ export class ReadingListAppElement extends ReadingListAppElementBase {
         type: Boolean,
         value: true,
       },
-
-      unifiedSidePanel_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('unifiedSidePanel'),
-      },
     };
   }
 
@@ -92,7 +89,6 @@ export class ReadingListAppElement extends ReadingListAppElementBase {
   private currentPageActionButtonState_: CurrentPageActionButtonState;
   buttonRipples: boolean;
   private loadingContent_: boolean;
-  private unifiedSidePanel_: boolean;
   private apiProxy_: ReadingListApiProxy =
       ReadingListApiProxyImpl.getInstance();
   private listenerIds_: number[] = [];
@@ -125,14 +121,8 @@ export class ReadingListAppElement extends ReadingListAppElementBase {
             (state: CurrentPageActionButtonState) =>
                 this.updateCurrentPageActionButton_(state)));
 
-    // If added in a visible state update current reading list items.
-    // If UnifiedSidePanel is enabled do this immediately. This is only
-    // undesirable when UnifiedSidePanel is not enabled since previously reading
-    // list and bookmarks shared a webview.
-    if (document.visibilityState === 'visible' || this.unifiedSidePanel_) {
-      this.updateReadLaterEntries_();
-      this.apiProxy_.updateCurrentPageActionButtonState();
-    }
+    this.updateReadLaterEntries_();
+    this.apiProxy_.updateCurrentPageActionButtonState();
 
     this.readingListEventTracker_.add(
         this.root!, MARKED_AS_READ_UI_EVENT, this.onMarkedAsRead.bind(this));
@@ -303,7 +293,7 @@ export class ReadingListAppElement extends ReadingListAppElementBase {
 
   private onItemFocus_(e: Event) {
     this.$.selector.selected =
-        (e.currentTarget as ReadingListItemElement).dataset.url!;
+        (e.currentTarget as ReadingListItemElement).dataset['url']!;
   }
 
   private shouldShowHr_(): boolean {

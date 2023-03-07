@@ -178,7 +178,7 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
 }
 
 #directory-tree .tree-item:not([disabled])
-  .tree-row[active] > .file-row > .item-icon {
+  .tree-row[active] > .file-row > .item-icon:not([style*='background-image']) {
   background-color: var(--cros-icon-color-selection);
 }
 
@@ -1319,33 +1319,39 @@ body.files-ng .thumbnail-frame > .img-container {
   position: relative;
 }
 
-body.files-ng .thumbnail-frame > .sync-status {
+#list-container.thumbnail-view .inline-status {
+  align-items: center;
+  display: none;
   height: 16px;
+  justify-content: center;
   position: absolute;
   right: 4px;
   top: 4px;
   width: 16px;
 }
 
-body.files-ng li:not([renaming]):not(.dim-offline) .thumbnail-frame > .sync-status {
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
+#list-container.thumbnail-view .inline-status .progress,
+#list-container.thumbnail-view .inline-status xf-icon {
+  display: none;
+  height: 16px;
+  width: 16px;
 }
 
-body.files-ng li:not([renaming]):not(.dim-offline) .thumbnail-frame[data-sync-status=in_progress] > .sync-status {
-  background-image: url(../images/files/ui/in_progress_indicator.svg);
+#list-container.thumbnail-view .inline-status xf-icon[type^=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
 }
 
-body.files-ng li:not([renaming]):not(.dim-offline) .thumbnail-frame[data-sync-status=error] > .sync-status {
-  background-image: url(../images/files/ui/error.svg);
-}
-
-body.files-ng li.directory .thumbnail-frame > .sync-status {
+#list-container.thumbnail-view li.directory .inline-status {
   height: 100%;
   top: 0;
 }
 
+#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type^=offline]),
+#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type^=offline],
+#list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
+#list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
+  display: flex;
+}
 html:not(.pointer-active) body[type='full-page'] .thumbnail-frame > .img-container,
 body[type='full-page'] .thumbnail-frame > .img-container:active,
 html:not(.pointer-active) body[type='full-page'] .detail-name .detail-icon,
@@ -1546,23 +1552,19 @@ body.files-ng #default-tasks-list {
 }
 
 #default-task-dialog.bottom-shadow::after {
-  background: linear-gradient(180deg,
-                              var(--cros-bg-color) 0,
-                              var(--cros-bg-color) 100%);
+  background: linear-gradient(transparent 0, var(--cros-bg-color) 100%);
   bottom: 24px;
   content: '';
   height: 40px;
   left: 0;
   pointer-events: none;
   position: absolute;
-  transform: rotate(-180deg);
   width: 100%
 }
 
 @media (prefers-color-scheme: dark) {
   #default-task-dialog.bottom-shadow::after {
-    background: linear-gradient(180deg,
-                                var(--cros-bg-color-elevation-2) 0,
+    background: linear-gradient(transparent 0,
                                 var(--cros-bg-color-elevation-2) 100%);
   }
 }
@@ -1952,6 +1954,7 @@ body[type='folder'] .file,
 body[type='upload-folder'] .file,
 .dialog-container[connection='OFFLINE'] .dim-offline,
 body[block-hosted-docs] .file.dim-hosted,
+body[block-encrypted] .file.dim-encrypted,
 .thumbnail-grid [disabled],
 #detail-table [disabled],
 #directory-tree .tree-item[disabled] > .tree-row {
@@ -2097,6 +2100,7 @@ body.files-ng #list-container .table-header-cell:first-child
 .table-header-label .sort-icon {
   --cr-icon-button-fill-color: var(--cros-icon-color-secondary);
   --cr-icon-button-icon-size: 16px;
+  --cr-icon-button-focus-outline-color: var(--cros-focus-ring-color);
   --cr-icon-button-hover-background-color: var(--cros-ripple-color);
   --cr-icon-button-size: 32px;
   border-radius: 50%;
@@ -2213,6 +2217,7 @@ body.files-ng .table-row-cell:first-child > * {
 
 body.files-ng .table-row-cell .filename-label {
   color: var(--cros-text-color-primary);
+  flex-grow: 1;
   padding-top: 0;
 }
 
@@ -2248,38 +2253,30 @@ body.files-ng #list-container li .detail-thumbnail {
   width: 32px;
 }
 
-.inline-status {
+#list-container .list .inline-status {
+  align-items: center;
   display: none;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
 }
 
-body.files-ng #list-container
-    li.pinned:not([renaming]):not(.dim-offline):not([data-sync-status]) .inline-status {
-  -webkit-mask-image: url(../images/files/ui/offline.svg);
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  background-color: currentColor;
+#list-container .list .inline-status .progress,
+#list-container .list .inline-status xf-icon {
+  display: none;
+  height: 16px;
+  width: 16px;
+}
+
+#list-container .list .inline-status xf-icon:is([type=offline]) {
+  --xf-icon-color: var(--cros-icon-color-secondary);
+}
+
+#list-container .list li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type=offline]),
+#list-container .list li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type=offline],
+#list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
+#list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
   display: flex;
-  height: 40px;
-  width: 40px;
-}
-
-body.files-ng #list-container li[data-sync-status]:not([renaming]):not(.dim-offline) .inline-status {
-  -webkit-mask-image: none;
-  background-color: unset;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
-  display: flex;
-  height: 32px;
-  width: 32px;
-}
-
-body.files-ng #list-container li[data-sync-status=in_progress]:not([renaming]):not(.dim-offline) .inline-status {
-  background-image: url(../images/files/ui/in_progress_indicator.svg);
-}
-
-body.files-ng #list-container li[data-sync-status=error]:not([renaming]):not(.dim-offline) .inline-status {
-  background-image: url(../images/files/ui/error.svg);
 }
 
 #new-folder-button {

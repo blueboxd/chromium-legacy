@@ -24,6 +24,10 @@ class SiteSettingsPermissionsHandler : public settings::SettingsPageUIHandler {
   friend class SiteSettingsPermissionsHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsPermissionsHandlerTest,
                            PopulateUnusedSitePermissionsData);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsPermissionsHandlerTest,
+                           HandleAllowPermissionsAgainForUnusedSite);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsPermissionsHandlerTest,
+                           HandleAcknowledgeRevokedUnusedSitePermissionsList);
 
   // SettingsPageUIHandler implementation.
   void OnJavascriptAllowed() override;
@@ -36,9 +40,21 @@ class SiteSettingsPermissionsHandler : public settings::SettingsPageUIHandler {
   // "Unused site permissions" module.
   void HandleGetRevokedUnusedSitePermissionsList(const base::Value::List& args);
 
+  // Re-grant the revoked permissions and remove the origin from the revoked
+  // permissions list.
+  void HandleAllowPermissionsAgainForUnusedSite(const base::Value::List& args);
+
+  // Clear the list of revoked permissions so they are not shown again.
+  // Permission settings themselves are not affected by this.
+  void HandleAcknowledgeRevokedUnusedSitePermissionsList(
+      const base::Value::List& args);
+
   // Returns the list of revoked permissions that belongs to origins which
   // haven't been visited recently.
   base::Value::List PopulateUnusedSitePermissionsData();
+
+  // Sends the list of unused site permissions to review to the WebUI.
+  void SendUnusedSitePermissionsReviewList();
 
   const raw_ptr<Profile> profile_;
 };

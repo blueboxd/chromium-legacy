@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check_deref.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
@@ -118,6 +118,14 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
     data_decoder = std::make_unique<data_decoder::DataDecoder>();
   }
 #endif
+
+  bool is_default_chrome_app_migrated;
+#if BUILDFLAG(IS_ANDROID)
+  is_default_chrome_app_migrated = false;
+#else
+  is_default_chrome_app_migrated = true;
+#endif
+
   auto most_visited_sites = std::make_unique<ntp_tiles::MostVisitedSites>(
       profile->GetPrefs(), TopSitesFactory::GetForProfile(profile),
 #if BUILDFLAG(IS_ANDROID)
@@ -144,11 +152,6 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
 #else
       nullptr,
 #endif
-#if !BUILDFLAG(IS_ANDROID)
-      web_app::IsAnyChromeAppToWebAppMigrationEnabled(CHECK_DEREF(profile))
-#else
-      false
-#endif
-  );
+      is_default_chrome_app_migrated);
   return most_visited_sites;
 }

@@ -143,6 +143,7 @@
 ../../third_party/catapult/telemetry/telemetry/core/debug_data.py
 ../../third_party/catapult/telemetry/telemetry/core/exceptions.py
 ../../third_party/catapult/telemetry/telemetry/core/fuchsia_interface.py
+../../third_party/catapult/telemetry/telemetry/core/linux_based_interface.py
 ../../third_party/catapult/telemetry/telemetry/core/local_server.py
 ../../third_party/catapult/telemetry/telemetry/core/memory_cache_http_server.py
 ../../third_party/catapult/telemetry/telemetry/core/network_controller.py
@@ -548,6 +549,7 @@ contrib/power/perf_benchmark_with_profiling.py
 contrib/power/perf_benchmark_with_profiling_unittest.py
 contrib/power/perf_profile.py
 contrib/power/power_perf_benchmark_base.py
+contrib/power/powerups.py
 contrib/power/process_results.py
 contrib/power/profiling_util.py
 contrib/power/profiling_util_unittest.py

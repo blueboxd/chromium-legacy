@@ -4,6 +4,7 @@
 
 #include "base/memory/raw_ptr.h"
 
+#import "base/task/single_thread_task_runner.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 
 #import <objc/runtime.h>
@@ -13,8 +14,8 @@
 #include <cmath>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -760,8 +761,9 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
     [NSApp activateIgnoringOtherApps:YES];
   } else if (new_state == WindowVisibilityState::kShowInactive && !parent_ &&
              ![window_ isMiniaturized]) {
-    if ([[NSApp mainWindow] screen] == [window_ screen] ||
-        ![[NSApp mainWindow] isKeyWindow]) {
+    NSWindow* mainWindow = [NSApp mainWindow];
+    if (mainWindow && ([mainWindow screen] == [window_ screen] ||
+                       ![mainWindow isKeyWindow])) {
       // When the new window is on the same display as the main window or the
       // main window is inactive, order the window relative to the main window.
       // Avoid making it the front window (with e.g. orderFront:), which can
@@ -1032,12 +1034,6 @@ void NativeWidgetNSWindowBridge::OnVisibilityChanged() {
 
   NotifyVisibilityChangeDown();
   host_->OnVisibilityChanged(window_visible_);
-
-  // Toolkit-views suppresses redraws while not visible. To prevent Cocoa asking
-  // for an "empty" draw, disable auto-display while hidden. For example, this
-  // prevents Cocoa drawing just *after* a minimize, resulting in a blank window
-  // represented in the deminiaturize animation.
-  [window_ setAutodisplay:window_visible_];
 }
 
 void NativeWidgetNSWindowBridge::OnSystemControlTintChanged() {
@@ -1241,6 +1237,13 @@ void NativeWidgetNSWindowBridge::OnDisplayMetricsChanged(
 void NativeWidgetNSWindowBridge::FullscreenControllerTransitionStart(
     bool is_target_fullscreen) {
   host_->OnWindowFullscreenTransitionStart(is_target_fullscreen);
+  if (!is_target_fullscreen) {
+    // Immersive full screen needs to be disabled synchronously during the
+    // fullscreen transition. So disable it right away, rather than waiting for
+    // the browser process to signal us to disable immersive fullscreen after
+    // being informed of the start of the transition.
+    DisableImmersiveFullscreen();
+  }
 }
 
 void NativeWidgetNSWindowBridge::FullscreenControllerTransitionComplete(

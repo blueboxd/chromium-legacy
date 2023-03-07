@@ -6,16 +6,15 @@
 
 #include <cstdint>
 
-#include "base/bind.h"
 #include "base/files/file_proxy.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "remoting/base/result.h"
 #include "remoting/host/file_transfer/ensure_user.h"

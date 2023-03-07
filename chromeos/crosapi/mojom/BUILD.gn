@@ -89,13 +89,14 @@ mojom("mojom") {
     "speech_recognition.mojom",
     "structured_metrics_service.mojom",
     "sync.mojom",
+    "synced_session_client.mojom",
     "system_display.mojom",
     "task_manager.mojom",
     "test_controller.mojom",
     "timezone.mojom",
     "tts.mojom",
+    "ui_constants.mojom",
     "url_handler.mojom",
-    "video_capture.mojom",
     "video_conference.mojom",
     "virtual_keyboard.mojom",
     "volume_manager.mojom",
@@ -110,16 +111,14 @@ mojom("mojom") {
   cpp_only = true
 
   public_deps = [
+    ":video_capture",
     "//chromeos/components/remote_apps/mojom",
     "//chromeos/components/sensors/mojom",
     "//chromeos/services/machine_learning/public/mojom",
-    "//chromeos/services/network_health/public/mojom:mojom",
+    "//chromeos/services/network_health/public/mojom:types",
     "//components/digital_goods/mojom:mojom",
     "//components/metrics/structured/mojom",
-    "//components/services/app_service/public/mojom:mojom",
     "//components/tab_groups/public/mojom:mojo_bindings",
-    "//media/capture/mojom:image_capture",
-    "//media/capture/mojom:video_capture_types",
     "//media/mojo/mojom:speech_recognition",
     "//mojo/public/mojom/base",
     "//printing/backend/mojom",
@@ -131,6 +130,7 @@ mojom("mojom") {
     "//ui/accessibility/mojom",
     "//ui/base/mojom",
     "//ui/display/mojom:mojom",
+    "//ui/events/mojom:mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojom",
     "//ui/gfx/mojom",
@@ -255,6 +255,10 @@ mojom("mojom") {
           mojom = "crosapi.mojom.TabGroup"
           cpp = "::tab_groups::TabGroupInfo"
         },
+        {
+          mojom = "crosapi.mojom.ResourceScaleFactor"
+          cpp = "::ui::ResourceScaleFactor"
+        },
       ]
       traits_headers = [
         "//chromeos/crosapi/mojom/app_service_types_mojom_traits.h",
@@ -265,6 +269,7 @@ mojom("mojom") {
         "//chromeos/crosapi/mojom/web_app_types_mojom_traits.h",
         "//chromeos/crosapi/mojom/desk_mojom_traits.h",
         "//chromeos/crosapi/mojom/browser_app_instance_registry_mojom_traits.h",
+        "//chromeos/crosapi/mojom/ui_constants_mojom_traits.h",
         "//components/services/app_service/public/cpp/app_launch_util.h",
         "//components/services/app_service/public/cpp/app_types.h",
         "//components/services/app_service/public/cpp/capability_access.h",
@@ -281,6 +286,7 @@ mojom("mojom") {
         "//chromeos/crosapi/mojom/policy_domain_mojom_traits.cc",
         "//chromeos/crosapi/mojom/policy_namespace_mojom_traits.cc",
         "//chromeos/crosapi/mojom/sharesheet_mojom_traits.cc",
+        "//chromeos/crosapi/mojom/ui_constants_mojom_traits.cc",
         "//chromeos/crosapi/mojom/web_app_types_mojom_traits.cc",
       ]
       traits_public_deps = [
@@ -291,11 +297,25 @@ mojom("mojom") {
         "//components/services/app_service/public/cpp:browser_app_instance_registry_update",
         "//components/services/app_service/public/cpp:icon_types",
         "//components/services/app_service/public/cpp:preferred_app",
-        "//components/services/app_service/public/mojom:mojom",
         "//components/tab_groups",
         "//components/webapps/browser:constants",
+        "//ui/base:ui_data_pack",
       ]
     },
+  ]
+}
+
+# This needs a separate target, because this is also used
+# by the Video Capture Service in Ash and blink bindings
+# are needed.
+mojom("video_capture") {
+  sources = [ "video_capture.mojom" ]
+  public_deps = [
+    "//media/capture/mojom:image_capture",
+    "//media/capture/mojom:video_capture_types",
+    "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojom",
+    "//ui/gfx/mojom",
   ]
 }
 
@@ -310,7 +330,6 @@ source_set("unit_tests") {
     ":mojom",
     "//base/test:test_support",
     "//components/services/app_service/public/cpp:intents",
-    "//components/services/app_service/public/mojom:mojom",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
     "//ui/gfx:test_support",

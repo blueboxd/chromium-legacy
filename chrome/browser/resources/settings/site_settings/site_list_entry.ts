@@ -233,7 +233,15 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
     }
     // </if>
 
-    return description;
+    try {
+      const url = new URL(this.model.origin);
+      if (url.protocol === 'chrome-extension:') {
+        description = loadTimeData.getStringF(
+            'siteSettingsExtensionIdDescription', url.hostname);
+      }
+    } finally {
+      return description;
+    }
   }
 
   private computeShowPolicyPrefIndicator_(): boolean {
@@ -246,8 +254,7 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
     // Use the appropriate method to reset a chooser exception.
     if (this.chooserType !== ChooserType.NONE && this.chooserObject !== null) {
       this.browserProxy.resetChooserExceptionForSite(
-          this.chooserType, this.model.origin, this.model.embeddingOrigin,
-          this.chooserObject);
+          this.chooserType, this.model.origin, this.chooserObject);
       return;
     }
 

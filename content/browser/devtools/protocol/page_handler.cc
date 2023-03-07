@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/back_forward_cache/disabled_reason_id.h"
@@ -1581,6 +1580,21 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
       return Page::PrerenderFinalStatusEnum::ActivatedInBackground;
     case PrerenderFinalStatus::kEmbedderHostDisallowed:
       return Page::PrerenderFinalStatusEnum::EmbedderHostDisallowed;
+    case PrerenderFinalStatus::kActivationNavigationDestroyedBeforeSuccess:
+      return Page::PrerenderFinalStatusEnum::
+          ActivationNavigationDestroyedBeforeSuccess;
+    case PrerenderFinalStatus::kTabClosedByUserGesture:
+      return Page::PrerenderFinalStatusEnum::TabClosedByUserGesture;
+    case PrerenderFinalStatus::kTabClosedWithoutUserGesture:
+      return Page::PrerenderFinalStatusEnum::TabClosedWithoutUserGesture;
+    case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessCrashed:
+      return Page::PrerenderFinalStatusEnum::
+          PrimaryMainFrameRendererProcessCrashed;
+    case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled:
+      return Page::PrerenderFinalStatusEnum::
+          PrimaryMainFrameRendererProcessKilled;
+    case PrerenderFinalStatus::kActivationFramePolicyNotCompatible:
+      return Page::PrerenderFinalStatusEnum::ActivationFramePolicyNotCompatible;
   }
 }
 
@@ -1688,6 +1702,8 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::InjectedStyleSheet;
     case WebSchedulerTrackedFeature::kKeepaliveRequest:
       return Page::BackForwardCacheNotRestoredReasonEnum::KeepaliveRequest;
+    case WebSchedulerTrackedFeature::kIndexedDBEvent:
+      return Page::BackForwardCacheNotRestoredReasonEnum::IndexedDBEvent;
     case WebSchedulerTrackedFeature::kDummy:
       // This is a test only reason and should never be called.
       NOTREACHED();
@@ -1878,6 +1894,7 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch:
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR:
     case WebSchedulerTrackedFeature::kWebTransport:
+    case WebSchedulerTrackedFeature::kIndexedDBEvent:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
     case WebSchedulerTrackedFeature::kPortal:
     case WebSchedulerTrackedFeature::kWebNfc:
@@ -1922,7 +1939,8 @@ CreateNotRestoredExplanation(
     const BackForwardCacheCanStoreDocumentResult::NotRestoredReasons
         not_restored_reasons,
     const blink::scheduler::WebSchedulerTrackedFeatures blocklisted_features,
-    const std::set<BackForwardCache::DisabledReason>& disabled_reasons) {
+    const BackForwardCacheCanStoreDocumentResult::DisabledReasonsMap&
+        disabled_reasons) {
   auto reasons = std::make_unique<
       protocol::Array<Page::BackForwardCacheNotRestoredExplanation>>();
 
@@ -1942,7 +1960,7 @@ CreateNotRestoredExplanation(
     } else if (not_restored_reason ==
                BackForwardCacheMetrics::NotRestoredReason::
                    kDisableForRenderFrameHostCalled) {
-      for (auto disabled_reason : disabled_reasons) {
+      for (const auto& [disabled_reason, _] : disabled_reasons) {
         auto reason =
             Page::BackForwardCacheNotRestoredExplanation::Create()
                 .SetType(

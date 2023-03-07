@@ -7,11 +7,11 @@
 #include <tuple>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,13 +28,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_select_file_dialog_factory.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
+#include "headless/public/switches.h"
 #include "headless/test/headless_browser_test.h"
 #include "headless/test/headless_browser_test_utils.h"
 #include "net/base/net_errors.h"
@@ -57,6 +57,10 @@
 
 #if !BUILDFLAG(IS_FUCHSIA)
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(IS_APPLE)
+#include "base/mac/mac_util.h"
 #endif
 
 using simple_devtools_protocol_client::SimpleDevToolsProtocolClient;
@@ -267,11 +271,18 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
   HeadlessWebContents* web_contents =
       browser_context->CreateWebContentsBuilder().Build();
 
+  bool expected_support = true;
+#if BUILDFLAG(IS_APPLE)
+  if (base::mac::GetCPUType() == base::mac::CPUType::kArm) {
+    expected_support = false;
+  }
+#endif
+
   EXPECT_THAT(
       EvaluateScript(web_contents,
                      "(document.createElement('canvas').getContext('webgl')"
                      "    instanceof WebGLRenderingContext)"),
-      DictHasValue("result.result.value", true));
+      DictHasValue("result.result.value", expected_support));
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
@@ -392,13 +403,12 @@ class CrashReporterTest : public HeadlessBrowserTest,
   CrashReporterTest() {}
   ~CrashReporterTest() override = default;
 
-  void SetUp() override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CreateNewTempDirectory(FILE_PATH_LITERAL("CrashReporterTest"),
                                  &crash_dumps_dir_);
-    EXPECT_FALSE(options()->enable_crash_reporter);
-    options()->enable_crash_reporter = true;
-    options()->crash_dumps_dir = crash_dumps_dir_;
-    HeadlessBrowserTest::SetUp();
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+    command_line->AppendSwitchPath(switches::kCrashDumpsDir, crash_dumps_dir_);
+    HeadlessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void TearDown() override {
@@ -593,44 +603,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserAllowInsecureLocalhostTest,
 
   // If the certificate fails to validate, this should fail.
   EXPECT_TRUE(WaitForLoad(web_contents));
-}
-
-class HeadlessBrowserTestAppendCommandLineFlags : public HeadlessBrowserTest {
- public:
-  HeadlessBrowserTestAppendCommandLineFlags() {
-    options()->append_command_line_flags_callback = base::BindRepeating(
-        &HeadlessBrowserTestAppendCommandLineFlags::AppendCommandLineFlags,
-        base::Unretained(this));
-  }
-
-  void AppendCommandLineFlags(base::CommandLine* command_line,
-                              HeadlessBrowserContext* child_browser_context,
-                              const std::string& child_process_type,
-                              int child_process_id) {
-    if (child_process_type != "renderer")
-      return;
-
-    callback_was_run_ = true;
-    EXPECT_LE(0, child_process_id);
-    EXPECT_NE(nullptr, command_line);
-    EXPECT_NE(nullptr, child_browser_context);
-  }
-
- protected:
-  bool callback_was_run_ = false;
-};
-
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
-                       AppendChildProcessCommandLineFlags) {
-  // Create a new renderer process, and verify that callback was executed.
-  HeadlessBrowserContext* browser_context =
-      browser()->CreateBrowserContextBuilder().Build();
-  // Used only for lifetime, thus std::ignore.
-  std::ignore = browser_context->CreateWebContentsBuilder()
-                    .SetInitialURL(GURL("about:blank"))
-                    .Build();
-
-  EXPECT_TRUE(callback_was_run_);
 }
 
 #if BUILDFLAG(IS_FUCHSIA)

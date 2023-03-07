@@ -7,11 +7,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
@@ -2705,17 +2706,25 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
 TEST_F(CookieManagerTest, BlockThirdPartyCookies) {
   const GURL kThisURL = GURL("http://www.this.com");
   const GURL kThatURL = GURL("http://www.that.com");
+  const url::Origin kThisOrigin = url::Origin::Create(kThisURL);
+  const net::SiteForCookies kThisSiteForCookies =
+      net::SiteForCookies::FromOrigin(kThisOrigin);
+  const net::SiteForCookies kThatSiteForCookies =
+      net::SiteForCookies::FromUrl(kThatURL);
   EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatURL, QueryReason::kCookies));
+      kThisURL, kThatSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
+      QueryReason::kCookies));
 
   // Set block third party cookies to true, cookie should now be blocked.
   cookie_service_client()->BlockThirdPartyCookies(true);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatURL, QueryReason::kCookies));
+      kThisURL, kThatSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
+      QueryReason::kCookies));
   EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThisURL, QueryReason::kCookies));
+      kThisURL, kThisSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
+      QueryReason::kCookies));
 
   // Set block third party cookies back to false, cookie should no longer be
   // blocked.
@@ -2723,7 +2732,8 @@ TEST_F(CookieManagerTest, BlockThirdPartyCookies) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatURL, QueryReason::kCookies));
+      kThisURL, kThatSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
+      QueryReason::kCookies));
 }
 
 // A test class having cookie store with a persistent backing store.

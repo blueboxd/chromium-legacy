@@ -53,6 +53,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Gesture-navigation"/>
   <variant name="Guest-tos"/>
   <variant name="Hid-detection"/>
+  <variant name="Hw-data-collection"/>
   <variant name="Image"/>
   <variant name="Kiosk-enable"/>
   <variant name="Locale-switch"/>
@@ -146,6 +147,8 @@ chromium-metrics-reviews@google.com.
   <variant name="Guest-Tos.Cancel"/>
   <variant name="Hid-detection.Next"/>
   <variant name="Hid-detection.StartDemo"/>
+  <variant name="Hw-data-collection.AcceptedWithHWDataUsage"/>
+  <variant name="Hw-data-collection.AcceptedWithoutHWDataUsage"/>
   <variant name="Kiosk-enable.Next"/>
   <variant name="Locale-switch.LocaleFetchFailed"/>
   <variant name="Locale-switch.LocaleFetchTimeout"/>
@@ -293,7 +296,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OOBE.GaiaLoginTime" units="ms" expires_after="2023-04-16">
+<histogram name="OOBE.GaiaLoginTime" units="ms" expires_after="2023-06-18">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -384,12 +387,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.HidDetectionScreen.BluetoothPairing.Result"
-    enum="BooleanSuccess" expires_after="2023-05-06">
+    enum="HidDetectionBluetoothPairingResult" expires_after="2023-07-09">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
-    Records success or failure of a pairing attempt (initiated automatically by
-    the OOBE HID detection screen) to a HID.
+    Records if a HID pairing attempt (initiated automatically by the OOBE HID
+    detection screen) paired successfully via Bluetooth or did not pair
+    successfully via Bluetooth. This is expected to fail most of the time
+    because of it being initiated in a loop automatically while the OOBE HID
+    Detection screen is open.
   </summary>
 </histogram>
 
@@ -404,7 +410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.HidDetectionScreen.BluetoothPairingAttempts"
-    units="attempts" expires_after="2023-05-06">
+    units="attempts" expires_after="2023-07-09">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -440,7 +446,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.HidDetectionScreen.InitialHidsMissing" enum="HidsMissing"
-    expires_after="2023-05-06">
+    expires_after="2023-07-09">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -630,7 +636,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.Behavior" enum="SyncConsentBehavior"
-    expires_after="2023-04-24">
+    expires_after="2023-06-25">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -683,7 +689,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2023-04-24">
+    expires_after="2023-06-25">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -704,7 +710,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Check" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -755,7 +761,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WebUI.LoadTime.FirstRun" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -786,7 +792,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.A11yUserActions"
-    enum="WelcomeScreenA11yUserAction" expires_after="2023-04-16">
+    enum="WelcomeScreenA11yUserAction" expires_after="2023-06-25">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>

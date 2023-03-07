@@ -4,35 +4,48 @@
 
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
 
+#import "base/check.h"
 #import "base/ios/ios_util.h"
 #import "components/history/core/browser/browsing_history_service.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/history/web_history_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
 #import "ios/chrome/browser/ui/history/history_menu_provider.h"
 #import "ios/chrome/browser/ui/history/history_table_view_controller.h"
-#import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #import "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #import "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/history/ios_browsing_history_driver_delegate_bridge.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+history::WebHistoryService* WebHistoryServiceGetter(
+    base::WeakPtr<ChromeBrowserState> weak_browser_state) {
+  DCHECK(weak_browser_state.get())
+      << "Getter should not be called after ChromeBrowserState destruction.";
+  return ios::WebHistoryServiceFactory::GetForBrowserState(
+      weak_browser_state.get());
+}
+
+}  // anonymous namespace
 
 @interface HistoryCoordinator () <BrowserObserving,
                                   HistoryMenuProvider,
@@ -57,10 +70,6 @@
 
 // Mediator being managed by this Coordinator.
 @property(nonatomic, strong) HistoryMediator* mediator;
-
-// The transitioning delegate used by the history view controller.
-@property(nonatomic, strong)
-    HistoryTransitioningDelegate* historyTransitioningDelegate;
 
 // The coordinator that will present Clear Browsing Data.
 @property(nonatomic, strong)
@@ -95,7 +104,9 @@
       std::make_unique<IOSBrowsingHistoryDriverDelegateBridge>(
           self.historyTableViewController);
   _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
-      self.browser->GetBrowserState(), _browsingHistoryDriverDelegate.get());
+      base::BindRepeating(&WebHistoryServiceGetter,
+                          self.browser->GetBrowserState()->AsWeakPtr()),
+      _browsingHistoryDriverDelegate.get());
   _browsingHistoryService = std::make_unique<history::BrowsingHistoryService>(
       _browsingHistoryDriver.get(),
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -112,21 +123,11 @@
   self.historyTableViewController.presentationDelegate =
       self.presentationDelegate;
 
-  BOOL useCustomPresentation = YES;
-      [self.historyNavigationController
-          setModalPresentationStyle:UIModalPresentationFormSheet];
-      self.historyNavigationController.presentationController.delegate =
-          self.historyTableViewController;
-      useCustomPresentation = NO;
+  [self.historyNavigationController
+      setModalPresentationStyle:UIModalPresentationFormSheet];
+  self.historyNavigationController.presentationController.delegate =
+      self.historyTableViewController;
 
-  if (useCustomPresentation) {
-    self.historyTransitioningDelegate =
-        [[HistoryTransitioningDelegate alloc] init];
-    self.historyNavigationController.transitioningDelegate =
-        self.historyTransitioningDelegate;
-    [self.historyNavigationController
-        setModalPresentationStyle:UIModalPresentationCustom];
-  }
   [self.baseViewController
       presentViewController:self.historyNavigationController
                    animated:YES

@@ -121,6 +121,8 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   // while.
   void MaybeFlushKeyboardEntries(DOMHighResTimeStamp current_time);
 
+  uint64_t GetInteractionCount() const;
+
   void Trace(Visitor*) const;
 
  private:
@@ -157,8 +159,7 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   // Map from keyCodes to keydown entries and keydown timestamps.
   HeapHashMap<int,
               Member<KeyboardEntryAndTimestamps>,
-              WTF::IntHash<int>,
-              WTF::UnsignedWithZeroKeyHashTraits<int>>
+              IntWithZeroKeyHashTraits<int>>
       key_code_entry_map_;
   // Whether we are composing or not. When we are not composing, we set
   // interactionId for keydown and keyup events. When we are composing, we set
@@ -169,8 +170,7 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   // interaction, and other information.
   HeapHashMap<PointerId,
               Member<PointerEntryAndInfo>,
-              WTF::IntHash<PointerId>,
-              WTF::UnsignedWithZeroKeyHashTraits<PointerId>>
+              IntWithZeroKeyHashTraits<PointerId>>
       pointer_id_entry_map_;
   HeapTaskRunnerTimer<ResponsivenessMetrics> pointer_flush_timer_;
   // The PointerId of the last pointerdown or pointerup event processed. Used to
@@ -181,6 +181,7 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   absl::optional<PointerId> last_pointer_id_;
 
   uint32_t current_interaction_id_for_event_timing_;
+  uint64_t interaction_count_ = 0;
 
   // Whether to perform UKM sampling.
   bool sampling_ = true;

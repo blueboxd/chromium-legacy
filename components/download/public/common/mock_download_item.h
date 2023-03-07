@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -101,11 +101,6 @@ class MockDownloadItem : public DownloadItem {
   }
   MOCK_METHOD1(DeleteFile_, void(base::OnceCallback<void(bool)>& cb));
   MOCK_METHOD0(GetDownloadFile, DownloadFile*());
-  MOCK_METHOD0(GetRenameHandler, DownloadItemRenameHandler*());
-  MOCK_METHOD(const DownloadItemRerouteInfo&,
-              GetRerouteInfo,
-              (),
-              (const override));
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_CONST_METHOD0(IsInsecure, bool());
   MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());

@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -248,6 +248,25 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
             devices.video_device.value().type);
   EXPECT_TRUE(devices.video_device.value().display_media_info);
 }
+
+#if BUILDFLAG(IS_MAC)
+TEST_F(DisplayMediaAccessHandlerTest, WindowPermissionGiven) {
+  blink::mojom::MediaStreamRequestResult result;
+  blink::mojom::StreamDevices devices;
+  content::DesktopMediaID desktop_media_id(content::DesktopMediaID::TYPE_WINDOW,
+                                           content::DesktopMediaID::kFakeId);
+
+  // Requests with a window_id will skip macOS screen share permission checks.
+  desktop_media_id.window_id = content::DesktopMediaID::kFakeId;
+  ProcessRequest(desktop_media_id, &result, devices, false /* request_audio */);
+
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
+  EXPECT_EQ(1u, blink::CountDevices(devices));
+  EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+            devices.video_device.value().type);
+  EXPECT_TRUE(devices.video_device.value().display_media_info);
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
   blink::mojom::MediaStreamRequestResult result;

@@ -79,6 +79,9 @@ BASE_FEATURE(kRestrictedNavigationAdTagging,
 
 namespace {
 
+using RectId = PageAdDensityTracker::RectId;
+using RectType = PageAdDensityTracker::RectType;
+
 #define ADS_HISTOGRAM(suffix, hist_macro, visibility, value)        \
   switch (visibility) {                                             \
     case kNonVisible:                                               \
@@ -275,6 +278,14 @@ PageLoadMetricsObserver::ObservePolicy AdsPageLoadMetricsObserver::OnStart(
     subresource_observation_.Observe(observer_manager);
   aggregate_frame_data_ = std::make_unique<AggregateFrameData>();
   return CONTINUE_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy
+AdsPageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // TODO(https://crbug.com/1317494): Handle Prerendering cases.
+  return STOP_OBSERVING;
 }
 
 PageLoadMetricsObserver::ObservePolicy
@@ -639,11 +650,19 @@ void AdsPageLoadMetricsObserver::OnMainFrameIntersectionRectChanged(
   FrameTreeData* ancestor_data = FindFrameData(frame_tree_node_id);
   if (ancestor_data &&
       frame_tree_node_id == ancestor_data->root_frame_tree_node_id()) {
-    page_ad_density_tracker_.RemoveRect(frame_tree_node_id);
+    RectId rect_id = RectId(RectType::kIFrame, frame_tree_node_id);
+
     // Only add frames if they are visible.
     if (!ancestor_data->is_display_none()) {
-      page_ad_density_tracker_.AddRect(frame_tree_node_id,
-                                       main_frame_intersection_rect);
+      page_ad_density_tracker_.RemoveRect(
+          rect_id,
+          /*recalculate_viewport_density=*/false);
+      page_ad_density_tracker_.AddRect(rect_id, main_frame_intersection_rect,
+                                       /*recalculate_density=*/true);
+    } else {
+      page_ad_density_tracker_.RemoveRect(
+          rect_id,
+          /*recalculate_viewport_density=*/true);
     }
   }
 
@@ -654,6 +673,12 @@ void AdsPageLoadMetricsObserver::OnMainFrameViewportRectChanged(
     const gfx::Rect& main_frame_viewport_rect) {
   page_ad_density_tracker_.UpdateMainFrameViewportRect(
       main_frame_viewport_rect);
+}
+
+void AdsPageLoadMetricsObserver::OnMainFrameImageAdRectsChanged(
+    const base::flat_map<int, gfx::Rect>& main_frame_image_ad_rects) {
+  page_ad_density_tracker_.UpdateMainFrameImageAdRects(
+      main_frame_image_ad_rects);
 }
 
 // TODO(https://crbug.com/1142669): Evaluate imposing width requirements
@@ -850,8 +875,8 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 
   auto* ukm_recorder = ukm::UkmRecorder::Get();
 
-  // AdPageLoadCustomSampling2 is recorded on all pages
-  ukm::builders::AdPageLoadCustomSampling2 custom_sampling_builder(source_id);
+  // AdPageLoadCustomSampling3 is recorded on all pages
+  ukm::builders::AdPageLoadCustomSampling3 custom_sampling_builder(source_id);
 
   page_ad_density_tracker_.Finalize();
 
@@ -1450,8 +1475,10 @@ void AdsPageLoadMetricsObserver::CleanupDeletedFrame(
   if (record_metrics)
     RecordPerFrameMetrics(*frame_data, GetDelegate().GetPageUkmSourceId());
 
-  if (update_density_tracker)
-    page_ad_density_tracker_.RemoveRect(id);
+  if (update_density_tracker) {
+    page_ad_density_tracker_.RemoveRect(RectId(RectType::kIFrame, id),
+                                        /*recalculate_viewport_density=*/true);
+  }
 }
 
 }  // namespace page_load_metrics

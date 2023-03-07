@@ -12,11 +12,11 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../components/notification_card.js';
 import '../../components/security_token_pin.js';
 import '../../components/gaia_dialog.js';
-import '../../components/oobe_icons.m.js';
+import '../../components/oobe_icons.html.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_next_button.js';
-import '../../components/common_styles/oobe_common_styles.m.js';
-import '../../components/common_styles/oobe_dialog_host_styles.m.js';
+import '../../components/common_styles/oobe_common_styles.css.js';
+import '../../components/common_styles/oobe_dialog_host_styles.css.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
 import '../../components/dialogs/oobe_loading_dialog.js';
 import '../../components/throbber_notice.js';
@@ -25,8 +25,8 @@ import {assert} from '//resources/ash/common/assert.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AuthFlow, AuthMode, SUPPORTED_PARAMS} from '../../../../gaia_auth_host/authenticator.js';
-import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
-import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
+import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
+import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
 import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
 import {OobeTypes} from '../../components/oobe_types.js';
@@ -778,11 +778,13 @@ class GaiaSigninElement extends GaiaSigninElementBase {
   }
 
   /**
-   * Invoked when auth is completed successfully.
-   * @param {!Object} credentials Credentials of the completed authentication.
+   * Invoked when onAuthCompleted message received.
+   * @param {!CustomEvent<!Object>} e Event with the credentials object as the
+   *     payload.
    * @private
    */
-  onAuthCompleted_(credentials) {
+  onAuthCompletedMessage_(e) {
+    const credentials = e.detail;
     if (credentials.publicSAML) {
       this.email_ = credentials.email;
       chrome.send('launchSAMLPublicSession', [credentials.email]);
@@ -809,16 +811,6 @@ class GaiaSigninElement extends GaiaSigninElementBase {
   }
 
   /**
-   * Invoked when onAuthCompleted message received.
-   * @param {!CustomEvent<!Object>} e Event with the credentials object as the
-   *     payload.
-   * @private
-   */
-  onAuthCompletedMessage_(e) {
-    this.onAuthCompleted_(e.detail);
-  }
-
-  /**
    * Invoked when onLoadAbort message received.
    * @param {!CustomEvent<!Object>} e Event with the payload containing
    *     additional information about error event like:
@@ -827,7 +819,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   onLoadAbortMessage_(e) {
-    this.onWebviewError_(e.detail);
+    chrome.send('webviewLoadAborted', [e.detail.error_code]);
   }
 
   /**
@@ -846,7 +838,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   onIdentifierEnteredMessage_(e) {
-    this.onIdentifierEntered_(e.detail);
+    chrome.send('identifierEntered', [e.detail.accountIdentifier]);
   }
 
   /**
@@ -856,7 +848,8 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   onRemoveUserByEmailMessage_(e) {
-    this.onRemoveUserByEmail_(e.detail);
+    chrome.send('removeUserByEmail', [e.detail]);
+    this.cancel();
   }
 
   /**
@@ -892,38 +885,6 @@ class GaiaSigninElement extends GaiaSigninElementBase {
       return;
     }
     this.userActed(isBackClicked ? 'back' : 'cancel');
-  }
-
-  /**
-   * Handler for webview error handling.
-   * @param {!Object} data Additional information about error event like:
-   *     {number} error_code Error code such as net::ERR_INTERNET_DISCONNECTED.
-   *     {string} src The URL that failed to load.
-   * @private
-   */
-  onWebviewError_(data) {
-    chrome.send('webviewLoadAborted', [data.error_code]);
-  }
-
-  /**
-   * Handler for identifierEntered event.
-   * @param {!Object} data The identifier entered by user:
-   *     {string} accountIdentifier User identifier.
-   * @private
-   */
-  onIdentifierEntered_(data) {
-    chrome.send('identifierEntered', [data.accountIdentifier]);
-  }
-
-  /**
-   * Handler for removeUserByEmail event.
-   * @param {!Object} data The user email:
-   *     {string} email User email.
-   * @private
-   */
-  onRemoveUserByEmail_(data) {
-    chrome.send('removeUserByEmail', [data]);
-    this.cancel();
   }
 
   /**

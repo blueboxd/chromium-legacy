@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/i18n/case_conversion.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
@@ -255,29 +256,23 @@ void CullNonProminentOrDuplicateClusters(
     // For the empty-query state, only show clusters with
     // `should_show_on_prominent_ui_surfaces` set to true. This restriction is
     // NOT applied when the user is searching for a specific keyword.
-    clusters.erase(base::ranges::remove_if(
-                       clusters,
-                       [](const history::Cluster& cluster) {
-                         return !cluster.should_show_on_prominent_ui_surfaces;
-                       }),
-                   clusters.end());
+    base::EraseIf(clusters, [](const history::Cluster& cluster) {
+      return !cluster.should_show_on_prominent_ui_surfaces;
+    });
   } else {
-    clusters.erase(base::ranges::remove_if(
-                       clusters,
-                       [&](const history::Cluster& cluster) {
-                         // Erase all duplicate single-visit non-prominent
-                         // clusters.
-                         if (!cluster.should_show_on_prominent_ui_surfaces &&
-                             cluster.visits.size() == 1) {
-                           auto [unused_iterator, newly_inserted] =
-                               seen_single_visit_cluster_urls->insert(
-                                   cluster.visits[0].url_for_deduping);
-                           return !newly_inserted;
-                         }
+    base::EraseIf(clusters, [&](const history::Cluster& cluster) {
+      // Erase all duplicate single-visit non-prominent
+      // clusters.
+      if (!cluster.should_show_on_prominent_ui_surfaces &&
+          cluster.visits.size() == 1) {
+        auto [unused_iterator, newly_inserted] =
+            seen_single_visit_cluster_urls->insert(
+                cluster.visits[0].url_for_deduping);
+        return !newly_inserted;
+      }
 
-                         return false;
-                       }),
-                   clusters.end());
+      return false;
+    });
   }
 }
 
@@ -297,10 +292,8 @@ void HideAndCullLowScoringVisits(std::vector<history::Cluster>& clusters) {
     }
 
     if (GetConfig().drop_hidden_visits) {
-      cluster.visits.erase(
-          base::ranges::remove_if(
-              cluster.visits, [](const auto& visit) { return visit.hidden; }),
-          cluster.visits.end());
+      base::EraseIf(cluster.visits,
+                    [](const auto& visit) { return visit.hidden; });
     }
   }
 }
@@ -349,6 +342,19 @@ void SortClusters(std::vector<history::Cluster>* clusters) {
     // Use c1 > c2 to get more recent clusters BEFORE older clusters.
     return c1_time > c2_time;
   });
+}
+
+bool ShouldUseNavigationContextClustersFromPersistence() {
+  return GetConfig().persist_clusters_in_history_db &&
+         GetConfig().use_navigation_context_clusters;
+}
+
+bool IsTransitionUserVisible(int32_t transition) {
+  ui::PageTransition page_transition = ui::PageTransitionFromInt(transition);
+  return (ui::PAGE_TRANSITION_CHAIN_END & transition) != 0 &&
+         ui::PageTransitionIsMainFrame(page_transition) &&
+         !ui::PageTransitionCoreTypeIs(page_transition,
+                                       ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 }
 
 }  // namespace history_clusters

@@ -10,9 +10,9 @@
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/action_circle.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_edit_button.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/touch_point.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/views/view.h"
@@ -29,8 +29,8 @@ constexpr int kDefaultLabelIndex = -1;
 // ActionView is the view for each action.
 class ActionView : public views::View {
  public:
-  explicit ActionView(Action* action,
-                      DisplayOverlayController* display_overlay_controller);
+  ActionView(Action* action,
+             DisplayOverlayController* display_overlay_controller);
   ActionView(const ActionView&) = delete;
   ActionView& operator=(const ActionView&) = delete;
   ~ActionView() override;
@@ -44,6 +44,7 @@ class ActionView : public views::View {
   virtual void OnBindingToMouse(std::string mouse_action) = 0;
   // Each type of the actions shows different edit menu.
   virtual void OnMenuEntryPressed() = 0;
+  virtual void AddTouchPoint() = 0;
 
   // TODO(cuicuiruan): Remove virtual for post MVP once edit menu is ready for
   // |ActionMove|.
@@ -82,14 +83,19 @@ class ActionView : public views::View {
   bool ShouldShowErrorMsg(ui::DomCode code,
                           ActionLabel* editing_label = nullptr);
 
-  // views::View:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool ApplyMousePressed(const ui::MouseEvent& event);
+  bool ApplyMouseDragged(const ui::MouseEvent& event);
+  void ApplyMouseReleased(const ui::MouseEvent& event);
+  void ApplyGestureEvent(ui::GestureEvent* event);
+  bool ApplyKeyPressed(const ui::KeyEvent& event);
+  bool ApplyKeyReleased(const ui::KeyEvent& event);
+
+  void OnFocus() override;
+  void OnBlur() override;
 
   Action* action() { return action_; }
   const std::vector<ActionLabel*>& labels() const { return labels_; }
+  TouchPoint* touch_point() { return touch_point_; }
   void set_editable(bool editable) { editable_ = editable; }
   DisplayOverlayController* display_overlay_controller() {
     return display_overlay_controller_;
@@ -98,10 +104,11 @@ class ActionView : public views::View {
     unbind_label_index_ = label_index;
   }
   int unbind_label_index() { return unbind_label_index_; }
-  bool show_circle() const { return show_circle_; }
 
  protected:
   void UpdateTrashButtonPosition();
+
+  void AddTouchPoint(ActionType action_type);
 
   // Reference to the action of this UI.
   raw_ptr<Action> action_ = nullptr;
@@ -111,13 +118,11 @@ class ActionView : public views::View {
   bool editable_ = false;
   // Three-dot button to show the |ActionEditMenu|.
   raw_ptr<ActionEditButton> menu_entry_ = nullptr;
-  // The circle view shows up for editing the action.
-  raw_ptr<ActionCircle> circle_ = nullptr;
   // Labels for mapping hints.
   std::vector<ActionLabel*> labels_;
   // Current display mode.
   DisplayMode current_display_mode_ = DisplayMode::kNone;
-  // Center position of the circle view.
+  // Center position of the touch point view.
   gfx::Point center_;
   // TODO(cuicuirunan): Enable or remove this after MVP.
   bool show_edit_button_ = false;
@@ -130,6 +135,8 @@ class ActionView : public views::View {
   void RemoveTrashButton();
   void OnTrashButtonPressed();
 
+  void RemoveTouchPoint();
+
   // Drag operations.
   void OnDragStart(const ui::LocatedEvent& event);
   bool OnDragUpdate(const ui::LocatedEvent& event);
@@ -141,13 +148,12 @@ class ActionView : public views::View {
   int unbind_label_index_ = kDefaultLabelIndex;
   // The position when starting to drag.
   gfx::Point start_drag_event_pos_;
+  // Touch point only shows up in the edit mode for users to align the position.
+  // This view owns the touch point as one of its children and |touch_point_|
+  // is for quick access.
+  raw_ptr<TouchPoint> touch_point_ = nullptr;
   // TODO(b/250900717): Update when the final UX/UI is ready.
   raw_ptr<views::ImageButton> trash_button_ = nullptr;
-
-  // TODO(cuicuiruan) As requested, we remove the action circle for edit mode
-  // for now. We will remove the circle permanently once the future design for
-  // MVP confirm that circle is not needed anymore.
-  bool show_circle_ = false;
 
   // TODO(b/260937747): Update or remove when removing flags
   // |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.

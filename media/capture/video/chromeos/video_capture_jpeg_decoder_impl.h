@@ -11,10 +11,11 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/chromeos_camera/mojo_mjpeg_decode_accelerator.h"
 #include "gpu/config/gpu_info.h"
 #include "media/capture/capture_export.h"

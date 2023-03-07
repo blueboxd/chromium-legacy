@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -26,7 +26,6 @@
 #include "base/task/updateable_sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregatable_report_assembler.h"
@@ -150,8 +149,7 @@ void AggregationServiceImpl::ClearData(
   storage_task_runner_->UpdatePriority(base::TaskPriority::USER_VISIBLE);
 
   storage_.AsyncCall(&AggregationServiceStorage::ClearDataBetween)
-      .WithArgs(delete_begin, delete_end, std::move(filter),
-                base::ElapsedTimer())
+      .WithArgs(delete_begin, delete_end, std::move(filter))
       .Then(std::move(done).Then(
           base::BindOnce(&AggregationServiceImpl::OnClearDataComplete,
                          weak_factory_.GetWeakPtr())));

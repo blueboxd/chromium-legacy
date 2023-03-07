@@ -10,8 +10,8 @@
 
 #include "base/android/build_info.h"
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/functional/bind.h"
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space.h"
 
@@ -631,31 +632,45 @@ SurfaceControl::Transaction::Transaction()
 }
 
 SurfaceControl::Transaction::~Transaction() {
-  if (transaction_)
-    SurfaceControlMethods::Get().ASurfaceTransaction_deleteFn(transaction_);
+  DestroyIfNeeded();
+}
+
+void SurfaceControl::Transaction::DestroyIfNeeded() {
+  if (!transaction_)
+    return;
+  if (need_to_apply_)
+    SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
+  SurfaceControlMethods::Get().ASurfaceTransaction_deleteFn(transaction_);
+  transaction_ = nullptr;
 }
 
 SurfaceControl::Transaction::Transaction(Transaction&& other)
     : id_(other.id_),
       transaction_(other.transaction_),
       on_commit_cb_(std::move(other.on_commit_cb_)),
-      on_complete_cb_(std::move(other.on_complete_cb_)) {
+      on_complete_cb_(std::move(other.on_complete_cb_)),
+      need_to_apply_(other.need_to_apply_) {
   other.transaction_ = nullptr;
   other.id_ = 0;
+  other.need_to_apply_ = false;
 }
 
 SurfaceControl::Transaction& SurfaceControl::Transaction::operator=(
     Transaction&& other) {
-  if (transaction_)
-    SurfaceControlMethods::Get().ASurfaceTransaction_deleteFn(transaction_);
+  if (this == &other)
+    return *this;
+
+  DestroyIfNeeded();
 
   transaction_ = other.transaction_;
   id_ = other.id_;
   on_commit_cb_ = std::move(other.on_commit_cb_);
   on_complete_cb_ = std::move(other.on_complete_cb_);
+  need_to_apply_ = other.need_to_apply_;
 
   other.transaction_ = nullptr;
   other.id_ = 0;
+  other.need_to_apply_ = false;
   return *this;
 }
 
@@ -676,6 +691,13 @@ void SurfaceControl::Transaction::SetBuffer(const Surface& surface,
   SurfaceControlMethods::Get().ASurfaceTransaction_setBufferFn(
       transaction_, surface.surface(), buffer,
       fence_fd.is_valid() ? fence_fd.release() : -1);
+  // In T OS, setBuffer call setOnComplete internally, so Apply() is required to
+  // decrease ref count of SurfaceControl.
+  // TODO(crbug.com/1395271): remove this if AOSP fix the issue
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_T) {
+    need_to_apply_ = true;
+  }
 }
 
 void SurfaceControl::Transaction::SetGeometry(const Surface& surface,
@@ -820,10 +842,12 @@ void SurfaceControl::Transaction::Apply() {
 
   PrepareCallbacks();
   SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
+  need_to_apply_ = false;
 }
 
 ASurfaceTransaction* SurfaceControl::Transaction::GetTransaction() {
   PrepareCallbacks();
+  need_to_apply_ = false;
   return transaction_;
 }
 
@@ -835,6 +859,9 @@ void SurfaceControl::Transaction::PrepareCallbacks() {
 
     SurfaceControlMethods::Get().ASurfaceTransaction_setOnCommitFn(
         transaction_, ack_ctx, &OnTransactiOnCommittedOnAnyThread);
+    // setOnCommit and setOnComplete increase ref count of SurfaceControl and
+    // Apply() is required to decrease the ref count.
+    need_to_apply_ = true;
   }
 
   if (on_complete_cb_) {
@@ -844,6 +871,7 @@ void SurfaceControl::Transaction::PrepareCallbacks() {
 
     SurfaceControlMethods::Get().ASurfaceTransaction_setOnCompleteFn(
         transaction_, ack_ctx, &OnTransactionCompletedOnAnyThread);
+    need_to_apply_ = true;
   }
 }
 

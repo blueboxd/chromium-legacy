@@ -8,7 +8,6 @@ import("//build/config/android/rules.gni")
 import("//build/config/python.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//testing/test.gni")
-import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 # Mark all targets as test only.
 testonly = true
@@ -24,7 +23,10 @@ group("test") {
 python_library("webview_cts_tests") {
   pydeps_file = "//android_webview/tools/run_cts.pydeps"
   deps = [ "//android_webview:system_webview_apk" ]
-  data_deps = [ "//build/android:test_runner_py" ]
+  data_deps = [
+    "//build/android:test_runner_py",
+    "//testing/buildbot/filters:webview_cts_tests_filters",
+  ]
   data = [ "//android_webview/tools/cts_config/" ]
 }
 
@@ -39,7 +41,10 @@ if (android_64bit_target_cpu) {
   python_library("webview_64_cts_tests") {
     pydeps_file = "//android_webview/tools/run_cts.pydeps"
     deps = [ "//android_webview:system_webview_64_apk" ]
-    data_deps = [ "//build/android:test_runner_py" ]
+    data_deps = [
+      "//build/android:test_runner_py",
+      "//testing/buildbot/filters:webview_cts_tests_filters",
+    ]
     data = [ "//android_webview/tools/cts_config/" ]
   }
 
@@ -94,6 +99,7 @@ android_apk("webview_instrumentation_apk") {
   # TODO(crbug.com/1099536): Fix tests that break when this is increased.
   target_sdk_version = 24
   deps = [
+    ":draw_fn_impl_java",
     ":webview_instrumentation_apk_assets",
     ":webview_instrumentation_apk_resources",
     ":webview_instrumentation_test_mock_services_java",
@@ -103,7 +109,6 @@ android_apk("webview_instrumentation_apk") {
     "//android_webview:common_java",
     "//android_webview:locale_pak_assets",
     "//android_webview:platform_service_bridge_upstream_implementation_java",
-    "//android_webview/js_sandbox:js_sandbox_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:jni_java",
@@ -115,6 +120,7 @@ android_apk("webview_instrumentation_apk") {
     "//content/public/android:content_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx_javascriptengine:javascriptengine_java",
     "//third_party/junit",
     "//ui/android:ui_java",
     "//url:gurl_java",
@@ -127,7 +133,6 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/shell/AwShellApplication.java",
     "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
     "shell/src/org/chromium/android_webview/shell/AwShellSwitches.java",
-    "shell/src/org/chromium/android_webview/shell/ContextManager.java",
     "shell/src/org/chromium/android_webview/test/AwJUnit4ClassRunner.java",
     "shell/src/org/chromium/android_webview/test/AwTestContainerView.java",
     "shell/src/org/chromium/android_webview/test/AwTestRunnerActivity.java",
@@ -149,12 +154,14 @@ android_resources("webview_instrumentation_apk_resources") {
     "shell/res/raw/resource_file.html",
     "shell/res/raw/resource_icon.png",
     "shell/res/values/config.xml",
+    "shell/res/values/strings.xml",
   ]
 }
 
 android_assets("webview_instrumentation_apk_assets") {
   deps = [
     "//android_webview:pak_file_assets",
+    "//gin:v8_snapshot_assets",
     "//third_party/icu:icu_assets",
   ]
 
@@ -177,17 +184,18 @@ android_assets("webview_instrumentation_apk_assets") {
     "shell/assets/visual_state_waits_for_js_detached_test.html",
     "shell/assets/visual_state_waits_for_js_test.html",
   ]
-
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
 }
 
 generate_jni("draw_fn_impl_jni_headers") {
   sources =
       [ "shell/src/org/chromium/android_webview/shell/ContextManager.java" ]
+}
+
+android_library("draw_fn_impl_java") {
+  sources =
+      [ "shell/src/org/chromium/android_webview/shell/ContextManager.java" ]
+  deps = [ "//base:jni_java" ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 shared_library("libstandalonelibwebviewchromium") {
@@ -217,6 +225,7 @@ shared_library("libstandalonelibwebviewchromium") {
     "//gpu/vulkan",
     "//gpu/vulkan/init",
     "//gpu/vulkan/init:skia",
+    "//ui/gl",
   ]
   libs = [ "android" ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
@@ -237,8 +246,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//android_webview:common_crash_java",
     "//android_webview:common_platform_services_java",
     "//android_webview:common_variations_java",
-    "//android_webview/js_sandbox:js_sandbox_aidl_java",
-    "//android_webview/js_sandbox:js_sandbox_java",
     "//android_webview/nonembedded:devui_java",
     "//android_webview/nonembedded:services_java",
     "//android_webview/nonembedded:util_java",
@@ -257,6 +264,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//components/component_updater/android:embedded_component_loader_java",
     "//components/content_capture/android:java",
     "//components/content_capture/android/test_support:java",
+    "//components/digital_asset_links/android:java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
@@ -294,6 +302,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_rules_java",
     "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/androidx_javascriptengine:javascriptengine_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings_java",
     "//third_party/hamcrest:hamcrest_java",
@@ -350,6 +359,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/AwPersistentOriginTrialTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwProxyControllerTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwQuotaManagerBridgeTest.java",
+    "../javatests/src/org/chromium/android_webview/test/AwRestrictSensitiveContentTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwSecondBrowserProcessTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerClientTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerSettingsTest.java",
@@ -589,6 +599,7 @@ test("android_webview_unittests") {
     "//components/viz/service:service",
     "//content:content",
     "//content/test:test_support",
+    "//gin:v8_snapshot_assets",
     "//mojo/core/embedder",
     "//net:net",
     "//net:test_support",
@@ -641,12 +652,6 @@ test("android_webview_unittests") {
     "../nonembedded/component_updater/aw_component_updater_configurator_unittest.cc",
     "../nonembedded/component_updater/installer_policies/aw_package_names_allowlist_component_installer_policy_unittest.cc",
   ]
-
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
 }
 
 android_assets("android_webview_unittests_assets") {
@@ -674,6 +679,7 @@ robolectric_binary("android_webview_junit_tests") {
     "../junit/src/org/chromium/android_webview/robolectric/AwDisplayCutoutControllerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwDisplayModeControllerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwLayoutSizerTest.java",
+    "../junit/src/org/chromium/android_webview/robolectric/AwOriginVerifierTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwScrollOffsetManagerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwWebContentsMetricsRecorderTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/FindAddressTest.java",
@@ -696,9 +702,15 @@ robolectric_binary("android_webview_junit_tests") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//components/component_updater/android:embedded_component_loader_java",
+    "//components/digital_asset_links:java",
+    "//components/digital_asset_links/android:java",
+    "//components/digital_asset_links/android:junit_test_support",
+    "//components/embedder_support/android:util_java",
+    "//content/public/android:content_full_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
     "//url:gurl_java",

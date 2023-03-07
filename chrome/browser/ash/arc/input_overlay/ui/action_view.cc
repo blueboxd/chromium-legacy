@@ -4,14 +4,18 @@
 
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 
-#include "base/bind.h"
+#include "ash/app_list/app_list_util.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_piece.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
+#include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/image_button_factory.h"
 
 namespace arc::input_overlay {
@@ -69,16 +73,18 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
     RemoveTrashButton();
     if (!IsInputBound(action_->GetCurrentDisplayedInput()))
       SetVisible(false);
+    if (allow_reposition_)
+      RemoveTouchPoint();
   }
   if (mode == DisplayMode::kEdit) {
     AddEditButton();
     AddTrashButton();
     if (!IsInputBound(*action_->current_input()))
       SetVisible(true);
+    if (allow_reposition_)
+      AddTouchPoint();
   }
 
-  if (show_circle() && circle_)
-    circle_->SetDisplayMode(mode);
   if (!editing_label) {
     for (auto* label : labels_)
       label->SetDisplayMode(mode);
@@ -177,24 +183,25 @@ bool ActionView::ShouldShowErrorMsg(ui::DomCode code,
   return false;
 }
 
-bool ActionView::OnMousePressed(const ui::MouseEvent& event) {
+bool ActionView::ApplyMousePressed(const ui::MouseEvent& event) {
   if (!allow_reposition_)
     return false;
   OnDragStart(event);
   return true;
 }
 
-bool ActionView::OnMouseDragged(const ui::MouseEvent& event) {
+bool ActionView::ApplyMouseDragged(const ui::MouseEvent& event) {
   return allow_reposition_ ? OnDragUpdate(event) : false;
 }
 
-void ActionView::OnMouseReleased(const ui::MouseEvent& event) {
+void ActionView::ApplyMouseReleased(const ui::MouseEvent& event) {
   if (!allow_reposition_)
     return;
   OnDragEnd();
+  RecordInputOverlayActionReposition(RepositionType::kMouseDragRepostion);
 }
 
-void ActionView::OnGestureEvent(ui::GestureEvent* event) {
+void ActionView::ApplyGestureEvent(ui::GestureEvent* event) {
   if (!allow_reposition_)
     return;
   switch (event->type()) {
@@ -210,10 +217,50 @@ void ActionView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START:
       OnDragEnd();
       event->SetHandled();
+      RecordInputOverlayActionReposition(
+          RepositionType::kTouchscreenDragRepostion);
       break;
     default:
       break;
   }
+}
+
+bool ActionView::ApplyKeyPressed(const ui::KeyEvent& event) {
+  auto current_pos = origin();
+  if (!allow_reposition_ ||
+      !UpdatePositionByArrowKey(event.key_code(), current_pos)) {
+    return View::OnKeyPressed(event);
+  }
+
+  SetPosition(current_pos);
+  return true;
+}
+
+bool ActionView::ApplyKeyReleased(const ui::KeyEvent& event) {
+  if (!allow_reposition_ || !ash::IsArrowKeyEvent(event))
+    return View::OnKeyReleased(event);
+
+  ChangePositionBinding(
+      gfx::Point(origin().x() + center_.x(), origin().y() + center_.y()));
+  RecordInputOverlayActionReposition(
+      RepositionType::kKeyboardArrowKeyReposition);
+  return true;
+}
+
+void ActionView::OnFocus() {
+  if (!IsFocusable()) {
+    auto* focus_manager = GetFocusManager();
+    if (focus_manager)
+      focus_manager->ClearFocus();
+    return;
+  }
+
+  // TODO(b/260868602): Update the color according to the design spec.
+  SetBackground(views::CreateSolidBackground(gfx::kGoogleBlue300));
+}
+
+void ActionView::OnBlur() {
+  SetBackground(nullptr);
 }
 
 void ActionView::AddEditButton() {
@@ -269,6 +316,21 @@ void ActionView::OnTrashButtonPressed() {
     return;
 
   display_overlay_controller_->OnActionTrashButtonPressed(action_);
+}
+
+void ActionView::AddTouchPoint(ActionType action_type) {
+  if (touch_point_)
+    return;
+
+  touch_point_ = TouchPoint::Show(this, action_type, center_);
+}
+
+void ActionView::RemoveTouchPoint() {
+  if (!touch_point_)
+    return;
+
+  RemoveChildViewT(touch_point_);
+  touch_point_ = nullptr;
 }
 
 void ActionView::UpdateTrashButtonPosition() {

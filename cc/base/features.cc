@@ -38,7 +38,7 @@ BASE_FEATURE(kSynchronizedScrolling,
 
 BASE_FEATURE(kAvoidRasterDuringElasticOverscroll,
              "AvoidRasterDuringElasticOverscroll",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRemoveMobileViewportDoubleTap,
              "RemoveMobileViewportDoubleTap",
@@ -103,5 +103,9 @@ BASE_FEATURE(kUIEnableSharedImageCacheForGpu,
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+BASE_FEATURE(kReclaimResourcesFlushInBackground,
+             "ReclaimResourcesFlushInBackground",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

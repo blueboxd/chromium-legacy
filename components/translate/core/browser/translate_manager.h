@@ -10,9 +10,9 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -354,11 +354,6 @@ class TranslateManager {
   LanguageState language_state_;
 
   std::unique_ptr<metrics::TranslateEventProto> translate_event_;
-
-  // Language code of current page. Code is stored when translation is disabled
-  // by Autofill Assistant. This code is later used to translate page when
-  // Autofill Assistant finishes run.
-  std::string page_language_code_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_{this};
 

@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/types/optional_ref.h"
@@ -81,22 +81,24 @@ std::unique_ptr<AuctionRunner> AuctionRunner::CreateAndStart(
       std::move(auction_config), std::move(client_security_state),
       std::move(is_interest_group_api_allowed_callback),
       std::move(abort_receiver), std::move(callback)));
-  instance->StartAuctionIfReady();
+  instance->StartAuction();
   return instance;
 }
 
 AuctionRunner::~AuctionRunner() = default;
 
 void AuctionRunner::ResolvedPromiseParam(
-    blink::mojom::AuctionAdConfigAuctionIdPtr auction,
+    blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
     blink::mojom::AuctionAdConfigField field,
     const absl::optional<std::string>& json_value) {
   if (state_ == State::kFailed) {
     return;
   }
 
-  blink::AuctionConfig* config = LookupAuction(*owned_auction_config_, auction);
+  blink::AuctionConfig* config =
+      LookupAuction(*owned_auction_config_, auction_id);
   if (!config) {
+    // TODO(morlovich): Abort on these.
     mojo::ReportBadMessage("Invalid auction ID in ResolvedPromiseParam");
     return;
   }
@@ -111,7 +113,6 @@ void AuctionRunner::ResolvedPromiseParam(
         return;
       }
       config->non_shared_params.auction_signals = std::move(new_val);
-      --promise_fields_in_auction_config_;
       break;
 
     case blink::mojom::AuctionAdConfigField::kSellerSignals:
@@ -120,10 +121,64 @@ void AuctionRunner::ResolvedPromiseParam(
         return;
       }
       config->non_shared_params.seller_signals = std::move(new_val);
-      --promise_fields_in_auction_config_;
       break;
   }
-  StartAuctionIfReady();
+
+  NotifyPromiseResolved(auction_id.get(), config);
+}
+
+void AuctionRunner::ResolvedPerBuyerSignalsPromise(
+    blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+    const absl::optional<base::flat_map<url::Origin, std::string>>&
+        per_buyer_signals) {
+  if (state_ == State::kFailed) {
+    return;
+  }
+
+  blink::AuctionConfig* config =
+      LookupAuction(*owned_auction_config_, auction_id);
+  if (!config) {
+    mojo::ReportBadMessage(
+        "Invalid auction ID in ResolvedPerBuyerSignalsPromise");
+    return;
+  }
+
+  if (!config->non_shared_params.per_buyer_signals.is_promise()) {
+    mojo::ReportBadMessage(
+        "ResolvedPerBuyerSignalsPromise updating non-promise");
+    return;
+  }
+
+  config->non_shared_params.per_buyer_signals =
+      blink::AuctionConfig::MaybePromisePerBuyerSignals::FromValue(
+          per_buyer_signals);
+  NotifyPromiseResolved(auction_id.get(), config);
+}
+
+void AuctionRunner::ResolvedBuyerTimeoutsPromise(
+    blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+    const blink::AuctionConfig::BuyerTimeouts& buyer_timeouts) {
+  if (state_ == State::kFailed) {
+    return;
+  }
+
+  blink::AuctionConfig* config =
+      LookupAuction(*owned_auction_config_, auction_id);
+  if (!config) {
+    mojo::ReportBadMessage(
+        "Invalid auction ID in ResolvedBuyerTimeoutsPromise");
+    return;
+  }
+
+  if (!config->non_shared_params.buyer_timeouts.is_promise()) {
+    mojo::ReportBadMessage("ResolvedBuyerTimeoutsPromise updating non-promise");
+    return;
+  }
+
+  config->non_shared_params.buyer_timeouts =
+      blink::AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(
+          buyer_timeouts);
+  NotifyPromiseResolved(auction_id.get(), config);
 }
 
 void AuctionRunner::Abort() {
@@ -189,10 +244,7 @@ AuctionRunner::AuctionRunner(
                interest_group_manager,
                /*auction_start_time=*/base::Time::Now()) {}
 
-void AuctionRunner::StartAuctionIfReady() {
-  if (promise_fields_in_auction_config_ > 0) {
-    return;
-  }
+void AuctionRunner::StartAuction() {
   auction_.StartLoadInterestGroupsPhase(
       is_interest_group_api_allowed_callback_,
       base::BindOnce(&AuctionRunner::OnLoadInterestGroupsComplete,
@@ -284,6 +336,25 @@ void AuctionRunner::UpdateInterestGroupsPostAuction() {
 
   interest_group_manager_->UpdateInterestGroupsOfOwners(
       update_owners, client_security_state_.Clone());
+}
+
+void AuctionRunner::NotifyPromiseResolved(
+    const blink::mojom::AuctionAdConfigAuctionId* auction_id,
+    blink::AuctionConfig* config) {
+  --promise_fields_in_auction_config_;
+  DCHECK_EQ(promise_fields_in_auction_config_,
+            owned_auction_config_->non_shared_params.NumPromises());
+
+  if (!auction_id->is_main_auction() &&
+      config->non_shared_params.NumPromises() == 0) {
+    auction_.NotifyComponentConfigPromisesResolved(
+        auction_id->get_component_auction());
+  }
+
+  // This may happen when updating a component auction as well.
+  if (promise_fields_in_auction_config_ == 0) {
+    auction_.NotifyConfigPromisesResolved();
+  }
 }
 
 }  // namespace content

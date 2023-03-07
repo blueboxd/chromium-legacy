@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -111,7 +111,7 @@ bool CastMediaSinkService::MdnsDiscoveryStarted() {
   return dns_sd_registry_ != nullptr;
 }
 
-void CastMediaSinkService::OnUserGesture() {
+void CastMediaSinkService::DiscoverSinksNow() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (dns_sd_registry_)
     dns_sd_registry_->ResetAndDiscover();

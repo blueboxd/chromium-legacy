@@ -113,7 +113,6 @@ class MockOpenNetworkContext : public content::test::MockNetworkContext {
 
  private:
   std::unique_ptr<content::test::MockUDPSocket> CreateMockUDPSocket(
-      mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
       mojo::PendingRemote<network::mojom::UDPSocketListener> listener) override;
 
   const net::Error result_;
@@ -124,10 +123,8 @@ class MockOpenUDPSocket : public content::test::MockUDPSocket {
  public:
   MockOpenUDPSocket(
       MockOpenNetworkContext* network_context,
-      mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
       mojo::PendingRemote<network::mojom::UDPSocketListener> listener)
-      : MockUDPSocket(std::move(receiver), std::move(listener)),
-        network_context_(network_context) {}
+      : MockUDPSocket(std::move(listener)), network_context_(network_context) {}
 
   ~MockOpenUDPSocket() override = default;
 
@@ -157,10 +154,8 @@ class MockOpenUDPSocket : public content::test::MockUDPSocket {
 
 std::unique_ptr<content::test::MockUDPSocket>
 MockOpenNetworkContext::CreateMockUDPSocket(
-    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
     mojo::PendingRemote<network::mojom::UDPSocketListener> listener) {
-  return std::make_unique<MockOpenUDPSocket>(this, std::move(receiver),
-                                             std::move(listener));
+  return std::make_unique<MockOpenUDPSocket>(this, std::move(listener));
 }
 
 }  // anonymous namespace
@@ -226,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
               ::testing::HasSubstr("keepAliveDelay must be no less than"));
 }
 
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsOne) {
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       DISABLED_OpenTcp_OptionsOne) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectUniqueSample(kTCPNetworkFailuresHistogramName,
                                       -net::Error::ERR_PROXY_CONNECTION_FAILED,

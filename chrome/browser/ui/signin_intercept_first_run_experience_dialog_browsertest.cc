@@ -114,11 +114,11 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
   using DialogEventSet =
       base::EnumSet<DialogEvent, DialogEvent::kStart, DialogEvent::kMaxValue>;
 
-  SigninInterceptFirstRunExperienceDialogBrowserTest() {
-    feature_list_.InitWithFeatures(
+  SigninInterceptFirstRunExperienceDialogBrowserTest()
+      : SigninBrowserTestBase(/*use_main_profile=*/true) {
+    feature_list_.InitAndEnableFeatures(
         {feature_engagement::kIPHProfileSwitchFeature,
-         kSyncPromoAfterSigninIntercept},
-        {});
+         kSyncPromoAfterSigninIntercept});
   }
 
   ~SigninInterceptFirstRunExperienceDialogBrowserTest() override = default;
@@ -159,8 +159,7 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
   // Returns true if the profile switch IPH has been shown.
   bool ProfileSwitchPromoHasBeenShown() {
     return user_education::test::WaitForStartupPromo(
-        feature_engagement::TrackerFactory::GetForBrowserContext(
-            browser()->profile()),
+        feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile()),
         feature_engagement::kIPHProfileSwitchFeature);
   }
 
@@ -177,7 +176,7 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
 
   void SimulateSyncConfirmationUIClosing(
       LoginUIService::SyncConfirmationUIClosedResult result) {
-    LoginUIServiceFactory::GetForProfile(browser()->profile())
+    LoginUIServiceFactory::GetForProfile(GetProfile())
         ->SyncConfirmationUIClosed(result);
   }
 
@@ -223,11 +222,11 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
 
   syncer::TestSyncService* sync_service() {
     return static_cast<syncer::TestSyncService*>(
-        SyncServiceFactory::GetForProfile(browser()->profile()));
+        SyncServiceFactory::GetForProfile(GetProfile()));
   }
 
   ThemeService* theme_service() {
-    return ThemeServiceFactory::GetForProfile(browser()->profile());
+    return ThemeServiceFactory::GetForProfile(GetProfile());
   }
 
   SigninViewController* controller() {
@@ -250,7 +249,7 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
 
  private:
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
-  base::test::ScopedFeatureList feature_list_;
+  feature_engagement::test::ScopedIphFeatureList feature_list_;
 
   base::HistogramTester histogram_tester_;
   base::UserActionTester user_action_tester_;
@@ -587,8 +586,8 @@ IN_PROC_BROWSER_TEST_F(SigninInterceptFirstRunExperienceDialogBrowserTest,
   sync_service()->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   sync_service()->FireStateChanged();
-  EXPECT_FALSE(TurnSyncOnHelper::HasCurrentTurnSyncOnHelperForTesting(
-      browser()->profile()));
+  EXPECT_FALSE(
+      TurnSyncOnHelper::HasCurrentTurnSyncOnHelperForTesting(GetProfile()));
   // Sync is aborted.
   ExpectPrimaryAccountWithExactConsentLevel(signin::ConsentLevel::kSignin);
   ExpectRecordedEvents({DialogEvent::kStart});

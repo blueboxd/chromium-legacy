@@ -176,6 +176,7 @@ namespace http://www.w3.org/1999/xhtml
     property offsetTop
     property offsetWidth
     property onabort
+    property onaftertoggle
     property onanimationend
     property onanimationiteration
     property onanimationstart
@@ -505,9 +506,9 @@ html element button
     property formTarget
     property labels
     property name
-    property popoverHideTarget
-    property popoverShowTarget
-    property popoverToggleTarget
+    property popoverHideTargetElement
+    property popoverShowTargetElement
+    property popoverToggleTargetElement
     property reportValidity
     property setCustomValidity
     property type
@@ -754,9 +755,9 @@ html element input
     property name
     property pattern
     property placeholder
-    property popoverHideTarget
-    property popoverShowTarget
-    property popoverToggleTarget
+    property popoverHideTargetElement
+    property popoverShowTargetElement
+    property popoverToggleTargetElement
     property readOnly
     property reportValidity
     property required
@@ -1409,6 +1410,7 @@ namespace http://www.w3.org/2000/svg
     property nonce
     property normalize
     property onabort
+    property onaftertoggle
     property onanimationend
     property onanimationiteration
     property onanimationstart

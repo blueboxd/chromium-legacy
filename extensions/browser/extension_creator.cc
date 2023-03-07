@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/strings/string_util.h"
 #include "components/crx_file/crx_creator.h"
 #include "components/crx_file/id_util.h"
@@ -106,9 +106,6 @@ bool ExtensionCreator::ValidateManifest(const base::FilePath& extension_dir,
       Extension::FOLLOW_SYMLINKS_ANYWHERE | Extension::ERROR_ON_PRIVATE_KEY;
   if (run_flags & kRequireModernManifestVersion)
     create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
-
-  if (run_flags & kBookmarkApp)
-    create_flags |= Extension::FROM_BOOKMARK;
 
   scoped_refptr<Extension> extension(file_util::LoadExtension(
       extension_dir, extension_id,

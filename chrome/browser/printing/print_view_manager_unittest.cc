@@ -6,8 +6,9 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -103,9 +104,6 @@ class TestPrinterQuery : public PrinterQuery {
   // Should be called before `SetSettings()`.
   void SetPrintableAreaOffsets(int offset_x, int offset_y);
 
-  // Intentional no-op.
-  void StopWorker() override;
-
  private:
   absl::optional<gfx::Point> offsets_;
 #if BUILDFLAG(IS_WIN)
@@ -182,8 +180,6 @@ void TestPrinterQuery::SetPrinterLanguageType(mojom::PrinterLanguageType type) {
 void TestPrinterQuery::SetPrintableAreaOffsets(int offset_x, int offset_y) {
   offsets_ = gfx::Point(offset_x, offset_y);
 }
-
-void TestPrinterQuery::StopWorker() {}
 
 class TestPrintViewManagerForSystemDialogPrint : public PrintViewManager {
  public:
@@ -292,7 +288,9 @@ class TestPrintViewManager : public PrintViewManagerBase {
     return static_cast<TestPrintJob*>(print_job_.get());
   }
 
-  base::RunLoop* run_loop_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION base::RunLoop* run_loop_ = nullptr;
 };
 
 TEST_F(PrintViewManagerTest, PrintSubFrameAndDestroy) {

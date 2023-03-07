@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PAGE_H_
 #define CONTENT_PUBLIC_BROWSER_PAGE_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
@@ -82,7 +82,7 @@ class CONTENT_EXPORT Page : public base::SupportsUserData {
   // include pages in bfcache, portal, prerendering, fenced frames, pending
   // commit and pending deletion pages. See WebContents::GetPrimaryPage for more
   // details.
-  virtual bool IsPrimary() = 0;
+  virtual bool IsPrimary() const = 0;
 
   // Returns the main RenderFrameHost associated with this Page.
   RenderFrameHost& GetMainDocument() { return GetMainDocumentHelper(); }

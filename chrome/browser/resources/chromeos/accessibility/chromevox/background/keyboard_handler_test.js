@@ -3,17 +3,19 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 /**
  * Test fixture for ChromeVox KeyboardHandler.
  */
-ChromeVoxBackgroundKeyboardHandlerTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxBackgroundKeyboardHandlerTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
 
     // Alphabetical based on file path.
+    await importModule(
+        'ChromeVoxRange', '/chromevox/background/chromevox_range.js');
     await importModule(
         'ChromeVoxState', '/chromevox/background/chromevox_state.js');
     await importModule(
@@ -21,7 +23,7 @@ ChromeVoxBackgroundKeyboardHandlerTest = class extends ChromeVoxNextE2ETest {
         '/chromevox/background/keyboard_handler.js');
     await importModule('KeyCode', '/common/key_code.js');
 
-    window.keyboardHandler = new BackgroundKeyboardHandler();
+    globalThis.keyboardHandler = BackgroundKeyboardHandler.instance;
   }
 };
 
@@ -40,8 +42,8 @@ AX_TEST_F(
 
       // A Search keydown does not get eaten when there's no range and there
       // was no previous range. TalkBack is handled elsewhere.
-      ChromeVoxState.instance.setCurrentRange(null);
-      ChromeVoxState.instance.previousRange_ = null;
+      ChromeVoxRange.set(null);
+      ChromeVoxRange.previous = null;
       const searchDown2 = {};
       searchDown2.metaKey = true;
       keyboardHandler.onKeyDown(searchDown2);
@@ -52,7 +54,7 @@ AX_TEST_F(
     'ChromeVoxBackgroundKeyboardHandlerTest', 'PassThroughMode',
     async function() {
       await this.runWithLoadedTree('<p>test</p>');
-      assertUndefined(ChromeVox.passThroughMode);
+      assertFalse(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
       assertEquals('no_pass_through', keyboardHandler.passThroughState_);
       assertEquals(0, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
@@ -64,7 +66,7 @@ AX_TEST_F(
       assertEquals(1, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals('no_pass_through', keyboardHandler.passThroughState_);
-      assertUndefined(ChromeVox.passThroughMode);
+      assertFalse(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       const searchShift = TestUtils.createMockKeyEvent(
           KeyCode.SHIFT, {metaKey: true, shiftKey: true});
@@ -72,7 +74,7 @@ AX_TEST_F(
       assertEquals(2, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals('no_pass_through', keyboardHandler.passThroughState_);
-      assertUndefined(ChromeVox.passThroughMode);
+      assertFalse(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       const searchShiftEsc = TestUtils.createMockKeyEvent(
           KeyCode.ESCAPE, {metaKey: true, shiftKey: true});
@@ -81,28 +83,28 @@ AX_TEST_F(
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_pass_through_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       keyboardHandler.onKeyUp(searchShiftEsc);
       assertEquals(2, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_pass_through_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       keyboardHandler.onKeyUp(searchShift);
       assertEquals(1, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_pass_through_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       keyboardHandler.onKeyUp(search);
       assertEquals(0, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_shortcut_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       // Now, the next series of key downs should be passed through.
       // Try Search+Ctrl+M.
@@ -111,7 +113,7 @@ AX_TEST_F(
       assertEquals(1, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_shortcut_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       const searchCtrl = TestUtils.createMockKeyEvent(
           KeyCode.CONTROL, {metaKey: true, ctrlKey: true});
@@ -120,7 +122,7 @@ AX_TEST_F(
       assertEquals(2, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_shortcut_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       const searchCtrlM = TestUtils.createMockKeyEvent(
           KeyCode.M, {metaKey: true, ctrlKey: true});
@@ -129,27 +131,27 @@ AX_TEST_F(
       assertEquals(3, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_shortcut_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       keyboardHandler.onKeyUp(searchCtrlM);
       assertEquals(0, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(2, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_shortcut_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       keyboardHandler.onKeyUp(searchCtrl);
       assertEquals(0, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(1, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals(
           'pending_shortcut_keyups', keyboardHandler.passThroughState_);
-      assertTrue(ChromeVox.passThroughMode);
+      assertTrue(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
 
       keyboardHandler.onKeyUp(search);
       assertEquals(0, keyboardHandler.eatenKeyDowns_.size);
       assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       assertEquals('no_pass_through', keyboardHandler.passThroughState_);
-      assertFalse(ChromeVox.passThroughMode);
+      assertFalse(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
     });
 
 AX_TEST_F(
@@ -157,7 +159,7 @@ AX_TEST_F(
     async function() {
       await this.runWithLoadedTree('<p>test</p>');
       function assertNoPassThrough() {
-        assertUndefined(ChromeVox.passThroughMode);
+        assertFalse(BackgroundKeyboardHandler.instance.passThroughModeEnabled_);
         assertEquals('no_pass_through', keyboardHandler.passThroughState_);
         assertEquals(0, keyboardHandler.passedThroughKeyDowns_.size);
       }
@@ -237,7 +239,7 @@ AX_TEST_F(
     'UnexpectedKeyDownUpPairsPassThrough', async function() {
       await this.runWithLoadedTree('<p>test</p>');
       // Force pass through mode.
-      ChromeVox.passThroughMode = true;
+      BackgroundKeyboardHandler.instance.passThroughModeEnabled_ = true;
 
       // Send a few key downs (which are passed through).
       const search =

@@ -6,10 +6,81 @@ import {TimeTicks} from 'chrome://resources/mojo/mojo/public/mojom/base/time.moj
 
 import {keyToIconNameMap} from './input_key.js';
 import {stringToMojoString16} from './mojo_utils.js';
-import {AcceleratorCategory, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutStyle, Modifier, MojoAcceleratorConfig, MojoAcceleratorInfo, MojoLayoutInfo} from './shortcut_types.js';
+import {AcceleratorCategory, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutStyle, Modifier, MojoAcceleratorConfig, MojoAcceleratorInfo, MojoLayoutInfo, TextAcceleratorPartType} from './shortcut_types.js';
 
 const fakeTimestamp: TimeTicks = {
   internalValue: BigInt(0),
+};
+
+const newTabAccelerator: MojoAcceleratorInfo = {
+  type: AcceleratorType.kDefault,
+  state: AcceleratorState.kEnabled,
+  locked: true,
+  layoutProperties: {
+    standardAccelerator: {
+      keyDisplay: stringToMojoString16('t'),
+      accelerator: {
+        modifiers: Modifier.CONTROL,
+        keyCode: 84,
+        keyState: 0,
+        timeStamp: fakeTimestamp,
+      },
+    },
+    textAccelerator: undefined,
+
+  },
+};
+
+const cycleTabsAccelerator: MojoAcceleratorInfo = {
+  type: AcceleratorType.kDefault,
+  state: AcceleratorState.kEnabled,
+  locked: true,
+  layoutProperties: {
+    textAccelerator: {
+      parts: [
+        {
+          text: stringToMojoString16('ctrl'),
+          type: TextAcceleratorPartType.kModifier,
+        },
+        {
+          text: stringToMojoString16(' + '),
+          type: TextAcceleratorPartType.kDelimiter,
+        },
+        {
+          text: stringToMojoString16('1 '),
+          type: TextAcceleratorPartType.kKey,
+        },
+        {
+          text: stringToMojoString16('through '),
+          type: TextAcceleratorPartType.kPlainText,
+        },
+        {
+          text: stringToMojoString16('8'),
+          type: TextAcceleratorPartType.kKey,
+        },
+      ],
+    },
+    standardAccelerator: undefined,
+  },
+};
+
+const sixPackDeleteAccelerator: MojoAcceleratorInfo = {
+  type: AcceleratorType.kDefault,
+  state: AcceleratorState.kEnabled,
+  locked: true,
+  layoutProperties: {
+    standardAccelerator: {
+      keyDisplay: stringToMojoString16('backspace'),
+      accelerator: {
+        modifiers: Modifier.COMMAND,
+        keyCode: 8,
+        keyState: 0,
+        timeStamp: fakeTimestamp,
+      },
+    },
+    textAccelerator: undefined,
+
+  },
 };
 
 export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
@@ -20,7 +91,7 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
       state: AcceleratorState.kEnabled,
       locked: true,
       layoutProperties: {
-        defaultAccelerator: {
+        standardAccelerator: {
           keyDisplay: stringToMojoString16('['),
           accelerator: {
             modifiers: Modifier.ALT,
@@ -38,7 +109,7 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
       state: AcceleratorState.kEnabled,
       locked: false,
       layoutProperties: {
-        defaultAccelerator: {
+        standardAccelerator: {
           keyDisplay: stringToMojoString16(']'),
           accelerator: {
             modifiers: Modifier.ALT,
@@ -57,7 +128,7 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
       state: AcceleratorState.kEnabled,
       locked: false,
       layoutProperties: {
-        defaultAccelerator: {
+        standardAccelerator: {
           keyDisplay: stringToMojoString16('+'),
           accelerator: {
             modifiers: Modifier.COMMAND | Modifier.SHIFT,
@@ -76,7 +147,7 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
       state: AcceleratorState.kEnabled,
       locked: false,
       layoutProperties: {
-        defaultAccelerator: {
+        standardAccelerator: {
           keyDisplay: stringToMojoString16('-'),
           accelerator: {
             modifiers: Modifier.COMMAND | Modifier.SHIFT,
@@ -90,26 +161,20 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
       },
     }],
   },
-  [AcceleratorSource.kBrowser]: {
+  // TODO(michaelcheco): Separate Browser and Ambient accelerators.
+  [AcceleratorSource.kAmbient]: {
     // New Tab
-    [1001]: [{
-      type: AcceleratorType.kDefault,
-      state: AcceleratorState.kEnabled,
-      locked: true,
-      layoutProperties: {
-        defaultAccelerator: {
-          keyDisplay: stringToMojoString16('t'),
-          accelerator: {
-            modifiers: Modifier.CONTROL,
-            keyCode: 84,
-            keyState: 0,
-            timeStamp: fakeTimestamp,
-          },
-        },
-        textAccelerator: undefined,
+    [0]: [newTabAccelerator],
+    [1]: [cycleTabsAccelerator],
+    [2]: [sixPackDeleteAccelerator],
+  },
+};
 
-      },
-    }],
+export const fakeAmbientConfig: MojoAcceleratorConfig = {
+  [AcceleratorSource.kAmbient]: {
+    [0]: [newTabAccelerator],
+    [1]: [cycleTabsAccelerator],
+    [2]: [sixPackDeleteAccelerator],
   },
 };
 
@@ -151,8 +216,24 @@ export const fakeLayoutInfo: MojoLayoutInfo[] = [
     subCategory: AcceleratorSubcategory.kSystemControls,
     description: stringToMojoString16('New Tab'),
     style: LayoutStyle.kDefault,
-    source: AcceleratorSource.kBrowser,
-    action: 1001,
+    source: AcceleratorSource.kAmbient,
+    action: 0,
+  },
+  {
+    category: AcceleratorCategory.kTabsAndWindows,
+    subCategory: AcceleratorSubcategory.kSystemApps,
+    description: stringToMojoString16('Go to tabs 1 through 8'),
+    style: LayoutStyle.kText,
+    source: AcceleratorSource.kAmbient,
+    action: 1,
+  },
+  {
+    category: AcceleratorCategory.kEventRewriter,
+    subCategory: AcceleratorSubcategory.kSixPackKeys,
+    description: stringToMojoString16('Delete'),
+    style: LayoutStyle.kDefault,
+    source: AcceleratorSource.kAmbient,
+    action: 2,
   },
 ];
 
@@ -165,7 +246,7 @@ const createFakeMojoAccelInfo = (keyDisplay: string): MojoAcceleratorInfo => {
     state: AcceleratorState.kEnabled,
     locked: true,
     layoutProperties: {
-      defaultAccelerator: {
+      standardAccelerator: {
         keyDisplay: stringToMojoString16(keyDisplay),
         accelerator: {
           modifiers: 0,
@@ -186,7 +267,7 @@ const createFakeMojoLayoutInfo =
         subCategory: AcceleratorSubcategory.kSystemControls,
         description: stringToMojoString16(description),
         style: LayoutStyle.kDefault,
-        source: AcceleratorSource.kBrowser,
+        source: AcceleratorSource.kAmbient,
         action,
       };
     };
@@ -195,8 +276,8 @@ const icons = Object.keys(keyToIconNameMap);
 
 for (const [index, iconName] of icons.entries()) {
   const actionId = 10000 + index;
-  fakeAcceleratorConfig[AcceleratorSource.kBrowser] = {
-    ...fakeAcceleratorConfig[AcceleratorSource.kBrowser],
+  fakeAcceleratorConfig[AcceleratorSource.kAmbient] = {
+    ...fakeAcceleratorConfig[AcceleratorSource.kAmbient],
     [actionId]: [createFakeMojoAccelInfo(iconName)],
   };
   fakeLayoutInfo.push(createFakeMojoLayoutInfo(`Icon: ${iconName}`, actionId));

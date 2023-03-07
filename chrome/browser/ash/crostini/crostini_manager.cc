@@ -9,13 +9,14 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "base/barrier_callback.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -98,10 +99,10 @@ void InvokeAndErasePendingCallbacks(
     std::map<guest_os::GuestId, base::OnceCallback<void(Parameters...)>>*
         vm_keyed_map,
     const std::string& vm_name,
-    Arguments&&... arguments) {
+    Arguments... arguments) {
   for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
     if (it->first.vm_name == vm_name) {
-      std::move(it->second).Run(std::forward<Arguments>(arguments)...);
+      std::move(it->second).Run(arguments...);
       vm_keyed_map->erase(it++);
     } else {
       ++it;
@@ -110,21 +111,17 @@ void InvokeAndErasePendingCallbacks(
 }
 
 // Find any callbacks for the specified |vm_name|, invoke them with
-// |arguments|... and erase them from the map.
-template <typename... Parameters, typename... Arguments>
+// |result| and erase them from the map.
 void InvokeAndErasePendingCallbacks(
-    std::map<std::string, base::OnceCallback<void(Parameters...)>>*
-        vm_keyed_map,
+    std::multimap<std::string, CrostiniManager::CrostiniResultCallback>*
+        vm_callbacks,
     const std::string& vm_name,
-    Arguments&&... arguments) {
-  for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
-    if (it->first == vm_name) {
-      std::move(it->second).Run(std::forward<Arguments>(arguments)...);
-      vm_keyed_map->erase(it++);
-    } else {
-      ++it;
-    }
+    CrostiniResult result) {
+  auto range = vm_callbacks->equal_range(vm_name);
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run(result);
   }
+  vm_callbacks->erase(range.first, range.second);
 }
 
 // Find any container callbacks for the specified |container_id|, invoke them
@@ -204,7 +201,7 @@ CrostiniManager::RestartOptions& CrostiniManager::RestartOptions::operator=(
 
 class CrostiniManager::CrostiniRestarter
     : public ash::VmShutdownObserver,
-      public chromeos::SchedulerConfigurationManagerBase::Observer {
+      public ash::SchedulerConfigurationManagerBase::Observer {
  public:
   struct RestartRequest {
     RestartId restart_id;
@@ -282,7 +279,7 @@ class CrostiniManager::CrostiniRestarter
   void CreateDiskImageFinished(int64_t disk_size_bytes,
                                CrostiniResult result,
                                const base::FilePath& result_path);
-  // chromeos::SchedulerConfigurationManagerBase::Observer:
+  // ash::SchedulerConfigurationManagerBase::Observer:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
   void OnConfigureContainerFinished(bool success);
   void OnWaylandServerCreated(guest_os::GuestOsWaylandServer::Result result);
@@ -349,8 +346,8 @@ class CrostiniManager::CrostiniRestarter
 
   mojom::InstallerState stage_ = mojom::InstallerState::kStart;
 
-  base::ScopedObservation<chromeos::SchedulerConfigurationManagerBase,
-                          chromeos::SchedulerConfigurationManagerBase::Observer>
+  base::ScopedObservation<ash::SchedulerConfigurationManagerBase,
+                          ash::SchedulerConfigurationManagerBase::Observer>
       scheduler_configuration_manager_observation_{this};
   base::ScopedObservation<CrostiniManager, ash::VmShutdownObserver>
       vm_shutdown_observation_{this};
@@ -541,9 +538,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   CloseCrostiniUpdateFilesystemView();
-  for (auto& observer : observer_list_) {
-    observer.OnContainerStarted(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -665,9 +659,6 @@ void CrostiniManager::CrostiniRestarter::ContinueRestart() {
 
 void CrostiniManager::CrostiniRestarter::LoadComponentFinished(
     CrostiniResult result) {
-  for (auto& observer : observer_list_) {
-    observer.OnComponentLoaded(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -738,7 +729,7 @@ void CrostiniManager::CrostiniRestarter::CreateDiskImageFinished(
                      scheduler_configuration->second);
 }
 
-// chromeos::SchedulerConfigurationManagerBase::Observer:
+// ash::SchedulerConfigurationManagerBase::Observer:
 void CrostiniManager::CrostiniRestarter::OnConfigurationSet(
     bool success,
     size_t num_cores_disabled) {
@@ -792,9 +783,6 @@ void CrostiniManager::CrostiniRestarter::OnWaylandServerCreated(
 void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "StartTerminaVmFinished for " << container_id_;
-  for (auto& observer : observer_list_) {
-    observer.OnVmStarted(success);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -851,9 +839,6 @@ void CrostiniManager::CrostiniRestarter::SharePathsFinished(
 void CrostiniManager::CrostiniRestarter::StartLxdFinished(
     CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& observer : observer_list_) {
-    observer.OnLxdStarted(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -882,9 +867,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdFinished(
 void CrostiniManager::CrostiniRestarter::CreateLxdContainerFinished(
     CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& observer : observer_list_) {
-    observer.OnContainerCreated(result);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -906,9 +888,6 @@ void CrostiniManager::CrostiniRestarter::SetUpLxdContainerUserFinished(
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (auto& observer : observer_list_) {
-    observer.OnContainerSetup(success);
-  }
   if (ReturnEarlyIfNeeded()) {
     return;
   }
@@ -1593,6 +1572,36 @@ void CrostiniManager::StopVm(std::string name,
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStopVm, weak_ptr_factory_.GetWeakPtr(),
                      std::move(name), std::move(callback)));
+}
+
+void CrostiniManager::StopRunningVms(CrostiniResultCallback callback) {
+  std::vector<std::string> names;
+  LOG(WARNING) << "StopRunningVms";
+  for (const auto& it : running_vms_) {
+    if (it.second.state != VmState::STOPPING) {
+      names.push_back(it.first);
+    }
+  }
+  auto barrier = base::BarrierCallback<CrostiniResult>(
+      names.size(), base::BindOnce(
+                        [](CrostiniResultCallback callback,
+                           std::vector<CrostiniResult> results) {
+                          auto result = CrostiniResult::SUCCESS;
+                          for (auto res : results) {
+                            if (res != CrostiniResult::SUCCESS) {
+                              LOG(ERROR) << "StopVm failure code "
+                                         << static_cast<int>(res);
+                              result = res;
+                              break;
+                            }
+                          }
+                          std::move(callback).Run(result);
+                        },
+                        std::move(callback)));
+  for (const auto& name : names) {
+    LOG(WARNING) << "Stopping vm " << name;
+    StopVm(name, barrier);
+  }
 }
 
 void CrostiniManager::UpdateTerminaVmKernelVersion() {
@@ -2384,6 +2393,12 @@ void CrostiniManager::CancelRestartCrostini(
 
 bool CrostiniManager::IsRestartPending(RestartId restart_id) {
   return restarters_by_id_.find(restart_id) != restarters_by_id_.end();
+}
+
+bool CrostiniManager::HasRestarterForTesting(
+    const guest_os::GuestId& guest_id) {
+  return restarters_by_container_.find(guest_id) !=
+         restarters_by_container_.end();
 }
 
 void CrostiniManager::AddShutdownContainerCallback(
@@ -4129,43 +4144,43 @@ bool CrostiniManager::RegisterCreateOptions(
     return false;
   }
 
-  base::Value new_create_options(base::Value::Type::DICT);
+  base::Value::Dict new_create_options;
 
-  base::Value share_paths(base::Value::Type::LIST);
+  base::Value::List share_paths;
   for (const base::FilePath& path : options.share_paths) {
     share_paths.Append(path.value());
   }
-  new_create_options.SetKey(prefs::kCrostiniCreateOptionsSharePathsKey,
-                            std::move(share_paths));
+  new_create_options.Set(prefs::kCrostiniCreateOptionsSharePathsKey,
+                         std::move(share_paths));
 
   if (options.container_username.has_value()) {
-    new_create_options.SetKey(prefs::kCrostiniCreateOptionsContainerUsernameKey,
-                              base::Value(options.container_username.value()));
+    new_create_options.Set(prefs::kCrostiniCreateOptionsContainerUsernameKey,
+                           base::Value(options.container_username.value()));
   }
   if (options.disk_size_bytes.has_value()) {
-    new_create_options.SetKey(
+    new_create_options.Set(
         prefs::kCrostiniCreateOptionsDiskSizeBytesKey,
         base::Value(base::NumberToString(options.disk_size_bytes.value())));
   }
   if (options.image_server_url.has_value()) {
-    new_create_options.SetKey(prefs::kCrostiniCreateOptionsImageServerUrlKey,
-                              base::Value(options.image_server_url.value()));
+    new_create_options.Set(prefs::kCrostiniCreateOptionsImageServerUrlKey,
+                           base::Value(options.image_server_url.value()));
   }
   if (options.image_alias.has_value()) {
-    new_create_options.SetKey(prefs::kCrostiniCreateOptionsImageAliasKey,
-                              base::Value(options.image_alias.value()));
+    new_create_options.Set(prefs::kCrostiniCreateOptionsImageAliasKey,
+                           base::Value(options.image_alias.value()));
   }
   if (options.ansible_playbook.has_value()) {
-    new_create_options.SetKey(
+    new_create_options.Set(
         prefs::kCrostiniCreateOptionsAnsiblePlaybookKey,
         base::Value(options.ansible_playbook.value().value()));
   }
-  new_create_options.SetKey(prefs::kCrostiniCreateOptionsUsedKey,
-                            base::Value(false));
+  new_create_options.Set(prefs::kCrostiniCreateOptionsUsedKey,
+                         base::Value(false));
 
   guest_os::UpdateContainerPref(profile_, container_id,
                                 guest_os::prefs::kContainerCreateOptions,
-                                std::move(new_create_options));
+                                base::Value(std::move(new_create_options)));
   return true;
 }
 
@@ -4184,69 +4199,69 @@ bool CrostiniManager::IsPendingCreation(const guest_os::GuestId& container_id) {
 
 void CrostiniManager::SetCreateOptionsUsed(
     const guest_os::GuestId& container_id) {
-  const base::Value* create_options = guest_os::GetContainerPrefValue(
+  const base::Value* create_options_val = guest_os::GetContainerPrefValue(
       profile_, container_id, guest_os::prefs::kContainerCreateOptions);
-  if (create_options == nullptr) {
+  if (create_options_val == nullptr) {
     // Should never reach here.
+    LOG(ERROR)
+        << "create_options_val in SetCreateOptionsUsed is pointing to null.";
     return;
   }
-  base::Value mutable_create_options = create_options->Clone();
-  mutable_create_options.SetKey(prefs::kCrostiniCreateOptionsUsedKey,
-                                base::Value(true));
+
+  base::Value::Dict mutable_create_options =
+      create_options_val->GetDict().Clone();
+  mutable_create_options.Set(prefs::kCrostiniCreateOptionsUsedKey,
+                             base::Value(true));
   guest_os::UpdateContainerPref(profile_, container_id,
                                 guest_os::prefs::kContainerCreateOptions,
-                                std::move(mutable_create_options));
+                                base::Value(std::move(mutable_create_options)));
 }
 
 bool CrostiniManager::FetchCreateOptions(const guest_os::GuestId& container_id,
                                          RestartOptions* options) {
   DCHECK(options != nullptr);
 
-  const base::Value* create_options = guest_os::GetContainerPrefValue(
+  const base::Value* create_options_val = guest_os::GetContainerPrefValue(
       profile_, container_id, guest_os::prefs::kContainerCreateOptions);
-  if (create_options == nullptr) {
+  if (create_options_val == nullptr) {
     // Should never reach here. If we somehow do, just restart with the given
     // options.
+    LOG(ERROR)
+        << "create_options_val in FetchCreateOptions is pointing to null.";
     return true;
   }
 
-  for (const auto& path : *create_options->GetDict().FindList(
-           prefs::kCrostiniCreateOptionsSharePathsKey)) {
+  const base::Value::Dict& create_options = create_options_val->GetDict();
+  for (const auto& path :
+       *create_options.FindList(prefs::kCrostiniCreateOptionsSharePathsKey)) {
     options->share_paths.emplace_back(path.GetString());
   }
 
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsContainerUsernameKey)) {
-    options->container_username = *create_options->GetDict().FindString(
+  if (create_options.Find(prefs::kCrostiniCreateOptionsContainerUsernameKey)) {
+    options->container_username = *create_options.FindString(
         prefs::kCrostiniCreateOptionsContainerUsernameKey);
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsDiskSizeBytesKey)) {
+  if (create_options.Find(prefs::kCrostiniCreateOptionsDiskSizeBytesKey)) {
     int64_t size;
-    base::StringToInt64(*create_options->GetDict().FindString(
+    base::StringToInt64(*create_options.FindString(
                             prefs::kCrostiniCreateOptionsDiskSizeBytesKey),
                         &size);
     options->disk_size_bytes = size;
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsImageServerUrlKey)) {
-    options->image_server_url = *create_options->GetDict().FindString(
+  if (create_options.Find(prefs::kCrostiniCreateOptionsImageServerUrlKey)) {
+    options->image_server_url = *create_options.FindString(
         prefs::kCrostiniCreateOptionsImageServerUrlKey);
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsImageAliasKey)) {
-    options->image_alias = *create_options->GetDict().FindString(
-        prefs::kCrostiniCreateOptionsImageAliasKey);
+  if (create_options.Find(prefs::kCrostiniCreateOptionsImageAliasKey)) {
+    options->image_alias =
+        *create_options.FindString(prefs::kCrostiniCreateOptionsImageAliasKey);
   }
-  if (create_options->GetDict().Find(
-          prefs::kCrostiniCreateOptionsAnsiblePlaybookKey)) {
-    options->ansible_playbook =
-        base::FilePath(*create_options->GetDict().FindString(
-            prefs::kCrostiniCreateOptionsAnsiblePlaybookKey));
+  if (create_options.Find(prefs::kCrostiniCreateOptionsAnsiblePlaybookKey)) {
+    options->ansible_playbook = base::FilePath(*create_options.FindString(
+        prefs::kCrostiniCreateOptionsAnsiblePlaybookKey));
   }
 
-  return *create_options->GetDict().FindBool(
-      prefs::kCrostiniCreateOptionsUsedKey);
+  return *create_options.FindBool(prefs::kCrostiniCreateOptionsUsedKey);
 }
 
 }  // namespace crostini

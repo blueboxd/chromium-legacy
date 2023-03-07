@@ -5,10 +5,12 @@
 #include "components/permissions/request_type.h"
 
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permissions_client.h"
 
@@ -56,6 +58,7 @@ int GetIconIdAndroid(RequestType type) {
     case RequestType::kProtectedMediaIdentifier:
       return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
     case RequestType::kStorageAccess:
+    case RequestType::kTopLevelStorageAccess:
       return IDR_ANDROID_INFOBAR_PERMISSION_COOKIE;
   }
   NOTREACHED();
@@ -105,6 +108,7 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
     case RequestType::kU2fApiRequest:
       return kUsbSecurityKeyIcon;
     case RequestType::kStorageAccess:
+    case RequestType::kTopLevelStorageAccess:
       return vector_icons::kCookieIcon;
     case RequestType::kWindowManagement:
       return vector_icons::kSelectWindowIcon;
@@ -185,6 +189,8 @@ absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
     case ContentSettingsType::WINDOW_MANAGEMENT:
       return RequestType::kWindowManagement;
 #endif
+    case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
+      return RequestType::kTopLevelStorageAccess;
     default:
       return absl::nullopt;
   }
@@ -249,6 +255,8 @@ absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
     case RequestType::kWindowManagement:
       return ContentSettingsType::WINDOW_MANAGEMENT;
 #endif
+    case RequestType::kTopLevelStorageAccess:
+      return ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS;
     default:
       // Not associated with a ContentSettingsType.
       return absl::nullopt;
@@ -333,6 +341,8 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
 #endif
     case permissions::RequestType::kStorageAccess:
       return "storage_access";
+    case permissions::RequestType::kTopLevelStorageAccess:
+      return "top_level_storage_access";
 #if !BUILDFLAG(IS_ANDROID)
     case permissions::RequestType::kU2fApiRequest:
       return "u2f_api_request";
@@ -341,7 +351,12 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
       return "vr_session";
 #if !BUILDFLAG(IS_ANDROID)
     case permissions::RequestType::kWindowManagement:
-      return "window_placement";
+      if (base::FeatureList::IsEnabled(
+              features::kWindowManagementPermissionAlias)) {
+        return "window_management";
+      } else {
+        return "window_placement";
+      }
 #endif
   }
 

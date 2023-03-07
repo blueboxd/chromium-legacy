@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -27,6 +27,7 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/omnibox_proto/entity_info.pb.h"
 
 namespace {
 
@@ -37,6 +38,9 @@ SearchSuggestionParser::SuggestResult BuildSuggestion(
     const std::string& additional_query_params,
     int relevance,
     bool should_prerender) {
+  omnibox::EntityInfo entity_info;
+  entity_info.set_suggest_search_parameters(additional_query_params);
+
   return SearchSuggestionParser::SuggestResult(
       /*suggestion=*/query,
       /*type=*/type,
@@ -44,11 +48,8 @@ SearchSuggestionParser::SuggestResult BuildSuggestion(
       /*match_contents=*/query,
       /*match_contents_prefix=*/u"",
       /*annotation=*/std::u16string(),
-      /*additional_query_params=*/additional_query_params,
-      /*entity_id=*/"",
+      /*entity_info=*/entity_info,
       /*deletion_url=*/std::string(),
-      /*image_dominant_color=*/std::string(),
-      /*image_url=*/std::string(),
       /*from_keyword=*/false,
       /*relevance=*/relevance,
       /*relevance_from_server=*/true,
@@ -453,4 +454,38 @@ TEST_P(BaseSearchProviderTest, PrerenderDefaultMatch) {
   AutocompleteMatch match = map.begin()->second;
   ASSERT_EQ(1U, match.duplicate_matches.size());
   EXPECT_TRUE(BaseSearchProvider::ShouldPrerender(match));
+}
+
+TEST_P(BaseSearchProviderTest, CreateOnDeviceSearchSuggestion) {
+  bool is_tail_suggestion = GetParam();
+  TemplateURLData data;
+  data.SetURL("http://foo.com/url?bar={searchTerms}");
+  auto template_url = std::make_unique<TemplateURL>(data);
+
+  std::vector<std::u16string> input_texts = {
+      u"googl", u"google", u"google ma", u"google map ", u"googl map login"};
+  std::vector<std::u16string> suggestions = {
+      u"google", u"google map", u"google map login", u"google map login",
+      u"google map login"};
+  std::vector<std::u16string> expected_tail_match_contents = {
+      u"google", u"google map", u"map login", u"map login",
+      u"google map login"};
+
+  for (size_t i = 0; i < input_texts.size(); ++i) {
+    AutocompleteInput autocomplete_input(input_texts[i],
+                                         metrics::OmniboxEventProto::OTHER,
+                                         TestSchemeClassifier());
+    AutocompleteMatch match =
+        BaseSearchProvider::CreateOnDeviceSearchSuggestion(
+            provider_.get(), autocomplete_input, suggestions[i], 99,
+            template_url.get(),
+            client_->GetTemplateURLService()->search_terms_data(),
+            TemplateURLRef::NO_SUGGESTION_CHOSEN, is_tail_suggestion);
+    ASSERT_EQ(match.contents, is_tail_suggestion
+                                  ? expected_tail_match_contents[i]
+                                  : suggestions[i]);
+    ASSERT_EQ(match.type, is_tail_suggestion
+                              ? AutocompleteMatchType::SEARCH_SUGGEST_TAIL
+                              : AutocompleteMatchType::SEARCH_SUGGEST);
+  }
 }

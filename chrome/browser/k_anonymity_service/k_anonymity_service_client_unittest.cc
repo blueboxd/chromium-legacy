@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/k_anonymity_service/k_anonymity_service_client.h"
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
@@ -397,6 +397,9 @@ class OhttpTestNetworkContext : public network::TestNetworkContext {
           request->resource_url.spec(),
           "https://chromekanonymityquery-pa.googleapis.com/v1:query"));
     }
+    ASSERT_TRUE(request->padding_params);
+    EXPECT_FALSE(request->padding_params->add_exponential_pad);
+    EXPECT_TRUE(request->padding_params->pad_to_next_power_of_two);
     pending_request_ = std::move(request);
   }
 
@@ -437,7 +440,8 @@ class KAnonymityServiceClientJoinQueryTest
       : KAnonymityServiceClientTest(
             std::make_unique<content::BrowserTaskEnvironment>(
                 content::BrowserTaskEnvironment::IO_MAINLOOP)),
-        network_context_receiver_(&network_context_) {}
+        network_context_receiver_(&network_context_),
+        otr_network_context_receiver_(&network_context_) {}
 
  protected:
   void SetUp() override {
@@ -448,7 +452,8 @@ class KAnonymityServiceClientJoinQueryTest
               {"KAnonymityServiceJoinRelayServer", kJoinRelayURL},
               {"KAnonymityServiceQueryRelayServer", kQueryRelayURL},
           }},
-         {features::kKAnonymityServiceOHTTPRequests, {}}},
+         {features::kKAnonymityServiceOHTTPRequests, {}},
+         {features::kKAnonymityServiceStorage, {}}},
         {});
     TestingProfile::Builder builder;
     builder.SetSharedURLLoaderFactory(
@@ -459,6 +464,15 @@ class KAnonymityServiceClientJoinQueryTest
             builder, signin::AccountConsistencyMethod::kMirror);
     profile_->GetDefaultStoragePartition()->SetNetworkContextForTesting(
         network_context_receiver_.BindNewPipeAndPassRemote());
+  }
+
+  void CreateOffTheRecordProfile() {
+    TestingProfile::Builder builder;
+    builder.SetSharedURLLoaderFactory(profile_->GetURLLoaderFactory());
+    Profile* otr_profile = builder.BuildOffTheRecord(
+        profile_.get(), Profile::OTRProfileID::PrimaryID());
+    otr_profile->GetDefaultStoragePartition()->SetNetworkContextForTesting(
+        otr_network_context_receiver_.BindNewPipeAndPassRemote());
   }
 
   void RespondWithJoinKey() {
@@ -490,6 +504,7 @@ class KAnonymityServiceClientJoinQueryTest
  private:
   OhttpTestNetworkContext network_context_;
   mojo::Receiver<network::mojom::NetworkContext> network_context_receiver_;
+  mojo::Receiver<network::mojom::NetworkContext> otr_network_context_receiver_;
 };
 
 TEST_F(KAnonymityServiceClientJoinQueryTest, TryJoinSetGetOHTTPKeyFailed) {
@@ -654,7 +669,6 @@ TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetGetOHTTPKeyFailed) {
 }
 
 TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetBadResponse) {
-  InitializeIdentity(/*signed_on=*/true);
   base::HistogramTester hist;
   std::vector<std::string> sets;
   sets.push_back("1");
@@ -706,7 +720,10 @@ TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetBadResponse) {
       }]
     })",                               // hashes should be base64 encoded values
   };
+
+  bool key_initialized = false;
   for (const auto& response : bad_responses) {
+    task_environment_->RunUntilIdle();
     base::RunLoop run_loop;
     KAnonymityServiceClient k_service(profile());
     k_service.QuerySets(sets,
@@ -715,22 +732,23 @@ TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetBadResponse) {
                               EXPECT_EQ(0u, result.size()) << response;
                               run_loop.Quit();
                             }));
-    RespondWithQueryKey();
+    if (!key_initialized) {
+      key_initialized = true;
+      RespondWithQueryKey();
+    }
     RespondWithQuery(response);
     run_loop.Run();
   }
   CheckQuerySetHistogramActions(
       hist, {{KAnonymityServiceQuerySetAction::kQuerySet, bad_responses.size()},
-             {KAnonymityServiceQuerySetAction::kFetchQuerySetOHTTPKey,
-              bad_responses.size()},
+             {KAnonymityServiceQuerySetAction::kFetchQuerySetOHTTPKey, 1},
              {KAnonymityServiceQuerySetAction::kSendQuerySetRequest,
               bad_responses.size()},
              {KAnonymityServiceQuerySetAction::kQuerySetRequestParseError,
               bad_responses.size()}});
 }
 
-TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetSignedIn) {
-  InitializeIdentity(true);
+TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySet) {
   KAnonymityServiceClient k_service(profile());
   base::HistogramTester hist;
   std::vector<std::string> sets;
@@ -761,7 +779,6 @@ TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetSignedIn) {
 }
 
 TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetMultipleSets) {
-  InitializeIdentity(true);
   KAnonymityServiceClient k_service(profile());
   base::HistogramTester hist;
   std::vector<std::string> sets;
@@ -812,7 +829,6 @@ TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetMultipleSets) {
 }
 
 TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetCoalescesSplitSets) {
-  InitializeIdentity(true);
   KAnonymityServiceClient k_service(profile());
   base::HistogramTester hist;
   std::vector<std::string> sets;
@@ -853,7 +869,6 @@ TEST_F(KAnonymityServiceClientJoinQueryTest, TryQuerySetCoalescesSplitSets) {
 
 TEST_F(KAnonymityServiceClientJoinQueryTest,
        TryQuerySetSingleFailureDropsAllRequests) {
-  InitializeIdentity(true);
   KAnonymityServiceClient k_service(profile());
   base::HistogramTester hist;
   std::vector<std::string> sets;
@@ -886,6 +901,60 @@ TEST_F(KAnonymityServiceClientJoinQueryTest,
       {{KAnonymityServiceQuerySetAction::kQuerySet, 3},
        {KAnonymityServiceQuerySetAction::kFetchQuerySetOHTTPKey, 1},
        {KAnonymityServiceQuerySetAction::kFetchQuerySetOHTTPKeyFailed, 1}});
+}
+
+TEST_F(KAnonymityServiceClientJoinQueryTest,
+       StorageDoesNotPersistWhenOffTheRecord) {
+  CreateOffTheRecordProfile();
+  std::vector<std::string> sets;
+  sets.push_back("1");
+  Profile* otr_profile =
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/false);
+  ASSERT_TRUE(otr_profile);
+  {
+    KAnonymityServiceClient k_service(otr_profile);
+    base::RunLoop run_loop;
+    k_service.QuerySets(
+        sets, base::BindLambdaForTesting([&run_loop](std::vector<bool> result) {
+          ASSERT_EQ(1u, result.size());
+          EXPECT_TRUE(result[0]);
+          run_loop.Quit();
+        }));
+    RespondWithQueryKey();
+    RespondWithQuery(
+        R"({
+        "kAnonymousSets": [{
+          "hashes": [
+            "a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s="
+            ],
+          "type":"fledge"
+        }]
+      })");
+    run_loop.Run();
+  }
+
+  // The OHTTP key should not be stored after the service client is destroyed.
+  {
+    KAnonymityServiceClient k_service(otr_profile);
+    base::RunLoop run_loop;
+    k_service.QuerySets(
+        sets, base::BindLambdaForTesting([&run_loop](std::vector<bool> result) {
+          ASSERT_EQ(1u, result.size());
+          EXPECT_TRUE(result[0]);
+          run_loop.Quit();
+        }));
+    RespondWithQueryKey();  // This will fail if the key was persisted.
+    RespondWithQuery(
+        R"({
+        "kAnonymousSets": [{
+          "hashes": [
+            "a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s="
+            ],
+          "type":"fledge"
+        }]
+      })");
+    run_loop.Run();
+  }
 }
 
 }  // namespace

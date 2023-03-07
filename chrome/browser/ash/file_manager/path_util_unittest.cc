@@ -13,9 +13,9 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_file_system_instance.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
@@ -1082,8 +1082,9 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
 
 TEST_F(FileManagerPathUtilConvertUrlTest,
        ConvertToContentUrls_AndroidFiles_GuestOs) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      arc::kEnableVirtioBlkForData};
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--enable-arcvm"});
+  EXPECT_TRUE(arc::IsArcVmEnabled());
   base::RunLoop run_loop;
   ConvertToContentUrls(
       ProfileManager::GetPrimaryUserProfile(),
@@ -1104,8 +1105,9 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
 
 TEST_F(FileManagerPathUtilConvertUrlTest,
        ConvertToContentUrls_InvalidAndroidFiles_GuestOs) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      arc::kEnableVirtioBlkForData};
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--enable-arcvm"});
+  EXPECT_TRUE(arc::IsArcVmEnabled());
   base::RunLoop run_loop;
   ConvertToContentUrls(
       ProfileManager::GetPrimaryUserProfile(),

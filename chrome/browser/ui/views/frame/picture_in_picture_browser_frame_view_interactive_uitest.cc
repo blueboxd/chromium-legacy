@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/picture_in_picture_browser_frame_view.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,6 +17,7 @@
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 
 namespace {
 
@@ -82,7 +84,7 @@ class PictureInPictureBrowserFrameViewTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  PictureInPictureBrowserFrameView* pip_frame_view_ = nullptr;
+  raw_ptr<PictureInPictureBrowserFrameView> pip_frame_view_ = nullptr;
 };
 
 #if BUILDFLAG(IS_WIN)
@@ -103,6 +105,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureBrowserFrameViewTest,
   gfx::Point center = pip_frame_view()->GetLocalBounds().CenterPoint();
   views::View::ConvertPointToScreen(pip_frame_view(), &center);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(center));
+  views::test::WaitForAnimatingLayoutManager(
+      pip_frame_view()->GetAnimatingLayoutManagerForTesting());
   ASSERT_TRUE(pip_frame_view()->GetBackToTabButtonForTesting()->GetVisible());
 
   // Move mouse to the top-left corner of the main browser window (out side of
@@ -112,10 +116,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureBrowserFrameViewTest,
       static_cast<BrowserView*>(browser()->window()), &outside);
   ASSERT_FALSE(IsPointInPIPFrameView(outside));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(outside));
+  views::test::WaitForAnimatingLayoutManager(
+      pip_frame_view()->GetAnimatingLayoutManagerForTesting());
   ASSERT_FALSE(pip_frame_view()->GetBackToTabButtonForTesting()->GetVisible());
 
   // Move mouse back in pip window should activate title.
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(center));
+  views::test::WaitForAnimatingLayoutManager(
+      pip_frame_view()->GetAnimatingLayoutManagerForTesting());
   ASSERT_TRUE(pip_frame_view()->GetBackToTabButtonForTesting()->GetVisible());
 }
 

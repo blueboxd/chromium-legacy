@@ -286,8 +286,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpenThenClose) {
   ASSERT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Go back.
-  web_contents()->GetController().GoBack();
-  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
   // A is restored from BFCache.
   EXPECT_FALSE(rfh_a.IsRenderFrameDeleted());
@@ -600,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       "<html><body> ... ");
 
   // The navigation finishes while the body is still loading.
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
 
   // 2) Navigate away.
@@ -629,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   shell()->LoadURL(url);
 
   // The navigation finishes while the iframe is still loading.
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   // Wait for the iframe request to arrive, and leave it hanging with no
   // response.
@@ -670,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   shell()->LoadURL(url);
 
   // The navigation finishes while the iframe within an iframe is still loading.
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   // Wait for the innermost iframe request to arrive, and leave it hanging with
   // no response.

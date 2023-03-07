@@ -55,7 +55,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.state.CouponPersistedTabData;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
-import org.chromium.chrome.browser.tab.state.StorePersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -73,6 +72,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabLi
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFavicon;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediator.PriceWelcomeMessageController;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiMetricsHelper.TabSelectionEditorActionMetricGroups;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
@@ -223,28 +223,6 @@ class TabListMediator {
     }
 
     /**
-     * Provides capability to asynchronously acquire {@link StorePersistedTabData}
-     */
-    static class StorePersistedTabDataFetcher {
-        protected Tab mTab;
-
-        /**
-         * @param tab {@link Tab} {@link StorePersistedTabData} will be acquired for.
-         */
-        StorePersistedTabDataFetcher(Tab tab) {
-            mTab = tab;
-        }
-
-        /**
-         * Asynchronously acquire {@link StorePersistedTabData}
-         * @param callback {@link Callback} to pass {@link StorePersistedTabData} back in
-         */
-        public void fetch(Callback<StorePersistedTabData> callback) {
-            StorePersistedTabData.from(mTab, (res) -> { callback.onResult(res); });
-        }
-    }
-
-    /**
      * Asynchronously acquire {@link CouponPersistedTabData}
      */
     static class CouponPersistedTabDataFetcher {
@@ -391,7 +369,7 @@ class TabListMediator {
 
             mNextTabId = tabId;
 
-            if (!mActionsOnAllRelatedTabs || TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            if (!mActionsOnAllRelatedTabs) {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
                 Tab newlySelectedTab =
                         TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
@@ -435,12 +413,6 @@ class TabListMediator {
                                         .indexOf(toTab);
 
             RecordUserAction.record("MobileTabSwitched." + mComponentName);
-            if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
-                assert fromFilterIndex != toFilterIndex;
-                RecordHistogram.recordSparseHistogram("Tabs.TabOffsetOfSwitch." + mComponentName,
-                        fromFilterIndex - toFilterIndex);
-                return;
-            }
 
             if (fromFilterIndex != toFilterIndex) return;
 
@@ -461,9 +433,11 @@ class TabListMediator {
             if (index == TabModel.INVALID_TAB_INDEX) return;
             boolean selected = mModel.get(index).model.get(TabProperties.IS_SELECTED);
             if (selected) {
-                RecordUserAction.record("TabMultiSelect.TabUnselected");
+                TabUiMetricsHelper.recordSelectionEditorActionMetrics(
+                        TabSelectionEditorActionMetricGroups.UNSELECTED);
             } else {
-                RecordUserAction.record("TabMultiSelect.TabSelected");
+                TabUiMetricsHelper.recordSelectionEditorActionMetrics(
+                        TabSelectionEditorActionMetricGroups.SELECTED);
             }
             mModel.get(index).model.set(TabProperties.IS_SELECTED, !selected);
             // Reset thumbnail to ensure the color of the blank tab slots is correct.
@@ -633,12 +607,7 @@ class TabListMediator {
             @Override
             public void tabClosureUndone(Tab tab) {
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
-                if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
-                    mTabModelSelector.getCurrentModel().setIndex(
-                            TabModelUtils.getTabIndexById(
-                                    mTabModelSelector.getCurrentModel(), tab.getId()),
-                            TabSelectionType.FROM_USER, false);
-                }
+
                 if (sTabClosedFromMapTabClosedFromMap.containsKey(tab.getId())) {
                     @TabClosedFrom
                     int from = sTabClosedFromMapTabClosedFromMap.get(tab.getId());
@@ -1827,13 +1796,6 @@ class TabListMediator {
                 mModel.get(index).model.set(
                         TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
             }
-            if (StoreTrackingUtilities.isStoreHoursOnTabsEnabled()
-                    && isUngroupedTab(pseudoTab.getId())) {
-                mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER,
-                        new StorePersistedTabDataFetcher(pseudoTab.getTab()));
-            } else {
-                mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
-            }
             if (CouponUtilities.isCouponsOnTabsEnabled() && isUngroupedTab(pseudoTab.getId())) {
                 mModel.get(index).model.set(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER,
                         new CouponPersistedTabDataFetcher(pseudoTab.getTab()));
@@ -1843,7 +1805,6 @@ class TabListMediator {
         } else {
             mModel.get(index).model.set(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER, null);
             mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
-            mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
         }
     }
 

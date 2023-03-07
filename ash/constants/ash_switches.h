@@ -18,7 +18,7 @@ namespace ash::switches {
 //
 // Note: If you add a switch, consider if it needs to be copied to a subsequent
 // command line if the process executes a new copy of itself.  (For example,
-// see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
+// see `GetOffTheRecordCommandLine()`.)
 
 // Please keep alphabetized.
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -43,6 +43,8 @@ extern const char kArcDisableMediaStoreMaintenance[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisablePlayAutoInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableTtsCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableUreadahead[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kArcHostUreadaheadGeneration[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -52,6 +54,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcTosHostForTests[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPrivacyPolicyHostForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmMountDebugFs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUreadaheadMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUseHugePages[];
@@ -193,7 +196,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceLaunchBrowser[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceLoginManagerInTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceShowCursor[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceShowReleaseTrack[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceSystemCompositorMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceTabletPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFormFactor[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFrameThrottleFps[];
@@ -299,7 +301,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWaitForInitialPolicyFetchForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWebUiDataSourcePathForTesting[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kOndeviceHandwritingSwitch[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGetAccessTokenForTest[];
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,26 +403,5 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsStabilizeTimeDependentViewForTestsEnabled();
 
 }  // namespace ash::switches
-
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos::switches {
-using ::ash::switches::IsOsInstallAllowed;
-using ::ash::switches::IsRevenBranding;
-using ::ash::switches::kAppOemManifestFile;
-using ::ash::switches::kArcTosHostForTests;
-using ::ash::switches::kDisableGaiaServices;
-using ::ash::switches::kEnableOobeTestAPI;
-using ::ash::switches::kEnableTouchCalibrationSetting;
-using ::ash::switches::kForceSystemCompositorMode;
-using ::ash::switches::kHasChromeOSKeyboard;
-using ::ash::switches::kLoginManager;
-using ::ash::switches::kOobeEulaUrlForTests;
-using ::ash::switches::kOobeScreenshotDirectory;
-using ::ash::switches::kOobeSkipPostLogin;
-using ::ash::switches::kPublicAccountsSamlAclUrl;
-using ::ash::switches::kSamlPasswordChangeUrl;
-using ::ash::switches::kShowOobeDevOverlay;
-}  // namespace chromeos::switches
 
 #endif  // ASH_CONSTANTS_ASH_SWITCHES_H_

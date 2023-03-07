@@ -14,13 +14,14 @@ WaylandConnection::WaylandConnection(std::string wl_socket)
       display_(wl_display_connect(wl_socket_.c_str())),
       registry_(wl_display_get_registry(display_.get())) {
   wl_registry_add_listener(registry_.get(), &wl_registry_listener_, this);
-  timer_.Start(FROM_HERE, base::Milliseconds(5), this,
+  timer_.Start(FROM_HERE, base::Microseconds(100), this,
                &WaylandConnection::DispatchWaylandEvents);
 }
 
 WaylandConnection::~WaylandConnection() {
-  if (display_)
+  if (display_) {
     wl_display_disconnect(display_.get());
+  }
 }
 
 // static
@@ -40,6 +41,7 @@ void WaylandConnection::OnGlobalEvent(void* data,
     connection->wayland_display_.HandleGlobalDisplayEvent(registry, name,
                                                           interface, version);
   } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+    connection->seat_id_ = name;
     connection->wayland_seat_.HandleGlobalSeatEvent(registry, name, interface,
                                                     version);
   }
@@ -53,7 +55,18 @@ void WaylandConnection::OnGlobalRemoveEvent(void* data,
   WaylandConnection* connection = static_cast<WaylandConnection*>(data);
   DCHECK(connection);
   DCHECK_CALLED_ON_VALID_SEQUENCE(connection->sequence_checker_);
-  connection->wayland_display_.HandleGlobalRemoveDisplayEvent(name);
+  if (connection->seat_id_ == name) {
+    connection->wayland_seat_.HandleGlobalRemoveSeatEvent(name);
+    connection->seat_id_ = 0;
+  } else {
+    connection->wayland_display_.HandleGlobalRemoveDisplayEvent(name);
+  }
+}
+
+uint32_t WaylandConnection::GetSeatId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GT(wayland_seat_.GetSeatId(), 0u);
+  return wayland_seat_.GetSeatId();
 }
 
 void WaylandConnection::DispatchWaylandEvents() {
@@ -69,13 +82,20 @@ void WaylandConnection::DispatchWaylandEvents() {
                << errno;
     success = false;
   }
-  if (!success)
+  if (!success) {
     timer_.Stop();
+  }
 }
 
 DesktopDisplayInfo WaylandConnection::GetCurrentDisplayInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return wayland_display_.GetCurrentDisplayInfo();
+}
+
+void WaylandConnection::SetSeatPresentCallback(
+    WaylandSeat::OnSeatPresentCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  wayland_seat_.SetSeatPresentCallback(std::move(callback));
 }
 
 }  // namespace remoting

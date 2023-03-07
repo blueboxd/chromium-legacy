@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP istek hataları</translation>
 <translation id="1947737735496445907">Yazdırıldı</translation>
 <translation id="1951012854035635156">Asistan</translation>
+<translation id="1962550982027027473">Varsayılan bir APN gerekli</translation>
 <translation id="1977994649430373166">Google profil fotoğrafı</translation>
 <translation id="1979103255016296513">Şifre değişikliği zamanı geçti</translation>
 <translation id="1999615961760456652">Giriş Portalı</translation>
@@ -317,6 +318,7 @@
 <translation id="4060260348856573701">Yeni APN</translation>
 <translation id="4093865285251893588">Profil resmi</translation>
 <translation id="409427325554347132">Test ayrıntılarını kaydet</translation>
+<translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> albümünü seçin</translation>
 <translation id="4111761024568264522">USB dokunmatik alan</translation>
 <translation id="4117637339509843559">Koyu mod</translation>
@@ -635,6 +637,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6791471867139427246">klavye ışığı rengi</translation>
 <translation id="680983167891198932">Anahtar</translation>
 <translation id="6816797338148849397">Seçiminizle ilgili bilgi mevcut. Erişmek için yukarı ok tuşunu kullanın.</translation>
+<translation id="6838167112108853532">Bu APN devre dışı bırakılamaz veya kaldırılamaz. Etkin durumdaki eklenmiş APN'lerin devre dışı bırakıldığından veya kaldırıldığından emin olun.</translation>
 <translation id="6853312040151791195">Şarjın boşalma hızı</translation>
 <translation id="6889786074662672253">Yeniden başlatılırken bu harici cihazı çıkarmayın ya da bilgisayarınızı kapatmayın. Bu pencereyi simge durumuna küçültebilirsiniz. Güncelleme birkaç dakika sürebilir ve bu süre boyunca harici cihazınız çalışmayabilir.</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> uygulamasına geri dön</translation>
@@ -717,6 +720,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="7690294790491645610">Yeni şifreyi doğrula</translation>
 <translation id="7701040980221191251">Yok</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7716280709122323042">WPA3</translation>
 <translation id="773153675489693198">Şarj döngüsü sayısı</translation>
 <translation id="7747039790905080783">Önceden paylaşılan anahtar</translation>
 <translation id="7762130827864645708">Şifre değişikliğiniz başarıyla tamamlandı. Lütfen bundan sonra yeni şifreyi kullanın.</translation>
@@ -724,6 +728,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="7769672763586021400">Model kimliği</translation>
 <translation id="7778717409420828014">Geri bildiriminiz ekibimiz tarafından incelenecek ve Chromebook deneyimini iyileştirmemize yardımcı olacaktır. Çok sayıda rapor aldığımız için yanıt gönderemiyoruz.</translation>
 <translation id="7784116172884276937">DNS sunucusu ayarlanmamış</translation>
+<translation id="7791543448312431591">Ekle</translation>
 <translation id="779591286616261875">Yeni rapor gönder</translation>
 <translation id="7799817062559422778">Açık mod</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
@@ -799,6 +804,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="8503836310948963452">Sadece birkaç dakika kaldı…</translation>
 <translation id="8508640263392900755">APN ayrıntıları</translation>
 <translation id="8528615187455571738">Crosvm</translation>
+<translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Operatörünüz, ağlarına bağlanmak için bu seçeneği gerektirebilir. Ayrıntılı bilgiler için operatörünüzle iletişime geçin.</translation>
 <translation id="8576249514688522074">Başlatılmamış</translation>
 <translation id="8620617069779373398">Dolaşım durumu</translation>

@@ -9,12 +9,13 @@ load("//lib/try.star", "try_")
 
 try_.defaults.set(
     bucket = "try",
-    executable = "recipe:angle_chromium_trybot",
     builder_group = "tryserver.chromium.swangle",
-    pool = "luci.chromium.try",
+    executable = "recipe:angle_chromium_trybot",
     builderless = True,
     os = os.LINUX_DEFAULT,
     cpu = cpu.X86_64,
+    pool = "luci.chromium.try",
+    service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
     build_numbers = True,
     caches = [
         swarming.cache(
@@ -30,7 +31,6 @@ try_.defaults.set(
     goma_backend = goma.backend.RBE_PROD,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-    service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
     subproject_list_view = "luci.chromium.try",
     task_template_canary_percentage = 5,
 )

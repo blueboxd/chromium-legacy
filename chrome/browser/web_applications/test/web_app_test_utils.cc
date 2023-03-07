@@ -14,11 +14,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
@@ -38,9 +38,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -310,6 +310,56 @@ std::vector<IconSizes> CreateRandomDownloadedShortcutsMenuIconsSizes(
   return results;
 }
 
+std::vector<blink::Manifest::ImageResource> CreateRandomHomeTabIcons(
+    RandomHelper& random) {
+  std::vector<blink::Manifest::ImageResource> icons;
+
+  for (int i = random.next_uint(4) + 1; i >= 0; --i) {
+    blink::Manifest::ImageResource icon;
+
+    int mime_type = random.next_uint(3);
+    switch (mime_type) {
+      case 0:
+        icon.src = GURL("https://example.com/image" + base::NumberToString(i) +
+                        ".png");
+        icon.type = base::UTF8ToUTF16(std::string("image/png"));
+        break;
+      case 1:
+        icon.src = GURL("https://example.com/image" + base::NumberToString(i) +
+                        ".svg");
+        icon.type = base::UTF8ToUTF16(std::string("image/svg+xml"));
+        break;
+      case 2:
+        icon.src = GURL("https://example.com/image" + base::NumberToString(i) +
+                        ".webp");
+        icon.type = base::UTF8ToUTF16(std::string("image/webp"));
+        break;
+    }
+
+    // Icon sizes can be non square
+    std::vector<gfx::Size> sizes;
+    for (int j = random.next_uint(3) + 1; j > 0; --j) {
+      sizes.emplace_back(j * random.next_uint(200), j * random.next_uint(200));
+    }
+    icon.sizes = std::move(sizes);
+
+    std::vector<blink::mojom::ManifestImageResource_Purpose> purposes = {
+        blink::mojom::ManifestImageResource_Purpose::ANY,
+        blink::mojom::ManifestImageResource_Purpose::MASKABLE,
+        blink::mojom::ManifestImageResource_Purpose::MONOCHROME};
+
+    std::vector<blink::mojom::ManifestImageResource_Purpose> purpose;
+
+    for (int j = random.next_uint(purposes.size()); j >= 0; --j) {
+      unsigned index = random.next_uint(purposes.size());
+      purpose.push_back(purposes[index]);
+      purposes.erase(purposes.begin() + index);
+    }
+    icon.purpose = std::move(purpose);
+    icons.push_back(std::move(icon));
+  }
+  return icons;
+}
 }  // namespace
 
 std::string GetExternalPrefMigrationTestName(
@@ -329,8 +379,10 @@ std::string GetExternalPrefMigrationTestName(
 std::string GetOsIntegrationSubManagersTestName(
     const ::testing::TestParamInfo<OsIntegrationSubManagersState>& info) {
   switch (info.param) {
-    case OsIntegrationSubManagersState::kEnabled:
-      return "OSIntegrationSubManagers_Enabled";
+    case OsIntegrationSubManagersState::kSaveStateToDB:
+      return "OSIntegrationSubManagers_SaveStateToDB";
+    case OsIntegrationSubManagersState::kSaveStateAndExecute:
+      return "OSIntegrationSubManagers_SaveStateAndExecute";
     case OsIntegrationSubManagersState::kDisabled:
       return "OSIntegrationSubManagers_Disabled";
   }
@@ -343,8 +395,9 @@ std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetStartUrl(start_url);
   web_app->AddSource(source_type);
-  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(mojom::UserDisplayMode::kStandalone);
   web_app->SetName("Name");
+  web_app->SetIsLocallyInstalled(true);
 
   return web_app;
 }
@@ -442,9 +495,9 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetIsLocallyInstalled(random.next_bool());
   app->SetIsFromSyncAndPendingInstallation(random.next_bool());
 
-  const UserDisplayMode user_display_modes[3] = {UserDisplayMode::kBrowser,
-                                                 UserDisplayMode::kStandalone,
-                                                 UserDisplayMode::kTabbed};
+  const mojom::UserDisplayMode user_display_modes[3] = {
+      mojom::UserDisplayMode::kBrowser, mojom::UserDisplayMode::kStandalone,
+      mojom::UserDisplayMode::kTabbed};
   app->SetUserDisplayMode(user_display_modes[random.next_uint(3)]);
 
   const base::Time last_badging_time =
@@ -624,8 +677,18 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
   if (random.next_bool()) {
     blink::Manifest::TabStrip tab_strip;
-    tab_strip.home_tab =
-        random.next_enum<blink::mojom::TabStripMemberVisibility>();
+
+    if (random.next_bool()) {
+      blink::Manifest::HomeTabParams home_tab_params;
+      if (random.next_bool()) {
+        home_tab_params.icons = CreateRandomHomeTabIcons(random);
+      }
+      tab_strip.home_tab = std::move(home_tab_params);
+    } else {
+      tab_strip.home_tab =
+          random.next_enum<blink::mojom::TabStripMemberVisibility>();
+    }
+
     if (random.next_bool()) {
       blink::Manifest::NewTabButtonParams new_tab_button_params;
       if (random.next_bool()) {
@@ -643,6 +706,8 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetAlwaysShowToolbarInFullscreen(random.next_bool());
 
   if (random.next_bool()) {
+    // TODO(crbug.com/1403844): Fill this up randomly to use in
+    // WebAppDatabaseTests.
     proto::WebAppOsIntegrationState state;
     app->SetCurrentOsIntegrationStates(state);
   }

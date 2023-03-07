@@ -5,25 +5,24 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_BASE_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_BASE_H_
 
+#include <stdint.h>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/unique_ptr_adapters.h"
-#include "base/gtest_prod_util.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
-#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/icon_cache.h"
 #include "components/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
@@ -35,20 +34,22 @@
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
-#include "components/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
-#include "url/gurl.h"
 
 class Profile;
+class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace apps {
 
-class AppServiceMojomImpl;
-
+class AppPublisher;
+class AppUpdate;
+class BrowserAppLauncher;
+class PreferredAppsListHandle;
 struct AppLaunchParams;
 
 struct IntentLaunchInfo {
@@ -61,6 +62,8 @@ struct IntentLaunchInfo {
   std::string activity_label;
   bool is_generic_file_handler;
   bool is_file_extension_match;
+  // Whether the intent is blocked by DLP. Defaults to false.
+  bool is_dlp_blocked = false;
 };
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
@@ -76,7 +79,6 @@ struct IntentLaunchInfo {
 // See components/services/app_service/README.md.
 class AppServiceProxyBase : public KeyedService,
                             public IconLoader,
-                            public apps::mojom::Subscriber,
                             public PreferredAppsImpl::Host {
  public:
   explicit AppServiceProxyBase(Profile* profile);
@@ -91,7 +93,6 @@ class AppServiceProxyBase : public KeyedService,
 
   Profile* profile() const { return profile_; }
 
-  mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
   apps::AppCapabilityAccessCache& AppCapabilityAccessCache();
 
@@ -103,6 +104,10 @@ class AppServiceProxyBase : public KeyedService,
   // of type `app_type`. `publisher` must have a lifetime equal to or longer
   // than this object.
   void RegisterPublisher(AppType app_type, AppPublisher* publisher);
+
+  // UnRegisters the publisher for `app_type`, As the publisher(ArcApps) might
+  // be destroyed earlier than AppServiceProxy.
+  void UnregisterPublisher(AppType app_type);
 
   // PreferredApps::Host overrides.
   void InitializePreferredAppsForAllSubscribers() override;
@@ -368,12 +373,6 @@ class AppServiceProxyBase : public KeyedService,
   virtual bool MaybeShowLaunchPreventionDialog(
       const apps::AppUpdate& update) = 0;
 
-  // apps::mojom::Subscriber overrides.
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
-              apps::mojom::AppType app_type,
-              bool should_notify_initialized) override;
-  void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
-
   IntentFilterPtr FindBestMatchingFilter(const IntentPtr& intent);
 
   virtual void PerformPostLaunchTasks(apps::LaunchSource launch_source);
@@ -398,21 +397,21 @@ class AppServiceProxyBase : public KeyedService,
   virtual void ReadIcons(AppType app_type,
                          const std::string& app_id,
                          int32_t size_in_dip,
-                         const IconKey& icon_key,
+                         std::unique_ptr<IconKey> icon_key,
                          IconType icon_type,
                          LoadIconCallback callback) {}
 
+  // Returns an instance of `IntentLaunchInfo` created based on `intent`,
+  // `filter`, and `update`.
+  virtual IntentLaunchInfo CreateIntentLaunchInfo(
+      const apps::IntentPtr& intent,
+      const apps::IntentFilterPtr& filter,
+      const apps::AppUpdate& update);
+
   base::flat_map<AppType, AppPublisher*> publishers_;
 
-  // This proxy privately owns its instance of the App Service. This should not
-  // be exposed except through the Mojo interface connected to |app_service_|.
-  std::unique_ptr<apps::AppServiceMojomImpl> app_service_mojom_impl_;
-
-  mojo::Remote<apps::mojom::AppService> app_service_;
   apps::AppRegistryCache app_registry_cache_;
   apps::AppCapabilityAccessCache app_capability_access_cache_;
-
-  mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
 
   // The LoadIconFromIconKey implementation sends a chained series of requests
   // through each icon loader, starting from the outer and working back to the

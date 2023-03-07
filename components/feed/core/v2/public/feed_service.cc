@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
@@ -161,6 +162,9 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   AccountInfo GetAccountInfo() override {
     return AccountInfo(identity_manager_->GetPrimaryAccountInfo(
         GetConsentLevelNeededForPersonalizedFeed()));
+  }
+  bool IsSyncOn() override {
+    return identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
   }
   void RegisterExperiments(const Experiments& experiments) override {
     service_delegate_->RegisterExperiments(experiments);

@@ -233,4 +233,37 @@ suite('SiteListEntry', function() {
         loadTimeData.getStringF('embeddedOnHost', 'http://example1.com'),
         siteDescription.textContent);
   });
+  test('chooser exception with website origin', function() {
+    testElement.model = {
+      category: ContentSettingsTypes.USB_DEVICES,
+      controlledBy: chrome.settingsPrivate.ControlledBy.OWNER,
+      displayName: '',
+      embeddingOrigin: '',
+      enforcement: null,
+      incognito: false,
+      isEmbargoed: false,
+      origin: 'https://example.com',
+      setting: ContentSetting.DEFAULT,
+    };
+    flush();
+    const siteDescription = testElement.$$('#siteDescription')!;
+    assertEquals('', siteDescription.textContent);
+  });
+  test('extension shows id in description', function() {
+    testElement.model = {
+      category: ContentSettingsTypes.USB_DEVICES,
+      controlledBy: chrome.settingsPrivate.ControlledBy.OWNER,
+      displayName: '',
+      embeddingOrigin: '',
+      enforcement: null,
+      incognito: false,
+      isEmbargoed: false,
+      origin: 'chrome-extension://mhabknllooicelmdboebjilbohdbihln',
+      setting: ContentSetting.DEFAULT,
+    };
+    flush();
+    const siteDescription = testElement.$$('#siteDescription')!;
+    assertEquals(
+        'ID: mhabknllooicelmdboebjilbohdbihln', siteDescription.textContent);
+  });
 });

@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -137,7 +137,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
         ash::NetworkHandler::Get()->managed_network_configuration_handler();
 
     const std::string user_policy_ssid = kManagedUserWifiSsid;
-    std::unique_ptr<base::Value> user_policy_onc =
+    base::Value::List user_policy_onc =
         ListBuilder()
             .Append(DictionaryBuilder()
                         .Set("GUID", kManagedUserWifiGuid)
@@ -155,11 +155,11 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
             .Build();
 
     config_handler->SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUserHash,
-                              *user_policy_onc,
+                              base::Value(std::move(user_policy_onc)),
                               base::Value(base::Value::Type::DICTIONARY));
 
     const std::string device_policy_ssid = kManagedDeviceWifiSsid;
-    std::unique_ptr<base::Value> device_policy_onc =
+    base::Value::List device_policy_onc =
         ListBuilder()
             .Append(DictionaryBuilder()
                         .Set("GUID", kManagedDeviceWifiGuid)
@@ -175,7 +175,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
                         .Build())
             .Build();
     config_handler->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, "",
-                              *device_policy_onc,
+                              base::Value(std::move(device_policy_onc)),
                               base::Value(base::Value::Type::DICTIONARY));
   }
 
@@ -215,15 +215,14 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
                       base::Value("test_min"));
     SetDeviceProperty(kCellularDevicePath, shill::kModelIdProperty,
                       base::Value("test_model_id"));
-    std::unique_ptr<base::Value> apn =
-        DictionaryBuilder()
-            .Set(shill::kApnProperty, "test-apn")
-            .Set(shill::kApnUsernameProperty, "test-user")
-            .Set(shill::kApnPasswordProperty, "test-password")
-            .Set(shill::kApnAuthenticationProperty, "chap")
-            .Build();
+    base::Value apn(DictionaryBuilder()
+                        .Set(shill::kApnProperty, "test-apn")
+                        .Set(shill::kApnUsernameProperty, "test-user")
+                        .Set(shill::kApnPasswordProperty, "test-password")
+                        .Set(shill::kApnAuthenticationProperty, "chap")
+                        .Build());
     base::Value apn_list(base::Value::Type::LIST);
-    apn_list.Append(apn->Clone());
+    apn_list.GetList().Append(apn.Clone());
     SetDeviceProperty(kCellularDevicePath, shill::kCellularApnListProperty,
                       apn_list);
 
@@ -246,9 +245,9 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
                                        shill::kRoamingStateProperty,
                                        base::Value(shill::kRoamingStateHome));
     service_test()->SetServiceProperty(kCellularServicePath,
-                                       shill::kCellularApnProperty, *apn);
+                                       shill::kCellularApnProperty, apn);
     service_test()->SetServiceProperty(
-        kCellularServicePath, shill::kCellularLastGoodApnProperty, *apn);
+        kCellularServicePath, shill::kCellularLastGoodApnProperty, apn);
 
     profile_test()->AddService(kUserProfilePath, kCellularServicePath);
 
@@ -1076,7 +1075,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularProperties) {
 
   ASSERT_TRUE(result);
 
-  std::unique_ptr<base::Value> expected_result =
+  base::Value::Dict expected_result =
       DictionaryBuilder()
           .Set("Cellular",
                DictionaryBuilder()
@@ -1103,7 +1102,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularProperties) {
           .Set("Type", "Cellular")
           .Build();
 
-  EXPECT_EQ(*expected_result, *result);
+  EXPECT_EQ(base::Value(std::move(expected_result)), *result);
 }
 
 TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
@@ -1119,14 +1118,13 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
 
   ASSERT_TRUE(result);
 
-  std::unique_ptr<base::Value> expected_apn =
-      DictionaryBuilder()
-          .Set("AccessPointName", "test-apn")
-          .Set("Username", "test-user")
-          .Set("Password", "test-password")
-          .Set("Authentication", "chap")
-          .Build();
-  std::unique_ptr<base::Value> expected_result =
+  base::Value::Dict expected_apn = DictionaryBuilder()
+                                       .Set("AccessPointName", "test-apn")
+                                       .Set("Username", "test-user")
+                                       .Set("Password", "test-password")
+                                       .Set("Authentication", "chap")
+                                       .Build();
+  base::Value::Dict expected_result =
       DictionaryBuilder()
           .Set("Cellular",
                DictionaryBuilder()
@@ -1149,14 +1147,10 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
                    .Set("NetworkTechnology", "GSM")
                    .Set("RoamingState", "Home")
                    .Set("Scanning", false)
-                   .Set("APNList", ListBuilder()
-                                       .Append(base::Value::ToUniquePtrValue(
-                                           expected_apn->Clone()))
-                                       .Build())
-                   .Set("APN",
-                        base::Value::ToUniquePtrValue(expected_apn->Clone()))
-                   .Set("LastGoodAPN",
-                        base::Value::ToUniquePtrValue(expected_apn->Clone()))
+                   .Set("APNList",
+                        ListBuilder().Append(expected_apn.Clone()).Build())
+                   .Set("APN", expected_apn.Clone())
+                   .Set("LastGoodAPN", expected_apn.Clone())
                    .Build())
           .Set("ConnectionState", "Connected")
           .Set("GUID", "cellular_guid")
@@ -1168,7 +1162,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
           .Set("Type", "Cellular")
           .Build();
 
-  EXPECT_EQ(*expected_result, *result);
+  EXPECT_EQ(base::Value(std::move(expected_result)), *result);
 }
 
 TEST_F(NetworkingPrivateApiTest, ForgetSharedNetwork) {

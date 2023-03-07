@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/test/base/testing_profile.h"
@@ -65,7 +65,7 @@ class SafetyTipPageInfoBubbleViewTest : public testing::Test {
 
     bubble_ = CreateSafetyTipBubbleForTesting(
         parent_window_->GetNativeView(), web_contents,
-        security_state::SafetyTipStatus::kBadReputation,
+        security_state::SafetyTipStatus::kLookalike,
         GURL("https://www.google.tld"), base::DoNothing());
   }
 

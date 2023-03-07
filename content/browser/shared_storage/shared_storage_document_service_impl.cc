@@ -38,6 +38,17 @@ bool IsValidFencedFrameReportingURL(const GURL& url) {
 
 const char kSharedStorageDisabledMessage[] = "sharedStorage is disabled";
 
+const char kSharedStorageSelectURLDisabledMessage[] =
+    "sharedStorage.selectURL is disabled";
+
+const char kSharedStorageAddModuleDisabledMessage[] =
+    "sharedStorage.worklet.addModule is disabled because either sharedStorage "
+    "is disabled or both sharedStorage.selectURL and privateAggregation are "
+    "disabled";
+
+const char kSharedStorageSelectURLLimitReachedMessage[] =
+    "sharedStorage.selectURL limit has been reached";
+
 // static
 bool& SharedStorageDocumentServiceImpl::
     GetBypassIsSharedStorageAllowedForTesting() {
@@ -70,9 +81,10 @@ void SharedStorageDocumentServiceImpl::AddModuleOnWorklet(
     return;
   }
 
-  if (!IsSharedStorageAllowed()) {
-    std::move(callback).Run(/*success=*/false,
-                            /*error_message=*/kSharedStorageDisabledMessage);
+  if (!IsSharedStorageAddModuleAllowed()) {
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageAddModuleDisabledMessage);
     return;
   }
 
@@ -165,9 +177,20 @@ void SharedStorageDocumentServiceImpl::RunURLSelectionOperationOnWorklet(
   }
 
   if (!IsSharedStorageAllowed()) {
-    std::move(callback).Run(/*success=*/false,
-                            /*error_message=*/kSharedStorageDisabledMessage,
-                            GURL());
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageSelectURLDisabledMessage,
+        /*result_config=*/absl::nullopt);
+    return;
+  }
+
+  if (!static_cast<PageImpl&>(
+           render_frame_host().GetOutermostMainFrame()->GetPage())
+           .IsSelectURLAllowed(render_frame_host().GetLastCommittedOrigin())) {
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageSelectURLLimitReachedMessage,
+        /*result_config=*/absl::nullopt);
     return;
   }
 
@@ -188,7 +211,7 @@ void SharedStorageDocumentServiceImpl::RunURLSelectionOperationOnWorklet(
              base::NumberToString(fenced_frame_depth),
              ") exceeding the maximum allowed number (",
              base::NumberToString(max_allowed_fenced_frame_depth), ")."}),
-        GURL());
+        /*result_config=*/absl::nullopt);
     return;
   }
 
@@ -209,8 +232,9 @@ void SharedStorageDocumentServiceImpl::SharedStorageSet(
     bool ignore_if_present,
     SharedStorageSetCallback callback) {
   if (!IsSharedStorageAllowed()) {
-    std::move(callback).Run(/*success=*/false,
-                            /*error_message=*/kSharedStorageDisabledMessage);
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageDisabledMessage);
     return;
   }
 
@@ -234,8 +258,9 @@ void SharedStorageDocumentServiceImpl::SharedStorageAppend(
     const std::u16string& value,
     SharedStorageAppendCallback callback) {
   if (!IsSharedStorageAllowed()) {
-    std::move(callback).Run(/*success=*/false,
-                            /*error_message=*/kSharedStorageDisabledMessage);
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/kSharedStorageDisabledMessage);
     return;
   }
 
@@ -343,9 +368,49 @@ bool SharedStorageDocumentServiceImpl::IsSharedStorageAllowed() {
   if (GetBypassIsSharedStorageAllowed())
     return true;
 
+  // Will trigger a call to
+  // `content_settings::PageSpecificContentSettings::BrowsingDataAccessed()` for
+  // reporting purposes.
   return GetContentClient()->browser()->IsSharedStorageAllowed(
       render_frame_host().GetBrowserContext(), &render_frame_host(),
       main_frame_origin_, render_frame_host().GetLastCommittedOrigin());
+}
+
+bool SharedStorageDocumentServiceImpl::IsSharedStorageSelectURLAllowed() {
+  if (GetBypassIsSharedStorageAllowed()) {
+    return true;
+  }
+
+  // Will trigger a call to
+  // `content_settings::PageSpecificContentSettings::BrowsingDataAccessed()` for
+  // reporting purposes.
+  if (!IsSharedStorageAllowed()) {
+    return false;
+  }
+
+  return GetContentClient()->browser()->IsSharedStorageSelectURLAllowed(
+      render_frame_host().GetBrowserContext(), main_frame_origin_,
+      render_frame_host().GetLastCommittedOrigin());
+}
+
+bool SharedStorageDocumentServiceImpl::IsSharedStorageAddModuleAllowed() {
+  if (GetBypassIsSharedStorageAllowed()) {
+    return true;
+  }
+
+  // Will trigger a call to
+  // `content_settings::PageSpecificContentSettings::BrowsingDataAccessed()` for
+  // reporting purposes.
+  if (!IsSharedStorageAllowed()) {
+    return false;
+  }
+
+  return GetContentClient()->browser()->IsSharedStorageSelectURLAllowed(
+             render_frame_host().GetBrowserContext(), main_frame_origin_,
+             render_frame_host().GetLastCommittedOrigin()) ||
+         GetContentClient()->browser()->IsPrivateAggregationAllowed(
+             render_frame_host().GetBrowserContext(), main_frame_origin_,
+             render_frame_host().GetLastCommittedOrigin());
 }
 
 std::string SharedStorageDocumentServiceImpl::SerializeLastCommittedOrigin()

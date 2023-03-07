@@ -68,7 +68,7 @@ const char kRestoreInIncognitoError[] =
 // descending modified_time (i.e., most recent first).
 bool SortSessionsByRecency(const sync_sessions::SyncedSession* s1,
                            const sync_sessions::SyncedSession* s2) {
-  return s1->modified_time > s2->modified_time;
+  return s1->GetModifiedTime() > s2->GetModifiedTime();
 }
 
 // Comparator function for use with std::sort that will sort tabs in a window
@@ -382,15 +382,15 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
     max_results = *params->filter->max_results;
 
   api::sessions::Device device_struct;
-  device_struct.info = session->session_name;
-  device_struct.device_name = session->session_name;
+  device_struct.info = session->GetSessionName();
+  device_struct.device_name = session->GetSessionName();
 
   for (auto it = session->windows.begin();
        it != session->windows.end() &&
        static_cast<int>(device_struct.sessions.size()) < max_results;
        ++it) {
-    absl::optional<api::sessions::Session> session_model =
-        CreateSessionModel(it->second->wrapped_window, session->session_tag);
+    absl::optional<api::sessions::Session> session_model = CreateSessionModel(
+        it->second->wrapped_window, session->GetSessionTag());
     if (session_model)
       device_struct.sessions.push_back(std::move(*session_model));
   }

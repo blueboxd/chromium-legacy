@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
@@ -20,9 +20,9 @@
 // A wrapper around the Nearby Connections mojo API.
 class NearbyConnectionsManager {
  public:
-  using Payload = location::nearby::connections::mojom::Payload;
-  using PayloadPtr = location::nearby::connections::mojom::PayloadPtr;
-  using ConnectionsStatus = location::nearby::connections::mojom::Status;
+  using Payload = nearby::connections::mojom::Payload;
+  using PayloadPtr = nearby::connections::mojom::PayloadPtr;
+  using ConnectionsStatus = nearby::connections::mojom::Status;
   using ConnectionsCallback =
       base::OnceCallback<void(ConnectionsStatus status)>;
   using NearbyConnectionCallback = base::OnceCallback<void(NearbyConnection*)>;
@@ -57,9 +57,9 @@ class NearbyConnectionsManager {
   // outgoing).
   class PayloadStatusListener {
    public:
-    using Medium = location::nearby::connections::mojom::Medium;
+    using Medium = nearby::connections::mojom::Medium;
     using PayloadTransferUpdatePtr =
-        location::nearby::connections::mojom::PayloadTransferUpdatePtr;
+        nearby::connections::mojom::PayloadTransferUpdatePtr;
 
     PayloadStatusListener();
     virtual ~PayloadStatusListener();
@@ -146,6 +146,8 @@ class NearbyConnectionsManager {
 
   // Initiates bandwidth upgrade for |endpoint_id|.
   virtual void UpgradeBandwidth(const std::string& endpoint_id) = 0;
+
+  virtual base::WeakPtr<NearbyConnectionsManager> GetWeakPtr() = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_PUBLIC_CPP_NEARBY_CONNECTIONS_MANAGER_H_

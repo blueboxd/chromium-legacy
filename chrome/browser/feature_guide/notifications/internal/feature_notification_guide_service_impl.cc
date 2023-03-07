@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
@@ -22,7 +22,6 @@
 #include "chrome/browser/notifications/scheduler/public/schedule_params.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
-#include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
@@ -79,14 +78,18 @@ void FeatureNotificationGuideServiceImpl::OnTrackerInitialized(
     return;
 
   CheckForLowEnagedUser();
-  StartCheckingForEligibleFeatures();
 }
 
 void FeatureNotificationGuideServiceImpl::CheckForLowEnagedUser() {
+  auto closure = base::BindOnce(
+      &FeatureNotificationGuideServiceImpl::StartCheckingForEligibleFeatures,
+      weak_ptr_factory_.GetWeakPtr());
+
   // Skip low engagement check if enabled. For testing only.
   if (base::FeatureList::IsEnabled(
           feature_guide::features::kSkipCheckForLowEngagedUsers)) {
     is_low_engaged_user_ = true;
+    std::move(closure).Run();
     return;
   }
 
@@ -99,23 +102,33 @@ void FeatureNotificationGuideServiceImpl::CheckForLowEnagedUser() {
       is_low_engaged_user_ = true;
     }
 #endif
+    std::move(closure).Run();
     return;
   }
 
   if (!base::FeatureList::IsEnabled(
           feature_guide::features::kSegmentationModelLowEngagedUsers)) {
     is_low_engaged_user_ = false;
+    std::move(closure).Run();
     return;
   }
 
   // Check segmentation model result.
-  auto result = segmentation_platform_service_->GetCachedSegmentResult(
-      segmentation_platform::kChromeLowUserEngagementSegmentationKey);
-  is_low_engaged_user_ =
-      result.is_ready && result.segment.has_value() &&
-      result.segment.value() ==
-          segmentation_platform::proto::SegmentId::
-              OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
+  segmentation_platform_service_->GetSelectedSegment(
+      segmentation_platform::kChromeLowUserEngagementSegmentationKey,
+      base::BindOnce(
+          [](bool* is_low_engaged_user, base::OnceClosure closure,
+             const segmentation_platform::SegmentSelectionResult&
+                 segment_selection_result) {
+            *is_low_engaged_user =
+                segment_selection_result.is_ready &&
+                segment_selection_result.segment.has_value() &&
+                segment_selection_result.segment.value() ==
+                    segmentation_platform::proto::SegmentId::
+                        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
+            std::move(closure).Run();
+          },
+          &is_low_engaged_user_, std::move(closure)));
 }
 
 void FeatureNotificationGuideServiceImpl::CloseRedundantNotifications() {

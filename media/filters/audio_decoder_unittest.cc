@@ -8,11 +8,12 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/md5.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
@@ -70,7 +71,9 @@ struct DecodedBufferExpectations {
 struct TestParams {
   AudioCodec codec;
   const char* filename;
-  const DecodedBufferExpectations* expectations;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #global-scope
+  RAW_PTR_EXCLUSION const DecodedBufferExpectations* expectations;
   int first_packet_pts;
   int samples_per_second;
   ChannelLayout channel_layout;

@@ -6,7 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,8 +58,7 @@ RecoveryEligibilityScreen::RecoveryEligibilityScreen(
 RecoveryEligibilityScreen::~RecoveryEligibilityScreen() = default;
 
 bool RecoveryEligibilityScreen::MaybeSkip(WizardContext& wizard_context) {
-  if (!features::IsUseAuthFactorsEnabled() ||
-      !features::IsCryptohomeRecoverySetupEnabled()) {
+  if (!features::IsCryptohomeRecoverySetupEnabled()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }

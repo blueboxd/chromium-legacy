@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/containers/span.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/u2f/u2f_client.h"
@@ -445,18 +445,6 @@ void ChromeOSAuthenticator::IsLacrosSupported(
             std::move(callback).Run(response && response->support_lacros());
           },
           std::move(callback)));
-}
-
-bool ChromeOSAuthenticator::IsInPairingMode() const {
-  return false;
-}
-
-bool ChromeOSAuthenticator::IsPaired() const {
-  return false;
-}
-
-bool ChromeOSAuthenticator::RequiresBlePairingPin() const {
-  return false;
 }
 
 bool ChromeOSAuthenticator::SupportsEnterpriseAttestation() const {

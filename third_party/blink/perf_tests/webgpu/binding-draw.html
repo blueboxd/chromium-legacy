@@ -21,7 +21,7 @@
       const device = await adapter.requestDevice();
       const canvas = document.getElementById('canvas');
       const context = canvas.getContext('webgpu');
-      const contextFormat = context.getPreferredFormat(adapter);
+      const contextFormat = navigator.gpu.getPreferredCanvasFormat();
 
       context.configure({
         device,
@@ -29,6 +29,7 @@
       });
 
       const pipeline = device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: device.createShaderModule({
             code: `
@@ -65,7 +66,9 @@
       const renderPassDescriptor = {
         colorAttachments: [{
             view: undefined,
-            loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+            loadOp: 'clear',
+            clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+            storeOp: 'store',
         }],
       };
 
@@ -82,7 +85,7 @@
           for (let i = 0; i < iterations; ++i) {
             passEncoder.draw(3, 1, 0, 0);
           }
-          passEncoder.endPass();
+          passEncoder.end();
 
           device.queue.submit([commandEncoder.finish()]);
         }

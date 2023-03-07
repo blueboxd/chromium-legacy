@@ -24,6 +24,7 @@ import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse
 import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
+import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 
@@ -42,6 +43,7 @@ export interface SiteEntryElement {
     displayName: HTMLElement,
     originList: CrLazyRenderElement<IronCollapseElement>,
     toggleButton: HTMLElement,
+    extensionIdDescription: HTMLElement,
   };
 }
 
@@ -92,6 +94,11 @@ export class SiteEntryElement extends SiteEntryElementBase {
        * Mock preference used to power managed policy icon for first party sets.
        */
       fpsEnterprisePref_: Object,
+
+      /**
+       * Whether site entry is shown with a first party set filter search.
+       */
+      isFpsFiltered: Boolean,
 
       /**
        * The position of this site-entry in its parent list.
@@ -147,6 +154,7 @@ export class SiteEntryElement extends SiteEntryElementBase {
   private displayName_: string;
   private cookieString_: string;
   private fpsMembershipLabel_: string;
+  isFpsFiltered: boolean;
   listIndex: number;
   private overallUsageString_: string;
   private originUsages_: string[];
@@ -241,6 +249,18 @@ export class SiteEntryElement extends SiteEntryElementBase {
     this.updateOrigins_(this.sortMethod);
     this.displayName_ = siteGroup.isolatedWebAppName ??
         this.siteGroupRepresentation_(siteGroup);
+
+    // For an extension |siteGroup|, try to show the extension name if the
+    // extension name is not empty.
+    if (this.isExtension_(siteGroup)) {
+      const extensionId =
+          this.originRepresentation(siteGroup.origins[0].origin);
+      this.getExtensionName_(extensionId).then(extensionName => {
+        if (extensionName !== '') {
+          this.displayName_ = extensionName;
+        }
+      });
+    }
   }
 
   /**
@@ -319,9 +339,17 @@ export class SiteEntryElement extends SiteEntryElementBase {
     });
   }
 
-
   private isFpsMember_(): boolean {
-    return this.siteGroup.fpsOwner !== undefined;
+    return !!this.siteGroup && this.siteGroup.fpsOwner !== undefined;
+  }
+
+  /**
+   * Evaluates whether the three dot menu should be shown for the site entry.
+   * @returns True if site group is a first party set member and filter by
+   * first party set owner is not applied.
+   */
+  private shouldShowOverflowMenu(): boolean {
+    return this.isFpsMember_() && !this.isFpsFiltered;
   }
 
   /**
@@ -383,7 +411,7 @@ export class SiteEntryElement extends SiteEntryElementBase {
     const isCurrentlyFocused = this.isFocused;
     afterNextRender(this, () => {
       if (isCurrentlyFocused) {
-        (this.isFpsMember_() ?
+        (this.shouldShowOverflowMenu() ?
              this.$$<CrIconButtonElement>('#fpsOverflowMenuButton') :
              this.$$<CrIconButtonElement>('#removeSiteButton'))!.focus();
       }
@@ -569,6 +597,29 @@ export class SiteEntryElement extends SiteEntryElementBase {
       };
     }
     assertNotReached();
+  }
+
+  /**
+   * Get the extension name of a given extension id.
+   */
+  private getExtensionName_(id: string): Promise<string> {
+    return this.browserProxy.getExtensionName(id);
+  }
+
+  /**
+   * Get extension id description string for an extension |siteGroup|.
+   */
+
+  private extensionIdDescription_(siteGroup: SiteGroup): string {
+    const id = this.originRepresentation(siteGroup.origins[0].origin);
+    return loadTimeData.getStringF('siteSettingsExtensionIdDescription', id);
+  }
+
+  /**
+   * Check if the given |siteGroup| is an extension.
+   */
+  private isExtension_(siteGroup: SiteGroup): boolean {
+    return this.siteGroupScheme_(siteGroup) === 'chrome-extension';
   }
 }
 

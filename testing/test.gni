@@ -78,7 +78,11 @@ template("mixed_test") {
   }
 
   if (_rs_sources != []) {
-    _rust_target_name = "${target_name}_rust_objects"
+    if (defined(invoker.crate_name)) {
+      _rust_target_name = "${invoker.crate_name}_rust_objects"
+    } else {
+      _rust_target_name = "${target_name}_rust_objects"
+    }
 
     # We could automatically add `deps += [ "//testing/rust_gtest_interop" ]`
     # if `rs_sources` is non-empty. But we don't automatically provide
@@ -104,7 +108,6 @@ template("mixed_test") {
     rust_static_library(_rust_target_name) {
       forward_variables_from(invoker,
                              TESTONLY_AND_VISIBILITY + [
-                                   "crate_name",
                                    "deps",
                                    "public_deps",
                                  ])
@@ -114,6 +117,11 @@ template("mixed_test") {
       if (_gtest_is_in_deps) {
         deps += [ "//testing/rust_gtest_interop" ]
       }
+
+      # Inform the build system that this library contains gtest unit tests.
+      # They must not be discarded by the linker even though there will be no
+      # edges going into them.
+      is_gtest_unittests = true
     }
   } else {
     not_needed(invoker, _rs_vars)
@@ -571,6 +579,7 @@ template("test") {
                              [
                                "excluded_files",
                                "excluded_dirs",
+                               "excluded_paths",
                              ])
       package_name = _output_name
       deps = _test_component_targets
@@ -578,11 +587,17 @@ template("test") {
       if (defined(invoker.fuchsia_package_deps)) {
         deps += invoker.fuchsia_package_deps
       }
-      if (!defined(excluded_dirs)) {
-        excluded_dirs = []
+      if (!defined(excluded_paths)) {
+        excluded_paths = []
       }
+      excluded_paths += [
+        "${devtools_root_location}/*",
+        "*.git/*",
+        "*.svn/*",
+        "*.hg/*",
+      ]
       if (devtools_root_location != "") {
-        excluded_dirs += [ devtools_root_location ]
+        excluded_paths += [ "${devtools_root_location}/*" ]
       }
     }
 

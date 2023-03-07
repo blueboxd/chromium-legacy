@@ -9,8 +9,8 @@
 #include <sstream>
 #include <string>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
@@ -360,6 +360,12 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, AddShortcut) {
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCredentialGroups) {
   EXPECT_TRUE(RunPasswordsSubtest("getCredentialGroups"));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       GetCredentialsWithReusedPassword) {
+  EXPECT_TRUE(RunPasswordsSubtest("getCredentialsWithReusedPassword"))
+      << message_;
 }
 
 }  // namespace extensions

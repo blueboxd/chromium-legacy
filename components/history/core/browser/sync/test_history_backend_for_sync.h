@@ -69,8 +69,13 @@ class TestHistoryBackendForSync : public HistoryBackendForSync {
   bool UpdateVisitReferrerOpenerIDs(VisitID visit_id,
                                     VisitID referrer_id,
                                     VisitID opener_id) override;
+  void AddVisitToSyncedCluster(const ClusterVisit& cluster_visit,
+                               const std::string& originator_cache_guid,
+                               int64_t originator_cluster_id) override;
+  int64_t GetClusterIdContainingVisit(VisitID visit_id) override;
   std::vector<GURL> GetFaviconURLsForURL(const GURL& page_url) override;
-  bool DeleteAllForeignVisits() override;
+  void MarkVisitAsKnownToSync(VisitID visit_id) override;
+  void DeleteAllForeignVisitsAndResetIsKnownToSync() override;
   void AddObserver(HistoryBackendObserver* observer) override;
   void RemoveObserver(HistoryBackendObserver* observer) override;
 
@@ -80,6 +85,10 @@ class TestHistoryBackendForSync : public HistoryBackendForSync {
 
   int delete_all_foreign_visits_call_count() const {
     return delete_all_foreign_visits_call_count_;
+  }
+
+  int add_visit_to_synced_cluster_count() const {
+    return add_visit_to_synced_cluster_count_;
   }
 
  private:
@@ -99,6 +108,7 @@ class TestHistoryBackendForSync : public HistoryBackendForSync {
 
   int get_foreign_visit_call_count_ = 0;
   int delete_all_foreign_visits_call_count_ = 0;
+  int add_visit_to_synced_cluster_count_ = 0;
 
   base::ObserverList<HistoryBackendObserver, true>::Unchecked observers_;
 };

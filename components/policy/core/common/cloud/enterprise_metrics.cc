@@ -84,6 +84,62 @@ const char kMetricUserRemoteCommandExecutedTemplate[] =
 const char kMetricDeviceRemoteCommandReceived[] =
     "Enterprise.DeviceRemoteCommand.Received";
 
+// Expands To:
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.UnknownUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.AutoLaunchedKioskSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.ManuallyLaunchedKioskSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.AffiliatedUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.UnaffiliatedUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.ManagedGuestSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.GuestSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.NoUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.UnknownUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.AutoLaunchedKioskSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.ManuallyLaunchedKioskSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.AffiliatedUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.UnaffiliatedUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.ManagedGuestSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.GuestSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.NoUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.UnknownUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.AutoLaunchedKioskSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.ManuallyLaunchedKioskSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.AffiliatedUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.UnaffiliatedUserSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.ManagedGuestSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.GuestSession.Result
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.NoUserSession.Result
+const char kMetricDeviceRemoteCommandCrdResultTemplate[] =
+    "Enterprise.DeviceRemoteCommand.Crd.%s.%s.Result";
+
+// ExpandsTo:
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.UnknownUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.AutoLaunchedKioskSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.ManuallyLaunchedKioskSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.AffiliatedUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.UnaffiliatedUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.ManagedGuestSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.GuestSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteAccess.NoUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.UnknownUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.AutoLaunchedKioskSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.ManuallyLaunchedKioskSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.AffiliatedUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.UnaffiliatedUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.ManagedGuestSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.GuestSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.RemoteSupport.NoUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.UnknownUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.AutoLaunchedKioskSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.ManuallyLaunchedKioskSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.AffiliatedUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.UnaffiliatedUserSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.ManagedGuestSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.GuestSession.SessionDuration
+// Enterprise.DeviceRemoteCommand.Crd.Unknown.NoUserSession.SessionDuration
+const char kMetricDeviceRemoteCommandCrdSessionDurationTemplate[] =
+    "Enterprise.DeviceRemoteCommand.Crd.%s.%s.SessionDuration";
+
 // Expands to:
 // Enterprise.DeviceRemoteCommand.Executed.CommandEchoTest
 // Enterprise.DeviceRemoteCommand.Executed.DeviceReboot

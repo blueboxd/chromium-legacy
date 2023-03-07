@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
@@ -164,7 +164,8 @@ void ExpectEqual(const cc::FilterOperation& input,
     case cc::FilterOperation::REFERENCE: {
       ASSERT_EQ(!!input.image_filter(), !!output.image_filter());
       if (input.image_filter()) {
-        EXPECT_EQ(*input.image_filter(), *output.image_filter());
+        EXPECT_TRUE(
+            input.image_filter()->EqualsForTesting(*output.image_filter()));
       }
       break;
     }
@@ -226,7 +227,7 @@ TEST_F(StructTraitsTest, FilterOperations) {
 
 TEST_F(StructTraitsTest, LocalSurfaceId) {
   LocalSurfaceId input(
-      42, base::UnguessableToken::Deserialize(0x12345678, 0x9abcdef0));
+      42, base::UnguessableToken::CreateForTesting(0x12345678, 0x9abcdef0));
 
   LocalSurfaceId output;
   mojo::test::SerializeAndDeserialize<mojom::LocalSurfaceId>(input, output);
@@ -242,7 +243,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
       CopyOutputRequest::ResultDestination::kSystemMemory;
   const gfx::Rect area(5, 7, 44, 55);
   const auto source =
-      base::UnguessableToken::Deserialize(0xdeadbeef, 0xdeadf00d);
+      base::UnguessableToken::CreateForTesting(0xdeadbeef, 0xdeadf00d);
   // Requesting 2:3 scale in X dimension, 5:4 in Y dimension.
   const gfx::Vector2d scale_from(2, 5);
   const gfx::Vector2d scale_to(3, 4);
@@ -518,12 +519,9 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   // TransferableResource constants.
   const ResourceId single_plane_id(1337);
   const ResourceId multi_plane_id(1338);
-  const SharedImageFormat single_plane_format =
-      SharedImageFormat::SinglePlane(ALPHA_8);
+  const SharedImageFormat single_plane_format = SinglePlaneFormat::kALPHA_8;
   const SharedImageFormat multi_plane_format =
-      SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_UV,
-                                    SharedImageFormat::Subsampling::k420,
-                                    SharedImageFormat::ChannelFormat::k8);
+      MultiPlaneFormat::kYUV_420_BIPLANAR;
   const uint32_t tr_filter = 1234;
   const gfx::Size tr_size(1234, 5678);
   TransferableResource single_plane_resource;
@@ -654,7 +652,7 @@ TEST_F(StructTraitsTest, SurfaceInfo) {
   const SurfaceId surface_id(
       FrameSinkId(1234, 4321),
       LocalSurfaceId(5678,
-                     base::UnguessableToken::Deserialize(143254, 144132)));
+                     base::UnguessableToken::CreateForTesting(143254, 144132)));
   constexpr float device_scale_factor = 1.234f;
   constexpr gfx::Size size(987, 123);
 
@@ -1158,7 +1156,7 @@ TEST_F(StructTraitsTest, SurfaceId) {
 
 TEST_F(StructTraitsTest, TransferableResource) {
   const ResourceId id(1337);
-  const SharedImageFormat format = SharedImageFormat::SinglePlane(ALPHA_8);
+  const SharedImageFormat format = SinglePlaneFormat::kALPHA_8;
   const uint32_t filter = 1234;
   const gfx::Size size(1234, 5678);
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
@@ -1207,28 +1205,16 @@ TEST_F(StructTraitsTest, TransferableResource) {
 }
 
 TEST_F(StructTraitsTest, SharedImageFormatWithSinglePlane) {
-  const ResourceFormat resource_format = RED_8;
-  SharedImageFormat input = SharedImageFormat::SinglePlane(resource_format);
-
+  SharedImageFormat input = SinglePlaneFormat::kRED_8;
   SharedImageFormat output;
   mojo::test::SerializeAndDeserialize<mojom::SharedImageFormat>(input, output);
-
   EXPECT_EQ(input, output);
 }
 
 TEST_F(StructTraitsTest, SharedImageFormatWithMultiPlane) {
-  const SharedImageFormat::PlaneConfig plane_config =
-      SharedImageFormat::PlaneConfig::kY_UV;
-  const SharedImageFormat::Subsampling subsampling =
-      SharedImageFormat::Subsampling::k420;
-  const SharedImageFormat::ChannelFormat channel_format =
-      SharedImageFormat::ChannelFormat::k8;
-  SharedImageFormat input =
-      SharedImageFormat::MultiPlane(plane_config, subsampling, channel_format);
-
+  SharedImageFormat input = MultiPlaneFormat::kYUV_420_BIPLANAR;
   SharedImageFormat output;
   mojo::test::SerializeAndDeserialize<mojom::SharedImageFormat>(input, output);
-
   EXPECT_EQ(input, output);
 }
 

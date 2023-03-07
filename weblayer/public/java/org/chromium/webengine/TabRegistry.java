@@ -4,29 +4,27 @@
 
 package org.chromium.webengine;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.webengine.interfaces.ITabParams;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Tab registry for storing open {@link Tab}s on the webengine side.
+ * Tab registry for storing open {@link Tab}s per WebEngine on the webengine side.
  *
  * For internal use only.
  */
 class TabRegistry {
     private Map<String, Tab> mGuidToTab = new HashMap<String, Tab>();
 
-    private static TabRegistry sInstance;
+    @Nullable
+    private Tab mActiveTab;
 
-    private TabRegistry() {}
-
-    static TabRegistry getInstance() {
-        if (sInstance == null) {
-            sInstance = new TabRegistry();
-        }
-        return sInstance;
-    }
+    TabRegistry() {}
 
     Tab getOrCreateTab(ITabParams tabParams) {
         Tab tab = mGuidToTab.get(tabParams.tabGuid);
@@ -46,5 +44,17 @@ class TabRegistry {
             tab.invalidate();
         }
         mGuidToTab.clear();
+    }
+
+    Set<Tab> getTabs() {
+        return new HashSet(mGuidToTab.values());
+    }
+
+    void setActiveTab(Tab tab) {
+        mActiveTab = tab;
+    }
+
+    Tab getActiveTab() {
+        return mActiveTab;
     }
 }

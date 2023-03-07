@@ -3,17 +3,22 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/download/bubble/download_dialog_view.h"
+
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/controls/rich_hover_button.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -72,38 +77,18 @@ void DownloadDialogView::AddHeader() {
 }
 
 void DownloadDialogView::AddFooter() {
-  auto* footer = AddChildView(std::make_unique<views::View>());
-  footer->SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kHorizontal);
-  footer->SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
-
-  footer_link_ = footer->AddChildView(std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_FOOTER_LINK),
-      views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY));
-  footer_link_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kUnbounded,
-                               /*adjust_height_for_width=*/true)
-          .WithWeight(1));
-  footer_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  footer_link_->SetCallback(base::BindRepeating(
-      &DownloadDialogView::ShowAllDownloads, base::Unretained(this)));
-  footer_link_->SetForceUnderline(false);
-
-  auto* icon = footer->AddChildView(std::make_unique<NonAccessibleImageView>());
-  icon->SetImage(
-      ui::ImageModel::FromVectorIcon(kDownloadToolbarButtonIcon, ui::kColorIcon,
-                                     GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
-  icon->SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ICON)));
-  icon->SetProperty(views::kCrossAxisAlignmentKey,
-                    views::LayoutAlignment::kStart);
-}
-
-void DownloadDialogView::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  footer_link_->SetEnabledColor(views::style::GetColor(
-      *this, footer_link_->GetTextContext(), footer_link_->GetTextStyle()));
+  AddChildView(
+      std::make_unique<RichHoverButton>(
+          base::BindRepeating(&DownloadDialogView::ShowAllDownloads,
+                              base::Unretained(this)),
+          /*main_image_icon=*/ui::ImageModel(),
+          l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_FOOTER_LINK),
+          /*secondary_text=*/std::u16string(),
+          l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_FOOTER_TOOLTIP),
+          /*subtitle_text=*/std::u16string(),
+          ui::ImageModel::FromVectorIcon(vector_icons::kLaunchIcon,
+                                         ui::kColorIconSecondary)))
+      ->SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
 }
 
 DownloadDialogView::DownloadDialogView(

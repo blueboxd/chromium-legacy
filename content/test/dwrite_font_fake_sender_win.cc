@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_util.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
 
@@ -138,15 +138,6 @@ void FakeFontCollection::MapCharacters(
 
 void FakeFontCollection::MatchUniqueFont(const std::u16string& unique_font_name,
                                          MatchUniqueFontCallback callback) {}
-
-void FakeFontCollection::GetUniqueFontLookupMode(
-    GetUniqueFontLookupModeCallback callback) {}
-
-void FakeFontCollection::GetUniqueNameLookupTable(
-    GetUniqueNameLookupTableCallback callback) {}
-
-void FakeFontCollection::GetUniqueNameLookupTableIfAvailable(
-    GetUniqueNameLookupTableIfAvailableCallback callback) {}
 
 void FakeFontCollection::FallbackFamilyAndStyleForCodepoint(
     const std::string& base_family_name,

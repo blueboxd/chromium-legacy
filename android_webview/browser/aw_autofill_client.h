@@ -64,6 +64,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool GetSaveFormData() const;
 
   // AutofillClient:
+  bool IsOffTheRecord() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager()
       override;
@@ -113,12 +115,12 @@ class AwAutofillClient : public autofill::AutofillClient,
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
+  bool TryToShowFastCheckout(const autofill::FormData& form,
+                             const autofill::FormFieldData& field,
+                             autofill::AutofillDriver* driver) override;
+  void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
-  bool IsFastCheckoutTriggerForm(const autofill::FormData& form,
-                                 const autofill::FormFieldData& field) override;
-  bool ShowFastCheckout(
-      base::WeakPtr<autofill::FastCheckoutDelegate> delegate) override;
-  void HideFastCheckout() override;
+  bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<autofill::TouchToFillDelegate> delegate,
@@ -145,7 +147,6 @@ class AwAutofillClient : public autofill::AutofillClient,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   autofill::FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;

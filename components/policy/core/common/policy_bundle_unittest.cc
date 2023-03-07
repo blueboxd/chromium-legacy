@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -37,13 +37,13 @@ void AddTestPolicies(PolicyMap* policy) {
               POLICY_SOURCE_CLOUD, base::Value("omg"), nullptr);
   policy->Set("recommended-user", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetBoolKey("false", false);
-  dict.SetIntKey("int", 456);
-  dict.SetStringKey("str", "bbq");
+  base::Value::Dict dict;
+  dict.Set("false", false);
+  dict.Set("int", 456);
+  dict.Set("str", "bbq");
   policy->Set("recommended-machine", POLICY_LEVEL_RECOMMENDED,
-              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(dict),
-              nullptr);
+              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+              base::Value(std::move(dict)), nullptr);
 }
 
 // Adds test policies to |policy| based on the parameters:

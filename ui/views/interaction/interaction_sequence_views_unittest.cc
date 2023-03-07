@@ -11,7 +11,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -538,7 +538,8 @@ TEST_F(InteractionSequenceViewsTest, TransitionToMenuAndActivateMenuItem) {
     ui::test::InteractionTestUtil test_util;
     test_util.AddSimulator(
         std::make_unique<test::InteractionTestUtilSimulatorViews>());
-    test_util.SelectMenuItem(menu_element_.get());
+    EXPECT_EQ(ui::test::ActionResult::kSucceeded,
+              test_util.SelectMenuItem(menu_element_.get()));
   });
 }
 

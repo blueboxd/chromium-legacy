@@ -80,6 +80,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -3199,8 +3200,8 @@ TEST_P(OverviewSessionTest, AccessibilityFocusAnnotator) {
 // Tests that accessibility overrides are set as expected on overview related
 // widgets.
 TEST_P(OverviewSessionTest, AccessibilityFocusAnnotatorNoSavedDesks) {
-  // If desks templates is enabled, the a11y order changes. This is tested in
-  // the desks templates test suite.
+  // If saved desk is enabled, the a11y order changes. This is tested in
+  // the saved desk test suite.
   if (GetParam() || saved_desk_util::IsDeskSaveAndRecallEnabled())
     return;
 
@@ -3586,6 +3587,54 @@ TEST_F(FloatOverviewSessionTest, DraggingToNewDeskWithFloatedWindow) {
   EXPECT_EQ(2u, controller->desks().size());
   EXPECT_TRUE(
       base::Contains(controller->desks()[1]->windows(), normal_window.get()));
+}
+
+// Tests that the overview item associated with the floated window appears
+// underneath the about to be dragged window after long pressing.
+TEST_F(FloatOverviewSessionTest, LongPressingWithFloatedWindow) {
+  // Shorten the long press times so we don't have to delay as long.
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_short_press_time(base::Milliseconds(1));
+  gesture_config->set_show_press_delay_in_ms(1);
+
+  // Create one normal and one floated window.
+  auto normal_window = CreateAppWindow();
+  auto floated_window = CreateAppWindow();
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  ToggleOverview();
+
+  // Simulate a long press on the overview item of the normal window.
+  OverviewItem* normal_item = GetOverviewItemForWindow(normal_window.get());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      gfx::ToRoundedPoint(normal_item->target_bounds().CenterPoint()));
+  generator->PressTouch();
+  base::RunLoop run_loop;
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(2));
+  run_loop.Run();
+
+  // After long pressing, the float container should be stacked under the desk
+  // container so that the overview item of the float window appears underneath
+  // during the drag.
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
+    EXPECT_TRUE(
+        IsStackedBelow(root->GetChildById(kShellWindowId_FloatContainer),
+                       root->GetChildById(kShellWindowId_DeskContainerA)));
+  }
+
+  // Test that on release, the float container is stacked above the desk
+  // container again.
+  generator->ReleaseTouch();
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
+    EXPECT_TRUE(
+        IsStackedBelow(root->GetChildById(kShellWindowId_DeskContainerA),
+                       root->GetChildById(kShellWindowId_FloatContainer)));
+  }
 }
 
 class TabletModeOverviewSessionTest : public OverviewTestBase {
@@ -5098,7 +5147,7 @@ TEST_F(SplitViewOverviewSessionTest, AltLeftSquareBracketOnMaximizedWindow) {
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
   EXPECT_FALSE(InOverviewSession());
-  const WindowSnapWMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
   snapped_window_state->OnWMEvent(&alt_left_square_bracket);
   EXPECT_TRUE(wm::IsActiveWindow(snapped_window.get()));
   EXPECT_EQ(WindowStateType::kPrimarySnapped,
@@ -5119,8 +5168,7 @@ TEST_F(SplitViewOverviewSessionTest, AltRightSquareBracketOnMaximizedWindow) {
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
   EXPECT_FALSE(InOverviewSession());
-  const WindowSnapWMEvent alt_right_square_bracket(
-      WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_SECONDARY);
   snapped_window_state->OnWMEvent(&alt_right_square_bracket);
   EXPECT_TRUE(wm::IsActiveWindow(snapped_window.get()));
   EXPECT_EQ(WindowStateType::kSecondarySnapped,
@@ -5147,11 +5195,10 @@ TEST_F(SplitViewOverviewSessionTest, AltSquareBracketOnUnsnappableWindow) {
         EXPECT_FALSE(InOverviewSession());
       };
   expect_unsnappable_window_is_active_and_maximized();
-  const WindowSnapWMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
   unsnappable_window_state->OnWMEvent(&alt_left_square_bracket);
   expect_unsnappable_window_is_active_and_maximized();
-  const WindowSnapWMEvent alt_right_square_bracket(
-      WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_SECONDARY);
   unsnappable_window_state->OnWMEvent(&alt_right_square_bracket);
   expect_unsnappable_window_is_active_and_maximized();
 }
@@ -5165,7 +5212,7 @@ TEST_F(SplitViewOverviewSessionTest, AltSquareBracketOnSameSideSnappedWindow) {
                                         &window1](WMEventType event_type) {
     wm::ActivateWindow(window1.get());
     WindowState* window1_state = WindowState::Get(window1.get());
-    const WindowSnapWMEvent event(event_type);
+    const WMEvent event(event_type);
     window1_state->OnWMEvent(&event);
     EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
     EXPECT_EQ(WindowStateType::kMaximized, window1_state->GetStateType());
@@ -5221,8 +5268,7 @@ TEST_F(SplitViewOverviewSessionTest,
   const auto test_left_snapping_window1 = [this, &window1, &window2]() {
     wm::ActivateWindow(window1.get());
     WindowState* window1_state = WindowState::Get(window1.get());
-    const WindowSnapWMEvent alt_left_square_bracket(
-        WM_EVENT_CYCLE_SNAP_PRIMARY);
+    const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
     window1_state->OnWMEvent(&alt_left_square_bracket);
     EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
     EXPECT_EQ(WindowStateType::kPrimarySnapped, window1_state->GetStateType());
@@ -5235,8 +5281,7 @@ TEST_F(SplitViewOverviewSessionTest,
   const auto test_right_snapping_window1 = [this, &window1, &window2]() {
     wm::ActivateWindow(window1.get());
     WindowState* window1_state = WindowState::Get(window1.get());
-    const WindowSnapWMEvent alt_right_square_bracket(
-        WM_EVENT_CYCLE_SNAP_SECONDARY);
+    const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_SECONDARY);
     window1_state->OnWMEvent(&alt_right_square_bracket);
     EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
     EXPECT_EQ(WindowStateType::kSecondarySnapped,
@@ -7286,15 +7331,14 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(InOverviewSession());
   // Alt+[
-  const WindowSnapWMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
   WindowState* window1_state = WindowState::Get(window1.get());
   window1_state->OnWMEvent(&alt_left_square_bracket);
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window1_state->GetStateType());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(InOverviewSession());
   // Alt+]
-  const WindowSnapWMEvent alt_right_square_bracket(
-      WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_SECONDARY);
   window1_state->OnWMEvent(&alt_right_square_bracket);
   EXPECT_EQ(WindowStateType::kSecondarySnapped, window1_state->GetStateType());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -7314,7 +7358,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
             snapped_window_state->GetStateType());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(InOverviewSession());
-  const WindowSnapWMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
   snapped_window_state->OnWMEvent(&alt_left_square_bracket);
   EXPECT_EQ(WindowStateType::kNormal, snapped_window_state->GetStateType());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -7334,8 +7378,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
             snapped_window_state->GetStateType());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(InOverviewSession());
-  const WindowSnapWMEvent alt_right_square_bracket(
-      WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_SECONDARY);
   snapped_window_state->OnWMEvent(&alt_right_square_bracket);
   EXPECT_EQ(WindowStateType::kNormal, snapped_window_state->GetStateType());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -7361,7 +7404,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   EXPECT_EQ(snapped_window.get(), split_view_controller()->secondary_window());
   EXPECT_TRUE(InOverviewSession());
   // Test using Alt+[ to put |snapped_window| on the left.
-  const WindowSnapWMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_PRIMARY);
   snapped_window_state->OnWMEvent(&alt_left_square_bracket);
   EXPECT_TRUE(wm::IsActiveWindow(snapped_window.get()));
   EXPECT_EQ(WindowStateType::kPrimarySnapped,
@@ -7371,8 +7414,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   EXPECT_EQ(snapped_window.get(), split_view_controller()->primary_window());
   EXPECT_TRUE(InOverviewSession());
   // Test using Alt+] to put |snapped_window| on the right.
-  const WindowSnapWMEvent alt_right_square_bracket(
-      WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_SECONDARY);
   snapped_window_state->OnWMEvent(&alt_right_square_bracket);
   EXPECT_TRUE(wm::IsActiveWindow(snapped_window.get()));
   EXPECT_EQ(WindowStateType::kSecondarySnapped,

@@ -6,7 +6,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -376,6 +376,9 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTest, MAYBE_AbortedSetup) {
 
 // TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg.
 #if !defined(NDEBUG)
+#define MAYBE_SyncConsentRecorder DISABLED_SyncConsentRecorder
+#elif BUILDFLAG(IS_CHROMEOS)  // TODO(crbug.com/1402468): Test failed on Linux
+                              // Chromium OS ASan
 #define MAYBE_SyncConsentRecorder DISABLED_SyncConsentRecorder
 #else
 #define MAYBE_SyncConsentRecorder SyncConsentRecorder

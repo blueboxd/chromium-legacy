@@ -4,8 +4,8 @@
 
 #include "media/video/fake_video_encode_accelerator.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
@@ -113,6 +113,19 @@ void FakeVideoEncodeAccelerator::SetWillInitializationSucceed(
 void FakeVideoEncodeAccelerator::SetWillEncodingSucceed(
     bool will_encoding_succeed) {
   will_encoding_succeed_ = will_encoding_succeed;
+}
+
+void FakeVideoEncodeAccelerator::NotifyEncoderInfoChange(
+    const VideoEncoderInfo& info) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeVideoEncodeAccelerator::DoNotifyEncoderInfoChange,
+                     weak_this_factory_.GetWeakPtr(), info));
+}
+
+void FakeVideoEncodeAccelerator::DoNotifyEncoderInfoChange(
+    const VideoEncoderInfo& info) {
+  client_->NotifyEncoderInfoChange(info);
 }
 
 void FakeVideoEncodeAccelerator::DoRequireBitstreamBuffers(

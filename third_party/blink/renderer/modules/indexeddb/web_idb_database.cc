@@ -8,6 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
@@ -311,6 +312,10 @@ void WebIDBDatabase::RenameIndex(int64_t transaction_id,
 
 void WebIDBDatabase::Abort(int64_t transaction_id) {
   database_->Abort(transaction_id);
+}
+
+void WebIDBDatabase::DidBecomeInactive() {
+  database_->DidBecomeInactive();
 }
 
 mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>

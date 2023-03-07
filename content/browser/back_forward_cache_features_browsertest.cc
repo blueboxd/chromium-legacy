@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/dedicated_worker_hosts_for_document.h"
+#include "content/public/browser/disallow_activation_reason.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/test/back_forward_cache_util.h"
@@ -36,6 +37,7 @@
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "ui/base/idle/idle_time_provider.h"
 #include "ui/base/test/idle_test_utils.h"
@@ -448,8 +450,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 
   // Go back to A.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored({NotRestoredReason::kNetworkRequestRedirected}, {}, {}, {},
                     {}, FROM_HERE);
 }
@@ -525,8 +526,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 
   // Go back to A.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored({NotRestoredReason::kNetworkRequestRedirected}, {}, {}, {},
                     {}, FROM_HERE);
 }
@@ -585,8 +585,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // Go back to the first page. We should not restore the page from the
   // back-forward cache.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
                     {}, FROM_HERE);
 }
@@ -650,8 +649,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // Go back to the first page. We should not restore the page from the
   // back-forward cache.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
                     {}, FROM_HERE);
 }
@@ -699,8 +697,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheWithDedicatedWorkerBrowserTest,
   // Go back to A. kNetworkRequestDatapipeDrainedAsBytesConsumer is recorded
   // since receiving the response body started but this didn't end before the
   // navigation to B.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored(
       {NotRestoredReason::kNetworkRequestDatapipeDrainedAsBytesConsumer}, {},
       {}, {}, {}, FROM_HERE);
@@ -756,8 +753,7 @@ IN_PROC_BROWSER_TEST_P(
   // Go back to A. kNetworkRequestDatapipeDrainedAsBytesConsumer is recorded
   // since receiving the response body started but this didn't end before the
   // navigation to B.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored(
       {NotRestoredReason::kNetworkRequestDatapipeDrainedAsBytesConsumer}, {},
       {}, {}, {}, FROM_HERE);
@@ -2087,31 +2083,333 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+class BackForwardCacheBrowserTestWithFlagForIndexedDB
+    : public BackForwardCacheBrowserTest,
+      public ::testing::WithParamInterface<int32_t> {
+ public:
+  // Different level of BFCache support for document with IndexedDB usage. This
+  // will affect the feature's value in the browser tests.
+  enum class IndexedDBBackForwardCacheEligibilityLevel {
+    // Do not cache if IndexedDB is used.
+    kNoCache = 0,
+    // Allow BFCache if the document has open connections, but without ongoing
+    // IndexedDB transactions.
+    kCacheConnectionOnly = 1,
+    // Allow BFCache if the document has open connections and/or ongoing
+    // IndexedDB transactions.
+    kCacheConnectionAndTransaction = 2,
+
+    kMinLevel = kNoCache,
+    kMaxLevel = kCacheConnectionAndTransaction,
+  };
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+      EnableFeatureAndSetParams(
+          blink::features::kAllowPageWithIDBConnectionInBFCache, "", "true");
+    } else {
+      DisableFeature(blink::features::kAllowPageWithIDBConnectionInBFCache);
+    }
+    if (ShouldAllowPageWithIndexedDBTransactionInBFCache()) {
+      EnableFeatureAndSetParams(
+          blink::features::kAllowPageWithIDBTransactionInBFCache, "", "true");
+    } else {
+      DisableFeature(blink::features::kAllowPageWithIDBTransactionInBFCache);
+    }
+
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  bool ShouldAllowPageWithIndexedDBConnectionInBFCache() {
+    return GetParam() >=
+           int(IndexedDBBackForwardCacheEligibilityLevel::kCacheConnectionOnly);
+  }
+
+  bool ShouldAllowPageWithIndexedDBTransactionInBFCache() {
+    return GetParam() >= int(IndexedDBBackForwardCacheEligibilityLevel::
+                                 kCacheConnectionAndTransaction);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BackForwardCacheBrowserTestWithFlagForIndexedDB,
+    ::testing::Range(
+        int(BackForwardCacheBrowserTestWithFlagForIndexedDB::
+                IndexedDBBackForwardCacheEligibilityLevel::kMinLevel),
+        int(BackForwardCacheBrowserTestWithFlagForIndexedDB::
+                IndexedDBBackForwardCacheEligibilityLevel::kMaxLevel) +
+            1));
+
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForIndexedDB,
                        DoesNotCacheIfOpenIndexedDBConnection) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to A and use IndexedDB.
-  EXPECT_TRUE(NavigateToURL(
+  ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/back_forward_cache/page_with_indexedDB.html")));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  EXPECT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
+  ASSERT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
 
   // 2) Navigate away.
-  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  EXPECT_TRUE(NavigateToURL(
+  ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  // The page has an open IndexedDB connection so it should be deleted.
-  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+  if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+    EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  }
 
   // 3) Go back to the page with IndexedDB.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectNotRestored(
-      {NotRestoredReason::kBlocklistedFeatures},
-      {blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBConnection}, {},
-      {}, {}, FROM_HERE);
+  if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+    // If the flag indicates that the page with open IndexedDB connection is
+    // eligible for back/forward cache, after navigating back, the page should
+    // be restored.
+    ASSERT_TRUE(HistoryGoBack(web_contents()));
+    ExpectRestored(FROM_HERE);
+  } else {
+    // If the flag indicates that the page with open IndexedDB connection is not
+    // eligible for back/forward cache, the document should be deleted.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+
+    // It should not be restored from the back/forward cache, and the reason
+    // should indicate that it was blocked due to `kIndexedDBConnection`.
+    ASSERT_TRUE(HistoryGoBack(web_contents()));
+    ExpectNotRestored(
+        {NotRestoredReason::kBlocklistedFeatures},
+        {blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBConnection},
+        {}, {}, {}, FROM_HERE);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForIndexedDB,
+                       EvictCacheIfOnVersionChangeEventReceived) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Shell* tab_receiving_version_change = shell();
+  Shell* tab_sending_version_change = CreateBrowser();
+
+  // 1) Navigate the tab receiving version change to A and use IndexedDB.
+  ASSERT_TRUE(NavigateToURL(
+      tab_receiving_version_change,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  // Create two connection with the same version here so that it can cover the
+  // cases when IndexedDB connection coordinator is not implemented correctly to
+  // handle multiple connections' back/forward cache status.
+  ASSERT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
+  ASSERT_TRUE(
+      ExecJs(rfh_a.get(), "setupNewIndexedDBConnectionWithSameVersion()"));
+
+  // 2) Navigate the tab receiving version change away, and navigate the tab
+  // sending version change to the same page, and create a new IndexedDB
+  // connection with a higher version. The new IndexedDB connection should be
+  // created without being blocked by the page in back/forward cache.
+  ASSERT_TRUE(
+      NavigateToURL(tab_receiving_version_change,
+                    embedded_test_server()->GetURL("a.com", "/title1.html")));
+  if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+    ASSERT_TRUE(rfh_a->IsInBackForwardCache());
+  }
+  ASSERT_TRUE(NavigateToURL(
+      tab_sending_version_change,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+
+  // Running `setupNewIndexedDBConnectionWithHigherVersion()` will trigger the
+  // `versionchange` event, which should cause the document receiving the
+  // version change to be evicted from back/forward cache.
+  content::DOMMessageQueue queue_sending_version_change(
+      tab_sending_version_change->web_contents());
+  std::string message_sending_version_change;
+  ExecuteScriptAsync(tab_sending_version_change,
+                     "setupNewIndexedDBConnectionWithHigherVersion()");
+  ASSERT_TRUE(queue_sending_version_change.WaitForMessage(
+      &message_sending_version_change));
+  ASSERT_EQ("\"onsuccess\"", message_sending_version_change);
+
+  // 3) Go back to the page a with IndexedDB.
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+
+  if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+    // If this feature is enabled, the page should be put into the back/forward
+    // cache after the navigation, but gets evicted due to `kIndexedDBEvent`.
+    ExpectNotRestored({NotRestoredReason::kIgnoreEventAndEvict}, {}, {}, {},
+                      {DisallowActivationReasonId::kIndexedDBEvent}, FROM_HERE);
+  } else {
+    // If this feature is disabled, the page should not be put into back/forward
+    // cache at all, and the recorded blocklisted feature should be
+    // `kIndexedDBConnection`.
+    ExpectNotRestored(
+        {NotRestoredReason::kBlocklistedFeatures},
+        {blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBConnection},
+        {}, {}, {}, FROM_HERE);
+  }
+}
+
+// Check if the non-sticky feature is properly registered before the
+// `versionchange ` is sent. Since the `versionchange` event's handler won't
+// close the IndexedDB connection, so when the navigation happens, the
+// non-sticky feature will prevent the document from entering BFCache.
+IN_PROC_BROWSER_TEST_P(
+    BackForwardCacheBrowserTestWithFlagForIndexedDB,
+    DoesNotCacheIfVersionChangeEventIsSentButIndexedDBConnectionIsNotClosed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Shell* tab_receiving_version_change = shell();
+  Shell* tab_sending_version_change = CreateBrowser();
+
+  // 1) Navigate the receiving tab to A and use IndexedDB.
+  ASSERT_TRUE(NavigateToURL(
+      tab_receiving_version_change,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  RenderFrameHostImplWrapper rfh_receiving(current_frame_host());
+  GURL destination_url =
+      embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  ASSERT_TRUE(
+      ExecJs(tab_receiving_version_change,
+             JsReplace("setupIndexedDBVersionChangeHandlerToNavigateTo($1)",
+                       destination_url.spec())));
+
+  // 2) Navigate the sending tab to A and use IndexedDB with higher version.
+  ASSERT_TRUE(NavigateToURL(
+      tab_sending_version_change,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  content::DOMMessageQueue queue_receiving_version_change(
+      tab_receiving_version_change->web_contents());
+  std::string message_receiving_version_change;
+  content::DOMMessageQueue queue_sending_version_change(
+      tab_sending_version_change->web_contents());
+  std::string message_sending_version_change;
+  ExecuteScriptAsync(tab_sending_version_change,
+                     "setupNewIndexedDBConnectionWithHigherVersion()");
+
+  // 3) Wait until receiving tab receives the event and sending tab successfully
+  // opens the connection. The receiving tab should navigate to another page in
+  // the event handler. Before the navigation, the page should register a
+  // corresponding feature handle and should not be eligible for BFCache.
+  // The document will be disallowed to enter BFCache because of the
+  // `versionchange` event without proper closure of connection if the feature
+  // is on, otherwise, the reason should be open IndexedDB connection instead.
+  blink::scheduler::WebSchedulerTrackedFeature tracked_feature;
+  if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+    tracked_feature =
+        blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBEvent;
+  } else {
+    tracked_feature =
+        blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBConnection;
+  }
+
+  ASSERT_TRUE(queue_receiving_version_change.WaitForMessage(
+      &message_receiving_version_change));
+  ASSERT_EQ("\"onversionchange\"", message_receiving_version_change);
+
+  TestNavigationManager navigation_manager(
+      tab_receiving_version_change->web_contents(), destination_url);
+  ASSERT_TRUE(navigation_manager.WaitForRequestStart());
+  ASSERT_TRUE(rfh_receiving.get()->GetBackForwardCacheDisablingFeatures().Has(
+      tracked_feature));
+  navigation_manager.ResumeNavigation();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
+
+  ASSERT_TRUE(queue_sending_version_change.WaitForMessage(
+      &message_sending_version_change));
+  ASSERT_EQ("\"onsuccess\"", message_sending_version_change);
+
+  // 4) Go back to the page A in the receiving tab, the page should not be put
+  // into back/forward cache at all, and the recorded blocklisted feature should
+  // be the `tracked_feature`.
+  ASSERT_TRUE(rfh_receiving.WaitUntilRenderFrameDeleted());
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                    {tracked_feature}, {}, {}, {}, FROM_HERE);
+}
+
+// Check if the non-sticky feature is properly registered before the
+// `versionchange ` is sent and removed after the IndexedDB Connection is
+// closed. Since the `versionchange` event's handler will close the IndexedDB
+// connection before navigating away, so the document is eligible for BFCache as
+// the non-sticky feature is removed.
+IN_PROC_BROWSER_TEST_P(
+    BackForwardCacheBrowserTestWithFlagForIndexedDB,
+    CacheIfVersionChangeEventIsSentAndIndexedDBConnectionIsClosed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Shell* tab_receiving_version_change = shell();
+  Shell* tab_sending_version_change = CreateBrowser();
+
+  // 1) Navigate the receiving tab to A and use IndexedDB.
+  ASSERT_TRUE(NavigateToURL(
+      tab_receiving_version_change,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  RenderFrameHostImplWrapper rfh_receiving(current_frame_host());
+  GURL destination_url =
+      embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  ASSERT_TRUE(ExecJs(tab_receiving_version_change,
+                     JsReplace("setupIndexedDBVersionChangeHandlerToCloseConnec"
+                               "tionAndNavigateTo($1)",
+                               destination_url.spec())));
+
+  // 2) Navigate the sending tab to A and use IndexedDB with higher version.
+  ASSERT_TRUE(NavigateToURL(
+      tab_sending_version_change,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  content::DOMMessageQueue queue_receiving_version_change(
+      tab_receiving_version_change->web_contents());
+  std::string message_receiving_version_change;
+  content::DOMMessageQueue queue_sending_version_change(
+      tab_sending_version_change->web_contents());
+  std::string message_sending_version_change;
+  ExecuteScriptAsync(tab_sending_version_change,
+                     "setupNewIndexedDBConnectionWithHigherVersion()");
+
+  // 3) Wait until receiving tab receives the event and sending tab successfully
+  // opens the connection. The receiving tab should navigate to another page in
+  // the event handler. Before the navigation, the page should register a
+  // corresponding feature handle and should not be eligible for BFCache, but it
+  // will be removed when the connection is closed, making the page eligible for
+  // BFCache.
+  ASSERT_TRUE(queue_receiving_version_change.WaitForMessage(
+      &message_receiving_version_change));
+  ASSERT_EQ("\"onversionchange\"", message_receiving_version_change);
+
+  TestNavigationManager navigation_manager(
+      tab_receiving_version_change->web_contents(), destination_url);
+  ASSERT_TRUE(navigation_manager.WaitForRequestStart());
+  // Since the connection is closed, the tracked feature should be reset so
+  // the page is allowed to enter BFCache again.
+
+  blink::scheduler::WebSchedulerTrackedFeature tracked_feature;
+  if (ShouldAllowPageWithIndexedDBConnectionInBFCache()) {
+    tracked_feature =
+        blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBEvent;
+  } else {
+    tracked_feature =
+        blink::scheduler::WebSchedulerTrackedFeature::kIndexedDBConnection;
+  }
+
+  ASSERT_FALSE(rfh_receiving.get()->GetBackForwardCacheDisablingFeatures().Has(
+      tracked_feature));
+
+  navigation_manager.ResumeNavigation();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
+
+  ASSERT_TRUE(queue_sending_version_change.WaitForMessage(
+      &message_sending_version_change));
+  ASSERT_EQ("\"onsuccess\"", message_sending_version_change);
+
+  // 4) Go back to the page A in the receiving tab, it should be restored from
+  // BFCache.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectRestored(FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2136,63 +2434,250 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Go back to the page with IndexedDB. The connection is closed so it
   // should be restored from bfcache.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectRestored(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForIndexedDB,
                        DoNotCacheIfIndexedDBTransactionNotCommitted) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to A and use IndexedDB.
-  EXPECT_TRUE(NavigateToURL(
+  ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/back_forward_cache/page_with_indexedDB.html")));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  EXPECT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
+  ASSERT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
   // This registers a pagehide handler to start a new transaction. This will
   // block bfcache because there is an inflight transaction.
-  EXPECT_TRUE(ExecJs(rfh_a.get(), "registerPagehideToStartTransaction()"));
+  ASSERT_TRUE(ExecJs(rfh_a.get(), "registerPagehideToStartTransaction()"));
 
   // 2) Navigate away.
-  EXPECT_TRUE(NavigateToURL(
+  ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
 
   // 3) Go back to the page with IndexedDB.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
-                    {blink::scheduler::WebSchedulerTrackedFeature::
-                         kOutstandingIndexedDBTransaction},
-                    {}, {}, {}, FROM_HERE);
+  if (ShouldAllowPageWithIndexedDBTransactionInBFCache()) {
+    ASSERT_TRUE(HistoryGoBack(web_contents()));
+    ExpectRestored(FROM_HERE);
+  } else {
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(web_contents()));
+    ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                      {blink::scheduler::WebSchedulerTrackedFeature::
+                           kOutstandingIndexedDBTransaction},
+                      {}, {}, {}, FROM_HERE);
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForIndexedDB,
                        CacheIfIndexedDBConnectionTransactionCommit) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to A and use IndexedDB.
-  EXPECT_TRUE(NavigateToURL(
+  ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/back_forward_cache/page_with_indexedDB.html")));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  EXPECT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
+  ASSERT_TRUE(ExecJs(rfh_a.get(), "setupIndexedDBConnection()"));
   // This registers a pagehide handler to start and commit the IDB transactions.
   // Since the transactions are ended inside the handler, the page is no longer
   // blocked for inflight IDB transactions.
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       ExecJs(rfh_a.get(), "registerPagehideToStartAndCommitTransaction()"));
 
   // 2) Navigate away.
-  EXPECT_TRUE(NavigateToURL(
+  ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  ASSERT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Go back to the page with IndexedDB.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectRestored(FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForIndexedDB,
+                       DoNotCacheIfIndexedDBTransactionIsAcquiringTheLock) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Shell* tab_holding_locks = CreateBrowser();
+  Shell* tab_waiting_for_locks = shell();
+
+  // 1) Navigate the tab holding locks to A and use IndexedDB.
+  ASSERT_TRUE(NavigateToURL(
+      tab_holding_locks,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  ASSERT_TRUE(ExecJs(tab_holding_locks, "setupIndexedDBConnection()"));
+  // Make sure the page keeps holding the lock by running infinite tasks on the
+  // object store.
+  ExecuteScriptAsync(tab_holding_locks,
+                     "runInfiniteIndexedDBTransactionLoop()");
+
+  // 2) Navigate the tab waiting for locks to A as well and make it requesting
+  // for the same lock on pagehide. Since the other tab is holding the lock,
+  // this tab will be blocked and waiting for the lock to be released.
+  ASSERT_TRUE(NavigateToURL(
+      tab_waiting_for_locks,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  ASSERT_TRUE(ExecJs(tab_waiting_for_locks, "setupIndexedDBConnection()"));
+  ASSERT_TRUE(
+      ExecJs(tab_waiting_for_locks, "registerPagehideToStartTransaction()"));
+
+  // 3) Navigate the tab waiting for locks away.
+  ASSERT_TRUE(
+      NavigateToURL(tab_waiting_for_locks,
+                    embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // 4) Go back to the page with IndexedDB.
+  if (ShouldAllowPageWithIndexedDBTransactionInBFCache()) {
+    // If the flag that enables a page with IndexedDB features to enter BFCache
+    // is toggled on, the page should be evicted by disallowing activation.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(tab_waiting_for_locks->web_contents()));
+    ExpectNotRestored(
+        {NotRestoredReason::kIgnoreEventAndEvict}, {}, {}, {},
+        {DisallowActivationReasonId::kIndexedDBTransactionIsAcquiringLocks},
+        FROM_HERE);
+  } else {
+    // If the flag is not toggled on, the page will not be eligible for BFCache
+    // because of the registered feature.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(tab_waiting_for_locks->web_contents()));
+    ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                      {blink::scheduler::WebSchedulerTrackedFeature::
+                           kOutstandingIndexedDBTransaction},
+                      {}, {}, {}, FROM_HERE);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    BackForwardCacheBrowserTestWithFlagForIndexedDB,
+    DoNotCacheIfIndexedDBTransactionHoldingLocksAndBlockingOthers) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Shell* tab_holding_locks = shell();
+  Shell* tab_waiting_for_locks = CreateBrowser();
+
+  // 1) Navigate the tab holding locks to A and use IndexedDB.
+  ASSERT_TRUE(NavigateToURL(
+      tab_holding_locks,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  ASSERT_TRUE(ExecJs(tab_holding_locks, "setupIndexedDBConnection()"));
+  ASSERT_TRUE(ExecJs(tab_holding_locks,
+                     "registerPagehideToCloseIndexedDBConnection()"));
+  // Make sure the page keeps holding the lock by running infinite tasks on the
+  // object store.
+  ExecuteScriptAsync(tab_holding_locks,
+                     "runInfiniteIndexedDBTransactionLoop()");
+
+  // 2) Navigate the tab waiting for locks to A as well and make it request for
+  // the same lock on pagehide. Since the other tab is holding the lock, this
+  // tab will be blocked and waiting for the lock to be released.
+  ASSERT_TRUE(NavigateToURL(
+      tab_waiting_for_locks,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  ASSERT_TRUE(ExecJs(tab_waiting_for_locks, "setupIndexedDBConnection()"));
+  ASSERT_TRUE(ExecJs(tab_waiting_for_locks, "startIndexedDBTransaction()"));
+
+  // 3) Navigate the tab holding locks away.
+  ASSERT_TRUE(NavigateToURL(tab_holding_locks, embedded_test_server()->GetURL(
+                                                   "b.com", "/title1.html")));
+
+  // 4) Go back to the page with IndexedDB from the tab holding the locks.
+  if (ShouldAllowPageWithIndexedDBTransactionInBFCache()) {
+    // If the flag that enables a page with IndexedDB features to enter BFCache
+    // is toggled on, the page should be evicted by disallowing activation.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(tab_holding_locks->web_contents()));
+    ExpectNotRestored(
+        {NotRestoredReason::kIgnoreEventAndEvict}, {}, {}, {},
+        {DisallowActivationReasonId::kIndexedDBTransactionIsBlockingOthers},
+        FROM_HERE);
+  } else {
+    // If the flag is not toggled on, the page will not be eligible for BFCache
+    // because of the registered feature.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(tab_holding_locks->web_contents()));
+    ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                      {blink::scheduler::WebSchedulerTrackedFeature::
+                           kOutstandingIndexedDBTransaction},
+                      {}, {}, {}, FROM_HERE);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForIndexedDB,
+                       EvictCacheIfPageBlocksNewTransaction) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Shell* tab_holding_locks = shell();
+  Shell* tab_acquiring_locks = CreateBrowser();
+
+  // 1) Navigate the tab holding locks to A and use IndexedDB, it also register
+  // a event on pagehide to run tasks that never ends to keep the IndexedDB
+  // transaction locks.
+  ASSERT_TRUE(NavigateToURL(
+      tab_holding_locks,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+
+  content::DOMMessageQueue queue_holding_locks(
+      tab_holding_locks->web_contents());
+  std::string message_holding_locks;
+  ASSERT_TRUE(ExecJs(tab_holding_locks, "setupIndexedDBConnection()"));
+  ASSERT_TRUE(
+      ExecJs(tab_holding_locks, "registerPagehideToStartTransaction()"));
+
+  // 2) Navigate the tab holding locks away.
+  ASSERT_TRUE(NavigateToURL(tab_holding_locks, embedded_test_server()->GetURL(
+                                                   "b.com", "/title1.html")));
+
+  // 3) After confirming the transaction has been created from the tab holding
+  // locks, navigate the tab acquiring locks to A that tries to acquire the same
+  // lock.
+  ASSERT_TRUE(queue_holding_locks.WaitForMessage(&message_holding_locks));
+  ASSERT_EQ("\"transaction_created\"", message_holding_locks);
+  ASSERT_TRUE(NavigateToURL(
+      tab_acquiring_locks,
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_indexedDB.html")));
+
+  content::DOMMessageQueue queue_acquiring_locks(
+      tab_acquiring_locks->web_contents());
+  std::string message_acquiring_locks;
+  ASSERT_TRUE(ExecJs(tab_acquiring_locks, "setupIndexedDBConnection()"));
+  ASSERT_TRUE(ExecJs(tab_acquiring_locks, "startIndexedDBTransaction()"));
+
+  // 4) After confirming that the transaction from the tab acquiring locks is
+  // completed (which should evict the other tab if it's in BFCache), navigate
+  // the tab holding locks back to the page with IndexedDB.
+  ASSERT_TRUE(queue_acquiring_locks.WaitForMessage(&message_acquiring_locks));
+  ASSERT_EQ("\"transaction_completed\"", message_acquiring_locks);
+  if (ShouldAllowPageWithIndexedDBTransactionInBFCache()) {
+    // If the flag that enables a page with IndexedDB features to enter BFCache
+    // is toggled on, the page should be evicted by disallowing activation.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(tab_holding_locks->web_contents()));
+    ExpectNotRestored(
+        {NotRestoredReason::kIgnoreEventAndEvict}, {}, {}, {},
+        {DisallowActivationReasonId::kIndexedDBTransactionIsBlockingOthers},
+        FROM_HERE);
+  } else {
+    // If the flag is not toggled on, the page will not be eligible for BFCache
+    // because of the registered feature.
+    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
+    ASSERT_TRUE(HistoryGoBack(tab_holding_locks->web_contents()));
+    ExpectNotRestored({NotRestoredReason::kBlocklistedFeatures},
+                      {blink::scheduler::WebSchedulerTrackedFeature::
+                           kOutstandingIndexedDBTransaction},
+                      {}, {}, {}, FROM_HERE);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2655,7 +3140,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   Shell* tab_to_execute_service_worker = shell();
   Shell* tab_to_be_bfcached = CreateBrowser();
 
-  // Observe the new WebContents to trace the navigtion ID.
+  // Observe the new WebContents to trace the navigation ID.
   WebContentsObserver::Observe(tab_to_be_bfcached->web_contents());
 
   // 1) Navigate to A in |tab_to_execute_service_worker|.
@@ -2738,11 +3223,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictOnServiceWorkerClaim) {
   // 5) The service worker calls clients.claim(). |rfh_a| would normally be
   //    claimed but because it's in bfcache, it is evicted from the cache.
   EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker, "claim()"));
+  deleted.WaitUntilDeleted();
 
   // 6) Navigate to A in |tab_to_be_bfcached|.
   ASSERT_TRUE(HistoryGoBack(tab_to_be_bfcached->web_contents()));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(deleted.deleted());
   ExpectNotRestored({NotRestoredReason::kServiceWorkerClaim}, {}, {}, {}, {},
                     FROM_HERE);
 }
@@ -2799,11 +3283,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       "DONE",
       EvalJs(tab_to_unregister_service_worker,
              "unregister('service_worker_registration.html?to_be_bfcached')"));
-
+  deleted.WaitUntilDeleted();
   // 7) Navigate back to A in |tab_to_be_bfcached|.
   ASSERT_TRUE(HistoryGoBack(tab_to_be_bfcached->web_contents()));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(deleted.deleted());
   ExpectNotRestored({NotRestoredReason::kServiceWorkerUnregistration}, {}, {},
                     {}, {}, FROM_HERE);
 }

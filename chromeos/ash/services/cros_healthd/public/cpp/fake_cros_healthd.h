@@ -6,9 +6,11 @@
 #define CHROMEOS_ASH_SERVICES_CROS_HEALTHD_PUBLIC_CPP_FAKE_CROS_HEALTHD_H_
 
 #include <cstdint>
+#include <map>
 #include <vector>
 
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chromeos/ash/components/mojo_service_manager/mojom/mojo_service_manager.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
@@ -16,6 +18,7 @@
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health_types.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -132,6 +135,15 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
   void SetProbeMultipleProcessInfoResponseForTesting(
       mojom::MultipleProcessResultPtr& result);
 
+  // Set expectation about the parameter that is passed to a call of
+  // a Diagnostics routine (`Run*Routine`) and `GetRoutineUpdate`.
+  void SetExpectedLastPassedDiagnosticsParametersForTesting(
+      base::Value::Dict expected_parameters);
+
+  // Verifies that the actual passed parameters to Diagnostic
+  // routines match the previously set expectations.
+  bool DidExpectedDiagnosticsParametersMatch();
+
   // Adds a delay before the passed callback is called.
   void SetCallbackDelay(base::TimeDelta delay);
 
@@ -188,6 +200,11 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
 
   // Calls the USB event OnAdd on all registered USB observers.
   void EmitUsbAddEventForTesting();
+
+  // Calls the `OnEvent` method with `info` on all observers registered for
+  // `category`.
+  void EmitEventForCategory(mojom::EventCategoryEnum category,
+                            mojom::EventInfoPtr info);
 
   // Calls the network event OnConnectionStateChangedEvent on all registered
   // network observers.
@@ -363,6 +380,10 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
       override;
   void AddUsbObserver(
       mojo::PendingRemote<mojom::CrosHealthdUsbObserver> observer) override;
+  void AddEventObserver(
+      ash::cros_healthd::mojom::EventCategoryEnum category,
+      mojo::PendingRemote<ash::cros_healthd::mojom::EventObserver> observer)
+      override;
 
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(
@@ -434,10 +455,18 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
   mojo::RemoteSet<mojom::CrosHealthdThunderboltObserver> thunderbolt_observers_;
   // Collection of registered USB observers.
   mojo::RemoteSet<mojom::CrosHealthdUsbObserver> usb_observers_;
+  // Collection of registered general observers grouped by category.
+  std::map<mojom::EventCategoryEnum, mojo::RemoteSet<mojom::EventObserver>>
+      event_observers_;
 
   // Contains the most recent params passed to `GetRoutineUpdate`, if it has
   // been called.
   absl::optional<RoutineUpdateParams> routine_update_params_;
+
+  // Expectation of the passed parameters.
+  base::Value::Dict expected_passed_parameters_;
+  // Actually passed parameter.
+  base::Value::Dict actual_passed_parameters_;
 
   // Allow |this| to call the methods on the NetworkDiagnosticsRoutines
   // interface.

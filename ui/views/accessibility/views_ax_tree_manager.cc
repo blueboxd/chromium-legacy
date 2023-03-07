@@ -4,9 +4,9 @@
 
 #include "ui/views/accessibility/views_ax_tree_manager.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
@@ -23,13 +23,15 @@
 namespace views {
 
 ViewsAXTreeManager::ViewsAXTreeManager(Widget* widget)
-    : ui::AXTreeManager(ui::AXTreeID::CreateNewAXTreeID(),
-                        std::make_unique<ui::AXTree>()),
+    : ui::AXTreeManager(std::make_unique<ui::AXTree>()),
       widget_(widget),
-      tree_source_(cache_.GetOrCreate(widget), ax_tree_id_, &cache_),
+      tree_source_(cache_.GetOrCreate(widget),
+                   ui::AXTreeID::CreateNewAXTreeID(),
+                   &cache_),
       tree_serializer_(&tree_source_) {
   DCHECK(widget);
-  views::WidgetAXTreeIDMap::GetInstance().AddWidget(ax_tree_id_, widget);
+  views::WidgetAXTreeIDMap::GetInstance().AddWidget(tree_source_.tree_id(),
+                                                    widget);
   views_event_observer_.Observe(AXEventManager::Get());
   widget_observer_.Observe(widget);
 

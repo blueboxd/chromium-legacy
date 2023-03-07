@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/safe_base_name.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
@@ -102,6 +103,12 @@ constexpr auto kOSSettingsMap = base::MakeFixedFlatMap<ChromePage,
      chromeos::settings::mojom::kLanguagesSubpagePath},
     {ChromePage::PERDEVICEKEYBOARD,
      chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath},
+    {ChromePage::PERDEVICEMOUSE,
+     chromeos::settings::mojom::kPerDeviceMouseSubpagePath},
+    {ChromePage::PERDEVICEPOINTINGSTICK,
+     chromeos::settings::mojom::kPerDevicePointingStickSubpagePath},
+    {ChromePage::PERDEVICETOUCHPAD,
+     chromeos::settings::mojom::kPerDeviceTouchpadSubpagePath},
     {ChromePage::POINTEROVERLAY,
      chromeos::settings::mojom::kPointersSubpagePath},
     {ChromePage::POWER, chromeos::settings::mojom::kPowerSubpagePath},

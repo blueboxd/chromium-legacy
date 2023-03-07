@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/types/pass_key.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -30,9 +31,9 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
@@ -605,18 +606,36 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
   base::Value::List ReportToList(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
     base::Value::List result_list;
+    // Used for string comparisons with const char* below.
+    const std::string track_str = "track";
+    const std::string stream_str = "stream";
+    const std::string track_id_str = "trackId";
     for (const auto& stats : *report) {
+      // Filter out deprecated metrics.
+      // TODO(https://crbug.com/webrtc/14175): When these are no longer exposed
+      // in the lower layers, remove this filtering because it will then not be
+      // needed.
+      if (stats.type() == track_str || stats.type() == stream_str) {
+        continue;
+      }
       // The format of "stats_subdictionary" is:
       // {timestamp:<milliseconds>, values: [<key-value pairs>]}
+      // The timestamp unit is milliseconds but we want decimal
+      // precision so we convert ourselves.
       base::Value::Dict stats_subdictionary;
-      // Timestamp is reported in milliseconds.
-      stats_subdictionary.Set("timestamp", stats.timestamp_us() / 1000.0);
+      stats_subdictionary.Set(
+          "timestamp",
+          stats.timestamp().us() /
+              static_cast<double>(base::Time::kMicrosecondsPerMillisecond));
       // Values are reported as
       // "values": ["member1", value, "member2", value...]
       base::Value::List name_value_pairs;
       for (const auto* member : stats.Members()) {
-        if (!member->is_defined())
+        // TODO(https://crbug.com/webrtc/14175): When trackId is deleted we'll
+        // no longer need to filter it out here.
+        if (!member->is_defined() || member->name() == track_id_str) {
           continue;
+        }
         // Non-standardized / provisional stats which are not exposed
         // to Javascript are postfixed with an asterisk.
         std::string postfix = member->is_standardized() ? "" : "*";
@@ -733,6 +752,7 @@ PeerConnectionTracker::~PeerConnectionTracker() {}
 void PeerConnectionTracker::Bind(
     mojo::PendingReceiver<blink::mojom::blink::PeerConnectionManager>
         receiver) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver), GetSupplementable()->GetTaskRunner(
                                           TaskType::kMiscPlatformAPI));

@@ -911,8 +911,7 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
       box_->ForceLayout();
 
 #if DCHECK_IS_ON()
-    if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled() ||
-        !box_->IsSVGRoot()) {
+    if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled()) {
       // Assert that legacy uses the size NG forces above. But legacy sends
       // LayoutUnit to float and back, which can slightly change the result. So
       // give a 1px cushion.
@@ -1276,7 +1275,6 @@ NGBlockNode NGBlockNode::GetFieldsetContent() const {
 }
 
 bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   if (box.ForceLegacyLayout())
     return false;
   return box.IsLayoutNGObject() || box.IsLayoutReplaced();
@@ -1328,19 +1326,21 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   if (LIKELY(physical_fragment.IsFirstForNode())) {
     box_->SetSize(LayoutSize(physical_fragment.Size().width,
                              physical_fragment.Size().height));
-    // If this is a fragment from a node that didn't break into multiple
-    // fragments, write back the intrinsic size. We skip this if the node has
-    // fragmented, since intrinsic block-size is rather meaningless in that
-    // case, because the block-size may have been affected by something on the
-    // outside (i.e. the fragmentainer).
-    //
-    // If we had a fixed block size, our children will have sized themselves
-    // relative to the fixed size, which would make our intrinsic size incorrect
-    // (too big). So skip the write-back in that case, too.
-    if (LIKELY(is_last_fragment && !constraint_space.IsFixedBlockSize())) {
-      box_->SetIntrinsicContentLogicalHeight(
-          layout_result.IntrinsicBlockSize() -
-          border_scrollbar_padding.BlockSum());
+    if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+      // If this is a fragment from a node that didn't break into multiple
+      // fragments, write back the intrinsic size. We skip this if the node has
+      // fragmented, since intrinsic block-size is rather meaningless in that
+      // case, because the block-size may have been affected by something on
+      // the outside (i.e. the fragmentainer).
+      //
+      // If we had a fixed block size, our children will have sized themselves
+      // relative to the fixed size, which would make our intrinsic size
+      // incorrect (too big). So skip the write-back in that case, too.
+      if (LIKELY(is_last_fragment && !constraint_space.IsFixedBlockSize())) {
+        box_->SetIntrinsicContentLogicalHeight(
+            layout_result.IntrinsicBlockSize() -
+            border_scrollbar_padding.BlockSum());
+      }
     }
   } else {
     // Update logical height, unless this fragment is past the block-end of the
@@ -1424,9 +1424,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   else
     box_->ClearNeedsLayout();
 
-  // Overflow computation depends on this being set.
-  if (LIKELY(block_flow))
-    block_flow->SetIsSelfCollapsingFromNG(layout_result.IsSelfCollapsing());
+  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+    // Overflow computation depends on this being set.
+    if (LIKELY(block_flow)) {
+      block_flow->SetIsSelfCollapsingFromNG(layout_result.IsSelfCollapsing());
+    }
+  }
 
   // We should notify the display lock that we've done layout on self, and if
   // it's not blocked, on children.
@@ -1545,10 +1548,12 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       if (!child_box->IsColumnSpanAll())
         continue;
       LayoutBox* placeholder = child_box->SpannerPlaceholder();
-      if (!child_fragment.BreakToken()) {
-        // Last fragment for this spanner. Update its placeholder.
-        placeholder->SetLocation(child_box->Location());
-        placeholder->SetSize(child_box->Size());
+      if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+        if (!child_fragment.BreakToken()) {
+          // Last fragment for this spanner. Update its placeholder.
+          placeholder->SetLocation(child_box->Location());
+          placeholder->SetSize(child_box->Size());
+        }
       }
 
       flow_thread->SkipColumnSpanner(child_box, flow_thread_offset);

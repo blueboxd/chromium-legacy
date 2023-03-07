@@ -9,10 +9,10 @@
 #include "ash/constants/ash_paths.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
@@ -237,7 +237,7 @@ const std::string& ExternalLoader::GetOemAppsFolderName() {
 
 void ExternalLoader::Load() {
   base::FilePath ordinals_file;
-  CHECK(base::PathService::Get(FILE_DEFAULT_APP_ORDER, &ordinals_file));
+  CHECK(base::PathService::Get(ash::FILE_DEFAULT_APP_ORDER, &ordinals_file));
 
   std::unique_ptr<base::Value::List> ordinals_value =
       ReadExternalOrdinalFile(ordinals_file);

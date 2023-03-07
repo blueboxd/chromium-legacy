@@ -7,19 +7,19 @@
 #include <string>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/system/diagnostics/networking_log.h"
 #include "ash/webui/diagnostics_ui/backend/common/histogram_util.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_util.h"
-#include "chromeos/services/network_config/in_process_instance.h"
+#include "chromeos/ash/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace ash {
 namespace diagnostics {
+
 namespace {
 
 namespace network_mojom = ::chromeos::network_config::mojom;
@@ -542,7 +542,7 @@ void NetworkHealthProvider::OnDeviceStateListReceived(
 }
 
 std::string NetworkHealthProvider::AddNewNetwork(
-    const chromeos::network_config::mojom::DeviceStatePropertiesPtr& device) {
+    const network_mojom::DeviceStatePropertiesPtr& device) {
   std::string observer_guid = base::GenerateGUID();
   auto network = mojom::Network::New();
   network->observer_guid = observer_guid;
@@ -632,7 +632,6 @@ void NetworkHealthProvider::OnManagedPropertiesReceived(
 
 void NetworkHealthProvider::BindInterface(
     mojo::PendingReceiver<mojom::NetworkHealthProvider> pending_receiver) {
-  DCHECK(features::IsNetworkingInDiagnosticsAppEnabled());
   receiver_.reset();
   receiver_.Bind(std::move(pending_receiver));
 }

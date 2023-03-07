@@ -24,26 +24,32 @@ bool FillLayersEqual(const FillLayer& a_layers, const FillLayer& b_layers) {
     switch (property) {
       case CSSPropertyID::kBackgroundPositionX:
       case CSSPropertyID::kWebkitMaskPositionX:
-        if (a_layer->PositionX() != b_layer->PositionX())
+        if (a_layer->PositionX() != b_layer->PositionX()) {
           return false;
-        if (a_layer->BackgroundXOrigin() != b_layer->BackgroundXOrigin())
+        }
+        if (a_layer->BackgroundXOrigin() != b_layer->BackgroundXOrigin()) {
           return false;
+        }
         break;
       case CSSPropertyID::kBackgroundPositionY:
       case CSSPropertyID::kWebkitMaskPositionY:
-        if (a_layer->PositionY() != b_layer->PositionY())
+        if (a_layer->PositionY() != b_layer->PositionY()) {
           return false;
-        if (a_layer->BackgroundYOrigin() != b_layer->BackgroundYOrigin())
+        }
+        if (a_layer->BackgroundYOrigin() != b_layer->BackgroundYOrigin()) {
           return false;
+        }
         break;
       case CSSPropertyID::kBackgroundSize:
       case CSSPropertyID::kWebkitMaskSize:
-        if (!(a_layer->SizeLength() == b_layer->SizeLength()))
+        if (!(a_layer->SizeLength() == b_layer->SizeLength())) {
           return false;
+        }
         break;
       case CSSPropertyID::kBackgroundImage:
-        if (!base::ValuesEquivalent(a_layer->GetImage(), b_layer->GetImage()))
+        if (!base::ValuesEquivalent(a_layer->GetImage(), b_layer->GetImage())) {
           return false;
+        }
         break;
       default:
         NOTREACHED();
@@ -168,6 +174,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.FontSizeAdjust() == b.FontSizeAdjust();
     case CSSPropertyID::kFontStretch:
       return a.GetFontStretch() == b.GetFontStretch();
+    case CSSPropertyID::kFontStyle:
+      return a.GetFontStyle() == b.GetFontStyle();
     case CSSPropertyID::kFontVariationSettings:
       return base::ValuesEquivalent(a.GetFontDescription().VariationSettings(),
                                     b.GetFontDescription().VariationSettings());

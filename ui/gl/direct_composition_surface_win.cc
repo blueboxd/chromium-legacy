@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
@@ -44,11 +44,9 @@ DirectCompositionSurfaceWin::PendingFrame::operator=(PendingFrame&& other) =
 
 DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     GLDisplayEGL* display,
-    HWND parent_window,
     VSyncCallback vsync_callback,
     const Settings& settings)
     : GLSurfaceEGL(display),
-      child_window_(parent_window),
       vsync_callback_(std::move(vsync_callback)),
       vsync_thread_(VSyncThreadWin::GetInstance()),
       task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
@@ -76,10 +74,9 @@ bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
 
   child_window_.Initialize();
 
-  window_ = child_window_.window();
-
-  if (!layer_tree_->Initialize(window_))
+  if (!layer_tree_->Initialize(window())) {
     return false;
+  }
 
   if (!root_surface_->Initialize(GLSurfaceFormat()))
     return false;
@@ -124,7 +121,7 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
                                          const gfx::ColorSpace& color_space,
                                          bool has_alpha) {
   // Force a resize and redraw (but not a move, activate, etc.).
-  if (!SetWindowPos(window_, nullptr, 0, 0, size.width(), size.height(),
+  if (!SetWindowPos(window(), nullptr, 0, 0, size.width(), size.height(),
                     SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS |
                         SWP_NOOWNERZORDER | SWP_NOZORDER)) {
     return false;
@@ -134,7 +131,7 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
 
 gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     PresentationCallback callback,
-    FrameData data) {
+    gfx::FrameData data) {
   TRACE_EVENT0("gpu", "DirectCompositionSurfaceWin::SwapBuffers");
 
   gfx::Rect swap_rect;
@@ -158,7 +155,7 @@ gfx::SwapResult DirectCompositionSurfaceWin::PostSubBuffer(
     int width,
     int height,
     PresentationCallback callback,
-    FrameData data) {
+    gfx::FrameData data) {
   // The arguments are ignored because SetDrawRectangle specified the area to
   // be swapped.
   return SwapBuffers(std::move(callback), data);
@@ -187,7 +184,7 @@ void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
 }
 
 bool DirectCompositionSurfaceWin::ScheduleDCLayer(
-    std::unique_ptr<ui::DCRendererLayerParams> params) {
+    std::unique_ptr<DCLayerOverlayParams> params) {
   return layer_tree_->ScheduleDCLayer(std::move(params));
 }
 

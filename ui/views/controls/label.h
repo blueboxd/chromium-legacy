@@ -13,6 +13,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
@@ -97,11 +98,9 @@ class VIEWS_EXPORT Label : public View,
   const std::u16string& GetText() const;
   virtual void SetText(const std::u16string& text);
 
-  // Set the accessibility name that will be announced by the screen reader.
-  // If this function is not called, the screen reader defaults to verbalizing
-  // the text value.
-  void SetAccessibleName(const std::u16string& name);
-  const std::u16string& GetAccessibleName() const;
+  // Returns the value of `accessible_name_` if it has been set, otherwise the
+  // text value.
+  const std::u16string& GetAccessibleName() const override;
 
   // Where the label appears in the UI. Passed in from the constructor. This is
   // a value from views::style::TextContext or an enum that extends it.
@@ -133,6 +132,7 @@ class VIEWS_EXPORT Label : public View,
   // enabled.
   SkColor GetEnabledColor() const;
   virtual void SetEnabledColor(SkColor color);
+  absl::optional<ui::ColorId> GetEnabledColorId() const;
   void SetEnabledColorId(absl::optional<ui::ColorId> enabled_color_id);
 
   // Gets/Sets the background color. This won't be explicitly drawn, but the
@@ -499,9 +499,6 @@ class VIEWS_EXPORT Label : public View,
   int max_width_single_line_ = 0;
 
   std::unique_ptr<SelectionController> selection_controller_;
-
-  // Accessibility data.
-  std::u16string accessible_name_;
 
   // Context menu related members.
   ui::SimpleMenuModel context_menu_contents_;

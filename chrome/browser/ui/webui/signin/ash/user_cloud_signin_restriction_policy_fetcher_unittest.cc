@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -128,8 +128,8 @@ class UserCloudSigninRestrictionPolicyFetcherTest : public ::testing::Test {
 TEST_F(UserCloudSigninRestrictionPolicyFetcherTest,
        FetchingPolicyValueSucceeds) {
   // Set API response.
-  base::Value expected_response(base::Value::Type::DICTIONARY);
-  expected_response.SetStringKey("policyValue", "primary_account_signin");
+  base::Value::Dict expected_response;
+  expected_response.Set("policyValue", "primary_account_signin");
   std::string response;
   JSONStringValueSerializer serializer(&response);
   ASSERT_TRUE(serializer.Serialize(expected_response));

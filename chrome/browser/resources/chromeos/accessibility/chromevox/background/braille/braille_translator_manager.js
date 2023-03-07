@@ -24,7 +24,7 @@ export class BrailleTranslatorManager {
             chrome.extension.getURL(
                 'chromevox/background/braille/liblouis_wrapper.js'),
             chrome.extension.getURL('chromevox/background/braille/tables'),
-            this.loadLiblouis_.bind(this));
+            () => this.loadLiblouis_());
 
     /** @private {!Array<function()>} */
     this.changeListeners_ = [];
@@ -174,7 +174,7 @@ export class BrailleTranslatorManager {
         this.tables_ = tables;
 
         // Initial refresh; set options from user preferences.
-        this.refresh(LocalStorage.get('brailleTable'), undefined, r);
+        this.refresh(LocalStorage.getString('brailleTable', ''), undefined, r);
       });
     });
   }

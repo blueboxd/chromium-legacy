@@ -3,41 +3,14 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//tools/grit/preprocess_if_expr.gni")
-import("//ui/webui/resources/tools/generate_grd.gni")
-
-preprocess_folder = "$root_gen_dir/ui/webui/resources/preprocessed/js"
-preprocess_src_manifest = "preprocessed_src_manifest.json"
+import("../tools/build_cr_component.gni")
 
 include_polymer = !is_android && !is_ios
 
-generate_grd("build_grdp") {
+build_cr_component("build") {
   grd_prefix = "webui_js"
-  out_grd = "$target_gen_dir/resources.grdp"
-  public_deps = [ ":preprocess" ]
-  manifest_files = [ "$target_gen_dir/$preprocess_src_manifest" ]
-  if (include_polymer) {
-    manifest_files += [ "$target_gen_dir/browser_command/build_ts.manifest" ]
-  }
-  resource_path_prefix = "js"
-}
 
-group("preprocess") {
-  public_deps = [
-    ":preprocess_src",
-    ":preprocess_src_ts",
-  ]
-  if (include_polymer) {
-    public_deps += [ "browser_command:build_ts" ]
-  }
-}
-
-# TS files are passed to a separate target so that they are not listed in the
-# |out_manifest|.
-preprocess_if_expr("preprocess_src_ts") {
-  in_folder = "./"
-  out_folder = "$preprocess_folder"
-  in_files = [
+  non_web_component_files = [
     "action_link.ts",
     "assert_ts.ts",
     "color_utils.ts",
@@ -51,6 +24,7 @@ preprocess_if_expr("preprocess_src_ts") {
     "icon.ts",
     "keyboard_shortcut_list.ts",
     "load_time_data.ts",
+    "load_time_data_deprecated.js",
     "parse_html_subset.ts",
     "platform.ts",
     "plural_string_proxy.ts",
@@ -64,32 +38,29 @@ preprocess_if_expr("preprocess_src_ts") {
   ]
 
   if (is_chromeos) {
-    in_files += [ "os_about.ts" ]
-  }
-
-  if (include_polymer) {
-    in_files += [
-      "focus_row_mixin.ts",
-      "focus_without_ink.ts",
-    ]
-  }
-}
-
-preprocess_if_expr("preprocess_src") {
-  in_folder = "./"
-  out_folder = "$preprocess_folder"
-  out_manifest = "$target_gen_dir/$preprocess_src_manifest"
-  in_files = [ "load_time_data_deprecated.js" ]
-
-  if (is_chromeos_ash || is_ios) {
-    # Used by ChromeOS UIs and ios inspect and omaha UIs
-    in_files += [ "util_deprecated.js" ]
+    non_web_component_files += [ "os_about.ts" ]
   }
 
   if (is_ios) {
-    in_files += [
+    non_web_component_files += [
       "ios/mojo_api.js",
       "ios/web_ui.js",
     ]
   }
+
+  if (is_chromeos_ash || is_ios) {
+    # Used by ChromeOS UIs and ios inspect and omaha UIs
+    non_web_component_files += [ "util_deprecated.js" ]
+  }
+
+  if (include_polymer) {
+    non_web_component_files += [
+      "focus_row_mixin.ts",
+      "focus_without_ink.ts",
+    ]
+  }
+
+  tsc_dir = "$root_gen_dir/ui/webui/resources/preprocessed/js"
+  ts_deps = [ "../mojo:library" ]
+  ts_definitions = [ "//tools/typescript/definitions/chrome_send.d.ts" ]
 }

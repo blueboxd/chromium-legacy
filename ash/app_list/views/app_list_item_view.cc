@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_item_util.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
@@ -17,20 +18,23 @@
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/apps_grid_context_menu.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dot_indicator.h"
+#include "ash/style/style_util.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -46,7 +50,10 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -71,9 +78,6 @@ constexpr float kDragDropAppIconScale = 1.2f;
 
 // The drag and drop icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionInMs = 200;
-
-// The width of the focus ring within a folder.
-constexpr int kFocusRingWidth = 2;
 
 // The size of the notification indicator circle over the size of the icon.
 constexpr float kNotificationIndicatorWidthRatio = 14.0f / 64.0f;
@@ -299,6 +303,38 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
   set_suppress_default_focus_handling();
   GetViewAccessibility().OverrideIsLeaf(true);
 
+  StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
+                                   /*highlight_on_hover=*/false,
+                                   /*highlight_on_focus=*/false,
+                                   /*background_color=*/gfx::kPlaceholderColor);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
+
+  SetHideInkDropWhenShowingContextMenu(false);
+  SetShowInkDropWhenHotTracked(false);
+  SetHasInkDropActionOnClick(false);
+
+  StyleUtil::SetUpFocusRingForView(this);
+  views::FocusRing::Get(this)->SetHasFocusPredicate([&](View* view) -> bool {
+    // With a `view_delegate_` present, focus ring should only show when
+    // button is focused and keyboard traversal is engaged.
+    if (view_delegate_ && !view_delegate_->KeyboardTraversalEngaged()) {
+      return false;
+    }
+
+    if (drag_state_ != DragState::kNone) {
+      return false;
+    }
+
+    if (waiting_for_context_menu_options_ || IsShowingAppMenu()) {
+      return false;
+    }
+
+    return view->HasFocus();
+  });
+
+  views::InstallRoundRectHighlightPathGenerator(
+      this, gfx::Insets(1), app_list_config_->grid_focus_corner_radius());
+
   auto title = std::make_unique<views::Label>();
   title->SetBackgroundColor(SK_ColorTRANSPARENT);
   title->SetHandlesTooltips(false);
@@ -321,8 +357,8 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
                             false /*animate*/);
   }
 
-  notification_indicator_ = AddChildView(
-      std::make_unique<DotIndicator>(item->GetNotificationBadgeColor(this)));
+  notification_indicator_ =
+      AddChildView(std::make_unique<DotIndicator>(gfx::kPlaceholderColor));
   notification_indicator_->SetVisible(item->has_notification_badge());
 
   title_ = AddChildView(std::move(title));
@@ -398,6 +434,9 @@ void AppListItemView::UpdateAppListConfig(
   app_list_config_ = app_list_config;
 
   DCHECK(app_list_config_);
+
+  views::InstallRoundRectHighlightPathGenerator(
+      this, gfx::Insets(1), app_list_config_->grid_focus_corner_radius());
 
   if (!item_weak_) {
     SetIcon(gfx::ImageSkia());
@@ -498,6 +537,10 @@ void AppListItemView::OnImplicitAnimationsCompleted() {
 }
 
 void AppListItemView::SetTouchDragging(bool touch_dragging) {
+  // Drag and drop refactor handles all drag operations as Mouse Dragging.
+  // TODO(b/261985897): Figure out a way to correctly direct drag operations.
+  DCHECK(!app_list_features::IsDragAndDropRefactorEnabled());
+
   if (touch_dragging_ == touch_dragging)
     return;
 
@@ -522,6 +565,7 @@ void AppListItemView::SetMouseDragging(bool mouse_dragging) {
 }
 
 void AppListItemView::OnMouseDragTimer() {
+  DCHECK(!app_list_features::IsDragAndDropRefactorEnabled());
   // Show scaled up app icon to indicate draggable state.
   SetMouseDragging(true);
 }
@@ -529,14 +573,18 @@ void AppListItemView::OnMouseDragTimer() {
 void AppListItemView::OnTouchDragTimer(
     const gfx::Point& tap_down_location,
     const gfx::Point& tap_down_root_location) {
+  DCHECK(!app_list_features::IsDragAndDropRefactorEnabled());
   // Show scaled up app icon to indicate draggable state.
   if (!InitiateDrag(tap_down_location, tap_down_root_location))
     return;
+
   SetTouchDragging(true);
 }
 
 bool AppListItemView::InitiateDrag(const gfx::Point& location,
                                    const gfx::Point& root_location) {
+  DCHECK(!app_list_features::IsDragAndDropRefactorEnabled());
+
   if (!grid_delegate_->InitiateDrag(
           this, location, root_location,
           base::BindOnce(&AppListItemView::OnDragStarted,
@@ -550,8 +598,6 @@ bool AppListItemView::InitiateDrag(const gfx::Point& location,
 }
 
 void AppListItemView::OnDragStarted() {
-  DCHECK_EQ(DragState::kInitialized, drag_state_);
-
   mouse_drag_timer_.Stop();
   touch_drag_timer_.Stop();
   drag_state_ = DragState::kStarted;
@@ -560,8 +606,6 @@ void AppListItemView::OnDragStarted() {
 }
 
 void AppListItemView::OnDragEnded() {
-  DCHECK_NE(drag_state_, DragState::kNone);
-
   mouse_dragging_ = false;
   mouse_drag_timer_.Stop();
 
@@ -701,8 +745,6 @@ void AppListItemView::OnContextMenuModelReceived(
 
   // Screen bounds don't need RTL flipping.
   gfx::Rect anchor_rect = GetBoundsInScreen();
-  // Anchor the menu to the same rect that is used for selection highlight.
-  AdaptBoundsForSelectionHighlight(&anchor_rect);
 
   // Assign the correct app type to `item_menu_model_adapter_` according to the
   // parent view of the app list item view.
@@ -753,6 +795,10 @@ void AppListItemView::ShowContextMenuForViewImpl(
   if (waiting_for_context_menu_options_)
     return;
   waiting_for_context_menu_options_ = true;
+  views::InkDrop::Get(this)->SetMode(
+      views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
+  views::InkDrop::Get(this)->AnimateToState(views::InkDropState::ACTIVATED,
+                                            nullptr);
 
   // When the context menu comes from the apps grid it has sorting options. When
   // it comes from recent apps it has an option to hide the continue section.
@@ -766,6 +812,9 @@ void AppListItemView::ShowContextMenuForViewImpl(
 }
 
 bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
+  if (drag_state_ != DragState::kNone) {
+    return false;
+  }
   // Don't enter pushed state for ET_GESTURE_TAP_DOWN so that hover gray
   // background does not show up during scroll.
   if (event.type() == ui::ET_GESTURE_TAP_DOWN)
@@ -775,45 +824,6 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
 }
 
 void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
-  if (drag_state_ != DragState::kNone)
-    return;
-
-  const views::Widget* app_list_widget = GetWidget();
-  if ((grid_delegate_->IsSelectedView(this) || HasFocus()) &&
-      (view_delegate_->KeyboardTraversalEngaged() ||
-       waiting_for_context_menu_options_ || IsShowingAppMenu())) {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    // Clamshell Launcher always has keyboard traversal engaged, so explicitly
-    // check HasFocus() before drawing focus ring. This allows right-click
-    // "selected" apps to avoid drawing the focus ring.
-    const bool draw_focus_ring =
-        view_delegate_->IsInTabletMode()
-            ? view_delegate_->KeyboardTraversalEngaged()
-            : HasFocus();
-    if (draw_focus_ring) {
-      flags.setColor(
-          AppListColorProvider::Get()->GetFocusRingColor(app_list_widget));
-      flags.setStyle(cc::PaintFlags::kStroke_Style);
-      flags.setStrokeWidth(kFocusRingWidth);
-    } else {
-      // Draw a background highlight ("selected" in the UI spec).
-      const AppListColorProvider* color_provider = AppListColorProvider::Get();
-      const SkColor bg_color =
-          grid_delegate_->IsInFolder()
-              ? color_provider->GetFolderBackgroundColor(app_list_widget)
-              : gfx::kPlaceholderColor;
-      flags.setColor(SkColorSetA(
-          color_provider->GetInkDropBaseColor(app_list_widget, bg_color),
-          color_provider->GetInkDropOpacity(app_list_widget, bg_color) * 255));
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-    }
-    gfx::Rect selection_highlight_bounds = GetContentsBounds();
-    AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);
-    canvas->DrawRoundRect(gfx::RectF(selection_highlight_bounds),
-                          app_list_config_->grid_focus_corner_radius(), flags);
-  }
-
   const int preview_circle_radius = GetPreviewCircleRadius();
   if (!preview_circle_radius)
     return;
@@ -830,7 +840,11 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
 }
 
 bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
-  Button::OnMousePressed(event);
+  bool return_value = Button::OnMousePressed(event);
+
+  if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    return return_value;
+  }
 
   if (!ShouldEnterPushedState(event))
     return true;
@@ -847,6 +861,8 @@ void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;
+
+  views::FocusRing::Get(this)->Layout();
 
   const gfx::Rect icon_bounds = GetIconBoundsForTargetViewBounds(
       app_list_config_, rect, icon_->GetImageBounds().size(), icon_scale_);
@@ -907,6 +923,10 @@ void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   if (!weak_this)
     return;
 
+  if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    return;
+  }
+
   SetMouseDragging(false);
 
   // EndDrag may delete |this|.
@@ -917,12 +937,21 @@ void AppListItemView::OnMouseCaptureLost() {
   Button::OnMouseCaptureLost();
   SetMouseDragging(false);
 
+  if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    return;
+  }
+
   // EndDrag may delete |this|.
   grid_delegate_->EndDrag(/*cancel=*/true);
 }
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
-  Button::OnMouseDragged(event);
+  bool return_value = Button::OnMouseDragged(event);
+
+  if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    return return_value;
+  }
+
   if (drag_state_ != DragState::kNone && mouse_dragging_) {
     // Update the drag location of the drag proxy if it has been created.
     // If the drag is no longer happening, it could be because this item
@@ -948,15 +977,44 @@ void AppListItemView::OnFocus() {
   if (focus_silently_)
     return;
   grid_delegate_->SetSelectedView(this);
+  views::FocusRing::Get(this)->SchedulePaint();
 }
 
 void AppListItemView::OnBlur() {
-  SchedulePaint();
   if (grid_delegate_->IsSelectedView(this))
     grid_delegate_->ClearSelectedView();
+  views::FocusRing::Get(this)->SchedulePaint();
+}
+
+int AppListItemView::GetDragOperations(const gfx::Point& press_pt) {
+  return app_list_features::IsDragAndDropRefactorEnabled()
+             ? ui::DragDropTypes::DRAG_MOVE
+             : views::View::GetDragOperations(press_pt);
+}
+
+void AppListItemView::WriteDragData(const gfx::Point& press_pt,
+                                    OSExchangeData* data) {
+  if (!app_list_features::IsDragAndDropRefactorEnabled()) {
+    views::View::WriteDragData(press_pt, data);
+    return;
+  }
+
+  SetMouseDragging(true);
+  if (item_weak_) {
+    data->provider().SetDragImage(icon_image_, press_pt.OffsetFromOrigin());
+    base::Pickle data_pickle;
+    data_pickle.WriteString(item_weak_->id());
+    data->SetPickledData(GetAppItemFormatType(), data_pickle);
+  }
 }
 
 void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
+  if (app_list_features::IsDragAndDropRefactorEnabled() &&
+      event->type() != ui::ET_GESTURE_TAP_DOWN) {
+    Button::OnGestureEvent(event);
+    return;
+  }
+
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {
@@ -1022,8 +1080,10 @@ void AppListItemView::OnThemeChanged() {
   views::Button::OnThemeChanged();
   if (item_weak_) {
     item_weak_->RequestFolderIconUpdate();
-    notification_indicator_->SetColor(
-        item_weak_->GetNotificationBadgeColor(this));
+    SkColor notification_indicator_color =
+        is_folder_ ? GetColorProvider()->GetColor(cros_tokens::kIconColorBlue)
+                   : item_weak_->GetNotificationBadgeColor();
+    notification_indicator_->SetColor(notification_indicator_color);
   }
   SchedulePaint();
 }
@@ -1152,6 +1212,10 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void AppListItemView::OnMenuClosed() {
+  views::InkDrop::Get(this)->AnimateToState(views::InkDropState::HIDDEN,
+                                            nullptr);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
+
   // Release menu since its menu model delegate (AppContextMenu) could be
   // released as a result of menu command execution.
   item_menu_model_adapter_.reset();
@@ -1278,8 +1342,7 @@ void AppListItemView::ItemBadgeVisibilityChanged() {
 }
 
 void AppListItemView::ItemBadgeColorChanged() {
-  notification_indicator_->SetColor(
-      item_weak_->GetNotificationBadgeColor(this));
+  notification_indicator_->SetColor(item_weak_->GetNotificationBadgeColor());
 }
 
 void AppListItemView::ItemIsNewInstallChanged() {
@@ -1294,6 +1357,12 @@ void AppListItemView::ItemBeingDestroyed() {
   DCHECK(item_weak_);
   item_weak_->RemoveObserver(this);
   item_weak_ = nullptr;
+
+  // TODO(b/261985897): Consider canceling drag when the item is being
+  // destroyed.
+  if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    return;
+  }
 
   // `EndDrag()` may delete this.
   if (drag_state_ != DragState::kNone)
@@ -1313,14 +1382,6 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
   dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(base::Milliseconds(250));
-}
-
-void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
-  // Update the bounds to account for the focus ring width - by default, the
-  // focus ring is painted so the highlight bounds are centered within the
-  // focus ring stroke - this should be overridden so the outer stroke bounds
-  // match the grid focus size set in the app list config.
-  bounds->Inset(gfx::Insets(kFocusRingWidth / 2));
 }
 
 BEGIN_METADATA(AppListItemView, views::Button)

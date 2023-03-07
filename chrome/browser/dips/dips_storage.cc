@@ -77,14 +77,10 @@ DIPSState DIPSStorage::ReadSite(std::string site) {
 
   if (state.has_value()) {
     // We should not have entries in the DB without any timestamps.
-    DCHECK(state->site_storage_times.first.has_value() ||
-           state->site_storage_times.last.has_value() ||
-           state->user_interaction_times.first.has_value() ||
-           state->user_interaction_times.last.has_value() ||
-           state->stateful_bounce_times.first.has_value() ||
-           state->stateful_bounce_times.last.has_value() ||
-           state->bounce_times.first.has_value() ||
-           state->bounce_times.last.has_value());
+    DCHECK(state->site_storage_times.has_value() ||
+           state->user_interaction_times.has_value() ||
+           state->stateful_bounce_times.has_value() ||
+           state->bounce_times.has_value());
 
     return DIPSState(this, std::move(site), state.value());
   }
@@ -111,6 +107,9 @@ void DIPSStorage::RemoveEvents(base::Time delete_begin,
   if (delete_end.is_null()) {
     delete_end = base::Time::Max();
   }
+  if (delete_begin.is_null()) {
+    delete_begin = base::Time::Min();
+  }
 
   if (filter.is_null()) {
     db_->RemoveEventsByTime(delete_begin, delete_end, type);
@@ -124,7 +123,8 @@ void DIPSStorage::RemoveEvents(base::Time delete_begin,
     // necessary.
     // Time ranges aren't currently supported for site-filtered
     // deletion of DIPS Events.
-    if (delete_begin != base::Time() || delete_end != base::Time::Max()) {
+    if (delete_begin != base::Time::Min() || delete_end != base::Time::Max()) {
+      // TODO (kaklilu@): Add a UMA metric to record if this happens.
       return;
     }
 
@@ -138,6 +138,7 @@ void DIPSStorage::RemoveEvents(base::Time delete_begin,
 
 void DIPSStorage::RemoveRows(const std::vector<std::string>& sites) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   db_->RemoveRows(sites);
 }
 
@@ -150,11 +151,11 @@ void DIPSStorage::RecordStorage(const GURL& url,
   DCHECK(db_);
 
   DIPSState state = Read(url);
-  if (!state.site_storage_times().first.has_value() &&
-      state.user_interaction_times().last.has_value()) {
+  if (!state.site_storage_times().has_value() &&
+      state.user_interaction_times().has_value()) {
     // First storage, but previous interaction.
-    UmaHistogramTimeToStorage(
-        time - state.user_interaction_times().last.value(), mode);
+    UmaHistogramTimeToStorage(time - state.user_interaction_times()->second,
+                              mode);
   }
 
   state.update_site_storage_time(time);
@@ -167,12 +168,12 @@ void DIPSStorage::RecordInteraction(const GURL& url,
   DCHECK(db_);
 
   DIPSState state = Read(url);
-  if (!state.user_interaction_times().first.has_value() &&
-      state.site_storage_times().first.has_value()) {
+  if (!state.user_interaction_times().has_value() &&
+      state.site_storage_times().has_value()) {
     // Site previously wrote to storage. Record metric for the time delay
     // between first storage and interaction.
-    UmaHistogramTimeToInteraction(
-        time - state.site_storage_times().first.value(), mode);
+    UmaHistogramTimeToInteraction(time - state.site_storage_times()->first,
+                                  mode);
   }
 
   state.update_user_interaction_time(time);
@@ -208,7 +209,7 @@ std::vector<std::string> DIPSStorage::GetSitesThatUsedStorage() const {
   return db_->GetSitesThatUsedStorage();
 }
 
-void DIPSStorage::DeleteDIPSEligibleState(DIPSCookieMode mode) {
+std::vector<std::string> DIPSStorage::GetSitesToClear() const {
   std::vector<std::string> sites_to_clear;
   switch (dips::kTriggeringAction.Get()) {
     case DIPSTriggeringAction::kStorage: {
@@ -225,13 +226,7 @@ void DIPSStorage::DeleteDIPSEligibleState(DIPSCookieMode mode) {
     }
   }
 
-  base::UmaHistogramCounts1000(base::StrCat({"Privacy.DIPS.ClearedSitesCount",
-                                             GetHistogramSuffix(mode)}),
-                               sites_to_clear.size());
-
-  // Perform clearing of sites.
-  // TODO: Actually clear the site-data for `sites_to_clear` here as well.
-  RemoveRows(sites_to_clear);
+  return sites_to_clear;
 }
 
 /* static */
@@ -247,13 +242,13 @@ void DIPSStorage::PrepopulateChunk(PrepopulateArgs args) {
       std::min(args.sites.size() - args.offset, g_prepopulate_chunk_size);
   for (size_t i = 0; i < chunk_size; i++) {
     DIPSState state = ReadSite(args.sites[args.offset + i]);
-    if (state.user_interaction_times().first) {
+    if (state.user_interaction_times().has_value()) {
       continue;
     }
 
     state.update_user_interaction_time(args.time);
 
-    if (!state.site_storage_times().first) {
+    if (!state.site_storage_times().has_value()) {
       // If we set a fake interaction time but no storage time, then when
       // storage does happen we'll report an incorrect
       // TimeFromInteractionToStorage metric. So set the storage time too.

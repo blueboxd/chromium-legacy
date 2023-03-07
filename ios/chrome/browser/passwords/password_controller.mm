@@ -13,7 +13,7 @@
 #import <utility>
 #import <vector>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
@@ -39,7 +39,7 @@
 #import "components/password_manager/core/browser/password_generation_frame_helper.h"
 #import "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
-#import "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/core/browser/password_sync_util.h"
 #import "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/password_form_helper.h"
@@ -59,8 +59,8 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/credential_provider_promo_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
 #import "ios/chrome/browser/ui/commands/password_suggestion_commands.h"
@@ -72,6 +72,7 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -109,11 +110,6 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 
 // Duration for notify user auto-sign in dialog being displayed.
 constexpr int kNotifyAutoSigninDuration = 3;  // seconds
-// Helper to check if password manager rebranding finch flag is enabled.
-BOOL IsPasswordManagerBrandingUpdateEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kIOSEnablePasswordManagerBrandingUpdate);
-}
 }  // namespace
 
 @interface PasswordController () <SharedPasswordControllerDelegate>
@@ -122,12 +118,6 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
 // PasswordController.
 @property(nonatomic, strong)
     NotifyUserAutoSigninViewController* notifyAutoSigninViewController;
-
-// The action sheet coordinator, if one is currently being shown.
-@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
-
-// Tracks current potential generated password until accepted or rejected.
-@property(nonatomic, copy) NSString* generatedPotentialPassword;
 
 // Displays infobar for `form` with `type`. If `type` is UPDATE, the user
 // is prompted to update the password. If `type` is SAVE, the user is prompted
@@ -356,19 +346,12 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
                                                         completion:completion];
 }
 
-#pragma mark - Private methods
-
-// Returns the user email.
-- (NSString*)userEmail {
-  DCHECK(self.browserState);
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
-  id<SystemIdentity> authenticatedIdentity =
-      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
-
-  return authenticatedIdentity.userEmail;
+- (void)showCredentialProviderPromo:(CredentialProviderPromoTrigger)trigger {
+  [self.credentialProviderPromoHandler
+      showCredentialProviderPromoWithTrigger:trigger];
 }
+
+#pragma mark - Private methods
 
 // The dispatcher used for PasswordBreachCommands.
 - (id<PasswordBreachCommands>)passwordBreachDispatcher {
@@ -380,6 +363,12 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
 - (id<PasswordProtectionCommands>)passwordProtectionDispatcher {
   DCHECK(self.dispatcher);
   return HandlerForProtocol(self.dispatcher, PasswordProtectionCommands);
+}
+
+// The handler used for CredentialProviderPromoCommands.
+- (id<CredentialProviderPromoCommands>)credentialProviderPromoHandler {
+  DCHECK(self.dispatcher);
+  return HandlerForProtocol(self.dispatcher, CredentialProviderPromoCommands);
 }
 
 // The dispatcher used for PasswordSuggestionCommands.
@@ -432,20 +421,16 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
     return;
   }
 
-  bool isSyncUser = false;
+  absl::optional<std::string> accountToStorePassword = absl::nullopt;
   if (self.browserState) {
     syncer::SyncService* syncService =
         SyncServiceFactory::GetForBrowserState(self.browserState);
-    isSyncUser =
-        password_bubble_experiment::HasChosenToSyncPasswords(syncService);
+    accountToStorePassword =
+        password_manager::sync_util::GetSyncingAccount(syncService);
   }
+
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
-  id<SystemIdentity> authenticatedIdentity =
-      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
 
   switch (type) {
     case PasswordInfoBarType::SAVE: {
@@ -457,7 +442,7 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
       }
 
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-          authenticatedIdentity.userEmail, isSyncUser,
+          accountToStorePassword,
           /*password_update=*/false, std::move(form));
       std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
           InfobarType::kInfobarTypePasswordSave, std::move(delegate),
@@ -475,7 +460,7 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
         }
 
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-            authenticatedIdentity.userEmail, isSyncUser,
+            accountToStorePassword,
             /*password_update=*/true, std::move(form));
         std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
             InfobarType::kInfobarTypePasswordUpdate, std::move(delegate),
@@ -494,134 +479,14 @@ BOOL IsPasswordManagerBrandingUpdateEnabled() {
   self.notifyAutoSigninViewController = nil;
 }
 
-- (void)generatePasswordPopupDismissed {
-  [self.actionSheetCoordinator stop];
-  self.actionSheetCoordinator = nil;
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  self.generatedPotentialPassword = nil;
-}
-
-- (void)updateGeneratePasswordStrings:(id)sender {
-  NSString* title;
-  NSString* message;
-
-  if (IsPasswordManagerBrandingUpdateEnabled()) {
-    title = [NSString
-        stringWithFormat:@"%@\n%@\n ",
-                         GetNSString(IDS_IOS_SUGGESTED_STRONG_PASSWORD),
-                         self.generatedPotentialPassword];
-    message = l10n_util::GetNSStringF(
-        IDS_IOS_SUGGESTED_STRONG_PASSWORD_HINT_DISPLAYING_EMAIL,
-        base::SysNSStringToUTF16([self userEmail]));
-  } else {
-    title = [NSString stringWithFormat:@"%@\n%@\n ",
-                                       GetNSString(IDS_IOS_SUGGESTED_PASSWORD),
-                                       self.generatedPotentialPassword];
-    message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
-  }
-
-  self.actionSheetCoordinator.attributedTitle =
-      [[NSMutableAttributedString alloc]
-          initWithString:title
-              attributes:@{
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              }];
-
-  self.actionSheetCoordinator.attributedMessage =
-      [[NSMutableAttributedString alloc]
-          initWithString:message
-              attributes:@{
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
-              }];
-
-  // TODO(crbug.com/886583): find a way to make action sheet coordinator
-  // responsible for font size changes.
-  [self.actionSheetCoordinator updateAttributedText];
-}
-
 #pragma mark - SharedPasswordControllerDelegate
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller
     showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
                    decisionHandler:(void (^)(BOOL accept))decisionHandler {
-  self.generatedPotentialPassword = generatedPotentialPassword;
-
-  if (IsPasswordManagerBrandingUpdateEnabled()) {
-    [self.passwordSuggestionDispatcher
-        showPasswordSuggestion:generatedPotentialPassword
-               decisionHandler:decisionHandler];
-  } else {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(updateGeneratePasswordStrings:)
-               name:UIContentSizeCategoryDidChangeNotification
-             object:nil];
-
-    // TODO(crbug.com/886583): add eg tests
-    self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-        initWithBaseViewController:self.baseViewController
-                           browser:nullptr
-                             title:@""
-                           message:@""
-                              rect:self.baseViewController.view.frame
-                              view:self.baseViewController.view];
-    self.actionSheetCoordinator.popoverArrowDirection = 0;
-    self.actionSheetCoordinator.alertStyle =
-        (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
-            ? UIAlertControllerStyleAlert
-            : UIAlertControllerStyleActionSheet;
-
-    // Set attributed text.
-    [self updateGeneratePasswordStrings:self];
-
-    __weak PasswordController* weakSelf = self;
-
-    auto popupDismissed = ^{
-      [weakSelf generatePasswordPopupDismissed];
-    };
-
-    auto closeKeyboard = ^{
-      if (!weakSelf.webState) {
-        return;
-      }
-      FormInputAccessoryViewHandler* handler =
-          [[FormInputAccessoryViewHandler alloc] init];
-      NSString* mainFrameID =
-          SysUTF8ToNSString(web::GetMainWebFrameId(weakSelf.webState));
-      [handler setLastFocusFormActivityWebFrameID:mainFrameID];
-      [handler closeKeyboardWithoutButtonPress];
-    };
-
-    NSString* primaryActionString;
-    if (IsPasswordManagerBrandingUpdateEnabled()) {
-      primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_STRONG_PASSWORD);
-    } else {
-      primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD);
-    }
-
-    [self.actionSheetCoordinator addItemWithTitle:primaryActionString
-                                           action:^{
-                                             decisionHandler(YES);
-                                             popupDismissed();
-                                             closeKeyboard();
-                                           }
-                                            style:UIAlertActionStyleDefault];
-
-    [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
-                                           action:^{
-                                             decisionHandler(NO);
-                                             popupDismissed();
-                                           }
-                                            style:UIAlertActionStyleCancel];
-
-    // Set 'suggest' as preferred action, as per UX.
-    self.actionSheetCoordinator.alertController.preferredAction =
-        self.actionSheetCoordinator.alertController.actions[0];
-
-    [self.actionSheetCoordinator start];
-  }
+  [self.passwordSuggestionDispatcher
+      showPasswordSuggestion:generatedPotentialPassword
+             decisionHandler:decisionHandler];
 }
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller

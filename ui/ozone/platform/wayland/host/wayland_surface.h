@@ -9,9 +9,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -84,6 +84,7 @@ class WaylandSurface {
   // the underlying wl_surface must be kept alive with no root window associated
   // (e.g: window/tab dragging sessions).
   void UnsetRootWindow();
+  void SetRootWindow(WaylandWindow* window);
 
   // Attaches the given wl_buffer to the underlying wl_surface at (0, 0).
   // Returns true if wl_surface.attach will be called in ApplyPendingStates().

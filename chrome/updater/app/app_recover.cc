@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -79,8 +79,8 @@ void AppRecover::FirstTaskRun() {
 }
 
 std::vector<RegistrationRequest> AppRecover::RecordRegisteredApps() const {
-  scoped_refptr<PersistedData> data =
-      base::MakeRefCounted<PersistedData>(global_prefs_->GetPrefService());
+  scoped_refptr<PersistedData> data = base::MakeRefCounted<PersistedData>(
+      updater_scope(), global_prefs_->GetPrefService());
   std::vector<RegistrationRequest> apps;
   bool found_browser_registration = false;
   for (const std::string& app : data->GetAppIds()) {

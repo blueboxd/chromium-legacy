@@ -13,10 +13,11 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "build/build_config.h"
@@ -24,6 +25,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ash/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
@@ -59,6 +61,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/test/browser_test.h"
@@ -66,8 +69,8 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/display/screen.h"
-#include "ui/wm/public/activation_change_observer.h"  // nogncheck
-#include "ui/wm/public/activation_client.h"           // nogncheck
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace web_app {
 

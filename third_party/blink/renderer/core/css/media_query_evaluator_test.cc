@@ -188,24 +188,6 @@ MediaQueryEvaluatorTestCase g_print_test_cases[] = {
     {nullptr, false}  // Do not remove the terminator line.
 };
 
-MediaQueryEvaluatorTestCase g_non_immersive_test_cases[] = {
-    {"(immersive: 1)", false},
-    {"(immersive: 0)", true},
-    {nullptr, false}  // Do not remove the terminator line.
-};
-
-MediaQueryEvaluatorTestCase g_immersive_test_cases[] = {
-    {"(immersive: 1)", true},
-    {"(immersive: 0)", false},
-    {nullptr, false}  // Do not remove the terminator line.
-};
-
-MediaQueryEvaluatorTestCase g_non_ua_sheet_immersive_test_cases[] = {
-    {"(immersive: 1)", false},
-    {"(immersive: 0)", false},
-    {nullptr, false}  // Do not remove the terminator line.
-};
-
 MediaQueryEvaluatorTestCase g_forcedcolors_active_cases[] = {
     {"(forced-colors: active)", true},
     {"(forced-colors: none)", false},
@@ -407,7 +389,6 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
   data.display_mode = blink::mojom::DisplayMode::kBrowser;
-  data.immersive_mode = false;
 
   // Default values.
   {
@@ -415,9 +396,6 @@ TEST(MediaQueryEvaluatorTest, Cached) {
     MediaQueryEvaluator media_query_evaluator(media_values);
     TestMQEvaluator(g_screen_test_cases, media_query_evaluator);
     TestMQEvaluator(g_viewport_test_cases, media_query_evaluator);
-    TestMQEvaluator(g_non_immersive_test_cases, media_query_evaluator,
-                    kUASheetMode);
-    TestMQEvaluator(g_non_ua_sheet_immersive_test_cases, media_query_evaluator);
   }
 
   // Print values.
@@ -438,17 +416,6 @@ TEST(MediaQueryEvaluatorTest, Cached) {
     TestMQEvaluator(g_monochrome_test_cases, media_query_evaluator);
     data.color_bits_per_component = 24;
     data.monochrome_bits_per_component = 0;
-  }
-
-  // Immersive values.
-  {
-    data.immersive_mode = true;
-    auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
-    MediaQueryEvaluator media_query_evaluator(media_values);
-    TestMQEvaluator(g_immersive_test_cases, media_query_evaluator,
-                    kUASheetMode);
-    TestMQEvaluator(g_non_ua_sheet_immersive_test_cases, media_query_evaluator);
-    data.immersive_mode = false;
   }
 }
 
@@ -491,19 +458,6 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly) {
   MediaQueryEvaluator media_query_evaluator(media_values);
   TestMQEvaluator(g_float_non_friendly_viewport_test_cases,
                   media_query_evaluator);
-}
-
-TEST(MediaQueryEvaluatorTest, DynamicImmersive) {
-  auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(500, 500));
-  page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
-
-  MediaQueryEvaluator media_query_evaluator(&page_holder->GetFrame());
-  page_holder->GetDocument().GetSettings()->SetImmersiveModeEnabled(false);
-
-  TestMQEvaluator(g_non_immersive_test_cases, media_query_evaluator,
-                  kUASheetMode);
-  page_holder->GetDocument().GetSettings()->SetImmersiveModeEnabled(true);
-  TestMQEvaluator(g_immersive_test_cases, media_query_evaluator, kUASheetMode);
 }
 
 TEST(MediaQueryEvaluatorTest, CachedForcedColors) {
@@ -1165,13 +1119,12 @@ TEST(MediaQueryEvaluatorTest, GeneralEnclosed) {
 
 class MediaQueryEvaluatorIdentifiabilityTest : public PageTestBase {
  public:
-  MediaQueryEvaluatorIdentifiabilityTest() {
-    CallCounts counts{.response_for_is_active = true,
-                      .response_for_is_anything_blocked = false,
-                      .response_for_is_allowed = true};
-
+  MediaQueryEvaluatorIdentifiabilityTest()
+      : counts_{.response_for_is_active = true,
+                .response_for_is_anything_blocked = false,
+                .response_for_is_allowed = true} {
     IdentifiabilityStudySettings::SetGlobalProvider(
-        std::make_unique<CountingSettingsProvider>(&counts));
+        std::make_unique<CountingSettingsProvider>(&counts_));
   }
   ~MediaQueryEvaluatorIdentifiabilityTest() override {
     IdentifiabilityStudySettings::ResetStateForTesting();
@@ -1182,6 +1135,7 @@ class MediaQueryEvaluatorIdentifiabilityTest : public PageTestBase {
   }
 
  protected:
+  CallCounts counts_;
   test::ScopedIdentifiabilityTestSampleCollector collector_;
   void UpdateAllLifecyclePhases() {
     GetDocument().View()->UpdateAllLifecyclePhasesForTest();

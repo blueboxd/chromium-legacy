@@ -41,7 +41,6 @@
 #include "components/exo/wayland/wl_output.h"
 #include "components/exo/wayland/xdg_shell.h"
 #include "components/exo/wm_helper.h"
-#include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -348,6 +347,7 @@ AuraSurface::~AuraSurface() {
   if (surface_) {
     surface_->RemoveSurfaceObserver(this);
     surface_->SetProperty(kSurfaceHasAuraSurfaceKey, false);
+    wm::SetTooltipText(surface_->window(), nullptr);
   }
 }
 
@@ -684,7 +684,11 @@ void AuraSurface::ShowTooltip(const char* text,
   auto* window = surface_->window();
   wm::SetTooltipText(window, &tooltip_text_);
   wm::SetTooltipId(window, surface_);
-  ash::Shell::Get()->tooltip_controller()->UpdateTooltip(window);
+
+  auto* tooltip_controller = ash::Shell::Get()->tooltip_controller();
+  tooltip_controller->SetShowTooltipDelay(window, show_delay);
+  tooltip_controller->SetHideTooltipTimeout(window, hide_delay);
+  tooltip_controller->UpdateTooltip(window);
 }
 
 void AuraSurface::HideTooltip() {
@@ -1082,6 +1086,7 @@ const uint32_t kFixedBugIds[] = {
     1352584,
     1358908,
     1400226,
+    1402158,
 };
 
 // Implements aura shell interface and monitors workspace state needed
@@ -1092,7 +1097,7 @@ class WaylandAuraShell : public ash::DesksController::Observer,
  public:
   WaylandAuraShell(wl_resource* aura_shell_resource, Display* display)
       : aura_shell_resource_(aura_shell_resource), seat_(display->seat()) {
-    WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
+    WMHelper* helper = WMHelper::GetInstance();
     helper->AddTabletModeObserver(this);
     ash::DesksController::Get()->AddObserver(this);
     if (wl_resource_get_version(aura_shell_resource_) >=
@@ -1116,7 +1121,7 @@ class WaylandAuraShell : public ash::DesksController::Observer,
   WaylandAuraShell(const WaylandAuraShell&) = delete;
   WaylandAuraShell& operator=(const WaylandAuraShell&) = delete;
   ~WaylandAuraShell() override {
-    WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
+    WMHelper* helper = WMHelper::GetInstance();
     helper->RemoveTabletModeObserver(this);
     ash::DesksController::Get()->RemoveObserver(this);
     if (seat_)

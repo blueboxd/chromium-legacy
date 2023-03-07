@@ -11,9 +11,9 @@
 #include <utility>
 
 #include "ash/public/cpp/ime_controller.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/string_compare.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -181,7 +181,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     keyboard_ = new FakeImeKeyboard;
     manager_->SetImeKeyboardForTesting(keyboard_);
     mock_engine_handler_ = std::make_unique<MockInputMethodEngine>();
-    ui::IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
+    IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
     menu_manager_ = ui::ime::InputMethodMenuManager::GetInstance();
 

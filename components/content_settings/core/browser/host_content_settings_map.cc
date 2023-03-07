@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -251,7 +252,8 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
       prefs_(prefs),
       is_off_the_record_(is_off_the_record),
       store_last_modified_(store_last_modified),
-      allow_invalid_secondary_pattern_for_testing_(false) {
+      allow_invalid_secondary_pattern_for_testing_(false),
+      clock_(base::DefaultClock::GetInstance()) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
 
   auto policy_provider_ptr =
@@ -598,6 +600,7 @@ base::WeakPtr<HostContentSettingsMap> HostContentSettingsMap::GetWeakPtr() {
 }
 
 void HostContentSettingsMap::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
   for (auto* provider : user_modifiable_providers_)
     provider->SetClockForTesting(clock);
 }
@@ -623,28 +626,6 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
           setting_entry.secondary_pattern ==
               ContentSettingsPattern::Wildcard()) {
         continue;
-      }
-
-      ContentSettingsPattern::SchemeType scheme =
-          setting_entry.primary_pattern.GetScheme();
-      base::UmaHistogramEnumeration("ContentSettings.ExceptionScheme", scheme,
-                                    ContentSettingsPattern::SCHEME_MAX);
-
-      if (scheme == ContentSettingsPattern::SCHEME_FILE) {
-        base::UmaHistogramBoolean("ContentSettings.ExceptionSchemeFile.HasPath",
-                                  setting_entry.primary_pattern.HasPath());
-        size_t num_values;
-        int histogram_value =
-            ContentSettingTypeToHistogramValue(content_type, &num_values);
-        if (setting_entry.primary_pattern.HasPath()) {
-          base::UmaHistogramExactLinear(
-              "ContentSettings.ExceptionSchemeFile.Type.WithPath",
-              histogram_value, num_values);
-        } else {
-          base::UmaHistogramExactLinear(
-              "ContentSettings.ExceptionSchemeFile.Type.WithoutPath",
-              histogram_value, num_values);
-        }
       }
 
       if (setting_entry.source == "preference") {
@@ -700,6 +681,15 @@ void HostContentSettingsMap::RemoveObserver(
 
 void HostContentSettingsMap::FlushLossyWebsiteSettings() {
   prefs_->SchedulePendingLossyWrites();
+}
+
+void HostContentSettingsMap::ResetLastVisitedTime(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType type) {
+  for (auto* provider : user_modifiable_providers_) {
+    provider->ResetLastVisitTime(primary_pattern, secondary_pattern, type);
+  }
 }
 
 void HostContentSettingsMap::UpdateLastVisitedTime(
@@ -796,7 +786,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
     // case and this setting isn't a match, don't add it. We will also avoid
     // adding any expired rules since they are no longer valid.
     if ((!rule.metadata.expiration.is_null() &&
-         (rule.metadata.expiration < base::Time::Now())) ||
+         (rule.metadata.expiration < clock_->Now())) ||
         (session_model && (session_model != rule.metadata.session_model))) {
       continue;
     }
@@ -905,7 +895,8 @@ base::Value HostContentSettingsMap::GetWebsiteSettingInternal(
   for (; it != content_settings_providers_.end(); ++it) {
     base::Value value = GetContentSettingValueAndPatterns(
         it->second.get(), primary_url, secondary_url, content_type,
-        is_off_the_record_, primary_pattern, secondary_pattern, metadata);
+        is_off_the_record_, primary_pattern, secondary_pattern, metadata,
+        clock_);
     if (!value.is_none()) {
       if (info)
         info->source = kProviderNamesSourceMap[it->first].provider_source;
@@ -930,7 +921,8 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
     bool include_incognito,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern,
-    content_settings::RuleMetaData* metadata) {
+    content_settings::RuleMetaData* metadata,
+    base::Clock* clock) {
   // TODO(crbug.com/1336617): Remove this check once we figure out what is
   // wrong.
   CHECK(provider);
@@ -943,7 +935,7 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
         provider->GetRuleIterator(content_type, true /* incognito */));
     base::Value value = GetContentSettingValueAndPatterns(
         incognito_rule_iterator.get(), primary_url, secondary_url,
-        primary_pattern, secondary_pattern, metadata);
+        primary_pattern, secondary_pattern, metadata, clock);
     if (!value.is_none())
       return value;
   }
@@ -952,7 +944,7 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
       provider->GetRuleIterator(content_type, false /* incognito */));
   base::Value value = GetContentSettingValueAndPatterns(
       rule_iterator.get(), primary_url, secondary_url, primary_pattern,
-      secondary_pattern, metadata);
+      secondary_pattern, metadata, clock);
   if (!value.is_none() && include_incognito) {
     value = ProcessIncognitoInheritanceBehavior(content_type, std::move(value));
   }
@@ -966,14 +958,15 @@ base::Value HostContentSettingsMap::GetContentSettingValueAndPatterns(
     const GURL& secondary_url,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern,
-    content_settings::RuleMetaData* metadata) {
+    content_settings::RuleMetaData* metadata,
+    base::Clock* clock) {
   if (rule_iterator) {
     while (rule_iterator->HasNext()) {
       const content_settings::Rule& rule = rule_iterator->Next();
       if (rule.primary_pattern.Matches(primary_url) &&
           rule.secondary_pattern.Matches(secondary_url) &&
           (rule.metadata.expiration.is_null() ||
-           (rule.metadata.expiration > base::Time::Now()))) {
+           (rule.metadata.expiration > clock->Now()))) {
         if (primary_pattern)
           *primary_pattern = rule.primary_pattern;
         if (secondary_pattern)

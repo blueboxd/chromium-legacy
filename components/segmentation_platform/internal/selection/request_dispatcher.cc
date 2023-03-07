@@ -15,19 +15,26 @@ namespace segmentation_platform {
 
 RequestDispatcher::RequestDispatcher(
     const std::vector<std::unique_ptr<Config>>& configs,
-    std::map<std::string, std::unique_ptr<SegmentResultProvider>>
-        result_providers)
-    : configs_(configs) {
-  for (const auto& config : configs_) {
-    request_handlers_[config->segmentation_key] = RequestHandler::Create(
-        *config, std::move(result_providers[config->segmentation_key]));
-  }
-}
+    CachedResultProvider* cached_result_provider)
+    : configs_(configs), cached_result_provider_(cached_result_provider) {}
 
 RequestDispatcher::~RequestDispatcher() = default;
 
-void RequestDispatcher::OnPlatformInitialized(bool success) {
+void RequestDispatcher::OnPlatformInitialized(
+    bool success,
+    ExecutionService* execution_service,
+    std::map<std::string, std::unique_ptr<SegmentResultProvider>>
+        result_providers) {
   storage_init_status_ = success;
+
+  // Only set request handlers if it has not been set for testing already.
+  if (request_handlers_.empty()) {
+    for (const auto& config : configs_) {
+      request_handlers_[config->segmentation_key] = RequestHandler::Create(
+          *config, std::move(result_providers[config->segmentation_key]),
+          execution_service);
+    }
+  }
 
   // Run any method calls that were received during initialization.
   while (!pending_actions_.empty()) {
@@ -43,29 +50,36 @@ void RequestDispatcher::GetClassificationResult(
     const PredictionOptions& options,
     scoped_refptr<InputContext> input_context,
     ClassificationResultCallback callback) {
+  if (!options.on_demand_execution) {
+    // Returns result directly from prefs for non-ondemand models.
+    auto result =
+        cached_result_provider_->GetCachedResultForClient(segmentation_key);
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
+    return;
+  }
+
   // For on-demand results, we need to run the models for which we need DB
   // initialization to be complete. Hence cache the request if platform
   // initialization isn't completed yet.
-  if (options.on_demand_execution) {
-    if (!storage_init_status_.has_value()) {
-      // If the platform isn't fully initialized, cache the input arguments to
-      // run later.
-      pending_actions_.push_back(base::BindOnce(
-          &RequestDispatcher::GetClassificationResult,
-          weak_ptr_factory_.GetWeakPtr(), segmentation_key, options,
-          std::move(input_context), std::move(callback)));
-      return;
-    }
+  if (!storage_init_status_.has_value()) {
+    // If the platform isn't fully initialized, cache the input arguments to
+    // run later.
+    pending_actions_.push_back(
+        base::BindOnce(&RequestDispatcher::GetClassificationResult,
+                       weak_ptr_factory_.GetWeakPtr(), segmentation_key,
+                       options, std::move(input_context), std::move(callback)));
+    return;
+  }
 
-    // If the platform initialization failed, invoke callback to return invalid
-    // results.
-    if (!storage_init_status_.value()) {
-      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(callback),
-                         ClassificationResult(PredictionStatus::kFailed)));
-      return;
-    }
+  // If the platform initialization failed, invoke callback to return invalid
+  // results.
+  if (!storage_init_status_.value()) {
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       ClassificationResult(PredictionStatus::kFailed)));
+    return;
   }
 
   auto iter = request_handlers_.find(segmentation_key);

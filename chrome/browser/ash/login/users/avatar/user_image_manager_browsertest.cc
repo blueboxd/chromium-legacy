@@ -23,13 +23,11 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager_test_util.h"
@@ -46,6 +44,7 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
@@ -602,7 +601,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTestBase,
       ADD_FAILURE();
     }
     std::string policy;
-    base::JSONWriter::Write(*policy::test::ConstructExternalDataReference(
+    base::JSONWriter::Write(policy::test::ConstructExternalDataReference(
                                 embedded_test_server()
                                     ->GetURL(std::string("/") + relative_path)
                                     .spec(),

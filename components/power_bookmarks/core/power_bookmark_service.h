@@ -12,14 +12,16 @@
 #include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/power_bookmarks/common/power_bookmark_observer.h"
 #include "components/sync/protocol/power_bookmark_specifics.pb.h"
 
 namespace bookmarks {
 class BookmarkModel;
-class BaseBookmarkModelObserver;
 }  // namespace bookmarks
 
 namespace power_bookmarks {
@@ -41,18 +43,20 @@ using SuccessCallback = base::OnceCallback<void(bool success)>;
 // Callbacks for the result of create/update/delete calls are wrapped so that
 // observers can be notified when any changes to the storage occur.
 class PowerBookmarkService : public KeyedService,
-                             public bookmarks::BaseBookmarkModelObserver {
+                             public bookmarks::BaseBookmarkModelObserver,
+                             public PowerBookmarkObserver {
  public:
-  // Observer class for any changes to the underlying storage.
-  class Observer {
-   public:
-    // Called whenever there are changes to Powers.
-    virtual void OnPowersChanged() = 0;
-  };
-
+  // `model` is an instance of BookmarkModel, used to query bookmarks and
+  // register as an observer.
+  // `database_dir` the directory to create the backend database in.
+  // `frontend_task_runner` the task runner which the service runs, used by the
+  // backend to communicate back to the service. Primarily for observer events.
+  // `backend_task_runner` the task runner which the backend runs, used by the
+  // service to construct the backend.
   PowerBookmarkService(
       bookmarks::BookmarkModel* model,
       const base::FilePath& database_dir,
+      scoped_refptr<base::SequencedTaskRunner> frontend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   PowerBookmarkService(const PowerBookmarkService&) = delete;
   PowerBookmarkService& operator=(const PowerBookmarkService&) = delete;
@@ -68,14 +72,27 @@ class PowerBookmarkService : public KeyedService,
       PowersCallback callback);
 
   // Returns a vector of PowerOverviews for the given `power_type` through the
-  // given `callback`.
+  // given `callback`. The PowerOverviews will be sorted based on count, with
+  // the highest count overviews coming first. The sample power in each overview
+  // will be the most recently modified power.
   void GetPowerOverviewsForType(
       const sync_pb::PowerBookmarkSpecifics::PowerType& power_type,
       PowerOverviewsCallback callback);
 
   // Returns a vector of Powers matching the given `search_params`. The results
   // are ordered by the url they're associated with.
-  void Search(const SearchParams& search_params, PowersCallback callback);
+  void SearchPowers(const SearchParams& search_params, PowersCallback callback);
+
+  // Returns a vector of PowerOverviews matching the given `search_params`. The
+  // results:
+  //   - are ordered by their url and PowerType.
+  //   - have the same `PowerOverview.count` value as if returned by
+  //     GetPowerOverviewsForType - which is the number of Powers with the same
+  //     url and type.
+  //   - have the `PowerOverview.power` that is the most recently modified Power
+  //     which matches the `search_params`.
+  void SearchPowerOverviews(const SearchParams& search_params,
+                            PowerOverviewsCallback callback);
 
   // Create the given `power` in the database. If it already exists, then it
   // will be updated. Success of the operation is returned through the given
@@ -100,12 +117,9 @@ class PowerBookmarkService : public KeyedService,
       const sync_pb::PowerBookmarkSpecifics::PowerType& power_type,
       SuccessCallback callback);
 
-  // Captures storage changes to forward along to observers.
-  void NotifyPowersChanged(bool success);
-
   // Registration methods for observers.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(PowerBookmarkObserver* observer);
+  void RemoveObserver(PowerBookmarkObserver* observer);
 
   // Allow features to receive notification when a bookmark node is created to
   // add extra information. The `data_provider` can be removed with the remove
@@ -113,36 +127,25 @@ class PowerBookmarkService : public KeyedService,
   void AddDataProvider(PowerBookmarkDataProvider* data_provider);
   void RemoveDataProvider(PowerBookmarkDataProvider* data_provider);
 
-  // BaseBookmarkModelObserver
+  // BaseBookmarkModelObserver implementation.
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
                          size_t index,
                          bool newly_added) override;
   void BookmarkModelChanged() override {}
 
- private:
-  void NotifyAndRecordPowerCreated(
-      sync_pb::PowerBookmarkSpecifics::PowerType power_type,
-      SuccessCallback callback,
-      bool success);
-  void NotifyAndRecordPowerUpdated(
-      sync_pb::PowerBookmarkSpecifics::PowerType power_type,
-      SuccessCallback callback,
-      bool success);
-  void NotifyAndRecordPowerDeleted(SuccessCallback callback, bool success);
-  void NotifyAndRecordPowersDeletedForURL(
-      sync_pb::PowerBookmarkSpecifics::PowerType power_type,
-      SuccessCallback callback,
-      bool success);
+  // PowerBookmarkObserver implementation.
+  void OnPowersChanged() override;
 
+ private:
   raw_ptr<bookmarks::BookmarkModel> model_;
   base::SequenceBound<PowerBookmarkBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<PowerBookmarkObserver>::Unchecked observers_;
   std::vector<PowerBookmarkDataProvider*> data_providers_;
 
-  base::WeakPtrFactory<PowerBookmarkService> weak_ptr_factory_{this};
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace power_bookmarks

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -115,7 +116,8 @@ class ParsingContext {
       const OriginWithPossibleWildcards::NodeType type);
 
   struct ParsedAllowlist {
-    std::vector<blink::OriginWithPossibleWildcards> allowed_origins;
+    std::vector<blink::OriginWithPossibleWildcards> allowed_origins
+        ALLOW_DISCOURAGED_TYPE("Permission policy uses STL for code sharing");
     bool matches_all_origins{false};
     bool matches_opaque_src{false};
 
@@ -255,17 +257,32 @@ void ParsingContext::ReportAllowlistTypeUsage() {
 absl::optional<mojom::blink::PermissionsPolicyFeature>
 ParsingContext::ParseFeatureName(const String& feature_name) {
   DCHECK(!feature_name.empty());
-  if (!feature_names_.Contains(feature_name)) {
-    logger_.Warn("Unrecognized feature: '" + feature_name + "'.");
+  // window-management is an alias for window-placement (crbug.com/1328581).
+  // Track usage of the alias used.
+  if (feature_name == "window-placement") {
+    UseCounter::Count(this->execution_context_,
+                      WebFeature::kWindowPlacementPermissionPolicyParsed);
+  }
+  if (feature_name == "window-management") {
+    UseCounter::Count(this->execution_context_,
+                      WebFeature::kWindowManagementPermissionPolicyParsed);
+  }
+  const String& effective_feature_name =
+      (feature_name == "window-management" &&
+       RuntimeEnabledFeatures::WindowManagementPermissionAliasEnabled())
+          ? "window-placement"
+          : feature_name;
+  if (!feature_names_.Contains(effective_feature_name)) {
+    logger_.Warn("Unrecognized feature: '" + effective_feature_name + "'.");
     return absl::nullopt;
   }
-  if (DisabledByOriginTrial(feature_name, execution_context_)) {
+  if (DisabledByOriginTrial(effective_feature_name, execution_context_)) {
     logger_.Warn("Origin trial controlled feature not enabled: '" +
-                 feature_name + "'.");
+                 effective_feature_name + "'.");
     return absl::nullopt;
   }
   mojom::blink::PermissionsPolicyFeature feature =
-      feature_names_.at(feature_name);
+      feature_names_.at(effective_feature_name);
 
   // TODO(https://crbug.com/1324111): Remove this after OT.
   if (feature == mojom::blink::PermissionsPolicyFeature::kUnload) {

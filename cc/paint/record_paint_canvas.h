@@ -30,7 +30,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   RecordPaintCanvas(const RecordPaintCanvas&) = delete;
   RecordPaintCanvas& operator=(const RecordPaintCanvas&) = delete;
 
-  virtual sk_sp<PaintRecord> ReleaseAsRecord();
+  virtual PaintRecord ReleaseAsRecord();
 
   bool HasRecordedDrawOps() const { return buffer_.has_draw_ops(); }
   size_t TotalOpCount() const { return buffer_.total_op_count(); }
@@ -44,8 +44,10 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   bool NeedsFlush() const override;
 
   int save() override;
-  int saveLayer(const SkRect* bounds, const PaintFlags* flags) final;
-  int saveLayerAlpha(const SkRect* bounds, uint8_t alpha) override;
+  int saveLayer(const PaintFlags& flags) override;
+  int saveLayer(const SkRect& bounds, const PaintFlags& flags) override;
+  int saveLayerAlphaf(float alpha) override;
+  int saveLayerAlphaf(const SkRect& bounds, float alpha) override;
   void restore() override;
   int getSaveCount() const final;
   void restoreToCount(int save_count) override;
@@ -53,10 +55,6 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   void translate(SkScalar dx, SkScalar dy) override;
   void scale(SkScalar sx, SkScalar sy) override;
   void rotate(SkScalar degrees) override;
-  // TODO(crbug.com/1167153): The concat and setMatrix methods that take an
-  // SkMatrix should be removed in favor of the SkM44 versions.
-  void concat(const SkMatrix& matrix) final;
-  void setMatrix(const SkMatrix& matrix) final;
   void concat(const SkM44& matrix) override;
   void setMatrix(const SkM44& matrix) override;
 
@@ -71,12 +69,8 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   // the constructor. With this restriction, we don't need to create
   // SkNoDrawCanvas for clients that only need recording.
   SkImageInfo imageInfo() const override;
-  SkRect getLocalClipBounds() const override;
   bool getLocalClipBounds(SkRect* bounds) const override;
-  SkIRect getDeviceClipBounds() const override;
   bool getDeviceClipBounds(SkIRect* bounds) const override;
-  bool isClipEmpty() const override;
-  SkMatrix getTotalMatrix() const override;
   SkM44 getLocalToDevice() const override;
 
   void drawColor(SkColor4f color, SkBlendMode mode) override;
@@ -126,7 +120,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
                     SkScalar y,
                     NodeId node_id,
                     const PaintFlags& flags) override;
-  void drawPicture(sk_sp<const PaintRecord> record) override;
+  void drawPicture(PaintRecord record) override;
 
   void Annotate(AnnotationType type,
                 const SkRect& rect,
@@ -180,7 +174,6 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   };
 
  protected:
-  virtual int saveLayerInternal(const SkRect* bounds, const PaintFlags* flags);
   virtual void clipRRectInternal(const SkRRect& rrect,
                                  SkClipOp op,
                                  bool antialias);
@@ -210,7 +203,10 @@ class CC_PAINT_EXPORT InspectableRecordPaintCanvas : public RecordPaintCanvas {
   ~InspectableRecordPaintCanvas() override;
 
   int save() override;
-  int saveLayerAlpha(const SkRect* bounds, uint8_t alpha) override;
+  int saveLayer(const PaintFlags& flags) override;
+  int saveLayer(const SkRect& bounds, const PaintFlags& flags) override;
+  int saveLayerAlphaf(float alpha) override;
+  int saveLayerAlphaf(const SkRect& bounds, float alpha) override;
   void restore() override;
 
   void translate(SkScalar dx, SkScalar dy) override;
@@ -222,19 +218,14 @@ class CC_PAINT_EXPORT InspectableRecordPaintCanvas : public RecordPaintCanvas {
   void clipRect(const SkRect& rect, SkClipOp op, bool antialias) override;
 
   SkImageInfo imageInfo() const override;
-  SkRect getLocalClipBounds() const override;
   bool getLocalClipBounds(SkRect* bounds) const override;
-  SkIRect getDeviceClipBounds() const override;
   bool getDeviceClipBounds(SkIRect* bounds) const override;
-  bool isClipEmpty() const override;
-  SkMatrix getTotalMatrix() const override;
   SkM44 getLocalToDevice() const override;
 
   // Don't shadow non-virtual helper functions.
   using RecordPaintCanvas::clipRect;
 
  private:
-  int saveLayerInternal(const SkRect* bounds, const PaintFlags* flags) override;
   void clipRRectInternal(const SkRRect& rrect,
                          SkClipOp op,
                          bool antialias) override;

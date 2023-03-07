@@ -5,8 +5,8 @@
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
@@ -371,11 +371,11 @@ class FillFromMetadataTask : public InitializationSubTask {
       ir.purpose.reserve(icon.purpose_size());
       for (auto purpose : icon.purpose()) {
         switch (purpose) {
-          case proto::BackgroundFetchOptions_ImageResource_Purpose_ANY:
+          case proto::ImageResource_Purpose_ANY:
             ir.purpose.push_back(
                 blink::mojom::ManifestImageResource_Purpose::ANY);
             break;
-          case proto::BackgroundFetchOptions_ImageResource_Purpose_MONOCHROME:
+          case proto::ImageResource_Purpose_MONOCHROME:
             ir.purpose.push_back(
                 blink::mojom::ManifestImageResource_Purpose::MONOCHROME);
             break;

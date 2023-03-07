@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/settings/ash/about_section.h"
 
 #include "ash/constants/ash_features.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
@@ -235,9 +235,7 @@ AboutSection::AboutSection(Profile* profile,
 
   updater.AddSearchTags(GetDiagnosticsAppSearchConcepts());
 
-  if (base::FeatureList::IsEnabled(features::kFirmwareUpdaterApp)) {
-    updater.AddSearchTags(GetFirmwareUpdatesAppSearchConcepts());
-  }
+  updater.AddSearchTags(GetFirmwareUpdatesAppSearchConcepts());
 
   if (base::FeatureList::IsEnabled(features::kEnableHostnameSetting)) {
     updater.AddSearchTags(GetDeviceNameSearchConcepts());
@@ -444,10 +442,6 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   std::string safetyInfoLink = GetSafetyInfoLink();
   html_source->AddBoolean("shouldShowSafetyInfo", !safetyInfoLink.empty());
-
-  html_source->AddBoolean(
-      "isFirmwareUpdaterAppEnabled",
-      base::FeatureList::IsEnabled(features::kFirmwareUpdaterApp));
 
   html_source->AddBoolean("isOsFeedbackEnabled",
                           base::FeatureList::IsEnabled(features::kOsFeedback));

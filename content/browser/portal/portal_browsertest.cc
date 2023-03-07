@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -1424,7 +1424,7 @@ IN_PROC_BROWSER_TEST_P(PortalOrphanedNavigationBrowserTest,
     EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
               activated_observer.WaitForActivateResult());
   }
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   EXPECT_TRUE(navigation_manager.was_successful());
 }
 
@@ -1492,7 +1492,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateEarlyInNavigation) {
                                    " beforeunload or has started unloading"));
 
   // The navigation should commit properly thereafter.
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   navigation_observer.Wait();
   EXPECT_EQ(web_contents_impl, shell()->web_contents());
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
@@ -1797,7 +1797,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
 
   NavigationControllerImpl& activated_controller = portal_controller;
 
-  pending_navigation.WaitForNavigationFinished();
+  ASSERT_TRUE(pending_navigation.WaitForNavigationFinished());
   ASSERT_EQ(2, activated_controller.GetEntryCount());
   ASSERT_EQ(1, activated_controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(main_url, activated_controller.GetEntryAtIndex(0)->GetURL());
@@ -2245,7 +2245,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigationPrecedence) {
                              "    () => 'resolve', () => 'reject');",
                              EXECUTE_SCRIPT_NO_USER_GESTURE));
 
-  pending_navigation.WaitForNavigationFinished();
+  ASSERT_TRUE(pending_navigation.WaitForNavigationFinished());
   EXPECT_TRUE(pending_navigation.was_successful());
 }
 
@@ -2987,6 +2987,83 @@ IN_PROC_BROWSER_TEST_F(PortalFencedFrameBrowserTest, CreatePortalBlocked) {
                         document.body.appendChild(portal);
              )"));
   ASSERT_TRUE(console_observer.Wait());
+}
+
+class TestRenderWidgetHostViewBaseObserver
+    : public RenderWidgetHostViewBaseObserver {
+ public:
+  TestRenderWidgetHostViewBaseObserver() = default;
+  ~TestRenderWidgetHostViewBaseObserver() override = default;
+
+  // RenderWidgetHostViewBaseObserver:
+  void OnRenderWidgetHostViewBaseDestroyed(
+      RenderWidgetHostViewBase* view) override {
+    if (view == view_) {
+      std::move(quit_closure_).Run();
+      view_ = nullptr;
+    }
+    view->RemoveObserver(this);
+  }
+
+  void WaitUntilDestroyed(RenderWidgetHostViewBase* view) {
+    view_ = view;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  base::OnceClosure quit_closure_;
+  RenderWidgetHostViewBase* view_ = nullptr;
+};
+
+// Tests that a RenderWidgetHostView for a fenced frame inside a portal should
+// stay that way for its entire lifetime regardless of the portal activation.
+IN_PROC_BROWSER_TEST_F(PortalFencedFrameBrowserTest,
+                       FencedFrameRenderWidgetHostViewInPortal) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* primary_rfh = web_contents->GetPrimaryMainFrame();
+
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents, a_url);
+  RenderFrameHostImpl* portal_rfh =
+      portal->GetPortalContents()->GetPrimaryMainFrame();
+  EXPECT_TRUE(portal_rfh);
+  RenderWidgetHostViewBase* portal_rwhv =
+      static_cast<RenderWidgetHostViewBase*>(portal_rfh->GetView());
+  ASSERT_TRUE(portal_rwhv->IsRenderWidgetHostViewChildFrame());
+
+  TestRenderWidgetHostViewBaseObserver observer;
+  portal_rwhv->AddObserver(&observer);
+
+  GURL fenced_frame_url =
+      embedded_test_server()->GetURL("a.com", "/fenced_frames/title1.html");
+  RenderFrameHostImpl* fenced_frame_rfh = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_helper_.CreateFencedFrame(portal_rfh, fenced_frame_url));
+  RenderWidgetHostViewBase* fenced_frame_rwhv =
+      static_cast<RenderWidgetHostViewBase*>(fenced_frame_rfh->GetView());
+  EXPECT_TRUE(fenced_frame_rwhv->IsRenderWidgetHostViewChildFrame());
+
+  PortalActivatedObserver activated_observer(portal);
+  ExecuteScriptAsync(primary_rfh,
+                     "document.querySelector('portal').activate();");
+  // During activation, a RenderWidgetHostView for a portal is destroyed.
+  observer.WaitUntilDestroyed(portal_rwhv);
+  activated_observer.WaitForActivate();
+
+  // After activation, a RenderWidgetHostView for a portal is re-created and
+  // it's not a RenderWidgetHostViewChildFrame.
+  portal_rwhv = static_cast<RenderWidgetHostViewBase*>(portal_rfh->GetView());
+  ASSERT_FALSE(portal_rwhv->IsRenderWidgetHostViewChildFrame());
+
+  fenced_frame_rwhv =
+      static_cast<RenderWidgetHostViewBase*>(fenced_frame_rfh->GetView());
+  // A RenderWidgetHostView for a fenced frame still exists as a
+  // RenderWidgetHostViewChildFrame.
+  EXPECT_TRUE(fenced_frame_rwhv->IsRenderWidgetHostViewChildFrame());
 }
 
 }  // namespace content

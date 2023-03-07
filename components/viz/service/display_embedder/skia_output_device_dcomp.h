@@ -14,9 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
+#include "ui/gfx/frame_data.h"
 
 namespace gl {
+class DCLayerOverlayImage;
+struct DCLayerOverlayParams;
 class GLSurface;
 }  // namespace gl
 
@@ -49,6 +51,8 @@ class SkiaOutputDeviceDComp : public SkiaOutputDevice {
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays) override;
 
  protected:
+  class OverlayData;
+
   SkiaOutputDeviceDComp(
       gpu::MailboxManager* mailbox_manager,
       gpu::SharedImageRepresentationFactory*
@@ -59,21 +63,19 @@ class SkiaOutputDeviceDComp : public SkiaOutputDevice {
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
 
-  class OverlayData;
-
-  gpu::OverlayImageRepresentation::ScopedReadAccess* BeginOverlayAccess(
+  absl::optional<gl::DCLayerOverlayImage> BeginOverlayAccess(
       const gpu::Mailbox& mailbox);
 
   void CreateSkSurface();
 
   virtual bool ScheduleDCLayer(
-      std::unique_ptr<ui::DCRendererLayerParams> params) = 0;
+      std::unique_ptr<gl::DCLayerOverlayParams> params) = 0;
 
   virtual gfx::Size GetRootSurfaceSize() const = 0;
 
   virtual gfx::SwapResult DoPostSubBuffer(const gfx::Rect& rect,
                                           BufferPresentedCallback feedback,
-                                          gl::FrameData data) = 0;
+                                          gfx::FrameData data) = 0;
 
   // Mailboxes of overlays scheduled in the current frame.
   base::flat_set<gpu::Mailbox> scheduled_overlay_mailboxes_;
@@ -121,11 +123,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceDCompGLSurface final
 
  protected:
   bool ScheduleDCLayer(
-      std::unique_ptr<ui::DCRendererLayerParams> params) override;
+      std::unique_ptr<gl::DCLayerOverlayParams> params) override;
   gfx::Size GetRootSurfaceSize() const override;
   gfx::SwapResult DoPostSubBuffer(const gfx::Rect& rect,
                                   BufferPresentedCallback feedback,
-                                  gl::FrameData data) override;
+                                  gfx::FrameData data) override;
 
  private:
   scoped_refptr<gl::GLSurface> gl_surface_;

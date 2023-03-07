@@ -402,6 +402,8 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(const GURL& url) {
   } else {
     // Please keep the order of the ifs below as URLs with an IP as host can
     // also have a "http" scheme.
+    const bool is_non_wildcard_portless_scheme =
+        IsNonWildcardDomainNonPortScheme(local_url->scheme());
     if (local_url->HostIsIPAddress()) {
       builder.WithScheme(local_url->scheme())->WithHost(local_url->host());
     } else if (local_url->SchemeIs(url::kHttpScheme)) {
@@ -411,14 +413,17 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(const GURL& url) {
       builder.WithScheme(local_url->scheme())
           ->WithDomainWildcard()
           ->WithHost(local_url->host());
+    } else if (is_non_wildcard_portless_scheme) {
+      builder.WithScheme(local_url->scheme())->WithHost(local_url->host());
     } else {
       // Unsupported scheme
     }
     if (local_url->port_piece().empty()) {
-      if (local_url->SchemeIs(url::kHttpsScheme))
+      if (local_url->SchemeIs(url::kHttpsScheme)) {
         builder.WithPort(std::string(GetDefaultPort(url::kHttpsScheme)));
-      else
+      } else if (!is_non_wildcard_portless_scheme) {
         builder.WithPortWildcard();
+      }
     } else {
       builder.WithPort(local_url->port());
     }
@@ -612,11 +617,6 @@ ContentSettingsPattern::SchemeType ContentSettingsPattern::GetScheme() const {
 
 const std::string& ContentSettingsPattern::GetHost() const {
   return parts_.host;
-}
-
-bool ContentSettingsPattern::HasPath() const {
-  DCHECK_EQ(GetScheme(), SCHEME_FILE);
-  return !parts_.is_path_wildcard && !parts_.path.empty();
 }
 
 ContentSettingsPattern::Relation ContentSettingsPattern::Compare(

@@ -8,6 +8,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/args.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/pgo/pgo.gni")
+import("//build/config/cronet/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
@@ -154,6 +155,12 @@ declare_args() {
   use_relative_vtables_abi = is_android && current_cpu == "arm64" &&
                              use_custom_libcxx && !is_component_build
 }
+
+# To try out this combination, delete this assert.
+assert(
+    !use_relative_vtables_abi || !is_cfi,
+    "is_cfi=true is known to conflict with use_relative_vtables_abi=true.\n" +
+        "See https://bugs.chromium.org/p/chromium/issues/detail?id=1375035#c53")
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
 assert(!enable_profiling || !is_component_build,

@@ -80,6 +80,7 @@ class FakeWebState : public WebState {
   bool IsCrashed() const override;
   bool IsEvicted() const override;
   bool IsBeingDestroyed() const override;
+  bool IsWebPageInFullscreenMode() const override;
   const FaviconStatus& GetFaviconStatus() const final;
   void SetFaviconStatus(const FaviconStatus& favicon_status) final;
   int GetNavigationItemCount() const override;
@@ -111,6 +112,10 @@ class FakeWebState : public WebState {
                            id<CRWWebViewDownloadDelegate> delegate,
                            void (^handler)(id<CRWWebViewDownload>)) override
       API_AVAILABLE(ios(14.5));
+  bool IsFindInteractionSupported() final;
+  bool IsFindInteractionEnabled() final;
+  void SetFindInteractionEnabled(bool enabled) final;
+  UIFindInteraction* GetFindInteraction() final API_AVAILABLE(ios(16));
 
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;

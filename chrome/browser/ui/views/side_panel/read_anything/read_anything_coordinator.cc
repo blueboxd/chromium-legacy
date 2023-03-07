@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_container_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_controller.h"
@@ -81,10 +82,8 @@ ReadAnythingCoordinator::~ReadAnythingCoordinator() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!browser_view)
     return;
-  SidePanelCoordinator* side_panel_coordinator =
-      browser_view->side_panel_coordinator();
   SidePanelRegistry* global_registry =
-      side_panel_coordinator->GetGlobalSidePanelRegistry();
+      SidePanelCoordinator::GetGlobalSidePanelRegistry(browser);
   global_registry->Deregister(
       SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
 }

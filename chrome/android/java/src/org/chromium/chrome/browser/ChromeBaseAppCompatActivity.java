@@ -10,8 +10,6 @@ import android.app.ActivityManager.TaskDescription;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -31,6 +29,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.base.ServiceTracingProxyProvider;
 import org.chromium.chrome.browser.base.SplitChromeApplication;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.language.GlobalAppLocaleController;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
@@ -237,6 +236,9 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
      */
     @CallSuper
     protected void applyThemeOverlays() {
+        if (ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()) {
+            setTheme(R.style.SurfaceColorsThemeOverlay);
+        }
         DynamicColors.applyToActivityIfAvailable(this);
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
@@ -253,11 +255,8 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
      * Sets the default task description that will appear in the recents UI.
      */
     protected void setDefaultTaskDescription() {
-        final Resources res = getResources();
         final TaskDescription taskDescription =
-                new TaskDescription(res.getString(R.string.app_name),
-                        BitmapFactory.decodeResource(res, R.mipmap.app_icon),
-                        res.getColor(R.color.default_task_description_color));
+                new TaskDescription(null, null, getColor(R.color.default_task_description_color));
         setTaskDescription(taskDescription);
     }
 

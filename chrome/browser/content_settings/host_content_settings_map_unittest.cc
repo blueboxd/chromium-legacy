@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -42,6 +42,8 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "net/base/schemeful_site.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/cookies/static_cookie_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,6 +93,10 @@ class MockUserModifiableProvider
   MOCK_METHOD0(ShutdownOnUIThread, void());
 
   MOCK_METHOD3(UpdateLastVisitTime,
+               bool(const ContentSettingsPattern& primary_pattern,
+                    const ContentSettingsPattern& secondary_pattern,
+                    ContentSettingsType content_type));
+  MOCK_METHOD3(ResetLastVisitTime,
                bool(const ContentSettingsPattern& primary_pattern,
                     const ContentSettingsPattern& secondary_pattern,
                     ContentSettingsType content_type));
@@ -278,12 +284,12 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   // Add setting for hosts[0].
   base::Value client_hint_value(42);
 
-  base::Value client_hints_dictionary(base::Value::Type::DICTIONARY);
-  client_hints_dictionary.SetKey(client_hints::kClientHintsSettingKey,
-                                 {std::move(client_hint_value)});
+  base::Value::Dict client_hints_dictionary;
+  client_hints_dictionary.Set(client_hints::kClientHintsSettingKey,
+                              {std::move(client_hint_value)});
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       hosts[0], GURL(), ContentSettingsType::CLIENT_HINTS,
-      client_hints_dictionary.Clone());
+      base::Value(client_hints_dictionary.Clone()));
 
   // Reading the settings should now return one setting.
   host_content_settings_map->GetSettingsForOneType(
@@ -301,7 +307,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   // Add setting for hosts[1].
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       hosts[1], GURL(), ContentSettingsType::CLIENT_HINTS,
-      client_hints_dictionary.Clone());
+      base::Value(client_hints_dictionary.Clone()));
 
   // Reading the settings should now return two settings.
   host_content_settings_map->GetSettingsForOneType(
@@ -319,7 +325,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   // Add settings again for hosts[0].
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       hosts[0], GURL(), ContentSettingsType::CLIENT_HINTS,
-      client_hints_dictionary.Clone());
+      base::Value(client_hints_dictionary.Clone()));
 
   // Reading the settings should still return two settings.
   host_content_settings_map->GetSettingsForOneType(
@@ -540,19 +546,25 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
       CookieSettingsFactory::GetForProfile(&profile).get();
 
   GURL host_ending_with_dot("http://example.com./");
+  url::Origin origin = url::Origin::Create(host_ending_with_dot);
+  net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromOrigin(origin);
 
   EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
-      host_ending_with_dot, host_ending_with_dot, QueryReason::kSetting));
+      host_ending_with_dot, site_for_cookies, origin,
+      net::CookieSettingOverrides(), QueryReason::kSetting));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), ContentSettingsType::COOKIES,
       CONTENT_SETTING_DEFAULT);
   EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
-      host_ending_with_dot, host_ending_with_dot, QueryReason::kSetting));
+      host_ending_with_dot, site_for_cookies, origin,
+      net::CookieSettingOverrides(), QueryReason::kSetting));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), ContentSettingsType::COOKIES,
       CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(cookie_settings->IsFullCookieAccessAllowed(
-      host_ending_with_dot, host_ending_with_dot, QueryReason::kSetting));
+      host_ending_with_dot, site_for_cookies, origin,
+      net::CookieSettingOverrides(), QueryReason::kSetting));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -1013,15 +1025,16 @@ TEST_F(HostContentSettingsMapTest, IncognitoDontInheritSetting) {
             otr_map->GetWebsiteSetting(
                 host, host, ContentSettingsType::USB_CHOOSER_DATA, nullptr));
 
-  base::Value test_value(base::Value::Type::DICTIONARY);
-  test_value.SetKey("test", base::Value("value"));
+  base::Value::Dict test_dict;
+  test_dict.Set("test", "value");
   host_content_settings_map->SetWebsiteSettingDefaultScope(
-      host, host, ContentSettingsType::USB_CHOOSER_DATA, test_value.Clone());
+      host, host, ContentSettingsType::USB_CHOOSER_DATA,
+      base::Value(test_dict.Clone()));
 
   // The setting is not inherted by |otr_map|.
   base::Value stored_value = host_content_settings_map->GetWebsiteSetting(
       host, host, ContentSettingsType::USB_CHOOSER_DATA, nullptr);
-  EXPECT_EQ(stored_value, test_value);
+  EXPECT_EQ(stored_value, test_dict);
   EXPECT_EQ(base::Value(),
             otr_map->GetWebsiteSetting(
                 host, host, ContentSettingsType::USB_CHOOSER_DATA, nullptr));
@@ -1419,11 +1432,11 @@ TEST_F(HostContentSettingsMapTest, InvalidPattern) {
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   GURL unsupported_url = GURL("view-source:http://www.google.com");
-  base::Value test_value(base::Value::Type::DICTIONARY);
-  test_value.SetKey("test", base::Value("value"));
+  base::Value::Dict test_dict;
+  test_dict.Set("test", "value");
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       unsupported_url, unsupported_url, ContentSettingsType::APP_BANNER,
-      std::move(test_value));
+      base::Value(std::move(test_dict)));
   EXPECT_EQ(base::Value(), host_content_settings_map->GetWebsiteSetting(
                                unsupported_url, unsupported_url,
                                ContentSettingsType::APP_BANNER, nullptr));
@@ -1456,7 +1469,6 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   host_content_settings_map->SetWebsiteSettingCustomScope(
       pattern2, ContentSettingsPattern::Wildcard(),
       ContentSettingsType::APP_BANNER,
-
       base::Value(base::Value::Type::DICTIONARY));
 
   // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
@@ -1853,8 +1865,9 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
       ASSERT_NE(new_value.type(), base::Value::Type::NONE)
           << "Every content setting should have at least two values.";
     } else {
-      new_value = base::Value(base::Value::Type::DICTIONARY);
-      new_value.SetIntPath("foo.bar", 0);
+      base::Value::Dict dict;
+      dict.SetByDottedPath("foo.bar", 0);
+      new_value = base::Value(std::move(dict));
     }
     // Ensure a different value is received.
     ASSERT_NE(original_value, new_value);
@@ -1890,10 +1903,6 @@ TEST_F(HostContentSettingsMapTest, MixedScopeSettings) {
   // It can be replaced with any other type if required.
   const ContentSettingsType persistent_type =
       ContentSettingsType::STORAGE_ACCESS;
-  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
-            content_settings::ContentSettingsRegistry::GetInstance()
-                ->Get(persistent_type)
-                ->storage_behavior());
 
   const GURL example_url1("https://example.com");
   const GURL example_url2("https://other_site.example");
@@ -1952,10 +1961,6 @@ TEST_F(HostContentSettingsMapTest, GetSettingsForOneTypeWithSessionModel) {
   // It can be replaced with any other type if required.
   const ContentSettingsType persistent_type =
       ContentSettingsType::STORAGE_ACCESS;
-  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
-            content_settings::ContentSettingsRegistry::GetInstance()
-                ->Get(persistent_type)
-                ->storage_behavior());
 
   const GURL example_url1("https://example.com");
   const GURL example_url2("https://other_site.example");
@@ -2023,10 +2028,6 @@ TEST_F(HostContentSettingsMapTest, GetSettingsForOneTypeWithExpiry) {
   // It can be replaced with any other type if required.
   const ContentSettingsType persistent_type =
       ContentSettingsType::STORAGE_ACCESS;
-  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
-            content_settings::ContentSettingsRegistry::GetInstance()
-                ->Get(persistent_type)
-                ->storage_behavior());
 
   const GURL example_url1("https://example.com");
   const GURL example_url2("https://other_site.example");

@@ -67,10 +67,8 @@ public class TopToolbarCoordinator implements Toolbar {
          * @param fraction The toolbar expansion progress. 0 indicates that the URL bar is not
          *                   expanded. 1 indicates that the URL bar is expanded to the maximum
          *                   width.
-         *
-         * @param changeInProgress Whether the toolbar animation is still in progress or not.
          */
-        void onUrlExpansionProgressChanged(float fraction, boolean changeInProgress);
+        void onUrlExpansionProgressChanged(float fraction);
     }
 
     /**
@@ -79,6 +77,14 @@ public class TopToolbarCoordinator implements Toolbar {
     public interface ToolbarColorObserver {
         /** @param color The toolbar color value. */
         void onToolbarColorChanged(int color);
+    }
+
+    /**
+     * Observes toolbar alpha value change during overview mode fading animation.
+     */
+    public interface ToolbarAlphaInOverviewObserver {
+        /** @param fraction The toolbar alpha value. */
+        void onToolbarAlphaInOverviewChanged(float fraction);
     }
 
     public static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
@@ -111,6 +117,12 @@ public class TopToolbarCoordinator implements Toolbar {
     private boolean mStartSurfaceToolbarVisible;
 
     /**
+     * The observer manager will receive all types of toolbar color change updates from toolbar
+     * components and send the rendering toolbar color to the ToolbarColorObserver.
+     */
+    private ToolbarColorObserverManager mToolbarColorObserverManager;
+
+    /**
      * Creates a new {@link TopToolbarCoordinator}.
      * @param controlContainer The {@link ToolbarControlContainer} for the containing activity.
      * @param toolbarStub The stub for the tab switcher mode toolbar.
@@ -130,7 +142,6 @@ public class TopToolbarCoordinator implements Toolbar {
      *        for the {@link Invalidator} a chance to defer the actual invalidate to sync drawing.
      * @param identityDiscButtonSupplier Supplier of Identity Disc button.
      * @param resourceManagerSupplier A supplier of a resource manager for native textures.
-     * @param isProgressBarVisibleSupplier A supplier of whether the progress bar is visible.
      * @param isGridTabSwitcherEnabled Whether grid tab switcher is enabled via a feature flag.
      * @param isTabToGtsAnimationEnabled Whether Tab-to-GTS animation is enabled via a feature flag.
      * @param isStartSurfaceEnabled Whether start surface is enabled via a feature flag.
@@ -165,7 +176,6 @@ public class TopToolbarCoordinator implements Toolbar {
             ButtonDataProvider identityDiscController, Callback<Runnable> invalidatorCallback,
             Supplier<ButtonData> identityDiscButtonSupplier,
             Supplier<ResourceManager> resourceManagerSupplier,
-            ObservableSupplier<Boolean> isProgressBarVisibleSupplier,
             BooleanSupplier isIncognitoModeEnabledSupplier, boolean isGridTabSwitcherEnabled,
             boolean isTabletGtsPolishEnabled, boolean isTabToGtsAnimationEnabled,
             boolean isStartSurfaceEnabled, boolean isTabGroupsAndroidContinuationEnabled,
@@ -185,6 +195,9 @@ public class TopToolbarCoordinator implements Toolbar {
         mResourceManagerSupplier = resourceManagerSupplier;
         mTabModelSelectorSupplier = tabModelSelectorSupplier;
         mIsStartSurfaceRefactorEnabled = isStartSurfaceRefactorEnabled;
+        mToolbarColorObserverManager =
+                new ToolbarColorObserverManager(mToolbarLayout.getContext(), mToolbarLayout);
+        mToolbarLayout.setToolbarColorObserver(mToolbarColorObserverManager);
 
         if (mToolbarLayout instanceof ToolbarPhone && isStartSurfaceEnabled) {
             mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(toolbarStub,
@@ -193,19 +206,19 @@ public class TopToolbarCoordinator implements Toolbar {
                     isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
                     isTabGroupsAndroidContinuationEnabled, isIncognitoModeEnabledSupplier,
                     startSurfaceLogoClickedCallback, mIsStartSurfaceRefactorEnabled,
-                    shouldCreateLogoInStartToolbar, this::onStartSurfaceToolbarTransitionFinished);
+                    shouldCreateLogoInStartToolbar, this::onStartSurfaceToolbarTransitionFinished,
+                    mToolbarColorObserverManager);
         } else if (mToolbarLayout instanceof ToolbarPhone || isTabletGridTabSwitcherEnabled()) {
             mTabSwitcherModeCoordinator = new TabSwitcherModeTTCoordinator(toolbarStub,
                     fullscreenToolbarStub, overviewModeMenuButtonCoordinator,
                     isGridTabSwitcherEnabled, isTabletGtsPolishEnabled, isTabToGtsAnimationEnabled,
-                    isIncognitoModeEnabledSupplier);
+                    isIncognitoModeEnabledSupplier, mToolbarColorObserverManager);
         }
         controlContainer.setPostInitializationDependencies(this, initializeWithIncognitoColors,
                 constraintsSupplier, toolbarDataProvider::getTab, compositorInMotionSupplier,
                 browserStateBrowserControlsVisibilityDelegate);
         mToolbarLayout.initialize(toolbarDataProvider, tabController, mMenuButtonCoordinator,
-                isProgressBarVisibleSupplier, historyDelegate, partnerHomepageEnabledSupplier,
-                offlineDownloader);
+                historyDelegate, partnerHomepageEnabledSupplier, offlineDownloader);
         mToolbarLayout.setThemeColorProvider(normalThemeColorProvider);
         mAppMenuButtonHelperSupplier = appMenuButtonHelperSupplier;
         new OneShotCallback<>(mAppMenuButtonHelperSupplier, this::setAppMenuButtonHelper);
@@ -318,7 +331,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param toolbarColorObserver The observer that observes toolbar color change.
      */
     public void setToolbarColorObserver(@NonNull ToolbarColorObserver toolbarColorObserver) {
-        mToolbarLayout.setToolbarColorObserver(toolbarColorObserver);
+        mToolbarColorObserverManager.setToolbarColorObserver(toolbarColorObserver);
     }
 
     /**
@@ -621,6 +634,7 @@ public class TopToolbarCoordinator implements Toolbar {
         } else if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.setIncognitoStateProvider(provider);
         }
+        mToolbarColorObserverManager.setIncognitoStateProvider(provider);
     }
 
     /**

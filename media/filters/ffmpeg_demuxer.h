@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -114,7 +114,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   Type type() const override;
   StreamLiveness liveness() const override;
-  void Read(ReadCB read_cb) override;
+  void Read(uint32_t count, ReadCB read_cb) override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
   AudioDecoderConfig audio_decoder_config() override;
@@ -204,6 +204,9 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   int num_discarded_packet_warnings_;
   int64_t last_packet_pos_;
   int64_t last_packet_dts_;
+  // Requested buffer count. The actual returned buffer count could be less
+  // according to DemuxerStream::Read() API.
+  size_t requested_buffer_count_ = 0;
 };
 
 class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
@@ -229,6 +232,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void StartWaitingForSeek(base::TimeDelta seek_time) override;
   void CancelPendingSeek(base::TimeDelta seek_time) override;
   void Seek(base::TimeDelta time, PipelineStatusCallback cb) override;
+  bool IsSeekable() const override;
   base::Time GetTimelineOffset() const override;
   std::vector<DemuxerStream*> GetAllStreams() override;
   base::TimeDelta GetStartTime() const override;

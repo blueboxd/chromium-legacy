@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/breadcrumbs/core/breadcrumb_manager.h"
@@ -61,12 +62,9 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
   // been written into.
   void WriteEvents();
 
-  // Writes events from BreadcrumbManager to `breadcrumbs_file_`, overwriting
-  // any existing persisted breadcrumbs.
-  void RewriteAllExistingBreadcrumbs();
-
-  // Writes breadcrumbs stored in |pending_breadcrumbs_| to |breadcrumbs_file_|.
-  void WritePendingBreadcrumbs();
+  // Writes the given `events` to `breadcrumbs_file_`. If `append` is false,
+  // overwrites the file.
+  void Write(const std::string& events, bool append);
 
   // BreadcrumbManagerObserver
   void EventAdded(const std::string& event) override;
@@ -80,16 +78,6 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
 
   // A timer to delay writing to disk too often.
   base::OneShotTimer write_timer_;
-
-  // TODO(crbug.com/1327267): Remove these counters once crash is understood.
-  // The number of times the breadcrumbs file has been written to. Counts from
-  // the perspective of the main thread, i.e., a write is counted at the time
-  // that a task to write is posted.
-  size_t write_counter_ = 0;
-  // The value of `write_counter_` when the file was last fully rewritten, i.e.,
-  // replaced by the temp file. Intended to investigate whether replacing the
-  // breadcrumbs file can sometimes cause a crash on the next write attempt.
-  size_t write_counter_at_last_full_rewrite_ = 0;
 
   // The path to the file for storing persisted breadcrumbs.
   const base::FilePath breadcrumbs_file_path_;

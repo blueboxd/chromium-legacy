@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
@@ -83,6 +83,7 @@ class GpuFenceManagerTest : public GpuServiceTest {
     if (display_)
       display_->Shutdown();
     egl_.reset();
+    gl::ClearBindingsEGL();
   }
 
   void SetupFeatureInfo(const char* gl_extensions,

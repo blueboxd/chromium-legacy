@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_CLIENT_H_
 #define COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_CLIENT_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/model/model_type_controller_delegate.h"
@@ -17,6 +17,8 @@ class FaviconService;
 namespace history {
 class HistoryService;
 }  // namespace history
+
+class ReadingListModel;
 
 namespace send_tab_to_self {
 class SendTabToSelfSyncService;
@@ -63,6 +65,7 @@ class BrowserSyncClient : public syncer::SyncClient {
   virtual history::HistoryService* GetHistoryService() = 0;
   virtual sync_preferences::PrefServiceSyncable* GetPrefServiceSyncable() = 0;
   virtual sync_sessions::SessionSyncService* GetSessionSyncService() = 0;
+  virtual ReadingListModel* GetReadingListModel() = 0;
   virtual send_tab_to_self::SendTabToSelfSyncService*
   GetSendTabToSelfSyncService() = 0;
 };

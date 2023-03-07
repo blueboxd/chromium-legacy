@@ -18,6 +18,7 @@ android_library("java") {
     "//chrome/browser/password_manager/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/touch_to_fill/android:public_java",
+    "//chrome/browser/touch_to_fill/common/android:java",
     "//chrome/browser/touch_to_fill/common/android:java_resources",
     "//chrome/browser/ui/android/favicon:java",
     "//chrome/browser/util:java",
@@ -62,11 +63,6 @@ android_resources("java_resources") {
   ]
   sources = [
     "java/res/drawable-night/touch_to_fill_header_image.xml",
-    "java/res/drawable/touch_to_fill_credential_background.xml",
-    "java/res/drawable/touch_to_fill_credential_background_modern.xml",
-    "java/res/drawable/touch_to_fill_credential_background_modern_rounded_all.xml",
-    "java/res/drawable/touch_to_fill_credential_background_modern_rounded_down.xml",
-    "java/res/drawable/touch_to_fill_credential_background_modern_rounded_up.xml",
     "java/res/drawable/touch_to_fill_header_image.xml",
     "java/res/layout/touch_to_fill_credential_item.xml",
     "java/res/layout/touch_to_fill_credential_item_modern.xml",

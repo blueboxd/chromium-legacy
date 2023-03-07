@@ -125,6 +125,7 @@ class CONTENT_EXPORT Navigator {
       const blink::LocalFrameToken* initiator_frame_token,
       int initiator_process_id,
       const absl::optional<url::Origin>& initiator_origin,
+      const absl::optional<GURL>& initiator_base_url,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       const std::string& extra_headers,
       const Referrer& referrer,
@@ -145,6 +146,7 @@ class CONTENT_EXPORT Navigator {
       const blink::LocalFrameToken* initiator_frame_token,
       int initiator_process_id,
       const url::Origin& initiator_origin,
+      const GURL& initiator_base_url,
       SiteInstance* source_site_instance,
       const Referrer& referrer,
       ui::PageTransition page_transition,
@@ -230,7 +232,8 @@ class CONTENT_EXPORT Navigator {
   // NavigationController.
   NavigationEntryImpl* GetNavigationEntryForRendererInitiatedNavigation(
       const blink::mojom::CommonNavigationParams& common_params,
-      FrameTreeNode* frame_tree_node);
+      FrameTreeNode* frame_tree_node,
+      bool override_user_agent);
 
   // Called to record the time it took to execute beforeunload handlers for
   // renderer-inititated navigations. It records the time it took to execute
@@ -248,7 +251,8 @@ class CONTENT_EXPORT Navigator {
   // events. Can be nullptr in tests.
   raw_ptr<NavigatorDelegate> delegate_;
 
-  std::unique_ptr<Navigator::NavigationMetricsData> navigation_data_;
+  // Tracks metrics for each navigation.
+  std::unique_ptr<Navigator::NavigationMetricsData> metrics_data_;
 };
 
 }  // namespace content

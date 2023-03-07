@@ -59,8 +59,8 @@ const char16_t kWhiteSpaceSeparator = ' ';
 
 const int kMaxNicknameLength = 25;
 
-constexpr int k16DigitNumberSegmentations[] = {4, 4, 4, 4};
-constexpr int k16DigitNumberSegmentationsLength = 4;
+constexpr std::array<int, 3> k15DigitAmexNumberSegmentations = {4, 6, 5};
+constexpr std::array<int, 4> k16DigitNumberSegmentations = {4, 4, 4, 4};
 
 // Suffix for GUID of a virtual card to differentiate it from it's corresponding
 // masked server card..
@@ -106,19 +106,17 @@ std::u16string GetLastFourDigits(const std::u16string& number) {
   return stripped.substr(stripped.size() - kNumLastDigits, kNumLastDigits);
 }
 
-// Returns a new string based on the input |number| by adding a white space
-// between |segments|. The provided |segments| denotes the length of each
-// segment, and we don't need to add whitespace to the last segmentation.
-// |segments_size| denotes the size of the |segments| array. For example, if you
-// would like to format 15-digit card number into "XXXX XXXXXX XXXXX", you need
-// to provide [4, 6, 5] as the |segments|, 3 as the |segments_size|.
+// Returns a new string based on the input `number` by adding a white space
+// between `segments`. The provided `segments` denotes the length of each
+// segment, and we don't need to add whitespace to the last segmentation. For
+// example, if you would like to format 15-digit card number into "XXXX XXXXXX
+// XXXXX", you need to provide [4, 6, 5] as the `segments`.
 std::u16string AddWhiteSpaceSeparatorForNumber(const std::u16string& number,
-                                               const int segments[],
-                                               const int segments_size) {
+                                               base::span<const int> segments) {
   std::u16string formatted;
   int pos = 0;
   // We don't need to add white space to the last segmentation.
-  for (int i = 0; i < segments_size - 1; i++) {
+  for (size_t i = 0; i < segments.size() - 1; i++) {
     formatted += number.substr(pos, segments[i]) + kWhiteSpaceSeparator;
     pos += segments[i];
   }
@@ -473,10 +471,9 @@ std::u16string CreditCard::GetRawInfo(ServerFieldType type) const {
   }
 }
 
-void CreditCard::SetRawInfoWithVerificationStatus(
-    ServerFieldType type,
-    const std::u16string& value,
-    structured_address::VerificationStatus status) {
+void CreditCard::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                  const std::u16string& value,
+                                                  VerificationStatus status) {
   DCHECK_EQ(FieldTypeGroup::kCreditCard, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
@@ -899,25 +896,30 @@ std::u16string CreditCard::LastFourDigits() const {
 
 std::u16string CreditCard::FullDigitsForDisplay() const {
   std::u16string stripped = CreditCard::StripSeparators(number_);
-  // Currently we only format 16-digit length card number.
-  // TODO(crbug.com/1222501): Extend this to other digit lengths.
-  if (stripped.size() != 16)
-    return number_;
-  return AddWhiteSpaceSeparatorForNumber(stripped, k16DigitNumberSegmentations,
-                                         k16DigitNumberSegmentationsLength);
+  if (stripped.size() == 16) {
+    return AddWhiteSpaceSeparatorForNumber(stripped,
+                                           k16DigitNumberSegmentations);
+  }
+  if (stripped.size() == 15 && network_ == kAmericanExpressCard) {
+    return AddWhiteSpaceSeparatorForNumber(stripped,
+                                           k15DigitAmexNumberSegmentations);
+  }
+
+  return number_;
 }
 
 std::u16string CreditCard::NetworkForDisplay() const {
   return CreditCard::NetworkForDisplay(network_);
 }
 
-std::u16string CreditCard::ObfuscatedLastFourDigits(
+std::u16string CreditCard::ObfuscatedNumberWithVisibleLastFourDigits(
     int obfuscation_length) const {
   return internal::GetObfuscatedStringForCardDigits(LastFourDigits(),
                                                     obfuscation_length);
 }
 
-std::u16string CreditCard::ObfuscatedLastFourDigitsForSplitFields() const {
+std::u16string
+CreditCard::ObfuscatedNumberWithVisibleLastFourDigitsForSplitFields() const {
   // For split credit card number fields, use plain dots without spacing and no
   // LTR formatting. Only obfuscate 12 dots and append the last four digits of
   // the credit card number.
@@ -975,7 +977,8 @@ std::u16string CreditCard::CardNameForAutofillDisplay(
 
 #if BUILDFLAG(IS_ANDROID)
 std::u16string CreditCard::CardIdentifierStringForManualFilling() const {
-  std::u16string obfuscated_number = ObfuscatedLastFourDigits();
+  std::u16string obfuscated_number =
+      ObfuscatedNumberWithVisibleLastFourDigits();
   if (record_type_ == VIRTUAL_CARD) {
     return l10n_util::GetStringUTF16(
                IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE) +
@@ -1031,11 +1034,6 @@ std::u16string CreditCard::Expiration2DigitYearAsString() const {
 
 std::u16string CreditCard::Expiration4DigitYearAsString() const {
   return data_util::Expiration4DigitYearAsString(expiration_year_);
-}
-
-bool CreditCard::HasFirstAndLastName() const {
-  return !temp_card_first_name_.empty() && !temp_card_last_name_.empty() &&
-         !name_on_card_.empty();
 }
 
 bool CreditCard::HasNameOnCard() const {
@@ -1099,7 +1097,7 @@ bool CreditCard::SetInfoWithVerificationStatusImpl(
     const AutofillType& type,
     const std::u16string& value,
     const std::string& app_locale,
-    structured_address::VerificationStatus status) {
+    VerificationStatus status) {
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == CREDIT_CARD_EXP_MONTH)
     return SetExpirationMonthFromString(value, app_locale);

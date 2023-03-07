@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -107,11 +107,11 @@ class BASE_EXPORT FileDescriptorWatcher {
   // returned Controller is deleted (deletion must happen on the current
   // sequence).
   // Usage note: To call these methods, a FileDescriptorWatcher must have been
-  // instantiated on the current thread and SequencedTaskRunnerHandle::IsSet()
-  // must return true (these conditions are met at least on all ThreadPool
-  // threads as well as on threads backed by a MessageLoopForIO). |fd| must
-  // outlive the returned Controller.
-  // Shutdown note: notifications aren't guaranteed to be emitted once the bound
+  // instantiated on the current thread and
+  // SequencedTaskRunner::HasCurrentDefault() must return true (these conditions
+  // are met at least on all ThreadPool threads as well as on threads backed by
+  // a MessageLoopForIO). |fd| must outlive the returned Controller. Shutdown
+  // note: notifications aren't guaranteed to be emitted once the bound
   // (current) SequencedTaskRunner enters its shutdown phase (i.e.
   // ThreadPool::Shutdown() or Thread::Stop()) regardless of the
   // SequencedTaskRunner's TaskShutdownBehavior.

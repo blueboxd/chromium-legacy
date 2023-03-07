@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
@@ -75,9 +75,6 @@ class TouchInjector : public ui::EventRewriter {
   void RegisterEventRewriter();
   // Unregister the EventRewriter.
   void UnRegisterEventRewriter();
-  // Update info for touch injector. For example, update transform information
-  // if there is screen rotation.
-  void Update();
   // Change bindings. This could be from user editing from display overlay
   // (|mode| = DisplayMode::kEdit) or from customized protobuf data (|mode| =
   // DisplayMode::kView).
@@ -105,8 +102,8 @@ class TouchInjector : public ui::EventRewriter {
 
   // Update |content_bounds_| and touch positions for each |actions_| for
   // different reasons.
-  void UpdateForDisplayMetricsChanged();
-  void UpdateForWindowBoundsChanged();
+  void UpdatePositionsForRegister();
+  void UpdateForOverlayBoundsChanged(const gfx::RectF& new_bounds);
 
   // Add or delete an Action.
   // Return an action ID (> kMaxDefaultActionID) for adding a new action.
@@ -322,8 +319,7 @@ class TouchInjector : public ui::EventRewriter {
 
   // TODO(b/260937747): Update or remove when removing flags
   // |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.
-  bool allow_reposition_ = ash::features::IsArcInputOverlayAlphaV2Enabled() ||
-                           ash::features::IsArcInputOverlayBetaEnabled();
+  bool allow_reposition_ = false;
   // Corresponds to |kArcInputOverlayBeta| flag to turn on/off the editor
   // feature of adding or removing actions.
   bool beta_ = ash::features::IsArcInputOverlayBetaEnabled();

@@ -25,6 +25,7 @@ non_web_component_files = [
   "js/ambient/ambient_controller.ts",
   "js/ambient/ambient_interface_provider.ts",
   "js/ambient/ambient_observer.ts",
+  "js/ambient/ambient_preview_base.ts",
   "js/ambient/ambient_reducers.ts",
   "js/ambient/ambient_state.ts",
   "js/ambient/utils.ts",
@@ -72,8 +73,9 @@ non_web_component_files = [
 web_component_files = [
   "js/ambient/album_list_element.ts",
   "js/ambient/albums_subpage_element.ts",
+  "js/ambient/ambient_preview_large_element.ts",
+  "js/ambient/ambient_preview_small_element.ts",
   "js/ambient/art_album_dialog_element.ts",
-  "js/ambient/ambient_preview_element.ts",
   "js/ambient/ambient_subpage_element.ts",
   "js/ambient/ambient_zero_state_svg_element.ts",
   "js/ambient/ambient_weather_element.ts",
@@ -207,6 +209,7 @@ ts_library("build_ts") {
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
+    "//ui/webui/resources/cr_components/localized_link:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
 
@@ -224,14 +227,10 @@ if (optimize_webui) {
   optimize_webui("build") {
     host = "personalization"
     input = rebase_path("$target_gen_dir/tsc", root_build_dir)
-    js_out_files = [ "personalization_app.rollup.js" ]
     js_module_in_files = [ "js/personalization_app.js" ]
     out_manifest = "$target_gen_dir/$build_manifest"
 
-    deps = [
-      ":build_ts",
-      "//ui/webui/resources:preprocess",
-    ]
+    deps = [ ":build_ts" ]
 
     excludes = [ "chrome://resources/mojo/mojo/public/js/bindings.js" ]
   }
@@ -245,7 +244,7 @@ generate_grd("build_grd") {
     deps = [ ":build" ]
     manifest_files = [ "$target_gen_dir/$build_manifest" ]
     resource_path_rewrites =
-        [ "personalization_app.rollup.js|js/personalization_app.js" ]
+        [ "js/personalization_app.rollup.js|js/personalization_app.js" ]
   } else {
     deps = [ ":build_ts" ]
     manifest_files =

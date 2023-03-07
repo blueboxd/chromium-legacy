@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/payments/shipping_address_editor_view_controller.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -212,6 +212,11 @@ std::u16string ShippingAddressEditorViewController::GetSheetTitle() {
   // in the case that one or more fields are missing.
   return profile_to_edit_ ? l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT_ADDRESS)
                           : l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
+}
+
+base::WeakPtr<PaymentRequestSheetController>
+ShippingAddressEditorViewController::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 int ShippingAddressEditorViewController::GetPrimaryButtonId() {

@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -452,7 +453,6 @@ bool SideSearchBrowserController::GetSidePanelToggledOpen() const {
 
 void SideSearchBrowserController::SidePanelCloseButtonPressed() {
   CloseSidePanel(SideSearchCloseActionType::kTapOnSideSearchCloseButton);
-  browser_view_->RightAlignedSidePanelWasClosed();
 }
 
 void SideSearchBrowserController::OpenSidePanel() {
@@ -552,11 +552,8 @@ void SideSearchBrowserController::UpdateSidePanel() {
   // When side search is shown we only need to close other side panels for the
   // basic clobbering experience. The improved experience leverages a
   // SidePanelVisibilityController on the browser view.
-  if (base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
-      !base::FeatureList::IsEnabled(features::kSidePanelImprovedClobbering) &&
-      will_show_side_panel) {
-    browser_view_->CloseOpenRightAlignedSidePanel(/*exclude_lens=*/false,
-                                                  /*exclude_side_search=*/true);
+  if (will_show_side_panel) {
+    browser_view_->CloseOpenRightAlignedSidePanel(/*exclude_side_search=*/true);
   }
 
   // The side panel contents will be created if it does not already exist.

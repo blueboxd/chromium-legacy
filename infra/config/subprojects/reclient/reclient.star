@@ -29,25 +29,25 @@ luci.bucket(
 
 ci.defaults.set(
     bucket = "reclient",
+    builder_group = "chromium.reclient.fyi",
     executable = "recipe:chromium",
     triggered_by = ["chromium-gitiles-trigger"],
-    builder_group = "chromium.reclient.fyi",
-    pool = "luci.chromium.ci",
     cores = 8,
     cpu = cpu.X86_64,
+    pool = "luci.chromium.ci",
     free_space = builders.free_space.standard,
-    build_numbers = True,
-    execution_timeout = 3 * time.hour,
-    goma_backend = None,
     service_account = (
         "chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com"
     ),
+    build_numbers = True,
+    execution_timeout = 3 * time.hour,
+    goma_backend = None,
 )
 
 consoles.console_view(
     name = "chromium.reclient.fyi",
-    repo = "https://chromium.googlesource.com/chromium/src",
     header = HEADER,
+    repo = "https://chromium.googlesource.com/chromium/src",
     include_experimental_builds = True,
 )
 
@@ -60,19 +60,24 @@ def fyi_reclient_staging_builder(
             "chromium-cq-staging-builder@chops-service-accounts.iam.gserviceaccount.com"
         ),
         reclient_version = "staging",
-        enable_crash_dump = "false",
+        reclient_scandeps_server = False,
         **kwargs):
     trusted_instance = reclient_instance % "trusted"
     unstrusted_instance = reclient_instance % "untrusted"
     reclient_bootstrap_env = kwargs.pop("reclient_bootstrap_env", {})
 
-    # TODO(b/233275188) remove once reproxy 0.83.0 is rolled out
+    # Use goma deps cache with scan deps server
+    if not reclient_scandeps_server:
+        # TODO(b/233275188) remove once reproxy 0.83.0 is rolled out
+        reclient_bootstrap_env.update({
+            "RBE_experimental_goma_deps_cache": "True",
+            "RBE_ip_reset_min_delay": "-1s",
+            "RBE_deps_cache_mode": "reproxy",
+        })
+
     reclient_bootstrap_env.update({
-        "RBE_experimental_goma_deps_cache": "True",
-        "RBE_ip_reset_min_delay": "-1s",
-        "RBE_deps_cache_mode": "reproxy",
         # TODO(b/258210757) remove once long term breakpad plans are dertermined
-        "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": enable_crash_dump,
+        "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "true" if reclient_scandeps_server else "false",
     })
     return [
         ci.builder(
@@ -85,6 +90,7 @@ def fyi_reclient_staging_builder(
                 short_name = "rcs",
             ),
             reclient_bootstrap_env = reclient_bootstrap_env,
+            reclient_scandeps_server = reclient_scandeps_server,
             **kwargs
         ),
         ci.builder(
@@ -98,6 +104,7 @@ def fyi_reclient_staging_builder(
             ),
             service_account = untrusted_service_account,
             reclient_bootstrap_env = reclient_bootstrap_env,
+            reclient_scandeps_server = reclient_scandeps_server,
             **kwargs
         ),
     ]
@@ -152,6 +159,7 @@ fyi_reclient_test_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
+    reclient_scandeps_server = True,
 )
 
 fyi_reclient_staging_builder(
@@ -198,7 +206,32 @@ fyi_reclient_test_builder(
     cores = None,
     os = os.MAC_DEFAULT,
     console_view_category = "mac",
-    enable_crash_dump = "true",
+    priority = 35,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
+    reclient_profiler_service = "reclient-mac",
+)
+
+fyi_reclient_test_builder(
+    name = "Mac Builder reclient scandeps test",
+    builder_spec = builder_config.copy_from(
+        "ci/Mac Builder",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "reclient_test",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
+    builderless = True,
+    cores = None,
+    os = os.MAC_DEFAULT,
+    console_view_category = "mac",
     priority = 35,
     reclient_bootstrap_env = {
         "GLOG_vmodule": "bridge*=2",
@@ -311,14 +344,39 @@ fyi_reclient_test_builder(
     builderless = True,
     cores = None,
     os = os.MAC_DEFAULT,
+    xcode = xcode.x14main,
     console_view_category = "ios",
-    enable_crash_dump = "true",
+    priority = 35,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
+)
+
+fyi_reclient_test_builder(
+    name = "ios-simulator reclient scandeps test",
+    builder_spec = builder_config.copy_from(
+        "ci/ios-simulator",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "reclient_test",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
+    builderless = True,
+    cores = None,
+    os = os.MAC_DEFAULT,
+    xcode = xcode.x14main,
+    console_view_category = "ios",
     priority = 35,
     reclient_bootstrap_env = {
         "GLOG_vmodule": "bridge*=2",
     },
     reclient_scandeps_server = True,
-    xcode = xcode.x14main,
 )
 
 fyi_reclient_staging_builder(
@@ -339,12 +397,12 @@ fyi_reclient_staging_builder(
     builderless = True,
     cores = None,
     os = os.MAC_DEFAULT,
+    xcode = xcode.x14main,
     console_view_category = "ios",
     priority = 35,
     reclient_bootstrap_env = {
         "GLOG_vmodule": "bridge*=2",
     },
-    xcode = xcode.x14main,
 )
 
 fyi_reclient_staging_builder(
@@ -391,7 +449,31 @@ fyi_reclient_test_builder(
     cores = None,
     os = os.MAC_DEFAULT,
     console_view_category = "mac",
-    enable_crash_dump = "true",
+    priority = 35,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
+)
+
+fyi_reclient_test_builder(
+    name = "mac-arm64-rel reclient scandeps test",
+    builder_spec = builder_config.copy_from(
+        "ci/mac-arm64-rel",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "reclient_test",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
+    builderless = True,
+    cores = None,
+    os = os.MAC_DEFAULT,
+    console_view_category = "mac",
     priority = 35,
     reclient_bootstrap_env = {
         "GLOG_vmodule": "bridge*=2",
@@ -411,6 +493,7 @@ ci.builder(
     reclient_bootstrap_env = {
         "RBE_ip_reset_min_delay": "-1s",
         "RBE_deps_cache_dir": "",
+        "RBE_enable_deps_cache": "false",
         "RBE_clang_depscan_archive": "true",
     },
     reclient_cache_silo = "Comparison Linux remote links - cache siloed",
@@ -430,45 +513,9 @@ ci.builder(
     reclient_bootstrap_env = {
         "RBE_ip_reset_min_delay": "-1s",
         "RBE_deps_cache_dir": "",
+        "RBE_enable_deps_cache": "false",
         "RBE_clang_depscan_archive": "true",
-    },
-    reclient_cache_silo = "Comparison Linux remote links - cache siloed",
-    reclient_instance = reclient.instance.TEST_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
-)
-
-ci.builder(
-    name = "Comparison Linux (reclient vs reclient remote links)(medium)",
-    executable = "recipe:reclient_reclient_comparison",
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "cmp",
-    ),
-    execution_timeout = 6 * time.hour,
-    reclient_bootstrap_env = {
-        "RBE_ip_reset_min_delay": "-1s",
-        "RBE_deps_cache_dir": "",
-        "RBE_clang_depscan_archive": "true",
-    },
-    reclient_cache_silo = "Comparison Linux remote links - cache siloed",
-    reclient_instance = reclient.instance.TEST_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
-)
-
-ci.builder(
-    name = "Comparison Linux (reclient vs reclient remote links)(large)",
-    executable = "recipe:reclient_reclient_comparison",
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "cmp",
-    ),
-    execution_timeout = 6 * time.hour,
-    reclient_bootstrap_env = {
-        "RBE_ip_reset_min_delay": "-1s",
-        "RBE_deps_cache_dir": "",
-        "RBE_clang_depscan_archive": "true",
+        "RBE_use_unified_uploads": "false",
     },
     reclient_cache_silo = "Comparison Linux remote links - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,

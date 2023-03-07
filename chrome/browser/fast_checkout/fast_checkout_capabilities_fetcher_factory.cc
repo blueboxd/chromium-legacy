@@ -9,8 +9,8 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher_impl.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 // static
 FastCheckoutCapabilitiesFetcherFactory*
@@ -20,9 +20,7 @@ FastCheckoutCapabilitiesFetcherFactory::GetInstance() {
 }
 
 FastCheckoutCapabilitiesFetcherFactory::FastCheckoutCapabilitiesFetcherFactory()
-    : BrowserContextKeyedServiceFactory(
-          "FastCheckoutCapabilitiesFetcher",
-          BrowserContextDependencyManager::GetInstance()) {}
+    : ProfileKeyedServiceFactory("FastCheckoutCapabilitiesFetcher") {}
 
 FastCheckoutCapabilitiesFetcherFactory::
     ~FastCheckoutCapabilitiesFetcherFactory() = default;
@@ -37,5 +35,7 @@ FastCheckoutCapabilitiesFetcherFactory::GetForBrowserContext(
 
 KeyedService* FastCheckoutCapabilitiesFetcherFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  return new FastCheckoutCapabilitiesFetcherImpl();
+  return new FastCheckoutCapabilitiesFetcherImpl(
+      browser_context->GetDefaultStoragePartition()
+          ->GetURLLoaderFactoryForBrowserProcess());
 }

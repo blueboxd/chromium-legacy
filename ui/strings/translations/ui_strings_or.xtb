@@ -26,6 +26,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ମାସ}other{# ମାସ}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/ସେ</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ଘଣ୍ଟା ଏବଂ }other{# ଘଣ୍ଟା ଏବଂ }}</translation>
+<translation id="185013357618350178">&amp;ଚୟନ କରନ୍ତୁ</translation>
 <translation id="1859234291848436338">ଦିଗନିର୍ଦ୍ଦେଶ ଲେଖାଯାଉଛି</translation>
 <translation id="1860796786778352021">ବିଜ୍ଞପ୍ତି ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="186476001994626254">ୱେବ୍ ସ୍ମାର୍ଟ ପେଷ୍ଟ ବିଷୟବସ୍ତୁ</translation>
@@ -174,7 +175,7 @@
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ଇମୋଜି</translation>
 <translation id="7620655452534002301">କାଢ଼ି ଦିଆଯାଇଛି।</translation>
-<translation id="7658239707568436148">ବାତିଲ</translation>
+<translation id="7658239707568436148">ବାତିଲ୍</translation>
 <translation id="7781829728241885113">ଗତକଲି</translation>
 <translation id="7814458197256864873">&amp;କପି</translation>
 <translation id="7879499977785298635">ଅବରୋଧ କରନ୍ତୁ ନାହିଁ</translation>

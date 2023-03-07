@@ -7,12 +7,12 @@
  */
 import {AutomationUtil} from '../../common/automation_util.js';
 import {constants} from '../../common/constants.js';
-import {Earcon} from '../common/abstract_earcons.js';
 import {ChromeVoxEvent} from '../common/custom_automation_event.js';
+import {EarconId} from '../common/earcon_id.js';
 
 import {BaseAutomationHandler} from './base_automation_handler.js';
 import {ChromeVox} from './chromevox.js';
-import {ChromeVoxState, ChromeVoxStateObserver} from './chromevox_state.js';
+import {ChromeVoxRange, ChromeVoxRangeObserver} from './chromevox_range.js';
 
 const ActionType = chrome.automation.ActionType;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -21,7 +21,7 @@ const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
-/** @implements {ChromeVoxStateObserver} */
+/** @implements {ChromeVoxRangeObserver} */
 export class PageLoadSoundHandler extends BaseAutomationHandler {
   /** @private */
   constructor() {
@@ -36,7 +36,7 @@ export class PageLoadSoundHandler extends BaseAutomationHandler {
       this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
       this.addListener_(EventType.LOAD_START, this.onLoadStart);
 
-      ChromeVoxState.addObserver(this);
+      ChromeVoxRange.addObserver(this);
     });
   }
 
@@ -59,7 +59,7 @@ export class PageLoadSoundHandler extends BaseAutomationHandler {
     }
 
     if (this.didRequestLoadSound_ && top.parent && top.parent.state.focused) {
-      ChromeVox.earcons.playEarcon(Earcon.PAGE_FINISH_LOADING);
+      ChromeVox.earcons.playEarcon(EarconId.PAGE_FINISH_LOADING);
       this.didRequestLoadSound_ = false;
     }
   }
@@ -73,7 +73,7 @@ export class PageLoadSoundHandler extends BaseAutomationHandler {
     const top = AutomationUtil.getTopLevelRoot(evt.target);
     if (top && top === evt.target.root && top.docUrl && top.parent &&
         top.parent.state.focused) {
-      ChromeVox.earcons.playEarcon(Earcon.PAGE_START_LOADING);
+      ChromeVox.earcons.playEarcon(EarconId.PAGE_START_LOADING);
       this.didRequestLoadSound_ = true;
     }
   }
@@ -87,7 +87,7 @@ export class PageLoadSoundHandler extends BaseAutomationHandler {
     const top = AutomationUtil.getTopLevelRoot(range.start.node);
     // |top| might be undefined e.g. if range is not in a root web area.
     if (this.didRequestLoadSound_ && (!top || top.docLoadingProgress === 1)) {
-      ChromeVox.earcons.playEarcon(Earcon.PAGE_FINISH_LOADING);
+      ChromeVox.earcons.playEarcon(EarconId.PAGE_FINISH_LOADING);
       this.didRequestLoadSound_ = false;
     }
 

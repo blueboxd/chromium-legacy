@@ -4,12 +4,11 @@
 
 #include "third_party/blink/renderer/modules/direct_sockets/udp_writable_stream_wrapper.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
-#include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom-blink.h"
+#include "services/network/public/mojom/restricted_udp_socket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -29,13 +28,15 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock-matchers.h"
 
 namespace blink {
 
 namespace {
 
-class FakeDirectUDPSocket : public blink::mojom::blink::DirectUDPSocket {
+class FakeRestrictedUDPSocket
+    : public network::mojom::blink::RestrictedUDPSocket {
  public:
   void Send(base::span<const uint8_t> data, SendCallback callback) override {
     data_.Append(data.data(), static_cast<uint32_t>(data.size_bytes()));
@@ -43,8 +44,6 @@ class FakeDirectUDPSocket : public blink::mojom::blink::DirectUDPSocket {
   }
 
   void ReceiveMore(uint32_t num_additional_datagrams) override { NOTREACHED(); }
-
-  void Close() override { NOTREACHED(); }
 
   const Vector<uint8_t>& GetReceivedData() const { return data_; }
 
@@ -55,10 +54,10 @@ class FakeDirectUDPSocket : public blink::mojom::blink::DirectUDPSocket {
 class StreamCreator : public GarbageCollected<StreamCreator> {
  public:
   StreamCreator()
-      : fake_udp_socket_{std::make_unique<FakeDirectUDPSocket>()},
+      : fake_udp_socket_{std::make_unique<FakeRestrictedUDPSocket>()},
         receiver_{fake_udp_socket_.get()} {}
 
-  explicit StreamCreator(std::unique_ptr<FakeDirectUDPSocket> socket)
+  explicit StreamCreator(std::unique_ptr<FakeRestrictedUDPSocket> socket)
       : fake_udp_socket_(std::move(socket)),
         receiver_{fake_udp_socket_.get()} {}
 
@@ -81,7 +80,7 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
 
   void Trace(Visitor* visitor) const { visitor->Trace(stream_wrapper_); }
 
-  FakeDirectUDPSocket* fake_udp_socket() { return fake_udp_socket_.get(); }
+  FakeRestrictedUDPSocket* fake_udp_socket() { return fake_udp_socket_.get(); }
 
   bool CloseCalledWith(bool error) { return close_called_with_ == error; }
 
@@ -96,8 +95,9 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
   }
 
   absl::optional<bool> close_called_with_;
-  std::unique_ptr<FakeDirectUDPSocket> fake_udp_socket_;
-  mojo::Receiver<blink::mojom::blink::DirectUDPSocket> receiver_;
+  std::unique_ptr<FakeRestrictedUDPSocket> fake_udp_socket_;
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
+  mojo::Receiver<network::mojom::blink::RestrictedUDPSocket> receiver_;
   Member<UDPWritableStreamWrapper> stream_wrapper_;
 };
 
@@ -324,7 +324,7 @@ TEST(UDPWritableStreamWrapperTest, WriteAfterClose) {
 }
 
 TEST(UDPWritableStreamWrapperTest, WriteFailed) {
-  class FailingFakeDirectUDPSocket : public FakeDirectUDPSocket {
+  class FailingFakeRestrictedUDPSocket : public FakeRestrictedUDPSocket {
    public:
     void Send(base::span<const uint8_t> data, SendCallback callback) override {
       std::move(callback).Run(net::ERR_UNEXPECTED);
@@ -334,7 +334,7 @@ TEST(UDPWritableStreamWrapperTest, WriteFailed) {
   V8TestingScope scope;
 
   ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>(
-      std::make_unique<FailingFakeDirectUDPSocket>()));
+      std::make_unique<FailingFakeRestrictedUDPSocket>()));
   auto* udp_writable_stream_wrapper = stream_creator->Create(scope);
 
   auto* script_state = scope.GetScriptState();

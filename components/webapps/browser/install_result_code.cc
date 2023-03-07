@@ -79,6 +79,10 @@ std::ostream& operator<<(std::ostream& os, InstallResultCode code) {
       return os << "kAppNotInRegistrarAfterCommit";
     case InstallResultCode::kHaltedBySyncUninstall:
       return os << "kHaltedBySyncUninstall";
+    case InstallResultCode::kInstallURLInvalid:
+      return os << "kInstallURLInvalid";
+    case InstallResultCode::kIconDownloadingFailed:
+      return os << "kIconDownloadingFailed";
   }
 }
 

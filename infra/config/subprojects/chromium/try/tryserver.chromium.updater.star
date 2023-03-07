@@ -8,13 +8,13 @@ load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
-    executable = try_.DEFAULT_EXECUTABLE,
     builder_group = "tryserver.chromium.updater",
-    pool = try_.DEFAULT_POOL,
+    executable = try_.DEFAULT_EXECUTABLE,
     builderless = True,
+    pool = try_.DEFAULT_POOL,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(

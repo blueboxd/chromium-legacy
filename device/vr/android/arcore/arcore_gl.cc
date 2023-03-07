@@ -10,11 +10,11 @@
 #include <utility>
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/jni_android.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
@@ -450,7 +450,8 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
 
   gl::GLDisplay* display = nullptr;
   if (gl::GetGLImplementation() == gl::kGLImplementationNone) {
-    display = gl::init::InitializeGLOneOff(/*system_device_id=*/0);
+    display = gl::init::InitializeGLOneOff(
+        /*gpu_preference=*/gl::GpuPreference::kDefault);
     if (!display) {
       DLOG(ERROR) << "gl::init::InitializeGLOneOff failed";
       return false;
@@ -584,6 +585,7 @@ void ArCoreGl::RecalculateUvsAndProjection() {
   float bottom =
       depth_near * (projection_.rc(2, 1) - 1.f) / projection_.rc(1, 1);
   float top = depth_near * (projection_.rc(2, 1) + 1.f) / projection_.rc(1, 1);
+  DVLOG(3) << __func__ << ": projection_=" << projection_.ToString();
 
   // Also calculate the inverse projection which is needed for converting
   // screen touches to world rays.
@@ -1058,7 +1060,7 @@ void ArCoreGl::FinishFrame(int16_t frame_index) {
 
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(3) << __func__;
-  surface_->SwapBuffers(base::DoNothing(), gl::FrameData());
+  surface_->SwapBuffers(base::DoNothing(), gfx::FrameData());
 
   // If we have a rendering frame (we don't if the app didn't submit one),
   // update statistics.

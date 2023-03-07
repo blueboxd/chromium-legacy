@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -773,12 +773,9 @@ std::string FidoCableDiscovery::ResultDebugString(
   return ret;
 }
 
-bool FidoCableDiscovery::MaybeStop() {
-  if (!FidoDeviceDiscovery::MaybeStop()) {
-    NOTREACHED();
-  }
+void FidoCableDiscovery::Stop() {
+  FidoDeviceDiscovery::Stop();
   StopAdvertisements(base::DoNothing());
-  return true;
 }
 
 }  // namespace device

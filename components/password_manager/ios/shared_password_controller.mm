@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -865,9 +865,9 @@ BOOL canProcessCrossOriginIframes() {
   if (!_passwordManager)
     return;
 
-  _passwordManager->PresaveGeneratedPassword(
+  _passwordManager->OnPresaveGeneratedPassword(
       [_driverHelper PasswordManagerDriver:frame], formData,
-      SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
+      SysNSStringToUTF16(generatedPassword));
 }
 
 // Checks that all fields with |fieldIds| have user input recorded by
@@ -917,19 +917,6 @@ BOOL canProcessCrossOriginIframes() {
   if (params.type == "form_changed") {
     [self findPasswordFormsAndSendToPasswordStoreForFormChange:true
                                                        inFrame:frame];
-  }
-
-  // If the form was cleared PasswordManager should be informed to decide
-  // whether it's a change password form that was submitted.
-  if (params.type == "password_form_cleared") {
-    FormData formData;
-    if (!JsonStringToFormData(SysUTF8ToNSString(params.value), &formData,
-                              pageURL)) {
-      return;
-    }
-
-    _passwordManager->OnPasswordFormCleared(
-        [_driverHelper PasswordManagerDriver:frame], formData);
   }
 }
 

@@ -101,13 +101,42 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 std::ostream& operator<<(std::ostream& out, const WEBAUTHN_EXTENSION& in) {
-  return out << "{" << Quoted(in.pwszExtensionIdentifier) << "}";
+  return out << "{" << Quoted(in.pwszExtensionIdentifier) << kSep
+             << base::HexEncode(in.pvExtension, in.cbExtension) << "}";
 }
 
 std::ostream& operator<<(std::ostream& out, const WEBAUTHN_EXTENSIONS& in) {
   out << "{" << in.cExtensions << ", &[";
   for (size_t i = 0; i < in.cExtensions; ++i) {
     out << (i ? kSep : "") << in.pExtensions[i];
+  }
+  return out << "]}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const WEBAUTHN_HMAC_SECRET_SALT& in) {
+  // The salts may be considered sensitive, and this structure is also reused
+  // for the outputs, so only the lengths are logged.
+  return out << "{[" << in.cbFirst << "]" << kSep << "[" << in.cbSecond << "]}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const WEBAUTHN_CRED_WITH_HMAC_SECRET_SALT& in) {
+  return out << "{" << base::HexEncode(in.pbCredID, in.cbCredID) << kSep << "&"
+             << *in.pHmacSecretSalt << "}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const WEBAUTHN_HMAC_SECRET_SALT_VALUES& in) {
+  out << "{";
+  if (in.pGlobalHmacSalt) {
+    out << "&" << *in.pGlobalHmacSalt;
+  } else {
+    out << "(null)";
+  }
+  out << kSep << "[";
+  for (DWORD i = 0; i < in.cCredWithHmacSecretSaltList; i++) {
+    out << (i ? kSep : "") << in.pCredWithHmacSecretSaltList[i];
   }
   return out << "]}";
 }
@@ -136,6 +165,14 @@ std::ostream& operator<<(
   } else {
     out << ", (null)";
   }
+  if (in.dwVersion < WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_6) {
+    return out << "}";
+  }
+  if (in.pHmacSecretSaltValues) {
+    out << ", &" << *in.pHmacSecretSaltValues;
+  } else {
+    out << ", (null)";
+  }
   return out << "}";
 }
 
@@ -159,6 +196,10 @@ std::ostream& operator<<(
   } else {
     out << ", (null)";
   }
+  if (in.dwVersion < WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_4) {
+    return out << "}";
+  }
+  out << kSep << in.dwLargeBlobSupport;
   return out << "}";
 }
 
@@ -178,13 +219,29 @@ std::ostream& operator<<(std::ostream& out,
     return out << "}";
   }
   out << kSep << in.dwUsedTransport;
+  if (in.dwVersion < WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_4) {
+    return out << "}";
+  }
+  out << kSep << in.bLargeBlobSupported;
   return out << "}";
 }
 
 std::ostream& operator<<(std::ostream& out, const WEBAUTHN_ASSERTION& in) {
-  return out << "{" << in.dwVersion << kSep
-             << base::HexEncode(in.pbAuthenticatorData, in.cbAuthenticatorData)
-             << kSep << base::HexEncode(in.pbSignature, in.cbSignature) << kSep
-             << in.Credential << kSep
-             << base::HexEncode(in.pbUserId, in.cbUserId) << "}";
+  out << "{" << in.dwVersion << kSep
+      << base::HexEncode(in.pbAuthenticatorData, in.cbAuthenticatorData) << kSep
+      << base::HexEncode(in.pbSignature, in.cbSignature) << kSep
+      << in.Credential << kSep << base::HexEncode(in.pbUserId, in.cbUserId);
+  if (in.dwVersion < WEBAUTHN_ASSERTION_VERSION_2) {
+    return out << "}";
+  }
+  out << in.Extensions;
+  if (in.dwVersion < WEBAUTHN_ASSERTION_VERSION_3) {
+    return out << "}";
+  }
+  if (in.pHmacSecret) {
+    out << kSep << "&" << *in.pHmacSecret;
+  } else {
+    out << ", (null)";
+  }
+  return out << "}";
 }

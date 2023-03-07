@@ -566,7 +566,10 @@ def add_manifest_to_mock_filesystem(port):
                                                 '/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html',
                                                 '=='
                                             ]], {
-                                                'timeout': 'long'
+                                                'timeout':
+                                                'long',
+                                                'fuzzy':
+                                                [[None, [[0, 255], [0, 200]]]]
                                             }
                                         ],
                                     ]
@@ -697,6 +700,8 @@ class TestPort(Port):
 
         if self._operating_system == 'linux':
             self._architecture = 'x86_64'
+        elif self._operating_system == 'mac':
+            self._architecture = 'arm64'
 
         self.all_systems = (('mac10.10', 'x86'), ('mac10.11', 'x86'),
                             ('win7', 'x86'), ('win10', 'x86'),
@@ -845,6 +850,11 @@ class TestPort(Port):
 
     def virtual_test_suites(self):
         return [
+            VirtualTestSuite(
+                prefix='virtual_console',
+                platforms=['Linux', 'Mac', 'Win'],
+                bases=['external/wpt/console/console-is-a-namespace.any.js'],
+                args=['--virtual-console']),
             VirtualTestSuite(prefix='virtual_passes',
                              platforms=['Linux', 'Mac', 'Win'],
                              bases=['passes', 'passes_two'],

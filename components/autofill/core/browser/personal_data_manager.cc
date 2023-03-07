@@ -12,11 +12,11 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
@@ -430,7 +430,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
          pending_creditcards_query_ || pending_server_creditcards_query_ ||
          pending_server_creditcard_cloud_token_data_query_ ||
          pending_ibans_query_ || pending_customer_data_query_ ||
-         pending_upi_ids_query_ || pending_offer_data_query_);
+         pending_upi_ids_query_ || pending_offer_data_query_ ||
+         pending_virtual_card_usage_data_query_);
 
   if (!result) {
     // Error from the web database.
@@ -454,6 +455,9 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_upi_ids_query_ = 0;
     else if (h == pending_offer_data_query_)
       pending_offer_data_query_ = 0;
+    else if (h == pending_virtual_card_usage_data_query_) {
+      pending_virtual_card_usage_data_query_ = 0;
+    }
   } else {
     switch (result->GetType()) {
       case AUTOFILL_PROFILES_RESULT:
@@ -523,6 +527,14 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
             << "received autofill offer data from invalid request.";
         ReceiveLoadedDbValues(h, result.get(), &pending_offer_data_query_,
                               &autofill_offer_data_);
+        break;
+      case AUTOFILL_VIRTUAL_CARD_USAGE_DATA:
+        DCHECK_EQ(h, pending_virtual_card_usage_data_query_)
+            << "received autofill virtual card usage data from invalid "
+               "request.";
+        ReceiveLoadedDbValues(h, result.get(),
+                              &pending_virtual_card_usage_data_query_,
+                              &autofill_virtual_card_usage_data_);
         break;
       default:
         NOTREACHED();
@@ -813,7 +825,6 @@ std::string PersonalDataManager::AddIBAN(const IBAN& iban) {
 }
 
 std::string PersonalDataManager::UpdateIBAN(const IBAN& iban) {
-  DCHECK_EQ(IBAN::LOCAL_IBAN, iban.record_type());
   if (is_off_the_record_)
     return std::string();
 
@@ -1291,6 +1302,20 @@ gfx::Image* PersonalDataManager::GetCachedCardArtImageForUrl(
   return nullptr;
 }
 
+std::vector<VirtualCardUsageData*>
+PersonalDataManager::GetVirtualCardUsageData() const {
+  if (!IsAutofillWalletImportEnabled() || !IsAutofillCreditCardEnabled()) {
+    return {};
+  }
+
+  std::vector<VirtualCardUsageData*> result;
+  result.reserve(autofill_virtual_card_usage_data_.size());
+  for (const auto& data : autofill_virtual_card_usage_data_) {
+    result.push_back(data.get());
+  }
+  return result;
+}
+
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
@@ -1299,6 +1324,7 @@ void PersonalDataManager::Refresh() {
   LoadPaymentsCustomerData();
   LoadUpiIds();
   LoadAutofillOffers();
+  LoadVirtualCardUsageData();
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
@@ -1418,13 +1444,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   return unique_suggestions;
 }
 
-const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest(
-    bool include_server_cards) const {
+const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
+    const {
   if (!IsAutofillCreditCardEnabled())
     return std::vector<CreditCard*>{};
 
   std::vector<CreditCard*> credit_cards;
-  if (include_server_cards && ShouldSuggestServerCards()) {
+  if (ShouldSuggestServerCards()) {
     credit_cards = GetCreditCards();
   } else {
     credit_cards = GetLocalCreditCards();
@@ -1886,6 +1912,17 @@ void PersonalDataManager::LoadAutofillOffers() {
       database_helper_->GetServerDatabase()->GetAutofillOffers(this);
 }
 
+void PersonalDataManager::LoadVirtualCardUsageData() {
+  if (!database_helper_->GetServerDatabase()) {
+    return;
+  }
+
+  CancelPendingServerQuery(&pending_virtual_card_usage_data_query_);
+
+  pending_virtual_card_usage_data_query_ =
+      database_helper_->GetServerDatabase()->GetVirtualCardUsageData(this);
+}
+
 void PersonalDataManager::CancelPendingLocalQuery(
     WebDataServiceBase::Handle* handle) {
   if (*handle) {
@@ -1916,6 +1953,7 @@ void PersonalDataManager::CancelPendingServerQueries() {
   CancelPendingServerQuery(&pending_customer_data_query_);
   CancelPendingServerQuery(&pending_server_creditcard_cloud_token_data_query_);
   CancelPendingServerQuery(&pending_offer_data_query_);
+  CancelPendingServerQuery(&pending_virtual_card_usage_data_query_);
 }
 
 void PersonalDataManager::LoadPaymentsCustomerData() {
@@ -2266,7 +2304,11 @@ void PersonalDataManager::OnCreditCardSaved(bool is_local_card) {}
 void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
   // If the full Sync feature isn't enabled, then do NOT convert any Wallet
   // addresses to local ones.
-  if (!IsSyncFeatureEnabled()) {
+  // When syncing of account profiles is enabled, converting wallet addresses
+  // is unnecessary, since they are available through the ContactInfoSyncBridge.
+  if (!IsSyncFeatureEnabled() ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillAccountProfilesUnionView)) {
     // PDM expects that each call to
     // ConvertWalletAddressesAndUpdateWalletCards() is followed by a
     // AutofillAddressConversionCompleted() notification, simulate the
@@ -2432,7 +2474,8 @@ bool PersonalDataManager::HasPendingQueries() {
          pending_server_creditcards_query_ != 0 ||
          pending_server_creditcard_cloud_token_data_query_ != 0 ||
          pending_customer_data_query_ != 0 || pending_upi_ids_query_ != 0 ||
-         pending_offer_data_query_ != 0;
+         pending_offer_data_query_ != 0 ||
+         pending_virtual_card_usage_data_query_ != 0;
 }
 
 bool PersonalDataManager::IsSyncEnabledFor(syncer::ModelType model_type) {

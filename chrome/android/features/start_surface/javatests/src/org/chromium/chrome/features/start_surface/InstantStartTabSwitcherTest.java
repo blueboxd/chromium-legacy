@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.INSTANT_START_TEST_BASE_PARAMS;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
@@ -105,7 +106,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CommandLineFlags.
     Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-    ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+    ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study,",
     ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INSTANT_START})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
     UiRestriction.RESTRICTION_TYPE_PHONE})
@@ -153,6 +154,7 @@ public class InstantStartTabSwitcherTest {
     @Before
     public void setUp() {
         mJniMocker.mock(JankMetricUMARecorderJni.TEST_HOOKS, mJankRecorderNativeMock);
+        ReturnToChromeUtil.setSkipInitializationCheckForTesting(true);
     }
 
     @After
@@ -213,7 +215,8 @@ public class InstantStartTabSwitcherTest {
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
-        RecyclerView recyclerView = cta.findViewById(org.chromium.chrome.test.R.id.tab_list_view);
+        RecyclerView recyclerView =
+                (RecyclerView) StartSurfaceTestUtils.getCarouselTabSwitcherTabListView(cta);
         CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
         mRenderTestRule.render(recyclerView, "tabSwitcher_3tabs");
 
@@ -256,10 +259,11 @@ public class InstantStartTabSwitcherTest {
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
-        RecyclerView recyclerView = cta.findViewById(org.chromium.chrome.test.R.id.tab_list_view);
+        RecyclerView recyclerView =
+                (RecyclerView) StartSurfaceTestUtils.getCarouselTabSwitcherTabListView(cta);
         CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
         // TODO(crbug.com/1065314): Tab group cards should not have favicons.
-        mRenderTestRule.render(cta.findViewById(org.chromium.chrome.test.R.id.tab_list_view),
+        mRenderTestRule.render(StartSurfaceTestUtils.getCarouselTabSwitcherTabListView(cta),
                 "tabSwitcher_tabGroups_aspect_ratio_point85");
 
         // Resume native initialization and make sure the GTS looks the same.
@@ -314,9 +318,10 @@ public class InstantStartTabSwitcherTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
 
-        RecyclerView recyclerView = cta.findViewById(org.chromium.chrome.test.R.id.tab_list_view);
+        RecyclerView recyclerView =
+                (RecyclerView) StartSurfaceTestUtils.getCarouselTabSwitcherTabListView(cta);
         CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
-        mRenderTestRule.render(cta.findViewById(org.chromium.chrome.test.R.id.tab_list_view),
+        mRenderTestRule.render(StartSurfaceTestUtils.getCarouselTabSwitcherTabListView(cta),
                 "tabSwitcher_tabGroups_theme_enforcement");
     }
 
@@ -344,7 +349,8 @@ public class InstantStartTabSwitcherTest {
                              withId(org.chromium.chrome.test.R.id.carousel_tab_switcher_container)),
                        withId(org.chromium.chrome.test.R.id.tab_list_view)))
                 .check(matches(isDisplayed()));
-        RecyclerView tabListView = cta.findViewById(org.chromium.chrome.test.R.id.tab_list_view);
+        RecyclerView tabListView =
+                (RecyclerView) StartSurfaceTestUtils.getCarouselTabSwitcherTabListView(cta);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> tabListView.getChildAt(0)
@@ -363,7 +369,7 @@ public class InstantStartTabSwitcherTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS,
         FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH})
-    public void testScrollToSelectedTab() throws IOException {
+    public void testScrollToSelectedTab() throws Exception {
         // clang-format on
         StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 5);
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -384,6 +390,9 @@ public class InstantStartTabSwitcherTest {
                     Assert.assertTrue(v instanceof RecyclerView);
                     LinearLayoutManager layoutManager =
                             (LinearLayoutManager) ((RecyclerView) v).getLayoutManager();
+                    assertEquals(2, layoutManager.findFirstVisibleItemPosition());
+                    assertTrue(layoutManager.isViewPartiallyVisible(
+                            layoutManager.getChildAt(5), false, false));
                     assertEquals(7, layoutManager.findLastVisibleItemPosition());
                 });
 
@@ -445,7 +454,8 @@ public class InstantStartTabSwitcherTest {
     public void testShowStartWhenHomepageDisabledWithImmediateReturn() throws IOException {
         // clang-format on
         Assert.assertTrue(ChromeFeatureList.sInstantStart.isEnabled());
-        Assert.assertEquals(0, ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+        Assert.assertEquals(
+                0, StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue());
         testShowStartWhenHomepageDisabledWithImmediateReturnImpl();
     }
 
@@ -456,7 +466,8 @@ public class InstantStartTabSwitcherTest {
     public void testShowStartWhenHomepageDisabledWithImmediateReturn_NoInstant()
             throws IOException {
         Assert.assertFalse(ChromeFeatureList.sInstantStart.isEnabled());
-        Assert.assertEquals(0, ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+        Assert.assertEquals(
+                0, StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue());
         testShowStartWhenHomepageDisabledWithImmediateReturnImpl();
     }
 

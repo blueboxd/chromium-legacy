@@ -55,7 +55,6 @@
 #include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/display/persistent_window_controller.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/display/projecting_observer.h"
 #include "ash/display/refresh_rate_throttle_controller.h"
@@ -66,6 +65,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/events/event_rewriter_controller_impl.h"
+#include "ash/events/keyboard_capability_delegate_impl.h"
 #include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -73,7 +73,6 @@
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/glanceables_delegate.h"
-#include "ash/highlighter/highlighter_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -92,9 +91,9 @@
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/nearby_share_delegate.h"
+#include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -115,6 +114,7 @@
 #include "ash/style/ash_color_mixer.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/system/audio/audio_effects_controller.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -124,17 +124,19 @@
 #include "ash/system/camera/camera_effects_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
-#include "ash/system/federated/federated_service_controller.h"
+#include "ash/system/federated/federated_service_controller_impl.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/human_presence/human_presence_orientation_controller.h"
 #include "ash/system/human_presence/snooping_protection_controller.h"
+#include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
+#include "ash/system/input_device_settings/input_device_tracker.h"
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/machine_learning/user_settings_event_logger.h"
-#include "ash/system/media/media_notification_provider_impl.h"
+#include "ash/system/media/media_notification_provider.h"
 #include "ash/system/message_center/message_center_ash_impl.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
@@ -178,12 +180,15 @@
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/multi_display/multi_display_metrics_controller.h"
+#include "ash/wm/multi_display/persistent_window_controller.h"
 #include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -200,10 +205,10 @@
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm_mode/wm_mode_controller.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
@@ -332,8 +337,9 @@ RootWindowController* Shell::GetPrimaryRootWindowController() {
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
   CHECK(HasInstance());
   RootWindowControllerList root_window_controllers;
-  for (aura::Window* root : GetAllRootWindows())
+  for (aura::Window* root : GetAllRootWindows()) {
     root_window_controllers.push_back(RootWindowController::ForWindow(root));
+  }
   return root_window_controllers;
 }
 
@@ -390,16 +396,18 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
 // static
 int Shell::GetOpenSystemModalWindowContainerId() {
   // The test boolean is not static to avoid leaking state between tests.
-  if (Get()->simulate_modal_window_open_for_test_)
+  if (Get()->simulate_modal_window_open_for_test_) {
     return kShellWindowId_SystemModalContainer;
+  }
 
   // Traverse all system modal containers, and find its direct child window
   // with "SystemModal" setting, and visible.
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     for (int modal_window_id : kSystemModalContainerIds) {
       aura::Window* system_modal = root->GetChildById(modal_window_id);
-      if (!system_modal)
+      if (!system_modal) {
         continue;
+      }
       for (const aura::Window* child : system_modal->children()) {
         if (child->GetProperty(aura::client::kModalKey) ==
                 ui::MODAL_TYPE_SYSTEM &&
@@ -440,28 +448,37 @@ Shell::CreateDefaultNonClientFrameView(views::Widget* widget) {
 }
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnCastingSessionStartedOrStopped(started);
+  }
 }
 
 void Shell::OnRootWindowAdded(aura::Window* root_window) {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnRootWindowAdded(root_window);
+  }
 }
 
 void Shell::OnRootWindowWillShutdown(aura::Window* root_window) {
-  for (auto& observer : shell_observers_)
+  DCHECK(toplevel_window_event_handler_);
+  root_window->RemovePreTargetHandler(toplevel_window_event_handler_.get());
+  root_window->RemovePostTargetHandler(toplevel_window_event_handler_.get());
+
+  for (auto& observer : shell_observers_) {
     observer.OnRootWindowWillShutdown(root_window);
+  }
 }
 
 void Shell::OnDictationStarted() {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnDictationStarted();
+  }
 }
 
 void Shell::OnDictationEnded() {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnDictationEnded();
+  }
 }
 
 bool Shell::IsInTabletMode() const {
@@ -504,8 +521,9 @@ void Shell::SetCursorCompositingEnabled(bool enabled) {
   CursorWindowController* cursor_window_controller =
       window_tree_host_manager_->cursor_window_controller();
 
-  if (cursor_window_controller->is_cursor_compositing_enabled() == enabled)
+  if (cursor_window_controller->is_cursor_compositing_enabled() == enabled) {
     return;
+  }
   cursor_window_controller->SetCursorCompositingEnabled(enabled);
   native_cursor_manager_->SetNativeCursorEnabled(!enabled);
 }
@@ -540,45 +558,53 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 }
 
 void Shell::ShutdownEventDispatch() {
-  for (aura::Window* root : GetAllRootWindows())
+  for (aura::Window* root : GetAllRootWindows()) {
     aura::client::SetDragDropClient(root, nullptr);
+  }
 
   // Stop dispatching events (e.g. synthesized mouse exits from window close).
   // https://crbug.com/874156
-  for (RootWindowController* rwc : GetAllRootWindowControllers())
+  for (RootWindowController* rwc : GetAllRootWindowControllers()) {
     rwc->GetHost()->dispatcher()->Shutdown();
+  }
 }
 
 void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
-  for (auto* root_window_controller : GetAllRootWindowControllers())
+  for (auto* root_window_controller : GetAllRootWindowControllers()) {
     root_window_controller->UpdateAfterLoginStatusChange(status);
+  }
 }
 
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
                                          aura::Window* container) {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnFullscreenStateChanged(is_fullscreen, container);
+  }
 }
 
 void Shell::NotifyPinnedStateChanged(aura::Window* pinned_window) {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnPinnedStateChanged(pinned_window);
+  }
 }
 
 void Shell::NotifyUserWorkAreaInsetsChanged(aura::Window* root_window) {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnUserWorkAreaInsetsChanged(root_window);
+  }
 }
 
 void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window,
                                         ShelfAlignment old_alignment) {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnShelfAlignmentChanged(root_window, old_alignment);
+  }
 }
 
 void Shell::NotifyDisplayForNewWindowsChanged() {
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnDisplayForNewWindowsChanged();
+  }
 }
 
 void Shell::AddAccessibilityEventHandler(
@@ -642,8 +668,9 @@ Shell::~Shell() {
 #if DCHECK_IS_ON()
   // All WindowEventDispatchers should be shutdown before the Shell is
   // destroyed.
-  for (RootWindowController* rwc : GetAllRootWindowControllers())
+  for (RootWindowController* rwc : GetAllRootWindowControllers()) {
     DCHECK(rwc->GetHost()->dispatcher()->in_shutdown());
+  }
 #endif
   login_unlock_throughput_recorder_.reset();
 
@@ -651,13 +678,15 @@ Shell::~Shell() {
 
   // Observes `SessionController` and must be destroyed before it.
   privacy_hub_controller_.reset();
+  microphone_privacy_switch_controller_.reset();
 
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnShellDestroying();
+  }
 
   ash_dbus_services_.reset();
 
-  desks_templates_delegate_.reset();
+  saved_desk_delegate_.reset();
   desks_controller_->Shutdown();
 
   user_metrics_recorder_->OnShellShuttingDown();
@@ -674,8 +703,9 @@ Shell::~Shell() {
   aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(nullptr);
 
   // Please keep in reverse order as in Init() because it's easy to miss one.
-  if (window_modality_controller_)
+  if (window_modality_controller_) {
     window_modality_controller_.reset();
+  }
 
   RemovePreTargetHandler(shell_tab_handler_.get());
   shell_tab_handler_.reset();
@@ -693,10 +723,9 @@ Shell::~Shell() {
   RemovePreTargetHandler(accelerator_tracker_.get());
   RemovePreTargetHandler(accelerator_filter_.get());
   RemovePreTargetHandler(event_transformation_handler_.get());
-  if (back_gesture_event_handler_)
+  if (back_gesture_event_handler_) {
     RemovePreTargetHandler(back_gesture_event_handler_.get());
-  RemovePreTargetHandler(toplevel_window_event_handler_.get());
-  RemovePostTargetHandler(toplevel_window_event_handler_.get());
+  }
   RemovePreTargetHandler(system_gesture_filter_.get());
   RemoveAccessibilityEventHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(modality_filter_.get());
@@ -709,6 +738,8 @@ Shell::~Shell() {
   wm_mode_controller_.reset();
 
   event_rewriter_controller_.reset();
+  input_device_tracker_.reset();
+  input_device_settings_controller_.reset();
 
   screen_orientation_controller_.reset();
   screen_layout_observer_.reset();
@@ -762,6 +793,8 @@ Shell::~Shell() {
   // both of which these rely on.
   snooping_protection_controller_.reset();
   human_presence_orientation_controller_.reset();
+
+  snap_group_controller_.reset();
 
   // Shutdown tablet mode controller early on since it has some observers which
   // need to be removed. It will be destroyed later after all windows are closed
@@ -827,6 +860,9 @@ Shell::~Shell() {
   system_tray_model_.reset();
   system_sounds_delegate_.reset();
 
+  // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
+  multi_display_metrics_controller_.reset();
+
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
@@ -857,7 +893,6 @@ Shell::~Shell() {
   modality_filter_.reset();
 
   touch_transformer_controller_.reset();
-  highlighter_controller_.reset();
   key_accessibility_enabler_.reset();
 
   display_speaker_controller_.reset();
@@ -950,12 +985,14 @@ Shell::~Shell() {
 
   laser_pointer_controller_.reset();
 
-  if (display_change_observer_)
+  if (display_change_observer_) {
     display_manager_->configurator()->RemoveObserver(
         display_change_observer_.get());
-  if (display_error_observer_)
+  }
+  if (display_error_observer_) {
     display_manager_->configurator()->RemoveObserver(
         display_error_observer_.get());
+  }
   display_change_observer_.reset();
   display_shutdown_observer_.reset();
 
@@ -1003,6 +1040,8 @@ Shell::~Shell() {
 
   camera_effects_controller_.reset();
 
+  audio_effects_controller_.reset();
+
   shell_delegate_.reset();
 
   multi_capture_service_client_.reset();
@@ -1015,11 +1054,13 @@ Shell::~Shell() {
   // Must be shut down after detachable_base_handler_.
   HammerdClient::Shutdown();
 
-  if (FwupdClient::Get())
+  if (FwupdClient::Get()) {
     FwupdClient::Shutdown();
+  }
 
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnShellDestroyed();
+  }
 
   DCHECK(instance_ == this);
   instance_ = nullptr;
@@ -1047,7 +1088,8 @@ void Shell::Init(
   message_center_ash_impl_ = std::make_unique<MessageCenterAshImpl>();
 
   // Initialized early since it is used by some other objects.
-  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>();
+  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>(
+      std::make_unique<KeyboardCapabilityDelegateImpl>());
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
@@ -1067,8 +1109,7 @@ void Shell::Init(
           message_center::MessageCenter::Get());
   media_controller_ = std::make_unique<MediaControllerImpl>();
   media_notification_provider_ =
-      std::make_unique<MediaNotificationProviderImpl>(
-          shell_delegate_->GetMediaSessionService());
+      shell_delegate_->CreateMediaNotificationProvider();
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
@@ -1137,7 +1178,7 @@ void Shell::Init(
     // keyboard and |wallpaper_controller_| because we will need to observe when
     // the extracted wallpaper color changes.
     keyboard_backlight_color_controller_ =
-        std::make_unique<KeyboardBacklightColorController>();
+        std::make_unique<KeyboardBacklightColorController>(local_state_);
   }
 
   window_positioner_ = std::make_unique<WindowPositioner>();
@@ -1154,8 +1195,9 @@ void Shell::Init(
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
   aura::Env* env = aura::Env::GetInstance();
-  if (context_factory)
+  if (context_factory) {
     env->set_context_factory(context_factory);
+  }
 
   ash_color_provider_ = std::make_unique<AshColorProvider>();
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
@@ -1181,8 +1223,9 @@ void Shell::Init(
   // display manager was properly initialized.
   privacy_screen_controller_ = std::make_unique<PrivacyScreenController>();
 
-  if (media::ShouldEnableAutoFraming())
+  if (media::ShouldEnableAutoFraming()) {
     autozoom_controller_ = std::make_unique<AutozoomControllerImpl>();
+  }
 
   // Fast Pair depends on the display manager, so initialize it after
   // display manager was properly initialized.
@@ -1196,10 +1239,19 @@ void Shell::Init(
   window_modality_controller_ =
       std::make_unique<::wm::WindowModalityController>(this, env);
 
+  // The `InputDeviceSettingsController` is a dependency of the
+  // `EventRewriterController` so it must be initialized first.
+  input_device_settings_controller_ =
+      std::make_unique<InputDeviceSettingsControllerImpl>();
+  input_device_tracker_ = std::make_unique<InputDeviceTracker>();
   event_rewriter_controller_ = std::make_unique<EventRewriterControllerImpl>();
 
   env_filter_ = std::make_unique<::wm::CompoundEventFilter>();
   AddPreTargetHandler(env_filter_.get());
+
+  if (features::IsSnapGroupEnabled()) {
+    snap_group_controller_ = std::make_unique<SnapGroupController>();
+  }
 
   // FocusController takes ownership of AshFocusRules.
   focus_rules_ = new AshFocusRules();
@@ -1213,8 +1265,9 @@ void Shell::Init(
   frame_throttling_controller_ = std::make_unique<FrameThrottlingController>(
       context_factory->GetHostFrameSinkManager());
 
-  if (features::IsTabClusterUIEnabled())
+  if (features::IsTabClusterUIEnabled()) {
     tab_cluster_ui_controller_ = std::make_unique<TabClusterUIController>();
+  }
 
   window_tree_host_manager_->Start();
   AshWindowTreeHostInitParams ash_init_params;
@@ -1227,7 +1280,7 @@ void Shell::Init(
   // present at all times. The desks controller also depends on the focus
   // controller.
   desks_controller_ = std::make_unique<DesksController>();
-  desks_templates_delegate_ = shell_delegate_->CreateDesksTemplatesDelegate();
+  saved_desk_delegate_ = shell_delegate_->CreateSavedDeskDelegate();
 
   Shell::SetRootWindowForNewWindows(GetPrimaryRootWindow());
 
@@ -1253,6 +1306,10 @@ void Shell::Init(
 
   if (CameraEffectsController::IsCameraEffectsSupported()) {
     camera_effects_controller_ = std::make_unique<CameraEffectsController>();
+  }
+
+  if (features::IsVcControlsUiEnabled()) {
+    audio_effects_controller_ = std::make_unique<AudioEffectsController>();
   }
 
   shelf_config_ = std::make_unique<ShelfConfig>();
@@ -1340,7 +1397,6 @@ void Shell::Init(
   laser_pointer_controller_ = std::make_unique<LaserPointerController>();
   partial_magnifier_controller_ =
       std::make_unique<PartialMagnifierController>();
-  highlighter_controller_ = std::make_unique<HighlighterController>();
   if (::features::IsTouchTextEditingRedesignEnabled()) {
     touch_selection_magnifier_runner_ash_ =
         std::make_unique<TouchSelectionMagnifierRunnerAsh>();
@@ -1350,6 +1406,10 @@ void Shell::Init(
       std::make_unique<FullscreenMagnifierController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
   assistant_controller_ = std::make_unique<AssistantControllerImpl>();
+
+  // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
+  multi_display_metrics_controller_ =
+      std::make_unique<MultiDisplayMetricsController>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.
@@ -1450,13 +1510,19 @@ void Shell::Init(
   if (features::IsCrosPrivacyHubEnabled()) {
     // One of the subcontrollers accesses the SystemNotificationController.
     privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
+  } else if (features::IsMicMuteNotificationsEnabled()) {
+    // TODO(b/264388354) Until PrivacyHub is enabled for all keep this around
+    // for the already existing microphone notifications to continue working.
+    microphone_privacy_switch_controller_ =
+        std::make_unique<MicrophonePrivacySwitchController>();
   }
 
   // WmModeController should be created before initializing the window tree
   // hosts, since the latter will initialize the shelf on each display, which
   // hosts the WM mode tray button.
-  if (features::IsWmModeEnabled())
+  if (features::IsWmModeEnabled()) {
     wm_mode_controller_ = std::make_unique<WmModeController>();
+  }
 
   window_tree_host_manager_->InitHosts();
 
@@ -1519,15 +1585,17 @@ void Shell::Init(
         glanceables_controller_.get()));
   }
 
-  if (features::IsProjectorEnabled())
+  if (features::IsProjectorEnabled()) {
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
+  }
 
-  if (chromeos::wm::features::IsFloatWindowEnabled())
+  if (chromeos::wm::features::IsFloatWindowEnabled()) {
     float_controller_ = std::make_unique<FloatController>();
+  }
 
   if (features::IsFederatedServiceEnabled()) {
     federated_service_controller_ =
-        std::make_unique<federated::FederatedServiceController>();
+        std::make_unique<federated::FederatedServiceControllerImpl>();
   }
 
   // Injects the factory which fulfills the implementation of the text context
@@ -1540,8 +1608,9 @@ void Shell::Init(
                                                                      textfield);
           }));
 
-  for (auto& observer : shell_observers_)
+  for (auto& observer : shell_observers_) {
     observer.OnShellInitialized();
+  }
 
   user_metrics_recorder_->OnShellInitialized();
 
@@ -1596,8 +1665,9 @@ void Shell::InitializeDisplayManager() {
   display_color_manager_ =
       std::make_unique<DisplayColorManager>(display_manager_->configurator());
 
-  if (!display_initialized)
+  if (!display_initialized) {
     display_manager_->InitDefaultDisplay();
+  }
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {
@@ -1637,8 +1707,9 @@ void Shell::CloseAllRootWindowChildWindows() {
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowController* controller : controllers) {
-    if (controller->CanWindowReceiveEvents(window))
+    if (controller->CanWindowReceiveEvents(window)) {
       return true;
+    }
   }
   return false;
 }
@@ -1667,8 +1738,9 @@ void Shell::OnWindowActivated(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  if (!gained_active)
+  if (!gained_active) {
     return;
+  }
 
   Shell::SetRootWindowForNewWindows(gained_active->GetRootWindow());
 }
@@ -1682,8 +1754,9 @@ void Shell::OnFirstSessionStarted() {
   SpokenFeedbackToggler::SetEnabled(session_controller_->IsRunningInAppMode());
 
   // Reset user prefs related to contextual tooltips.
-  if (switches::ContextualNudgesResetShownCount())
+  if (switches::ContextualNudgesResetShownCount()) {
     contextual_tooltip::ClearPrefs();
+  }
 
   // The launcher is not available before login, so start tracking usage after
   // the session starts.
@@ -1705,8 +1778,8 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // active user session, this prevents a bug in which the service would start
   // up earlier than expected and causes a delay during boot.
   // See b/250002264 for more details.
-  if (is_session_active && features::IsFirmwareUpdaterAppEnabled() &&
-      !FwupdClient::Get() && !firmware_update_notification_controller_) {
+  if (is_session_active && !FwupdClient::Get() &&
+      !firmware_update_notification_controller_) {
     chromeos::InitializeDBusClient<FwupdClient>(dbus_bus_.get());
     firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
     // The notification controller is registered as an observer before
@@ -1733,8 +1806,9 @@ void Shell::OnLockStateChanged(bool locked) {
   if (!locked) {
     aura::Window::Windows containers = GetContainersForAllRootWindows(
         kShellWindowId_LockSystemModalContainer, GetPrimaryRootWindow());
-    for (aura::Window* container : containers)
+    for (aura::Window* container : containers) {
       DCHECK(container->children().empty());
+    }
   }
 #endif
 }

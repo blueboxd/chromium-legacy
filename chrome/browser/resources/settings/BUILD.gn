@@ -33,44 +33,30 @@ build_webui("build") {
     "images/password_check_positive.svg",
     "images/permissions_banner_dark.svg",
     "images/permissions_banner.svg",
-    "images/privacy_guide/clear_on_exit_graphic_dark_v2.svg",
-    "images/privacy_guide/clear_on_exit_graphic_dark.svg",
-    "images/privacy_guide/clear_on_exit_graphic_v2.svg",
-    "images/privacy_guide/clear_on_exit_graphic.svg",
     "images/privacy_guide/clouds_graphic_dark.svg",
     "images/privacy_guide/clouds_graphic.svg",
     "images/privacy_guide/completion_banner_circle.svg",
     "images/privacy_guide/completion_banner_dark_v2.svg",
-    "images/privacy_guide/completion_banner_dark.svg",
     "images/privacy_guide/completion_banner_pill.svg",
     "images/privacy_guide/completion_banner_square.svg",
     "images/privacy_guide/completion_banner_triangle.svg",
     "images/privacy_guide/completion_banner_v2.svg",
-    "images/privacy_guide/completion_banner.svg",
     "images/privacy_guide/cookies_graphic_dark_v2.svg",
-    "images/privacy_guide/cookies_graphic_dark.svg",
     "images/privacy_guide/cookies_graphic_v2.svg",
-    "images/privacy_guide/cookies_graphic.svg",
     "images/privacy_guide/hills_graphic_dark.svg",
     "images/privacy_guide/hills_graphic.svg",
     "images/privacy_guide/history_sync_graphic_dark_v2.svg",
-    "images/privacy_guide/history_sync_graphic_dark.svg",
     "images/privacy_guide/history_sync_graphic_v2.svg",
-    "images/privacy_guide/history_sync_graphic.svg",
     "images/privacy_guide/horizon_graphic_dark.svg",
     "images/privacy_guide/horizon_graphic.svg",
     "images/privacy_guide/msbb_graphic_dark_v2.svg",
-    "images/privacy_guide/msbb_graphic_dark.svg",
     "images/privacy_guide/msbb_graphic_v2.svg",
-    "images/privacy_guide/msbb_graphic.svg",
     "images/privacy_guide/privacy_sandbox_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic.svg",
     "images/privacy_guide/promo_banner_dark.svg",
     "images/privacy_guide/promo_banner.svg",
     "images/privacy_guide/safe_browsing_graphic_dark_v2.svg",
-    "images/privacy_guide/safe_browsing_graphic_dark.svg",
     "images/privacy_guide/safe_browsing_graphic_v2.svg",
-    "images/privacy_guide/safe_browsing_graphic.svg",
     "images/privacy_guide/waa_graphic_dark.svg",
     "images/privacy_guide/waa_graphic.svg",
     "images/privacy_guide/welcome_banner_dark.svg",
@@ -102,6 +88,8 @@ build_webui("build") {
     "autofill_page/avatar_icon.ts",
     "autofill_page/credit_card_edit_dialog.ts",
     "autofill_page/credit_card_list_entry.ts",
+    "autofill_page/iban_edit_dialog.ts",
+    "autofill_page/iban_list_entry.ts",
     "autofill_page/password_check_edit_disclaimer_dialog.ts",
     "autofill_page/password_check_list_item.ts",
     "autofill_page/password_check.ts",
@@ -124,7 +112,6 @@ build_webui("build") {
     "basic_page/basic_page.ts",
     "clear_browsing_data_dialog/clear_browsing_data_dialog.ts",
     "clear_browsing_data_dialog/history_deletion_dialog.ts",
-    "clear_browsing_data_dialog/installed_app_checkbox.ts",
     "clear_browsing_data_dialog/passwords_deletion_dialog.ts",
     "controls/controlled_button.ts",
     "controls/controlled_radio_button.ts",
@@ -155,8 +142,8 @@ build_webui("build") {
     "privacy_page/disable_safebrowsing_dialog.ts",
     "privacy_page/do_not_track_toggle.ts",
     "privacy_page/personalization_options.ts",
+    "privacy_page/preloading_page.ts",
     "privacy_page/privacy_guide_promo.ts",
-    "privacy_page/privacy_guide/privacy_guide_clear_on_exit_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_completion_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_completion_link_row.ts",
     "privacy_page/privacy_guide/privacy_guide_cookies_fragment.ts",
@@ -171,6 +158,7 @@ build_webui("build") {
     "privacy_page/privacy_page.ts",
     "privacy_page/privacy_sandbox/privacy_sandbox_ad_measurement_subpage.ts",
     "privacy_page/privacy_sandbox/privacy_sandbox_fledge_subpage.ts",
+    "privacy_page/privacy_sandbox/privacy_sandbox_interest_item.ts",
     "privacy_page/privacy_sandbox/privacy_sandbox_page.ts",
     "privacy_page/privacy_sandbox/privacy_sandbox_topics_subpage.ts",
     "privacy_page/secure_dns.ts",
@@ -268,9 +256,6 @@ build_webui("build") {
 
   if (is_win) {
     web_component_files += [
-      "safety_check_page/safety_check_chrome_cleaner_child.ts",
-      "chrome_cleanup_page/chrome_cleanup_page.ts",
-      "chrome_cleanup_page/items_to_remove_list.ts",
       "incompatible_applications_page/incompatible_application_item.ts",
       "incompatible_applications_page/incompatible_applications_page.ts",
     ]
@@ -334,9 +319,9 @@ build_webui("build") {
     "privacy_page/privacy_guide/constants.ts",
     "privacy_page/privacy_guide/privacy_guide_browser_proxy.ts",
     "privacy_page/privacy_page_browser_proxy.ts",
+    "privacy_page/privacy_sandbox/privacy_sandbox_browser_proxy.ts",
     "privacy_page/security_keys_browser_proxy.ts",
     "privacy_sandbox/icons.html.ts",
-    "privacy_sandbox/privacy_sandbox_browser_proxy.ts",
     "relaunch_mixin.ts",
     "reset_page/reset_browser_proxy.ts",
     "route.ts",
@@ -382,10 +367,7 @@ build_webui("build") {
   }
 
   if (is_win) {
-    non_web_component_files += [
-      "chrome_cleanup_page/chrome_cleanup_proxy.ts",
-      "incompatible_applications_page/incompatible_applications_browser_proxy.ts",
-    ]
+    non_web_component_files += [ "incompatible_applications_page/incompatible_applications_browser_proxy.ts" ]
   }
   if (is_win || is_mac) {
     non_web_component_files += [ "autofill_page/passkeys_browser_proxy.ts" ]
@@ -433,6 +415,9 @@ build_webui("build") {
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/help_bubble:build_ts",
+    "//ui/webui/resources/cr_components/localized_link:build_ts",
+    "//ui/webui/resources/cr_components/managed_dialog:build_ts",
+    "//ui/webui/resources/cr_components/managed_footnote:build_ts",
   ]
 
   if (!is_chromeos_ash) {
@@ -464,11 +449,6 @@ build_webui("build") {
     optimize_webui_in_files = [
       "settings.js",
       "lazy_load.js",
-    ]
-    optimize_webui_out_files = [
-      "settings.rollup.js",
-      "lazy_load.rollup.js",
-      "shared.rollup.js",
     ]
     optimize_webui_excludes = [
       "chrome://resources/js/cr.js",

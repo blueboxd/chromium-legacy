@@ -27,12 +27,13 @@ class GURL;
 @protocol PopupMenuCommands;
 @protocol RecentTabsConsumer;
 @class RecentTabsTableViewController;
+@protocol TabCollectionCommands;
 @protocol TabCollectionConsumer;
 @protocol TabCollectionDragDropHandler;
+@protocol TabContextMenuProvider;
 @class TabGridViewController;
 @protocol ThumbStripCommands;
 @protocol ViewControllerTraitCollectionObserver;
-@protocol GridContextMenuProvider;
 
 // Configurations for tab grid pages.
 enum class TabGridPageConfiguration {
@@ -119,19 +120,24 @@ enum class TabGridPageConfiguration {
     id<TabCollectionConsumer, IncognitoReauthConsumer>
         incognitoTabsConsumer;
 @property(nonatomic, readonly) id<RecentTabsConsumer> remoteTabsConsumer;
+@property(nonatomic, readonly) id<TabCollectionConsumer> pinnedTabsConsumer;
 
 // Delegates send updates from the UI layer to the model layer.
 @property(nonatomic, weak) id<GridCommands> regularTabsDelegate;
 @property(nonatomic, weak) id<GridCommands> incognitoTabsDelegate;
+@property(nonatomic, weak) id<TabCollectionCommands> pinnedTabsDelegate;
 
 // Handles drag and drop interactions that require the model layer.
 @property(nonatomic, weak) id<TabCollectionDragDropHandler>
     regularTabsDragDropHandler;
 @property(nonatomic, weak) id<TabCollectionDragDropHandler>
     incognitoTabsDragDropHandler;
+@property(nonatomic, weak) id<TabCollectionDragDropHandler>
+    pinnedTabsDragDropHandler;
 
 // Data sources provide lazy access to heavy-weight resources.
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
+@property(nonatomic, weak) id<GridImageDataSource> pinnedTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
 
 // Data source for acquiring data which power the PriceCardView
@@ -160,9 +166,9 @@ enum class TabGridPageConfiguration {
     RecentTabsTableViewController* remoteTabsViewController;
 
 // Provides the context menu for the tabs on the grid.
-@property(nonatomic, weak) id<GridContextMenuProvider>
+@property(nonatomic, weak) id<TabContextMenuProvider>
     regularTabsContextMenuProvider;
-@property(nonatomic, weak) id<GridContextMenuProvider>
+@property(nonatomic, weak) id<TabContextMenuProvider>
     incognitoTabsContextMenuProvider;
 
 // The layout guide center to use to refer to the bottom toolbar.
@@ -195,9 +201,6 @@ enum class TabGridPageConfiguration {
 // Sets both the current page and page control's selected page to `page`.
 // Animation is used if `animated` is YES.
 - (void)setCurrentPageAndPageControl:(TabGridPage)page animated:(BOOL)animated;
-
-// YES if it is possible to undo the close all conditions.
-@property(nonatomic, assign) BOOL undoCloseAllAvailable;
 
 @end
 

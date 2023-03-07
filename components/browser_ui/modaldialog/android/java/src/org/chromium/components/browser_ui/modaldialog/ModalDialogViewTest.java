@@ -30,7 +30,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.test.filters.MediumTest;
@@ -300,6 +302,32 @@ public class ModalDialogViewTest {
         onView(withId(R.id.custom))
                 .check(matches(allOf(not(isDisplayed()), not(withChild(withId(R.id.test_view_one))),
                         not(withChild(withId(R.id.test_view_two))))));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ModalDialog"})
+    public void testScrollCustomView() {
+        // Verify custom view set from builder is displayed.
+        var scrollView = new ScrollView(activityTestRule.getActivity());
+        var linearLayout = new LinearLayout(activityTestRule.getActivity());
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        createModel(mModelBuilder.with(ModalDialogProperties.CUSTOM_VIEW, scrollView));
+        // Add content.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (int i = 0; i < 100; i++) {
+                var textView = new TextView(activityTestRule.getActivity());
+                textView.setText("" + i);
+                linearLayout.addView(textView);
+            }
+            scrollView.addView(linearLayout);
+            scrollView.setFillViewport(true);
+        });
+        // Verify the first few elements are visible.
+        onView(withText("1")).check(matches(isDisplayed()));
+        scrollView.scrollTo(0, scrollView.getBottom());
+        // Verify after scrolling, the few elements are not visible.
+        onView(withText("1")).check(matches(not(isDisplayed())));
     }
 
     @Test

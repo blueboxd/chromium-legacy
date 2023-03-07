@@ -103,7 +103,7 @@ AutofillEnvironment::~AutofillEnvironment() {
 }
 
 LocalFrameToken AutofillEnvironment::NextLocalFrameToken() {
-  return LocalFrameToken(base::UnguessableToken::Deserialize(
+  return LocalFrameToken(base::UnguessableToken::CreateForTesting(
       ++local_frame_token_counter_high_, ++local_frame_token_counter_low_));
 }
 
@@ -120,7 +120,8 @@ LocalFrameToken MakeLocalFrameToken(RandomizeFrame randomize) {
     return LocalFrameToken(
         AutofillEnvironment::GetCurrent().NextLocalFrameToken());
   } else {
-    return LocalFrameToken(base::UnguessableToken::Deserialize(98765, 43210));
+    return LocalFrameToken(
+        base::UnguessableToken::CreateForTesting(98765, 43210));
   }
 }
 
@@ -429,8 +430,7 @@ inline void check_and_set(
     FormGroup* profile,
     ServerFieldType type,
     const char* value,
-    structured_address::VerificationStatus status =
-        structured_address::VerificationStatus::kObserved) {
+    VerificationStatus status = VerificationStatus::kObserved) {
   if (value) {
     profile->SetRawInfoWithVerificationStatus(type, base::UTF8ToUTF16(value),
                                               status);
@@ -766,7 +766,8 @@ AutofillWalletUsageData GetAutofillWalletUsageDataForVirtualCard() {
   VirtualCardUsageData virtual_card_usage_data;
   virtual_card_usage_data.instrument_id =
       VirtualCardUsageData::InstrumentId(12345);
-  virtual_card_usage_data.virtual_card_last_four = "1234";
+  virtual_card_usage_data.virtual_card_last_four =
+      VirtualCardUsageData::VirtualCardLastFour("1234");
   virtual_card_usage_data.merchant_origin =
       url::Origin::Create(GURL("https://www.google.com"));
   virtual_card_usage_data.merchant_app_package = "google";
@@ -778,27 +779,25 @@ std::vector<CardUnmaskChallengeOption> GetCardUnmaskChallengeOptions(
     const std::vector<CardUnmaskChallengeOptionType>& types) {
   std::vector<CardUnmaskChallengeOption> challenge_options;
   for (CardUnmaskChallengeOptionType type : types) {
-    CardUnmaskChallengeOption card_unmask_challenge_option{.type = type};
-
     switch (type) {
       case CardUnmaskChallengeOptionType::kSmsOtp:
-        card_unmask_challenge_option.id = "123";
-        card_unmask_challenge_option.challenge_info = u"xxx-xxx-3547";
-        card_unmask_challenge_option.challenge_input_length = 6U;
+        challenge_options.emplace_back(CardUnmaskChallengeOption(
+            CardUnmaskChallengeOption::ChallengeOptionId("123"), type,
+            /*challenge_info=*/u"xxx-xxx-3547",
+            /*challenge_input_length=*/6U));
         break;
       case CardUnmaskChallengeOptionType::kCvc:
-        card_unmask_challenge_option.id = "234";
-        card_unmask_challenge_option.challenge_info =
-            u"3 digit security code on the back of your card";
-        card_unmask_challenge_option.cvc_position = CvcPosition::kBackOfCard;
-        card_unmask_challenge_option.challenge_input_length = 3U;
+        challenge_options.emplace_back(CardUnmaskChallengeOption(
+            CardUnmaskChallengeOption::ChallengeOptionId("234"), type,
+            /*challenge_info=*/
+            u"3 digit security code on the back of your card",
+            /*challenge_input_length=*/3U,
+            /*cvc_position=*/CvcPosition::kBackOfCard));
         break;
       default:
         NOTREACHED();
         break;
     }
-
-    challenge_options.push_back(card_unmask_challenge_option);
   }
   return challenge_options;
 }
@@ -818,7 +817,7 @@ void SetProfileInfo(AutofillProfile* profile,
                     const char* country,
                     const char* phone,
                     bool finalize,
-                    structured_address::VerificationStatus status) {
+                    VerificationStatus status) {
   check_and_set(profile, NAME_FIRST, first_name, status);
   check_and_set(profile, NAME_MIDDLE, middle_name, status);
   check_and_set(profile, NAME_LAST, last_name, status);
@@ -851,7 +850,7 @@ void SetProfileInfo(AutofillProfile* profile,
                     const char* country,
                     const char* phone,
                     bool finalize,
-                    structured_address::VerificationStatus status) {
+                    VerificationStatus status) {
   check_and_set(profile, NAME_FIRST, first_name, status);
   check_and_set(profile, NAME_MIDDLE, middle_name, status);
   check_and_set(profile, NAME_LAST, last_name, status);
@@ -883,7 +882,7 @@ void SetProfileInfoWithGuid(AutofillProfile* profile,
                             const char* country,
                             const char* phone,
                             bool finalize,
-                            structured_address::VerificationStatus status) {
+                            VerificationStatus status) {
   if (guid)
     profile->set_guid(guid);
   SetProfileInfo(profile, first_name, middle_name, last_name, email, company,

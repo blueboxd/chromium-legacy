@@ -9,9 +9,9 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
@@ -40,6 +40,15 @@ bool IsVp9KSVCStream(VideoCodecProfile profile,
 bool IsVp9KSVCSupportedDriver(const std::string& driver_name) {
   const std::string kVP9KSVCSupportedDrivers[] = {"qcom-venus"};
   return base::Contains(kVP9KSVCSupportedDrivers, driver_name);
+}
+
+absl::optional<uint8_t> V4L2PixelFormatToBitDepth(uint32_t v4l2_pixelformat) {
+  const auto fourcc = Fourcc::FromV4L2PixFmt(v4l2_pixelformat);
+  if (fourcc) {
+    return BitDepth(fourcc->ToVideoPixelFormat());
+  }
+
+  return absl::nullopt;
 }
 }  // namespace
 
@@ -231,7 +240,7 @@ void V4L2StatefulVideoDecoderBackend::DoDecodeWork() {
   size_t bytes_to_copy = 0;
 
   if (!frame_splitter_->AdvanceFrameFragment(data, data_size, &bytes_to_copy)) {
-    VLOGF(1) << "Invalid bitstream detected.";
+    LOG(ERROR) << "Invalid bitstream detected.";
     std::move(current_decode_request_->decode_cb)
         .Run(DecoderStatus::Codes::kFailed);
     current_decode_request_.reset();
@@ -242,7 +251,7 @@ void V4L2StatefulVideoDecoderBackend::DoDecodeWork() {
 
   const size_t bytes_used = current_input_buffer_->GetPlaneBytesUsed(0);
   if (bytes_used + bytes_to_copy > current_input_buffer_->GetPlaneSize(0)) {
-    VLOGF(1) << "V4L2 buffer size is too small to contain a whole frame.";
+    LOG(ERROR) << "V4L2 buffer size is too small to contain a whole frame.";
     std::move(current_decode_request_->decode_cb)
         .Run(DecoderStatus::Codes::kFailed);
     current_decode_request_.reset();
@@ -574,7 +583,10 @@ bool V4L2StatefulVideoDecoderBackend::CompleteFlush() {
   }
 
   client_->CompleteFlush();
-
+  // Qualcomm venus stops capture queue after LAST buffer is dequeued and needs
+  // restarting to be ready for resume operation in case it was left in EOS
+  // state
+  client_->RestartStream();
   // Resume decoding if data is available.
   ScheduleDecodeWork();
 
@@ -600,6 +612,7 @@ void V4L2StatefulVideoDecoderBackend::ChangeResolution() {
 
   auto format = output_queue_->GetFormat().first;
   if (!format) {
+    LOG(ERROR) << "Unable to get format when changing resolution.";
     client_->OnBackendError();
     return;
   }
@@ -607,11 +620,23 @@ void V4L2StatefulVideoDecoderBackend::ChangeResolution() {
 
   auto visible_rect = output_queue_->GetVisibleRect();
   if (!visible_rect) {
+    LOG(ERROR) << "Unable to get visible rectangle when changing resolution.";
     client_->OnBackendError();
     return;
   }
 
   if (!gfx::Rect(pic_size).Contains(*visible_rect)) {
+    LOG(ERROR) << "Visible rectangle (" << visible_rect->ToString()
+               << ") is not contained by the picture rectangle ("
+               << gfx::Rect(pic_size).ToString() << ").";
+    client_->OnBackendError();
+    return;
+  }
+
+  const auto bit_depth =
+      V4L2PixelFormatToBitDepth(format->fmt.pix_mp.pixelformat);
+  if (!bit_depth) {
+    LOG(ERROR) << "Unable to determine bitdepth of format ";
     client_->OnBackendError();
     return;
   }
@@ -641,7 +666,7 @@ void V4L2StatefulVideoDecoderBackend::ChangeResolution() {
   DCHECK(!resolution_change_cb_);
   resolution_change_cb_ = base::BindOnce(
       &V4L2StatefulVideoDecoderBackend::ContinueChangeResolution, weak_this_,
-      pic_size, *visible_rect, num_codec_reference_frames);
+      pic_size, *visible_rect, num_codec_reference_frames, *bit_depth);
 
   // ...that is, unless we are not streaming yet, in which case the resolution
   // change can take place immediately.
@@ -652,13 +677,15 @@ void V4L2StatefulVideoDecoderBackend::ChangeResolution() {
 void V4L2StatefulVideoDecoderBackend::ContinueChangeResolution(
     const gfx::Size& pic_size,
     const gfx::Rect& visible_rect,
-    const size_t num_codec_reference_frames) {
+    const size_t num_codec_reference_frames,
+    const uint8_t bit_depth) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
   // Flush is done, but stay in flushing state and ask our client to set the new
   // resolution.
-  client_->ChangeResolution(pic_size, visible_rect, num_codec_reference_frames);
+  client_->ChangeResolution(pic_size, visible_rect, num_codec_reference_frames,
+                            bit_depth);
 }
 
 bool V4L2StatefulVideoDecoderBackend::ApplyResolution(
@@ -683,6 +710,8 @@ void V4L2StatefulVideoDecoderBackend::OnChangeResolutionDone(CroStatus status) {
   }
 
   if (status != CroStatus::Codes::kOk) {
+    LOG(ERROR) << "Backend failure when changing resolution ("
+               << static_cast<int>(status.code()) << ").";
     client_->OnBackendError();
     return;
   }

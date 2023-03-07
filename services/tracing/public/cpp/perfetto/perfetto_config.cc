@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 namespace tracing {
@@ -168,6 +170,22 @@ void AddDataSourceConfigs(
   }
 }
 
+size_t GetDefaultTraceBufferSize() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  std::string switch_value = command_line->GetSwitchValueASCII(
+      switches::kDefaultTraceBufferSizeLimitInKb);
+  size_t switch_kilobytes;
+  if (!switch_value.empty() &&
+      base::StringToSizeT(switch_value, &switch_kilobytes)) {
+    return switch_kilobytes;
+  } else {
+    // TODO(eseckler): Reduce the default buffer size after benchmarks set
+    // what they require. Should also invest some time to reduce the overhead
+    // of begin/end pairs further.
+    return 200 * 1024;
+  }
+}
+
 }  // namespace
 
 perfetto::TraceConfig GetDefaultPerfettoConfig(
@@ -193,10 +211,8 @@ perfetto::TraceConfig COMPONENT_EXPORT(TRACING_CPP)
 
   size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
   if (size_limit == 0) {
-    // TODO(eseckler): Reduce the default buffer size after benchmarks set what
-    // they require. Should also invest some time to reduce the overhead of
-    // begin/end pairs further.
-    size_limit = 200 * 1024;
+    // If trace config did not provide trace buffer size, we will use default
+    size_limit = GetDefaultTraceBufferSize();
   }
   auto* buffer_config = perfetto_config.add_buffers();
   buffer_config->set_size_kb(size_limit);
@@ -234,7 +250,13 @@ perfetto::TraceConfig COMPONENT_EXPORT(TRACING_CPP)
 
   // Clear incremental state every 5 seconds, so that we lose at most the first
   // 5 seconds of the trace (if we wrap around perfetto's central buffer).
+  // For Android, we reset the incremental state every 0.5 seconds to reduce
+  // data loss in ring buffer mode.
+#if BUILDFLAG(IS_ANDROID)
+  perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(500);
+#else
   perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(5000);
+#endif
 
   // We strip the process filter from the config string we send to Perfetto, so
   // perfetto doesn't reject it from a future TracingService::ChangeTraceConfig

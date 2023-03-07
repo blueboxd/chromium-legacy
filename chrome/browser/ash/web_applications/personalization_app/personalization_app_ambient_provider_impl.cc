@@ -22,9 +22,9 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/mojom/personalization_app_mojom_traits.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
@@ -51,8 +51,6 @@ constexpr int kBannerWidthPx = 160;
 constexpr int kBannerHeightPx = 160;
 
 constexpr int kMaxRetries = 3;
-
-constexpr char kRecentHighlightsPhotoContainerId[] = "RECENT_PHOTOS";
 
 constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     0,          // Number of initial errors to ignore.
@@ -189,13 +187,7 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
       settings_->selected_album_ids.clear();
       for (const auto& personal_album : personal_albums_.albums) {
         if (personal_album.selected) {
-          std::string album_id = personal_album.album_id;
-
-          // Convert the fake album ID back to actual ID from IMAX so we can
-          // download the previews.
-          if (album_id == ash::kAmbientModeRecentHighlightsAlbumId)
-            album_id = kRecentHighlightsPhotoContainerId;
-          settings_->selected_album_ids.emplace_back(album_id);
+          settings_->selected_album_ids.push_back(personal_album.album_id);
         }
       }
 

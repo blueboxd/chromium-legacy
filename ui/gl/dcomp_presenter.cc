@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
@@ -43,11 +43,9 @@ DCompPresenter::PendingFrame& DCompPresenter::PendingFrame::operator=(
 
 DCompPresenter::DCompPresenter(
     GLDisplayEGL* display,
-    HWND parent_window,
     VSyncCallback vsync_callback,
     const DirectCompositionSurfaceWin::Settings& settings)
     : SurfacelessEGL(display, gfx::Size(1, 1)),
-      child_window_(parent_window),
       vsync_callback_(std::move(vsync_callback)),
       vsync_thread_(VSyncThreadWin::GetInstance()),
       task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
@@ -72,10 +70,9 @@ bool DCompPresenter::Initialize(GLSurfaceFormat format) {
 
   child_window_.Initialize();
 
-  window_ = child_window_.window();
-
-  if (!layer_tree_->Initialize(window_))
+  if (!layer_tree_->Initialize(window())) {
     return false;
+  }
 
   return true;
 }
@@ -112,7 +109,7 @@ bool DCompPresenter::Resize(const gfx::Size& size,
   }
 
   // Force a resize and redraw (but not a move, activate, etc.).
-  if (!SetWindowPos(window_, nullptr, 0, 0, size.width(), size.height(),
+  if (!SetWindowPos(window(), nullptr, 0, 0, size.width(), size.height(),
                     SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS |
                         SWP_NOOWNERZORDER | SWP_NOZORDER)) {
     return false;
@@ -121,7 +118,7 @@ bool DCompPresenter::Resize(const gfx::Size& size,
 }
 
 gfx::SwapResult DCompPresenter::SwapBuffers(PresentationCallback callback,
-                                            FrameData data) {
+                                            gfx::FrameData data) {
   TRACE_EVENT0("gpu", "DCompPresenter::SwapBuffers");
 
   // Callback will be dequeued on next vsync.
@@ -140,7 +137,7 @@ gfx::SwapResult DCompPresenter::PostSubBuffer(int x,
                                               int width,
                                               int height,
                                               PresentationCallback callback,
-                                              FrameData data) {
+                                              gfx::FrameData data) {
   // The arguments are ignored because SetDrawRectangle specified the area to
   // be swapped.
   return SwapBuffers(std::move(callback), data);
@@ -165,7 +162,7 @@ void DCompPresenter::OnVSync(base::TimeTicks vsync_time,
 }
 
 bool DCompPresenter::ScheduleDCLayer(
-    std::unique_ptr<ui::DCRendererLayerParams> params) {
+    std::unique_ptr<DCLayerOverlayParams> params) {
   return layer_tree_->ScheduleDCLayer(std::move(params));
 }
 

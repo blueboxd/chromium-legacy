@@ -10,10 +10,10 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
@@ -33,11 +33,13 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/loader/loader_constants.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
@@ -219,6 +221,24 @@ FrameTree::~FrameTree() {
 #if DCHECK_IS_ON()
   DCHECK(was_shut_down_);
 #endif
+}
+
+void FrameTree::MakeSpeculativeRVHCurrent() {
+  CHECK(speculative_render_view_host_);
+
+  // The existing RenderViewHost needs to be unregistered first.
+  // Speculative RenderViewHosts are only used for same-SiteInstanceGroup
+  // navigations, so there should be a RenderViewHost of the same
+  // SiteInstanceGroup already in the tree.
+  RenderViewHostMapId speculative_id =
+      speculative_render_view_host_->rvh_map_id();
+  auto it = render_view_host_map_.find(speculative_id);
+  CHECK(it != render_view_host_map_.end());
+  UnregisterRenderViewHost(speculative_id, it->second);
+
+  speculative_render_view_host_->set_is_speculative(false);
+  RegisterRenderViewHost(speculative_id, speculative_render_view_host_.get());
+  speculative_render_view_host_.reset();
 }
 
 FrameTreeNode* FrameTree::FindByID(int frame_tree_node_id) {
@@ -456,11 +476,10 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
 
 void FrameTree::CreateProxiesForSiteInstance(
     FrameTreeNode* source,
-    SiteInstance* site_instance,
+    SiteInstanceImpl* site_instance,
     const scoped_refptr<BrowsingContextState>&
         source_new_browsing_context_state) {
-  SiteInstanceGroup* group =
-      static_cast<SiteInstanceImpl*>(site_instance)->group();
+  SiteInstanceGroup* group = site_instance->group();
   // Create the RenderFrameProxyHost for the new SiteInstance.
   if (!source || !source->IsMainFrame()) {
     RenderViewHostImpl* render_view_host = GetRenderViewHost(group).get();
@@ -512,7 +531,7 @@ void FrameTree::CreateProxiesForSiteInstance(
     // that SiteInstance don't need a proxy for the new frame.
     RenderFrameHostImpl* current_host =
         node->render_manager()->current_frame_host();
-    SiteInstance* current_instance = current_host->GetSiteInstance();
+    SiteInstanceImpl* current_instance = current_host->GetSiteInstance();
     if (current_instance != site_instance) {
       if (node == source && !current_host->IsRenderFrameLive()) {
         // We don't create a proxy at |source| when the current RenderFrameHost
@@ -611,19 +630,31 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node,
 }
 
 scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
-    SiteInstance* site_instance,
+    SiteInstanceImpl* site_instance,
     int32_t main_frame_routing_id,
     bool renderer_initiated_creation,
-    scoped_refptr<BrowsingContextState> main_browsing_context_state) {
+    scoped_refptr<BrowsingContextState> main_browsing_context_state,
+    CreateRenderViewHostCase create_case) {
   if (main_browsing_context_state) {
     DCHECK(main_browsing_context_state->is_main_frame());
   }
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
-          this, static_cast<SiteInstanceImpl*>(site_instance)->group(),
+          this, site_instance->group(),
           site_instance->GetStoragePartitionConfig(), render_view_delegate_,
           render_widget_delegate_, main_frame_routing_id,
-          renderer_initiated_creation, std::move(main_browsing_context_state)));
+          renderer_initiated_creation, std::move(main_browsing_context_state),
+          create_case));
+
+  if (ShouldCreateNewHostForAllFrames() &&
+      create_case == CreateRenderViewHostCase::kSpeculative) {
+    set_speculative_render_view_host(rvh->GetWeakPtr());
+  } else {
+    // Register non-speculative RenderViewHosts. If they are speculative, they
+    // will be registered when they become active.
+    RegisterRenderViewHost(rvh->rvh_map_id(), rvh);
+  }
+
   return base::WrapRefCounted(rvh);
 }
 
@@ -652,18 +683,22 @@ void FrameTree::RegisterRenderViewHost(RenderViewHostMapId id,
                                        RenderViewHostImpl* rvh) {
   TRACE_EVENT_INSTANT("navigation", "FrameTree::RegisterRenderViewHost",
                       ChromeTrackEvent::kRenderViewHost, *rvh);
+  CHECK(!rvh->is_speculative());
   CHECK(!base::Contains(render_view_host_map_, id));
   render_view_host_map_[id] = rvh;
+  rvh->set_is_registered_with_frame_tree(true);
 }
 
 void FrameTree::UnregisterRenderViewHost(RenderViewHostMapId id,
                                          RenderViewHostImpl* rvh) {
   TRACE_EVENT_INSTANT("navigation", "FrameTree::UnregisterRenderViewHost",
                       ChromeTrackEvent::kRenderViewHost, *rvh);
+  CHECK(!rvh->is_speculative());
   auto it = render_view_host_map_.find(id);
   CHECK(it != render_view_host_map_.end());
   CHECK_EQ(it->second, rvh);
   render_view_host_map_.erase(it);
+  rvh->set_is_registered_with_frame_tree(false);
 }
 
 void FrameTree::FrameUnloading(FrameTreeNode* frame) {
@@ -741,7 +776,7 @@ void FrameTree::RegisterExistingOriginAsHavingDefaultIsolation(
   controller().RegisterExistingOriginAsHavingDefaultIsolation(
       previously_visited_origin);
 
-  std::unordered_set<SiteInstance*> matching_site_instances;
+  std::unordered_set<SiteInstanceImpl*> matching_site_instances;
 
   // Be sure to visit all RenderFrameHosts associated with this frame that might
   // have an origin that could script other frames. We skip RenderFrameHosts
@@ -775,12 +810,11 @@ void FrameTree::RegisterExistingOriginAsHavingDefaultIsolation(
 
   // Update any SiteInstances found to contain |origin|.
   for (auto* site_instance : matching_site_instances) {
-    static_cast<SiteInstanceImpl*>(site_instance)
-        ->RegisterAsDefaultOriginIsolation(previously_visited_origin);
+    site_instance->RegisterAsDefaultOriginIsolation(previously_visited_origin);
   }
 }
 
-void FrameTree::Init(SiteInstance* main_frame_site_instance,
+void FrameTree::Init(SiteInstanceImpl* main_frame_site_instance,
                      bool renderer_initiated_creation,
                      const std::string& main_frame_name,
                      RenderFrameHostImpl* opener_for_origin,
@@ -937,6 +971,25 @@ void FrameTree::FocusOuterFrameTrees() {
     }
     frame_tree_to_focus = &outer_node->frame_tree();
   }
+}
+
+void FrameTree::RegisterOriginForUnpartitionedSessionStorageAccess(
+    const url::Origin& origin) {
+  if (origin.opaque()) {
+    return;
+  }
+  unpartitioned_session_storage_origins_.insert(origin);
+}
+
+const blink::StorageKey FrameTree::GetSessionStorageKey(
+    const blink::StorageKey& storage_key) {
+  if (unpartitioned_session_storage_origins_.find(storage_key.origin()) !=
+      unpartitioned_session_storage_origins_.end()) {
+    // If the storage key matches a participating origin we need to return the
+    // first-party version for use in binding session storage.
+    return blink::StorageKey(storage_key.origin());
+  }
+  return storage_key;
 }
 
 }  // namespace content

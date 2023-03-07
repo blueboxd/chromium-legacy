@@ -8,8 +8,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FENCED_FRAME_REDACTED_FENCED_FRAME_CONFIG_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FENCED_FRAME_REDACTED_FENCED_FRAME_CONFIG_H_
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -40,6 +40,14 @@ enum ReportingDestination {
   kSharedStorageSelectUrl,
 };
 
+// TODO(crbug.com/1347953): Decompose this into flags that directly control the
+// behavior of the frame, e.g. sandbox flags. We do not want mode to exist as a
+// concept going forward.
+enum DeprecatedFencedFrameMode {
+  kDefault,
+  kOpaqueAds,
+};
+
 struct BLINK_COMMON_EXPORT FencedFrameReporting {
   // If this is an "opaque-ads" mode fenced frame, there might be an associated
   // reporting metadata. This is a map from destination type to reporting
@@ -63,12 +71,16 @@ struct BLINK_COMMON_EXPORT AdAuctionData {
 // the `FencedFrameURLMapping`.
 struct BLINK_COMMON_EXPORT SharedStorageBudgetMetadata {
   url::Origin origin;
+  double budget_to_charge = 0;
 
-  // The `budget_to_charge` needs to be mutable because the overall
-  // `FencedFrameConfig`/`FencedFrameProperties` object is const in virtually
-  // all cases, except that we want to reduce this budget to 0 after it's used
-  // the first time.
-  mutable double budget_to_charge = 0;
+  // The bools `top_navigated` and `report_event_called` need to be mutable
+  // because the overall `FencedFrameConfig`/`FencedFrameProperties` object is
+  // const in virtually all cases, except that we want to change each of these
+  // bools to true after a frame with this config navigates the top for the
+  // first time or calls `fence.reportEvent() with a shared storage reporting
+  // destination for the first time, respectively.
+  mutable bool top_navigated = false;
+  mutable bool report_event_called = false;
 };
 
 // Represents a potentially opaque (redacted) value.
@@ -96,7 +108,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameConfig {
   RedactedFencedFrameConfig();
   ~RedactedFencedFrameConfig();
 
-  const absl::optional<GURL>& urn() const { return urn_; }
+  const absl::optional<GURL>& urn_uuid() const { return urn_uuid_; }
   const absl::optional<RedactedFencedFrameProperty<GURL>>& mapped_url() const {
     return mapped_url_;
   }
@@ -130,6 +142,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameConfig {
   reporting_metadata() const {
     return reporting_metadata_;
   }
+  const DeprecatedFencedFrameMode& mode() const { return mode_; }
 
  private:
   friend struct content::FencedFrameConfig;
@@ -140,7 +153,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameConfig {
   FRIEND_TEST_ALL_PREFIXES(::content::FencedFrameConfigMojomTraitsTest,
                            ConfigMojomTraitsTest);
 
-  absl::optional<GURL> urn_;
+  absl::optional<GURL> urn_uuid_;
   absl::optional<RedactedFencedFrameProperty<GURL>> mapped_url_;
   absl::optional<RedactedFencedFrameProperty<gfx::Size>> container_size_;
   absl::optional<RedactedFencedFrameProperty<gfx::Size>> content_size_;
@@ -154,6 +167,9 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameConfig {
       shared_storage_budget_metadata_;
   absl::optional<RedactedFencedFrameProperty<FencedFrameReporting>>
       reporting_metadata_;
+
+  // TODO(crbug.com/1347953): Not yet used.
+  DeprecatedFencedFrameMode mode_ = DeprecatedFencedFrameMode::kDefault;
 };
 
 // Represents a set of fenced frame properties (instantiated from a config) that
@@ -166,7 +182,6 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameProperties {
   RedactedFencedFrameProperties();
   ~RedactedFencedFrameProperties();
 
-  const absl::optional<GURL>& urn() const { return urn_; }
   const absl::optional<RedactedFencedFrameProperty<GURL>>& mapped_url() const {
     return mapped_url_;
   }
@@ -200,6 +215,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameProperties {
   reporting_metadata() const {
     return reporting_metadata_;
   }
+  const DeprecatedFencedFrameMode& mode() const { return mode_; }
 
  private:
   friend struct content::FencedFrameProperties;
@@ -210,7 +226,6 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameProperties {
   FRIEND_TEST_ALL_PREFIXES(::content::FencedFrameConfigMojomTraitsTest,
                            ConfigMojomTraitsTest);
 
-  absl::optional<GURL> urn_;
   absl::optional<RedactedFencedFrameProperty<GURL>> mapped_url_;
   absl::optional<RedactedFencedFrameProperty<gfx::Size>> container_size_;
   absl::optional<RedactedFencedFrameProperty<gfx::Size>> content_size_;
@@ -224,6 +239,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameProperties {
       shared_storage_budget_metadata_;
   absl::optional<RedactedFencedFrameProperty<FencedFrameReporting>>
       reporting_metadata_;
+  DeprecatedFencedFrameMode mode_ = DeprecatedFencedFrameMode::kDefault;
 };
 
 }  // namespace blink::FencedFrame

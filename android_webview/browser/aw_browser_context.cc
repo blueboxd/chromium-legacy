@@ -30,10 +30,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/base_paths_posix.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -455,10 +455,6 @@ AwPermissionManager* AwBrowserContext::GetPermissionControllerDelegate() {
 
 content::ClientHintsControllerDelegate*
 AwBrowserContext::GetClientHintsControllerDelegate() {
-  if (!base::FeatureList::IsEnabled(
-          android_webview::features::kWebViewClientHintsControllerDelegate)) {
-    return nullptr;
-  }
   if (!client_hints_controller_delegate_.get()) {
     client_hints_controller_delegate_ =
         std::make_unique<AwClientHintsControllerDelegate>(GetPrefService());

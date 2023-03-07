@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,7 +18,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/views/help_bubble_delegate.h"
-#include "components/user_education/views/help_bubble_factory_views.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -290,17 +289,16 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView,
 // outline in dark mode on Mac. Use our own shadow instead. The shadow type is
 // the same for all other platforms.
 HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
-                               views::View* anchor_view,
-                               HelpBubbleParams params,
-                               absl::optional<gfx::Rect> anchor_rect)
-    : BubbleDialogDelegateView(anchor_view,
+                               const internal::HelpBubbleAnchorParams& anchor,
+                               HelpBubbleParams params)
+    : BubbleDialogDelegateView(anchor.view,
                                TranslateArrow(params.arrow),
                                views::BubbleBorder::STANDARD_SHADOW),
       delegate_(delegate),
-      force_anchor_rect_(anchor_rect) {
+      force_anchor_rect_(anchor.rect) {
   // The anchor for promo bubbles should not highlight.
   set_highlight_button_when_shown(false);
-  DCHECK(anchor_view)
+  DCHECK(anchor.view)
       << "A bubble that closes on blur must be initially focused.";
   UseCompactMargins();
 
@@ -322,7 +320,7 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
 
   // Since we don't have any controls for the user to interact with (we're just
   // an information bubble), override our role to kAlert.
-  SetAccessibleRole(ax::mojom::Role::kAlert);
+  SetAccessibleWindowRole(ax::mojom::Role::kAlert);
 
   // Layout structure:
   //
@@ -615,13 +613,13 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   frame_view->SetCornerRadius(
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
           views::Emphasis::kHigh));
-  frame_view->SetDisplayVisibleArrow(!force_anchor_rect_.has_value() &&
+  frame_view->SetDisplayVisibleArrow(anchor.show_arrow &&
                                      params.arrow != HelpBubbleArrow::kNone);
   SizeToContents();
 
   widget->ShowInactive();
   auto* const anchor_bubble =
-      anchor_view->GetWidget()->widget_delegate()->AsBubbleDialogDelegate();
+      anchor.view->GetWidget()->widget_delegate()->AsBubbleDialogDelegate();
   if (anchor_bubble)
     anchor_pin_ = anchor_bubble->PreventCloseOnDeactivate();
   MaybeStartAutoCloseTimer();

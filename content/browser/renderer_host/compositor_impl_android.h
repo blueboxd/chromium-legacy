@@ -48,13 +48,13 @@ class Layer;
 class LayerTreeHost;
 
 struct CommitState;
-}
+}  // namespace cc
 
 namespace viz {
 class FrameSinkId;
 class HostDisplayClient;
 class OutputSurface;
-}
+}  // namespace viz
 
 namespace content {
 class CompositorClient;
@@ -117,7 +117,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetRequiresAlphaChannel(bool flag) override;
   void SetNeedsComposite() override;
   void SetNeedsRedraw() override;
-  ui::UIResourceProvider& GetUIResourceProvider() override;
+  base::WeakPtr<ui::UIResourceProvider> GetUIResourceProvider() override;
   ui::ResourceManager& GetResourceManager() override;
   void CacheBackBufferForCurrentSurface() override;
   void EvictCachedBackBuffer() override;
@@ -132,7 +132,7 @@ class CONTENT_EXPORT CompositorImpl
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void WillUpdateLayers() override {}
-  void DidUpdateLayers() override;
+  void DidUpdateLayers() override {}
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void OnDeferMainFrameUpdatesChanged(bool) override {}
   void OnDeferCommitsChanged(
@@ -143,7 +143,7 @@ class CONTENT_EXPORT CompositorImpl
   void OnCommitRequested() override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
-  void UpdateLayerTreeHost() override;
+  void UpdateLayerTreeHost() override {}
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
   }
   void UpdateCompositorScrollState(
@@ -300,8 +300,6 @@ class CONTENT_EXPORT CompositorImpl
       swap_completed_with_size_for_testing_;
 
   size_t num_of_consecutive_surface_failures_ = 0u;
-
-  base::TimeTicks latest_frame_time_;
 
   uint32_t pending_readbacks_ = 0u;
 

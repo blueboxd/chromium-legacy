@@ -22,6 +22,7 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
@@ -181,7 +182,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                         "Settings.LoadCompletedTime.MD") {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
+      content::WebUIDataSource::CreateAndAdd(
+          web_ui->GetWebContents()->GetBrowserContext(),
+          chrome::kChromeUISettingsHost);
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc,
       "worker-src blob: chrome://resources 'self';");
@@ -279,6 +282,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                                                profile->GetPrefs()->GetBoolean(
                                                    prefs::kSigninAllowed));
 
+  html_source->AddBoolean(
+      "turnOffSyncAllowedForManagedProfiles",
+      base::FeatureList::IsEnabled(kDisallowManagedProfileSignout));
+
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
@@ -297,11 +304,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
 
-  html_source->AddBoolean(
-      "changePriceEmailNotificationsEnabled",
-      base::FeatureList::IsEnabled(commerce::kShoppingList));
-  commerce::ShoppingServiceFactory::GetForBrowserContext(profile)
-      ->FetchPriceEmailPref();
+  commerce::ShoppingService* shopping_service =
+      commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
+  html_source->AddBoolean("changePriceEmailNotificationsEnabled",
+                          shopping_service->IsShoppingListEligible());
+  if (shopping_service->IsShoppingListEligible()) {
+    commerce::ShoppingServiceFactory::GetForBrowserContext(profile)
+        ->FetchPriceEmailPref();
+  }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -338,10 +348,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   bool show_privacy_guide =
       !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild();
   html_source->AddBoolean("showPrivacyGuide", show_privacy_guide);
-
-  html_source->AddBoolean("privacyGuide2Enabled",
-                          show_privacy_guide && base::FeatureList::IsEnabled(
-                                                    features::kPrivacyGuide2));
 
   html_source->AddBoolean("esbSettingsImprovementsEnabled",
                           base::FeatureList::IsEnabled(
@@ -421,9 +427,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddLocalizedStrings(html_source, profile, web_ui->GetWebContents());
 
   ManagedUIHandler::Initialize(web_ui, html_source);
-
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                html_source);
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
@@ -571,7 +574,7 @@ void SettingsUI::CreateHelpBubbleHandler(
     mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> client,
     mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
   help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
-      std::move(handler), std::move(client), web_ui()->GetWebContents(),
+      std::move(handler), std::move(client), this,
       std::vector<ui::ElementIdentifier>{kEnhancedProtectionSettingElementId});
 }
 

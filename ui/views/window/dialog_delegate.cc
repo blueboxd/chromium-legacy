@@ -53,8 +53,6 @@ DialogDelegate::DialogDelegate() {
 
   WidgetDelegate::RegisterWindowWillCloseCallback(
       base::BindOnce(&DialogDelegate::WindowWillClose, base::Unretained(this)));
-  UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegate.Create", true);
-  creation_time_ = base::TimeTicks::Now();
 }
 
 // static
@@ -334,6 +332,10 @@ void DialogDelegate::DialogModelChanged() {
     observer.OnDialogChanged();
 }
 
+void DialogDelegate::TriggerInputProtection() {
+  GetDialogClientView()->TriggerInputProtection();
+}
+
 void DialogDelegate::SetDefaultButton(int button) {
   if (params_.default_button == button)
     return;
@@ -433,8 +435,6 @@ void DialogDelegate::CancelDialog() {
 }
 
 DialogDelegate::~DialogDelegate() {
-  UMA_HISTOGRAM_LONG_TIMES("Dialog.DialogDelegate.Duration",
-                           base::TimeTicks::Now() - creation_time_);
   --g_instance_count;
 }
 
@@ -464,7 +464,6 @@ std::unique_ptr<View> DialogDelegate::DisownFootnoteView() {
 
 DialogDelegateView::DialogDelegateView() {
   SetOwnedByWidget(true);
-  UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegateView.Create", true);
 }
 
 DialogDelegateView::~DialogDelegateView() = default;

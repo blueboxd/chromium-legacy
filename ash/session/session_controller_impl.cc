@@ -26,15 +26,16 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/message_center.h"
 
 using session_manager::SessionState;
@@ -117,10 +118,7 @@ bool SessionControllerImpl::ShouldEnableSettings() const {
 }
 
 bool SessionControllerImpl::ShouldShowNotificationTray() const {
-  if (!IsActiveUserSessionStarted() || IsInSecondaryLoginScreen())
-    return false;
-
-  return true;
+  return IsActiveUserSessionStarted() && !IsInSecondaryLoginScreen();
 }
 
 const SessionControllerImpl::UserSessions&
@@ -197,6 +195,11 @@ bool SessionControllerImpl::IsUserFirstLogin() const {
 
 bool SessionControllerImpl::IsEnterpriseManaged() const {
   return client_ && client_->IsEnterpriseManaged();
+}
+
+absl::optional<int> SessionControllerImpl::GetExistingUsersCount() const {
+  return client_ ? absl::optional<int>(client_->GetExistingUsersCount())
+                 : absl::nullopt;
 }
 
 bool SessionControllerImpl::ShouldDisplayManagedUI() const {

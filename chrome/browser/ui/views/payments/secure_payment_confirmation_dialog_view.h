@@ -30,7 +30,6 @@ class SecurePaymentConfirmationDialogView
 
   class ObserverForTest {
    public:
-    virtual void OnDialogOpened() = 0;
     virtual void OnDialogClosed() = 0;
     virtual void OnConfirmButtonPressed() = 0;
     virtual void OnCancelButtonPressed() = 0;
@@ -71,9 +70,6 @@ class SecurePaymentConfirmationDialogView
   // views::DialogDelegate:
   bool ShouldShowCloseButton() const override;
   bool Accept() override;
-
-  // views::View:
-  void OnThemeChanged() override;
 
   base::WeakPtr<SecurePaymentConfirmationDialogView> GetWeakPtr();
 

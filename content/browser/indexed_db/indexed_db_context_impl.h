@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
@@ -50,7 +51,7 @@ class QuotaClientCallbackWrapper;
 }  // namespace storage
 
 namespace content {
-class IndexedDBFactoryImpl;
+class IndexedDBFactory;
 class IndexedDBQuotaClient;
 
 class CONTENT_EXPORT IndexedDBContextImpl
@@ -84,9 +85,13 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // mojom::IndexedDBControl implementation:
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
+      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+          client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindIndexedDBForBucket(
       const storage::BucketLocator& bucket_locator,
+      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+          client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
   void DeleteForStorageKey(const blink::StorageKey& storage_key,
@@ -149,7 +154,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void DeleteBucketData(const storage::BucketLocator& bucket_locator,
                         base::OnceCallback<void(bool success)> callback);
 
-  IndexedDBFactoryImpl* GetIDBFactory();
+  IndexedDBFactory* GetIDBFactory();
 
   // Called by StoragePartitionImpl to clear session-only data.
   // *not* called on the IDBTaskRunner.
@@ -160,7 +165,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // This getter is thread-safe.
   base::SequencedTaskRunner* IDBTaskRunner() { return idb_task_runner_.get(); }
 
-  // Methods called by IndexedDBFactoryImpl or IndexedDBDispatcherHost for
+  // Methods called by IndexedDBFactory or IndexedDBDispatcherHost for
   // quota support.
   void FactoryOpened(const storage::BucketLocator& bucket_locator);
   void ConnectionOpened(const storage::BucketLocator& bucket_locator);
@@ -232,6 +237,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // mojom::IndexedDBControl internal implementation:
   void BindIndexedDBImpl(
+      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+          client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       storage::QuotaErrorOr<storage::BucketInfo> bucket_info);
   void GetUsageImpl(GetUsageCallback usage_callback);
@@ -300,7 +307,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;
   mojo::Remote<storage::mojom::FileSystemAccessContext>
       file_system_access_context_;
-  std::unique_ptr<IndexedDBFactoryImpl> indexeddb_factory_;
+  std::unique_ptr<IndexedDBFactory> indexeddb_factory_;
 
   // If `base_data_path_` is empty then this is an incognito session and the
   // backing store will be held in-memory rather than on-disk.

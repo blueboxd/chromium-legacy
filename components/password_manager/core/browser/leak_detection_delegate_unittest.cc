@@ -6,6 +6,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -455,7 +456,7 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
       InsecureType::kLeaked,
       InsecurityMetadata(base::Time::Now(), IsMuted(false)));
   form.in_store = PasswordForm::Store::kProfileStore;
-  EXPECT_CALL(*profile_store(), UpdateLogin(form));
+  EXPECT_CALL(*profile_store(), UpdateLogin(form, _));
   WaitForPasswordStore();
 }
 

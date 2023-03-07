@@ -1,3 +1,4 @@
+
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -21,20 +22,17 @@ export class TestSiteSettingsPermissionsBrowserProxy extends TestBrowserProxy
       'acknowledgeRevokedUnusedSitePermissionsList',
       'allowPermissionsAgainForUnusedSite',
       'getRevokedUnusedSitePermissionsList',
+      'undoAcknowledgeRevokedUnusedSitePermissionsList',
+      'undoAllowPermissionsAgainForUnusedSite',
     ]);
   }
 
-  acknowledgeRevokedUnusedSitePermissionsList(unusedSitePermissionList:
-                                                  UnusedSitePermissions[]) {
-    this.methodCalled(
-        'acknowledgeRevokedUnusedSitePermissionsList',
-        [unusedSitePermissionList]);
+  acknowledgeRevokedUnusedSitePermissionsList() {
+    this.methodCalled('acknowledgeRevokedUnusedSitePermissionsList');
   }
 
-  allowPermissionsAgainForUnusedSite(unusedSitePermissions:
-                                         UnusedSitePermissions) {
-    this.methodCalled(
-        'allowPermissionsAgainForUnusedSite', [unusedSitePermissions]);
+  allowPermissionsAgainForUnusedSite(origin: string) {
+    this.methodCalled('allowPermissionsAgainForUnusedSite', [origin]);
   }
 
   setUnusedSitePermissions(unusedSitePermissionsList: UnusedSitePermissions[]) {
@@ -44,5 +42,18 @@ export class TestSiteSettingsPermissionsBrowserProxy extends TestBrowserProxy
   getRevokedUnusedSitePermissionsList(): Promise<UnusedSitePermissions[]> {
     this.methodCalled('getRevokedUnusedSitePermissionsList');
     return Promise.resolve(this.unusedSitePermissions_.slice());
+  }
+
+  undoAcknowledgeRevokedUnusedSitePermissionsList(unusedSitePermissionList:
+                                                      UnusedSitePermissions[]) {
+    this.methodCalled(
+        'undoAcknowledgeRevokedUnusedSitePermissionsList',
+        [unusedSitePermissionList]);
+  }
+
+  undoAllowPermissionsAgainForUnusedSite(unusedSitePermissions:
+                                             UnusedSitePermissions) {
+    this.methodCalled(
+        'undoAllowPermissionsAgainForUnusedSite', [unusedSitePermissions]);
   }
 }

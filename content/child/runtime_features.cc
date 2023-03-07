@@ -4,6 +4,7 @@
 
 #include "content/child/runtime_features.h"
 
+#include <string>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -46,10 +47,6 @@
 #include "base/android/build_info.h"
 #endif
 
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using blink::WebRuntimeFeatures;
 
 namespace {
@@ -67,8 +64,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCompositedSelectionUpdate(true);
 #endif
 #if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() >= base::win::Version::WIN10)
-    WebRuntimeFeatures::EnableWebBluetooth(true);
+  WebRuntimeFeatures::EnableWebBluetooth(true);
 #endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -98,8 +94,9 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableWebGLImageChromium(enable_web_gl_image_chromium);
 
 #if BUILDFLAG(IS_ANDROID)
-  if (command_line.HasSwitch(switches::kDisableMediaSessionAPI))
+  if (command_line.HasSwitch(switches::kDisableMediaSessionAPI)) {
     WebRuntimeFeatures::EnableMediaSession(false);
+  }
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -158,12 +155,14 @@ void SetRuntimeFeatureFromChromiumFeature(const base::Feature& chromium_feature,
       FeatureList::GetInstance()->IsFeatureOverridden(chromium_feature.name);
   switch (option) {
     case kSetOnlyIfOverridden:
-      if (is_overridden)
+      if (is_overridden) {
         enabler(feature_enabled);
+      }
       break;
     case kDefault:
-      if (feature_enabled || is_overridden)
+      if (feature_enabled || is_overridden) {
         enabler(feature_enabled);
+      }
       break;
     default:
       NOTREACHED();
@@ -213,11 +212,17 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
     {wf::EnableFedCm, features::kFedCm, kSetOnlyIfOverridden},
+    {wf::EnableFedCmAutoSignin, features::kFedCmAutoSignin,
+     kSetOnlyIfOverridden},
     {wf::EnableFedCmIframeSupport, features::kFedCmIframeSupport,
      kSetOnlyIfOverridden},
+    {wf::EnableFedCmLoginHint, features::kFedCmLoginHint, kSetOnlyIfOverridden},
     {wf::EnableFedCmMultipleIdentityProviders,
      features::kFedCmMultipleIdentityProviders, kDefault},
-    {wf::EnableFedCmUserInfo, features::kFedCmUserInfo, kDefault},
+    {wf::EnableFedCmRpContext, features::kFedCmRpContext, kDefault},
+    {wf::EnableFedCmUserInfo, features::kFedCmUserInfo, kSetOnlyIfOverridden},
+    {wf::EnableFedCmSelectiveDisclosure, features::kFedCmSelectiveDisclosure,
+     kDefault},
     {wf::EnableFencedFrames, features::kPrivacySandboxAdsAPIsOverride,
      kSetOnlyIfOverridden},
     {wf::EnableSharedStorageAPI, features::kPrivacySandboxAdsAPIsOverride,
@@ -233,8 +238,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableLazyInitializeMediaControls,
      features::kLazyInitializeMediaControls},
     {wf::EnableLazyFrameLoading, features::kLazyFrameLoading},
-    {wf::EnableLazyFrameVisibleLoadTimeMetrics,
-     features::kLazyFrameVisibleLoadTimeMetrics},
     {wf::EnableLazyImageLoading, features::kLazyImageLoading},
     {wf::EnableLazyImageVisibleLoadTimeMetrics,
      features::kLazyImageVisibleLoadTimeMetrics},
@@ -243,11 +246,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      media::kMediaEngagementBypassAutoplayPolicies},
     {wf::EnableMouseSubframeNoImplicitCapture,
      features::kMouseSubframeNoImplicitCapture},
-    {wf::EnableNeverSlowMode, features::kNeverSlowMode},
     {wf::EnableNotificationContentImage, features::kNotificationContentImage,
      kSetOnlyIfOverridden},
     {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
-    {wf::EnableWebPaymentAPICSP, features::kWebPaymentAPICSP},
     {wf::EnablePaymentRequest, features::kWebPayments},
     {wf::EnablePercentBasedScrolling, features::kWindowsScrollingPersonality},
     {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
@@ -283,10 +284,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kWebOTPAssertionFeaturePolicy, kSetOnlyIfOverridden},
     {wf::EnableWebUSB, features::kWebUsb},
     {wf::EnableWebXR, features::kWebXr},
-    {wf::EnableWebXRARModule, features::kWebXrArModule},
-    {wf::EnableWebXRCameraAccess, device::features::kWebXrIncubations},
+    {wf::EnableWebXRFrontFacing, device::features::kWebXrIncubations},
     {wf::EnableWebXRHandInput, device::features::kWebXrHandInput},
-    {wf::EnableWebXRHitTest, device::features::kWebXrHitTest},
     {wf::EnableWebXRImageTracking, device::features::kWebXrIncubations},
     {wf::EnableWebXRLayers, device::features::kWebXrLayers},
     {wf::EnableWebXRPlaneDetection, device::features::kWebXrIncubations},
@@ -326,9 +325,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"StorageAccessAPI", net::features::kStorageAccessAPI},
           {"TopicsAPI", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
+          {"TopicsXHR", features::kPrivacySandboxAdsAPIsOverride,
+           kSetOnlyIfOverridden},
           {"TrustedTypesFromLiteral", features::kTrustedTypesFromLiteral},
           {"WebAppTabStrip", features::kDesktopPWAsTabStrip},
-          {"WebAuthenticationConditionalUI", features::kWebAuthConditionalUI},
           {"WGIGamepadTriggerRumble",
            features::kEnableWindowsGamingInputDataFetcher},
           {"UserAgentFull", blink::features::kFullUserAgent},
@@ -376,8 +376,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPipe, true},
       {wrf::EnableDatabase, switches::kDisableDatabases, false},
       {wrf::EnableFileSystem, switches::kDisableFileSystem, false},
-      {wrf::EnableFileSystemSyncAccessHandleAsyncInterfaceOverride,
-       switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled, true},
       {wrf::EnableNetInfoDownlinkMax,
        switches::kEnableNetworkInformationDownlinkMax, true},
       {wrf::EnableNotifications, switches::kDisableNotifications, false},
@@ -405,8 +403,9 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableDirectSockets, switches::kIsolatedAppOrigins, true},
   };
   for (const auto& mapping : switchToFeatureMapping) {
-    if (command_line.HasSwitch(mapping.switch_name))
+    if (command_line.HasSwitch(mapping.switch_name)) {
       mapping.feature_enabler(mapping.target_enabled_state);
+    }
   }
 
   // Set EnableAutomationControlled if the caller passes
@@ -432,10 +431,12 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(blink::switches::kEventPathPolicy)) {
     const std::string value =
         command_line.GetSwitchValueASCII(blink::switches::kEventPathPolicy);
-    if (value == blink::switches::kEventPathPolicy_ForceEnable)
+    if (value == blink::switches::kEventPathPolicy_ForceEnable) {
       WebRuntimeFeatures::EnableEventPath(true);
-    if (value == blink::switches::kEventPathPolicy_ForceDisable)
+    }
+    if (value == blink::switches::kEventPathPolicy_ForceDisable) {
       WebRuntimeFeatures::EnableEventPath(false);
+    }
   }
 
   // Enable or disable OffsetParentNewSpecBehavior for Enterprise Policy. This
@@ -445,11 +446,13 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
     const std::string value = command_line.GetSwitchValueASCII(
         blink::switches::kOffsetParentNewSpecBehaviorPolicy);
     if (value ==
-        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceEnable)
+        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceEnable) {
       WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(true);
+    }
     if (value ==
-        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceDisable)
+        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceDisable) {
       WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(false);
+    }
   }
 
   // Enable or disable SendMouseEventsDisabledFormControls for Enterprise
@@ -458,12 +461,14 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
           blink::switches::kSendMouseEventsDisabledFormControlsPolicy)) {
     const std::string value = command_line.GetSwitchValueASCII(
         blink::switches::kSendMouseEventsDisabledFormControlsPolicy);
-    if (value ==
-        blink::switches::kSendMouseEventsDisabledFormControlsPolicy_ForceEnable)
-      WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(true);
     if (value == blink::switches::
-                     kSendMouseEventsDisabledFormControlsPolicy_ForceDisable)
+                     kSendMouseEventsDisabledFormControlsPolicy_ForceEnable) {
+      WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(true);
+    }
+    if (value == blink::switches::
+                     kSendMouseEventsDisabledFormControlsPolicy_ForceDisable) {
       WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(false);
+    }
   }
 }
 
@@ -495,10 +500,11 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
 
   // TODO(rodneyding): This is a rare case for a stable feature
   // Need to investigate more to determine whether to refactor it.
-  if (command_line.HasSwitch(switches::kDisableV8IdleTasks))
+  if (command_line.HasSwitch(switches::kDisableV8IdleTasks)) {
     WebRuntimeFeatures::EnableV8IdleTasks(false);
-  else
+  } else {
     WebRuntimeFeatures::EnableV8IdleTasks(true);
+  }
 
   WebRuntimeFeatures::EnableBackForwardCache(
       content::IsBackForwardCacheEnabled());
@@ -594,14 +600,23 @@ void ResolveInvalidConfigurations() {
     WebRuntimeFeatures::EnableFencedFrames(false);
   }
 
-  // Topics API cannot be enabled without the support of the browser process.
-  if (base::FeatureList::IsEnabled(features::kPrivacySandboxAdsAPIsOverride) &&
-      !base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+  // Topics API cannot be enabled without the support of the browser process,
+  // and the XHR attribute should be additionally gated by the
+  // `kBrowsingTopicsXHR` feature.
+  if (!base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
     LOG_IF(WARNING, WebRuntimeFeatures::IsTopicsAPIEnabled())
         << "Topics cannot be enabled in this configuration. Use --"
         << switches::kEnableFeatures << "="
-        << blink::features::kBrowsingTopics.name << " instead.";
+        << blink::features::kBrowsingTopics.name << " in addition.";
     WebRuntimeFeatures::EnableTopicsAPI(false);
+    WebRuntimeFeatures::EnableTopicsXHR(false);
+  } else if (!base::FeatureList::IsEnabled(
+                 blink::features::kBrowsingTopicsXHR)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsTopicsXHREnabled())
+        << "Topics XHR cannot be enabled in this configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kBrowsingTopicsXHR.name << " in addition.";
+    WebRuntimeFeatures::EnableTopicsXHR(false);
   }
 
   // Storage Access API ForSite cannot be enabled unless the larger Storage
@@ -636,8 +651,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableTestOnlyFeatures(true);
   }
 
-  if (enable_experimental_web_platform_features)
+  if (enable_experimental_web_platform_features) {
     WebRuntimeFeatures::EnableExperimentalFeatures(true);
+  }
 
   SetRuntimeFeatureDefaultsForPlatform(command_line);
 

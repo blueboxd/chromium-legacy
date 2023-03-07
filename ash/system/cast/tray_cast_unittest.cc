@@ -9,6 +9,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/cast_config_controller.h"
+#include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/style/pill_button.h"
 #include "ash/system/tray/fake_detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -35,7 +36,9 @@ class TestCastConfigController : public CastConfigController {
   bool HasMediaRouterForPrimaryProfile() const override { return true; }
   bool HasSinksAndRoutes() const override { return false; }
   bool HasActiveRoute() const override { return false; }
-  bool AccessCodeCastingEnabled() const override { return false; }
+  bool AccessCodeCastingEnabled() const override {
+    return access_code_casting_enabled_;
+  }
   void RequestDeviceRefresh() override {}
   const std::vector<SinkAndRoute>& GetSinksAndRoutes() override {
     return sinks_and_routes_;
@@ -48,6 +51,7 @@ class TestCastConfigController : public CastConfigController {
     stop_casting_route_id_ = route_id;
   }
 
+  bool access_code_casting_enabled_ = false;
   std::vector<SinkAndRoute> sinks_and_routes_;
   size_t cast_to_sink_count_ = 0;
   size_t stop_casting_count_ = 0;
@@ -59,9 +63,7 @@ class TestCastConfigController : public CastConfigController {
 class CastDetailedViewTest : public AshTestBase {
  public:
   CastDetailedViewTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kQsRevamp, features::kQsRevampWip},
-        /*disabled_features=*/{});
+    feature_list_.InitAndEnableFeature(features::kQsRevamp);
   }
 
   // AshTestBase:
@@ -84,8 +86,9 @@ class CastDetailedViewTest : public AshTestBase {
 
   std::vector<views::View*> GetDeviceViews() {
     std::vector<views::View*> views;
-    for (const auto& it : detailed_view_->view_to_sink_map_)
+    for (const auto& it : detailed_view_->view_to_sink_map_) {
       views.push_back(it.first);
+    }
     return views;
   }
 
@@ -97,13 +100,11 @@ class CastDetailedViewTest : public AshTestBase {
     SinkAndRoute device1;
     device1.sink.id = "fake_sink_id_1";
     device1.sink.name = "Sink Name 1";
-    device1.sink.domain = "example.com";
     device1.sink.sink_icon_type = SinkIconType::kCast;
     devices.push_back(device1);
     SinkAndRoute device2;
     device2.sink.id = "fake_sink_id_2";
     device2.sink.name = "Sink Name 2";
-    device2.sink.domain = "example.com";
     device2.sink.sink_icon_type = SinkIconType::kCast;
     devices.push_back(device2);
     detailed_view_->OnDevicesUpdated(devices);
@@ -116,6 +117,10 @@ class CastDetailedViewTest : public AshTestBase {
 
   // Removes simulated cast devices.
   void ResetCastDevices() { detailed_view_->OnDevicesUpdated({}); }
+
+  views::View* GetAddAccessCodeDeviceView() {
+    return detailed_view_->add_access_code_device_;
+  }
 
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<views::Widget> widget_;
@@ -152,6 +157,19 @@ TEST_F(CastDetailedViewTest, ClickOnViewClosesBubble) {
   EXPECT_EQ(delegate_->close_bubble_call_count(), 1u);
 }
 
+TEST_F(CastDetailedViewTest, AccessCodeCasting) {
+  cast_config_.access_code_casting_enabled_ = true;
+  ResetCastDevices();
+  views::View* add_access_code_device = GetAddAccessCodeDeviceView();
+  ASSERT_TRUE(add_access_code_device);
+
+  LeftClickOn(add_access_code_device);
+  EXPECT_EQ(GetSystemTrayClient()->show_access_code_casting_dialog_count(), 1);
+  // The bubble is not closed via the delegate, because it happens via a focus
+  // change when the dialog appears.
+  EXPECT_EQ(delegate_->close_bubble_call_count(), 0u);
+}
+
 TEST_F(CastDetailedViewTest, ZeroStateView) {
   // The zero state view shows when there are no cast devices.
   ASSERT_TRUE(GetDeviceViews().empty());
@@ -173,7 +191,6 @@ TEST_F(CastDetailedViewTest, StopCastingButton) {
   SinkAndRoute device;
   device.sink.id = "fake_sink_id_1";
   device.sink.name = "Sink Name 1";
-  device.sink.domain = "example.com";
   device.sink.sink_icon_type = SinkIconType::kCast;
   device.route.id = "fake_route_id_1";
   device.route.title = "Title 1";
@@ -208,7 +225,6 @@ TEST_F(CastDetailedViewTest, NoStopCastingButtonForNonLocalSource) {
   SinkAndRoute device;
   device.sink.id = "fake_sink_id_1";
   device.sink.name = "Sink Name 1";
-  device.sink.domain = "example.com";
   device.sink.sink_icon_type = SinkIconType::kCast;
   device.route.id = "fake_route_id_1";
   device.route.title = "Title 1";

@@ -30,6 +30,7 @@ include_rules = [
   "+components/metrics/metrics_pref_names.h",
   "+components/metrics/public",
   "+components/nacl/common",
+  "+components/lens",
   "+components/net_log",
   "+components/network_session_configurator/common",
   "+components/no_state_prefetch/common",
@@ -76,6 +77,9 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  "chrome_constants_ash_unittest\.cc": [
+    "+chromeos/ash/components/browser_context_helper/browser_context_types.h",
+  ],
   "logging_chrome\.cc": [
     "+ash/constants/ash_switches.h",
   ],

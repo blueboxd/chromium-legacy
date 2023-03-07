@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -87,10 +87,10 @@ std::string GetRlzBrand() {
 }
 
 void InitBrand(base::OnceClosure callback) {
-  ::chromeos::system::StatisticsProvider* provider =
-      ::chromeos::system::StatisticsProvider::GetInstance();
+  ::ash::system::StatisticsProvider* provider =
+      ::ash::system::StatisticsProvider::GetInstance();
   const absl::optional<base::StringPiece> brand =
-      provider->GetMachineStatistic(::chromeos::system::kRlzBrandCodeKey);
+      provider->GetMachineStatistic(::ash::system::kRlzBrandCodeKey);
   if (brand && IsBrandValid(brand.value())) {
     SetBrand(std::move(callback), std::string(brand.value()));
     return;

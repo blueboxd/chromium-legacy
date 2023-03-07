@@ -9,10 +9,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -651,6 +652,10 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                             blink::mojom::InputEventResultState::kIgnored,
                             nullptr, nullptr, /*scroll_result_data=*/nullptr);
   }
+  // Ensure that the associated PendingTask for the WidgetInputHandler is
+  // recorded when tasking long-running chrome tasks. This is needed to
+  // selectively record input queueing and processing time.
+  base::TaskAnnotator::MarkCurrentTaskAsInterestingForTracing();
 }
 
 void InputRouterImpl::KeyboardEventHandled(

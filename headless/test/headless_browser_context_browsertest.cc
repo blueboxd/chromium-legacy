@@ -4,9 +4,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -15,7 +15,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
@@ -257,32 +256,6 @@ IN_PROC_BROWSER_TEST_P(HeadlessBrowserTestWithUserDataDirAndMaybeIncognito,
   EXPECT_TRUE(WaitForLoad(web_contents));
 
   EXPECT_EQ(incognito(), base::IsDirectoryEmpty(user_data_dir()));
-}
-
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextWebPreferences) {
-  // By default, hide_scrollbars should be false.
-  EXPECT_FALSE(WebPreferences().hide_scrollbars);
-
-  // Set hide_scrollbars preference to true for a new BrowserContext.
-  HeadlessBrowserContext* browser_context =
-      browser()
-          ->CreateBrowserContextBuilder()
-          .SetOverrideWebPreferencesCallback(base::BindRepeating(
-              [](blink::web_pref::WebPreferences* preferences) {
-                preferences->hide_scrollbars = true;
-              }))
-          .Build();
-  HeadlessWebContents* web_contents =
-      browser_context->CreateWebContentsBuilder()
-          .SetInitialURL(GURL("about:blank"))
-          .Build();
-
-  // Verify that the preference takes effect.
-  HeadlessWebContentsImpl* contents_impl =
-      HeadlessWebContentsImpl::From(web_contents);
-  EXPECT_TRUE(contents_impl->web_contents()
-                  ->GetOrCreateWebPreferences()
-                  .hide_scrollbars);
 }
 
 }  // namespace headless

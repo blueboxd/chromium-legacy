@@ -6,16 +6,18 @@
  * @fileoverview Handles logic for the ChromeVox panel that requires state from
  * the background context.
  */
+import {AsyncUtil} from '../../../common/async_util.js';
 import {constants} from '../../../common/constants.js';
 import {CursorRange} from '../../../common/cursors/range.js';
-import {Earcon} from '../../common/abstract_earcons.js';
 import {BridgeConstants} from '../../common/bridge_constants.js';
 import {BridgeHelper} from '../../common/bridge_helper.js';
+import {EarconId} from '../../common/earcon_id.js';
 import {PanelBridge} from '../../common/panel_bridge.js';
 import {ALL_PANEL_MENU_NODE_DATA} from '../../common/panel_menu_data.js';
 import {QueueMode} from '../../common/tts_types.js';
 import {ChromeVox} from '../chromevox.js';
-import {ChromeVoxState, ChromeVoxStateObserver} from '../chromevox_state.js';
+import {ChromeVoxRange, ChromeVoxRangeObserver} from '../chromevox_range.js';
+import {ChromeVoxState} from '../chromevox_state.js';
 import {Output} from '../output/output.js';
 import {OutputCustomEvent} from '../output/output_types.js';
 
@@ -25,7 +27,8 @@ import {PanelNodeMenuBackground} from './panel_node_menu_background.js';
 import {PanelTabMenuBackground} from './panel_tab_menu_background.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
-const Constants = BridgeConstants.PanelBackground;
+const TARGET = BridgeConstants.PanelBackground.TARGET;
+const Action = BridgeConstants.PanelBackground.Action;
 
 /** @implements {ISearchHandler} */
 export class PanelBackground {
@@ -44,58 +47,56 @@ export class PanelBackground {
       throw 'Trying to create two copies of singleton PanelBackground';
     }
     PanelBackground.instance = new PanelBackground();
-    PanelBackground.stateObserver_ = new PanelStateObserver();
-    ChromeVoxState.addObserver(PanelBackground.stateObserver_);
+    PanelBackground.rangeObserver_ = new PanelRangeObserver();
+    ChromeVoxRange.addObserver(PanelBackground.rangeObserver_);
 
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.CLEAR_SAVED_NODE,
+        TARGET, Action.CLEAR_SAVED_NODE,
         () => PanelBackground.instance.clearSavedNode_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.CREATE_ALL_NODE_MENU_BACKGROUNDS,
+        TARGET, Action.CREATE_ALL_NODE_MENU_BACKGROUNDS,
         opt_activateMenuTitle =>
             PanelBackground.instance.createAllNodeMenuBackgrounds_(
                 opt_activateMenuTitle));
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.CREATE_NEW_I_SEARCH,
+        TARGET, Action.CREATE_NEW_I_SEARCH,
         () => PanelBackground.instance.createNewISearch_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.DESTROY_I_SEARCH,
+        TARGET, Action.DESTROY_I_SEARCH,
         () => PanelBackground.instance.destroyISearch_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.FOCUS_TAB,
+        TARGET, Action.FOCUS_TAB,
         (windowId, tabId) => PanelTabMenuBackground.focusTab(windowId, tabId));
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.GET_ACTIONS_FOR_CURRENT_NODE,
+        TARGET, Action.GET_ACTIONS_FOR_CURRENT_NODE,
         () => PanelBackground.instance.getActionsForCurrentNode_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.GET_TAB_MENU_DATA,
+        TARGET, Action.GET_TAB_MENU_DATA,
         () => PanelTabMenuBackground.getTabMenuData());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.INCREMENTAL_SEARCH,
+        TARGET, Action.INCREMENTAL_SEARCH,
         (searchStr, dir, opt_nextObject) =>
             PanelBackground.instance.incrementalSearch_(
                 searchStr, dir, opt_nextObject));
     BridgeHelper.registerHandler(
-        Constants.TARGET,
-        Constants.Action.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE,
+        TARGET, Action.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE,
         actionId => PanelBackground.instance.performCustomActionOnCurrentNode_(
             actionId));
     BridgeHelper.registerHandler(
-        Constants.TARGET,
-        Constants.Action.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE,
+        TARGET, Action.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE,
         action => PanelBackground.instance.performStandardActionOnCurrentNode_(
             action));
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.SAVE_CURRENT_NODE,
+        TARGET, Action.SAVE_CURRENT_NODE,
         () => PanelBackground.instance.saveCurrentNode_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.SET_PANEL_COLLAPSE_WATCHER,
+        TARGET, Action.SET_PANEL_COLLAPSE_WATCHER,
         () => PanelBackground.instance.setPanelCollapseWatcher_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.SET_RANGE_TO_I_SEARCH_NODE,
+        TARGET, Action.SET_RANGE_TO_I_SEARCH_NODE,
         () => PanelBackground.instance.setRangeToISearchNode_());
     BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.WAIT_FOR_PANEL_COLLAPSE,
+        TARGET, Action.WAIT_FOR_PANEL_COLLAPSE,
         () => PanelBackground.instance.waitForPanelCollapse_());
   }
 
@@ -132,11 +133,10 @@ export class PanelBackground {
     }
     // TODO(accessibility): not sure if this actually works anymore since all
     // the refactoring.
-    if (!ChromeVoxState.instance.currentRange ||
-        !ChromeVoxState.instance.currentRange.start) {
+    if (!ChromeVoxRange.current || !ChromeVoxRange.current.start) {
       return;
     }
-    this.iSearch_ = new ISearch(ChromeVoxState.instance.currentRange.start);
+    this.iSearch_ = new ISearch(ChromeVoxRange.current.start);
     this.iSearch_.handler = this;
   }
 
@@ -230,7 +230,7 @@ export class PanelBackground {
   /** @override */
   onSearchReachedBoundary(boundaryNode) {
     this.iSearchOutput_(boundaryNode);
-    ChromeVox.earcons.playEarcon(Earcon.WRAP);
+    ChromeVox.earcons.playEarcon(EarconId.WRAP);
   }
 
   /** @override */
@@ -260,7 +260,7 @@ export class PanelBackground {
     }
     o.go();
 
-    ChromeVoxState.instance.setCurrentRange(CursorRange.fromNode(node));
+    ChromeVoxRange.set(CursorRange.fromNode(node));
   }
 
   /**
@@ -268,8 +268,7 @@ export class PanelBackground {
    * @private
    */
   async setPanelCollapseWatcher_() {
-    const desktop =
-        await new Promise((resolve) => chrome.automation.getDesktop(resolve));
+    const desktop = await AsyncUtil.getDesktop();
     let notifyPanelCollapsed;
     this.resolvePanelCollapsed_ = new Promise(resolve => {
       notifyPanelCollapsed = resolve;
@@ -298,8 +297,8 @@ export class PanelBackground {
 
   /** @private */
   saveCurrentNode_() {
-    if (ChromeVoxState.instance.currentRange) {
-      this.savedNode_ = ChromeVoxState.instance.currentRange.start.node;
+    if (ChromeVoxRange.current) {
+      this.savedNode_ = ChromeVoxRange.current.start.node;
     }
   }
 
@@ -315,11 +314,11 @@ export class PanelBackground {
 /** @type {PanelBackground} */
 PanelBackground.instance;
 
-/** @private {PanelStateObserver} */
-PanelBackground.stateObserver_;
+/** @private {PanelRangeObserver} */
+PanelBackground.rangeObserver_;
 
-/** @implements {ChromeVoxStateObserver} */
-class PanelStateObserver {
+/** @implements {ChromeVoxRangeObserver} */
+class PanelRangeObserver {
   /** @override */
   onCurrentRangeChanged(range, opt_fromEditing) {
     PanelBridge.onCurrentRangeChanged();

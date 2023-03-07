@@ -5,7 +5,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
@@ -458,9 +458,9 @@ bool GetTerminalSettingPassCtrlW(Profile* profile) {
 }
 
 std::string ShortcutIdForSSH(const std::string& profileId) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey(kShortcutKey, base::Value(kShortcutValueSSH));
-  dict.SetKey(kProfileIdKey, base::Value(profileId));
+  base::Value::Dict dict;
+  dict.Set(kShortcutKey, base::Value(kShortcutValueSSH));
+  dict.Set(kProfileIdKey, base::Value(profileId));
   std::string shortcut_id;
   base::JSONWriter::Write(dict, &shortcut_id);
   return shortcut_id;

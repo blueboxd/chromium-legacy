@@ -288,8 +288,12 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
         Layer() ? Layer()->Transform() : nullptr);
     // Compare local scale before and after.
     if (old_squared_scale != new_squared_scale) {
-      for (LayoutBox* box : *View()->SvgTextDescendantsMap().at(this))
+      for (LayoutBox* box : *View()->SvgTextDescendantsMap().at(this)) {
         To<LayoutNGSVGText>(box)->SetNeedsTextMetricsUpdate();
+        if (GetNode() == GetDocument().documentElement()) {
+          box->SetNeedsLayout(layout_invalidation_reason::kStyleChange);
+        }
+      }
     }
   }
 }
@@ -2121,7 +2125,7 @@ void LayoutBlock::AddOutlineRects(Vector<PhysicalRect>& rects,
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
     rects.emplace_back(additional_offset, Size());
 
-  if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
+  if (ShouldIncludeBlockVisualOverflow(include_block_overflows) &&
       !HasNonVisibleOverflow() && !HasControlClip()) {
     AddOutlineRectsForNormalChildren(rects, additional_offset,
                                      include_block_overflows);

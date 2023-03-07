@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -259,6 +259,13 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewWithMessage(l10n_util::GetStringUTF16(
           IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY));
+#else
+      NOTREACHED();
+#endif
+      break;
+    case apps::AppType::kBruschetta:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // TODO(b/247636749): Implement Bruschetta uninstall.
 #else
       NOTREACHED();
 #endif

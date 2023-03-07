@@ -8,16 +8,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"  // for [[fallthrough]];
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -30,6 +29,7 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/site_for_cookies.h"
@@ -287,7 +287,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     // being deleted at a later time, which can happen due to eviction or due to
     // the user explicitly deleting all cookies.
     if (!restricted_cookie_manager_->cookie_settings().IsCookieAccessible(
-            change.cookie, url_, site_for_cookies_, top_frame_origin_)) {
+            change.cookie, url_, site_for_cookies_, top_frame_origin_,
+            restricted_cookie_manager_->GetCookieSettingOverrides())) {
       return;
     }
 
@@ -434,7 +435,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   net::CookieAccessResultList excluded_cookies = excluded_list;
   cookie_settings().AnnotateAndMoveUserBlockedCookies(
       url, site_for_cookies, &top_frame_origin, first_party_set_metadata_,
-      maybe_included_cookies, excluded_cookies);
+      net::CookieSettingOverrides(), maybe_included_cookies, excluded_cookies);
 
   std::vector<net::CookieWithAccessResult> result;
   std::vector<mojom::CookieOrLineWithAccessResultPtr>
@@ -549,7 +550,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
   bool blocked = !cookie_settings_->IsCookieAccessible(
-      cookie, url, site_for_cookies, top_frame_origin);
+      cookie, url, site_for_cookies, top_frame_origin,
+      GetCookieSettingOverrides());
 
   if (blocked)
     status.AddExclusionReason(
@@ -799,7 +801,7 @@ void RestrictedCookieManager::CookiesEnabledFor(
   }
 
   std::move(callback).Run(cookie_settings_->IsFullCookieAccessAllowed(
-      url, site_for_cookies, top_frame_origin,
+      url, site_for_cookies, top_frame_origin, GetCookieSettingOverrides(),
       CookieSettings::QueryReason::kCookies));
 }
 
@@ -846,6 +848,11 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
 
   mojo::ReportBadMessage("Incorrect url origin");
   return false;
+}
+
+net::CookieSettingOverrides RestrictedCookieManager::GetCookieSettingOverrides()
+    const {
+  return net::CookieSettingOverrides();
 }
 
 }  // namespace network

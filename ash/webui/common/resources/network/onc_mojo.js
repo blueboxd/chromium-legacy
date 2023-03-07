@@ -379,10 +379,14 @@ export class OncMojo {
    */
   static getVpnTypeString(value) {
     switch (value) {
+      case VpnType.kIKEv2:
+        return 'IKEv2';
       case VpnType.kL2TPIPsec:
         return 'L2TP-IPsec';
       case VpnType.kOpenVPN:
         return 'OpenVPN';
+      case VpnType.kWireGuard:
+        return 'WireGuard';
       case VpnType.kExtension:
         return 'ThirdPartyVPN';
       case VpnType.kArc:
@@ -390,25 +394,6 @@ export class OncMojo {
     }
     assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
     return '';
-  }
-
-  /**
-   * @param {string} value
-   * @return {!VpnType}
-   */
-  static getVpnTypeFromString(value) {
-    switch (value) {
-      case 'L2TP-IPsec':
-        return VpnType.kL2TPIPsec;
-      case 'OpenVPN':
-        return VpnType.kOpenVPN;
-      case 'ThirdPartyVPN':
-        return VpnType.kExtension;
-      case 'ARCVPN':
-        return VpnType.kArc;
-    }
-    assertNotReached('Unexpected value: ' + value);
-    return VpnType.kOpenVPN;
   }
 
   /**

@@ -10,13 +10,13 @@
 #include <atomic>
 #include <utility>
 
-#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/environment_config.h"
@@ -38,7 +38,7 @@
 #endif
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
-    defined(PA_THREAD_CACHE_SUPPORTED)
+    PA_CONFIG(THREAD_CACHE_SUPPORTED)
 #include "base/allocator/partition_allocator/thread_cache.h"
 #endif
 
@@ -47,7 +47,7 @@ namespace base::internal {
 namespace {
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
-    defined(PA_THREAD_CACHE_SUPPORTED)
+    PA_CONFIG(THREAD_CACHE_SUPPORTED)
 // Returns the desired sleep time before the worker has to wake up to purge
 // the cache thread or reclaim itself. |min_sleep_time| contains the minimal
 // acceptable amount of time to sleep.
@@ -77,7 +77,8 @@ TimeDelta GetSleepTimeBeforePurge(TimeDelta min_sleep_time) {
   // that's too short.
   return std::max(snapped_wake - now, first_scheduled_wake - now);
 }
-#endif
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+        // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 
 bool IsDelayFirstWorkerSleepEnabled() {
   static bool state = FeatureList::IsEnabled(kDelayFirstWorkerWake);
@@ -107,7 +108,7 @@ void WorkerThread::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
   // that we do no work for short sleeps, and that threads do not get awaken
   // many times.
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
-    defined(PA_THREAD_CACHE_SUPPORTED)
+    PA_CONFIG(THREAD_CACHE_SUPPORTED)
   TimeDelta min_sleep_time = std::min(sleep_time, kPurgeThreadCacheIdleDelay);
 
   if (IsDelayFirstWorkerSleepEnabled())
@@ -130,7 +131,7 @@ void WorkerThread::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
 #else
   wake_up_event->TimedWait(sleep_time);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
-        // defined(PA_THREAD_CACHE_SUPPORTED)
+        // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 }
 
 WorkerThread::WorkerThread(ThreadType thread_type_hint,

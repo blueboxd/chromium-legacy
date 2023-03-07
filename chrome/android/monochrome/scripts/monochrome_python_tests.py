@@ -47,9 +47,14 @@ def create_argument_parser():
       '--system-webview-pathmap',
       help='The system webview APK resources pathmap path.')
 
-  # --avd-config parameter is unused. Add it to the parser because typ.Runner
-  # checks that all arguments are known. crbug.com/1084351
+  # --avd-config and use-persistent-shell parameters are unused.
+  # Add them to the parser because typ.Runner checks that all arguments
+  # are known. crbug.com/1084351
   parser.add_argument('--avd-config', help='Unused')
+  parser.add_argument(
+      '--use-persistent-shell',
+      action='store_true',
+      help='Unused')
   return parser
 
 

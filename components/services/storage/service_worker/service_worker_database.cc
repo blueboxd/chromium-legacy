@@ -1453,29 +1453,43 @@ ServiceWorkerDatabase::DeleteAllDataForStorageKeys(
     return status;
   leveldb::WriteBatch batch;
 
-  for (const blink::StorageKey& key : keys) {
-    if (key.origin().opaque())
-      return Status::kErrorFailed;
+  std::vector<mojom::ServiceWorkerRegistrationDataPtr> registrations;
+  status = GetAllRegistrations(&registrations);
+  if (status != Status::kOk) {
+    return status;
+  }
 
-    // Delete from the unique origin list.
-    batch.Delete(CreateUniqueOriginKey(key));
+  // Filter all registrations, using the criteria in the doc comment to
+  // determine which keys match.
+  for (const mojom::ServiceWorkerRegistrationDataPtr& reg : registrations) {
+    blink::StorageKey& key = reg->key;
 
-    std::vector<mojom::ServiceWorkerRegistrationDataPtr> registrations;
-    status = GetRegistrationsForStorageKey(key, &registrations, nullptr);
-    if (status != Status::kOk)
-      return status;
+    for (const blink::StorageKey& requested_key : keys) {
+      // Only the origin of the requested key is relevant.
+      const url::Origin& requested_origin = requested_key.origin();
 
-    // Delete registrations, resource records and user data.
-    for (const auto& data : registrations) {
-      batch.Delete(CreateRegistrationKey(data->registration_id, key));
-      batch.Delete(CreateRegistrationIdToStorageKey(data->registration_id));
+      if (requested_origin.opaque()) {
+        return Status::kErrorFailed;
+      }
 
-      status = DeleteResourceRecords(data->version_id,
-                                     newly_purgeable_resources, &batch);
+      auto match = key.origin() == requested_origin;
+      match = match ||
+              (key.IsThirdPartyContext() &&
+               key.top_level_site() == net::SchemefulSite(requested_origin));
+      if (!match) {
+        continue;
+      }
+
+      batch.Delete(CreateUniqueOriginKey(key));
+      batch.Delete(CreateRegistrationKey(reg->registration_id, key));
+      batch.Delete(CreateRegistrationIdToStorageKey(reg->registration_id));
+
+      status = DeleteResourceRecords(reg->version_id, newly_purgeable_resources,
+                                     &batch);
       if (status != Status::kOk)
         return status;
 
-      status = DeleteUserDataForRegistration(data->registration_id, &batch);
+      status = DeleteUserDataForRegistration(reg->registration_id, &batch);
       if (status != Status::kOk)
         return status;
     }
@@ -1803,48 +1817,52 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     }
     switch (data.cross_origin_embedder_policy_value()) {
       case ServiceWorkerRegistrationData::REQUIRE_CORP:
-        (*out)->cross_origin_embedder_policy.value =
-            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
-        (*out)->policy_container_policies->cross_origin_embedder_policy =
+        (*out)->policy_container_policies->cross_origin_embedder_policy.value =
             network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
         break;
       case ServiceWorkerRegistrationData::CREDENTIALLESS:
-        (*out)->cross_origin_embedder_policy.value =
-            network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless;
-        (*out)->policy_container_policies->cross_origin_embedder_policy =
+        (*out)->policy_container_policies->cross_origin_embedder_policy.value =
             network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless;
         break;
       case ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST:
-        (*out)->cross_origin_embedder_policy.value =
-            network::mojom::CrossOriginEmbedderPolicyValue::kNone;
-        (*out)->policy_container_policies->cross_origin_embedder_policy =
+        (*out)->policy_container_policies->cross_origin_embedder_policy.value =
             network::mojom::CrossOriginEmbedderPolicyValue::kNone;
     }
   }
 
   if (data.has_cross_origin_embedder_policy_reporting_endpoint()) {
-    (*out)->cross_origin_embedder_policy.reporting_endpoint =
+    (*out)
+        ->policy_container_policies->cross_origin_embedder_policy
+        .reporting_endpoint =
         data.cross_origin_embedder_policy_reporting_endpoint();
   }
 
   if (data.has_cross_origin_embedder_policy_report_only_value()) {
     switch (data.cross_origin_embedder_policy_report_only_value()) {
       case ServiceWorkerRegistrationData::REQUIRE_CORP:
-        (*out)->cross_origin_embedder_policy.report_only_value =
+        (*out)
+            ->policy_container_policies->cross_origin_embedder_policy
+            .report_only_value =
             network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
         break;
       case ServiceWorkerRegistrationData::CREDENTIALLESS:
-        (*out)->cross_origin_embedder_policy.report_only_value =
+        (*out)
+            ->policy_container_policies->cross_origin_embedder_policy
+            .report_only_value =
             network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless;
         break;
-      default:
-        (*out)->cross_origin_embedder_policy.report_only_value =
+      case ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST:
+        (*out)
+            ->policy_container_policies->cross_origin_embedder_policy
+            .report_only_value =
             network::mojom::CrossOriginEmbedderPolicyValue::kNone;
     }
   }
 
   if (data.has_cross_origin_embedder_policy_report_only_reporting_endpoint()) {
-    (*out)->cross_origin_embedder_policy.report_only_reporting_endpoint =
+    (*out)
+        ->policy_container_policies->cross_origin_embedder_policy
+        .report_only_reporting_endpoint =
         data.cross_origin_embedder_policy_report_only_reporting_endpoint();
   }
 
@@ -1906,7 +1924,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
 }
 
 ServiceWorkerRegistrationData::CrossOriginEmbedderPolicyValue
-ConvertCrossOriginEmbedderPolicyFromMojomToProtocolBuffer(
+ConvertCrossOriginEmbedderPolicyValueFromMojomToProtocolBuffer(
     network::mojom::CrossOriginEmbedderPolicyValue value) {
   switch (value) {
     case network::mojom::CrossOriginEmbedderPolicyValue::kNone:
@@ -2033,24 +2051,6 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
           ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType>(
           registration.update_via_cache));
 
-  data.set_cross_origin_embedder_policy_value(
-      ConvertCrossOriginEmbedderPolicyFromMojomToProtocolBuffer(
-          registration.cross_origin_embedder_policy.value));
-
-  if (registration.cross_origin_embedder_policy.reporting_endpoint) {
-    data.set_cross_origin_embedder_policy_reporting_endpoint(
-        registration.cross_origin_embedder_policy.reporting_endpoint.value());
-  }
-  data.set_cross_origin_embedder_policy_report_only_value(
-      ConvertCrossOriginEmbedderPolicyFromMojomToProtocolBuffer(
-          registration.cross_origin_embedder_policy.report_only_value));
-  if (registration.cross_origin_embedder_policy
-          .report_only_reporting_endpoint) {
-    data.set_cross_origin_embedder_policy_report_only_reporting_endpoint(
-        registration.cross_origin_embedder_policy.report_only_reporting_endpoint
-            .value());
-  }
-
   switch (registration.ancestor_frame_type) {
     case blink::mojom::AncestorFrameType::kNormalFrame:
       data.set_ancestor_frame_type(ServiceWorkerRegistrationData::NORMAL_FRAME);
@@ -2061,6 +2061,28 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   }
 
   if (registration.policy_container_policies) {
+    data.set_cross_origin_embedder_policy_value(
+        ConvertCrossOriginEmbedderPolicyValueFromMojomToProtocolBuffer(
+            registration.policy_container_policies->cross_origin_embedder_policy
+                .value));
+
+    if (registration.policy_container_policies->cross_origin_embedder_policy
+            .reporting_endpoint) {
+      data.set_cross_origin_embedder_policy_reporting_endpoint(
+          registration.policy_container_policies->cross_origin_embedder_policy
+              .reporting_endpoint.value());
+    }
+    data.set_cross_origin_embedder_policy_report_only_value(
+        ConvertCrossOriginEmbedderPolicyValueFromMojomToProtocolBuffer(
+            registration.policy_container_policies->cross_origin_embedder_policy
+                .report_only_value));
+    if (registration.policy_container_policies->cross_origin_embedder_policy
+            .report_only_reporting_endpoint) {
+      data.set_cross_origin_embedder_policy_report_only_reporting_endpoint(
+          registration.policy_container_policies->cross_origin_embedder_policy
+              .report_only_reporting_endpoint.value());
+    }
+
     ServiceWorkerRegistrationData::PolicyContainerPolicies* policies =
         data.mutable_policy_container_policies();
     policies->set_referrer_policy(
@@ -2153,6 +2175,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseResourceRecord(
   (*out)->resource_id = record.resource_id();
   (*out)->url = url;
   (*out)->size_bytes = record.size_bytes();
+  (*out)->sha256_checksum = record.sha256_checksum();
   return Status::kOk;
 }
 
@@ -2177,6 +2200,7 @@ void ServiceWorkerDatabase::WriteResourceRecordInBatch(
   data.set_resource_id(resource.resource_id);
   data.set_url(resource.url.spec());
   data.set_size_bytes(resource.size_bytes);
+  data.set_sha256_checksum(resource.sha256_checksum.value());
 
   std::string value;
   bool success = data.SerializeToString(&value);

@@ -6,9 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/mac/foundation_util.h"
-#import "base/threading/thread_task_runner_handle.h"
 #import "net/test/embedded_test_server/http_response.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

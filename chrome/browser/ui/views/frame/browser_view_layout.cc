@@ -69,10 +69,6 @@ bool ConvertedHitTest(views::View* src, views::View* dst, gfx::Point* point) {
   views::View::ConvertPointToTarget(src, dst, point);
   return dst->HitTestPoint(*point);
 }
-
-bool IsSideSearchRightAligned() {
-  return base::FeatureList::IsEnabled(features::kSideSearchDSESupport);
-}
 }  // namespace
 
 constexpr int BrowserViewLayout::kMainBrowserContentsMinimumWidth;
@@ -157,7 +153,6 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* left_aligned_side_panel_separator,
     views::View* unified_side_panel,
     views::View* right_aligned_side_panel_separator,
-    views::View* lens_side_panel,
     ImmersiveModeController* immersive_mode_controller,
     views::View* contents_separator)
     : delegate_(std::move(delegate)),
@@ -171,7 +166,6 @@ BrowserViewLayout::BrowserViewLayout(
       left_aligned_side_panel_separator_(left_aligned_side_panel_separator),
       unified_side_panel_(unified_side_panel),
       right_aligned_side_panel_separator_(right_aligned_side_panel_separator),
-      lens_side_panel_(lens_side_panel),
       immersive_mode_controller_(immersive_mode_controller),
       contents_separator_(contents_separator),
       tab_strip_(tab_strip),
@@ -567,12 +561,8 @@ void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
         gfx::Insets().set_bottom(-webui_tab_strip_->size().height()));
   }
 
-  // TODO(pbos): Note that this code implicitly relies on at most one of
-  // `unified_side_panel_` and `lens_side_panel_` being visible at once.
-  // Consider moving them into a shared container.
   LayoutSidePanelView(unified_side_panel_, contents_container_bounds);
   LayoutSidePanelView(side_search_side_panel_, contents_container_bounds);
-  LayoutSidePanelView(lens_side_panel_, contents_container_bounds);
 
   const bool side_search_visible =
       side_search_side_panel_ && side_search_side_panel_->GetVisible();
@@ -583,20 +573,16 @@ void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
   // separator visibility back into LayoutSidePanelView().
   if (left_aligned_side_panel_separator_) {
     const bool any_left_side_panel_visible =
-        (side_search_visible && !IsSideSearchRightAligned()) ||
-        (side_panel_visible &&
-         !views::AsViewClass<SidePanel>(unified_side_panel_)->IsRightAligned());
+        side_panel_visible &&
+        !views::AsViewClass<SidePanel>(unified_side_panel_)->IsRightAligned();
 
     SetViewVisibility(left_aligned_side_panel_separator_,
                       any_left_side_panel_visible);
   }
 
   if (right_aligned_side_panel_separator_) {
-    const bool lens_panel_visible =
-        lens_side_panel_ && lens_side_panel_->GetVisible();
     const bool any_right_side_panel_visible =
-        lens_panel_visible ||
-        (side_search_visible && IsSideSearchRightAligned()) ||
+        side_search_visible ||
         (side_panel_visible &&
          views::AsViewClass<SidePanel>(unified_side_panel_)->IsRightAligned());
 
@@ -614,8 +600,7 @@ void BrowserViewLayout::LayoutSidePanelView(
     return;
 
   DCHECK(side_panel == unified_side_panel_ ||
-         side_panel == side_search_side_panel_ ||
-         side_panel == lens_side_panel_);
+         side_panel == side_search_side_panel_);
   bool is_right_aligned =
       views::AsViewClass<SidePanel>(side_panel)->IsRightAligned();
 

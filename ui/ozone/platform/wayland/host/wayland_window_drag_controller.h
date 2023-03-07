@@ -10,12 +10,12 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -30,6 +30,7 @@
 
 namespace ui {
 
+class ScopedEventDispatcher;
 class WaylandConnection;
 class WaylandDataDeviceManager;
 class WaylandDataOffer;
@@ -56,10 +57,6 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
     kCancelled,  // Drag cancel event was just received.
     kAttaching,  // About to transition back to |kAttached|.
   };
-  enum class DragSource {
-    kMouse,
-    kTouch,
-  };
 
   WaylandWindowDragController(WaylandConnection* connection,
                               WaylandDataDeviceManager* device_manager,
@@ -70,10 +67,13 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
       delete;
   ~WaylandWindowDragController() override;
 
-  // Starts a new Wayland DND session for window dragging, if not done yet. A
-  // new data source is setup and the focused window is used as the origin
-  // surface.
-  bool StartDragSession();
+  // Starts a new Wayland DND session for window dragging, if not done yet.
+  // Whereas `origin` is used as the origin drag surface and `event_source` as
+  // the event type that is triggering the drag session, ie: mouse or touch. See
+  // https://wayland.app/protocols/wayland#wl_data_device:request:start_drag for
+  // more protocol-related information.
+  bool StartDragSession(WaylandToplevelWindow* origin,
+                        mojom::DragEventSource event_source);
 
   bool Drag(WaylandToplevelWindow* window, const gfx::Vector2d& offset);
   void StopDragging();
@@ -92,14 +92,14 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
 
   WaylandWindow* origin_window_for_testing() { return origin_window_; }
 
-  absl::optional<DragSource> drag_source() { return drag_source_; }
+  absl::optional<mojom::DragEventSource> drag_source() { return drag_source_; }
 
  private:
   class ExtendedDragSource;
 
   FRIEND_TEST_ALL_PREFIXES(WaylandWindowDragControllerTest,
                            HandleDraggedWindowDestructionAfterMoveLoop);
-  FRIEND_TEST_ALL_PREFIXES(WaylandWindowDragControllerTest, GetSerialAndOrigin);
+  FRIEND_TEST_ALL_PREFIXES(WaylandWindowDragControllerTest, GetSerial);
 
   // WaylandDataDevice::DragDelegate:
   bool IsDragSource() const override;
@@ -145,10 +145,10 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // |extended_drag_available_for_testing_|.
   bool IsExtendedDragAvailableInternal() const;
 
-  // Returns the serial and origin window based on both how recent is the serial
-  // and the input focus information.
-  // TODO(crbug.com/1246529): Drop once drag source is supplied by the callers.
-  std::pair<absl::optional<wl::Serial>, WaylandWindow*> GetSerialAndOrigin();
+  // Returns the serial for the given |drag_source| if |origin| has the
+  // corresponding focus, otherwise return null.
+  absl::optional<wl::Serial> GetSerial(mojom::DragEventSource drag_source,
+                                       WaylandToplevelWindow* origin);
 
   const raw_ptr<WaylandConnection> connection_;
   const raw_ptr<WaylandDataDeviceManager> data_device_manager_;
@@ -158,7 +158,7 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   const raw_ptr<WaylandTouch::Delegate> touch_delegate_;
 
   State state_ = State::kIdle;
-  absl::optional<DragSource> drag_source_;
+  absl::optional<mojom::DragEventSource> drag_source_;
 
   gfx::Vector2d drag_offset_;
 

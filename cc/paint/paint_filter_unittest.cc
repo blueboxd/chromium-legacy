@@ -40,10 +40,10 @@ sk_sp<PaintFilter> CreateTestFilter(PaintFilter::Type filter_type,
   auto image_filter = sk_make_sp<ImagePaintFilter>(
       image, SkRect::MakeWH(100.f, 100.f), SkRect::MakeWH(100.f, 100.f),
       PaintFlags::FilterQuality::kNone);
-  auto record = sk_make_sp<PaintOpBuffer>();
-  record->push<DrawImageOp>(image, 0.f, 0.f);
-  auto record_filter =
-      sk_make_sp<RecordPaintFilter>(record, SkRect::MakeWH(100.f, 100.f));
+  PaintOpBuffer buffer;
+  buffer.push<DrawImageOp>(image, 0.f, 0.f);
+  auto record_filter = sk_make_sp<RecordPaintFilter>(
+      buffer.ReleaseAsRecord(), SkRect::MakeWH(100.f, 100.f));
 
   PaintFilter::CropRect crop_rect(SkRect::MakeWH(100.f, 100.f));
 
@@ -115,7 +115,7 @@ sk_sp<PaintFilter> CreateTestFilter(PaintFilter::Type filter_type,
       return sk_make_sp<ShaderPaintFilter>(
           PaintShader::MakeImage(image, SkTileMode::kClamp, SkTileMode::kClamp,
                                  nullptr),
-          /*alpha=*/255, PaintFlags::FilterQuality::kNone,
+          /*alpha=*/1.0f, PaintFlags::FilterQuality::kNone,
           SkImageFilters::Dither::kNo, &crop_rect);
     }
     case PaintFilter::Type::kMatrix:
@@ -178,7 +178,7 @@ TEST_P(PaintFilterTest, SnapshotWithImages) {
     EXPECT_GT(image_provider.image_count_, 0)
         << PaintFilter::TypeToString(GetParamType());
   }
-  EXPECT_EQ(*filter, *snapshot_filter)
+  EXPECT_TRUE(filter->EqualsForTesting(*snapshot_filter))
       << PaintFilter::TypeToString(GetParamType());
 }
 

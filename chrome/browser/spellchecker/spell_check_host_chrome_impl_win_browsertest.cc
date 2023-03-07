@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,10 +110,6 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
 }
 
 void SpellCheckHostChromeImplWinBrowserTest::RunSpellCheckReturnMessageTest() {
-  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
-    return;
-  }
-
   spellcheck_platform::SetLanguage(
       platform_spell_checker_, "en-US",
       base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::

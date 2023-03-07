@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -127,6 +127,14 @@ MakeCredentialStatus IsCandidateAuthenticatorPostTouch(
     return MakeCredentialStatus::kAuthenticatorMissingResidentKeys;
   }
 
+  // The largeBlobs extension only works for resident credentials on CTAP 2.1
+  // authenticators or on some Windows versions.
+  if (options.large_blob_support == LargeBlobSupport::kRequired &&
+      (!authenticator->SupportsLargeBlobs() ||
+       !request.resident_key_required)) {
+    return MakeCredentialStatus::kAuthenticatorMissingLargeBlob;
+  }
+
   const absl::optional<AuthenticatorSupportedOptions>& auth_options =
       authenticator->Options();
   if (!auth_options) {
@@ -161,13 +169,6 @@ MakeCredentialStatus IsCandidateAuthenticatorPostTouch(
   if (authenticator->PINUVDispositionForMakeCredential(request, observer) ==
       PINUVDisposition::kUnsatisfiable) {
     return MakeCredentialStatus::kAuthenticatorMissingUserVerification;
-  }
-
-  // The largeBlobs extension only works for resident credentials on CTAP 2.1
-  // authenticators.
-  if (options.large_blob_support == LargeBlobSupport::kRequired &&
-      (!auth_options->supports_large_blobs || !request.resident_key_required)) {
-    return MakeCredentialStatus::kAuthenticatorMissingLargeBlob;
   }
 
   absl::optional<base::span<const int32_t>> supported_algorithms(
@@ -375,7 +376,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  if (request.large_blob_key && !response.large_blob_key) {
+  if (request.large_blob_key && !response.has_associated_large_blob_key) {
     FIDO_LOG(ERROR) << "Large blob key requested but not returned";
     return false;
   }

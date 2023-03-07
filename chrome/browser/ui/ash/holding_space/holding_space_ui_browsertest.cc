@@ -22,24 +22,25 @@
 #include "ash/public/cpp/holding_space/mock_holding_space_model_observer.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/test/view_drawn_waiter.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_locale.h"
 #include "build/build_config.h"
-#include "chrome/browser/ash/app_list/search/files/file_suggest_keyed_service.h"
-#include "chrome/browser/ash/app_list/search/files/file_suggest_keyed_service_factory.h"
-#include "chrome/browser/ash/app_list/search/files/local_file_suggestion_provider.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/file_manager/file_tasks_observer.h"
+#include "chrome/browser/ash/file_suggest/file_suggest_keyed_service.h"
+#include "chrome/browser/ash/file_suggest/file_suggest_keyed_service_factory.h"
+#include "chrome/browser/ash/file_suggest/local_file_suggestion_provider.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/test/browser_test.h"
@@ -1815,11 +1817,6 @@ class HoldingSpaceUiInProgressDownloadsBrowserTestBase
     ON_CALL(*ash_download_item, GetOpenWhenComplete)
         .WillByDefault(testing::ReturnPointee(open_when_complete.get()));
 
-    // Mock `download::DownloadItem::GetRerouteInfo()`.
-    ON_CALL(*ash_download_item, GetRerouteInfo)
-        .WillByDefault(
-            testing::ReturnRefOfCopy(download::DownloadItemRerouteInfo()));
-
     // Mock `download::DownloadItem::GetReceivedBytes()`.
     ON_CALL(*ash_download_item, GetReceivedBytes)
         .WillByDefault(testing::Return(received_bytes));
@@ -3014,7 +3011,7 @@ class HoldingSpaceSuggestionUiBrowserTest : public HoldingSpaceUiBrowserTest {
       open_events.push_back(std::move(e));
     }
 
-    app_list::FileSuggestKeyedServiceFactory::GetInstance()
+    FileSuggestKeyedServiceFactory::GetInstance()
         ->GetService(GetProfile())
         ->local_file_suggestion_provider_for_test()
         ->OnFilesOpened(open_events);

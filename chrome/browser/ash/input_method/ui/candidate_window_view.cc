@@ -176,7 +176,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   set_parent_window(parent);
   set_margins(gfx::Insets());
   // Ignore this role for accessibility purposes.
-  SetAccessibleRole(ax::mojom::Role::kNone);
+  SetAccessibleWindowRole(ax::mojom::Role::kNone);
 
   // When BubbleDialogDelegateView creates its frame view it will create a
   // bubble border with a non-zero corner radius by default.
@@ -373,10 +373,11 @@ void CandidateWindowView::UpdateCandidates(
       base::UTF8ToUTF16(candidate_window_.auxiliary_text()));
 }
 
-void CandidateWindowView::SetCursorBounds(const gfx::Rect& cursor_bounds,
-                                          const gfx::Rect& composition_head) {
+void CandidateWindowView::SetCursorAndCompositionBounds(
+    const gfx::Rect& cursor_bounds,
+    const gfx::Rect& composition_bounds) {
   if (candidate_window_.show_window_at_composition())
-    SetAnchorRect(composition_head);
+    SetAnchorRect(composition_bounds);
   else
     SetAnchorRect(cursor_bounds);
 }

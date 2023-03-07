@@ -6,24 +6,20 @@
 #include "base/scoped_environment_variable_override.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view_test_utils.h"
+#include "chrome/browser/ui/views/profiles/profiles_pixel_test_utils.h"
 #include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
-#include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -37,59 +33,80 @@
 // Tests for the chrome://sync-confirmation WebUI page. They live here and not
 // in the webui directory because they manipulate views.
 namespace {
-struct TestParam {
-  std::string test_suffix = "";
-  bool use_dark_theme = false;
+struct SyncConfirmationTestParam {
+  PixelTestParam pixel_test_param;
   bool use_tangible_sync = false;
-  bool use_right_to_left_language = false;
+  AccountManagementStatus account_management_status =
+      AccountManagementStatus::kNonManaged;
   SyncConfirmationStyle sync_style = SyncConfirmationStyle::kWindow;
 };
 
 // To be passed as 4th argument to `INSTANTIATE_TEST_SUITE_P()`, allows the test
 // to be named like `<TestClassName>.InvokeUi_default/<TestSuffix>` instead
 // of using the index of the param in `TestParam` as suffix.
-std::string ParamToTestSuffix(const ::testing::TestParamInfo<TestParam>& info) {
-  return info.param.test_suffix;
+std::string ParamToTestSuffix(
+    const ::testing::TestParamInfo<SyncConfirmationTestParam>& info) {
+  return info.param.pixel_test_param.test_suffix;
 }
 
 // Permutations of supported parameters.
-const TestParam kWindowTestParams[] = {
-    {.test_suffix = "LegacySync"},
-    {.test_suffix = "LegacySyncDarkTheme", .use_dark_theme = true},
-    {.test_suffix = "LegacySyncRtl", .use_right_to_left_language = true},
-    {.test_suffix = "TangibleSync", .use_tangible_sync = true},
-    {.test_suffix = "TangibleSyncDarkTheme",
-     .use_dark_theme = true,
+const SyncConfirmationTestParam kWindowTestParams[] = {
+    {.pixel_test_param = {.test_suffix = "LegacySync"}},
+    {.pixel_test_param = {.test_suffix = "LegacySyncDarkTheme",
+                          .use_dark_theme = true}},
+    {.pixel_test_param = {.test_suffix = "LegacySyncRtl",
+                          .use_right_to_left_language = true}},
+    {.pixel_test_param = {.test_suffix = "LegacySyncSmallWindow",
+                          .use_small_window = true}},
+    {.pixel_test_param = {.test_suffix = "LegacySyncManagedAccount"},
+     .account_management_status = AccountManagementStatus::kManaged},
+    {.pixel_test_param = {.test_suffix = "TangibleSync"},
      .use_tangible_sync = true},
-    {.test_suffix = "TangibleSyncRtl",
+    {.pixel_test_param = {.test_suffix = "TangibleSyncDarkTheme",
+                          .use_dark_theme = true},
+     .use_tangible_sync = true},
+    {.pixel_test_param = {.test_suffix = "TangibleSyncRtl",
+                          .use_right_to_left_language = true},
+     .use_tangible_sync = true},
+    {.pixel_test_param = {.test_suffix = "TangibleSyncSmallWindow",
+                          .use_small_window = true},
+     .use_tangible_sync = true},
+    {.pixel_test_param = {.test_suffix = "TangibleSyncManagedAccount"},
      .use_tangible_sync = true,
-     .use_right_to_left_language = true},
+     .account_management_status = AccountManagementStatus::kManaged},
 };
 
-const TestParam kDialogTestParams[] = {
-    {.test_suffix = "LegacySync",
+const SyncConfirmationTestParam kDialogTestParams[] = {
+    {.pixel_test_param = {.test_suffix = "LegacySync"},
      .sync_style = SyncConfirmationStyle::kDefaultModal},
-    {.test_suffix = "LegacySyncSigninInterceptStyle",
+    {.pixel_test_param = {.test_suffix = "LegacySyncSigninInterceptStyle"},
      .sync_style = SyncConfirmationStyle::kSigninInterceptModal},
-    {.test_suffix = "LegacySyncDarkTheme",
-     .use_dark_theme = true,
+    {.pixel_test_param = {.test_suffix = "LegacySyncDarkTheme",
+                          .use_dark_theme = true},
      .sync_style = SyncConfirmationStyle::kDefaultModal},
-    {.test_suffix = "LegacySyncRtl",
-     .use_right_to_left_language = true,
+    {.pixel_test_param = {.test_suffix = "LegacySyncRtl",
+                          .use_right_to_left_language = true},
      .sync_style = SyncConfirmationStyle::kDefaultModal},
-    {.test_suffix = "TangibleSync",
+    {.pixel_test_param = {.test_suffix = "LegacySyncManagedAccount"},
+     .account_management_status = AccountManagementStatus::kManaged,
+     .sync_style = SyncConfirmationStyle::kSigninInterceptModal},
+    {.pixel_test_param = {.test_suffix = "TangibleSync"},
      .use_tangible_sync = true,
      .sync_style = SyncConfirmationStyle::kDefaultModal},
-    {.test_suffix = "TangibleSyncSigninInterceptStyle",
+    {.pixel_test_param = {.test_suffix = "TangibleSyncSigninInterceptStyle"},
      .use_tangible_sync = true,
      .sync_style = SyncConfirmationStyle::kSigninInterceptModal},
-    {.test_suffix = "TangibleSyncDarkTheme",
-     .use_dark_theme = true,
+    {.pixel_test_param = {.test_suffix = "TangibleSyncDarkTheme",
+                          .use_dark_theme = true},
      .use_tangible_sync = true,
      .sync_style = SyncConfirmationStyle::kDefaultModal},
-    {.test_suffix = "TangibleSyncRtl",
+    {.pixel_test_param = {.test_suffix = "TangibleSyncRtl",
+                          .use_right_to_left_language = true},
      .use_tangible_sync = true,
-     .use_right_to_left_language = true,
+     .sync_style = SyncConfirmationStyle::kDefaultModal},
+    {.pixel_test_param = {.test_suffix = "TangibleSyncManagedAccount"},
+     .use_tangible_sync = true,
+     .account_management_status = AccountManagementStatus::kManaged,
      .sync_style = SyncConfirmationStyle::kDefaultModal},
 };
 
@@ -97,32 +114,6 @@ GURL BuildSyncConfirmationWindowURL() {
   std::string url_string = chrome::kChromeUISyncConfirmationURL;
   return AppendSyncConfirmationQueryParams(GURL(url_string),
                                            SyncConfirmationStyle::kWindow);
-}
-
-AccountInfo FillAccountInfo(const CoreAccountInfo& core_info) {
-  AccountInfo account_info;
-  account_info.email = core_info.email;
-  account_info.gaia = core_info.gaia;
-  account_info.account_id = core_info.account_id;
-  account_info.is_under_advanced_protection =
-      core_info.is_under_advanced_protection;
-  account_info.full_name = "Test Full Name";
-  account_info.given_name = "Joe";
-  account_info.hosted_domain = kNoHostedDomainFound;
-  account_info.locale = "en";
-  account_info.picture_url = "https://example.com";
-  return account_info;
-}
-
-void SignInWithPrimaryAccount(Profile* profile) {
-  DCHECK(profile);
-
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  auto core_account_info = signin::MakePrimaryAccountAvailable(
-      identity_manager, "joe.consumer@gmail.com",
-      signin::ConsentLevel::kSignin);
-  auto account_info = FillAccountInfo(core_account_info);
-  signin::UpdateAccountInfoForAccount(identity_manager, account_info);
 }
 
 // Creates a step to represent the sync-confirmation.
@@ -166,42 +157,26 @@ class SyncConfirmationStepControllerForTest
       this};
 };
 
-void InitFeatures(const TestParam& params,
+void InitFeatures(const SyncConfirmationTestParam& params,
                   base::test::ScopedFeatureList& feature_list) {
   std::vector<base::test::FeatureRef> enabled_features = {};
+  std::vector<base::test::FeatureRef> disabled_features = {};
   if (params.use_tangible_sync) {
     enabled_features.push_back(switches::kTangibleSync);
-  }
-  if (params.use_dark_theme) {
-    enabled_features.push_back(features::kWebUIDarkMode);
+  } else {
+    disabled_features.push_back(switches::kTangibleSync);
   }
   if (params.sync_style == SyncConfirmationStyle::kSigninInterceptModal) {
     enabled_features.push_back(kSyncPromoAfterSigninIntercept);
   }
-  feature_list.InitWithFeatures(enabled_features, {});
-}
-
-void SetUpCommandLine(
-    const TestParam& params,
-    std::unique_ptr<base::ScopedEnvironmentVariableOverride>& env_variables,
-    base::CommandLine* command_line) {
-  if (params.use_dark_theme) {
-    command_line->AppendSwitch(switches::kForceDarkMode);
-  }
-  if (params.use_right_to_left_language) {
-    command_line->AppendSwitchASCII(switches::kLang, "ar");
-
-    // On Linux & Lacros the command line switch has no effect, we need to use
-    // environment variables to change the language.
-    env_variables = std::make_unique<base::ScopedEnvironmentVariableOverride>(
-        "LANGUAGE", "ar");
-  }
+  InitPixelTestFeatures(params.pixel_test_param, feature_list, enabled_features,
+                        disabled_features);
 }
 }  // namespace
 
 class SyncConfirmationUIWindowPixelTest
     : public UiBrowserTest,
-      public testing::WithParamInterface<TestParam> {
+      public testing::WithParamInterface<SyncConfirmationTestParam> {
  public:
   SyncConfirmationUIWindowPixelTest() {
     DCHECK(GetParam().sync_style == SyncConfirmationStyle::kWindow);
@@ -209,7 +184,8 @@ class SyncConfirmationUIWindowPixelTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ::SetUpCommandLine(GetParam(), scoped_env_override_, command_line);
+    SetUpPixelTestCommandLine(GetParam().pixel_test_param, scoped_env_override_,
+                              command_line);
   }
 
   void ShowUi(const std::string& name) override {
@@ -217,7 +193,8 @@ class SyncConfirmationUIWindowPixelTest
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
     DCHECK(browser());
 
-    SignInWithPrimaryAccount(browser()->profile());
+    SignInWithPrimaryAccount(browser()->profile(),
+                             GetParam().account_management_status);
     profile_picker_view_ = new ProfileManagementStepTestView(
         ProfilePicker::Params::ForFirstRun(browser()->profile()->GetPath(),
                                            base::DoNothing()),
@@ -227,7 +204,10 @@ class SyncConfirmationUIWindowPixelTest
           return std::unique_ptr<ProfileManagementStepController>(
               new SyncConfirmationStepControllerForTest(host));
         }));
-    profile_picker_view_->ShowAndWait();
+    profile_picker_view_->ShowAndWait(
+        GetParam().pixel_test_param.use_small_window
+            ? absl::optional<gfx::Size>(gfx::Size(750, 590))
+            : absl::nullopt);
   }
 
   bool VerifyUi() override {
@@ -268,7 +248,7 @@ INSTANTIATE_TEST_SUITE_P(,
 
 class SyncConfirmationUIDialogPixelTest
     : public DialogBrowserTest,
-      public testing::WithParamInterface<TestParam> {
+      public testing::WithParamInterface<SyncConfirmationTestParam> {
  public:
   SyncConfirmationUIDialogPixelTest() {
     DCHECK(GetParam().sync_style != SyncConfirmationStyle::kWindow);
@@ -281,7 +261,8 @@ class SyncConfirmationUIDialogPixelTest
   void ShowUi(const std::string& name) override {
     DCHECK(browser());
 
-    SignInWithPrimaryAccount(browser()->profile());
+    SignInWithPrimaryAccount(browser()->profile(),
+                             GetParam().account_management_status);
     auto url = GURL(chrome::kChromeUISyncConfirmationURL);
     if (GetParam().sync_style == SyncConfirmationStyle::kSigninInterceptModal) {
       url = AppendSyncConfirmationQueryParams(url, GetParam().sync_style);
@@ -296,7 +277,8 @@ class SyncConfirmationUIDialogPixelTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ::SetUpCommandLine(GetParam(), scoped_env_override_, command_line);
+    SetUpPixelTestCommandLine(GetParam().pixel_test_param, scoped_env_override_,
+                              command_line);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
@@ -30,6 +30,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/process/process_metrics.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
@@ -101,6 +102,7 @@
 #include "content/browser/webui/content_web_ui_configs.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/pseudonymization_salt.h"
 #include "content/common/skia_utils.h"
 #include "content/common/thread_pool_util.h"
 #include "content/public/browser/audio_service.h"
@@ -188,14 +190,12 @@
 #include <shellapi.h>
 #include <windows.h>
 
-#include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
 #include "net/base/winsock_init.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #endif
@@ -432,6 +432,15 @@ void BindHidManager(mojo::PendingReceiver<device::mojom::HidManager> receiver) {
 #endif
 }
 
+uint32_t GenerateBrowserSalt() {
+  uint32_t salt;
+  do {
+    salt = base::RandUint64();
+  } while (salt == 0);
+
+  return salt;
+}
+
 }  // namespace
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
@@ -522,7 +531,7 @@ void BrowserMainLoop::Init() {
 int BrowserMainLoop::EarlyInitialization() {
   TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization");
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
   // The initialization of the sandbox host ends up with forking the Zygote
   // process and requires no thread been forked. The initialization has happened
   // by now since a thread to start the ServiceManager has been created
@@ -809,6 +818,12 @@ int BrowserMainLoop::PreCreateThreads() {
   // happen.
   SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
+  // Generate the browser process salt. This is then accessible by calls to
+  // GetPseudonymizationSalt in the browser process. This generation is only
+  // needed in the browser process, because for other processes it is
+  // transferred to them over IPC from the relevant process host.
+  SetPseudonymizationSalt(GenerateBrowserSalt());
+
   return result_code_;
 }
 
@@ -969,16 +984,6 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   }
 
   variations::MaybeScheduleFakeCrash();
-
-#if BUILDFLAG(IS_WIN)
-  // ShellBrowserMainParts initializes a ShellBrowserContext with a profile
-  // directory only in PreMainMessageLoopRun(). DWriteFontLookupTableBuilder
-  // needs to access this directory, hence triggering after this stage has run.
-  if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
-    content::DWriteFontLookupTableBuilder::GetInstance()
-        ->SchedulePrepareFontUniqueNameTableIfNeeded();
-  }
-#endif  // BUILDFLAG(IS_WIN)
 
   // Unretained(this) is safe as the main message loop expected to run it is
   // stopped before ~BrowserMainLoop (in the event the message loop doesn't

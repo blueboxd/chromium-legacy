@@ -233,6 +233,7 @@ size_t TemplateURLRef::SearchTermsArgs::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(prefetch_query_type);
   res += base::trace_event::EstimateMemoryUsage(additional_query_params);
   res += base::trace_event::EstimateMemoryUsage(image_thumbnail_content);
+  res += base::trace_event::EstimateMemoryUsage(image_thumbnail_content_type);
   res += base::trace_event::EstimateMemoryUsage(image_url);
   res += base::trace_event::EstimateMemoryUsage(contextual_search_params);
 
@@ -1306,8 +1307,14 @@ std::string TemplateURLRef::HandleReplacements(
         HandleReplacement(std::string(),
                           search_terms_args.image_thumbnail_content,
                           replacement, &url);
-        if (replacement.is_post_param)
-          post_params_[replacement.index].content_type = "image/jpeg";
+        if (replacement.is_post_param) {
+          if (!search_terms_args.image_thumbnail_content_type.empty()) {
+            post_params_[replacement.index].content_type =
+                search_terms_args.image_thumbnail_content_type;
+          } else {
+            post_params_[replacement.index].content_type = "image/jpeg";
+          }
+        }
         break;
 
       case GOOGLE_IMAGE_THUMBNAIL_BASE64: {
@@ -1316,8 +1323,14 @@ std::string TemplateURLRef::HandleReplacements(
                            &base64_thumbnail_content);
         HandleReplacement(std::string(), base64_thumbnail_content, replacement,
                           &url);
-        if (replacement.is_post_param)
-          post_params_[replacement.index].content_type = "image/jpeg";
+        if (replacement.is_post_param) {
+          if (!search_terms_args.image_thumbnail_content_type.empty()) {
+            post_params_[replacement.index].content_type =
+                search_terms_args.image_thumbnail_content_type;
+          } else {
+            post_params_[replacement.index].content_type = "image/jpeg";
+          }
+        }
         break;
       }
 
@@ -1616,6 +1629,7 @@ bool TemplateURL::IsSearchURL(const GURL& url,
 bool TemplateURL::KeepSearchTermsInURL(const GURL& url,
                                        const SearchTermsData& search_terms_data,
                                        const bool keep_search_intent_params,
+                                       const bool normalize_search_terms,
                                        GURL* result) const {
   std::u16string search_terms;
   if (!ExtractSearchTermsFromURL(url, search_terms_data, &search_terms) ||
@@ -1637,7 +1651,10 @@ bool TemplateURL::KeepSearchTermsInURL(const GURL& url,
     }
   }
 
-  TemplateURLRef::SearchTermsArgs search_terms_args(search_terms);
+  TemplateURLRef::SearchTermsArgs search_terms_args(
+      normalize_search_terms
+          ? base::i18n::ToLower(base::CollapseWhitespace(search_terms, false))
+          : search_terms);
   search_terms_args.additional_query_params =
       base::JoinString(query_params, "&");
   *result =

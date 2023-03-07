@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
@@ -14,9 +14,7 @@
 
 namespace remoting {
 
-FakeNetworkDispatcher::FakeNetworkDispatcher()
-    : allocated_address_(0) {
-}
+FakeNetworkDispatcher::FakeNetworkDispatcher() : allocated_address_(0) {}
 
 FakeNetworkDispatcher::~FakeNetworkDispatcher() {
   CHECK(nodes_.empty());

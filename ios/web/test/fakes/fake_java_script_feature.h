@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #import "ios/web/public/js_messaging/java_script_feature.h"
 #include "ios/web/public/js_messaging/script_message.h"
@@ -42,6 +42,11 @@ class FakeJavaScriptFeature : public JavaScriptFeature {
   // `parameters` in `web_frame`.
   void ReplyWithPostMessage(WebFrame* web_frame,
                             const std::vector<base::Value>& parameters);
+
+  // Executes `kJavaScriptFeatureTestScriptReplyWithPostMessage` with
+  // `parameters` in `web_frame` using __gCrWeb.common.sendWebKitMessage.
+  void ReplyWithPostMessageCommonJS(WebFrame* web_frame,
+                                    const std::vector<base::Value>& parameters);
 
   // Returns the number of errors received
   void GetErrorCount(WebFrame* web_frame,

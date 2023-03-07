@@ -8,6 +8,7 @@
 #include "ash/quick_pair/common/account_key_failure.h"
 #include "ash/quick_pair/common/fast_pair/fast_pair_http_result.h"
 #include "ash/quick_pair/common/pair_failure.h"
+#include "ash/quick_pair/proto/fastpair.pb.h"
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -17,7 +18,7 @@
 namespace ash {
 namespace quick_pair {
 
-struct Device;
+class Device;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. The numbers here correspond to the
@@ -204,6 +205,18 @@ enum class COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairProtocolPairingSteps {
 };
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordFastPairDeviceAndNotificationSpecificEngagementFlow(
+    const Device& device,
+    const nearby::fastpair::Device& device_details,
+    FastPairEngagementFlowEvent event);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordFastPairDeviceAndNotificationSpecificRetroactiveEngagementFlow(
+    const Device& device,
+    const nearby::fastpair::Device& device_details,
+    FastPairRetroactiveEngagementFlowEvent event);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void AttemptRecordingFastPairEngagementFlow(const Device& device,
                                             FastPairEngagementFlowEvent event);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
@@ -260,6 +273,9 @@ void RecordEffectiveGattConnectionSuccess(bool success);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordGattConnectionAttemptCount(int num_attempts);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordGattRetryFailureReason(PairFailure failure);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordPairingFailureReason(const Device& device, PairFailure failure);
@@ -366,6 +382,12 @@ void RecordFastPairRepositoryCacheResult(bool success);
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordGattInitializationStep(
     FastPairGattConnectionSteps initialization_step);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordEffectiveHandshakeSuccess(bool success);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordHandshakeAttemptCount(int num_attempts);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordHandshakeResult(bool success);

@@ -7,9 +7,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
@@ -18,6 +18,7 @@
 #include "base/types/pass_key.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -164,15 +165,32 @@ void WebAppSyncBridge::CommitUpdate(
   DCHECK(is_in_update_);
   is_in_update_ = false;
 
-  if (update == nullptr || update->update_data().IsEmpty()) {
+  if (update == nullptr) {
     std::move(callback).Run(/*success*/ true);
     return;
   }
 
-  if (!disable_checks_for_testing_)
-    CheckRegistryUpdateData(update->update_data());
-
   std::unique_ptr<RegistryUpdateData> update_data = update->TakeUpdateData();
+
+  // Remove all unchanged apps.
+  RegistryUpdateData::Apps changed_apps_to_update;
+  for (std::unique_ptr<WebApp>& app_to_update : update_data->apps_to_update) {
+    const AppId& app_id = app_to_update->app_id();
+    if (*app_to_update != *registrar().GetAppById(app_id)) {
+      changed_apps_to_update.push_back(std::move(app_to_update));
+    }
+  }
+  update_data->apps_to_update = std::move(changed_apps_to_update);
+
+  if (update_data->IsEmpty()) {
+    std::move(callback).Run(/*success*/ true);
+    return;
+  }
+
+  if (!disable_checks_for_testing_) {
+    CheckRegistryUpdateData(*update_data);
+  }
+
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
 
@@ -192,19 +210,20 @@ void WebAppSyncBridge::Init(base::OnceClosure callback) {
                                          std::move(callback)));
 }
 
-void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
-                                             UserDisplayMode user_display_mode,
-                                             bool is_user_action) {
+void WebAppSyncBridge::SetAppUserDisplayMode(
+    const AppId& app_id,
+    mojom::UserDisplayMode user_display_mode,
+    bool is_user_action) {
   if (is_user_action) {
     switch (user_display_mode) {
-      case UserDisplayMode::kStandalone:
+      case mojom::UserDisplayMode::kStandalone:
         base::RecordAction(
             base::UserMetricsAction("WebApp.SetWindowMode.Window"));
         break;
-      case UserDisplayMode::kBrowser:
+      case mojom::UserDisplayMode::kBrowser:
         base::RecordAction(base::UserMetricsAction("WebApp.SetWindowMode.Tab"));
         break;
-      case UserDisplayMode::kTabbed:
+      case mojom::UserDisplayMode::kTabbed:
         base::RecordAction(
             base::UserMetricsAction("WebApp.SetWindowMode.Tabbed"));
         break;
@@ -345,42 +364,6 @@ void WebAppSyncBridge::SetUserLaunchOrdinal(
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
     web_app->SetUserLaunchOrdinal(std::move(launch_ordinal));
-}
-
-void WebAppSyncBridge::RemoveAllowedLaunchProtocol(
-    const AppId& app_id,
-    const std::string& protocol_scheme) {
-  // Use a scope here, so that the web app registry is updated when
-  // `update` goes out of scope. If it doesn't then observers will
-  // examine stale data.
-  {
-    ScopedRegistryUpdate update(this);
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    base::flat_set<std::string> protocol_handlers(
-        app_to_update->allowed_launch_protocols());
-    protocol_handlers.erase(protocol_scheme);
-    app_to_update->SetAllowedLaunchProtocols(std::move(protocol_handlers));
-  }
-  // Notify observers that the list of allowed protocols was updated.
-  registrar_->NotifyWebAppProtocolSettingsChanged();
-}
-
-void WebAppSyncBridge::RemoveDisallowedLaunchProtocol(
-    const AppId& app_id,
-    const std::string& protocol_scheme) {
-  // Use a scope here, so that the web app registry is updated when
-  // `update` goes out of scope. If it doesn't then observers will
-  // examine stale data.
-  {
-    ScopedRegistryUpdate update(this);
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    base::flat_set<std::string> protocol_handlers(
-        app_to_update->disallowed_launch_protocols());
-    protocol_handlers.erase(protocol_scheme);
-    app_to_update->SetDisallowedLaunchProtocols(std::move(protocol_handlers));
-  }
-  // Notify observers that the list of disallowed protocols was updated.
-  registrar_->NotifyWebAppProtocolSettingsChanged();
 }
 
 #if BUILDFLAG(IS_MAC)

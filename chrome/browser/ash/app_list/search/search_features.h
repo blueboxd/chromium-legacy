@@ -18,9 +18,21 @@ BASE_DECLARE_FEATURE(kLauncherKeywordExtractionScoring);
 // Federated analytics for launcher queries, via Private Heavy Hitters (PHH).
 BASE_DECLARE_FEATURE(kLauncherQueryFederatedAnalyticsPHH);
 
+// Enables a fuzzy match between the query and title in Omnibox result to
+// calculate the relevance
+BASE_DECLARE_FEATURE(kLauncherFuzzyMatchForOmnibox);
+
+// Enables image search in the launcher.
+BASE_DECLARE_FEATURE(kLauncherImageSearch);
+
+BASE_DECLARE_FEATURE(kLauncherSystemInfoAnswerCards);
+
 bool IsLauncherGameSearchEnabled();
 bool IsLauncherKeywordExtractionScoringEnabled();
 bool IsLauncherQueryFederatedAnalyticsPHHEnabled();
+bool IsLauncherImageSearchEnabled();
+bool isLauncherFuzzyMatchForOmniboxEnabled();
+bool isLauncherSystemInfoAnswerCardsEnabled();
 
 }  // namespace search_features
 

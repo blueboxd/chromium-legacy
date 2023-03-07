@@ -11,10 +11,10 @@
 #include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -271,7 +271,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     reconnect_command_line.AppendArg(
         ::switches::kPrefetchArgumentBrowserBackground);
 #endif
-    base::Value args(base::Value::Type::LIST);
+    base::Value::List args;
     for (const auto& arg : reconnect_command_line.argv()) {
 #if BUILDFLAG(IS_WIN)
       args.Append(base::WideToUTF8(arg));

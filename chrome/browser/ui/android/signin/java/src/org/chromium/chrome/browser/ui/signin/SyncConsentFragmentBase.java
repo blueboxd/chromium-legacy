@@ -498,7 +498,8 @@ public abstract class SyncConsentFragmentBase
 
         if (hasAccounts) {
             final boolean hideAccountPicker = mIsSignedInWithoutSync
-                    || (FREMobileIdentityConsistencyFieldTrial.isEnabled() && mIsChild);
+                    || (FREMobileIdentityConsistencyFieldTrial.isEnabled()
+                            && mSigninAccessPoint == SigninAccessPoint.START_PAGE && mIsChild);
             mSigninView.getAccountPickerView().setVisibility(
                     hideAccountPicker ? View.GONE : View.VISIBLE);
             mConsentTextTracker.setText(
@@ -626,6 +627,18 @@ public abstract class SyncConsentFragmentBase
         mConsentTextTracker.setText(mSigninView.getMoreButton(), R.string.more);
     }
 
+    private CharSequence getSigninViewAccountTextPrimary(
+            DisplayableProfileData profileData, boolean canShowEmailAddress) {
+        if (!TextUtils.isEmpty(profileData.getFullName())) {
+            return profileData.getFullName();
+        } else if (canShowEmailAddress) {
+            // Full name is not available, show the email address if permitted.
+            return profileData.getAccountEmail();
+        }
+        // Cannot show the email address and empty full name; use default account string.
+        return getText(R.string.default_google_account_username);
+    }
+
     private void updateProfileData(String accountEmail) {
         if (!TextUtils.equals(accountEmail, mSelectedAccountName)) {
             return;
@@ -639,16 +652,27 @@ public abstract class SyncConsentFragmentBase
 
         mSigninView.getAccountImageView().setImageDrawable(profileData.getImage());
 
-        final String fullName = profileData.getFullName();
-        if (!TextUtils.isEmpty(fullName)) {
-            mConsentTextTracker.setTextNonRecordable(mSigninView.getAccountTextPrimary(), fullName);
-            mConsentTextTracker.setTextNonRecordable(
-                    mSigninView.getAccountTextSecondary(), profileData.getAccountEmail());
-            mSigninView.getAccountTextSecondary().setVisibility(View.VISIBLE);
+        final boolean canShowEmailAddress = profileData.hasDisplayableEmailAddress()
+                || !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL);
+
+        // The primary TextView is always visible.
+        mConsentTextTracker.setTextNonRecordable(mSigninView.getAccountTextPrimary(),
+                getSigninViewAccountTextPrimary(profileData, canShowEmailAddress));
+
+        if (canShowEmailAddress) {
+            // If the full name is available, the email will be in the secondary TextView.
+            // Otherwise, the email is in the primary TextView; the secondary TextView hidden.
+            final int secondaryTextVisibility =
+                    TextUtils.isEmpty(profileData.getFullName()) ? View.GONE : View.VISIBLE;
+            if (secondaryTextVisibility == View.VISIBLE) {
+                mConsentTextTracker.setTextNonRecordable(
+                        mSigninView.getAccountTextSecondary(), profileData.getAccountEmail());
+            }
+            mSigninView.getAccountTextSecondary().setVisibility(secondaryTextVisibility);
         } else {
-            // Full name is not available, show the email in the primary TextView.
-            mConsentTextTracker.setTextNonRecordable(
-                    mSigninView.getAccountTextPrimary(), profileData.getAccountEmail());
+            // If the email address cannot be shown, the primary TextView either displays the
+            // full name or the default account string. The secondary TextView is hidden.
             mSigninView.getAccountTextSecondary().setVisibility(View.GONE);
         }
     }
@@ -712,27 +736,22 @@ public abstract class SyncConsentFragmentBase
         AccountInfoServiceProvider.get()
                 .getAccountInfoByEmail(mSelectedAccountName)
                 .then(accountInfo -> {
-                    if (accountInfo != null) {
-                        mConsentTextTracker.recordConsent(accountInfo.getId(),
-                                ConsentAuditorFeature.CHROME_SYNC, (TextView) confirmationView,
-                                mSyncConsentView != null ? mSyncConsentView : mSigninView);
-                        if (isResumed()) {
-                            runStateMachineAndSignin(settingsClicked);
-                        }
+                    if (accountInfo == null) {
+                        mIsSigninInProgress = false;
+                        // If accountInfo is null, then the account may have been removed while
+                        // sign-in is in progress. In this case update the UI with the updated
+                        // account list.
+                        mAccountManagerFacade.getAccounts().then(this::updateAccounts);
                         return;
                     }
-                    mAccountManagerFacade.getAccounts().then((accounts) -> {
-                        if (AccountUtils.findAccountByName(accounts, mSelectedAccountName)
-                                == null) {
-                            // TODO(crbug.com/1380917): This is a temporary solution to investigate
-                            // the crash. After the bug is fixed we can probably replace this with
-                            // just updateAccounts().
-                            updateAccounts(accounts);
-                        } else {
-                            throw new NullPointerException(
-                                    "The seeded CoreAccountInfo shouldn't be null");
-                        }
-                    });
+                    mConsentTextTracker.recordConsent(accountInfo.getId(),
+                            ConsentAuditorFeature.CHROME_SYNC, (TextView) confirmationView,
+                            mSyncConsentView != null ? mSyncConsentView : mSigninView);
+                    if (isResumed()) {
+                        runStateMachineAndSignin(settingsClicked);
+                    } else {
+                        mIsSigninInProgress = false;
+                    }
                 });
     }
 

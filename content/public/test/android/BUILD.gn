@@ -17,11 +17,13 @@ android_library("android_test_message_pump_support_java") {
 
 android_library("content_java_test_support") {
   testonly = true
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   deps = [
     ":android_test_message_pump_support_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:jni_java",
+    "//base:process_launcher_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
     "//net/android:net_java",

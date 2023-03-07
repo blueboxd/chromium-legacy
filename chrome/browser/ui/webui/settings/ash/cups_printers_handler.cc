@@ -7,11 +7,11 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -20,7 +20,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
 #include "chrome/browser/ash/printing/ppd_provider_factory.h"
@@ -577,8 +576,7 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::Value::List& args) {
     OnAutoconfQueried(callback_id, PrinterQueryResult::kUnknownFailure,
                       ::printing::PrinterStatus(), /*make_and_model=*/"",
                       /*document_formats=*/{}, /*ipp_everywhere=*/false,
-                      chromeos::PrinterAuthenticationInfo{},
-                      /*client_info_supported=*/false);
+                      chromeos::PrinterAuthenticationInfo{});
     return;
   }
 
@@ -595,8 +593,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     const std::string& make_and_model,
     const std::vector<std::string>& /*document_formats*/,
     bool ipp_everywhere,
-    const chromeos::PrinterAuthenticationInfo& /*auth_info*/,
-    bool /*client_info_supported*/) {
+    const chromeos::PrinterAuthenticationInfo& /*auth_info*/) {
   RecordIppQueryResult(result);
 
   const bool success = result == PrinterQueryResult::kSuccess;
@@ -637,8 +634,7 @@ void CupsPrintersHandler::OnAutoconfQueried(
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere,
-    const chromeos::PrinterAuthenticationInfo& /*auth_info*/,
-    bool /*client_info_supported*/) {
+    const chromeos::PrinterAuthenticationInfo& /*auth_info*/) {
   RecordIppQueryResult(result);
   const bool success = result == PrinterQueryResult::kSuccess;
 

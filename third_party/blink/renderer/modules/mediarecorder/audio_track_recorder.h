@@ -7,12 +7,16 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/modules/mediarecorder/track_recorder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
+#include "third_party/blink/renderer/platform/wtf/sequence_bound.h"
 
 namespace media {
 class AudioBus;
@@ -23,7 +27,6 @@ namespace blink {
 
 class AudioTrackEncoder;
 class MediaStreamComponent;
-class NonMainThread;
 
 // AudioTrackRecorder is a MediaStreamAudioSink that encodes the audio buses
 // received from a Stream Audio Track. The class is constructed on a
@@ -52,15 +55,16 @@ class MODULES_EXPORT AudioTrackRecorder
 
   static CodecId GetPreferredCodecId();
 
-  AudioTrackRecorder(CodecId codec,
-                     MediaStreamComponent* track,
-                     OnEncodedAudioCB on_encoded_audio_cb,
-                     base::OnceClosure on_track_source_ended_cb,
-                     uint32_t bits_per_second,
-                     BitrateMode bitrate_mode,
-                     std::unique_ptr<NonMainThread> encoder_thread =
-                         NonMainThread::CreateThread(ThreadCreationParams(
-                             ThreadType::kAudioEncoderThread)));
+  AudioTrackRecorder(
+      CodecId codec,
+      MediaStreamComponent* track,
+      OnEncodedAudioCB on_encoded_audio_cb,
+      base::OnceClosure on_track_source_ended_cb,
+      uint32_t bits_per_second,
+      BitrateMode bitrate_mode,
+      scoped_refptr<base::SequencedTaskRunner> encoder_task_runner =
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::TaskPriority::USER_VISIBLE}));
 
   AudioTrackRecorder(const AudioTrackRecorder&) = delete;
   AudioTrackRecorder& operator=(const AudioTrackRecorder&) = delete;
@@ -78,7 +82,7 @@ class MODULES_EXPORT AudioTrackRecorder
  private:
   // Creates an audio encoder from |codec|. Returns nullptr if the codec is
   // invalid.
-  static scoped_refptr<AudioTrackEncoder> CreateAudioEncoder(
+  static std::unique_ptr<AudioTrackEncoder> CreateAudioEncoder(
       CodecId codec,
       OnEncodedAudioCB on_encoded_audio_cb,
       uint32_t bits_per_second,
@@ -86,25 +90,17 @@ class MODULES_EXPORT AudioTrackRecorder
 
   void ConnectToTrack();
   void DisconnectFromTrack();
-  void ShutdownEncoder();
 
   void Prefinalize();
 
   // We need to hold on to the Blink track to remove ourselves on destruction.
   Persistent<MediaStreamComponent> track_;
 
+  // Sequence used for the encoder, backed by the thread pool.
+  const scoped_refptr<base::SequencedTaskRunner> encoder_task_runner_;
+
   // Thin wrapper around the chosen encoder.
-  // |encoder_| should be initialized before |encoder_thread_| such that
-  // |encoder_thread_| is destructed first. This, combined with all
-  // AudioTrackEncoder work (aside from construction and destruction) happening
-  // on |encoder_thread_|, should allow us to be sure that all AudioTrackEncoder
-  // work is done by the time we destroy it on ATR's thread.
-  const scoped_refptr<AudioTrackEncoder> encoder_;
-
-  // The thread on which |encoder_| works.
-  std::unique_ptr<NonMainThread> encoder_thread_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
+  WTF::SequenceBound<std::unique_ptr<AudioTrackEncoder>> encoder_;
 
   // Number of frames per chunked buffer passed to the encoder.
   int frames_per_chunk_ = 0;

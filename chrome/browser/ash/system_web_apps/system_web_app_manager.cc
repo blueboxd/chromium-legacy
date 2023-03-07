@@ -67,8 +67,8 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -168,7 +168,7 @@ web_app::ExternalInstallOptions CreateInstallOptionsForSystemApp(
              content::kChromeUIUntrustedScheme);
 
   web_app::ExternalInstallOptions install_options(
-      delegate.GetInstallUrl(), web_app::UserDisplayMode::kStandalone,
+      delegate.GetInstallUrl(), web_app::mojom::UserDisplayMode::kStandalone,
       web_app::ExternalInstallSource::kSystemInstalled);
   install_options.only_use_app_info_factory = true;
   // This can be Unretained because it's referring to the delegate owning this
@@ -368,9 +368,19 @@ void SystemWebAppManager::Start() {
   // or `SetSystemAppsForTesting()` has been called.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType) &&
       skip_app_installation_in_test_) {
-    install_options_list.clear();
-  }
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &SystemWebAppManager::OnAppsSynchronized,
+            weak_ptr_factory_.GetWeakPtr(), should_force_install_apps,
+            install_start_time,
+            /*install_results=*/
+            std::map<GURL,
+                     web_app::ExternallyManagedAppManager::InstallResult>(),
+            /*uninstall_results=*/std::map<GURL, bool>()));
 
+    return;
+  }
   provider_->externally_managed_app_manager().SynchronizeInstalledApps(
       std::move(install_options_list),
       web_app::ExternalInstallSource::kSystemInstalled,

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/ranges/ranges.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -73,7 +73,8 @@ class LiveCaptionControllerTest : public LiveCaptionBrowserTest {
   }
 
   CaptionBubbleController* GetBubbleControllerForProfile(Profile* profile) {
-    return GetControllerForProfile(profile)->caption_bubble_controller_.get();
+    return GetControllerForProfile(profile)
+        ->caption_bubble_controller_for_testing();
   }
 
   CaptionBubbleContextBrowser* GetCaptionBubbleContextBrowser() {
@@ -123,8 +124,8 @@ class LiveCaptionControllerTest : public LiveCaptionBrowserTest {
   }
 
   bool HasBubbleControllerOnProfile(Profile* profile) {
-    return GetControllerForProfile(profile)->caption_bubble_controller_ !=
-           nullptr;
+    return GetControllerForProfile(profile)
+               ->caption_bubble_controller_for_testing() != nullptr;
   }
 
   void ExpectIsWidgetVisible(bool visible) {

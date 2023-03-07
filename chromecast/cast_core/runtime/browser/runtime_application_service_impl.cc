@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromecast/browser/cast_web_service.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "chromecast/cast_core/grpc/grpc_status_or.h"
@@ -23,7 +24,7 @@ namespace {
 class CastContentWindowControls : public cast_receiver::ContentWindowControls,
                                   public CastContentWindow::Observer {
  public:
-  CastContentWindowControls(CastContentWindow& content_window)
+  explicit CastContentWindowControls(CastContentWindow& content_window)
       : content_window_(content_window) {
     content_window_->AddObserver(this);
   }
@@ -125,10 +126,10 @@ RuntimeApplicationServiceImpl::RuntimeApplicationServiceImpl(
     cast::common::ApplicationConfig config,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     CastWebService& web_service)
-    : runtime_application_(std::move(runtime_application)),
-      config_(std::move(config)),
+    : config_(std::move(config)),
       task_runner_(std::move(task_runner)),
-      web_service_(web_service) {
+      web_service_(web_service),
+      runtime_application_(std::move(runtime_application)) {
   DCHECK(runtime_application_);
   DCHECK(task_runner_);
 }
@@ -238,7 +239,7 @@ void RuntimeApplicationServiceImpl::Launch(
   runtime_application_->Launch(std::move(callback));
 }
 
-void RuntimeApplicationServiceImpl::LoadPage(const GURL& url) {
+void RuntimeApplicationServiceImpl::NavigateToPage(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto* cast_web_contents = cast_web_view_->cast_web_contents();
@@ -547,6 +548,7 @@ RuntimeApplicationServiceImpl::GetContentWindowControls() {
   return content_window_controls_.get();
 }
 
+#if !BUILDFLAG(IS_CAST_DESKTOP_BUILD)
 cast_receiver::StreamingConfigManager*
 RuntimeApplicationServiceImpl::GetStreamingConfigManager() {
   if (streaming_config_manager_) {
@@ -565,6 +567,7 @@ RuntimeApplicationServiceImpl::GetStreamingConfigManager() {
           weak_factory_.GetWeakPtr()));
   return streaming_config_manager_.get();
 }
+#endif  // !BUILDFLAG(IS_CAST_DESKTOP_BUILD)
 
 void RuntimeApplicationServiceImpl::OnAllBindingsReceived(
     GetAllBindingsCallback callback,

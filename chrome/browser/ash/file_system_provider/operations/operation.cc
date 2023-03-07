@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "chrome/browser/ash/file_system_provider/event_dispatcher.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/request_dispatcher.h"
 #include "extensions/browser/event_router.h"
 
 namespace ash {
@@ -20,9 +20,9 @@ namespace {
 
 }  // namespace
 
-Operation::Operation(EventDispatcher* dispatcher,
+Operation::Operation(RequestDispatcher* dispatcher,
                      const ProvidedFileSystemInfo& file_system_info)
-    : file_system_info_(file_system_info), event_dispatcher_(dispatcher) {}
+    : file_system_info_(file_system_info), request_dispatcher_(dispatcher) {}
 
 Operation::~Operation() {
 }
@@ -33,8 +33,13 @@ bool Operation::SendEvent(int request_id,
                           base::Value::List event_args) {
   auto event = std::make_unique<extensions::Event>(histogram_value, event_name,
                                                    std::move(event_args));
-  return event_dispatcher_->DispatchEvent(
+  return request_dispatcher_->DispatchRequest(
       request_id, file_system_info_.file_system_id(), std::move(event));
+}
+
+void Operation::OnAbort(int request_id) {
+  request_dispatcher_->CancelRequest(request_id,
+                                     file_system_info_.file_system_id());
 }
 
 }  // namespace operations

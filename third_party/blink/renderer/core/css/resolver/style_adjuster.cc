@@ -112,11 +112,13 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
 }
 
 bool HostIsInputFile(const Element* element) {
-  if (!element || !element->IsInUserAgentShadowRoot())
+  if (!element || !element->IsInUserAgentShadowRoot()) {
     return false;
+  }
   if (const Element* shadow_host = element->OwnerShadowHost()) {
-    if (const auto* input = DynamicTo<HTMLInputElement>(shadow_host))
+    if (const auto* input = DynamicTo<HTMLInputElement>(shadow_host)) {
       return input->type() == input_type_names::kFile;
+    }
   }
   return false;
 }
@@ -138,34 +140,61 @@ void AdjustStyleForSvgElement(const SVGElement& element,
 
 // Adjust style for anchor() and anchor-size() queries.
 void AdjustAnchorQueryStyles(ComputedStyleBuilder& builder) {
-  if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled())
+  if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
     return;
+  }
 
   // anchor() and anchor-size() can only be used on absolutely positioned
   // elements.
   EPosition position = builder.GetPosition();
   if (position != EPosition::kAbsolute && position != EPosition::kFixed) {
-    if (builder.Left().HasAnchorQueries())
+    if (builder.Left().HasAnchorQueries()) {
       builder.SetLeft(Length::Auto());
-    if (builder.Right().HasAnchorQueries())
+    }
+    if (builder.Right().HasAnchorQueries()) {
       builder.SetRight(Length::Auto());
-    if (builder.Top().HasAnchorQueries())
+    }
+    if (builder.Top().HasAnchorQueries()) {
       builder.SetTop(Length::Auto());
-    if (builder.Bottom().HasAnchorQueries())
+    }
+    if (builder.Bottom().HasAnchorQueries()) {
       builder.SetBottom(Length::Auto());
-    if (builder.Width().HasAnchorQueries())
+    }
+    if (builder.Width().HasAnchorQueries()) {
       builder.SetWidth(Length::Auto());
-    if (builder.MinWidth().HasAnchorQueries())
+    }
+    if (builder.MinWidth().HasAnchorQueries()) {
       builder.SetMinWidth(Length::Auto());
-    if (builder.MaxWidth().HasAnchorQueries())
+    }
+    if (builder.MaxWidth().HasAnchorQueries()) {
       builder.SetMaxWidth(Length::Auto());
-    if (builder.Height().HasAnchorQueries())
+    }
+    if (builder.Height().HasAnchorQueries()) {
       builder.SetHeight(Length::Auto());
-    if (builder.MinHeight().HasAnchorQueries())
+    }
+    if (builder.MinHeight().HasAnchorQueries()) {
       builder.SetMinHeight(Length::Auto());
-    if (builder.MaxHeight().HasAnchorQueries())
+    }
+    if (builder.MaxHeight().HasAnchorQueries()) {
       builder.SetMaxHeight(Length::Auto());
+    }
   }
+}
+
+bool ElementForcesStackingContext(Element* element) {
+  if (!element) {
+    return false;
+  }
+  if (element == element->GetDocument().documentElement()) {
+    return true;
+  }
+  if (element->IsInTopLayer()) {
+    return true;
+  }
+  if (IsA<SVGForeignObjectElement>(*element)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -221,11 +250,13 @@ static bool IsOutermostSVGElement(const Element* element) {
 }
 
 static bool IsAtMediaUAShadowBoundary(const Element* element) {
-  if (!element)
+  if (!element) {
     return false;
+  }
   if (ContainerNode* parent = element->parentNode()) {
-    if (auto* shadow_root = DynamicTo<ShadowRoot>(parent))
+    if (auto* shadow_root = DynamicTo<ShadowRoot>(parent)) {
       return shadow_root->host().IsMediaElement();
+    }
   }
   return false;
 }
@@ -272,15 +303,17 @@ static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
 }
 
 void StyleAdjuster::AdjustStyleForEditing(ComputedStyleBuilder& builder) {
-  if (builder.UserModify() != EUserModify::kReadWritePlaintextOnly)
+  if (builder.UserModify() != EUserModify::kReadWritePlaintextOnly) {
     return;
+  }
   // Collapsing whitespace is harmful in plain-text editing.
-  if (builder.WhiteSpace() == EWhiteSpace::kNormal)
+  if (builder.WhiteSpace() == EWhiteSpace::kNormal) {
     builder.SetWhiteSpace(EWhiteSpace::kPreWrap);
-  else if (builder.WhiteSpace() == EWhiteSpace::kNowrap)
+  } else if (builder.WhiteSpace() == EWhiteSpace::kNowrap) {
     builder.SetWhiteSpace(EWhiteSpace::kPre);
-  else if (builder.WhiteSpace() == EWhiteSpace::kPreLine)
+  } else if (builder.WhiteSpace() == EWhiteSpace::kPreLine) {
     builder.SetWhiteSpace(EWhiteSpace::kPreWrap);
+  }
 }
 
 void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyleBuilder& builder) {
@@ -315,7 +348,7 @@ void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
   builder.SetWordSpacing(0.0f);
   builder.SetWritingMode(WritingMode::kHorizontalTb);
 
-  builder.MutableInternalStyle()->ClearAppliedTextDecorations();
+  builder.ClearAppliedTextDecorations();
   builder.ResetTextIndent();
   builder.UpdateFontOrientation();
 
@@ -328,8 +361,9 @@ void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
 }
 
 static void AdjustStyleForFirstLetter(ComputedStyleBuilder& builder) {
-  if (builder.StyleType() != kPseudoIdFirstLetter)
+  if (builder.StyleType() != kPseudoIdFirstLetter) {
     return;
+  }
 
   // Force inline display (except for floating first-letters).
   builder.SetDisplay(builder.IsFloating() ? EDisplay::kBlock
@@ -339,8 +373,9 @@ static void AdjustStyleForFirstLetter(ComputedStyleBuilder& builder) {
 static void AdjustStyleForMarker(ComputedStyleBuilder& builder,
                                  const ComputedStyle& parent_style,
                                  const Element& parent_element) {
-  if (builder.StyleType() != kPseudoIdMarker)
+  if (builder.StyleType() != kPseudoIdMarker) {
     return;
+  }
 
   bool is_inside =
       parent_style.ListStylePosition() == EListStylePosition::kInside ||
@@ -377,12 +412,14 @@ static void AdjustStyleForHTMLElement(ComputedStyleBuilder& builder,
                                       HTMLElement& element) {
   // <div> and <span> are the most common elements on the web, we skip all the
   // work for them.
-  if (IsA<HTMLDivElement>(element) || IsA<HTMLSpanElement>(element))
+  if (IsA<HTMLDivElement>(element) || IsA<HTMLSpanElement>(element)) {
     return;
+  }
 
   if (auto* image = DynamicTo<HTMLImageElement>(element)) {
-    if (image->IsCollapsed() || builder.Display() == EDisplay::kContents)
+    if (image->IsCollapsed() || builder.Display() == EDisplay::kContents) {
       builder.SetDisplay(EDisplay::kNone);
+    }
     return;
   }
 
@@ -391,8 +428,9 @@ static void AdjustStyleForHTMLElement(ComputedStyleBuilder& builder,
     // back to the default.
     if (builder.GetTextAlign() == ETextAlign::kWebkitLeft ||
         builder.GetTextAlign() == ETextAlign::kWebkitCenter ||
-        builder.GetTextAlign() == ETextAlign::kWebkitRight)
+        builder.GetTextAlign() == ETextAlign::kWebkitRight) {
       builder.SetTextAlign(ETextAlign::kStart);
+    }
     return;
   }
 
@@ -459,16 +497,18 @@ static void AdjustStyleForHTMLElement(ComputedStyleBuilder& builder,
     builder.SetOverflowY(builder.OverflowY() == EOverflow::kVisible
                              ? EOverflow::kAuto
                              : builder.OverflowY());
-    if (builder.Display() == EDisplay::kContents)
+    if (builder.Display() == EDisplay::kContents) {
       builder.SetDisplay(EDisplay::kNone);
+    }
     return;
   }
 
   if (auto* html_plugin_element = DynamicTo<HTMLPlugInElement>(element)) {
     builder.SetRequiresAcceleratedCompositingForExternalReasons(
         html_plugin_element->ShouldAccelerate());
-    if (builder.Display() == EDisplay::kContents)
+    if (builder.Display() == EDisplay::kContents) {
       builder.SetDisplay(EDisplay::kNone);
+    }
     return;
   }
 
@@ -509,31 +549,36 @@ void StyleAdjuster::AdjustOverflow(ComputedStyleBuilder& builder,
     // a table is not a block container box the rules for resolving conflicting
     // x and y values in CSS Overflow Module Level 3 do not apply. Arguably
     // overflow-x and overflow-y aren't allowed on tables but all UAs allow it.
-    if (builder.OverflowX() != EOverflow::kHidden)
+    if (builder.OverflowX() != EOverflow::kHidden) {
       builder.SetOverflowX(EOverflow::kVisible);
-    if (builder.OverflowY() != EOverflow::kHidden)
+    }
+    if (builder.OverflowY() != EOverflow::kHidden) {
       builder.SetOverflowY(EOverflow::kVisible);
+    }
     // If we are left with conflicting overflow values for the x and y axes on a
     // table then resolve both to OverflowVisible. This is interoperable
     // behaviour but is not specced anywhere.
-    if (builder.OverflowX() == EOverflow::kVisible)
+    if (builder.OverflowX() == EOverflow::kVisible) {
       builder.SetOverflowY(EOverflow::kVisible);
-    else if (builder.OverflowY() == EOverflow::kVisible)
+    } else if (builder.OverflowY() == EOverflow::kVisible) {
       builder.SetOverflowX(EOverflow::kVisible);
+    }
   } else if (!IsOverflowClipOrVisible(builder.OverflowY())) {
     // Values of 'clip' and 'visible' can only be used with 'clip' and
     // 'visible.' If they aren't, 'clip' and 'visible' is reset.
-    if (builder.OverflowX() == EOverflow::kVisible)
+    if (builder.OverflowX() == EOverflow::kVisible) {
       builder.SetOverflowX(EOverflow::kAuto);
-    else if (builder.OverflowX() == EOverflow::kClip)
+    } else if (builder.OverflowX() == EOverflow::kClip) {
       builder.SetOverflowX(EOverflow::kHidden);
+    }
   } else if (!IsOverflowClipOrVisible(builder.OverflowX())) {
     // Values of 'clip' and 'visible' can only be used with 'clip' and
     // 'visible.' If they aren't, 'clip' and 'visible' is reset.
-    if (builder.OverflowY() == EOverflow::kVisible)
+    if (builder.OverflowY() == EOverflow::kVisible) {
       builder.SetOverflowY(EOverflow::kAuto);
-    else if (builder.OverflowY() == EOverflow::kClip)
+    } else if (builder.OverflowY() == EOverflow::kClip) {
       builder.SetOverflowY(EOverflow::kHidden);
+    }
   }
 
   if (element && !element->IsPseudoElement() &&
@@ -553,8 +598,9 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
     builder.SetIsInBlockifyingDisplay();
     if (builder.Display() != EDisplay::kContents) {
       builder.SetDisplay(EquivalentBlockDisplay(builder.Display()));
-      if (!builder.HasOutOfFlowPosition())
+      if (!builder.HasOutOfFlowPosition()) {
         builder.SetIsFlexOrGridOrCustomItem();
+      }
     }
     if (layout_parent_style.IsDisplayFlexibleOrGridBox() ||
         layout_parent_style.IsDisplayMathType()) {
@@ -562,15 +608,17 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
     }
   }
 
-  if (builder.Display() == EDisplay::kBlock)
+  if (builder.Display() == EDisplay::kBlock) {
     return;
+  }
 
   // FIXME: Don't support this mutation for pseudo styles like first-letter or
   // first-line, since it's not completely clear how that should work.
   if (builder.Display() == EDisplay::kInline &&
       builder.StyleType() == kPseudoIdNone &&
-      builder.GetWritingMode() != layout_parent_style.GetWritingMode())
+      builder.GetWritingMode() != layout_parent_style.GetWritingMode()) {
     builder.SetDisplay(EDisplay::kInlineBlock);
+  }
 
   // writing-mode does not apply to table row groups, table column groups, table
   // rows, and table columns.
@@ -590,24 +638,29 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
 
 bool StyleAdjuster::IsEditableElement(Element* element,
                                       const ComputedStyleBuilder& builder) {
-  if (builder.UserModify() != EUserModify::kReadOnly)
+  if (builder.UserModify() != EUserModify::kReadOnly) {
     return true;
+  }
 
-  if (!element)
+  if (!element) {
     return false;
+  }
 
-  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element)) {
     return !textarea->IsDisabledOrReadOnly();
+  }
 
-  if (auto* input = DynamicTo<HTMLInputElement>(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     return !input->IsDisabledOrReadOnly() && input->IsTextField();
+  }
 
   return false;
 }
 
 bool StyleAdjuster::IsPasswordFieldWithUnrevealedPassword(Element* element) {
-  if (!element)
+  if (!element) {
     return false;
+  }
   if (auto* input = DynamicTo<HTMLInputElement>(element)) {
     return (input->type() == input_type_names::kPassword) &&
            !input->ShouldRevealPassword();
@@ -651,8 +704,9 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
     // kInternalNotWritable is only for internal usage, GetTouchAction()
     // doesn't contain this bit. We set this bit when kPan is set so it can be
     // cleared for eligible non-password editable areas later on.
-    if ((element_touch_action & TouchAction::kPan) != TouchAction::kNone)
+    if ((element_touch_action & TouchAction::kPan) != TouchAction::kNone) {
       element_touch_action |= TouchAction::kInternalNotWritable;
+    }
   }
 
   if (!element) {
@@ -681,8 +735,9 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
                                                  parent_style, element);
 
   TouchAction enforced_by_policy = TouchAction::kNone;
-  if (element->GetDocument().IsVerticalScrollEnforced())
+  if (element->GetDocument().IsVerticalScrollEnforced()) {
     enforced_by_policy = TouchAction::kPanY;
+  }
   if (::features::IsSwipeToMoveCursorEnabled() &&
       IsEditableElement(element, builder)) {
     element_touch_action &= ~TouchAction::kInternalPanXScrolls;
@@ -714,8 +769,9 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
 
 static void AdjustStyleForInert(ComputedStyleBuilder& builder,
                                 Element* element) {
-  if (!element)
+  if (!element) {
     return;
+  }
 
   if (element->IsInertRoot()) {
     builder.SetIsInert(true);
@@ -725,8 +781,9 @@ static void AdjustStyleForInert(ComputedStyleBuilder& builder,
 
   Document& document = element->GetDocument();
   const Element* modal_element = document.ActiveModalDialog();
-  if (!modal_element)
+  if (!modal_element) {
     modal_element = Fullscreen::FullscreenElementFrom(document);
+  }
   if (modal_element == element) {
     builder.SetIsInert(false);
     builder.SetIsInertIsInherited(false);
@@ -741,16 +798,19 @@ static void AdjustStyleForInert(ComputedStyleBuilder& builder,
 
 void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyleBuilder& builder) {
   if (!builder.InForcedColorsMode() ||
-      builder.ForcedColorAdjust() != EForcedColorAdjust::kAuto)
+      builder.ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
     return;
+  }
 
   builder.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
   builder.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
   builder.SetColorScheme({"light", "dark"});
-  if (builder.ShouldForceColor(builder.AccentColor()))
+  if (builder.ShouldForceColor(builder.AccentColor())) {
     builder.SetAccentColor(ComputedStyleInitialValues::InitialAccentColor());
-  if (!builder.HasUrlBackgroundImage())
+  }
+  if (!builder.HasUrlBackgroundImage()) {
     builder.ClearBackgroundImage();
+  }
 }
 
 void StyleAdjuster::AdjustForSVGTextElement(ComputedStyleBuilder& builder) {
@@ -796,8 +856,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
                            IsA<MathMLElement>(element);
 
   if (builder.Display() != EDisplay::kNone) {
-    if (svg_element)
+    if (svg_element) {
       AdjustStyleForSvgElement(*svg_element, builder);
+    }
 
     bool is_document_element =
         element && element->GetDocument().documentElement() == element;
@@ -821,11 +882,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // Absolute/fixed positioned elements, floating elements and the document
     // element need block-like outside display.
     if (builder.Display() != EDisplay::kContents &&
-        (builder.HasOutOfFlowPosition() || builder.IsFloating()))
+        (builder.HasOutOfFlowPosition() || builder.IsFloating())) {
       builder.SetDisplay(EquivalentBlockDisplay(builder.Display()));
+    }
 
-    if (is_document_element)
+    if (is_document_element) {
       builder.SetDisplay(EquivalentBlockDisplay(builder.Display()));
+    }
 
     // math display values on non-MathML elements compute to flow display
     // values.
@@ -854,21 +917,29 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     bool is_in_main_frame = element && element->GetDocument().IsInMainFrame();
     // The root element of the main frame has no backdrop, so don't allow
     // it to have a backdrop filter either.
-    if (is_document_element && is_in_main_frame && builder.HasBackdropFilter())
+    if (is_document_element && is_in_main_frame &&
+        builder.HasBackdropFilter()) {
       builder.MutableBackdropFilter().clear();
+    }
   } else {
     AdjustStyleForFirstLetter(builder);
   }
 
+  builder.SetForcesStackingContext(false);
+
   // Make sure our z-index value is only applied if the object is positioned.
-  if (builder.GetPosition() == EPosition::kStatic &&
-      !LayoutParentStyleForcesZIndexToCreateStackingContext(
-          layout_parent_style)) {
-    builder.SetIsStackingContextWithoutContainment(false);
-    if (!builder.HasAutoZIndex())
+  if (!builder.HasAutoZIndex()) {
+    if (builder.GetPosition() == EPosition::kStatic &&
+        !LayoutParentStyleForcesZIndexToCreateStackingContext(
+            layout_parent_style)) {
       builder.SetEffectiveZIndexZero(true);
-  } else if (!builder.HasAutoZIndex()) {
-    builder.SetIsStackingContextWithoutContainment(true);
+    } else {
+      builder.SetForcesStackingContext(true);
+    }
+  }
+
+  if (ElementForcesStackingContext(element)) {
+    builder.SetForcesStackingContext(true);
   }
 
   if (builder.OverflowX() != EOverflow::kVisible ||
@@ -879,10 +950,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // Highlight pseudos propagate decorations with inheritance only.
   if (StopPropagateTextDecorations(builder, element) ||
       state.IsForHighlight()) {
-    builder.MutableInternalStyle()->ClearAppliedTextDecorations();
+    builder.ClearAppliedTextDecorations();
   } else {
-    builder.MutableInternalStyle()->RestoreParentTextDecorations(
-        layout_parent_style);
+    builder.RestoreParentTextDecorations(layout_parent_style);
   }
 
   // The computed value of currentColor for highlight pseudos is the
@@ -891,8 +961,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (state.UsesHighlightPseudoInheritance() &&
       state.OriginatingElementStyle()) {
     const ComputedStyle* originating_style = state.OriginatingElementStyle();
-    if (builder.ColorIsCurrentColor())
+    if (builder.ColorIsCurrentColor()) {
       builder.SetColor(originating_style->Color());
+    }
     if (builder.InternalVisitedColorIsCurrentColor()) {
       builder.SetInternalVisitedColor(
           originating_style->InternalVisitedColor());
@@ -900,10 +971,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   }
 
   if (builder.Display() != EDisplay::kContents) {
-    builder.MutableInternalStyle()->ApplyTextDecorations(
-        parent_style.VisitedDependentColorFast(
-            GetCSSPropertyTextDecorationColor()),
-        OverridesTextDecorationColors(element));
+    builder.ApplyTextDecorations(parent_style.VisitedDependentColorFast(
+                                     GetCSSPropertyTextDecorationColor()),
+                                 OverridesTextDecorationColors(element));
   }
 
   // Cull out any useless layers and also repeat patterns into additional
@@ -947,12 +1017,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // SVG text layout code expects us to be a block-level style element.
     if ((IsA<SVGForeignObjectElement>(*element) ||
          IsA<SVGTextElement>(*element)) &&
-        builder.IsDisplayInlineType())
+        builder.IsDisplayInlineType()) {
       builder.SetDisplay(EDisplay::kBlock);
+    }
 
     // Columns don't apply to svg text elements.
-    if (IsA<SVGTextElement>(*element))
+    if (IsA<SVGTextElement>(*element)) {
       AdjustForSVGTextElement(builder);
+    }
 
     // Copy DominantBaseline to CssDominantBaseline without 'no-change',
     // 'reset-size', and 'use-script'.
@@ -981,8 +1053,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // It is possible that this node is already in a sticky subtree (i.e. we have
   // nested sticky nodes) - in that case the bit will already be set via
   // inheritance from the ancestor and there is no harm to setting it again.
-  if (builder.GetPosition() == EPosition::kSticky)
+  if (builder.GetPosition() == EPosition::kSticky) {
     builder.SetSubtreeIsSticky(true);
+  }
 
   // If the inherited value of justify-items includes the 'legacy'
   // keyword (plus 'left', 'right' or 'center'), 'legacy' computes to
@@ -1031,8 +1104,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // that we can quickly determine whether we need to check that an element is
     // compatible with the block fragmentation implementation being used.
     if (builder.InternalStyle()->SpecifiesColumns() ||
-        (element && element->GetDocument().Printing()))
+        (element && element->GetDocument().Printing())) {
       builder.SetInsideFragmentationContextWithNondeterministicEngine(true);
+    }
+  }
+
+  if (element && element->HasCustomStyleCallbacks()) {
+    element->AdjustStyle(base::PassKey<StyleAdjuster>(), builder);
   }
 }
 

@@ -1,6 +1,7 @@
 ; This file is generated from a similarly-named Perl script in the BoringSSL
 ; source tree. Do not edit by hand.
 
+%ifidn __OUTPUT_FORMAT__, win64
 default	rel
 %define XMMWORD
 %define YMMWORD
@@ -304,6 +305,9 @@ $L$enc_tail:
 	vpaddb	xmm0,xmm1,xmm2
 	mov	QWORD[((112+8))+rsp],r13
 	lea	rdi,[96+rdi]
+
+	prefetcht0	[512+rdi]
+	prefetcht0	[576+rdi]
 	vaesenclast	xmm11,xmm11,xmm5
 	vpaddb	xmm5,xmm0,xmm2
 	mov	QWORD[((120+8))+rsp],r12
@@ -905,19 +909,19 @@ $L$gcm_enc_abort:
 $L$SEH_end_aesni_gcm_encrypt:
 ALIGN	64
 $L$bswap_mask:
-DB	15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
+	DB	15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
 $L$poly:
-DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0xc2
+	DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0xc2
 $L$one_msb:
-DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+	DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
 $L$two_lsb:
-DB	2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	DB	2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 $L$one_lsb:
-DB	1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-DB	65,69,83,45,78,73,32,71,67,77,32,109,111,100,117,108
-DB	101,32,102,111,114,32,120,56,54,95,54,52,44,32,67,82
-DB	89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112
-DB	114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
+	DB	1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	DB	65,69,83,45,78,73,32,71,67,77,32,109,111,100,117,108
+	DB	101,32,102,111,114,32,120,56,54,95,54,52,44,32,67,82
+	DB	89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112
+	DB	114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
 ALIGN	64
 EXTERN	__imp_RtlVirtualUnwind
 
@@ -1024,10 +1028,11 @@ ALIGN	4
 section	.xdata rdata align=8
 ALIGN	8
 $L$SEH_gcm_dec_info:
-DB	9,0,0,0
+	DB	9,0,0,0
 	DD	gcm_se_handler wrt ..imagebase
 	DD	$L$gcm_dec_body wrt ..imagebase,$L$gcm_dec_abort wrt ..imagebase
 $L$SEH_gcm_enc_info:
-DB	9,0,0,0
+	DB	9,0,0,0
 	DD	gcm_se_handler wrt ..imagebase
 	DD	$L$gcm_enc_body wrt ..imagebase,$L$gcm_enc_abort wrt ..imagebase
+%endif

@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/observer_list.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -130,6 +130,7 @@ enum AcceleratorAction {
   TOGGLE_MAXIMIZED,
   TOGGLE_MESSAGE_CENTER_BUBBLE,
   TOGGLE_MIRROR_MODE,
+  TOGGLE_MULTITASK_MENU,
   TOGGLE_OVERVIEW,
   TOGGLE_PROJECTOR_MARKER,
   TOGGLE_RESIZE_LOCK_MENU,
@@ -223,6 +224,12 @@ ASH_PUBLIC_EXPORT extern const AcceleratorData
     kEnableWithSameAppWindowCycleAcceleratorData[];
 ASH_PUBLIC_EXPORT extern const size_t
     kEnableWithSameAppWindowCycleAcceleratorDataLength;
+
+// Accelerators that are enabled with the floating windows feature.
+ASH_PUBLIC_EXPORT extern const AcceleratorData
+    kEnableWithFloatWindowAcceleratorData[];
+ASH_PUBLIC_EXPORT extern const size_t
+    kEnableWithFloatWindowAcceleratorDataLength;
 
 // The public-facing interface for accelerator handling, which is Ash's duty to
 // implement.

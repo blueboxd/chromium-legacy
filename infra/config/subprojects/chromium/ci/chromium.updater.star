@@ -10,15 +10,15 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
-    executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium.updater",
-    pool = ci.DEFAULT_POOL,
+    executable = ci.DEFAULT_EXECUTABLE,
     cores = 8,
     os = os.LINUX_DEFAULT,
+    pool = ci.DEFAULT_POOL,
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
@@ -168,7 +168,6 @@ ci.builder(
 
 ci.thin_tester(
     name = "mac10.13-updater-tester-dbg",
-    triggered_by = ["mac-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -184,6 +183,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|mac",
         short_name = "10.13",
@@ -192,7 +192,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "mac10.13-updater-tester-rel",
-    triggered_by = ["mac-updater-builder-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -208,6 +207,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
         short_name = "10.13",
@@ -216,7 +216,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "mac10.14-updater-tester-dbg",
-    triggered_by = ["mac-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -232,6 +231,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|mac",
         short_name = "10.14",
@@ -240,7 +240,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "mac10.14-updater-tester-rel",
-    triggered_by = ["mac-updater-builder-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -256,6 +255,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
         short_name = "10.14",
@@ -264,7 +264,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "mac10.15-updater-tester-dbg",
-    triggered_by = ["mac-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -280,6 +279,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|mac",
         short_name = "10.15",
@@ -288,7 +288,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "mac10.15-updater-tester-rel",
-    triggered_by = ["mac-updater-builder-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -304,6 +303,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
         short_name = "10.15",
@@ -311,8 +311,7 @@ ci.thin_tester(
 )
 
 ci.thin_tester(
-    name = "mac11.0-updater-tester-dbg",
-    triggered_by = ["mac-updater-builder-dbg"],
+    name = "mac11-arm64-updater-tester-dbg",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -328,63 +327,15 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|mac",
-        short_name = "11.0",
-    ),
-)
-
-ci.thin_tester(
-    name = "mac11.0-updater-tester-rel",
-    triggered_by = ["mac-updater-builder-rel"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.MAC,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release|mac",
-        short_name = "11.0",
-    ),
-)
-
-ci.thin_tester(
-    name = "mac11.0-arm64-updater-tester-dbg",
     triggered_by = ["mac-updater-builder-arm64-dbg"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.MAC,
-        ),
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "debug|mac",
-        short_name = "11.0 arm64",
+        short_name = "11 arm64",
     ),
 )
 
 ci.thin_tester(
-    name = "mac11.0-arm64-updater-tester-rel",
-    triggered_by = ["mac-updater-builder-arm64-rel"],
+    name = "mac11-arm64-updater-tester-rel",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -400,16 +351,15 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-arm64-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
-        short_name = "11.0 arm64",
+        short_name = "11 arm64",
     ),
 )
 
-# TODO(crbug.com/1381588): move to macOS 12 once crbug.com/1394839 is resolved.
 ci.thin_tester(
-    name = "mac11.0-updater-tester-asan-dbg",
-    triggered_by = ["mac-updater-builder-asan-dbg"],
+    name = "mac11-x64-updater-tester-dbg",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -425,9 +375,106 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
+    triggered_by = ["mac-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|mac",
-        short_name = "11.0 asan",
+        short_name = "11",
+    ),
+)
+
+ci.thin_tester(
+    name = "mac11-x64-updater-tester-rel",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    triggered_by = ["mac-updater-builder-rel"],
+    console_view_entry = consoles.console_view_entry(
+        category = "release|mac",
+        short_name = "11",
+    ),
+)
+
+ci.thin_tester(
+    name = "mac12-x64-updater-tester-asan-dbg",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    triggered_by = ["mac-updater-builder-asan-dbg"],
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "12 asan",
+    ),
+)
+
+ci.thin_tester(
+    name = "mac13-arm64-updater-tester-dbg",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    triggered_by = ["mac-updater-builder-arm64-dbg"],
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "13 arm64",
+    ),
+)
+
+ci.thin_tester(
+    name = "mac13-x64-updater-tester-rel",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    triggered_by = ["mac-updater-builder-rel"],
+    console_view_entry = consoles.console_view_entry(
+        category = "release|mac",
+        short_name = "13",
     ),
 )
 
@@ -534,56 +581,7 @@ ci.builder(
 )
 
 ci.thin_tester(
-    name = "win7-updater-tester-rel",
-    triggered_by = ["win-updater-builder-rel"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.WIN,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release|win (64)",
-        short_name = "7",
-    ),
-)
-
-ci.thin_tester(
-    name = "win7(32)-updater-tester-rel",
-    triggered_by = ["win32-updater-builder-rel"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.WIN,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release|win (32)",
-        short_name = "7",
-    ),
-)
-
-ci.thin_tester(
     name = "win10-updater-tester-dbg",
-    triggered_by = ["win-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -599,6 +597,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
     ),
+    triggered_by = ["win-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|win (64)",
         short_name = "10",
@@ -607,7 +606,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "win10-32-on-64-updater-tester-dbg",
-    triggered_by = ["win32-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -623,6 +621,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
     ),
+    triggered_by = ["win32-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|win (32)",
         short_name = "10 (x64)",
@@ -630,8 +629,31 @@ ci.thin_tester(
 )
 
 ci.thin_tester(
+    name = "win10-32-on-64-updater-tester-rel",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
+        ),
+    ),
+    triggered_by = ["win32-updater-builder-rel"],
+    console_view_entry = consoles.console_view_entry(
+        category = "release|win (32)",
+        short_name = "10 (x64)",
+    ),
+)
+
+ci.thin_tester(
     name = "win10-updater-tester-dbg-uac",
-    triggered_by = ["win-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -647,6 +669,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
     ),
+    triggered_by = ["win-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|win (64)",
         short_name = "UAC10",
@@ -655,7 +678,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "win10-updater-tester-rel",
-    triggered_by = ["win-updater-builder-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -671,6 +693,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
     ),
+    triggered_by = ["win-updater-builder-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "release|win (64)",
         short_name = "10",
@@ -678,8 +701,31 @@ ci.thin_tester(
 )
 
 ci.thin_tester(
+    name = "win10-updater-tester-rel-uac",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
+        ),
+    ),
+    triggered_by = ["win-updater-builder-rel"],
+    console_view_entry = consoles.console_view_entry(
+        category = "release|win (64)",
+        short_name = "UAC10",
+    ),
+)
+
+ci.thin_tester(
     name = "win11-updater-tester-dbg-uac",
-    triggered_by = ["win-updater-builder-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -695,6 +741,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
     ),
+    triggered_by = ["win-updater-builder-dbg"],
     console_view_entry = consoles.console_view_entry(
         category = "debug|win (64)",
         short_name = "UAC11",
@@ -703,7 +750,6 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "win11-updater-tester-rel",
-    triggered_by = ["win-updater-builder-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -719,6 +765,7 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.WIN,
         ),
     ),
+    triggered_by = ["win-updater-builder-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "release|win (64)",
         short_name = "11",

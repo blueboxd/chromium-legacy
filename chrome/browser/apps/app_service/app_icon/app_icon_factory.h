@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -27,19 +27,43 @@ namespace content {
 class BrowserContext;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
+class SkBitmap;
+
 namespace apps {
 
 using ScaleToSize = std::map<float, int>;
 
 static const int kInvalidIconResource = 0;
 
+std::map<std::pair<int, int>, gfx::ImageSkia>& GetResourceIconCache();
+
+// Gets the ImageSkia for the resource `icon_resource` and the size
+// `size_in_dip`.
+gfx::ImageSkia CreateResizedResourceImage(int icon_resource,
+                                          int32_t size_in_dip);
+
 apps::ScaleToSize GetScaleToSize(const gfx::ImageSkia& image_skia);
+
+// Decodes `data` to a SkBitmap. The decode happens in-process, so must only be
+// done with trusted data.
+SkBitmap DecompressToSkBitmap(const unsigned char* data, size_t size);
+
+// Creates an ImageSkia for the given `bitmap` and `icon_scale`;
+gfx::ImageSkia SkBitmapToImageSkia(SkBitmap bitmap, float icon_scale);
 
 // Returns a callback that converts compressed data to an ImageSkia.
 base::OnceCallback<void(std::vector<uint8_t> compressed_data)>
 CompressedDataToImageSkiaCallback(
     base::OnceCallback<void(gfx::ImageSkia)> callback,
     float icon_scale);
+
+// Converts compressed data to a SkBitmap.
+void CompressedDataToSkBitmap(std::vector<uint8_t> compressed_data,
+                              base::OnceCallback<void(SkBitmap)> callback);
 
 // Encodes a single SkBitmap representation from the given ImageSkia to the
 // compressed PNG data. |rep_icon_scale| argument denotes, which ImageSkiaRep to
@@ -86,6 +110,11 @@ void ApplyIconEffects(IconEffects icon_effects,
                       IconValuePtr iv,
                       LoadIconCallback callback);
 
+// Encodes `iv` as a compressed PNG icon with `scale_factor`.
+void ConvertUncompressedIconToCompressedIconWithScale(float rep_icon_scale,
+                                                      LoadIconCallback callback,
+                                                      IconValuePtr iv);
+
 // Encodes |iv| as a compressed PNG icon.
 void ConvertUncompressedIconToCompressedIcon(IconValuePtr iv,
                                              LoadIconCallback callback);
@@ -106,7 +135,7 @@ void LoadIconFromWebApp(content::BrowserContext* context,
                         IconEffects icon_effects,
                         LoadIconCallback callback);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 // Requests a compressed icon data for an web app identified by `web_app_id`.
 void GetWebAppCompressedIconData(content::BrowserContext* context,
                                  const std::string& web_app_id,
@@ -121,6 +150,22 @@ void GetChromeAppCompressedIconData(content::BrowserContext* context,
                                     int size_in_dip,
                                     ui::ResourceScaleFactor scale_factor,
                                     LoadIconCallback callback);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Requests a compressed icon data for an ARC app identified by `app_id`.
+void GetArcAppCompressedIconData(content::BrowserContext* context,
+                                 const std::string& app_id,
+                                 int size_in_dip,
+                                 ui::ResourceScaleFactor scale_factor,
+                                 LoadIconCallback callback);
+
+// Requests a compressed icon data for a Guest OS app identified by `app_id`.
+void GetGuestOSAppCompressedIconData(content::BrowserContext* context,
+                                     const std::string& app_id,
+                                     int size_in_dip,
+                                     ui::ResourceScaleFactor scale_factor,
+                                     LoadIconCallback callback);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Loads an icon from a FilePath. If that fails, it calls the fallback.

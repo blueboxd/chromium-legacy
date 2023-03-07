@@ -28,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -39,7 +40,29 @@ constexpr char kAddFencedFrameScript[] = R"(
   const fenced_frame = document.createElement('fencedframe');
   document.body.appendChild(fenced_frame);
 )";
-}
+
+class FixedTopicsContentBrowserClient : public ContentBrowserClient {
+ public:
+  bool HandleTopicsWebApi(
+      const url::Origin& context_origin,
+      content::RenderFrameHost* main_frame,
+      browsing_topics::ApiCallerSource caller_source,
+      bool get_topics,
+      bool observe,
+      std::vector<blink::mojom::EpochTopicPtr>& topics) override {
+    blink::mojom::EpochTopicPtr result_topic = blink::mojom::EpochTopic::New();
+    result_topic->topic = 1;
+    result_topic->config_version = "chrome.1";
+    result_topic->taxonomy_version = "1";
+    result_topic->model_version = "2";
+    result_topic->version = "chrome.1:1:2";
+
+    topics.push_back(std::move(result_topic));
+
+    return true;
+  }
+};
+}  // namespace
 
 class PrivacySandboxAdsAPIsBrowserTestBase : public ContentBrowserTest {
  public:
@@ -57,12 +80,11 @@ class PrivacySandboxAdsAPIsBrowserTestBase : public ContentBrowserTest {
               last_request_is_topics_request_ =
                   params->url_request.browsing_topics;
 
-              last_resource_request_url_ = params->url_request.url;
-              if (resource_request_url_waiter_ &&
-                  resource_request_url_waiter_->running() &&
-                  last_resource_request_url_ ==
-                      expected_last_resource_request_url_) {
-                resource_request_url_waiter_->Quit();
+              last_topics_header_.reset();
+              std::string topics_header;
+              if (params->url_request.headers.GetHeader("Sec-Browsing-Topics",
+                                                        &topics_header)) {
+                last_topics_header_ = topics_header;
               }
 
               URLLoaderInterceptor::WriteResponse(
@@ -72,9 +94,14 @@ class PrivacySandboxAdsAPIsBrowserTestBase : public ContentBrowserTest {
 
               return true;
             }));
+
+    original_client_ = SetBrowserClientForTesting(&browser_client_);
   }
 
-  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
+  void TearDownOnMainThread() override {
+    SetBrowserClientForTesting(original_client_);
+    url_loader_interceptor_.reset();
+  }
 
   WebContents* web_contents() { return shell()->web_contents(); }
 
@@ -88,23 +115,16 @@ class PrivacySandboxAdsAPIsBrowserTestBase : public ContentBrowserTest {
     return last_request_is_topics_request_;
   }
 
-  void WaitForResourceRequestURL(const GURL& url) {
-    DCHECK(!resource_request_url_waiter_);
-
-    if (last_resource_request_url_ == url)
-      return;
-
-    expected_last_resource_request_url_ = url;
-    resource_request_url_waiter_ = std::make_unique<base::RunLoop>();
-    resource_request_url_waiter_->Run();
+  const absl::optional<std::string>& last_topics_header() const {
+    return last_topics_header_;
   }
 
  private:
   bool last_request_is_topics_request_ = false;
+  absl::optional<std::string> last_topics_header_;
 
-  std::unique_ptr<base::RunLoop> resource_request_url_waiter_;
-  GURL expected_last_resource_request_url_;
-  GURL last_resource_request_url_;
+  FixedTopicsContentBrowserClient browser_client_;
+  raw_ptr<ContentBrowserClient> original_client_ = nullptr;
 
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
 };
@@ -115,7 +135,7 @@ class PrivacySandboxAdsAPIsAllEnabledBrowserTest
   PrivacySandboxAdsAPIsAllEnabledBrowserTest() {
     feature_list_.InitWithFeatures(
         {blink::features::kPrivacySandboxAdsAPIs,
-         blink::features::kBrowsingTopics,
+         blink::features::kBrowsingTopics, blink::features::kBrowsingTopicsXHR,
          blink::features::kInterestGroupStorage, blink::features::kFencedFrames,
          blink::features::kSharedStorageAPI},
         /*disabled_features=*/{});
@@ -188,6 +208,10 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
                  GURL("https://example.test/page_without_ads_apis_ot.html"))));
 
   EXPECT_TRUE(last_request_is_topics_request());
+  EXPECT_TRUE(last_topics_header());
+  EXPECT_EQ(last_topics_header().value(),
+            "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_"
+            "version=\"2\";taxonomy_version=\"1\"");
 }
 
 IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
@@ -203,36 +227,69 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
                  GURL("https://example.test/page_without_ads_apis_ot.html"))));
 
   EXPECT_FALSE(last_request_is_topics_request());
+  EXPECT_FALSE(last_topics_header());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PrivacySandboxAdsAPIsAllEnabledBrowserTest,
-    OriginTrialEnabled_TopicsNotAllowedForServiceWorkerFetch) {
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
+                       OriginTrialEnabled_TopicsAllowedForXhr) {
   EXPECT_TRUE(NavigateToURL(
       shell(), GURL("https://example.test/page_with_ads_apis_ot.html")));
 
-  EXPECT_EQ(
-      "ok",
-      EvalJs(
-          shell()->web_contents(),
-          JsReplace(
-              "setupServiceWorker($1)",
-              GURL(
-                  "https://example.test/"
-                  "fetch_topics.js?fetch_url=page_without_ads_apis_ot.html"))));
+  EXPECT_EQ("success", EvalJs(shell()->web_contents(),
+                              R"(
+    const xhr = new XMLHttpRequest();
 
-  WaitForResourceRequestURL(
-      GURL("https://example.test/page_without_ads_apis_ot.html"));
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        domAutomationController.send('success');
+      }
+    }
+
+    xhr.open('GET', 'https://example.test/page_without_ads_apis_ot.html');
+    xhr.deprecatedBrowsingTopics = true;
+    xhr.send();)",
+                              EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+
+  EXPECT_TRUE(last_request_is_topics_request());
+  EXPECT_TRUE(last_topics_header());
+  EXPECT_EQ(last_topics_header().value(),
+            "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_"
+            "version=\"2\";taxonomy_version=\"1\"");
+}
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
+                       OriginTrialDisabled_TopicsNotAllowedForXhr) {
+  // Navigate to a page without an OT token.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_without_ads_apis_ot.html")));
+
+  EXPECT_EQ("success", EvalJs(shell()->web_contents(),
+                              R"(
+    const xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        domAutomationController.send('success');
+      }
+    }
+
+    xhr.open('GET', 'https://example.test/page_without_ads_apis_ot.html');
+    xhr.deprecatedBrowsingTopics = true;
+    xhr.send();)",
+                              EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
   EXPECT_FALSE(last_request_is_topics_request());
+  EXPECT_FALSE(last_topics_header());
 }
 
 class PrivacySandboxAdsAPIsTopicsDisabledBrowserTest
     : public PrivacySandboxAdsAPIsBrowserTestBase {
  public:
   PrivacySandboxAdsAPIsTopicsDisabledBrowserTest() {
-    feature_list_.InitWithFeatures({blink::features::kPrivacySandboxAdsAPIs},
-                                   {blink::features::kBrowsingTopics});
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPrivacySandboxAdsAPIs,
+                              blink::features::kBrowsingTopicsXHR},
+        /*disabled_features=*/{blink::features::kBrowsingTopics});
   }
 
  private:
@@ -252,6 +309,113 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsDisabledBrowserTest,
                           "browsing-topics')"));
 
   EXPECT_EQ(false, EvalJs(shell(), "document.browsingTopics !== undefined"));
+}
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsDisabledBrowserTest,
+                       OriginTrialEnabled_TopicsNotAllowedForFetch) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_with_ads_apis_ot.html")));
+
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(),
+             content::JsReplace(
+                 "fetch($1, {browsingTopics: true})",
+                 GURL("https://example.test/page_without_ads_apis_ot.html"))));
+
+  EXPECT_FALSE(last_request_is_topics_request());
+  EXPECT_FALSE(last_topics_header());
+}
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsDisabledBrowserTest,
+                       OriginTrialEnabled_TopicsNotAllowedForXhr) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_with_ads_apis_ot.html")));
+
+  EXPECT_EQ("success", EvalJs(shell()->web_contents(),
+                              R"(
+    const xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        domAutomationController.send('success');
+      }
+    }
+
+    xhr.open('GET', 'https://example.test/page_without_ads_apis_ot.html');
+    xhr.deprecatedBrowsingTopics = true;
+    xhr.send();)",
+                              EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+
+  EXPECT_FALSE(last_request_is_topics_request());
+  EXPECT_FALSE(last_topics_header());
+}
+
+class PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest
+    : public PrivacySandboxAdsAPIsBrowserTestBase {
+ public:
+  PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPrivacySandboxAdsAPIs,
+                              blink::features::kBrowsingTopics},
+        /*disabled_features=*/{blink::features::kBrowsingTopicsXHR});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest,
+                       OriginTrialEnabled_TopicsFeatureDetected) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_with_ads_apis_ot.html")));
+
+  EXPECT_EQ(true, EvalJs(shell(),
+                         "document.featurePolicy.features().includes('"
+                         "browsing-topics')"));
+
+  EXPECT_EQ(true, EvalJs(shell(), "document.browsingTopics !== undefined"));
+}
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest,
+                       OriginTrialEnabled_TopicsAllowedForFetch) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_with_ads_apis_ot.html")));
+
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents(),
+             content::JsReplace(
+                 "fetch($1, {browsingTopics: true})",
+                 GURL("https://example.test/page_without_ads_apis_ot.html"))));
+
+  EXPECT_TRUE(last_request_is_topics_request());
+  EXPECT_TRUE(last_topics_header());
+  EXPECT_EQ(last_topics_header().value(),
+            "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_"
+            "version=\"2\";taxonomy_version=\"1\"");
+}
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest,
+                       OriginTrialEnabled_TopicsNotAllowedForXhr) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_with_ads_apis_ot.html")));
+
+  EXPECT_EQ("success", EvalJs(shell()->web_contents(),
+                              R"(
+    const xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        domAutomationController.send('success');
+      }
+    }
+
+    xhr.open('GET', 'https://example.test/page_without_ads_apis_ot.html');
+    xhr.deprecatedBrowsingTopics = true;
+    xhr.send();)",
+                              EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+
+  EXPECT_FALSE(last_request_is_topics_request());
+  EXPECT_FALSE(last_topics_header());
 }
 
 class PrivacySandboxAdsAPIsSharedStorageDisabledBrowserTest

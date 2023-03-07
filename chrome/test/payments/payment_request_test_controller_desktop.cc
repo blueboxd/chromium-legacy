@@ -60,6 +60,10 @@ class PaymentRequestTestController::ObserverConverter
       description->total = total->amount->currency + " " + total->amount->value;
     }
     controller_->set_app_descriptions(descriptions);
+    controller_->set_shipping_section_visible(
+        payment_request->state()->ShouldShowShippingSection());
+    controller_->set_contact_section_visible(
+        payment_request->state()->ShouldShowContactSection());
 
     controller_->OnAppListReady();
   }
@@ -68,6 +72,7 @@ class PaymentRequestTestController::ObserverConverter
   void OnConnectionTerminated() override {
     controller_->OnConnectionTerminated();
   }
+  void OnPayCalled() override {}
   void OnAbortCalled() override { controller_->OnAbortCalled(); }
   void OnCompleteCalled() override { controller_->OnCompleteCalled(); }
 
@@ -97,33 +102,38 @@ PaymentRequestTestController::GetPaymentHandlerWebContents() {
 }
 
 bool PaymentRequestTestController::ConfirmPayment() {
-  if (!delegate_)
+  if (!delegate_) {
     return false;
+  }
 
   PaymentRequestDialog* dialog = delegate_->GetDialogForTesting();
-  if (!dialog)
+  if (!dialog) {
     return false;
+  }
 
   dialog->ConfirmPaymentForTesting();
   return true;
 }
 
 bool PaymentRequestTestController::ClickOptOut() {
-  if (!delegate_)
+  if (!delegate_) {
     return false;
+  }
 
   PaymentRequestDialog* dialog = delegate_->GetDialogForTesting();
   SecurePaymentConfirmationNoCreds* no_creds_dialog =
       delegate_->GetNoMatchingCredentialsDialogForTesting();
-  if (!dialog && !no_creds_dialog)
+  if (!dialog && !no_creds_dialog) {
     return false;
+  }
 
   // The SPC dialog will exist, but will not be showing a view, when the
   // no-matching-creds dialog is present. Therefore, we have to check the
   // no-matching-creds case first, as it will only be present when it is showing
   // a view.
-  if (no_creds_dialog)
+  if (no_creds_dialog) {
     return no_creds_dialog->ClickOptOutForTesting();
+  }
   return dialog->ClickOptOutForTesting();
 }
 
@@ -132,20 +142,24 @@ bool PaymentRequestTestController::ClickPaymentHandlerCloseButton() {
 }
 
 bool PaymentRequestTestController::CloseDialog() {
-  if (!delegate_)
+  if (!delegate_) {
     return false;
+  }
 
   PaymentRequestDialog* dialog = delegate_->GetDialogForTesting();
   SecurePaymentConfirmationNoCreds* no_creds_dialog =
       delegate_->GetNoMatchingCredentialsDialogForTesting();
-  if (!dialog && !no_creds_dialog)
+  if (!dialog && !no_creds_dialog) {
     return false;
+  }
 
-  if (dialog)
+  if (dialog) {
     dialog->CloseDialog();
+  }
 
-  if (no_creds_dialog)
+  if (no_creds_dialog) {
     no_creds_dialog->CloseDialog();
+  }
 
   return true;
 }
@@ -242,33 +256,39 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
 }
 
 void PaymentRequestTestController::OnCanMakePaymentCalled() {
-  if (observer_)
+  if (observer_) {
     observer_->OnCanMakePaymentCalled();
+  }
 }
 
 void PaymentRequestTestController::OnCanMakePaymentReturned() {
-  if (observer_)
+  if (observer_) {
     observer_->OnCanMakePaymentReturned();
+  }
 }
 
 void PaymentRequestTestController::OnHasEnrolledInstrumentCalled() {
-  if (observer_)
+  if (observer_) {
     observer_->OnHasEnrolledInstrumentCalled();
+  }
 }
 
 void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
-  if (observer_)
+  if (observer_) {
     observer_->OnHasEnrolledInstrumentReturned();
+  }
 }
 
 void PaymentRequestTestController::OnAppListReady() {
-  if (observer_)
+  if (observer_) {
     observer_->OnAppListReady();
+  }
 }
 
 void PaymentRequestTestController::OnErrorDisplayed() {
-  if (observer_)
+  if (observer_) {
     observer_->OnErrorDisplayed();
+  }
 }
 
 void PaymentRequestTestController::OnCompleteCalled() {
@@ -284,18 +304,21 @@ void PaymentRequestTestController::OnUIDisplayed() {
 }
 
 void PaymentRequestTestController::OnNotSupportedError() {
-  if (observer_)
+  if (observer_) {
     observer_->OnNotSupportedError();
+  }
 }
 
 void PaymentRequestTestController::OnConnectionTerminated() {
-  if (observer_)
+  if (observer_) {
     observer_->OnConnectionTerminated();
+  }
 }
 
 void PaymentRequestTestController::OnAbortCalled() {
-  if (observer_)
+  if (observer_) {
     observer_->OnAbortCalled();
+  }
 }
 
 }  // namespace payments

@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -32,7 +32,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/nearby/src/connections/implementation/service_controller_router.h"
 
-namespace location::nearby::connections {
+namespace nearby::connections {
 
 class Core;
 
@@ -51,7 +51,7 @@ class NearbyConnections : public mojom::NearbyConnections {
   // destroy this instance.
   NearbyConnections(
       mojo::PendingReceiver<mojom::NearbyConnections> nearby_connections,
-      location::nearby::api::LogMessage::Severity min_log_severity,
+      nearby::api::LogMessage::Severity min_log_severity,
       base::OnceClosure on_disconnect);
 
   NearbyConnections(const NearbyConnections&) = delete;
@@ -164,6 +164,6 @@ class NearbyConnections : public mojom::NearbyConnections {
   base::WeakPtrFactory<NearbyConnections> weak_ptr_factory_{this};
 };
 
-}  // namespace location::nearby::connections
+}  // namespace nearby::connections
 
 #endif  // CHROME_SERVICES_SHARING_NEARBY_NEARBY_CONNECTIONS_H_

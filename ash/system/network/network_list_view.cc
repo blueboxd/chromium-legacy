@@ -28,7 +28,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
@@ -45,24 +45,23 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 
-using chromeos::network_config::IsInhibited;
-using chromeos::network_config::NetworkTypeMatchesType;
-using chromeos::network_config::StateIsConnected;
-
-using chromeos::network_config::mojom::ActivationStateType;
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::DeviceStatePropertiesPtr;
-using chromeos::network_config::mojom::DeviceStateType;
-using chromeos::network_config::mojom::FilterType;
-using chromeos::network_config::mojom::NetworkFilter;
-using chromeos::network_config::mojom::NetworkStateProperties;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::OncSource;
-using chromeos::network_config::mojom::ProxyMode;
-
 namespace ash {
+
 namespace {
+
+using ::chromeos::network_config::IsInhibited;
+using ::chromeos::network_config::NetworkTypeMatchesType;
+using ::chromeos::network_config::StateIsConnected;
+using ::chromeos::network_config::mojom::ActivationStateType;
+using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::DeviceStateType;
+using ::chromeos::network_config::mojom::FilterType;
+using ::chromeos::network_config::mojom::NetworkFilter;
+using ::chromeos::network_config::mojom::NetworkStateProperties;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
+using ::chromeos::network_config::mojom::OncSource;
+using ::chromeos::network_config::mojom::ProxyMode;
 
 const int kMobileNetworkBatteryIconSize = 20;
 const int kPowerStatusPaddingRight = 10;
@@ -251,8 +250,9 @@ void NetworkListView::OnGetNetworkStateList(
   for (auto& network : networks) {
     ConnectionStateType connection_state = network->connection_state;
     if (network->type == NetworkType::kVPN) {
-      if (chromeos::network_config::StateIsConnected(connection_state))
+      if (StateIsConnected(connection_state)) {
         vpn_connected_ = true;
+      }
       continue;
     }
 

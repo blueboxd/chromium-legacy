@@ -9,9 +9,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1719,7 +1719,7 @@ TEST_F(PasswordSyncBridgeTest,
 }
 
 TEST_F(PasswordSyncBridgeTest,
-       TrimRemoteSpecificsForCachingPreservesOnlyUnknownFields) {
+       TrimAllSupportedFieldsFromRemoteSpecificsPreservesOnlyUnknownFields) {
   sync_pb::EntitySpecifics specifics_with_only_unknown_fields;
   *specifics_with_only_unknown_fields.mutable_password()
        ->mutable_client_only_encrypted_data()
@@ -1753,7 +1753,7 @@ TEST_F(PasswordSyncBridgeTest,
        ->mutable_unknown_fields() = "unknown_fields";
 
   sync_pb::EntitySpecifics trimmed_specifics =
-      bridge()->TrimRemoteSpecificsForCaching(specifics);
+      bridge()->TrimAllSupportedFieldsFromRemoteSpecifics(specifics);
 
   EXPECT_EQ(trimmed_specifics.SerializeAsString(),
             specifics_with_only_unknown_fields.SerializeAsString());
@@ -1766,7 +1766,9 @@ TEST_F(PasswordSyncBridgeTest,
       specifics.mutable_password()->mutable_client_only_encrypted_data();
   password_data->set_username_value("username_value");
 
-  EXPECT_EQ(bridge()->TrimRemoteSpecificsForCaching(specifics).ByteSizeLong(),
+  EXPECT_EQ(bridge()
+                ->TrimAllSupportedFieldsFromRemoteSpecifics(specifics)
+                .ByteSizeLong(),
             0u);
 }
 

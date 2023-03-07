@@ -11,13 +11,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -246,9 +246,9 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
 
     // Create PreloadingPrediction and PreloadingAttempt for NoStatePrefetch.
     preloading_data->AddPreloadingPrediction(
-        content::PreloadingPredictor::kLinkRel, confidence, same_url_matcher);
+        content::preloading_predictor::kLinkRel, confidence, same_url_matcher);
     attempt = preloading_data->AddPreloadingAttempt(
-        content::PreloadingPredictor::kLinkRel,
+        content::preloading_predictor::kLinkRel,
         content::PreloadingType::kNoStatePrefetch, same_url_matcher);
   }
   return StartPrefetchingWithPreconnectFallback(

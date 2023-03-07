@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
@@ -894,16 +894,16 @@ void MediaStreamVideoTrack::GetSettings(
     settings.aspect_ratio = static_cast<double>(width_) / height_;
   }
 
-  // 0.0 means the track is using the source's frame rate.
-  if (frame_rate_ != 0.0) {
-    settings.frame_rate = frame_rate_;
+  if (frame_rate_.has_value()) {
+    settings.frame_rate = *frame_rate_;
   }
 
   absl::optional<media::VideoCaptureFormat> format =
       source_->GetCurrentFormat();
   if (format) {
-    if (frame_rate_ == 0.0)
+    if (!frame_rate_.has_value()) {
       settings.frame_rate = format->frame_rate;
+    }
   } else {
     // Format is only set for local tracks. For other tracks, use the frame rate
     // reported through settings callback SetSizeAndComputedFrameRate().
@@ -1032,7 +1032,7 @@ void MediaStreamVideoTrack::StartTimerForRequestingFrames() {
   }
 
   base::TimeDelta refresh_interval = ComputeRefreshIntervalFromBounds(
-      base::Hertz(required_min_fps), min_frame_rate_, max_frame_rate_);
+      base::Hertz(required_min_fps), min_frame_rate(), max_frame_rate());
 
   if (refresh_interval.is_max()) {
     refresh_timer_.Stop();

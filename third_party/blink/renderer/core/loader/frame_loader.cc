@@ -54,6 +54,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -92,6 +93,7 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/idna_util.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
@@ -123,6 +125,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -818,9 +821,28 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     }
   }
 
+  // Warn if the resource URL's hostname contains IDNA deviation characters.
+  // Only warn if the resource URL's origin is different than its requestor
+  // (we don't want to warn for <img src="faß.de/image.img"> on faß.de).
+  // TODO(crbug.com/1396475): Remove once Non-Transitional mode is shipped.
+  if (resource_request.RequestorOrigin() &&
+      !resource_request.RequestorOrigin()->IsSameOriginWith(
+          SecurityOrigin::Create(url).get()) &&
+      url.HasIDNA2008DeviationCharacter()) {
+    String message = GetConsoleWarningForIDNADeviationCharacters(url);
+    if (!message.empty()) {
+      request.GetOriginWindow()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kSecurity,
+              mojom::ConsoleMessageLevel::kWarning, message));
+      origin_window->CountUse(
+          WebFeature::kIDNA2008DeviationCharacterInHostnameOfIFrame);
+    }
+  }
+
   Client()->BeginNavigation(
-      resource_request, request.GetFrameType(), origin_window,
-      nullptr /* document_loader */, navigation_type,
+      resource_request, request.GetRequestorBaseURL(), request.GetFrameType(),
+      origin_window, nullptr /* document_loader */, navigation_type,
       request.GetNavigationPolicy(), frame_load_type,
       CalculateClientRedirectPolicy(
           request.ClientRedirectReason(), frame_load_type,
@@ -1038,40 +1060,35 @@ void FrameLoader::CommitNavigation(
   // initiated from inside the fenced frame. Embedder-initiated navigations
   // use a unique origin (in `FencedFrame::Navigate`), so the requestor is
   // always considered cross-origin by the check (in MPArch).
+  // TODO(crbug.com/1381158): Move the checks for whether fenced frame reporting
+  // metadata should be copied or not, to the browser process.
   bool is_requestor_same_origin =
       !navigation_params->requestor_origin.IsNull() &&
       navigation_params->requestor_origin.IsSameOriginWith(
           WebSecurityOrigin::Create(navigation_params->url));
   if (is_requestor_same_origin) {
-    for (const WebNavigationParams::RedirectInfo& redirect :
-         navigation_params->redirects) {
-      is_requestor_same_origin &=
-          navigation_params->requestor_origin.IsSameOriginWith(
+    // Check if all redirects are same origin with `requestor_origin`.
+    // If there is a cross-origin redirect, renderer will mark the fenced frame
+    // having no associated reporting metadata.
+    auto has_same_origin_with_requestor =
+        [&requestor_origin = std::as_const(
+             navigation_params->requestor_origin)](const auto& redirect) {
+          return requestor_origin.IsSameOriginWith(
               WebSecurityOrigin::Create(redirect.new_url));
-    }
+        };
+    is_requestor_same_origin = base::ranges::all_of(
+        navigation_params->redirects, has_same_origin_with_requestor);
   }
   if (is_requestor_same_origin) {
-    const absl::optional<blink::FencedFrameReporting>&
-        old_fenced_frame_reporting = document_loader_->FencedFrameReporting();
-    // In urn iframes, embedder-initiated navigations may be same-origin, so
-    // this isn't true.
-    if (navigation_params->fenced_frame_reporting) {
+    if (navigation_params->has_fenced_frame_reporting) {
+      // In urn iframes, embedder-initiated navigations may be same-origin, so
+      // this isn't true.
       DCHECK(!frame_->IsFencedFrameRoot() &&
              blink::features::IsAllowURNsInIframeEnabled());
-    }
-
-    if (!navigation_params->fenced_frame_reporting &&
-        old_fenced_frame_reporting) {
-      navigation_params->fenced_frame_reporting.emplace();
-      for (const auto& [destination, event_type_url] :
-           old_fenced_frame_reporting->metadata) {
-        base::flat_map<std::string, GURL> data;
-        for (const auto& [event_type, url] : event_type_url) {
-          data.emplace(event_type.Utf8(), url);
-        }
-        navigation_params->fenced_frame_reporting->metadata.emplace(
-            destination, std::move(data));
-      }
+    } else if (document_loader_->HasFencedFrameReporting()) {
+      // Fenced frame reporting metadata persists across same-origin navigations
+      // initiated from inside the fenced frame.
+      navigation_params->has_fenced_frame_reporting = true;
     }
   }
 
@@ -1164,6 +1181,10 @@ void FrameLoader::CommitNavigation(
     policy_container = PolicyContainer::CreateFromWebPolicyContainer(
         std::move(navigation_params->policy_container));
   }
+
+  base::flat_map<mojom::blink::RuntimeFeatureState, bool> override_values =
+      navigation_params->modified_runtime_features;
+
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
@@ -1174,6 +1195,14 @@ void FrameLoader::CommitNavigation(
       new_document_loader,
       ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()->history_item,
       commit_reason);
+
+  // Now that the RuntimeFeatureStateOverrideContext has been created, set the
+  // override values.
+  // TODO(crbug.com/1377000): Move this inside CommitNavigation() and put it
+  // alongside the other state initialization.
+  frame_->DomWindow()
+      ->GetRuntimeFeatureStateOverrideContext()
+      ->ApplyOverrideValuesFromParams(override_values);
 
   RestoreScrollPositionAndViewState();
 

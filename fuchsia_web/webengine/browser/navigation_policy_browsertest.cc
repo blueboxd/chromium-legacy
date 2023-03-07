@@ -4,6 +4,7 @@
 
 #include <fuchsia/web/cpp/fidl.h>
 
+#include "base/task/single_thread_task_runner.h"
 #include "content/public/test/browser_test.h"
 #include "fuchsia_web/common/test/frame_test_util.h"
 #include "fuchsia_web/common/test/test_navigation_listener.h"
@@ -54,6 +55,11 @@ class NavigationPolicyTest : public WebEngineBrowserTest {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(
         frame_impl_->navigation_policy_handler()->is_provider_connected());
+  }
+
+  void TearDownOnMainThread() override {
+    frame_ = {};
+    WebEngineBrowserTest::TearDownOnMainThread();
   }
 
  protected:

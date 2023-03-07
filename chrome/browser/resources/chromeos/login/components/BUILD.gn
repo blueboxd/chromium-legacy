@@ -5,9 +5,20 @@
 import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
-import("//tools/polymer/polymer.gni")
-import("//ui/webui/resources/tools/js_modulizer.gni")
-import("../oobe_auto_imports.gni")
+import("//tools/polymer/html_to_wrapper.gni")
+
+group("web_components") {
+  public_deps = [
+    ":html_wrapper_files",
+    ":web_components_local",
+    "./behaviors:copy_js",
+    "./buttons:copy_js",
+    "./buttons:web_components",
+    "./common_styles:css_wrapper_files",
+    "./dialogs:web_components",
+    "./oobe_vars:css_wrapper_files",
+  ]
+}
 
 group("closure_compile") {
   deps = [
@@ -24,9 +35,9 @@ group("closure_compile") {
     ":gaia_header",
     ":gaia_input_form",
     ":hd_iron_icon",
-    ":keyboard_utils_for_injection",
-    ":keyboard_utils_for_injection.m",
-    ":long_touch_detector.m",
+    ":keyboard_utils",
+    ":keyboard_utils_oobe",
+    ":long_touch_detector",
     ":network_select_login",
     ":notification_card",
     ":oobe_a11y_option",
@@ -34,32 +45,18 @@ group("closure_compile") {
     ":oobe_carousel",
     ":oobe_cr_lottie",
     ":oobe_i18n_dropdown",
-    ":oobe_icons.m",
-    ":oobe_network_icons.m",
+    ":oobe_icons.html",
+    ":oobe_network_icons.html",
     ":oobe_screens_list",
     ":oobe_select",
     ":oobe_slide",
     ":oobe_types",
     ":progress_list_item",
     ":security_token_pin",
-    ":test_util.m",
     ":throbber_notice",
     ":web_view_helper",
     ":web_view_loader",
   ]
-}
-
-group("polymer3_elements") {
-  public_deps = [
-                  "behaviors:modulize",
-                  "common_styles:polymer3_elements",
-                  "oobe_vars:polymer3_elements",
-
-                  # Local targets
-                  ":oobe_icons_module",
-                  ":oobe_icons_module",
-                  ":oobe_network_icons_module",
-                ] + [ ":modulize" ]
 }
 
 ###############################
@@ -121,16 +118,17 @@ js_library("hd_iron_icon") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("keyboard_utils_for_injection.m") {
+js_library("keyboard_utils") {
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-js_library("keyboard_utils_for_injection") {
+js_library("keyboard_utils_oobe") {
 }
 
-js_library("long_touch_detector.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/long_touch_detector.m.js" ]
+js_library("long_touch_detector") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/long_touch_detector.js" ]
   deps = []
-  extra_deps = [ ":modulize" ]
+  extra_deps = [ ":copy_js" ]
 }
 
 js_library("network_select_login") {
@@ -163,10 +161,10 @@ js_library("oobe_apps_list") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("oobe_icons.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_icons.m.js" ]
+js_library("oobe_icons.html") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_icons.html.js" ]
   deps = []
-  extra_deps = [ ":oobe_icons_module" ]
+  extra_deps = [ ":html_wrapper_files" ]
 }
 
 js_library("oobe_i18n_dropdown") {
@@ -198,10 +196,10 @@ js_library("oobe_cr_lottie") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("oobe_network_icons.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_network_icons.m.js" ]
+js_library("oobe_network_icons.html") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_network_icons.html.js" ]
   deps = []
-  extra_deps = [ ":oobe_network_icons_module" ]
+  extra_deps = [ ":html_wrapper_files" ]
 }
 
 js_library("oobe_screens_list") {
@@ -257,12 +255,6 @@ js_library("throbber_notice") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("test_util.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/test_util.m.js" ]
-  deps = []
-  extra_deps = [ ":modulize" ]
-}
-
 js_library("web_view_helper") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/web_view_helper.js" ]
   deps = []
@@ -275,30 +267,12 @@ js_library("web_view_loader") {
   extra_deps = [ ":copy_js" ]
 }
 
-polymer_modulizer("oobe_icons") {
-  js_file = "oobe_icons.m.js"
-  html_file = "oobe_icons.html"
-  html_type = "iron-iconset"
-}
-
-polymer_modulizer("oobe_network_icons") {
-  js_file = "oobe_network_icons.m.js"
-  html_file = "oobe_network_icons.html"
-  html_type = "iron-iconset"
-}
-
-js_modulizer("modulize") {
-  input_files = [
-    "long_touch_detector.js",
-    "test_util.js",
-  ]
-  namespace_rewrites = []
-}
-
 # Copy existing files to output directory for closure compilation.
 copy("copy_js") {
   sources = [
     "display_manager_types.js",
+    "keyboard_utils.js",
+    "long_touch_detector.js",
     "oobe_select.js",
     "oobe_types.js",
     "web_view_helper.js",
@@ -307,7 +281,15 @@ copy("copy_js") {
   outputs = [ "$target_gen_dir/{{source_file_part}}" ]
 }
 
-html_to_js("web_components") {
+html_to_wrapper("html_wrapper_files") {
+  in_files = [
+    "oobe_icons.html",
+    "oobe_network_icons.html",
+  ]
+  use_js = true
+}
+
+html_to_js("web_components_local") {
   js_files = [
     "gaia_button.js",
     "gaia_dialog.js",

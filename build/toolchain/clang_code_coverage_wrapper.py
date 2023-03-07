@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -46,7 +46,6 @@ Example usage:
       --files-to-instrument=coverage_instrumentation_input.txt
 """
 
-from __future__ import print_function
 
 import argparse
 import os

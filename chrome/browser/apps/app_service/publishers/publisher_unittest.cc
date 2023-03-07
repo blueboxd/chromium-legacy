@@ -16,14 +16,15 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_apps.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager_impl.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
@@ -32,7 +33,6 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/permission.h"
-#include "components/services/app_service/public/cpp/publisher_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -75,7 +75,7 @@ scoped_refptr<extensions::Extension> MakeExtensionApp(
   base::Value::Dict value;
   value.Set("name", name);
   value.Set("version", version);
-  base::ListValue scripts;
+  base::Value::List scripts;
   scripts.Append("script.js");
   value.SetByDottedPath("app.background.scripts", std::move(scripts));
   scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
@@ -318,7 +318,8 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
     web_app_info->title = base::UTF8ToUTF16(app_name);
     web_app_info->start_url = kAppUrl;
     web_app_info->scope = kAppUrl;
-    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    web_app_info->user_display_mode =
+        web_app::mojom::UserDisplayMode::kStandalone;
 
     return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
@@ -468,6 +469,14 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
               NOTREACHED();
             }));
   }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  PromiseAppPtr& GetPromiseApp(const PackageId& package_id) {
+    PromiseAppRegistryCache& cache =
+        AppServiceProxyFactory::GetForProfile(profile())
+            ->PromiseAppRegistryCache();
+    return cache.promise_app_map_[package_id];
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -1375,5 +1384,28 @@ TEST_F(PublisherTest, WebAppsOnApps) {
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PublisherTest, ArcPublishPromiseApps) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(ash::features::kPromiseIcons);
+
+  ArcAppTest arc_test;
+  arc_test.SetUp(profile());
+  std::string package_name = "test.package.name";
+  PackageId package_id = PackageId(AppType::kArc, package_name);
+
+  // Confirm that there isn't a promise app yet.
+  ASSERT_TRUE(GetPromiseApp(package_id) == nullptr);
+
+  // Notify the publisher about a started installation.
+  arc_test.app_instance()->SendInstallationStarted(package_name);
+
+  // Verify the ARC promise app is added to PromiseAppRegistryCache.
+  PromiseAppPtr& promise_app = GetPromiseApp(package_id);
+  ASSERT_FALSE(promise_app == nullptr);
+  ASSERT_EQ(promise_app->package_id, package_id);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace apps

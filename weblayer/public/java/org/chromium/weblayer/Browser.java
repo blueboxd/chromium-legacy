@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IMediaRouteDialogFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
@@ -45,7 +47,7 @@ class Browser {
     private IBrowser mImpl;
     private final ObserverList<TabListCallback> mTabListCallbacks;
 
-    private final ObserverList<BrowserRestoreCallback> mBrowserRestoreCallbacks;
+    private final ObserverList<TabInitializationCallback> mTabInitializationCallbacks;
 
     private static int sMaxNavigationsPerTabForInstanceState;
 
@@ -76,18 +78,17 @@ class Browser {
     protected Browser() {
         mImpl = null;
         mTabListCallbacks = null;
-        mBrowserRestoreCallbacks = null;
+        mTabInitializationCallbacks = null;
     }
 
     // Constructor for browserfragment to inject the {@code tabListCallback} on startup.
-    Browser(IBrowser impl, @Nullable TabListCallback tabListCallback) {
+    Browser(IBrowser impl) {
         mImpl = impl;
         mTabListCallbacks = new ObserverList<TabListCallback>();
-        if (tabListCallback != null) {
-            mTabListCallbacks.addObserver(tabListCallback);
-        }
-        mBrowserRestoreCallbacks = new ObserverList<BrowserRestoreCallback>();
+        mTabInitializationCallbacks = new ObserverList<TabInitializationCallback>();
+    }
 
+    void initializeState() {
         try {
             mImpl.setClient(new BrowserClientImpl());
         } catch (RemoteException e) {
@@ -103,6 +104,28 @@ class Browser {
 
     IBrowser getIBrowser() {
         return mImpl;
+    }
+
+    /**
+     * Returns remote counterpart for the BrowserFragment: an {@link IBrowserFragment}.
+     */
+    IBrowserFragment connectFragment() {
+        try {
+            return mImpl.getBrowserFragmentImpl();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Returns the remote counterpart of MediaRouteDialogFragment.
+     */
+    /* package */ IMediaRouteDialogFragment createMediaRouteDialogFragment() {
+        try {
+            return mImpl.createMediaRouteDialogFragmentImpl();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     /**
@@ -312,25 +335,25 @@ class Browser {
     }
 
     /**
-     * Adds a BrowserRestoreCallback.
+     * Adds a TabInitializationCallback.
      *
-     * @param callback The BrowserRestoreCallback.
+     * @param callback The TabInitializationCallback.
      */
-    public void registerBrowserRestoreCallback(@NonNull BrowserRestoreCallback callback) {
+    public void registerTabInitializationCallback(@NonNull TabInitializationCallback callback) {
         ThreadCheck.ensureOnUiThread();
         throwIfDestroyed();
-        mBrowserRestoreCallbacks.addObserver(callback);
+        mTabInitializationCallbacks.addObserver(callback);
     }
 
     /**
-     * Removes a BrowserRestoreCallback.
+     * Removes a TabInitializationCallback.
      *
-     * @param callback The BrowserRestoreCallback.
+     * @param callback The TabInitializationCallback.
      */
-    public void unregisterBrowserRestoreCallback(@NonNull BrowserRestoreCallback callback) {
+    public void unregisterTabInitializationCallback(@NonNull TabInitializationCallback callback) {
         ThreadCheck.ensureOnUiThread();
         throwIfDestroyed();
-        mBrowserRestoreCallbacks.removeObserver(callback);
+        mTabInitializationCallbacks.removeObserver(callback);
     }
 
     /**
@@ -390,6 +413,14 @@ class Browser {
         }
     }
 
+    public void shutdown() {
+        try {
+            mImpl.shutdown();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     private final class BrowserClientImpl extends IBrowserClient.Stub {
         @Override
         public void onActiveTabChanged(int activeTabId) {
@@ -442,9 +473,9 @@ class Browser {
         }
 
         @Override
-        public void onRestoreCompleted() {
-            for (BrowserRestoreCallback callback : mBrowserRestoreCallbacks) {
-                callback.onRestoreCompleted();
+        public void onTabInitializationCompleted() {
+            for (TabInitializationCallback callback : mTabInitializationCallbacks) {
+                callback.onTabInitializationCompleted();
             }
         }
     }

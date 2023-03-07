@@ -29,10 +29,10 @@
 
 #include <atomic>
 
-#include "base/callback_forward.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
@@ -60,8 +60,6 @@ typedef const struct __CFString* CFStringRef;
 
 namespace WTF {
 
-struct AlreadyHashed;
-
 enum TextCaseSensitivity {
   kTextCaseSensitive,
   kTextCaseASCIIInsensitive,
@@ -76,7 +74,8 @@ enum StripBehavior { kStripExtraWhiteSpace, kDoNotStripWhiteSpace };
 
 typedef bool (*CharacterMatchFunctionPtr)(UChar);
 typedef bool (*IsWhiteSpaceFunctionPtr)(UChar);
-typedef HashMap<wtf_size_t, StringImpl*, AlreadyHashed> StaticStringsTable;
+typedef HashMap<wtf_size_t, StringImpl*, AlreadyHashedTraits>
+    StaticStringsTable;
 
 // You can find documentation about this class in this doc:
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
@@ -948,12 +947,12 @@ inline void StringImpl::PrependTo(BufferType& result,
 }
 
 template <typename T>
-struct DefaultHash;
+struct HashTraits;
 // Defined in string_hash.h.
 template <>
-struct DefaultHash<StringImpl*>;
+struct HashTraits<StringImpl*>;
 template <>
-struct DefaultHash<scoped_refptr<StringImpl>>;
+struct HashTraits<scoped_refptr<StringImpl>>;
 
 }  // namespace WTF
 

@@ -391,6 +391,12 @@ namespace declarativeNetRequest {
   };
 
   [noinline_doc]
+  dictionary GetRulesFilter {
+    // If specified, only rules with matching IDs are included.
+    long[]? ruleIds;
+  };
+
+  [noinline_doc]
   dictionary MatchedRuleInfo {
     MatchedRule rule;
 
@@ -546,6 +552,20 @@ namespace declarativeNetRequest {
     DOMString[]? enableRulesetIds;
   };
 
+  dictionary UpdateStaticRulesOptions {
+    // The id corresponding to a static $(ref:Ruleset).
+    DOMString rulesetId;
+    // Set of ids corresponding to rules in the $(ref:Ruleset) to disable.
+    long[]? disableRuleIds;
+    // Set of ids corresponding to rules in the $(ref:Ruleset) to enable.
+    long[]? enableRuleIds;
+  };
+
+  dictionary GetDisabledRuleIdsOptions {
+    // The id corresponding to a static $(ref:Ruleset).
+    DOMString rulesetId;
+  };
+
   dictionary TabActionCountUpdate {
     // The tab for which to update the action count.
     long tabId;
@@ -567,6 +587,7 @@ namespace declarativeNetRequest {
   callback GetRulesCallback = void(Rule[] rules);
   callback GetMatchedRulesCallback = void(RulesMatchedDetails details);
   callback GetEnabledRulesetsCallback = void(DOMString[] rulesetIds);
+  callback GetDisabledRuleIdsCallback = void(long[] disabledRuleIds);
   callback IsRegexSupportedCallback = void(IsRegexSupportedResult result);
   callback GetAvailableStaticRuleCountCallback = void(long count);
   callback TestMatchOutcomeCallback = void(TestMatchOutcomeResult result);
@@ -596,10 +617,15 @@ namespace declarativeNetRequest {
         UpdateRuleOptions options,
         optional EmptyCallback callback);
 
-    // Returns the current set of dynamic rules for the extension.
+    // Returns the current set of dynamic rules for the extension. Callers can
+    // optionally filter the list of fetched rules by specifying a
+    // <code>filter</code>.
+    // |filter|: An object to filter the list of fetched rules.
     // |callback|: Called with the set of dynamic rules. An error might be
     // raised in case of transient internal errors.
-    [supportsPromises] static void getDynamicRules(GetRulesCallback callback);
+    [supportsPromises] static void getDynamicRules(
+        optional GetRulesFilter filter,
+        GetRulesCallback callback);
 
     // Modifies the current set of session scoped rules for the extension.
     // The rules with IDs listed in <code>options.removeRuleIds</code> are first
@@ -622,8 +648,13 @@ namespace declarativeNetRequest {
         optional EmptyCallback callback);
 
     // Returns the current set of session scoped rules for the extension.
+    // Callers can optionally filter the list of fetched rules by specifying a
+    // <code>filter</code>.
+    // |filter|: An object to filter the list of fetched rules.
     // |callback|: Called with the set of session scoped rules.
-    [supportsPromises] static void getSessionRules(GetRulesCallback callback);
+    [supportsPromises] static void getSessionRules(
+        optional GetRulesFilter filter,
+        GetRulesCallback callback);
 
     // Updates the set of enabled static rulesets for the extension. The
     // rulesets with IDs listed in <code>options.disableRulesetIds</code> are
@@ -647,9 +678,28 @@ namespace declarativeNetRequest {
     [supportsPromises] static void getEnabledRulesets(
         GetEnabledRulesetsCallback callback);
 
+    // Disables and enables individual static rules in a $(ref:Ruleset).
+    // Changes to rules belonging to a disabled $(ref:Ruleset) will take
+    // effect the next time that it becomes enabled.
+    // |callback|: Called once the update is complete. In case of an error,
+    // $(ref:runtime.lastError) will be set and no change will be made to the
+    // enabled static rules.
+    [nodoc, supportsPromises] static void updateStaticRules(
+        UpdateStaticRulesOptions options,
+        optional EmptyCallback callback);
+
+    // Returns the list of static rules in the given $(ref:Ruleset) that are
+    // currently disabled.
+    // |options|: Specifies the ruleset to query.
+    // |callback|: Called with a list of ids that correspond to the disabled
+    // rules in that ruleset.
+    [nodoc, supportsPromises] static void getDisabledRuleIds(
+        GetDisabledRuleIdsOptions options,
+        GetDisabledRuleIdsCallback callback);
+
     // Returns all rules matched for the extension. Callers can optionally
-    // filter the list of matched rules by specifying a |filter|. This method is
-    // only available to extensions with the
+    // filter the list of matched rules by specifying a <code>filter</code>.
+    // This method is only available to extensions with the
     // <code>declarativeNetRequestFeedback</code> permission or having the
     // <code>activeTab</code> permission granted for the <code>tabId</code>
     // specified in <code>filter</code>.

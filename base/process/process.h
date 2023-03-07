@@ -20,9 +20,9 @@
 #include <lib/zx/process.h>
 #endif
 
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 #include "base/feature_list.h"
-#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_APPLE)
 #include "base/process/port_provider_mac.h"
@@ -40,6 +40,10 @@ BASE_DECLARE_FEATURE(kMacAllowBackgroundingProcesses);
 // of all threads in the process when deciding on the next thread to schedule.
 // It will help guarantee fairness between renderers.
 BASE_EXPORT BASE_DECLARE_FEATURE(kOneGroupPerRenderer);
+#endif
+
+#if BUILDFLAG(IS_WIN)
+BASE_EXPORT BASE_DECLARE_FEATURE(kUseEcoQoSForBackgroundProcess);
 #endif
 
 // Provides a move-only encapsulation of a process.
@@ -243,6 +247,13 @@ class BASE_EXPORT Process {
   // or if it has already been called.
   void InitializePriority();
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_MAC)
+  // Sets the `task_role_t` of the current task (the calling process) to
+  // TASK_DEFAULT_APPLICATION, if the MacSetDefaultTaskRole feature is
+  // enabled.
+  static void SetCurrentTaskDefaultRole();
+#endif  // BUILDFLAG(IS_MAC)
 
  private:
 #if BUILDFLAG(IS_CHROMEOS)

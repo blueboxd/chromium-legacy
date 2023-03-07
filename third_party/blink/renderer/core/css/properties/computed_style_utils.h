@@ -40,8 +40,9 @@ class CORE_EXPORT ComputedStyleUtils {
   inline static CSSValue* ZoomAdjustedPixelValueOrAuto(
       const Length& length,
       const ComputedStyle& style) {
-    if (length.IsAuto())
+    if (length.IsAuto()) {
       return CSSIdentifierValue::Create(CSSValueID::kAuto);
+    }
     return ZoomAdjustedPixelValue(length.Value(), style);
   }
 
@@ -124,6 +125,10 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValue* ValueForFontVariantEastAsian(const ComputedStyle&);
   static CSSValue* ValueForFontVariantAlternates(const ComputedStyle&);
   static CSSIdentifierValue* ValueForFontVariantPosition(const ComputedStyle&);
+  static CSSIdentifierValue* ValueForFontKerning(const ComputedStyle&);
+  static CSSIdentifierValue* ValueForFontOpticalSizing(const ComputedStyle&);
+  static CSSValue* ValueForFontFeatureSettings(const ComputedStyle&);
+  static CSSValue* ValueForFontVariationSettings(const ComputedStyle&);
   static CSSValue* SpecifiedValueForGridTrackSize(const GridTrackSize&,
                                                   const ComputedStyle&);
   static CSSValue* ValueForGridAutoTrackList(GridTrackSizingDirection,
@@ -149,6 +154,10 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValue* ValueForAnimationFillMode(Timing::FillMode);
   static CSSValue* ValueForAnimationIterationCount(double iteration_count);
   static CSSValue* ValueForAnimationPlayState(EAnimPlayState);
+  static CSSValue* ValueForAnimationRangeStart(
+      const absl::optional<Timing::TimelineOffset>&);
+  static CSSValue* ValueForAnimationRangeEnd(
+      const absl::optional<Timing::TimelineOffset>&);
   static CSSValue* ValueForAnimationTimingFunction(
       const scoped_refptr<TimingFunction>&);
   static CSSValue* ValueForAnimationTimeline(const StyleTimeline&);
@@ -160,12 +169,13 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValue* ValueForAnimationFillModeList(const CSSAnimationData*);
   static CSSValue* ValueForAnimationIterationCountList(const CSSAnimationData*);
   static CSSValue* ValueForAnimationPlayStateList(const CSSAnimationData*);
+  static CSSValue* ValueForAnimationRangeStartList(const CSSTimingData*);
+  static CSSValue* ValueForAnimationRangeEndList(const CSSTimingData*);
   static CSSValue* ValueForAnimationTimingFunctionList(const CSSTimingData*);
   static CSSValue* ValueForAnimationTimelineList(const CSSAnimationData*);
 
-  static CSSValue* SingleValueForViewTimelineShorthand(
-      const ScopedCSSName* name,
-      TimelineAxis);
+  static CSSValue* SingleValueForTimelineShorthand(const ScopedCSSName* name,
+                                                   TimelineAxis);
   static CSSValueList* ValuesForBorderRadiusCorner(const LengthSize&,
                                                    const ComputedStyle&);
   static CSSValue* ValueForBorderRadiusCorner(const LengthSize&,
@@ -276,10 +286,6 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValueList* ValuesForContainerShorthand(const ComputedStyle&,
                                                    const LayoutObject*,
                                                    bool allow_visited_style);
-  static CSSValueList* ValuesForScrollTimelineShorthand(
-      const ComputedStyle&,
-      const LayoutObject*,
-      bool allow_visited_style);
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
       scroll_customization::ScrollDirection);
   static CSSValue* ValueForGapLength(const absl::optional<Length>&,

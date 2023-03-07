@@ -71,6 +71,10 @@ crosapi::mojom::WebAppInstallResultCode EnumTraits<
           kAppNotInRegistrarAfterCommit;
     case webapps::InstallResultCode::kHaltedBySyncUninstall:
       return crosapi::mojom::WebAppInstallResultCode::kHaltedBySyncUninstall;
+    case webapps::InstallResultCode::kInstallURLInvalid:
+      return crosapi::mojom::WebAppInstallResultCode::kInstallURLInvalid;
+    case webapps::InstallResultCode::kIconDownloadingFailed:
+      return crosapi::mojom::WebAppInstallResultCode::kIconDownloadingFailed;
   };
 }
 
@@ -156,6 +160,12 @@ bool EnumTraits<crosapi::mojom::WebAppInstallResultCode,
       return true;
     case crosapi::mojom::WebAppInstallResultCode::kHaltedBySyncUninstall:
       *output = webapps::InstallResultCode::kHaltedBySyncUninstall;
+      return true;
+    case crosapi::mojom::WebAppInstallResultCode::kInstallURLInvalid:
+      *output = webapps::InstallResultCode::kInstallURLInvalid;
+      return true;
+    case crosapi::mojom::WebAppInstallResultCode::kIconDownloadingFailed:
+      *output = webapps::InstallResultCode::kIconDownloadingFailed;
       return true;
   };
 

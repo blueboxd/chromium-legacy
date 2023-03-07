@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/containers/span.h"
+#include "base/functional/callback_forward.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
@@ -128,10 +128,14 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
   IsUserVerifyingPlatformAuthenticatorAvailableOverride(
       RenderFrameHost* render_frame_host);
 
-  // Returns the WebAuthenticationRequestProxy for the |browser_context|, if
-  // any.
+  // Returns the active WebAuthenticationRequestProxy for WebAuthn requests
+  // originating from `caller_origin` in `browser_context`.
+  //
+  // If this method returns a proxy, the caller is expected to hand off WebAuthn
+  // request handling to this proxy instance.
   virtual WebAuthenticationRequestProxy* MaybeGetRequestProxy(
-      BrowserContext* browser_context);
+      BrowserContext* browser_context,
+      const url::Origin& caller_origin);
 #endif  // !IS_ANDROID
 
 #if BUILDFLAG(IS_WIN)

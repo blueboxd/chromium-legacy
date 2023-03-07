@@ -61,6 +61,8 @@ build_webui_tests("build") {
     "prefs_test_cases.ts",
     "prefs_tests.ts",
     "pref_util_tests.ts",
+    "preloading_page_test.ts",
+    "privacy_guide_fragments_test.ts",
     "privacy_guide_page_test.ts",
     "privacy_page_test.ts",
     "privacy_sandbox_page_test.ts",
@@ -98,6 +100,7 @@ build_webui_tests("build") {
     "settings_subpage_test.ts",
     "settings_toggle_button_tests.ts",
     "settings_ui_tests.ts",
+    "site_data_test.ts",
     "site_details_permission_tests.ts",
     "site_details_tests.ts",
     "site_entry_tests.ts",
@@ -180,18 +183,23 @@ build_webui_tests("build") {
   }
 
   if (is_win && is_chrome_branded) {
-    files += [
-      "chrome_cleanup_page_test.ts",
-      "incompatible_applications_page_test.ts",
-      "safety_check_chrome_cleaner_test.ts",
-      "test_chrome_cleanup_proxy.ts",
-    ]
+    files += [ "incompatible_applications_page_test.ts" ]
   }
 
-  ts_path_mappings =
-      [ "chrome://settings/*|" +
-        rebase_path("$root_gen_dir/chrome/browser/resources/settings/tsc/*",
-                    target_gen_dir) ]
+  ts_path_mappings = [
+    # Settings tests should only be importing from one of the URLs below, so
+    # that tests work both in optimize_webui=true/false modes.
+    "chrome://settings/privacy_sandbox/*|" + rebase_path(
+            "$root_gen_dir/chrome/browser/resources/settings/tsc/privacy_sandbox/*",
+            target_gen_dir),
+    "chrome://settings/settings.js|" +
+        rebase_path(
+            "$root_gen_dir/chrome/browser/resources/settings/tsc/settings.d.ts",
+            target_gen_dir),
+    "chrome://settings/lazy_load.js|" + rebase_path(
+            "$root_gen_dir/chrome/browser/resources/settings/tsc/lazy_load.d.ts",
+            target_gen_dir),
+  ]
 
   ts_definitions = [
     "//tools/typescript/definitions/autofill_private.d.ts",

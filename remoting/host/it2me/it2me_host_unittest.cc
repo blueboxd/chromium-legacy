@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -38,9 +38,10 @@
 #include "base/linux_util.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(IS_LINUX) && defined(REMOTING_USE_WAYLAND)
+#if BUILDFLAG(IS_LINUX)
 #include "remoting/host/linux/wayland_manager.h"
-#endif  // BUILDFLAG(IS_LINUX) && defined(REMOTING_USE_WAYLAND)
+#include "remoting/host/linux/wayland_utils.h"
+#endif  // BUILDFLAG(IS_LINUX)
 
 namespace remoting {
 
@@ -219,6 +220,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   absl::optional<bool> is_enterprise_session_;
   absl::optional<bool> terminate_upon_input_;
   absl::optional<bool> enable_curtaining_;
+  absl::optional<std::string> authorized_helper_;
 
   // Stores the last nat traversal policy value received.
   bool last_nat_traversal_enabled_value_ = false;
@@ -284,8 +286,10 @@ void It2MeHostTest::TearDown() {
   // Shutdown the host if it hasn't been already. Without this, the call to
   // run_loop_->Run() may never return.
   it2me_host_->Disconnect();
-#if BUILDFLAG(IS_LINUX) && defined(REMOTING_USE_WAYLAND)
-  WaylandManager::Get()->CleanupRunnerForTest();
+#if BUILDFLAG(IS_LINUX)
+  if (IsRunningWayland()) {
+    WaylandManager::Get()->CleanupRunnerForTest();
+  }
 #endif
   network_task_runner_ = nullptr;
   ui_task_runner_ = nullptr;
@@ -372,6 +376,10 @@ void It2MeHostTest::StartHost() {
     // curtain_local_user_session should only be run on ChromeOS.
     it2me_host_->set_enable_curtaining(enable_curtaining_.value());
   }
+  if (authorized_helper_.has_value()) {
+    it2me_host_->set_authorized_helper(authorized_helper_.value());
+  }
+
   auto create_connection_context = base::BindOnce(
       [](std::unique_ptr<SignalStrategy> signal_strategy,
          ChromotingHostContext* host_context) {
@@ -752,6 +760,25 @@ TEST_F(It2MeHostTest, ConnectionValidationClientDomainListPolicyNoMatch) {
   StartHost();
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, AuthorizedHelperCanConnect) {
+  authorized_helper_ = kTestUserName;
+  StartHost();
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
+  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, UnauthorizedHelperIsRejected) {
+  authorized_helper_ = kTestUserName;
+  StartHost();
+  RunValidationCallback(kTestClientJid2);
+  ASSERT_EQ(ValidationResult::ERROR_UNAUTHORIZED_ACCOUNT, validation_result_);
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }

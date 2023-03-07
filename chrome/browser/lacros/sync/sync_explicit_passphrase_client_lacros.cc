@@ -4,8 +4,9 @@
 
 #include "chrome/browser/lacros/sync/sync_explicit_passphrase_client_lacros.h"
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
+#include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -67,13 +68,6 @@ void SyncExplicitPassphraseClientLacros::LacrosSyncServiceObserver::
   is_passphrase_available_ = new_is_passphrase_available;
 }
 
-void SyncExplicitPassphraseClientLacros::LacrosSyncServiceObserver::
-    OnSyncShutdown(syncer::SyncService* sync_service) {
-  explicit_passphrase_client_->OnLacrosSyncShutdown();
-  sync_service_->RemoveObserver(this);
-  sync_service_ = nullptr;
-}
-
 SyncExplicitPassphraseClientLacros::AshSyncExplicitPassphraseClientObserver::
     AshSyncExplicitPassphraseClientObserver(
         SyncExplicitPassphraseClientLacros* explicit_passphrase_client,
@@ -106,16 +100,14 @@ void SyncExplicitPassphraseClientLacros::
 }
 
 SyncExplicitPassphraseClientLacros::SyncExplicitPassphraseClientLacros(
-    syncer::SyncService* sync_service,
-    mojo::Remote<crosapi::mojom::SyncService>* sync_service_remote)
+    mojo::Remote<crosapi::mojom::SyncExplicitPassphraseClient> remote,
+    syncer::SyncService* sync_service)
     : sync_service_(sync_service),
       sync_service_observer_(sync_service,
-                             /*explicit_passphrase_client=*/this) {
-  DCHECK(sync_service_remote);
-  DCHECK(sync_service_remote->is_bound());
+                             /*explicit_passphrase_client=*/this),
+      remote_(std::move(remote)) {
+  DCHECK(remote_.is_bound());
 
-  (*sync_service_remote)
-      ->BindExplicitPassphraseClient(remote_.BindNewPipeAndPassReceiver());
   ash_explicit_passphrase_client_observer_ =
       std::make_unique<AshSyncExplicitPassphraseClientObserver>(
           /*explicit_passphrase_client=*/this, &remote_);
@@ -142,13 +134,6 @@ void SyncExplicitPassphraseClientLacros::OnLacrosPassphraseAvailable() {
   if (ash_explicit_passphrase_client_observer_->is_passphrase_required()) {
     SendDecryptionKeyToAsh();
   }
-}
-
-void SyncExplicitPassphraseClientLacros::OnLacrosSyncShutdown() {
-  // Disconnect mojo to ensure no methods will access the SyncService anymore.
-  remote_.reset();
-  ash_explicit_passphrase_client_observer_.reset();
-  sync_service_ = nullptr;
 }
 
 void SyncExplicitPassphraseClientLacros::OnAshPassphraseRequired() {

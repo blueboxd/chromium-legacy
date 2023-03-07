@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/browser/buildflags.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("web_applications") {
   sources = [
@@ -18,14 +19,22 @@ source_set("web_applications") {
     "commands/fetch_installability_for_chrome_management.h",
     "commands/fetch_manifest_and_install_command.cc",
     "commands/fetch_manifest_and_install_command.h",
+    "commands/install_app_locally_command.cc",
+    "commands/install_app_locally_command.h",
     "commands/install_from_info_command.cc",
     "commands/install_from_info_command.h",
+    "commands/install_from_manifest_command.cc",
+    "commands/install_from_manifest_command.h",
     "commands/install_from_sync_command.cc",
     "commands/install_from_sync_command.h",
+    "commands/install_placeholder_command.cc",
+    "commands/install_placeholder_command.h",
     "commands/manifest_update_data_fetch_command.cc",
     "commands/manifest_update_data_fetch_command.h",
     "commands/manifest_update_finalize_command.cc",
     "commands/manifest_update_finalize_command.h",
+    "commands/os_integration_synchronize_command.cc",
+    "commands/os_integration_synchronize_command.h",
     "commands/run_on_os_login_command.cc",
     "commands/run_on_os_login_command.h",
     "commands/sub_app_install_command.cc",
@@ -67,6 +76,10 @@ source_set("web_applications") {
     "isolated_web_apps/isolated_web_app_reader_registry.h",
     "isolated_web_apps/isolated_web_app_reader_registry_factory.cc",
     "isolated_web_apps/isolated_web_app_reader_registry_factory.h",
+    "isolated_web_apps/isolated_web_app_response_reader.cc",
+    "isolated_web_apps/isolated_web_app_response_reader.h",
+    "isolated_web_apps/isolated_web_app_response_reader_factory.cc",
+    "isolated_web_apps/isolated_web_app_response_reader_factory.h",
     "isolated_web_apps/isolated_web_app_trust_checker.cc",
     "isolated_web_apps/isolated_web_app_trust_checker.h",
     "isolated_web_apps/isolated_web_app_url_info.cc",
@@ -101,13 +114,23 @@ source_set("web_applications") {
     "manifest_update_manager.h",
     "manifest_update_utils.cc",
     "manifest_update_utils.h",
+    "os_integration/file_handling_sub_manager.cc",
+    "os_integration/file_handling_sub_manager.h",
     "os_integration/os_integration_manager.cc",
     "os_integration/os_integration_manager.h",
     "os_integration/os_integration_sub_manager.h",
+    "os_integration/os_integration_test_override.cc",
+    "os_integration/os_integration_test_override.h",
     "os_integration/protocol_handling_sub_manager.cc",
     "os_integration/protocol_handling_sub_manager.h",
-    "os_integration/shortcut_handling_sub_manager.cc",
-    "os_integration/shortcut_handling_sub_manager.h",
+    "os_integration/run_on_os_login_sub_manager.cc",
+    "os_integration/run_on_os_login_sub_manager.h",
+    "os_integration/shortcut_menu_handling_sub_manager.cc",
+    "os_integration/shortcut_menu_handling_sub_manager.h",
+    "os_integration/shortcut_sub_manager.cc",
+    "os_integration/shortcut_sub_manager.h",
+    "os_integration/uninstallation_via_os_settings_sub_manager.cc",
+    "os_integration/uninstallation_via_os_settings_sub_manager.h",
     "os_integration/url_handler_manager.cc",
     "os_integration/url_handler_manager.h",
     "os_integration/web_app_file_handler_manager.cc",
@@ -227,6 +250,7 @@ source_set("web_applications") {
     "web_app_translation_manager.h",
     "web_app_ui_manager.cc",
     "web_app_ui_manager.h",
+    "web_app_uninstall_and_replace_job.h",
     "web_app_uninstall_job.cc",
     "web_app_uninstall_job.h",
     "web_app_url_loader.cc",
@@ -319,6 +343,7 @@ source_set("web_applications") {
 
   assert_no_deps = [
     # TODO: Exclude "//extensions" as well.
+    "//chrome/browser/apps/app_service",
     "//chrome/browser/ash/system_web_apps",
     "//chrome/browser/extensions",
   ]
@@ -330,6 +355,7 @@ source_set("web_applications") {
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/browser:browser_process",
+    "//chrome/browser/apps/app_service:constants",
     "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/favicon",
     "//chrome/browser/profiles:profile",
@@ -357,7 +383,6 @@ source_set("web_applications") {
     "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/app_service/public/cpp:run_on_os_login",
     "//components/services/app_service/public/cpp:types",
-    "//components/services/app_service/public/mojom",
     "//components/site_engagement/content",
     "//components/site_engagement/core/mojom:mojo_bindings",
     "//components/sync",
@@ -368,6 +393,7 @@ source_set("web_applications") {
     "//components/webapps/common:mojo_bindings",
     "//components/webapps/services/web_app_origin_association:lib",
     "//components/webapps/services/web_app_origin_association:service",
+    "//content/browser/background_fetch:background_fetch_proto",
     "//content/public/browser",
     "//mojo/core/embedder",
     "//mojo/core/embedder:features",
@@ -446,6 +472,7 @@ source_set("web_applications") {
   }
 
   public_deps = [
+    "//chrome/browser/web_applications/mojom:mojom_web_apps_enum",
     "//chrome/browser/web_applications/proto",
     "//components/permissions:permissions",
     "//components/services/app_service/public/cpp:app_share_target",
@@ -519,6 +546,7 @@ source_set("web_applications_test_support") {
     "//chrome/app:command_ids",
     "//chrome/app/theme:chrome_unscaled_resources_grit",
     "//chrome/browser",
+    "//chrome/browser/apps/app_service",
     "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
@@ -557,8 +585,10 @@ source_set("web_applications_unit_tests") {
     "commands/fetch_installability_for_chrome_management_unittest.cc",
     "commands/fetch_manifest_and_install_command_unittest.cc",
     "commands/install_from_sync_command_unittest.cc",
+    "commands/install_placeholder_command_unittest.cc",
     "commands/manifest_update_data_fetch_command_unittest.cc",
     "commands/manifest_update_finalize_command_unittest.cc",
+    "commands/os_integration_synchronize_command_unittest.cc",
     "commands/run_on_os_login_command_unittest.cc",
     "commands/sub_app_install_command_unittest.cc",
     "commands/update_file_handler_command_unittest.cc",
@@ -571,6 +601,8 @@ source_set("web_applications_unit_tests") {
     "isolated_web_apps/install_isolated_web_app_from_command_line_unittest.cc",
     "isolated_web_apps/isolated_web_app_reader_registry_factory_unittest.cc",
     "isolated_web_apps/isolated_web_app_reader_registry_unittest.cc",
+    "isolated_web_apps/isolated_web_app_response_reader_factory_unittest.cc",
+    "isolated_web_apps/isolated_web_app_response_reader_unittest.cc",
     "isolated_web_apps/isolated_web_app_trust_checker_unittest.cc",
     "isolated_web_apps/isolated_web_app_url_info_unittest.cc",
     "isolated_web_apps/isolated_web_app_url_loader_factory_unittest.cc",
@@ -578,8 +610,12 @@ source_set("web_applications_unit_tests") {
     "isolated_web_apps/pending_install_info_unittest.cc",
     "isolated_web_apps/signed_web_bundle_reader_unittest.cc",
     "isolation_prefs_utils_unittest.cc",
+    "os_integration/file_handling_sub_manager_unittest.cc",
     "os_integration/os_integration_manager_unittest.cc",
     "os_integration/protocol_handling_sub_manager_unittest.cc",
+    "os_integration/run_on_os_login_sub_manager_unittest.cc",
+    "os_integration/shortcut_menu_handling_sub_manager_unittest.cc",
+    "os_integration/uninstallation_via_os_settings_sub_manager_unittest.cc",
     "os_integration/web_app_file_handler_manager_unittest.cc",
     "os_integration/web_app_protocol_handler_manager_unittest.cc",
     "os_integration/web_app_shortcut_unittest.cc",
@@ -666,6 +702,7 @@ source_set("web_applications_unit_tests") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
     "//chrome/browser:browser_process",
+    "//chrome/browser/apps/app_service",
     "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/extensions:test_support",
     "//chrome/browser/profiles:profile",
@@ -735,16 +772,17 @@ source_set("web_applications_browser_tests") {
     "commands/externally_managed_install_command_browsertest.cc",
     "commands/fetch_manifest_and_install_command_browsertest.cc",
     "commands/install_from_info_command_browsertest.cc",
+    "commands/install_from_manifest_command_browsertest.cc",
     "commands/install_from_sync_command_browsertest.cc",
     "commands/update_protocol_handler_approval_command_browsertest.cc",
     "externally_installed_web_app_prefs_browsertest.cc",
     "externally_managed_app_manager_impl_browsertest.cc",
-    "isolated_web_apps/install_isolated_web_app_command_browsertest.cc",
     "isolated_web_apps/install_isolated_web_app_from_command_line_browsertest.cc",
     "isolated_web_apps/isolated_web_app_browsertest.cc",
     "isolated_web_apps/isolated_web_app_url_loader_factory_browsertest.cc",
     "manifest_update_manager_browsertest.cc",
-    "os_integration/shortcut_handling_sub_manager_browsertest.cc",
+    "os_integration/shortcut_sub_manager_browsertest.cc",
+    "policy/web_app_policy_manager_browsertest.cc",
     "preinstalled_web_app_manager_browsertest.cc",
     "preinstalled_web_apps_browsertest.cc",
     "user_uninstalled_preinstalled_web_app_prefs_browsertest.cc",
@@ -762,10 +800,6 @@ source_set("web_applications_browser_tests") {
     ]
   }
 
-  if (is_chromeos) {
-    sources += [ "policy/web_app_policy_manager_browsertest.cc" ]
-  }
-
   if (is_chromeos_ash) {
     sources += [ "isolated_web_apps/policy/isolated_web_app_policy_manager_ash_browsertest.cc" ]
   }
@@ -777,6 +811,7 @@ source_set("web_applications_browser_tests") {
     ":web_applications_test_support",
     "//base",
     "//chrome/app:command_ids",
+    "//chrome/browser/apps/app_service",
     "//chrome/browser/apps/app_service:test_support",
     "//chrome/browser/profiles:profile",
     "//chrome/test:test_support",
@@ -832,6 +867,7 @@ source_set("app_service_browser_tests") {
     ":web_applications",
     ":web_applications_test_support",
     "//base",
+    "//chrome/browser/apps/app_service",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
   ]

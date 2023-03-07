@@ -43,7 +43,7 @@ BASE_FEATURE(kRendererAppContainer,
 // Enables shared/fixed policy for Windows sandbox policies.
 BASE_FEATURE(kSharedSandboxPolicies,
              "SharedSandboxPolicies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Emergency "off switch" for pipe security changes, which apply more
 // restrictions to sandboxed processes from opening or creating pipes. This
@@ -51,6 +51,12 @@ BASE_FEATURE(kSharedSandboxPolicies,
 // https://crbug.com/1378724.
 BASE_FEATURE(kChromePipeLockdown,
              "ChromePipeLockdown",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Emergency "off switch" for renderer environment filtering, this feature can
+// be removed around the M113 timeline. See https://crbug.com/1403087.
+BASE_FEATURE(kRendererFilterEnvironment,
+             "RendererFilterEnvironment",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_WIN)

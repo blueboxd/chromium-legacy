@@ -11,8 +11,8 @@
 #import "base/strings/utf_string_conversions.h"
 #import "base/time/time.h"
 #import "components/bookmarks/browser/bookmark_model.h"
+#import "ios/chrome/browser/bookmarks/bookmark_ios_unit_test_support.h"
 #import "ios/chrome/browser/flags/system_flags.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 #import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +23,7 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-class BookmarkIOSUtilsUnitTest : public BookmarkIOSUnitTest {
+class BookmarkIOSUtilsUnitTest : public BookmarkIOSUnitTestSupport {
  protected:
   base::Time timeFromEpoch(int days, int hours) {
     return base::Time::UnixEpoch() + base::Days(days) + base::Hours(hours);

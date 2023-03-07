@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/process/launch.h"
@@ -131,8 +131,8 @@ void AppUninstall::FirstTaskRun() {
 
   if (command_line->HasSwitch(kUninstallIfUnusedSwitch)) {
     CHECK(global_prefs_);
-    auto persisted_data =
-        base::MakeRefCounted<PersistedData>(global_prefs_->GetPrefService());
+    auto persisted_data = base::MakeRefCounted<PersistedData>(
+        updater_scope(), global_prefs_->GetPrefService());
     const bool should_uninstall = ShouldUninstall(
         persisted_data->GetAppIds(), global_prefs_->CountServerStarts(),
         persisted_data->GetHadApps());

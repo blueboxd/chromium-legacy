@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -63,7 +63,8 @@ bool IsValidStateChange(LifecycleUnitState from,
       switch (to) {
         // Discard(URGENT|EXTERNAL) is called.
         case LifecycleUnitState::DISCARDED: {
-          return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
+          return reason == StateChangeReason::BROWSER_INITIATED ||
+                 reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
         }
         case LifecycleUnitState::FROZEN: {
@@ -114,6 +115,8 @@ StateChangeReason DiscardReasonToStateChangeReason(
       return StateChangeReason::EXTENSION_INITIATED;
     case LifecycleUnitDiscardReason::URGENT:
       return StateChangeReason::SYSTEM_MEMORY_PRESSURE;
+    case LifecycleUnitDiscardReason::PROACTIVE:
+      return StateChangeReason::BROWSER_INITIATED;
   }
 }
 
@@ -140,8 +143,8 @@ class TabLifecycleUnitExternalImpl : public TabLifecycleUnitExternal {
   }
 
   bool DiscardTab(LifecycleUnitDiscardReason reason,
-                  uint64_t resident_set_size_estimate) override {
-    return tab_lifecycle_unit_->Discard(reason, resident_set_size_estimate);
+                  uint64_t memory_footprint_estimate) override {
+    return tab_lifecycle_unit_->Discard(reason, memory_footprint_estimate);
   }
 
   bool IsDiscarded() const override {
@@ -462,7 +465,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetAutoDiscardable(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
     LifecycleUnitDiscardReason discard_reason,
-    uint64_t tab_resident_set_size_estimate) {
+    uint64_t tab_memory_footprint_estimate) {
   UMA_HISTOGRAM_BOOLEAN(
       "TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler",
       web_contents()->NeedToFireBeforeUnloadOrUnloadEvents());
@@ -483,7 +486,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
 
   performance_manager::user_tuning::UserPerformanceTuningManager::
       PreDiscardResourceUsage::CreateForWebContents(
-          null_contents.get(), tab_resident_set_size_estimate);
+          null_contents.get(), tab_memory_footprint_estimate);
 
   // Attach the ResourceCoordinatorTabHelper. In production code this has
   // already been attached by now due to AttachTabHelpers, but there's a long
@@ -556,7 +559,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
     LifecycleUnitDiscardReason reason,
-    uint64_t tab_resident_set_size_estimate) {
+    uint64_t tab_memory_footprint_estimate) {
   // Can't discard a tab when it isn't in a tabstrip.
   if (!tab_strip_model_) {
     // Logs are used to diagnose user feedback reports.
@@ -576,7 +579,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
 
   discard_reason_ = reason;
 
-  FinishDiscard(reason, tab_resident_set_size_estimate);
+  FinishDiscard(reason, tab_memory_footprint_estimate);
 
   return true;
 }

@@ -23,7 +23,7 @@
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
@@ -169,12 +169,6 @@ void ParsePathAndImageSpec(const GURL& url,
     if (frame_index)
       *frame_index = index;
   }
-}
-
-void ParsePathAndScale(const GURL& url,
-                       std::string* path,
-                       float* scale_factor) {
-  ParsePathAndImageSpec(url, path, scale_factor, nullptr);
 }
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,

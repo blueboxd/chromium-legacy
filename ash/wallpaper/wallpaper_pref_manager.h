@@ -57,7 +57,6 @@ class WallpaperProfileHelper {
 // Manages wallpaper preferences and tracks the currently configured wallpaper.
 class ASH_EXPORT WallpaperPrefManager
     : public base::SupportsWeakPtr<WallpaperPrefManager>,
-      public ColorModeObserver,
       public SessionObserver {
  public:
   // Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
@@ -138,6 +137,14 @@ class ASH_EXPORT WallpaperPrefManager
       const base::StringPiece location) const = 0;
 
   virtual void RemoveKMeanColor(const AccountId& account_id) = 0;
+
+  // Cache the prominent color sampled with the 'Celebi' algorithm.
+  virtual void CacheCelebiColor(const AccountId& account_id,
+                                SkColor celebi_color) = 0;
+  // Returns the cached celebi color for the wallpaper at `location`.
+  virtual absl::optional<SkColor> GetCelebiColor(
+      const base::StringPiece location) const = 0;
+  virtual void RemoveCelebiColor(const AccountId& account_id) = 0;
 
   virtual bool SetDailyGooglePhotosWallpaperIdCache(
       const AccountId& account_id,

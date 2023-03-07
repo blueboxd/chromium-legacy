@@ -18,9 +18,10 @@ namespace ash {
 
 namespace {
 
-content::WebUIDataSource* CreateFaceMLAppUntrustedDataSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(kChromeUIFaceMLAppUntrustedURL);
+void CreateAndAddFaceMLAppUntrustedDataSource(content::WebUI* web_ui) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      kChromeUIFaceMLAppUntrustedURL);
   source->SetDefaultResource(IDR_ASH_FACE_ML_APP_UNTRUSTED_APP_HTML);
   source->AddResourcePaths(base::make_span(
       kAshFaceMlAppUntrustedResources, kAshFaceMlAppUntrustedResourcesSize));
@@ -45,18 +46,16 @@ content::WebUIDataSource* CreateFaceMLAppUntrustedDataSource() {
       "trusted-types polymer_resin lit-html goog#html polymer-html-literal "
       "polymer-template-event-attribute-policy;");
 
-  return source;
+  // Allow images to also handle data urls.
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ImgSrc, "img-src blob: data: 'self';");
 }
 
 }  // namespace
 
 FaceMLAppUntrustedUI::FaceMLAppUntrustedUI(content::WebUI* web_ui)
     : ui::UntrustedWebUIController(web_ui) {
-  content::WebUIDataSource* untrusted_source =
-      CreateFaceMLAppUntrustedDataSource();
-
-  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, untrusted_source);
+  CreateAndAddFaceMLAppUntrustedDataSource(web_ui);
 }
 
 FaceMLAppUntrustedUI::~FaceMLAppUntrustedUI() = default;

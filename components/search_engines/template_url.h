@@ -249,6 +249,9 @@ class TemplateURLRef {
     // search-by-image frontend.
     std::string image_thumbnail_content;
 
+    // The content type string for `image_thumbnail_content`.
+    std::string image_thumbnail_content_type;
+
     // When searching for an image, the URL of the original image. Callers
     // should leave this empty for images specified via data: URLs.
     GURL image_url;
@@ -385,6 +388,8 @@ class TemplateURLRef {
  private:
   friend class TemplateURL;
   friend class TemplateURLTest;
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest,
+                           ImageThumbnailContentTypePostParams);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, SetPrepopulatedAndParse);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
@@ -832,13 +837,17 @@ class TemplateURL {
   bool IsSearchURL(const GURL& url,
                    const SearchTermsData& search_terms_data) const;
 
-  // Given a |url| corresponding to this TemplateURL, keeps the search terms and
-  // optionally the search intent params and removes the other params. If |url|
-  // is not a search URL or replacement fails, leaves |result| untouched and
-  // returns false. Used to compare normalized (aka canonical) search URLs.
+  // Given a `url` corresponding to this TemplateURL, keeps the search terms and
+  // optionally the search intent params and removes the other params. If
+  // `normalize_search_terms` is true, the search terms in the final URL
+  // will be converted to lowercase with extra whitespace characters collapsed.
+  // If `url` is not a search URL or replacement fails, leaves `result`
+  // untouched and returns false. Used to compare normalized (aka canonical)
+  // search URLs.
   bool KeepSearchTermsInURL(const GURL& url,
                             const SearchTermsData& search_terms_data,
                             const bool keep_search_intent_params,
+                            const bool normalize_search_terms,
                             GURL* result) const;
 
   // Given a |url| corresponding to this TemplateURL, identifies the search

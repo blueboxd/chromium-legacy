@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
@@ -410,10 +410,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeDeleted(ui::AXTree* tree, int32_t node_id) override;
   void OnNodeReparented(ui::AXTree* tree, ui::AXNode* node) override;
-  void OnRoleChanged(ui::AXTree* tree,
-                     ui::AXNode* node,
-                     ax::mojom::Role old_role,
-                     ax::mojom::Role new_role) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,

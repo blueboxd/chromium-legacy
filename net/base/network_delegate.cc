@@ -12,6 +12,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_util.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/url_request/url_request.h"
@@ -124,14 +125,10 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
 }
 
 NetworkDelegate::PrivacySetting NetworkDelegate::ForcePrivacyMode(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    SamePartyContext::Type same_party_context_type) const {
+    const URLRequest& request) const {
   TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::ForcePrivacyMode");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnForcePrivacyMode(url, site_for_cookies, top_frame_origin,
-                            same_party_context_type);
+  return OnForcePrivacyMode(request);
 }
 
 bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(

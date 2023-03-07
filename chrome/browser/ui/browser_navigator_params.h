@@ -14,11 +14,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/referrer.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -112,6 +112,10 @@ struct NavigateParams {
 
   // The origin of the initiator of the navigation.
   absl::optional<url::Origin> initiator_origin;
+
+  // The base url of the initiator of the navigation. This is only set if the
+  // url is about:blank or about:srcdoc.
+  absl::optional<GURL> initiator_base_url;
 
   // The frame name to be used for the main frame.
   std::string frame_name;

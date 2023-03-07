@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
@@ -51,6 +51,9 @@ enum class StorageQueueOperationKind {
   kEncryptedRecordLowMemory,
   kWriteLowDiskSpace,
 };
+
+using ErrorInjectionHandlerType =
+    base::RepeatingCallback<Status(test::StorageQueueOperationKind, int64_t)>;
 
 }  // namespace test
 
@@ -142,8 +145,7 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // can be returned as a resulting operation status too.
   // If `handler` is null, error injections is disabled.
   void TestInjectErrorsForOperation(
-      base::RepeatingCallback<Status(test::StorageQueueOperationKind, int64_t)>
-          handler = decltype(handler)());
+      test::ErrorInjectionHandlerType handler = base::NullCallback());
 
   // Access queue options.
   const QueueOptions& options() const { return options_; }
@@ -492,8 +494,7 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // Test only: records callback to be invoked. It will be called with operation
   // kind and seq id, and will return Status (non-OK status indicates the
   // failure to be injected). In production code must be null.
-  base::RepeatingCallback<Status(test::StorageQueueOperationKind, int64_t)>
-      test_injection_handler_;
+  test::ErrorInjectionHandlerType test_injection_handler_{base::NullCallback()};
 
   // Weak pointer factory (must be last member in class).
   base::WeakPtrFactory<StorageQueue> weakptr_factory_{this};

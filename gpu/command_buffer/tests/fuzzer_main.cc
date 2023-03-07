@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -345,7 +345,7 @@ class CommandBufferSetup {
         /*fallback_to_software_gl=*/false,
         /*disable_gl_drawing=*/false,
         /*init_extensions=*/true,
-        /*system_device_id=*/0);
+        /*gpu_preference=*/gl::GpuPreference::kDefault);
     CHECK(display_);
 #elif defined(GPU_FUZZER_USE_STUB)
     gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
@@ -415,7 +415,7 @@ class CommandBufferSetup {
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         gpu_preferences_, config_.workarounds, gpu_feature_info,
         context_state_.get(), shared_image_manager_.get(),
-        /*image_factory=*/nullptr, /*memory_tracker=*/nullptr,
+        /*memory_tracker=*/nullptr,
         /*is_for_display_compositor=*/false);
     for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2; usage <= LAST_CLIENT_USAGE;
          usage <<= 1) {
@@ -462,7 +462,7 @@ class CommandBufferSetup {
     auto* context = context_.get();
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
-        context_group.get(), /*image_factory_for_nacl_swapchain=*/nullptr));
+        context_group.get()));
 #endif
 
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
@@ -470,8 +470,9 @@ class CommandBufferSetup {
     auto result = decoder_->Initialize(surface_.get(), context, true,
                                        gles2::DisallowedFeatures(),
                                        config_.attrib_helper);
-    if (result != gpu::ContextResult::kSuccess)
+    if (result != gpu::ContextResult::kSuccess) {
       return false;
+    }
     decoder_initialized_ = true;
 
     command_buffer_->set_handler(decoder_.get());

@@ -11,6 +11,9 @@ import './audio.js';
 import './display.js';
 import './keyboard.js';
 import './per_device_keyboard.js';
+import './per_device_mouse.js';
+import './per_device_pointing_stick.js';
+import './per_device_touchpad.js';
 import './pointers.js';
 import './power.js';
 import './storage.js';
@@ -130,7 +133,17 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           if (routes.POINTERS) {
             map.set(routes.POINTERS.path, '#pointersRow');
           }
-          // TODO(@wangdanny): Add route for mouse settings page.
+          if (routes.PER_DEVICE_MOUSE) {
+            map.set(routes.PER_DEVICE_MOUSE.path, '#perDeviceMouseRow');
+          }
+          if (routes.PER_DEVICE_TOUCHPAD) {
+            map.set(routes.PER_DEVICE_TOUCHPAD.path, '#perDeviceTouchpadRow');
+          }
+          if (routes.PER_DEVICE_POINTING_STICK) {
+            map.set(
+                routes.PER_DEVICE_POINTING_STICK.path,
+                '#perDevicePointingStickRow');
+          }
           if (routes.PER_DEVICE_KEYBOARD) {
             map.set(routes.PER_DEVICE_KEYBOARD.path, '#perDeviceKeyboardRow');
           }
@@ -173,6 +186,9 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   static get observers() {
     return [
       'pointersChanged_(hasMouse_, hasPointingStick_, hasTouchpad_)',
+      'mouseChanged_(hasMouse_)',
+      'touchpadChanged_(hasTouchpad_)',
+      'pointingStickChanged_(hasPointingStick_)',
     ];
   }
 
@@ -180,6 +196,7 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   private hasMouse_: boolean;
   private hasPointingStick_: boolean;
   private hasTouchpad_: boolean;
+  private isDeviceSettingsSplitEnabled_: boolean;
 
   constructor() {
     super();
@@ -242,6 +259,27 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   }
 
   /**
+   * Handler for tapping the Mouse settings menu item.
+   */
+  private onPerDeviceMouseTap_() {
+    Router.getInstance().navigateTo(routes.PER_DEVICE_MOUSE);
+  }
+
+  /**
+   * Handler for tapping the Touchpad settings menu item.
+   */
+  private onPerDeviceTouchpadTap_() {
+    Router.getInstance().navigateTo(routes.PER_DEVICE_TOUCHPAD);
+  }
+
+  /**
+   * Handler for tapping the Pointing stick settings menu item.
+   */
+  private onPerDevicePointingStickTap_() {
+    Router.getInstance().navigateTo(routes.PER_DEVICE_POINTING_STICK);
+  }
+
+  /**
    * Handler for tapping the Keyboard settings menu item.
    */
   private onKeyboardTap_() {
@@ -291,6 +329,40 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       hasMouse: boolean, hasPointingStick: boolean, hasTouchpad: boolean) {
     this.$.pointersRow.hidden = !hasMouse && !hasPointingStick && !hasTouchpad;
     this.checkPointerSubpage_();
+  }
+
+  private mouseChanged_(hasMouse: boolean) {
+    if (hasMouse === false &&
+        Router.getInstance().getCurrentRoute() === routes.PER_DEVICE_MOUSE) {
+      Router.getInstance().navigateTo(routes.DEVICE);
+    }
+  }
+
+  private touchpadChanged_(hasTouchpad: boolean) {
+    if (hasTouchpad === false &&
+        Router.getInstance().getCurrentRoute() === routes.PER_DEVICE_TOUCHPAD) {
+      Router.getInstance().navigateTo(routes.DEVICE);
+    }
+  }
+
+  private pointingStickChanged_(hasPointingStick: boolean) {
+    if (hasPointingStick === false &&
+        Router.getInstance().getCurrentRoute() ===
+            routes.PER_DEVICE_POINTING_STICK) {
+      Router.getInstance().navigateTo(routes.DEVICE);
+    }
+  }
+
+  private showPerDeviceMouseRow_(): boolean {
+    return this.hasMouse_ && this.isDeviceSettingsSplitEnabled_;
+  }
+
+  private showPerDeviceTouchpadRow_(): boolean {
+    return this.hasTouchpad_ && this.isDeviceSettingsSplitEnabled_;
+  }
+
+  private showPerDevicePointingStickRow_(): boolean {
+    return this.hasPointingStick_ && this.isDeviceSettingsSplitEnabled_;
   }
 
   /**

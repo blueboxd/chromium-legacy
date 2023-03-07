@@ -88,13 +88,38 @@ suite('CategoriesTest', () => {
     assertTrue(!!event);
   });
 
-  test('clicking classic chrome sets theme and sends event', async () => {
+  test('clicking classic chrome sets theme', async () => {
     await setInitialSettings(0);
-
-    const eventPromise = eventToPromise('theme-select', categoriesElement);
     categoriesElement.$.classicChromeTile.click();
+    assertEquals(1, handler.getCallCount('setClassicChromeDefaultTheme'));
+  });
+
+  test('clicking upload image creates dialog and sends event', async () => {
+    await setInitialSettings(0);
+    handler.setResultFor('chooseLocalCustomBackground', Promise.resolve({
+      success: true,
+    }));
+
+    const eventPromise =
+        eventToPromise('local-image-upload', categoriesElement);
+    categoriesElement.$.uploadImageTile.click();
     const event = await eventPromise;
     assertTrue(!!event);
-    assertEquals(1, handler.getCallCount('setClassicChromeDefaultTheme'));
+    assertEquals(1, handler.getCallCount('chooseLocalCustomBackground'));
+  });
+
+  test('clicking Chrome Web Store tile opens Chrome Web Store', async () => {
+    await setInitialSettings(0);
+
+    categoriesElement.$.chromeWebStoreTile.click();
+    assertEquals(1, handler.getCallCount('openChromeWebStore'));
+  });
+
+  test('clicking chrome colors sends event', async () => {
+    const eventPromise =
+        eventToPromise('chrome-colors-select', categoriesElement);
+    categoriesElement.$.chromeColorsTile.click();
+    const event = await eventPromise;
+    assertTrue(!!event);
   });
 });

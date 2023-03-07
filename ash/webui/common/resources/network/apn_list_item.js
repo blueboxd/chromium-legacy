@@ -48,10 +48,16 @@ class ApnListItem extends ApnListItemBase {
         value: true,
       },
 
-      isAutoDetected: {
+      shouldDisallowDisablingRemoving: {
         type: Boolean,
-        value: true,
+        value: false,
       },
+
+      shouldDisallowEnabling: {
+        type: Boolean,
+        value: false,
+      },
+
       /** @private */
       isDisabled_: {
         reflectToAttribute: true,
@@ -90,8 +96,7 @@ class ApnListItem extends ApnListItemBase {
       detail: /** @type {!ApnEventData} */ ({
         apn: this.apn,
         // Only allow editing if the APN is a custom APN.
-        mode: this.isAutoDetected ? ApnDetailDialogMode.VIEW :
-                                    ApnDetailDialogMode.EDIT,
+        mode: this.apn.id ? ApnDetailDialogMode.EDIT : ApnDetailDialogMode.VIEW,
       }),
     }));
   }
@@ -110,6 +115,15 @@ class ApnListItem extends ApnListItemBase {
 
     if (this.apn.state !== ApnState.kEnabled) {
       console.error('Only an APN that is enabled can be disabled.');
+      return;
+    }
+
+    if (this.shouldDisallowDisablingRemoving) {
+      this.dispatchEvent(new CustomEvent('show-error-toast', {
+        bubbles: true,
+        composed: true,
+        detail: this.i18n('apnWarningPromptForDisableRemove'),
+      }));
       return;
     }
 
@@ -136,6 +150,17 @@ class ApnListItem extends ApnListItemBase {
       return;
     }
 
+    // TODO(b/162365553): Add string to chromeos_string when it is approved by
+    // writers.
+    if (this.shouldDisallowEnabling) {
+      this.dispatchEvent(new CustomEvent('show-error-toast', {
+        bubbles: true,
+        composed: true,
+        detail: `Can't enable this APN. Add a default APN to attach to.`,
+      }));
+      return;
+    }
+
     const apn =
         /** @type {!ApnProperties} */ (Object.assign({}, this.apn));
     apn.state = ApnState.kEnabled;
@@ -151,6 +176,15 @@ class ApnListItem extends ApnListItemBase {
     assert(this.apn);
     if (!this.apn.id) {
       console.error('Only custom APNs can be removed.');
+      return;
+    }
+
+    if (this.shouldDisallowDisablingRemoving) {
+      this.dispatchEvent(new CustomEvent('show-error-toast', {
+        bubbles: true,
+        composed: true,
+        detail: this.i18n('apnWarningPromptForDisableRemove'),
+      }));
       return;
     }
 

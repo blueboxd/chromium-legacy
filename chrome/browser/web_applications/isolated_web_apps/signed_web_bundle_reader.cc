@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/check_is_test.h"
 #include "base/check_op.h"
+#include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -161,15 +161,12 @@ void SignedWebBundleReader::OnIntegrityBlockParsed(
   }
 
   integrity_block_size_in_bytes_ = integrity_block->size_in_bytes();
-  std::vector<web_package::Ed25519PublicKey> public_key_stack =
-      integrity_block->GetPublicKeyStack();
 
   std::move(integrity_block_result_callback)
-      .Run(public_key_stack,
+      .Run(*integrity_block,
            base::BindOnce(&SignedWebBundleReader::
                               OnShouldContinueParsingAfterIntegrityBlock,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          std::move(*integrity_block),
+                          weak_ptr_factory_.GetWeakPtr(), *integrity_block,
                           std::move(read_error_callback)));
 }
 
@@ -353,8 +350,9 @@ void SignedWebBundleReader::ReadResponse(
   auto response_location = entry_it->second->Clone();
   if (is_disconnected_) {
     // Try reconnecting the parser if it hasn't been attempted yet.
-    if (pending_read_responses_.empty())
+    if (pending_read_responses_.empty()) {
       Reconnect();
+    }
     pending_read_responses_.emplace_back(std::move(response_location),
                                          std::move(callback));
     return;
@@ -459,8 +457,9 @@ void SignedWebBundleReader::ReconnectForFile(base::File file) {
   }
 
   absl::optional<std::string> error;
-  if (file_error != base::File::FILE_OK)
+  if (file_error != base::File::FILE_OK) {
     error = base::File::ErrorToString(file_error);
+  }
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&SignedWebBundleReader::DidReconnect,

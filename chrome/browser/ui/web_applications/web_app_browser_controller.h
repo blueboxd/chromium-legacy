@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -115,9 +115,13 @@ class WebAppBrowserController : public AppBrowserController,
 
   // WebAppInstallManagerObserver:
   void OnWebAppUninstalled(const AppId& app_id) override;
+  void OnWebAppManifestUpdated(const AppId& app_id,
+                               base::StringPiece old_name) override;
   void OnWebAppInstallManagerDestroyed() override;
 
-  void SetReadIconCallbackForTesting(base::OnceClosure callback);
+  static void SetIconLoadCallbackForTesting(base::OnceClosure callback);
+  static void SetManifestUpdateAppliedCallbackForTesting(
+      base::OnceClosure callback);
 
  protected:
   // AppBrowserController:
@@ -170,7 +174,6 @@ class WebAppBrowserController : public AppBrowserController,
   base::ScopedObservation<WebAppInstallManager, WebAppInstallManagerObserver>
       install_manager_observation_{this};
 
-  base::OnceClosure callback_for_testing_;
   mutable base::WeakPtrFactory<WebAppBrowserController> weak_ptr_factory_{this};
 };
 

@@ -18,8 +18,6 @@
 #include "chrome/browser/ui/webui/ash/login/base_screen_handler.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_settings.h"
 #include "components/sync/protocol/user_consent_types.pb.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
 
@@ -103,8 +101,7 @@ class AssistantOptInFlowScreenHandler
  private:
   // AssistantStateObserver:
   void OnAssistantSettingsEnabled(bool enabled) override;
-  void OnAssistantStatusChanged(
-      chromeos::assistant::AssistantStatus status) override;
+  void OnAssistantStatusChanged(assistant::AssistantStatus status) override;
 
   // Send GetSettings request for the opt-in UI.
   void SendGetSettingsRequest();

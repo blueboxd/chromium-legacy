@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_client_factory_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
@@ -31,7 +31,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     ServerBackedStateKeysBroker* state_keys_broker,
     DeviceCloudPolicyStoreAsh* policy_store,
     DeviceCloudPolicyManagerAsh* policy_manager,
-    chromeos::system::StatisticsProvider* statistics_provider)
+    ash::system::StatisticsProvider* statistics_provider)
     : enterprise_service_(enterprise_service),
       install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),

@@ -27,10 +27,6 @@ const char kAllowLoopbackInPeerConnection[] =
 // This is used in blimp to emulate android fonts on linux.
 const char kAndroidFontsPath[]          = "android-fonts-path";
 
-// Indicates that the ash web browser is disabled (i.e. lacros the only
-// browser).
-const char kAshWebBrowserDisabled[] = "ash-web-browser-disabled";
-
 // Causes the Attribution Report API to run without delays or noise.
 const char kAttributionReportingDebugMode[] =
     "attribution-reporting-debug-mode";
@@ -333,10 +329,6 @@ const char kEnableExperimentalCookieFeatures[] =
 const char kEnableExperimentalWebAssemblyFeatures[] =
     "enable-experimental-webassembly-features";
 
-// Enables experimental WebAssembly stack switching.
-const char kEnableExperimentalWebAssemblyStackSwitching[] =
-    "enable-experimental-webassembly-stack-switching";
-
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
@@ -460,19 +452,15 @@ const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 // Enables WebGL rendering into a scanout buffer for overlay support.
 const char kEnableWebGLImageChromium[] = "enable-webgl-image-chromium";
 
-// Controls whether async interface for FileSystemSyncAccessHandle is
-// force-enabled.
-const char kFileSystemSyncAccessHandleAsyncInterfaceEnabled[] =
-    "file-system-sync-access-handle-async-interface-enabled";
-
 // Define an alias root directory which is replaced with the replacement string
 // in file URLs. The format is "/alias=/replacement", which would turn
 // file:///alias/some/path.html into file:///replacement/some/path.html.
 const char kFileUrlPathAlias[] = "file-url-path-alias";
 
-// Forces the Chrome major version to the minor position in the User-Agent
-// string. Locks major version to 99.
-const char kForceMajorVersionToMinorPosition[] = "force-major-version-to-minor";
+// Force-enables the PPB_VideoDecoder(Dev) API, overriding the value from any
+// ongoing Finch experiment.
+const char kForceEnablePepperVideoDecoderDevAPI[] =
+    "force-enable-pepper-video-decoder-dev-api";
 
 // This forces pages to be loaded as presentation receivers.  Useful for testing
 // behavior specific to presentation receivers.
@@ -677,6 +665,10 @@ const char kRemoteDebuggingPipe[] = "remote-debugging-pipe";
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
+// Enables web socket connections from the specified origins only. '*' allows
+// any origin.
+const char kRemoteAllowOrigins[] = "remote-allow-origins";
+
 const char kRendererClientId[] = "renderer-client-id";
 
 // The contents of this flag are prepended to the renderer command line.
@@ -779,7 +771,7 @@ const char kSkiaFontCacheLimitMb[] = "skia-font-cache-limit-mb";
 // exceeds this limit.
 const char kSkiaResourceCacheLimitMb[] = "skia-resource-cache-limit-mb";
 
-// Type of the current test harness ("browser" or "ui").
+// Type of the current test harness ("browser" or "ui" or "gpu").
 const char kTestType[]                      = "test-type";
 
 // The time zone to use for testing. Passed to renderers and plugins on startup.
@@ -1040,10 +1032,6 @@ const char kDeviceScaleFactor[]     = "device-scale-factor";
 
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
-
-// Enables H264 HW decode acceleration for WebRtc on Win 7.
-const char kEnableWin7WebRtcHWH264Decoding[] =
-    "enable-win7-webrtc-hw-h264-decoding";
 
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
 // This switch allows us to pass the shared memory handle to the renderer.

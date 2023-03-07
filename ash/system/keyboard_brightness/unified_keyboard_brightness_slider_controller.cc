@@ -21,7 +21,7 @@
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -45,8 +45,7 @@ class UnifiedKeyboardBrightnessView : public UnifiedSliderView,
       : UnifiedSliderView(views::Button::PressedCallback(),
                           controller,
                           kUnifiedMenuKeyboardBrightnessIcon,
-                          IDS_ASH_STATUS_TRAY_BRIGHTNESS,
-                          true /* readonly*/),
+                          IDS_ASH_STATUS_TRAY_BRIGHTNESS),
         model_(model) {
     if (features::IsRgbKeyboardEnabled() &&
         Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported()) {
@@ -146,7 +145,18 @@ void UnifiedKeyboardBrightnessSliderController::SliderValueChanged(
     float value,
     float old_value,
     views::SliderChangeReason reason) {
-  // This slider is read-only.
+  if (reason != views::SliderChangeReason::kByUser) {
+    return;
+  }
+
+  power_manager::SetBacklightBrightnessRequest request;
+  request.set_percent(value * 100);
+  request.set_transition(
+      power_manager::SetBacklightBrightnessRequest_Transition_FAST);
+  request.set_cause(
+      power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
+  chromeos::PowerManagerClient::Get()->SetKeyboardBrightness(
+      std::move(request));
 }
 
 }  // namespace ash

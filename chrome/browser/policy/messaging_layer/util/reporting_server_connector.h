@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_MESSAGING_LAYER_UTIL_REPORTING_SERVER_CONNECTOR_H_
 #define CHROME_BROWSER_POLICY_MESSAGING_LAYER_UTIL_REPORTING_SERVER_CONNECTOR_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/timer/timer.h"
@@ -25,8 +25,6 @@ class ReportingServerConnector : public ::policy::CloudPolicyCore::Observer {
  public:
   using ResponseCallback =
       base::OnceCallback<void(StatusOr<base::Value::Dict>)>;
-
-  friend struct base::DefaultSingletonTraits<ReportingServerConnector>;
 
   // RAII class for testing ReportingServerConnector - substitutes cloud policy
   // client instead of getting it from the cloud policy core. Resets client when
@@ -49,6 +47,8 @@ class ReportingServerConnector : public ::policy::CloudPolicyCore::Observer {
                                     ResponseCallback callback);
 
  private:
+  friend struct base::DefaultSingletonTraits<ReportingServerConnector>;
+
   // Manages reporting accumulated payload sizes per hour via UMA.
   class PayloadSizePerHourUmaReporter {
    public:

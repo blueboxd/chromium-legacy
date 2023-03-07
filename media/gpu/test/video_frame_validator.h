@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -285,6 +285,48 @@ class SSIMVideoFrameValidator : public VideoFrameValidator {
   const ValidationMode validation_mode_;
   std::map<size_t, double> ssim_;
 };
+
+// Validate by computing the log likelihood ratio of the frame to be validate
+// and the model frame acquired by |get_model_frame_cb_|. If the log likelihood
+// ratio is less than or equal to |tolerance_|, the validation on the frame
+// passes.
+class LogLikelihoodRatioVideoFrameValidator : public VideoFrameValidator {
+ public:
+  // Default tolerance value chosen empirically.
+  constexpr static double kDefaultTolerance = 1.015;
+
+  static std::unique_ptr<LogLikelihoodRatioVideoFrameValidator> Create(
+      const GetModelFrameCB& get_model_frame_cb,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr,
+      ValidationMode validation_mode = ValidationMode::kThreshold,
+      double tolerance = kDefaultTolerance,
+      CropHelper crop_helper = CropHelper());
+
+  const std::map<size_t, double>& get_log_likelihood_ratio_values() const {
+    return log_likelihood_ratios_;
+  }
+
+  ~LogLikelihoodRatioVideoFrameValidator() override;
+
+ private:
+  struct LogLikelihoodRatioMismatchedFrameInfo;
+
+  LogLikelihoodRatioVideoFrameValidator(
+      const GetModelFrameCB& get_model_frame_cb,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+      ValidationMode validation_mode,
+      double tolerance,
+      CropHelper crop_helper);
+
+  std::unique_ptr<MismatchedFrameInfo> Validate(
+      scoped_refptr<const VideoFrame> frame,
+      size_t frame_index) override;
+
+  const GetModelFrameCB get_model_frame_cb_;
+  const double tolerance_;
+  std::map<size_t, double> log_likelihood_ratios_;
+};
+
 }  // namespace test
 }  // namespace media
 

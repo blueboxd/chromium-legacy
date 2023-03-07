@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -17,6 +16,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/immediate_crash.h"
 #include "base/lazy_instance.h"
@@ -34,7 +34,6 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -246,8 +245,10 @@ const char* const ChromeMainDelegate::kNonWildcardDomainNonPortSchemes[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::kExtensionScheme,
 #endif
-    chrome::kChromeSearchScheme, content::kChromeDevToolsScheme,
-    content::kChromeUIScheme, content::kChromeUIUntrustedScheme};
+    chrome::kChromeSearchScheme,       chrome::kIsolatedAppScheme,
+    content::kChromeDevToolsScheme,    content::kChromeUIScheme,
+    content::kChromeUIUntrustedScheme,
+};
 const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
     std::size(kNonWildcardDomainNonPortSchemes);
 
@@ -954,10 +955,6 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ash::ConfigureSwap();
     ash::InitializeKstaled();
-
-    // If we're in an experimental group that locks the browser text we will do
-    // that now.
-    ash::LockMainProgramText();
 #endif
   }
 

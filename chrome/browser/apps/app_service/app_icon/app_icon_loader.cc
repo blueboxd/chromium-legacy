@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -38,6 +38,7 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -50,27 +51,81 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/icon_standardizer.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_list/md_icon_normalizer.h"
-#include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/ash/arc/icon_decode_request.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/icon_transcoder/svg_icon_transcoder.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif
 
 namespace {
 
-std::map<std::pair<int, int>, gfx::ImageSkia>& GetResourceIconCache() {
-  static base::NoDestructor<std::map<std::pair<int, int>, gfx::ImageSkia>>
-      cache;
-  return *cache;
+std::string ReadFileAsCompressedString(const base::FilePath path) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
+  std::string data;
+  base::ReadFileToString(path, &data);
+  return data;
 }
 
 std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  std::string data;
-  base::ReadFileToString(path, &data);
+  std::string data = ReadFileAsCompressedString(std::move(path));
   return std::vector<uint8_t>(data.begin(), data.end());
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+std::vector<uint8_t> ReadFileAndMaybeResize(const base::FilePath path,
+                                            float icon_scale,
+                                            int icon_size_in_px) {
+  std::vector<uint8_t> data = ReadFileAsCompressedData(path);
+  if (data.empty()) {
+    return data;
+  }
+
+  SkBitmap bitmap = apps::DecompressToSkBitmap(data.data(), data.size());
+
+  // Resize `bitmap` to match `icon_size_in_px`.
+  if (bitmap.width() != icon_size_in_px) {
+    bitmap = skia::ImageOperations::Resize(
+        bitmap, skia::ImageOperations::RESIZE_LANCZOS3, icon_size_in_px,
+        icon_size_in_px);
+  }
+
+  return apps::EncodeImageToPngBytes(
+      apps::SkBitmapToImageSkia(bitmap, icon_scale), icon_scale);
+}
+
+// Reads the raw icon data for the foreground and the background icon file. For
+// the icon data from `icon_path`, we might resize it if the icon size doesn't
+// match, because it could be shown as the compress icon directly, without
+// calling the adaptive icon Composite function to chop and resize.
+apps::IconValuePtr ReadFilesAndMaybeResize(apps::AdaptiveIconPaths icon_paths,
+                                           float icon_scale,
+                                           int icon_size_in_px) {
+  auto iv = std::make_unique<apps::IconValue>();
+  iv->icon_type = apps::IconType::kCompressed;
+
+  // Save the raw icon for the non-adaptive icon, or the generated standard icon
+  // done by the ARC side for the adaptive icon if missing the foreground and
+  // background icon data.
+  iv->compressed =
+      ReadFileAndMaybeResize(icon_paths.icon_path, icon_scale, icon_size_in_px);
+
+  // For the adaptive icon, save the foreground and background icon data.
+  iv->foreground_icon_png_data =
+      ReadFileAsCompressedData(icon_paths.foreground_icon_path);
+  iv->background_icon_png_data =
+      ReadFileAsCompressedData(icon_paths.background_icon_path);
+
+  return iv;
+}
+#endif
 
 // Returns a callback that converts a gfx::Image to an ImageSkia.
 base::OnceCallback<void(const gfx::Image&)> ImageToImageSkia(
@@ -121,7 +176,7 @@ absl::optional<IconPurpose> GetIconPurpose(
     }
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
                                    max_icon_size_in_px)) {
     return absl::make_optional(IconPurpose::MASKABLE);
@@ -180,6 +235,11 @@ apps::IconValuePtr ApplyEffects(apps::IconEffects icon_effects,
 }  // namespace
 
 namespace apps {
+
+bool AdaptiveIconPaths::IsEmpty() {
+  return icon_path.empty() && foreground_icon_path.empty() &&
+         background_icon_path.empty();
+}
 
 AppIconLoader::AppIconLoader(IconType icon_type,
                              int size_hint_in_dip,
@@ -333,6 +393,7 @@ void AppIconLoader::LoadWebAppIcon(const std::string& web_app_id,
     icon_effects_ &= ~apps::IconEffects::kCrOsStandardIcon;
     icon_effects_ |= apps::IconEffects::kCrOsStandardBackground;
     icon_effects_ |= apps::IconEffects::kCrOsStandardMask;
+    is_maskable_icon_ = true;
   }
 
   switch (icon_type_) {
@@ -492,29 +553,13 @@ void AppIconLoader::LoadIconFromResource(int icon_resource) {
       // icons, we load the uncompressed image, apply the icon effects, and
       // then re-encode the image if necessary.
 
-      // Get the ImageSkia for the resource. The ui::ResourceBundle shared
-      // instance already caches ImageSkia's, but caches the unscaled
-      // versions. The |cache| here caches scaled versions, keyed by the
-      // pair (resource_id, size_hint_in_dip).
-      gfx::ImageSkia scaled;
-      std::map<std::pair<int, int>, gfx::ImageSkia>& cache =
-          GetResourceIconCache();
-      const auto cache_key = std::make_pair(icon_resource, size_hint_in_dip_);
-      const auto cache_iter = cache.find(cache_key);
-      if (cache_iter != cache.end()) {
-        scaled = cache_iter->second;
-      } else {
-        gfx::ImageSkia* unscaled =
-            ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                icon_resource);
-        scaled = gfx::ImageSkiaOperations::CreateResizedImage(
-            *unscaled, skia::ImageOperations::RESIZE_BEST,
-            gfx::Size(size_hint_in_dip_, size_hint_in_dip_));
-        cache.insert(std::make_pair(cache_key, scaled));
-      }
+      // Get the ImageSkia for the resource `icon_resource` and the size
+      // `size_in_dip_`.
+      gfx::ImageSkia image_skia =
+          CreateResizedResourceImage(icon_resource, size_hint_in_dip_);
 
       // Apply icon effects, re-encode if necessary and run the callback.
-      MaybeApplyEffectsAndComplete(scaled);
+      MaybeApplyEffectsAndComplete(image_skia);
       return;
     }
     case IconType::kUnknown:
@@ -574,7 +619,9 @@ void AppIconLoader::LoadArcActivityIcons(
     std::move(arc_activity_icons_callback_).Run(arc_activity_icons_);
   }
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS)
 void AppIconLoader::GetWebAppCompressedIconData(
     const std::string& web_app_id,
     ui::ResourceScaleFactor scale_factor,
@@ -624,6 +671,170 @@ void AppIconLoader::GetChromeAppCompressedIconData(
       ImageToImageSkia(
           base::BindOnce(&AppIconLoader::OnReadChromeAppForCompressedIconData,
                          base::WrapRefCounted(this))));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void AppIconLoader::GetArcAppCompressedIconData(
+    const std::string& app_id,
+    ArcAppListPrefs* arc_prefs,
+    ui::ResourceScaleFactor scale_factor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(arc_prefs);
+
+  icon_scale_ = ui::GetScaleForResourceScaleFactor(scale_factor);
+  icon_size_in_px_ =
+      apps_util::ConvertDipToPxForScale(size_hint_in_dip_, icon_scale_);
+
+  AdaptiveIconPaths app_paths;
+  const ArcAppIconDescriptor descriptor(size_hint_in_dip_, scale_factor);
+  if (arc_prefs->IsDefault(app_id)) {
+    // Get the icon paths for the default apps. If we can't fetch the raw icon
+    // data from the ARC side, the icon paths for the default apps are used to
+    // get the icon data.
+    app_paths.icon_path =
+        arc_prefs->MaybeGetIconPathForDefaultApp(app_id, descriptor);
+    app_paths.foreground_icon_path =
+        arc_prefs->MaybeGetForegroundIconPathForDefaultApp(app_id, descriptor);
+    app_paths.background_icon_path =
+        arc_prefs->MaybeGetBackgroundIconPathForDefaultApp(app_id, descriptor);
+  } else {
+    // For the migration scenario, as ARC may take some time to startup after
+    // the user login, fetching the raw icon files from the ARC VM could fail.
+    // So try to fetch the raw icon files from the ARC on-disk cache to
+    // migrate the icon files from the ARC directory to the AppService
+    // directory.
+    app_paths.icon_path = arc_prefs->GetIconPath(app_id, descriptor);
+    app_paths.foreground_icon_path =
+        arc_prefs->GetForegroundIconPath(app_id, descriptor);
+    app_paths.background_icon_path =
+        arc_prefs->GetBackgroundIconPath(app_id, descriptor);
+  }
+
+  arc_prefs->RequestRawIconData(
+      app_id, ArcAppIconDescriptor(size_hint_in_dip_, scale_factor),
+      base::BindOnce(&AppIconLoader::OnGetArcAppCompressedIconData,
+                     base::WrapRefCounted(this), std::move(app_paths)));
+}
+
+void AppIconLoader::GetGuestOSAppCompressedIconData(
+    Profile* profile,
+    const std::string& app_id,
+    ui::ResourceScaleFactor scale_factor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile);
+
+  profile_ = profile;
+  auto* registry =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_);
+  if (!registry) {
+    std::move(callback_).Run(std::make_unique<apps::IconValue>());
+    return;
+  }
+
+  icon_scale_ = ui::GetScaleForResourceScaleFactor(scale_factor);
+  icon_size_in_px_ =
+      apps_util::ConvertDipToPxForScale(size_hint_in_dip_, icon_scale_);
+
+  // GuestOS may have the png icon file for the primary scale factor only.
+  base::FilePath png_path = registry->GetIconPath(
+      app_id, apps_util::GetPrimaryDisplayUIScaleFactor());
+  base::FilePath svg_path = registry->GetIconPath(app_id, ui::kScaleFactorNone);
+
+  registry->RequestIcon(
+      app_id, scale_factor,
+      base::BindOnce(&AppIconLoader::OnGetGuestOSAppCompressedIconData,
+                     base::WrapRefCounted(this), png_path, svg_path));
+}
+
+void AppIconLoader::OnGetArcAppCompressedIconData(
+    AdaptiveIconPaths app_icon_paths,
+    arc::mojom::RawIconPngDataPtr icon) {
+  auto iv = std::make_unique<IconValue>();
+  if (!icon || !icon->icon_png_data.has_value()) {
+    // If we can't find `app_icon_paths`, return the empty icon value.
+    if (app_icon_paths.IsEmpty()) {
+      std::move(callback_).Run(std::move(iv));
+      return;
+    }
+
+    // Get the raw icon data from `app_icon_paths`.
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&ReadFilesAndMaybeResize, std::move(app_icon_paths),
+                       icon_scale_, icon_size_in_px_),
+        std::move(callback_));
+    return;
+  }
+
+  iv->icon_type = IconType::kCompressed;
+
+  // Save the raw icon for the non-adaptive icon, or the generated standard icon
+  // done by the ARC side for the adaptive icon if missing the foreground and
+  // background icon data.
+  iv->compressed = std::move(icon->icon_png_data.value());
+  if (icon->is_adaptive_icon) {
+    // For the adaptive icon, save the foreground and background icon data.
+    iv->foreground_icon_png_data =
+        std::move(icon->foreground_icon_png_data.value());
+    iv->background_icon_png_data =
+        std::move(icon->background_icon_png_data.value());
+  }
+  std::move(callback_).Run(std::move(iv));
+}
+
+void AppIconLoader::OnGetGuestOSAppCompressedIconData(base::FilePath png_path,
+                                                      base::FilePath svg_path,
+                                                      std::string icon_data) {
+  if (!icon_data.empty()) {
+    std::vector<uint8_t> data(icon_data.begin(), icon_data.end());
+    CompressedDataToSkBitmap(
+        std::move(data),
+        base::BindOnce(&AppIconLoader::OnGetCompressedIconDataWithSkBitmap,
+                       base::WrapRefCounted(this), /*is_maskable_icon=*/false));
+    return;
+  }
+
+  // For the migration scenario, when migrate from the GuestOS loading icon to
+  // the AppService unified icon loading, as the GuestOS can't startup after the
+  // user login, fetching the raw icon files from the GuestOS VM could fail.
+  // So try to fetch the raw icon files from the GuestOS on-disk cache to
+  // migrate the icon files from the GuestOS directory to the AppService
+  // directory.
+  if (!png_path.empty()) {
+    // Set `png_path` as null to ensure no infinite loops in
+    // OnGetGuestOSAppCompressedIconData.
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&ReadFileAsCompressedString, png_path),
+        base::BindOnce(&AppIconLoader::OnGetGuestOSAppCompressedIconData,
+                       base::WrapRefCounted(this),
+                       /*png_path=*/base::FilePath(), svg_path));
+    return;
+  }
+
+  if (!svg_path.empty()) {
+    TranscodeIconFromSvg(std::move(svg_path), std::move(png_path));
+    return;
+  }
+
+  std::move(callback_).Run(std::make_unique<apps::IconValue>());
+}
+
+void AppIconLoader::TranscodeIconFromSvg(base::FilePath svg_path,
+                                         base::FilePath png_path) {
+  DCHECK(profile_);
+  gfx::Size kPreferredSize = gfx::Size(128, 128);
+  if (!svg_icon_transcoder_) {
+    svg_icon_transcoder_ = std::make_unique<SvgIconTranscoder>(profile_);
+  }
+  // Set `png_path` and `svg_path` as null to ensure no infinite loops in
+  // OnGetGuestOSAppCompressedIconData.
+  svg_icon_transcoder_->Transcode(
+      std::move(svg_path), std::move(png_path), kPreferredSize,
+      base::BindOnce(&AppIconLoader::OnGetGuestOSAppCompressedIconData,
+                     base::WrapRefCounted(this), /*png_path=*/base::FilePath(),
+                     /*svg_path=*/base::FilePath()));
 }
 
 std::unique_ptr<arc::IconDecodeRequest>
@@ -728,6 +939,7 @@ void AppIconLoader::CompleteWithCompressed(bool is_maskable_icon,
 void AppIconLoader::CompleteWithUncompressed(IconValuePtr iv) {
   DCHECK_NE(icon_type_, IconType::kCompressed);
   DCHECK_NE(icon_type_, IconType::kUnknown);
+  iv->is_maskable_icon = is_maskable_icon_;
   if (iv->uncompressed.isNull()) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
@@ -748,7 +960,7 @@ void AppIconLoader::CompleteWithIconValue(IconValuePtr iv) {
     // the icon might be null. Return early here if the image is null, to
     // prevent calling MakeThreadSafe, which might cause the system crash due to
     // DCHECK error on image.
-    CompleteWithCompressed(/*is_maskable_icon=*/false, std::vector<uint8_t>());
+    CompleteWithCompressed(is_maskable_icon_, std::vector<uint8_t>());
     return;
   }
 
@@ -758,7 +970,7 @@ void AppIconLoader::CompleteWithIconValue(IconValuePtr iv) {
       base::BindOnce(&apps::EncodeImageToPngBytes, iv->uncompressed,
                      icon_scale_for_compressed_response_),
       base::BindOnce(&AppIconLoader::CompleteWithCompressed,
-                     base::WrapRefCounted(this), /*is_maskable_icon=*/false));
+                     base::WrapRefCounted(this), is_maskable_icon_));
 }
 
 // Callback for reading uncompressed web app icons.
@@ -808,12 +1020,18 @@ void AppIconLoader::OnReadWebAppForCompressedIconData(
     return;
   }
 
-  SkBitmap bitmap = icon_bitmaps.begin()->second;
+  OnGetCompressedIconDataWithSkBitmap(is_maskable_icon,
+                                      std::move(icon_bitmaps.begin()->second));
+}
 
-  // Resize |bitmap| to match |icon_scale|.
-  bitmap = skia::ImageOperations::Resize(bitmap,
-                                         skia::ImageOperations::RESIZE_LANCZOS3,
-                                         icon_size_in_px_, icon_size_in_px_);
+void AppIconLoader::OnGetCompressedIconDataWithSkBitmap(bool is_maskable_icon,
+                                                        SkBitmap bitmap) {
+  // Resize `bitmap` to match `icon_scale_`.
+  if (bitmap.width() != icon_size_in_px_) {
+    bitmap = skia::ImageOperations::Resize(
+        bitmap, skia::ImageOperations::RESIZE_LANCZOS3, icon_size_in_px_,
+        icon_size_in_px_);
+  }
 
   gfx::ImageSkia image_skia;
   image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, icon_scale_));

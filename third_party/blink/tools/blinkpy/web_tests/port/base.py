@@ -156,7 +156,7 @@ class Port(object):
         ('mac12', 'x86_64'),
         ('mac12-arm64', 'arm64'),
         ('win10.20h2', 'x86'),
-        ('win11', 'x64'),
+        ('win11', 'x86_64'),
         ('trusty', 'x86_64'),
         ('fuchsia', 'x86_64'),
     )
@@ -1005,6 +1005,12 @@ class Port(object):
         """Find all real tests in paths, using results saved in dict."""
         files = []
         for path in paths:
+            # Some WPT files can expand to multiple tests, and the file itself
+            # is not a test so it is not in tests_by_dir. Do special handling
+            # when we found a WPT file in virtual bases.
+            if self.is_wpt_file(path):
+                files.extend(self._wpt_test_urls_matching_paths([path]))
+                continue
             if self._has_supported_extension_for_all(path):
                 # only append the file when it is in tests_by_dir
                 dirname = self._filesystem.dirname(path) + '/'
@@ -1108,6 +1114,13 @@ class Port(object):
             WPTManifest.ensure_manifest(self, path)
         return WPTManifest(self.host, manifest_path)
 
+    def is_wpt_file(self, path):
+        """Returns whether a path is a WPT test file."""
+
+        if self.WPT_REGEX.match(path):
+            return self._filesystem.isfile(self.abspath_for_test(path))
+        return False
+
     def is_wpt_crash_test(self, test_name):
         """Returns whether a WPT test is a crashtest.
 
@@ -1175,8 +1188,8 @@ class Port(object):
         """Returns the WPT-style fuzzy metadata for the given test.
 
         The metadata is a pair of lists, (maxDifference, totalPixels), where
-        each list is a [min, max] range, inclusive. If the test has no fuzzy metadata,
-        returns (None, None).
+        each list is a [min, max] range, inclusive, adjusted by the device
+        scale factor. If the test has no fuzzy metadata, returns (None, None).
 
         See https://web-platform-tests.org/writing-tests/reftests.html#fuzzy-matching
         """
@@ -1186,8 +1199,10 @@ class Port(object):
             # This is an actual WPT test, so we can get the metadata from the manifest.
             wpt_path = match.group(1)
             path_in_wpt = match.group(2)
-            return self.wpt_manifest(wpt_path).extract_fuzzy_metadata(
-                path_in_wpt)
+            return self._adjust_fuzzy_metadata_by_dsf(
+                test_name,
+                self.wpt_manifest(wpt_path).extract_fuzzy_metadata(
+                    path_in_wpt))
 
         # This is not a WPT test, so we will parse the metadata ourselves.
         if not self.test_isfile(test_name):
@@ -1210,18 +1225,26 @@ class Port(object):
         if not tot_pix_min:
             tot_pix_min = tot_pix_max
 
+        return self._adjust_fuzzy_metadata_by_dsf(
+            test_name,
+            ([int(max_diff_min), int(max_diff_max)
+              ], [int(tot_pix_min), int(tot_pix_max)]))
+
+    def _adjust_fuzzy_metadata_by_dsf(self, test_name, metadata):
+        if metadata == (None, None):
+            return metadata
+
+        ([max_diff_min, max_diff_max], [tot_pix_min, tot_pix_max]) = metadata
         for flag in reversed(self._specified_additional_driver_flags() +
                              self.args_for_test(test_name)):
-            if "--force-device-scale-factor" in flag:
+            if "--force-device-scale-factor=" in flag:
                 _, scale_factor = flag.split("=")
                 dsf = float(scale_factor)
-                tot_pix_min = float(tot_pix_min) * dsf * dsf
-                tot_pix_max = float(tot_pix_max) * dsf * dsf
+                tot_pix_min = int(tot_pix_min * dsf * dsf)
+                tot_pix_max = int(tot_pix_max * dsf * dsf)
                 break
 
-        return ([int(max_diff_min),
-                 int(max_diff_max)], [int(tot_pix_min),
-                                      int(tot_pix_max)])
+        return ([max_diff_min, max_diff_max], [tot_pix_min, tot_pix_max])
 
     def get_file_path_for_wpt_test(self, test_name):
         """Returns the real file path for the given WPT test.
@@ -1269,10 +1292,12 @@ class Port(object):
         return [tryint(chunk) for chunk in re.split(r'(\d+)', string_to_split)]
 
     def read_test(self, test_name, encoding="utf8"):
-        """Returns the contents of the given test according to the given encoding.
+        """Returns the contents of the given Non WPT test according to the given encoding.
         If no corresponding file can be found, returns None instead.
         Warning: some tests are in utf8-incompatible encodings.
         """
+        assert not self.WPT_REGEX.match(
+            test_name), "read_test only works with legacy layout test"
         path = self.abspath_for_test(test_name)
         if self._filesystem.isfile(path):
             return self._filesystem.read_binary_file(path).decode(encoding)
@@ -2292,6 +2317,10 @@ class Port(object):
             for base in suite.bases:
                 if real_path.startswith(base) or base.startswith(real_path):
                     bases.add(base)
+                if (self.is_wpt_file(base) and base.endswith('.js')
+                        and real_path in self._wpt_test_urls_matching_paths(
+                            [base])):
+                    bases.add(base)
 
         return list(bases)
 
@@ -2323,6 +2352,11 @@ class Port(object):
     def _virtual_tests_matching_paths(self, paths):
         tests = []
         normalized_paths = [self.normalize_test_name(p) for p in paths]
+        # Remove the 'js' suffix so that the startswith test can pass
+        modified_paths = [
+            p[:-2] if self.is_wpt_test(p) and p.endswith('.js') else p
+            for p in normalized_paths
+        ]
         for suite in self.virtual_test_suites():
             virtual_paths = [
                 p for p in normalized_paths if p.startswith(suite.full_prefix)
@@ -2331,7 +2365,7 @@ class Port(object):
                 continue
             for test in self._virtual_tests_for_suite_with_paths(
                     suite, virtual_paths):
-                if any(test.startswith(p) for p in normalized_paths):
+                if any(test.startswith(p) for p in modified_paths):
                     tests.append(test)
 
         if any(self._path_has_wildcard(path) for path in paths):
@@ -2447,6 +2481,12 @@ class Port(object):
             test_name[len(suite.full_prefix):])
         for base in suite.bases:
             normalized_base = self.normalize_test_name(base)
+            # Wpt js file can expand to multiple tests. Remove the "js"
+            # suffix so that the startswith test can pass. This could
+            # be inaccurate but is computationally cheap.
+            if (self.is_wpt_test(normalized_base)
+                    and normalized_base.endswith(".js")):
+                normalized_base = normalized_base[:-2]
             if normalized_base.startswith(maybe_base) or maybe_base.startswith(
                     normalized_base):
                 return maybe_base

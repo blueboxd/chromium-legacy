@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -13,7 +13,6 @@
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/clear_activities_task.h"
 #include "chrome/browser/android/explore_sites/clear_catalog_task.h"
-#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
@@ -58,9 +57,6 @@ ExploreSitesServiceImpl::ExploreSitesServiceImpl(
       explore_sites_store_(std::move(store)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       history_statistics_reporter_(std::move(history_statistics_reporter)) {
-  if (IsExploreSitesEnabled()) {
-    ExploreSitesBridge::ScheduleDailyTask();
-  }
   // Collect history statistics unconditionally, to have baseline as well.
   history_statistics_reporter_->ScheduleReportStatistics();
 }

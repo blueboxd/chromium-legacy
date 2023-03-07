@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/app_list/views/contents_view.h"
@@ -16,11 +15,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/colors/assistant_colors.h"
-#include "ash/assistant/ui/colors/assistant_colors_util.h"
 #include "ash/assistant/util/assistant_util.h"
-#include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/style/color_provider.h"
@@ -29,9 +24,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -42,7 +36,6 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
-#include "ui/views/background.h"
 #include "ui/views/layout/layout_manager_base.h"
 
 namespace ash {
@@ -203,15 +196,7 @@ void AssistantPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void AssistantPageView::ChildPreferredSizeChanged(views::View* child) {
-  MaybeUpdateAppListState(child->GetHeightForWidth(width()));
   PreferredSizeChanged();
-}
-
-void AssistantPageView::ChildVisibilityChanged(views::View* child) {
-  if (!child->GetVisible())
-    return;
-
-  MaybeUpdateAppListState(child->GetHeightForWidth(width()));
 }
 
 void AssistantPageView::VisibilityChanged(views::View* starting_from,
@@ -244,14 +229,6 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-}
-
-void AssistantPageView::OnWillBeShown() {
-  // Our preferred size may require a change in AppListState in order to ensure
-  // that the AssistantPageView renders fully on screen w/o being clipped. We do
-  // this in OnWillBeShown(), as opposed to waiting for OnShown(), so that the
-  // AppListState change animation can run in sync with page change animations.
-  MaybeUpdateAppListState(GetPreferredSize().height());
 }
 
 void AssistantPageView::OnAnimationStarted(AppListState from_state,
@@ -329,24 +306,6 @@ void AssistantPageView::OnAnimationStarted(AppListState from_state,
 
 gfx::Size AssistantPageView::GetPreferredSearchBoxSize() const {
   return gfx::Size(kPreferredWidthDip, kSearchBoxHeightDip);
-}
-
-void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
-                                         const TransformAnimator& animator,
-                                         float default_offset) {
-  // Assistant page view may host native views for its content. The native view
-  // hosts use view to widget coordinate conversion to calculate the native view
-  // bounds, and thus depend on the view transform values.
-  // Make sure the view is laid out before starting the transform animation so
-  // native views are not placed according to interim, animated page transform
-  // value.
-  layer()->GetAnimator()->StopAnimatingProperty(
-      ui::LayerAnimationElement::TRANSFORM);
-  if (needs_layout())
-    Layout();
-
-  animator.Run(default_offset, layer());
-  animator.Run(default_offset, view_shadow_->shadow()->shadow_layer());
 }
 
 void AssistantPageView::UpdatePageOpacityForState(AppListState state,
@@ -464,9 +423,6 @@ void AssistantPageView::UpdateBackground(bool in_tablet_mode) {
   else
     layer()->SetColor(SK_ColorWHITE);
 }
-
-// TODO(crbug.com/1359096): Clean up this function and its relative code path.
-void AssistantPageView::MaybeUpdateAppListState(int child_height) {}
 
 BEGIN_METADATA(AssistantPageView, views::View)
 END_METADATA

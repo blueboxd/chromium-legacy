@@ -32,11 +32,12 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -1242,7 +1243,7 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
 void ResourceLoader::DidFinishLoading(
     base::TimeTicks response_end_time,
     int64_t encoded_data_length,
-    int64_t encoded_body_length,
+    uint64_t encoded_body_length,
     int64_t decoded_body_length,
     bool should_report_corb_blocking,
     absl::optional<bool> pervasive_payload_requested) {
@@ -1303,7 +1304,7 @@ void ResourceLoader::DidFinishLoading(
 void ResourceLoader::DidFail(const WebURLError& error,
                              base::TimeTicks response_end_time,
                              int64_t encoded_data_length,
-                             int64_t encoded_body_length,
+                             uint64_t encoded_body_length,
                              int64_t decoded_body_length) {
   const ResourceRequestHead& request = resource_->GetResourceRequest();
   response_end_time_for_error_cases_ = response_end_time;
@@ -1392,7 +1393,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequestHead& request) {
   absl::optional<WebURLError> error_out;
   WebData data_out;
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
-  int64_t encoded_body_length = 0;
+  uint64_t encoded_body_length = 0;
   WebBlobInfo downloaded_blob;
 
   if (CanHandleDataURLRequestLocally(request)) {

@@ -12,8 +12,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -113,8 +113,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     // stream is open.
     void DisableConnectionMigrationToCellularNetwork();
 
-    // Sets the precedence of the stream to |precedence|.
-    void SetPriority(const spdy::SpdyStreamPrecedence& precedence);
+    // Sets the precedence of the stream to |priority|.
+    void SetPriority(const quic::QuicStreamPriority& priority);
 
     // Sends a RST_STREAM frame to the peer and closes the streams.
     void Reset(quic::QuicRstStreamErrorCode error_code);

@@ -47,6 +47,7 @@ const Color Color::kTransparent = Color(0x00000000);
 
 namespace {
 
+const RGBA32 kLightenedBlack = 0xFF545454;
 const RGBA32 kDarkenedWhite = 0xFFABABAB;
 
 const int kCStartAlpha = 153;     // 60%
@@ -123,22 +124,6 @@ inline const NamedColor* FindNamedColor(const String& name) {
   return FindColor(buffer, length);
 }
 
-bool ValidColorSpaceForFromColorFunction(Color::ColorSpace color_space) {
-  switch (color_space) {
-    case Color::ColorSpace::kSRGB:
-    case Color::ColorSpace::kSRGBLinear:
-    case Color::ColorSpace::kDisplayP3:
-    case Color::ColorSpace::kA98RGB:
-    case Color::ColorSpace::kProPhotoRGB:
-    case Color::ColorSpace::kRec2020:
-    case Color::ColorSpace::kXYZD50:
-    case Color::ColorSpace::kXYZD65:
-      return true;
-    default:
-      return false;
-  }
-}
-
 constexpr int RedChannel(RGBA32 color) {
   return (color >> 16) & 0xFF;
 }
@@ -194,21 +179,41 @@ Color Color::FromRGBALegacy(absl::optional<int> r,
 }
 
 // static
+Color Color::FromColorSpace(ColorSpace color_space,
+                            absl::optional<float> param0,
+                            absl::optional<float> param1,
+                            absl::optional<float> param2,
+                            absl::optional<float> alpha) {
+  Color result;
+  result.color_space_ = color_space;
+  result.param0_is_none_ = !param0;
+  result.param1_is_none_ = !param1;
+  result.param2_is_none_ = !param2;
+  result.alpha_is_none_ = !alpha;
+  result.param0_ = param0.value_or(0.f);
+  result.param1_ = param1.value_or(0.f);
+  result.param2_ = param2.value_or(0.f);
+  result.alpha_ = ClampTo(alpha.value_or(0.f), 0.f, 1.f);
+
+  if (color_space == ColorSpace::kLab || color_space == ColorSpace::kOklab ||
+      color_space == ColorSpace::kLch || color_space == ColorSpace::kOklch) {
+    // param0_ is luminance which cannot be negative.
+    result.param0_ = std::max(result.param0_, 0.f);
+  }
+  if (color_space == ColorSpace::kLch || color_space == ColorSpace::kOklch) {
+    // param1_ is chroma, which cannot be negative.
+    result.param1_ = std::max(result.param1_, 0.f);
+  }
+
+  return result;
+}
+
+// static
 Color Color::FromHSLA(absl::optional<float> h,
                       absl::optional<float> s,
                       absl::optional<float> l,
                       absl::optional<float> a) {
-  Color result;
-  result.param0_is_none_ = !h;
-  result.param1_is_none_ = !s;
-  result.param2_is_none_ = !l;
-  result.alpha_is_none_ = !a;
-  result.param0_ = h.value_or(0.0f);
-  result.param1_ = s.value_or(0.0f);
-  result.param2_ = l.value_or(0.0f);
-  result.alpha_ = ClampTo(a.value_or(0.f), 0.f, 1.f);
-  result.color_space_ = ColorSpace::kHSL;
-  return result;
+  return FromColorSpace(ColorSpace::kHSL, h, s, l, a);
 }
 
 // static
@@ -216,113 +221,7 @@ Color Color::FromHWBA(absl::optional<float> h,
                       absl::optional<float> w,
                       absl::optional<float> b,
                       absl::optional<float> a) {
-  Color result;
-  result.param0_is_none_ = !h;
-  result.param1_is_none_ = !w;
-  result.param2_is_none_ = !b;
-  result.alpha_is_none_ = !a;
-  result.param0_ = h.value_or(0.0f);
-  result.param1_ = w.value_or(0.0f);
-  result.param2_ = b.value_or(0.0f);
-  result.alpha_ = ClampTo(a.value_or(0.f), 0.f, 1.f);
-  result.color_space_ = ColorSpace::kHWB;
-  return result;
-}
-
-// static
-Color Color::FromColorFunction(ColorSpace space,
-                               absl::optional<float> red_or_x,
-                               absl::optional<float> green_or_y,
-                               absl::optional<float> blue_or_z,
-                               absl::optional<float> alpha) {
-  if (!ValidColorSpaceForFromColorFunction(space)) {
-    NOTREACHED();
-    return Color();
-  }
-
-  Color result;
-  result.color_space_ = space;
-  result.param0_is_none_ = !red_or_x;
-  result.param1_is_none_ = !green_or_y;
-  result.param2_is_none_ = !blue_or_z;
-  result.alpha_is_none_ = !alpha;
-  result.param0_ = red_or_x.value_or(0.f);
-  result.param1_ = green_or_y.value_or(0.f);
-  result.param2_ = blue_or_z.value_or(0.f);
-  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
-  return result;
-}
-
-// static
-Color Color::FromLab(absl::optional<float> L,
-                     absl::optional<float> a,
-                     absl::optional<float> b,
-                     absl::optional<float> alpha) {
-  Color result;
-  result.color_space_ = ColorSpace::kLab;
-  result.param0_is_none_ = !L;
-  result.param1_is_none_ = !a;
-  result.param2_is_none_ = !b;
-  result.alpha_is_none_ = !alpha;
-  result.param0_ = std::max(L.value_or(0.f), 0.f);
-  result.param1_ = a.value_or(0.f);
-  result.param2_ = b.value_or(0.f);
-  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
-  return result;
-}
-
-// static
-Color Color::FromOklab(absl::optional<float> L,
-                       absl::optional<float> a,
-                       absl::optional<float> b,
-                       absl::optional<float> alpha) {
-  Color result;
-  result.color_space_ = ColorSpace::kOklab;
-  result.param0_is_none_ = !L;
-  result.param1_is_none_ = !a;
-  result.param2_is_none_ = !b;
-  result.alpha_is_none_ = !alpha;
-  result.param0_ = std::max(L.value_or(0.f), 0.f);
-  result.param1_ = a.value_or(0.f);
-  result.param2_ = b.value_or(0.f);
-  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
-  return result;
-}
-
-// static
-Color Color::FromLch(absl::optional<float> L,
-                     absl::optional<float> chroma,
-                     absl::optional<float> hue,
-                     absl::optional<float> alpha) {
-  Color result;
-  result.color_space_ = ColorSpace::kLch;
-  result.param0_is_none_ = !L;
-  result.param1_is_none_ = !chroma;
-  result.param2_is_none_ = !hue;
-  result.alpha_is_none_ = !alpha;
-  result.param0_ = std::max(L.value_or(0.f), 0.f);
-  result.param1_ = std::max(chroma.value_or(0.f), 0.f);
-  result.param2_ = hue.value_or(0.f);
-  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
-  return result;
-}
-
-// static
-Color Color::FromOklch(absl::optional<float> L,
-                       absl::optional<float> chroma,
-                       absl::optional<float> hue,
-                       absl::optional<float> alpha) {
-  Color result;
-  result.color_space_ = ColorSpace::kOklch;
-  result.param0_is_none_ = !L;
-  result.param1_is_none_ = !chroma;
-  result.param2_is_none_ = !hue;
-  result.alpha_is_none_ = !alpha;
-  result.param0_ = std::max(L.value_or(0.f), 0.f);
-  result.param1_ = std::max(chroma.value_or(0.f), 0.f);
-  result.param2_ = hue.value_or(0.f);
-  result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
-  return result;
+  return FromColorSpace(ColorSpace::kHWB, h, w, b, a);
 }
 
 // static
@@ -350,7 +249,6 @@ float Color::HueInterpolation(float value1,
   DCHECK(value1 >= 0.0f && value1 < 360.0f) << value1;
   DCHECK(value2 >= 0.0f && value2 < 360.0f) << value2;
   DCHECK(percentage >= 0.0f && percentage <= 1.0f);
-  percentage = 1.0f - percentage;
   // Adapt values of angles if needed, depending on the hue_method.
   switch (hue_method) {
     case Color::HueInterpolationMethod::kShorter: {
@@ -384,7 +282,7 @@ float Color::HueInterpolation(float value1,
       DCHECK(-360.0f < value2 - value1 && value2 - value1 <= 0.f);
       break;
   }
-  return AngleToUnitCircleDegrees(blink::Blend(value2, value1, percentage));
+  return AngleToUnitCircleDegrees(blink::Blend(value1, value2, percentage));
 }
 
 // static
@@ -454,15 +352,21 @@ Color Color::InterpolateColors(
                                     color2.param0_, color2.param0_is_none_)
       : (interpolation_space == ColorInterpolationSpace::kHSL ||
          interpolation_space == ColorInterpolationSpace::kHWB)
-          ? HueInterpolation(color2.param0_, color1.param0_, percentage,
-                             hue_method.value())
-          : blink::Blend(color2.param0_, color1.param0_, percentage);
+          // TODO(aaronhk): Historically we store hue in the range [0, 6] for
+          // hsl and hwb. This is so that primary and secondary colors are
+          // integers. With the addition of lch and oklch, this makes less
+          // sense. We should transform these to degrees [0, 360] which is
+          // what HueInterpolation() relies on.
+          ? HueInterpolation(color1.param0_ * 60.f, color2.param0_ * 60.f,
+                             percentage, hue_method.value()) /
+                60.f
+          : blink::Blend(color1.param0_, color2.param0_, percentage);
 
   absl::optional<float> param1 =
       (color1.param1_is_none_ || color2.param1_is_none_)
           ? HandleNoneInterpolation(color1.param1_, color1.param1_is_none_,
                                     color2.param1_, color2.param1_is_none_)
-          : blink::Blend(color2.param1_, color1.param1_, percentage);
+          : blink::Blend(color1.param1_, color2.param1_, percentage);
 
   absl::optional<float> param2 =
       (color1.param2_is_none_ || color2.param2_is_none_)
@@ -470,48 +374,20 @@ Color Color::InterpolateColors(
                                     color2.param2_, color2.param2_is_none_)
       : (interpolation_space == ColorInterpolationSpace::kLch ||
          interpolation_space == ColorInterpolationSpace::kOklch)
-          ? HueInterpolation(color2.param2_, color1.param2_, percentage,
+          ? HueInterpolation(color1.param2_, color2.param2_, percentage,
                              hue_method.value())
-          : blink::Blend(color2.param2_, color1.param2_, percentage);
+          : blink::Blend(color1.param2_, color2.param2_, percentage);
 
   absl::optional<float> alpha =
       (color1.alpha_is_none_ && color2.alpha_is_none_)
           ? HandleNoneInterpolation(alpha1.value(), color1.alpha_is_none_,
                                     alpha2.value(), color2.alpha_is_none_)
-          : blink::Blend(alpha2.value(), alpha1.value(), percentage);
+          : blink::Blend(alpha1.value(), alpha2.value(), percentage);
 
   Color result;
   ColorSpace result_color_space =
       ColorInterpolationSpaceToColorSpace(interpolation_space);
-  // TODO(crbug.com/1333988): Write a FromColorSpace function that accounts for
-  // all these options.
-  if (ValidColorSpaceForFromColorFunction(result_color_space)) {
-    result =
-        FromColorFunction(result_color_space, param0, param1, param2, alpha);
-  } else {
-    switch (result_color_space) {
-      case ColorSpace::kLab:
-        result = FromLab(param0, param1, param2, alpha);
-        break;
-      case ColorSpace::kOklab:
-        result = FromOklab(param0, param1, param2, alpha);
-        break;
-      case ColorSpace::kLch:
-        result = FromLch(param0, param1, param2, alpha);
-        break;
-      case ColorSpace::kOklch:
-        result = FromOklch(param0, param1, param2, alpha);
-        break;
-      case ColorSpace::kHSL:
-        result = FromHSLA(param0, param1, param2, alpha);
-        break;
-      case ColorSpace::kHWB:
-        result = FromHWBA(param0, param1, param2, alpha);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
+  result = FromColorSpace(result_color_space, param0, param1, param2, alpha);
 
   result.UnpremultiplyColor();
 
@@ -1054,6 +930,32 @@ bool Color::SetNamedColor(const String& name) {
 
 SkColor Color::ToSkColorDeprecated() const {
   return SkColorSetARGB(Alpha(), Red(), Green(), Blue());
+}
+
+Color Color::Light() const {
+  // Hardcode this common case for speed.
+  if (*this == kBlack) {
+    return Color(kLightenedBlack);
+  }
+
+  const float scale_factor = nextafterf(256.0f, 0.0f);
+
+  float r, g, b, a;
+  GetRGBA(r, g, b, a);
+
+  float v = std::max(r, std::max(g, b));
+
+  if (v == 0.0f) {
+    // Lightened black with alpha.
+    return Color(RedChannel(kLightenedBlack), GreenChannel(kLightenedBlack),
+                 BlueChannel(kLightenedBlack), Alpha());
+  }
+
+  float multiplier = std::min(1.0f, v + 0.33f) / v;
+
+  return Color(static_cast<int>(multiplier * r * scale_factor),
+               static_cast<int>(multiplier * g * scale_factor),
+               static_cast<int>(multiplier * b * scale_factor), Alpha());
 }
 
 Color Color::Dark() const {

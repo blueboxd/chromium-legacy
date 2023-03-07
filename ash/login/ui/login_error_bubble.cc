@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -36,8 +37,9 @@ LoginErrorBubble::LoginErrorBubble(base::WeakPtr<views::View> anchor_view)
 LoginErrorBubble::~LoginErrorBubble() = default;
 
 void LoginErrorBubble::SetContent(std::unique_ptr<views::View> content) {
-  if (content_)
+  if (content_) {
     RemoveChildViewT(content_);
+  }
   content_ = AddChildView(std::move(content));
 }
 
@@ -50,13 +52,9 @@ void LoginErrorBubble::SetTextContent(const std::u16string& message) {
   SetContent(login_views_utils::CreateBubbleLabel(message, this));
 }
 
-const char* LoginErrorBubble::GetClassName() const {
-  return "LoginErrorBubble";
-}
-
 void LoginErrorBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kAlertDialog;
-  node_data->SetName(accessible_name_);
+  node_data->SetName(GetAccessibleName());
 }
 
 void LoginErrorBubble::OnThemeChanged() {
@@ -68,8 +66,12 @@ void LoginErrorBubble::OnThemeChanged() {
   // It is assumed that we will not have an external call to SetTextContent
   // followed by a call to SetContent (in such a case, the content would be
   // erased on theme changed and replaced with the prior message).
-  if (!message_.empty())
+  if (!message_.empty()) {
     SetTextContent(message_);
+  }
 }
+
+BEGIN_METADATA(LoginErrorBubble, LoginBaseBubbleView)
+END_METADATA
 
 }  // namespace ash

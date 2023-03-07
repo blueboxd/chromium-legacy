@@ -8,12 +8,9 @@ import {SwitchAccessMetrics} from './metrics.js';
 import {Navigator} from './navigator.js';
 import {SAChildNode, SARootNode} from './nodes/switch_access_node.js';
 import {SwitchAccess} from './switch_access.js';
-import {SAConstants, SwitchAccessMenuAction} from './switch_access_constants.js';
+import {ActionResponse, MenuType, Mode} from './switch_access_constants.js';
 
-const ActionResponse = SAConstants.ActionResponse;
-const MenuAction = SwitchAccessMenuAction;
-const MenuType = SAConstants.MenuType;
-const Mode = SAConstants.Mode;
+const MenuAction = chrome.accessibilityPrivate.SwitchAccessMenuAction;
 
 /**
  * Class to handle performing actions with Switch Access, including determining
@@ -28,6 +25,9 @@ export class ActionManager {
      * @private {SAChildNode}
      */
     this.actionNode_;
+
+    /** @private {!MenuManager} */
+    this.menuManager_ = MenuManager.create();
 
     /** @private {!Array<!MenuType>} */
     this.menuStack_ = [];
@@ -48,7 +48,7 @@ export class ActionManager {
   static exitAllMenus() {
     ActionManager.instance.menuStack_ = [];
     ActionManager.instance.actionNode_ = null;
-    MenuManager.close();
+    ActionManager.instance.menuManager_.close();
     if (SwitchAccess.mode === Mode.POINT_SCAN) {
       Navigator.byPoint.start();
     } else {
@@ -276,7 +276,7 @@ export class ActionManager {
     if (actions.length < 2) {
       ActionManager.exitCurrentMenu();
     }
-    MenuManager.open(actions, location);
+    this.menuManager_.open(actions, location);
   }
 
   /**

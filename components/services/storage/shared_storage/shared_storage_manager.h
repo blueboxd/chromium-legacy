@@ -9,11 +9,12 @@
 #include <queue>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom-forward.h"
 #include "components/services/storage/shared_storage/async_shared_storage_database.h"
@@ -213,12 +214,10 @@ class SharedStorageManager {
   // Fetches a vector of `mojom::StorageUsageInfoPtr`, with one
   // `mojom::StorageUsageInfoPtr` for each origin currently using shared
   // storage in this profile. Called by
-  // `browsing_data::SharedStorageHelper::StartFetching`. If
-  // `exclude_empty_origins` is true, then only those with positive `length` are
-  // included in the vector.
-  void FetchOrigins(base::OnceCallback<
-                        void(std::vector<mojom::StorageUsageInfoPtr>)> callback,
-                    bool exclude_empty_origins = true);
+  // `browsing_data::SharedStorageHelper::StartFetching`.
+  void FetchOrigins(
+      base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
+          callback);
 
   // Makes a withdrawal of `bits_debit` stamped with the current time from the
   // privacy budget of `context_origin`.
@@ -252,6 +251,13 @@ class SharedStorageManager {
   // `OperationResult`. To only be used by DevTools.
   void GetEntriesForDevTools(url::Origin context_origin,
                              base::OnceCallback<void(EntriesResult)> callback);
+
+  // Removes all budget withdrawals for `context_origin`. Calls `callback` to
+  // indicate whether the transaction succeeded. Intended as a convenience for
+  // the DevTools UX.
+  void ResetBudgetForDevTools(
+      url::Origin context_origin,
+      base::OnceCallback<void(OperationResult)> callback);
 
   void SetOnDBDestroyedCallbackForTesting(
       base::OnceCallback<void(bool)> callback);

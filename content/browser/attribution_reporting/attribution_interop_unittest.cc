@@ -53,8 +53,9 @@ std::vector<base::FilePath> GetInputs() {
                          FILE_PATH_LITERAL("*.json"));
 
   for (base::FilePath name = e.Next(); !name.empty(); name = e.Next()) {
-    if (name.BaseName().MaybeAsASCII() == kDefaultConfigFileName)
+    if (name.BaseName().MaybeAsASCII() == kDefaultConfigFileName) {
       continue;
+    }
 
     input_paths.push_back(std::move(name));
   }
@@ -110,10 +111,7 @@ TEST_P(AttributionInteropTest, HasExpectedOutput) {
       .output_options =
           AttributionSimulationOutputOptions{
               .remove_report_ids = true,
-              .report_time_format =
-                  AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch,
               .remove_assembled_report = true,
-              .remove_actual_report_times = true,
           },
   };
 
@@ -125,8 +123,9 @@ TEST_P(AttributionInteropTest, HasExpectedOutput) {
       parser.InteropOutputFromSimulatorOutput(std::move(simulator_output));
   EXPECT_TRUE(actual_output) << error_stream.str();
 
-  if (expected_output)
+  if (expected_output) {
     EXPECT_THAT(actual_output, Optional(base::test::IsJson(*expected_output)));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -19,6 +19,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
@@ -26,7 +27,6 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/result_selection_controller.h"
@@ -38,13 +38,10 @@
 #include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/constants/ash_features.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -72,11 +69,10 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller_test_api.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -162,8 +158,7 @@ void SanityCheckSearchResultsAnchoredDialogBounds(
   };
 
   const gfx::Rect dialog_bounds = dialog->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds =
-      search_box_view->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = search_box_view->GetBoundsInScreen();
   // The dialog should be horizontally centered within the search box.
   EXPECT_EQ(0, horizontal_center_offset(dialog_bounds, search_box_bounds));
   // Verify the confirmation dialog is positioned with the top within search
@@ -277,7 +272,7 @@ class AppListPresenterTest : public AshTestBase,
 
   SearchResultContainerView* GetDefaultSearchResultListView() {
     return search_result_page()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
@@ -297,22 +292,6 @@ class AppListPresenterTest : public AshTestBase,
                               base::TimeTicks::Now(),
                               ui::PointerDetails(ui::EventPointerType::kTouch));
     GetEventGenerator()->Dispatch(&long_press);
-  }
-
-  views::DialogDelegate* GetSearchResultPageAnchoredDialog() {
-    return search_result_page()
-        ->dialog_for_test()
-        ->widget()
-        ->widget_delegate()
-        ->AsDialogDelegate();
-  }
-
-  // Returns the |dialog| vertical offset from the top of the search box bounds.
-  int GetSearchResultsAnchoredDialogTopOffset(const views::Widget* dialog) {
-    const gfx::Rect dialog_bounds = dialog->GetWindowBoundsInScreen();
-    const gfx::Rect search_box_bounds =
-        GetSearchBoxView()->GetWidget()->GetWindowBoundsInScreen();
-    return dialog_bounds.y() - search_box_bounds.y();
   }
 };
 
@@ -413,23 +392,23 @@ class AppListBubbleAndTabletTestBase : public AshTestBase {
   SearchResultContainerView* GetDefaultSearchResultListView() {
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
-          ->GetProductivityLauncherSearchView()
+          ->GetBubbleAppListSearchView()
           ->result_container_views_for_test()[kBestMatchContainerIndex];
     }
     return GetFullscreenSearchPage()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
   ResultSelectionController* GetResultSelectionController() {
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
-          ->GetProductivityLauncherSearchView()
+          ->GetBubbleAppListSearchView()
           ->result_selection_controller_for_test();
     }
 
     return GetFullscreenSearchPage()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_selection_controller_for_test();
   }
 
@@ -2892,20 +2871,14 @@ TEST_F(AppListPresenterTest, AppListBoundsChangeForDisplayChange) {
 
   const gfx::Rect app_list_bounds =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds = GetAppListView()
-                                          ->search_box_view()
-                                          ->GetWidget()
-                                          ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetSearchBoxView()->GetBoundsInScreen();
 
   UpdateDisplay("800x600");
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect app_list_bounds2 =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds2 = GetAppListView()
-                                           ->search_box_view()
-                                           ->GetWidget()
-                                           ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetSearchBoxView()->GetBoundsInScreen();
   EXPECT_GT(app_list_bounds.size().GetArea(),
             app_list_bounds2.size().GetArea());
   EXPECT_NE(search_box_bounds, search_box_bounds2);
@@ -2923,20 +2896,14 @@ TEST_F(AppListPresenterTest, AppListBoundsChangeForDisplayChangeFullscreen) {
 
   const gfx::Rect app_list_bounds =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds = GetAppListView()
-                                          ->search_box_view()
-                                          ->GetWidget()
-                                          ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetSearchBoxView()->GetBoundsInScreen();
 
   UpdateDisplay("800x600");
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect app_list_bounds2 =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds2 = GetAppListView()
-                                           ->search_box_view()
-                                           ->GetWidget()
-                                           ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetSearchBoxView()->GetBoundsInScreen();
   EXPECT_GT(app_list_bounds.size().GetArea(),
             app_list_bounds2.size().GetArea());
   EXPECT_NE(search_box_bounds, search_box_bounds2);
@@ -2956,20 +2923,14 @@ TEST_F(AppListPresenterTest,
 
   const gfx::Rect app_list_bounds =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds = GetAppListView()
-                                          ->search_box_view()
-                                          ->GetWidget()
-                                          ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetSearchBoxView()->GetBoundsInScreen();
 
   UpdateDisplay("800x600");
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect app_list_bounds2 =
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect search_box_bounds2 = GetAppListView()
-                                           ->search_box_view()
-                                           ->GetWidget()
-                                           ->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetSearchBoxView()->GetBoundsInScreen();
   EXPECT_GT(app_list_bounds.size().GetArea(),
             app_list_bounds2.size().GetArea());
   EXPECT_NE(search_box_bounds, search_box_bounds2);
@@ -4211,16 +4172,9 @@ TEST_P(AppListPresenterTest, SearchBoxTextfieldGestureTap) {
   EXPECT_LT(textfield->GetCursorPosition(), initial_cursor_position);
 }
 
-// Temporary class to test `kAnimateScaleOnTabletModeTransition` related
-// animations.
+// Tests tablet <-> clamshell mode transition.
 class AppListPresenterWithScaleAnimationOnTabletModeTransitionTest
     : public AppListPresenterTest {
- public:
-  AppListPresenterWithScaleAnimationOnTabletModeTransitionTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        app_list_features::kAnimateScaleOnTabletModeTransition);
-  }
-
  protected:
   void EnsureAppListViewIsCached() {
     ASSERT_FALSE(GetAppListTestHelper()->GetAppListView());
@@ -4236,8 +4190,6 @@ class AppListPresenterWithScaleAnimationOnTabletModeTransitionTest
     // Entering and exiting from tablet mode should keep `AppListView` cached.
     ASSERT_TRUE(GetAppListTestHelper()->GetAppListView());
   }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
@@ -4339,20 +4291,7 @@ TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
   EXPECT_EQ(layer->GetTargetTransform(), no_transform);
 }
 
-class AppListPresenterAnimationMigrationTest
-    : public AshTestBase,
-      public testing::WithParamInterface<bool> {
- public:
-  AppListPresenterAnimationMigrationTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        app_list_features::kAnimateScaleOnTabletModeTransition, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_P(AppListPresenterAnimationMigrationTest,
+TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
        AbortedHideAnimationDoesNotChangeVisibility) {
   // Configure test observer.
   auto visibility_observer = std::make_unique<TestAppListControllerObserver>();
@@ -4369,10 +4308,5 @@ TEST_P(AppListPresenterAnimationMigrationTest,
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(visibility_observer->visibility_changed_to_hidden_times(), 0);
 }
-
-// Runs tests for `kAnimateScaleOnTabletModeTransition` enabled and disabled.
-INSTANTIATE_TEST_SUITE_P(All,
-                         AppListPresenterAnimationMigrationTest,
-                         testing::Bool());
 
 }  // namespace ash

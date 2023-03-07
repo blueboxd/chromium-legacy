@@ -22,7 +22,6 @@
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "components/account_id/account_id.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -48,6 +47,7 @@ namespace wallpaper_handlers {
 class BackdropCollectionInfoFetcher;
 class BackdropImageInfoFetcher;
 class GooglePhotosAlbumsFetcher;
+class GooglePhotosSharedAlbumsFetcher;
 class GooglePhotosEnabledFetcher;
 class GooglePhotosPhotosFetcher;
 }  // namespace wallpaper_handlers
@@ -107,6 +107,10 @@ class PersonalizationAppWallpaperProviderImpl
       FetchImagesForCollectionCallback callback) override;
 
   void FetchGooglePhotosAlbums(
+      const absl::optional<std::string>& resume_token,
+      FetchGooglePhotosAlbumsCallback callback) override;
+
+  void FetchGooglePhotosSharedAlbums(
       const absl::optional<std::string>& resume_token,
       FetchGooglePhotosAlbumsCallback callback) override;
 
@@ -181,6 +185,11 @@ class PersonalizationAppWallpaperProviderImpl
   wallpaper_handlers::GooglePhotosAlbumsFetcher*
   SetGooglePhotosAlbumsFetcherForTest(
       std::unique_ptr<wallpaper_handlers::GooglePhotosAlbumsFetcher> fetcher);
+
+  wallpaper_handlers::GooglePhotosSharedAlbumsFetcher*
+  SetGooglePhotosSharedAlbumsFetcherForTest(
+      std::unique_ptr<wallpaper_handlers::GooglePhotosSharedAlbumsFetcher>
+          fetcher);
 
   wallpaper_handlers::GooglePhotosEnabledFetcher*
   SetGooglePhotosEnabledFetcherForTest(
@@ -282,6 +291,13 @@ class PersonalizationAppWallpaperProviderImpl
   // in a test.
   std::unique_ptr<wallpaper_handlers::GooglePhotosAlbumsFetcher>
       google_photos_albums_fetcher_;
+
+  // Fetches the Google Photos albums shared with the user. Constructed lazily
+  // at the time of the first request and then persists for the rest of the
+  // delegate's lifetime, unless preemptively or subsequently replaced by a mock
+  // in a test.
+  std::unique_ptr<wallpaper_handlers::GooglePhotosSharedAlbumsFetcher>
+      google_photos_shared_albums_fetcher_;
 
   // Fetches the state of the user's permission to access Google Photos data.
   // Constructed lazily at the time of the first request and then persists for

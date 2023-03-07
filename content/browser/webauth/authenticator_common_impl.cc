@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/base64url.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
@@ -591,7 +591,8 @@ void AuthenticatorCommonImpl::MakeCredential(
 
   // If there is an active webAuthenticationProxy extension, let it handle the
   // request.
-  WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
+  WebAuthenticationRequestProxy* proxy =
+      GetWebAuthnRequestProxyIfActive(caller_origin);
   if (proxy) {
     if (options->remote_desktop_client_override) {
       // Don't allow proxying of an already proxied request.
@@ -918,7 +919,8 @@ void AuthenticatorCommonImpl::GetAssertion(
     app_id_ = app_id;
   }
 
-  WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
+  WebAuthenticationRequestProxy* proxy =
+      GetWebAuthnRequestProxyIfActive(caller_origin);
   if (proxy) {
     if (options->is_conditional || options->remote_desktop_client_override) {
       // Don't allow proxying of an already proxied or conditional request.
@@ -1027,10 +1029,11 @@ void AuthenticatorCommonImpl::GetAssertion(
                                     GetBrowserContext()->IsOffTheRecord());
   ctap_get_assertion_options_.emplace();
 
-  bool is_first = true;
-  absl::optional<std::vector<uint8_t>> last_id;
   if (options->prf) {
     requested_extensions_.insert(RequestExtension::kPRF);
+
+    bool is_first = true;
+    absl::optional<std::vector<uint8_t>> last_id;
     for (const auto& prf_input_from_renderer : options->prf_inputs) {
       device::CtapGetAssertionOptions::PRFInput prf_input;
 
@@ -1139,9 +1142,11 @@ void AuthenticatorCommonImpl::GetAssertion(
 }
 
 void AuthenticatorCommonImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
+    url::Origin caller_origin,
     blink::mojom::Authenticator::
         IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
-  WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
+  WebAuthenticationRequestProxy* proxy =
+      GetWebAuthnRequestProxyIfActive(caller_origin);
   if (proxy) {
     // Note that IsUvpaa requests can interleave with MakeCredential or
     // GetAssertion, and cannot be cancelled. Thus, we do not set
@@ -1184,6 +1189,7 @@ void AuthenticatorCommonImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
 }
 
 void AuthenticatorCommonImpl::IsConditionalMediationAvailable(
+    url::Origin caller_origin,
     blink::mojom::Authenticator::IsConditionalMediationAvailableCallback
         callback) {
   // Conditional mediation is always supported if the virtual environment is
@@ -1197,7 +1203,7 @@ void AuthenticatorCommonImpl::IsConditionalMediationAvailable(
     return;
   }
 
-  if (GetWebAuthnRequestProxyIfActive()) {
+  if (GetWebAuthnRequestProxyIfActive(caller_origin)) {
     // Conditional requests cannot be proxied, signal the feature as
     // unavailable.
     std::move(callback).Run(false);
@@ -1675,7 +1681,7 @@ void AuthenticatorCommonImpl::CancelWithStatus(
   if (pending_proxied_request_id_) {
     WebAuthenticationRequestProxy* proxy =
         GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
-            GetBrowserContext());
+            GetBrowserContext(), caller_origin_);
     // As long as `pending_proxied_request_id_` is set, there should be an
     // active request proxy. Deactivation of the proxy would have invoked
     // `OnMakeCredentialProxyResponse()` or `OnGetAssertionProxyResponse()`, and
@@ -1814,7 +1820,7 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
       case RequestExtension::kLargeBlobEnable:
         response->echo_large_blob = true;
         response->supports_large_blob =
-            response_data.large_blob_key.has_value();
+            response_data.has_associated_large_blob_key;
         break;
       case RequestExtension::kCredBlob:
         response->echo_cred_blob = true;
@@ -2076,13 +2082,14 @@ void AuthenticatorCommonImpl::EnableRequestProxyExtensionsAPISupport() {
 }
 
 WebAuthenticationRequestProxy*
-AuthenticatorCommonImpl::GetWebAuthnRequestProxyIfActive() {
+AuthenticatorCommonImpl::GetWebAuthnRequestProxyIfActive(
+    const url::Origin& caller_origin) {
+  DCHECK(!caller_origin.opaque());
   if (!enable_request_proxy_api_) {
     return nullptr;
   }
-  WebAuthenticationRequestProxy* proxy =
-      GetWebAuthenticationDelegate()->MaybeGetRequestProxy(GetBrowserContext());
-  return proxy && proxy->IsActive() ? proxy : nullptr;
+  return GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+      GetBrowserContext(), caller_origin);
 }
 
 void AuthenticatorCommonImpl::OnMakeCredentialProxyResponse(

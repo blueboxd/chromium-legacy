@@ -12,8 +12,12 @@
 #include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -54,6 +58,152 @@ std::string OsIntegrationStateToString(OsIntegrationState state) {
     case OsIntegrationState::kDisabled:
       return "kDisabled";
   }
+}
+
+std::string GetRunOnOsLoginMode(const proto::RunOnOsLoginMode& mode) {
+  switch (mode) {
+    case proto::RunOnOsLoginMode::RUN_ON_OS_LOGIN_MODE_UNSPECIFIED:
+      return "unspecified";
+    case proto::RunOnOsLoginMode::NOT_RUN:
+      return "not_run";
+    case proto::RunOnOsLoginMode::WINDOWED:
+      return "windowed";
+    case proto::RunOnOsLoginMode::MINIMIZED:
+      return "minimized";
+  }
+}
+
+base::Value OsStatesDebugValue(
+    const proto::WebAppOsIntegrationState& current_states) {
+  base::Value::Dict debug_dict;
+
+  if (current_states.has_shortcut()) {
+    base::Value::Dict shortcut_data;
+    shortcut_data.Set("title", current_states.shortcut().title());
+    shortcut_data.Set("description", current_states.shortcut().description());
+    base::Value::Dict icon_data;
+    for (const auto& data : current_states.shortcut().icon_data_any()) {
+      icon_data.Set(base::NumberToString(data.icon_size()),
+                    syncer::GetTimeDebugString(
+                        syncer::ProtoTimeToTime(data.timestamp())));
+    }
+    shortcut_data.Set("icon_size_to_timestamp_map",
+                      base::Value(std::move(icon_data)));
+    debug_dict.Set("shortcut_descriptions",
+                   base::Value(std::move(shortcut_data)));
+  }
+
+  if (current_states.has_protocols_handled()) {
+    base::Value::Dict protocol_data;
+    for (const auto& data : current_states.protocols_handled().protocols()) {
+      protocol_data.Set(data.protocol(), data.url());
+    }
+    debug_dict.Set("protocols_handled", base::Value(std::move(protocol_data)));
+  }
+
+  if (current_states.has_run_on_os_login() &&
+      current_states.run_on_os_login().has_run_on_os_login_mode()) {
+    debug_dict.Set(
+        "run_on_os_login",
+        GetRunOnOsLoginMode(
+            current_states.run_on_os_login().run_on_os_login_mode()));
+  }
+
+  if (current_states.has_uninstall_registration()) {
+    debug_dict.Set(
+        "uninstall_registration",
+        current_states.uninstall_registration().registered_with_os());
+  }
+
+  if (current_states.has_shortcut_menus()) {
+    base::Value::List shortcut_menus_list;
+    for (const auto& shortcut_menu :
+         current_states.shortcut_menus().shortcut_menu_info()) {
+      base::Value::Dict icon_data_any_dict;
+      base::Value::Dict icon_data_maskable_dict;
+      base::Value::Dict icon_data_monochrome_dict;
+      for (const auto& icon_data_any : shortcut_menu.icon_data_any()) {
+        icon_data_any_dict.Set(
+            base::NumberToString(icon_data_any.icon_size()),
+            syncer::GetTimeDebugString(
+                syncer::ProtoTimeToTime(icon_data_any.timestamp())));
+      }
+      for (const auto& icon_data_maskable : shortcut_menu.icon_data_any()) {
+        icon_data_maskable_dict.Set(
+            base::NumberToString(icon_data_maskable.icon_size()),
+            syncer::GetTimeDebugString(
+                syncer::ProtoTimeToTime(icon_data_maskable.timestamp())));
+      }
+      for (const auto& icon_data_monochrome : shortcut_menu.icon_data_any()) {
+        icon_data_monochrome_dict.Set(
+            base::NumberToString(icon_data_monochrome.icon_size()),
+            syncer::GetTimeDebugString(
+                syncer::ProtoTimeToTime(icon_data_monochrome.timestamp())));
+      }
+      base::Value::Dict shortcut_menu_dict;
+      shortcut_menu_dict.Set("app_title", shortcut_menu.app_title());
+      shortcut_menu_dict.Set("app_launch_url", shortcut_menu.app_launch_url());
+      shortcut_menu_dict.Set("icon_data_any",
+                             base::Value(std::move(icon_data_any_dict)));
+      shortcut_menu_dict.Set("icon_data_maskable",
+                             base::Value(std::move(icon_data_maskable_dict)));
+      shortcut_menu_dict.Set("icon_data_monochrome",
+                             base::Value(std::move(icon_data_monochrome_dict)));
+      shortcut_menus_list.Append(std::move(shortcut_menu_dict));
+    }
+    debug_dict.Set("shortcut_menus",
+                   base::Value(std::move(shortcut_menus_list)));
+  }
+
+  if (current_states.has_file_handling()) {
+    base::Value::List file_handlers_list;
+    for (const auto& file_handler :
+         current_states.file_handling().file_handlers()) {
+      base::Value::Dict file_handler_dict;
+      file_handler_dict.Set("action", base::Value(file_handler.action()));
+      file_handler_dict.Set("display_name", file_handler.display_name());
+      base::Value::List accept_list;
+      for (const auto& accept : file_handler.accept()) {
+        base::Value::Dict accept_dict;
+        accept_dict.Set("mimetype", accept.mimetype());
+        base::Value::List file_extensions_list;
+        for (const auto& file_extension : accept.file_extensions()) {
+          file_extensions_list.Append(file_extension);
+        }
+        accept_dict.Set("file_extensions", std::move(file_extensions_list));
+        accept_list.Append(std::move(accept_dict));
+      }
+      file_handler_dict.Set("accept", std::move(accept_list));
+      file_handlers_list.Append(std::move(file_handler_dict));
+    }
+    debug_dict.Set("file_handling", std::move(file_handlers_list));
+  }
+
+  return base::Value(std::move(debug_dict));
+}
+
+base::Value ImageResourceDebugValue(
+    const blink::Manifest::ImageResource& icon) {
+  const char* const kPurposeStrings[] = {"Any", "Monochrome", "Maskable"};
+
+  base::Value root(base::Value::Type::DICT);
+  root.SetStringKey("src", icon.src.spec());
+  root.SetStringKey("type", icon.type);
+
+  base::Value sizes_json(base::Value::Type::LIST);
+  for (const auto& size : icon.sizes) {
+    std::string size_formatted = base::NumberToString(size.width()) + "x" +
+                                 base::NumberToString(size.height());
+    sizes_json.Append(base::Value(size_formatted));
+  }
+  root.SetKey("sizes", std::move(sizes_json));
+
+  base::Value purpose_json(base::Value::Type::LIST);
+  for (const auto& purpose : icon.purpose) {
+    purpose_json.Append(kPurposeStrings[static_cast<int>(purpose)]);
+  }
+  root.SetKey("purpose", std::move(purpose_json));
+  return root;
 }
 
 }  // namespace
@@ -197,7 +347,7 @@ void WebApp::SetDisplayMode(DisplayMode display_mode) {
   display_mode_ = display_mode;
 }
 
-void WebApp::SetUserDisplayMode(UserDisplayMode user_display_mode) {
+void WebApp::SetUserDisplayMode(mojom::UserDisplayMode user_display_mode) {
   user_display_mode_ = user_display_mode;
 }
 
@@ -406,8 +556,7 @@ void WebApp::SetTabStrip(absl::optional<blink::Manifest::TabStrip> tab_strip) {
 }
 
 void WebApp::SetCurrentOsIntegrationStates(
-    absl::optional<proto::WebAppOsIntegrationState>
-        current_os_integration_states) {
+    proto::WebAppOsIntegrationState current_os_integration_states) {
   current_os_integration_states_ = std::move(current_os_integration_states);
 }
 
@@ -580,7 +729,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.management_to_external_config_map_,
         app.tab_strip_,
         app.always_show_toolbar_in_fullscreen_,
-        app.current_os_integration_states_.value_or(proto::WebAppOsIntegrationState()).SerializeAsString(),
+        app.current_os_integration_states_.SerializeAsString(),
         app.isolation_data_
         // clang-format on
     );
@@ -858,8 +1007,18 @@ base::Value WebApp::AsDebugValue() const {
           "home_tab", base::StreamableToString(absl::get<TabStrip::Visibility>(
                           tab_strip_.value().home_tab)));
     } else {
-      tab_strip_json.Set("home_tab", base::Value::Dict());
-      // TODO(crbug.com/897314): Add debug info for home tab icons.
+      base::Value::Dict home_tab_json;
+      base::Value icons_json(base::Value::Type::LIST);
+      absl::optional<std::vector<blink::Manifest::ImageResource>> icons =
+          absl::get<blink::Manifest::HomeTabParams>(tab_strip_.value().home_tab)
+              .icons;
+
+      for (auto& icon : *icons) {
+        icons_json.Append(ImageResourceDebugValue(icon));
+      }
+
+      home_tab_json.Set("icons", std::move(icons_json));
+      tab_strip_json.Set("home_tab", std::move(home_tab_json));
     }
     root.Set("tab_strip", std::move(tab_strip_json));
   } else {
@@ -869,10 +1028,8 @@ base::Value WebApp::AsDebugValue() const {
   root.Set("always_show_toolbar_in_fullscreen",
            always_show_toolbar_in_fullscreen_);
 
-  if (current_os_integration_states_.has_value()) {
-    root.Set("current_os_integration_states", base::Value());
-    // TODO(crbug.com/1295044) : Add logic to parse and show data.
-  }
+  root.Set("current_os_integration_states",
+           OsStatesDebugValue(current_os_integration_states_));
 
   if (isolation_data_.has_value()) {
     root.Set("isolation_data", isolation_data_->AsDebugValue());

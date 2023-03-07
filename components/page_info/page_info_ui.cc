@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/page_info/core/features.h"
+#include "components/page_info/page_info.h"
 #include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -242,18 +243,11 @@ CreateSecurityDescriptionForSafetyTip(
       std::make_unique<PageInfoUI::SecurityDescription>();
   security_description->summary_style = PageInfoUI::SecuritySummaryColor::RED;
 
-  if (safety_tip_status == security_state::SafetyTipStatus::kBadReputation ||
-      safety_tip_status ==
-          security_state::SafetyTipStatus::kBadReputationIgnored) {
-    security_description->summary = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE);
-  } else {
-    const std::u16string safe_host =
-        security_interstitials::common_string_util::GetFormattedHostName(
-            safe_url);
-    security_description->summary = l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE, safe_host);
-  }
+  const std::u16string safe_host =
+      security_interstitials::common_string_util::GetFormattedHostName(
+          safe_url);
+  security_description->summary = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE, safe_host);
   security_description->details =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_DESCRIPTION);
   security_description->type = PageInfoUI::SecurityDescriptionType::SAFETY_TIP;
@@ -526,6 +520,7 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
+    case PageInfo::SITE_IDENTITY_STATUS_ISOLATED_WEB_APP:
       switch (identity_info.connection_status) {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
@@ -905,6 +900,7 @@ int PageInfoUI::GetIdentityIconID(PageInfo::SiteIdentityStatus status) {
     case PageInfo::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
+    case PageInfo::SITE_IDENTITY_STATUS_ISOLATED_WEB_APP:
       return IDR_PAGEINFO_GOOD;
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_ERROR:
@@ -922,6 +918,7 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
     case PageInfo::SITE_CONNECTION_STATUS_UNKNOWN:
     case PageInfo::SITE_CONNECTION_STATUS_INTERNAL_PAGE:
     case PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED:
+    case PageInfo::SITE_CONNECTION_STATUS_ISOLATED_WEB_APP:
       return IDR_PAGEINFO_GOOD;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
@@ -940,6 +937,7 @@ int PageInfoUI::GetIdentityIconColorID(PageInfo::SiteIdentityStatus status) {
     case PageInfo::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
+    case PageInfo::SITE_IDENTITY_STATUS_ISOLATED_WEB_APP:
       return IDR_PAGEINFO_GOOD_COLOR;
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
@@ -957,6 +955,7 @@ int PageInfoUI::GetConnectionIconColorID(
     case PageInfo::SITE_CONNECTION_STATUS_UNKNOWN:
     case PageInfo::SITE_CONNECTION_STATUS_INTERNAL_PAGE:
     case PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED:
+    case PageInfo::SITE_CONNECTION_STATUS_ISOLATED_WEB_APP:
       return IDR_PAGEINFO_GOOD_COLOR;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
@@ -985,18 +984,10 @@ std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoUI::CreateSafetyTipSecurityDescription(
     const security_state::SafetyTipInfo& info) {
   switch (info.status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-    case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalike:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
       return CreateSecurityDescriptionForSafetyTip(info.status, info.safe_url);
 
-    case security_state::SafetyTipStatus::kBadKeyword:
-      // Keyword safety tips are only used to collect metrics for now and are
-      // not visible to the user, so don't affect Page Info.
-      break;
-
-    case security_state::SafetyTipStatus::kDigitalAssetLinkMatch:
     case security_state::SafetyTipStatus::kNone:
     case security_state::SafetyTipStatus::kUnknown:
       break;

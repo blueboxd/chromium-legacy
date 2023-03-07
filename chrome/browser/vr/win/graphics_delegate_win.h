@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_WIN_GRAPHICS_DELEGATE_WIN_H_
 
 #include <string>
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/vr/graphics_delegate.h"
@@ -65,22 +65,11 @@ class GraphicsDelegateWin : public GraphicsDelegate {
   void InitializeBuffers() override;
   void PrepareBufferForWebXr() override;
   void PrepareBufferForWebXrOverlayElements() override;
-  void PrepareBufferForContentQuadLayer(
-      const gfx::Transform& quad_transform) override;
   void PrepareBufferForBrowserUi() override;
   void OnFinishedDrawingBuffer() override;
   void GetWebXrDrawParams(int* texture_id, Transform* uv_transform) override;
-  bool IsContentQuadReady() override;
-  void ResumeContentRendering() override;
-  void BufferBoundsChanged(const gfx::Size& content_buffer_size,
-                           const gfx::Size& overlay_buffer_size) override;
-  void GetContentQuadDrawParams(Transform* uv_transform,
-                                float* border_x,
-                                float* border_y) override;
-  int GetContentBufferWidth() override;
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
   bool RunInSkiaContext(base::OnceClosure callback) override;
-  void SetFrameDumpFilepathBase(std::string& filepath_base) override;
 
   // Helpers:
   bool EnsureMemoryBuffer(int width, int height);

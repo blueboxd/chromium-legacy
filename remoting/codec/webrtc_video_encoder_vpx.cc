@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
@@ -57,7 +57,7 @@ void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
                               const webrtc::DesktopSize& size) {
   // Use millisecond granularity time base.
   config->g_timebase.num = 1;
-  config->g_timebase.den = base::Time::kMicrosecondsPerSecond;
+  config->g_timebase.den = base::Time::kMillisecondsPerSecond;
 
   config->g_w = size.width();
   config->g_h = size.height();
@@ -186,8 +186,9 @@ void WebrtcVideoEncoderVpx::SetTickClockForTests(
 }
 
 void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
-  if (!use_vp9_)
+  if (!use_vp9_) {
     return;
+  }
 
   if (want_lossless != lossless_color_) {
     lossless_color_ = want_lossless;
@@ -201,8 +202,9 @@ void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
 }
 
 void WebrtcVideoEncoderVpx::SetEncoderSpeed(int encoder_speed) {
-  if (!use_vp9_)
+  if (!use_vp9_) {
     return;
+  }
 
   vp9_encoder_speed_ = base::clamp<int>(encoder_speed, kVp9LosslessEncodeSpeed,
                                         kVp9MaxEncoderSpeed);
@@ -244,11 +246,13 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
   vpx_active_map_t act_map;
   if (use_active_map_) {
-    if (params.clear_active_map)
+    if (params.clear_active_map) {
       active_map_.Clear();
+    }
 
-    if (params.key_frame)
+    if (params.key_frame) {
       updated_region.SetRect(webrtc::DesktopRect::MakeSize(frame_size));
+    }
 
     active_map_.Update(updated_region);
 
@@ -308,8 +312,9 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   while (!got_data) {
     const vpx_codec_cx_pkt_t* vpx_packet =
         vpx_codec_get_cx_data(codec_.get(), &iter);
-    if (!vpx_packet)
+    if (!vpx_packet) {
       continue;
+    }
 
     switch (vpx_packet->kind) {
       case VPX_CODEC_CX_FRAME_PKT: {
@@ -404,8 +409,9 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
 
 void WebrtcVideoEncoderVpx::UpdateConfig(const FrameParams& params) {
   // Configuration not initialized.
-  if (config_.g_timebase.den == 0)
+  if (config_.g_timebase.den == 0) {
     return;
+  }
 
   bool changed = false;
 
@@ -432,13 +438,14 @@ void WebrtcVideoEncoderVpx::UpdateConfig(const FrameParams& params) {
     changed = true;
   }
 
-  if (!changed)
+  if (!changed) {
     return;
+  }
 
   // Update encoder context.
-  if (vpx_codec_enc_config_set(codec_.get(), &config_))
+  if (vpx_codec_enc_config_set(codec_.get(), &config_)) {
     NOTREACHED() << "Unable to set encoder config";
-
+  }
 }
 
 void WebrtcVideoEncoderVpx::PrepareImage(
@@ -474,7 +481,7 @@ void WebrtcVideoEncoderVpx::PrepareImage(
     updated_region->IntersectWith(
         webrtc::DesktopRect::MakeWH(image_->d_w, image_->d_h));
   } else {
-    vpx_img_fmt_t fmt = lossless_color_ ? VPX_IMG_FMT_I444 : VPX_IMG_FMT_YV12;
+    vpx_img_fmt_t fmt = lossless_color_ ? VPX_IMG_FMT_I444 : VPX_IMG_FMT_I420;
     image_.reset(vpx_img_alloc(nullptr, fmt, frame->size().width(),
                                frame->size().height(),
                                GetSimdMemoryAlignment()));
@@ -506,7 +513,7 @@ void WebrtcVideoEncoderVpx::PrepareImage(
                            rect.width(), rect.height());
       }
       break;
-    case VPX_IMG_FMT_YV12:
+    case VPX_IMG_FMT_I420:
       for (webrtc::DesktopRegion::Iterator r(*updated_region); !r.IsAtEnd();
            r.Advance()) {
         webrtc::DesktopRect rect = GetRowAlignedRect(r.rect(), image_->d_w);

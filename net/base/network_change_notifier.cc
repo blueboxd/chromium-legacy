@@ -72,7 +72,8 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
             NetworkChangeCalculatorParams(),
             dns_config_notifier.get(),
             // Omit adding observers from the constructor as that would prevent
-            // construction when SequencedTaskRunnerHandle isn't set.
+            // construction when SingleThreadTaskRunner::CurrentDefaultHandle
+            // isn't set.
             /* omit_observers_in_constructor_for_testing=*/true),
         dns_config_notifier_(std::move(dns_config_notifier)) {}
 
@@ -525,7 +526,17 @@ NetworkChangeNotifier::GetAddressTracker() {
              ? g_network_change_notifier->GetAddressTrackerInternal()
              : nullptr;
 }
-#endif
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_FUCHSIA)
+// static
+const internal::NetworkInterfaceCache*
+NetworkChangeNotifier::GetNetworkInterfaceCache() {
+  return g_network_change_notifier
+             ? g_network_change_notifier->GetNetworkInterfaceCacheInternal()
+             : nullptr;
+}
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 // static
 bool NetworkChangeNotifier::IsOffline() {
@@ -865,6 +876,13 @@ NetworkChangeNotifier::NetworkChangeNotifier(
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 const internal::AddressTrackerLinux*
 NetworkChangeNotifier::GetAddressTrackerInternal() const {
+  return nullptr;
+}
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+const internal::NetworkInterfaceCache*
+NetworkChangeNotifier::GetNetworkInterfaceCacheInternal() const {
   return nullptr;
 }
 #endif

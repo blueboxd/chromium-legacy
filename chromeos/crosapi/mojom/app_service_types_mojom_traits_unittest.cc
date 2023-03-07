@@ -34,6 +34,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTrip) {
   input->additional_search_terms = {"1", "2"};
   input->icon_key = apps::IconKey(
       /*timeline=*/1, apps::IconKey::kInvalidResourceId, /*icon_effects=*/2);
+  input->icon_key->raw_icon_updated = true;
   input->last_launch_time = base::Time() + base::Days(1);
   input->install_time = base::Time() + base::Days(2);
   input->install_reason = apps::InstallReason::kUser;
@@ -85,6 +86,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTrip) {
 
   EXPECT_EQ(output->icon_key->timeline, 1U);
   EXPECT_EQ(output->icon_key->icon_effects, 2U);
+  EXPECT_TRUE(output->icon_key->raw_icon_updated);
 
   EXPECT_EQ(output->last_launch_time, base::Time() + base::Days(1));
   EXPECT_EQ(output->install_time, base::Time() + base::Days(2));
@@ -774,6 +776,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripIconValue) {
 
     input->compressed = {1u, 2u};
     input->is_placeholder_icon = true;
+    input->is_maskable_icon = false;
 
     auto output = std::make_unique<apps::IconValue>();
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::IconValue>(
@@ -796,6 +799,7 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripIconValue) {
     gfx::ImageSkia image = gfx::test::CreateImageSkia(3, 4);
     input->uncompressed = image;
     input->is_placeholder_icon = false;
+    input->is_maskable_icon = true;
 
     auto output = std::make_unique<apps::IconValue>();
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::IconValue>(
@@ -812,9 +816,9 @@ TEST(AppServiceTypesMojomTraitsTest, RoundTripIconValue) {
 
     input->compressed = {3u, 4u};
     input->is_placeholder_icon = true;
+    input->is_maskable_icon = true;
 
     auto output = std::make_unique<apps::IconValue>();
-    ;
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<crosapi::mojom::IconValue>(
         input, output));
 

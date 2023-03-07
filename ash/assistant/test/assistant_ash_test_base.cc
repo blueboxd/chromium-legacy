@@ -118,9 +118,7 @@ void AssistantAshTestBase::SetUp() {
   test_api_->DisableAnimations();
   EnableKeyboard();
 
-  if (set_up_active_user_in_test_set_up_) {
-    SetUpActiveUser();
-  }
+  SetUpActiveUser();
 }
 
 void AssistantAshTestBase::TearDown() {

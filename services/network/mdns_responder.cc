@@ -12,7 +12,7 @@
 #include "services/network/mdns_responder.h"
 
 #include "base/big_endian.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -21,7 +21,6 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

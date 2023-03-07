@@ -26,6 +26,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/platform/inspect/ax_api_type.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -64,6 +65,7 @@ std::vector<ui::AXPropertyFilter> DumpAccessibilityTreeTest::DefaultFilters()
   property_filters.emplace_back("horizontal", AXPropertyFilter::ALLOW);
   property_filters.emplace_back("multiselectable", AXPropertyFilter::ALLOW);
   property_filters.emplace_back("placeholder=*", AXPropertyFilter::ALLOW);
+  property_filters.emplace_back("ispopup*", AXPropertyFilter::ALLOW);
 
   // Deny most empty values.
   property_filters.emplace_back("*=''", AXPropertyFilter::DENY);
@@ -140,36 +142,6 @@ void DumpAccessibilityTreeTestWithIgnoredNodes::ChooseFeatures(
 
 class DumpAccessibilityTreeTestExceptUIA : public DumpAccessibilityTreeTest {};
 
-class DumpAccessibilityTreeWithoutLayoutNGTest
-    : public DumpAccessibilityTreeTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DumpAccessibilityTreeTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
-                                    "LayoutNG");
-  }
-};
-
-class DumpAccessibilityTreeWithLayoutNGBlockFragmentationTest
-    : public DumpAccessibilityTreeTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DumpAccessibilityTreeTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "LayoutNGBlockFragmentation");
-  }
-};
-
-class DumpAccessibilityTreeWithoutLayoutNGBlockFragmentationTest
-    : public DumpAccessibilityTreeTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DumpAccessibilityTreeTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
-                                    "LayoutNGBlockFragmentation");
-  }
-};
-
 // Parameterize the tests so that each test-pass is run independently.
 struct DumpAccessibilityTreeTestPassToString {
   std::string operator()(
@@ -193,24 +165,6 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     DumpAccessibilityTreeTestWithIgnoredNodes,
-    ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
-    DumpAccessibilityTreeTestPassToString());
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    DumpAccessibilityTreeWithoutLayoutNGTest,
-    ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
-    DumpAccessibilityTreeTestPassToString());
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    DumpAccessibilityTreeWithLayoutNGBlockFragmentationTest,
-    ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
-    DumpAccessibilityTreeTestPassToString());
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    DumpAccessibilityTreeWithoutLayoutNGBlockFragmentationTest,
     ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
@@ -313,16 +267,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("marker-hyphens.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithLayoutNGBlockFragmentationTest,
-                       AccessibilityCSSMarkerCrash) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSMarkerCrash) {
   RunCSSTest(FILE_PATH_LITERAL("marker-crash.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(
-    DumpAccessibilityTreeWithoutLayoutNGBlockFragmentationTest,
-    AccessibilityCSSMarkerCrash) {
-  RunCSSTest(
-      FILE_PATH_LITERAL("marker-crash-without-layout-ng-block-frag.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -1746,17 +1692,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
-                       AccessibilityContenteditableBr) {
-  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br.html"));
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableFontSize) {
-  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-font-size.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
                        AccessibilityContenteditableFontSize) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-font-size.html"));
 }
@@ -1779,30 +1715,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-docs-li.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
-                       AccessibilityContenteditableDocsLi) {
-  RunHtmlTest(
-      FILE_PATH_LITERAL("contenteditable-docs-li-disable-ng-layout.html"));
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableLiContainsPresentation) {
   RunHtmlTest(
       FILE_PATH_LITERAL("contenteditable-li-contains-presentation.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
-                       AccessibilityContenteditableLiContainsPresentation) {
-  RunHtmlTest(FILE_PATH_LITERAL(
-      "contenteditable-li-contains-presentation-disable-ng-layout.html"));
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableSpans) {
-  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-spans.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
                        AccessibilityContenteditableSpans) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-spans.html"));
 }
@@ -1845,16 +1764,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-plaintext-with-role.html"));
 }
 
-// TODO(crbug.com/1379137): This test is failing on Mac.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_AccessibilityContenteditableOnDisallowedElement \
-  DISABLED_AccessibilityContenteditableOnDisallowedElement
-#else
-#define MAYBE_AccessibilityContenteditableOnDisallowedElement \
-  AccessibilityContenteditableOnDisallowedElement
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityContenteditableOnDisallowedElement) {
+                       AccessibilityContenteditableOnDisallowedElement) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-on-disallowed-element.html"));
 }
 
@@ -2382,7 +2293,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("input-radio-wrapped-label.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputRange) {
+// TODO(crbug.com/1407673): failing on Fuchsia
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_AccessibilityInputRange DISABLED_AccessibilityInputRange
+#else
+#define MAYBE_AccessibilityInputRange AccessibilityInputRange
+#endif  // BUILDFLAG(IS_FUCHSIA)
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityInputRange) {
   RunHtmlTest(FILE_PATH_LITERAL("input-range.html"));
 }
 
@@ -2804,10 +2722,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityP) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityParam) {
   RunHtmlTest(FILE_PATH_LITERAL("param.html"));
 }
-// TODO(crbug.com/1367886): Test flaky on multiple platforms.
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityPopupApi) {
-  RunHtmlTest(FILE_PATH_LITERAL("popup-api.html"));
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPopoverApi) {
+  RunHtmlTest(FILE_PATH_LITERAL("popover-api.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPre) {
@@ -2946,6 +2863,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilitySelectMenu) {
+  // Fails when synchronous a11y serialization is enabled - crbug.com/1401767
+  if (base::FeatureList::IsEnabled(
+          blink::features::kSerializeAccessibilityPostLifecycle)) {
+    return;
+  }
   RunHtmlTest(FILE_PATH_LITERAL("selectmenu.html"));
 }
 

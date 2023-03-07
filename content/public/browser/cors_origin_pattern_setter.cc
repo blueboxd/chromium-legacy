@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/barrier_closure.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -53,7 +53,7 @@ void CorsOriginPatternSetter::Set(
       base::MakeRefCounted<CorsOriginPatternSetter>(
           PassKey(), source_origin, mojo::Clone(allow_patterns),
           mojo::Clone(block_patterns), barrier_closure);
-  browser_context->ForEachStoragePartition(
+  browser_context->ForEachLoadedStoragePartition(
       base::BindRepeating(&CorsOriginPatternSetter::SetForStoragePartition,
                           base::RetainedRef(setter)));
 

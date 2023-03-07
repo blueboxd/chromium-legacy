@@ -4,14 +4,13 @@
 
 #import <memory>
 
-#import "base/bind.h"
 #import "base/command_line.h"
 #import "base/files/file_path.h"
 #import "base/files/scoped_temp_dir.h"
+#import "base/functional/bind.h"
 #import "base/path_service.h"
 #import "base/run_loop.h"
 #import "base/test/task_environment.h"
-#import "base/threading/thread_task_runner_handle.h"
 #import "components/policy/core/browser/policy_pref_mapping_test.h"
 #import "components/policy/core/common/mock_configuration_policy_provider.h"
 #import "components/policy/core/common/policy_map.h"

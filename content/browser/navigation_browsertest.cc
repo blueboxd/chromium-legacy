@@ -6,12 +6,12 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -19,6 +19,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -151,7 +152,7 @@ class RenderFrameHostImplForHistoryBackInterceptor
   void GoToEntryAtOffset(int32_t offset,
                          bool has_user_gesture,
                          absl::optional<blink::scheduler::TaskAttributionId>
-                             soft_navigation_heuristic_task_id) override {
+                             soft_navigation_heuristics_task_id) override {
     if (quit_handler_)
       std::move(quit_handler_).Run();
   }
@@ -684,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SanitizeReferrer) {
 
   // The navigation should commit without being blocked.
   EXPECT_TRUE(manager.WaitForResponse());
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   EXPECT_EQ(kInsecureUrl, web_contents()->GetLastCommittedURL());
 }
 
@@ -732,7 +733,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTestReferrerPolicy, ReferrerPolicy) {
 
   // The navigation should commit without being blocked.
   EXPECT_TRUE(manager.WaitForResponse());
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   EXPECT_EQ(kDestination, web_contents()->GetLastCommittedURL());
 }
 
@@ -868,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
 
   // The renderer commits the navigation and the browser deletes its
   // NavigationRequest.
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   EXPECT_FALSE(main_frame()->navigation_request());
 
   // The NavigationURLLoader has been deleted by now. Check that the renderer
@@ -1333,10 +1334,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     // begins and ends.
     TestNavigationManager push_state_navigation(web_contents(), main_url);
     ExecuteScriptAsync(shell(), "window.history.pushState({}, null);");
-    push_state_navigation.WaitForNavigationFinished();
+    ASSERT_TRUE(push_state_navigation.WaitForNavigationFinished());
 
     // The iframe navigation is resumed.
-    iframe_navigation.WaitForNavigationFinished();
+    ASSERT_TRUE(iframe_navigation.WaitForNavigationFinished());
   }
 
   // 3) history.back() must work.
@@ -1600,7 +1601,7 @@ IN_PROC_BROWSER_TEST_F(NavigationGoToEntryAtOffsetBrowserTest,
   shell()->LoadURL(url_2);
   run_loop.Run();
 
-  navigation.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation.WaitForNavigationFinished());
 
   EXPECT_TRUE(navigation.was_successful());
 }
@@ -1625,7 +1626,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                      EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // 3) The first pending navigation is not canceled and can continue.
-  navigation.WaitForNavigationFinished();  // Resume navigation.
+  ASSERT_TRUE(navigation.WaitForNavigationFinished());  // Resume navigation.
   EXPECT_TRUE(navigation.was_successful());
 }
 
@@ -1648,7 +1649,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                      "history.back();"));
 
   // 3) Check the first pending navigation has been canceled.
-  navigation.WaitForNavigationFinished();  // Resume navigation.
+  ASSERT_TRUE(navigation.WaitForNavigationFinished());  // Resume navigation.
   EXPECT_FALSE(navigation.was_successful());
 }
 
@@ -1775,7 +1776,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   TestNavigationManager manager(web_contents(), data_url);
   EXPECT_TRUE(ExecJs(popup, base::StringPrintf("window.opener.location ='%s'",
                                                data_url.spec().c_str())));
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 
   EXPECT_FALSE(manager.was_successful());
 
@@ -2141,7 +2142,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, WebViewRendererKillReload) {
 
   // Wait for navigation in new WebContents to finish.
   NewWebContentsData data = crash_observer.TakeNewWebContentsData();
-  data.manager->WaitForNavigationFinished();
+  ASSERT_TRUE(data.manager->WaitForNavigationFinished());
 
   // Test passes if renderer is still alive.
   EXPECT_TRUE(ExecJs(data.new_web_contents.get(), "true;"));
@@ -2325,7 +2326,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       let subwindow = document.querySelector('iframe').contentWindow;
       subwindow.location.search = "1";
     )"));
-    commit_waiter.WaitForNavigationFinished();
+    ASSERT_TRUE(commit_waiter.WaitForNavigationFinished());
   }
 
   //  3) Cross-document navigation to about:srcdoc?2.
@@ -2335,7 +2336,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       let subwindow = document.querySelector('iframe').contentWindow;
       subwindow.location.search = "2";
     )"));
-    commit_waiter.WaitForNavigationFinished();
+    ASSERT_TRUE(commit_waiter.WaitForNavigationFinished());
   }
 
   // Inspect the session history.
@@ -2627,7 +2628,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       main_frame()->navigation_request()->GetNextPageUkmSourceId();
 
   EXPECT_TRUE(manager.WaitForResponse());
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   EXPECT_EQ(current_frame_host()->GetPageUkmSourceId(), nav_request_id);
 }
 
@@ -2652,7 +2653,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       subframe->navigation_request()->GetNextPageUkmSourceId();
 
   EXPECT_TRUE(manager.WaitForResponse());
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 
   // Should have the same page UKM ID in navigation as page post commit, and as
   // the top-level frame.
@@ -4067,7 +4068,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
 
   EXPECT_TRUE(navigation_manager.WaitForResponse());
   navigation_manager.ResumeNavigation();
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_TRUE(WaitForRenderFrameReady(current_frame_host()));
 
@@ -4123,7 +4124,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
 
   EXPECT_TRUE(navigation_manager.WaitForResponse());
   navigation_manager.ResumeNavigation();
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_TRUE(WaitForRenderFrameReady(current_frame_host()));
 
@@ -4178,7 +4179,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
 
   EXPECT_TRUE(navigation_manager.WaitForResponse());
   navigation_manager.ResumeNavigation();
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_TRUE(WaitForRenderFrameReady(current_frame_host()));
@@ -4225,7 +4226,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
 
   EXPECT_TRUE(navigation_manager.WaitForResponse());
   navigation_manager.ResumeNavigation();
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_TRUE(WaitForRenderFrameReady(current_frame_host()));
@@ -4246,7 +4247,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommitBasic) {
   absl::optional<url::Origin> origin_to_commit =
       navigation->GetOriginToCommit();
   ASSERT_TRUE(origin_to_commit.has_value());
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   url::Origin origin_committed = current_frame_host()->GetLastCommittedOrigin();
 
   EXPECT_FALSE(origin_to_commit->opaque());
@@ -4264,7 +4265,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommit204) {
   absl::optional<url::Origin> origin_to_commit =
       navigation->GetOriginToCommit();
   EXPECT_FALSE(origin_to_commit.has_value());
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
@@ -4276,7 +4277,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_TRUE(manager.WaitForResponse());
   NavigationRequest* navigation = main_frame()->navigation_request();
   url::Origin origin_to_commit = navigation->GetOriginToCommit().value();
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   url::Origin origin_committed = current_frame_host()->GetLastCommittedOrigin();
 
   EXPECT_TRUE(origin_to_commit.opaque());
@@ -4301,7 +4302,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   FrameTreeNode* iframe = current_frame_host()->child_at(0);
   NavigationRequest* navigation = iframe->navigation_request();
   url::Origin origin_to_commit = navigation->GetOriginToCommit().value();
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   url::Origin origin_committed =
       iframe->current_frame_host()->GetLastCommittedOrigin();
 
@@ -4328,7 +4329,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromCspSandboxResponse) {
       "a.com", "/set-header?Content-Security-Policy: sandbox");
   TestNavigationManager manager(web_contents(), url);
   shell()->LoadURL(url);
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 
   // An error page committed. It doesn't have any sandbox flags, despite the
   // original response headers.
@@ -4463,7 +4464,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromInSandboxedIframe) {
     iframe.sandbox = "allow-orientation-lock";
     document.body.appendChild(iframe);
   )");
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 
   RenderFrameHostImpl* child_rfh =
       current_frame_host()->child_at(0)->current_frame_host();
@@ -4487,7 +4488,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommitSandboxFromFrame) {
   FrameTreeNode* iframe = current_frame_host()->child_at(0);
   NavigationRequest* navigation = iframe->navigation_request();
   url::Origin origin_to_commit = navigation->GetOriginToCommit().value();
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   url::Origin origin_committed =
       iframe->current_frame_host()->GetLastCommittedOrigin();
 
@@ -4513,8 +4514,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   TestNavigationManager manager_1(popup_contents, url_b);
   TestNavigationManager manager_2(popup_contents, GURL("about:blank"));
 
-  manager_1.WaitForNavigationFinished();
-  manager_2.WaitForNavigationFinished();
+  ASSERT_TRUE(manager_1.WaitForNavigationFinished());
+  ASSERT_TRUE(manager_2.WaitForNavigationFinished());
 
   EXPECT_EQ(popup_contents->GetLastCommittedURL(), "about:blank");
 }
@@ -5880,7 +5881,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_EQ(1U, main_frame()->child_count());
   FrameTreeNode* child = main_frame()->child_at(0);
   EXPECT_EQ(iframe_url_1, child->current_url());
-  EXPECT_FALSE(child->credentialless());
+  EXPECT_FALSE(child->Credentialless());
   EXPECT_FALSE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(false,
             EvalJs(child->current_frame_host(), "window.credentialless"));
@@ -5890,7 +5891,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_TRUE(
       ExecJs(main_frame(),
              "document.getElementById('test_iframe').credentialless = true;"));
-  EXPECT_TRUE(child->credentialless());
+  EXPECT_TRUE(child->Credentialless());
   EXPECT_FALSE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(false,
             EvalJs(child->current_frame_host(), "window.credentialless"));
@@ -5908,7 +5909,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   // The grandchild FrameTreeNode does not set the 'credentialless'
   // attribute. The grandchild RenderFrameHost is not credentialless, since its
   // parent RenderFrameHost is not credentialless.
-  EXPECT_FALSE(grandchild->credentialless());
+  EXPECT_FALSE(grandchild->Credentialless());
   EXPECT_FALSE(grandchild->current_frame_host()->IsCredentialless());
   EXPECT_EQ(false,
             EvalJs(grandchild->current_frame_host(), "window.credentialless"));
@@ -5919,7 +5920,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
                                "        .contentWindow.location.href = $1;",
                                iframe_url_1.Resolve("#here").spec())));
   WaitForLoadStop(web_contents());
-  EXPECT_TRUE(child->credentialless());
+  EXPECT_TRUE(child->Credentialless());
   EXPECT_FALSE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(false,
             EvalJs(child->current_frame_host(), "window.credentialless"));
@@ -5929,7 +5930,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
       main_frame(), JsReplace("document.getElementById('test_iframe').src = $1",
                               iframe_url_2)));
   WaitForLoadStop(web_contents());
-  EXPECT_TRUE(child->credentialless());
+  EXPECT_TRUE(child->Credentialless());
   EXPECT_TRUE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true, EvalJs(child->current_frame_host(), "window.credentialless"));
   // A credentialless document has a storage key with a nonce.
@@ -5950,7 +5951,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
 
   // The grandchild does not set the 'credentialless' attribute, but the
   // grandchild document is credentialless.
-  EXPECT_FALSE(grandchild->credentialless());
+  EXPECT_FALSE(grandchild->Credentialless());
   EXPECT_TRUE(grandchild->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true,
             EvalJs(grandchild->current_frame_host(), "window.credentialless"));
@@ -5981,7 +5982,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_TRUE(
       ExecJs(main_frame(),
              "document.getElementById('test_iframe').credentialless = false;"));
-  EXPECT_FALSE(child->credentialless());
+  EXPECT_FALSE(child->Credentialless());
   EXPECT_TRUE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true, EvalJs(child->current_frame_host(), "window.credentialless"));
   EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
@@ -5998,7 +5999,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
                        iframe_url_1)));
   EXPECT_EQ(2U, child->child_count());
   FrameTreeNode* grandchild2 = child->child_at(1);
-  EXPECT_FALSE(grandchild2->credentialless());
+  EXPECT_FALSE(grandchild2->Credentialless());
   EXPECT_TRUE(grandchild2->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true,
             EvalJs(grandchild2->current_frame_host(), "window.credentialless"));
@@ -6015,7 +6016,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
              JsReplace("document.getElementById('test_iframe').src = $1;",
                        iframe_url_2)));
   WaitForLoadStop(web_contents());
-  EXPECT_FALSE(child->credentialless());
+  EXPECT_FALSE(child->Credentialless());
   EXPECT_FALSE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(false,
             EvalJs(child->current_frame_host(), "window.credentialless"));
@@ -6031,7 +6032,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_EQ(1U, main_frame()->child_count());
   FrameTreeNode* child_b = main_frame()->child_at(0);
   EXPECT_EQ(iframe_url_b, child_b->current_url());
-  EXPECT_TRUE(child_b->credentialless());
+  EXPECT_TRUE(child_b->Credentialless());
   EXPECT_TRUE(child_b->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true,
             EvalJs(child_b->current_frame_host(), "window.credentialless"));

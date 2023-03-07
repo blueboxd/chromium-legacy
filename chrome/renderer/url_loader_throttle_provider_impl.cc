@@ -6,11 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/google_url_loader_throttle.h"
@@ -184,7 +183,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   throttles.emplace_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if BUILDFLAG(IS_ANDROID)
       client_data_header,
-      /* is_tab_large_enough= */ false,
 #endif
       ChromeRenderThreadObserver::GetDynamicParams()));
 

@@ -106,20 +106,17 @@ class AssistantControllerImplTest : public AssistantAshTestBase {
   const AssistantUiModel* ui_model() {
     return AssistantUiController::Get()->GetModel();
   }
+  TestAssistantService* test_assistant_service() {
+    return &test_assistant_service_;
+  }
 
  private:
   MockNewWindowDelegate* new_window_delegate_;
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
-};
 
-// Same with `AssistantControllerImplTest` except that this class does not set
-// up an active user in `SetUp`.
-class AssistantControllerImplTestForStartUp
-    : public AssistantControllerImplTest {
- public:
-  AssistantControllerImplTestForStartUp() {
-    set_up_active_user_in_test_set_up_ = false;
-  }
+  // AssistantService must outlive AssistantController as destructor can
+  // reference AssistantService.
+  TestAssistantService test_assistant_service_;
 };
 
 }  // namespace
@@ -259,19 +256,19 @@ TEST_F(AssistantControllerImplTest, ClosesAssistantUiForFeedbackDeeplink) {
 
 // Dark mode is set to true if the DarkLightMode flag is off. This is determined
 // in DarkLightModeControllerImpl::IsDarkModeEnabled().
-TEST_F(AssistantControllerImplTestForStartUp,
-       ColorModeIsSetWhenAssistantIsReadyFlagOff) {
+TEST_F(AssistantControllerImplTest, ColorModeIsSetWhenAssistantIsReadyFlagOff) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       /*enabled_features=*/{}, /*disabled_features=*/{
           chromeos::features::kDarkLightMode, features::kNotificationsRefresh});
-  SetUpActiveUser();
 
-  ASSERT_TRUE(assistant_service()->dark_mode_enabled().has_value());
-  EXPECT_TRUE(assistant_service()->dark_mode_enabled().value());
+  controller()->SetAssistant(test_assistant_service());
+
+  ASSERT_TRUE(test_assistant_service()->dark_mode_enabled().has_value());
+  EXPECT_TRUE(test_assistant_service()->dark_mode_enabled().value());
 }
 
-TEST_F(AssistantControllerImplTestForStartUp, ColorModeIsUpdated) {
+TEST_F(AssistantControllerImplTest, ColorModeIsUpdated) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(chromeos::features::kDarkLightMode);
 
@@ -284,18 +281,18 @@ TEST_F(AssistantControllerImplTestForStartUp, ColorModeIsUpdated) {
   auto* dark_light_mode_controller = DarkLightModeControllerImpl::Get();
   dark_light_mode_controller->OnActiveUserPrefServiceChanged(
       active_user_pref_service);
-  SetUpActiveUser();
+  controller()->SetAssistant(test_assistant_service());
   const bool initial_dark_mode_status =
       dark_light_mode_controller->IsDarkModeEnabled();
-  ASSERT_TRUE(assistant_service()->dark_mode_enabled().has_value());
+  ASSERT_TRUE(test_assistant_service()->dark_mode_enabled().has_value());
   EXPECT_EQ(initial_dark_mode_status,
-            assistant_service()->dark_mode_enabled().value());
+            test_assistant_service()->dark_mode_enabled().value());
 
   // Switch the color mode.
   dark_light_mode_controller->ToggleColorMode();
-  ASSERT_TRUE(assistant_service()->dark_mode_enabled().has_value());
+  ASSERT_TRUE(test_assistant_service()->dark_mode_enabled().has_value());
   EXPECT_NE(initial_dark_mode_status,
-            assistant_service()->dark_mode_enabled().value());
+            test_assistant_service()->dark_mode_enabled().value());
 }
 
 }  // namespace ash

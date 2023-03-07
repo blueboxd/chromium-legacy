@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #include "remoting/host/win/evaluate_3d_display_mode.h"
@@ -31,7 +30,7 @@ static constexpr char kSeparator[] = ",";
 
 struct Attribute {
   const char* name;
-  bool(* get_value_func)();
+  bool (*get_value_func)();
 };
 
 inline constexpr bool IsDebug() {
@@ -48,7 +47,7 @@ inline constexpr bool IsChromeBranded() {
 #elif BUILDFLAG(CHROMIUM_BRANDING)
   return false;
 #else
-  #error Only Chrome and Chromium brands are supported.
+#error Only Chrome and Chromium brands are supported.
 #endif
 }
 
@@ -79,11 +78,11 @@ inline constexpr bool IsNonOfficialBuild() {
 // So we need IsDebug() function, and "Debug-Build" Attribute.
 
 static constexpr Attribute kAttributes[] = {
-  { "Debug-Build", &IsDebug },
-  { "ChromeBrand", &IsChromeBranded },
-  { "ChromiumBrand", &IsChromiumBranded },
-  { "OfficialBuild", &IsOfficialBuild },
-  { "NonOfficialBuild", &IsNonOfficialBuild },
+    {"Debug-Build", &IsDebug},
+    {"ChromeBrand", &IsChromeBranded},
+    {"ChromiumBrand", &IsChromiumBranded},
+    {"OfficialBuild", &IsOfficialBuild},
+    {"NonOfficialBuild", &IsNonOfficialBuild},
 };
 
 }  // namespace
@@ -99,20 +98,8 @@ std::string GetHostAttributes() {
     }
   }
 #if BUILDFLAG(IS_WIN)
-  {
-    GetD3DCapabilities(&result);
-
-    auto version = base::win::GetVersion();
-    if (version >= base::win::Version::WIN8) {
-      result.push_back("Win8+");
-    }
-    if (version >= base::win::Version::WIN8_1) {
-      result.push_back("Win81+");
-    }
-    if (version >= base::win::Version::WIN10) {
-      result.push_back("Win10+");
-    }
-  }
+  GetD3DCapabilities(&result);
+  result.push_back("Win10+");
 
   // TODO(crbug.com/1184041): Remove this and/or the entire HostAttributes class
   // so we can remove //remoting/host:common from //media/gpu's visibility list.

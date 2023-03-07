@@ -15,10 +15,10 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/intrusive_heap.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -555,7 +555,7 @@ class BASE_EXPORT TaskQueueImpl {
       OnTaskPostedCallbackHandleImpl* on_task_posted_callback_handle);
 
   QueueName name_;
-  const raw_ptr<SequenceManagerImpl> sequence_manager_;
+  const raw_ptr<SequenceManagerImpl, DanglingUntriaged> sequence_manager_;
 
   const scoped_refptr<const AssociatedThreadId> associated_thread_;
 

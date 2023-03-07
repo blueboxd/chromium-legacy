@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -23,6 +24,8 @@ TrackedChildPendingURLLoaderFactoryBundle::
         OriginMap pending_isolated_world_factories,
         mojo::PendingRemote<network::mojom::URLLoaderFactory>
             pending_prefetch_loader_factory,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            pending_topics_loader_factory,
         std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
         bool bypass_redirect_checks)
     : ChildPendingURLLoaderFactoryBundle(
@@ -30,6 +33,7 @@ TrackedChildPendingURLLoaderFactoryBundle::
           std::move(pending_scheme_specific_factories),
           std::move(pending_isolated_world_factories),
           std::move(pending_prefetch_loader_factory),
+          std::move(pending_topics_loader_factory),
           bypass_redirect_checks),
       main_thread_host_bundle_(std::move(main_thread_host_bundle)) {}
 
@@ -51,6 +55,8 @@ TrackedChildPendingURLLoaderFactoryBundle::CreateFactory() {
       std::move(pending_isolated_world_factories_);
   other->pending_prefetch_loader_factory_ =
       std::move(pending_prefetch_loader_factory_);
+  other->pending_topics_loader_factory_ =
+      std::move(pending_topics_loader_factory_);
   other->main_thread_host_bundle_ = std::move(main_thread_host_bundle_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
@@ -90,6 +96,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
       std::move(pending_factories->pending_scheme_specific_factories()),
       std::move(pending_factories->pending_isolated_world_factories()),
       std::move(pending_factories->pending_prefetch_loader_factory()),
+      std::move(pending_factories->pending_topics_loader_factory()),
       std::move(main_thread_host_bundle_clone),
       pending_factories->bypass_redirect_checks());
 }
@@ -105,7 +112,7 @@ void TrackedChildURLLoaderFactoryBundle::AddObserverOnMainThread() {
       FROM_HERE,
       base::BindOnce(
           &HostChildURLLoaderFactoryBundle::AddObserver,
-          main_thread_host_bundle_->first, base::UnsafeDanglingUntriaged(this),
+          main_thread_host_bundle_->first, reinterpret_cast<ObserverKey>(this),
           std::make_unique<
               HostChildURLLoaderFactoryBundle::ObserverPtrAndTaskRunner>(
               AsWeakPtr(), base::SequencedTaskRunner::GetCurrentDefault())));
@@ -118,7 +125,7 @@ void TrackedChildURLLoaderFactoryBundle::RemoveObserverOnMainThread() {
       FROM_HERE,
       base::BindOnce(&HostChildURLLoaderFactoryBundle::RemoveObserver,
                      main_thread_host_bundle_->first,
-                     base::UnsafeDanglingUntriaged(this)));
+                     reinterpret_cast<ObserverKey>(this)));
 }
 
 void TrackedChildURLLoaderFactoryBundle::OnUpdate(
@@ -155,6 +162,7 @@ HostChildURLLoaderFactoryBundle::Clone() {
       std::move(pending_factories->pending_scheme_specific_factories()),
       std::move(pending_factories->pending_isolated_world_factories()),
       std::move(pending_factories->pending_prefetch_loader_factory()),
+      std::move(pending_factories->pending_topics_loader_factory()),
       std::move(main_thread_host_bundle_clone),
       pending_factories->bypass_redirect_checks());
 }
@@ -182,15 +190,14 @@ bool HostChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle()
 }
 
 void HostChildURLLoaderFactoryBundle::AddObserver(
-    TrackedChildURLLoaderFactoryBundle* observer,
+    ObserverKey observer,
     std::unique_ptr<ObserverPtrAndTaskRunner> observer_info) {
   DCHECK(IsMainThread()) << "Should run in the main renderer thread";
   DCHECK(observer_list_);
   (*observer_list_)[observer] = std::move(observer_info);
 }
 
-void HostChildURLLoaderFactoryBundle::RemoveObserver(
-    TrackedChildURLLoaderFactoryBundle* observer) {
+void HostChildURLLoaderFactoryBundle::RemoveObserver(ObserverKey observer) {
   DCHECK(IsMainThread()) << "Should run in the main renderer thread";
   DCHECK(observer_list_);
   observer_list_->erase(observer);

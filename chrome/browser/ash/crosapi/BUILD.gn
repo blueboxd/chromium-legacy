@@ -20,6 +20,7 @@ source_set("browser_util") {
     "//base",
     "//chrome/browser:browser_process",
     "//chrome/common",
+    "//chromeos/ash/components/standalone_browser",
     "//chromeos/crosapi/cpp",
     "//chromeos/crosapi/cpp:crosapi_constants",
     "//chromeos/crosapi/mojom",
@@ -218,12 +219,6 @@ source_set("crosapi") {
     "translate_proxy_config_to_crosapi.cc",
     "url_handler_ash.cc",
     "url_handler_ash.h",
-    "video_capture_device_ash.cc",
-    "video_capture_device_ash.h",
-    "video_capture_device_factory_ash.cc",
-    "video_capture_device_factory_ash.h",
-    "video_frame_handler_ash.cc",
-    "video_frame_handler_ash.h",
     "virtual_keyboard_ash.cc",
     "virtual_keyboard_ash.h",
     "volume_manager_ash.cc",
@@ -249,8 +244,6 @@ source_set("crosapi") {
       "printing_metrics_ash.cc",
       "printing_metrics_ash.h",
     ]
-  } else {
-    sources += [ "fake_printing_metrics_ash.h" ]
   }
 
   deps = [
@@ -275,7 +268,6 @@ source_set("crosapi") {
     "//chrome/browser/ash/video_conference",
     "//chrome/browser/image_decoder:image_decoder",
     "//chrome/browser/profiles:profile",
-    "//chrome/browser/ui/ash/system_web_apps",
     "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings",
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
     "//chrome/browser/web_applications",
@@ -345,6 +337,7 @@ source_set("crosapi") {
     "//remoting/host/chromeos:remoting_service",
     "//services/data_decoder/public/cpp:cpp",
     "//services/device/wake_lock/power_save_blocker",
+    "//services/video_capture:lib",
     "//services/video_capture/public/cpp:cpp",
     "//services/video_capture/public/mojom",
     "//ui/base",
@@ -394,6 +387,7 @@ source_set("test_support") {
     ":crosapi",
     "//ash",
     "//ash/app_list",
+    "//chrome/browser/apps/app_service",
     "//chrome/browser/ash:test_support",
     "//chrome/test:test_support",
     "//chromeos/ash/components/dbus/shill",
@@ -470,6 +464,7 @@ source_set("unit_tests") {
     "//chromeos/ash/components/dbus/shill",
     "//chromeos/ash/components/dbus/upstart",
     "//chromeos/ash/components/login/login_state",
+    "//chromeos/ash/components/standalone_browser",
     "//chromeos/ash/components/system",
     "//chromeos/crosapi/cpp:cpp",
     "//chromeos/crosapi/cpp:crosapi_constants",

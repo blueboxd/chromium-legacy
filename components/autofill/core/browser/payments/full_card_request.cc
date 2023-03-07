@@ -6,14 +6,15 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/better_auth_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/card_unmask_authentication_metrics.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -74,10 +75,9 @@ void FullCardRequest::GetFullCardViaFIDO(
     const CreditCard& card,
     AutofillClient::UnmaskCardReason reason,
     base::WeakPtr<ResultDelegate> result_delegate,
-    base::Value fido_assertion_info,
+    base::Value::Dict fido_assertion_info,
     absl::optional<GURL> last_committed_primary_main_frame_origin,
     absl::optional<std::string> context_token) {
-  DCHECK(fido_assertion_info.is_dict());
   GetFullCardImpl(
       card, reason, result_delegate, nullptr, std::move(fido_assertion_info),
       std::move(last_committed_primary_main_frame_origin),
@@ -89,7 +89,7 @@ void FullCardRequest::GetFullCardImpl(
     AutofillClient::UnmaskCardReason reason,
     base::WeakPtr<ResultDelegate> result_delegate,
     base::WeakPtr<UIDelegate> ui_delegate,
-    absl::optional<base::Value> fido_assertion_info,
+    absl::optional<base::Value::Dict> fido_assertion_info,
     absl::optional<GURL> last_committed_primary_main_frame_origin,
     absl::optional<std::string> context_token,
     absl::optional<CardUnmaskChallengeOption> selected_challenge_option) {
@@ -268,7 +268,7 @@ void FullCardRequest::OnDidGetRealPan(
         AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result,
         card_type);
   } else if (request_->fido_assertion_info.has_value()) {
-    AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
+    autofill_metrics::LogCardUnmaskDurationAfterWebauthn(
         AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result,
         card_type);
   }

@@ -14,7 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -276,26 +276,6 @@ void AppListClientImpl::InvokeSearchResultAction(
   ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
   if (result)
     search_controller_->InvokeResultAction(result, action);
-}
-
-void AppListClientImpl::GetSearchResultContextMenuModel(
-    const std::string& result_id,
-    GetContextMenuModelCallback callback) {
-  if (!search_controller_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-  ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
-  if (!result) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-  result->GetContextMenuModel(base::BindOnce(
-      [](GetContextMenuModelCallback callback,
-         std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-        std::move(callback).Run(std::move(menu_model));
-      },
-      std::move(callback)));
 }
 
 void AppListClientImpl::ViewClosing() {

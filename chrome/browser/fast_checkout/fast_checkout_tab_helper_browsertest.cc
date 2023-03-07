@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher_factory.h"
@@ -90,8 +90,6 @@ IN_PROC_BROWSER_TEST_F(FastCheckoutTabHelperBrowserTest,
 
   GURL shopping_url("http://www.example2.co.uk/checkout.html");
   url::Origin request_origin;
-  EXPECT_CALL(*fetcher(), FetchAvailability)
-      .WillOnce(SaveArg<0>(&request_origin));
+  EXPECT_CALL(*fetcher(), FetchCapabilities);
   NavigateToUrl(shopping_url);
-  EXPECT_THAT(shopping_url.host(), Eq(request_origin.host()));
 }

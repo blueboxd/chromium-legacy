@@ -6,9 +6,9 @@
 
 #include <set>
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -388,6 +388,29 @@ Ranges<base::TimeDelta> SourceBufferState::GetBufferedRanges(
     ranges_list.push_back(it.second->GetBufferedRanges(duration));
 
   return ComputeRangesIntersection(ranges_list, ended);
+}
+
+base::TimeDelta SourceBufferState::GetLowestPresentationTimestamp() const {
+  base::TimeDelta min_pts = kInfiniteDuration;
+
+  for (const auto& it : audio_streams_) {
+    min_pts = std::min(min_pts, it.second->GetLowestPresentationTimestamp());
+  }
+
+  for (const auto& it : video_streams_) {
+    min_pts = std::min(min_pts, it.second->GetLowestPresentationTimestamp());
+  }
+
+  for (const auto& it : text_streams_) {
+    min_pts = std::min(min_pts, it.second->GetLowestPresentationTimestamp());
+  }
+
+  DCHECK_LE(base::TimeDelta(), min_pts);
+  if (min_pts == kInfiniteDuration) {
+    return base::TimeDelta();
+  }
+
+  return min_pts;
 }
 
 base::TimeDelta SourceBufferState::GetHighestPresentationTimestamp() const {

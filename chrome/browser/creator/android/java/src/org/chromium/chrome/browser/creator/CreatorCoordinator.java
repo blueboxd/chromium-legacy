@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
@@ -95,6 +96,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
             mCreatorToolbarModelChangeProcessor;
 
     private final SnackbarManager mSnackbarManager;
+    private final CreatorSnackbarController mCreatorSnackbarController;
     private final WindowAndroid mWindowAndroid;
     private BottomSheetController mBottomSheetController;
     private ScrimCoordinator mScrim;
@@ -121,7 +123,8 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
     private static final String CREATOR_PROFILE_ID = "CreatorProfileView";
 
     /**
-     * The constructor for the CreatorCoordinator.
+     * Constructor for the CreatorCoordinator.
+     *
      * @param activity The Creator Activity this is a part of.
      * @param webFeedId The ID that is is used to create the feed.
      * @param snackbarManager the snackbarManager that is used for the feed.
@@ -149,6 +152,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         mCreatorWebContents = creatorWebContents;
         mCreatorOpenTab = creatorOpenTab;
         mBottomsheetShareDelegateSupplier = bottomsheetShareDelegateSupplier;
+        mCreatorSnackbarController = new CreatorSnackbarController(mActivity, mSnackbarManager);
 
         mProfileView =
                 (View) LayoutInflater.from(mActivity).inflate(R.layout.creator_profile, null);
@@ -176,10 +180,16 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
                 mCreatorModel, (CreatorToolbarView) mLayoutView, CreatorToolbarViewBinder::bind);
         setUpToolbarListener();
 
-        mMediator = new CreatorMediator(mActivity, mCreatorModel);
+        mMediator = new CreatorMediator(mActivity, mCreatorModel, mCreatorSnackbarController);
     }
 
-    // Create a FeedStream and bind it to the RecyclerView
+    /**
+     * Create a FeedStream and bind it to the RecyclerView
+     *
+     * @param FeedActionDelegate Interface for Feed actions implemented by the Browser.
+     * @param HelpAndFeedbackLauncher Interface for launching a help and feedback page.
+     * @param Supplier<ShareDelegate> Supplier of the interface to expose sharing.
+     */
     public void initFeedStream(FeedActionDelegate feedActionDelegate,
             HelpAndFeedbackLauncher helpAndFeedbackLauncher,
             Supplier<ShareDelegate> shareDelegateSupplier) {
@@ -189,15 +199,28 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
                 /* FeedAutoplaySettingsDelegate */ this, feedActionDelegate,
                 helpAndFeedbackLauncher,
                 /* FeedContentFirstLoadWatcher */ this,
-                /* streamsMediator */ null, mWebFeedId);
+                /* streamsMediator */ new StreamsMediatorImpl(), mWebFeedId);
 
         mStream.bind(mRecyclerView, mContentManager, /*FeedScrollState*/ null, mSurfaceScope,
                 mHybridListRenderer, new FeedLaunchReliabilityLogger() {}, mHeaderCount,
                 /* shouldScrollToTop */ false);
     }
 
+    private class StreamsMediatorImpl implements Stream.StreamsMediator {
+        @Override
+        public void disableFollowButton() {
+            mRecyclerView.findViewById(R.id.creator_follow_button).setEnabled(false);
+            mRecyclerView.findViewById(R.id.creator_following_button).setEnabled(false);
+        }
+    }
+
     public ViewGroup getView() {
         return mCreatorViewGroup;
+    }
+
+    @VisibleForTesting
+    public View getProfileView() {
+        return mProfileView;
     }
 
     public PropertyModel getCreatorModel() {
@@ -243,7 +266,6 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
     }
 
     private int getContentPreviewsPaddingPx() {
-        // Return 16dp
         return mActivity.getResources().getDimensionPixelSize(R.dimen.content_previews_padding);
     }
 
@@ -275,7 +297,9 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         WebFeedBridge.getWebFeedMetadata(mWebFeedId, metadata_callback);
     }
 
-    /** Set up the bottom sheet for this activity. */
+    /**
+     * Set up the bottom sheet for this activity.
+     */
     private void initBottomSheet() {
         mScrim = new ScrimCoordinator(mActivity, new ScrimCoordinator.SystemUiScrimDelegate() {
             @Override
@@ -299,13 +323,14 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 mCreatorModel.set(CreatorProperties.IS_TOOLBAR_VISIBLE_KEY,
-                        mHybridListRenderer.getListLayoutHelper().findFirstVisibleItemPosition()
-                                > 0);
+                        recyclerView.canScrollVertically(-1));
             }
         });
     }
 
-    /** Launches autoplay settings activity. */
+    /**
+     * Launches autoplay settings activity.
+     */
     @Override
     public void launchAutoplaySettings() {}
     @Override
@@ -314,6 +339,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
     /**
      * Entry point for preview tab flow. This will create an creator tab and show it in the
      * bottom sheet.
+     *
      * @param url The URL to be shown.
      */
     public void requestOpenSheet(GURL url) {
@@ -390,7 +416,9 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         mCurrentMaxViewHeight = maxViewHeight;
     }
 
-    /** @return The maximum base view height for sheet content view. */
+    /**
+     * @return The maximum base view height for sheet content view.
+     * */
     private int getMaxViewHeight() {
         return mCreatorViewGroup.getHeight();
     }
@@ -458,7 +486,10 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         private final RoundedIconGenerator mIconGenerator;
         private final int mFaviconSize;
 
-        /** Constructor. */
+        /**
+         * The FaviconLoader constructor.
+         * @param context The context where the Favicon will be loaded.
+         */
         public FaviconLoader(Context context) {
             mContext = context;
             mFaviconHelper = new FaviconHelper();
@@ -470,6 +501,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         /**
          * Generates a favicon for a given URL. If no favicon was could be found or generated from
          * the URL, a default favicon will be shown.
+         *
          * @param url The URL for which favicon is to be generated.
          * @param callback The callback to be invoked to display the final image.
          * @param profile The profile for which favicon service is used.

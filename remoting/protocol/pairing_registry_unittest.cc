@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
@@ -196,14 +196,12 @@ TEST_F(PairingRegistryTest, SerializedRequests) {
       .InSequence(s);
   EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client2")))
       .InSequence(s);
-  EXPECT_CALL(callbacks, DoneCallback(true))
-      .InSequence(s);
+  EXPECT_CALL(callbacks, DoneCallback(true)).InSequence(s);
   EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client1")))
       .InSequence(s);
   EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("")))
       .InSequence(s);
-  EXPECT_CALL(callbacks, DoneCallback(true))
-      .InSequence(s);
+  EXPECT_CALL(callbacks, DoneCallback(true)).InSequence(s);
   EXPECT_CALL(callbacks, GetAllPairingsCallback(NoPairings())).InSequence(s);
   EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client3")))
       .InSequence(s)

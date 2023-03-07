@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 
 namespace enterprise_connectors {
 
@@ -24,6 +24,8 @@ class KeyRotationCommand {
     TIMED_OUT,
     FAILED_KEY_CONFLICT,
     FAILED_OS_RESTRICTION,
+    FAILED_INVALID_PERMISSIONS,
+    FAILED_INVALID_INSTALLATION,
   };
 
   // Trigger completion callback.  The single argument is the status of the

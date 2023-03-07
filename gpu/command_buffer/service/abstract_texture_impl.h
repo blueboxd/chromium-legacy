@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_ABSTRACT_TEXTURE_IMPL_H_
 #define GPU_COMMAND_BUFFER_SERVICE_ABSTRACT_TEXTURE_IMPL_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
@@ -39,11 +39,11 @@ class GPU_GLES2_EXPORT AbstractTextureImpl : public AbstractTexture {
   TextureBase* GetTextureBase() const override;
   void SetParameteri(GLenum pname, GLint param) override;
 #if BUILDFLAG(IS_ANDROID)
-  void BindStreamTextureImage(gl::GLImage* image, GLuint service_id) override;
+  void BindToServiceId(GLuint service_id) override;
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   void SetUnboundImage(gl::GLImage* image) override;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   void SetBoundImage(gl::GLImage* image) override;
 #endif
   gl::GLImage* GetImageForTesting() const override;
@@ -75,11 +75,11 @@ class GPU_GLES2_EXPORT AbstractTextureImplPassthrough : public AbstractTexture {
   TextureBase* GetTextureBase() const override;
   void SetParameteri(GLenum pname, GLint param) override;
 #if BUILDFLAG(IS_ANDROID)
-  void BindStreamTextureImage(gl::GLImage* image, GLuint service_id) override;
+  void BindToServiceId(GLuint service_id) override;
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   void SetUnboundImage(gl::GLImage* image) override;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   void SetBoundImage(gl::GLImage* image) override;
 #endif
   gl::GLImage* GetImageForTesting() const override;

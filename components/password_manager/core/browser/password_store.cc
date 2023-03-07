@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "base/barrier_callback.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -115,7 +115,8 @@ void PasswordStore::AddLogin(const PasswordForm& form,
                 .Then(std::move(completion))));
 }
 
-void PasswordStore::UpdateLogin(const PasswordForm& form) {
+void PasswordStore::UpdateLogin(const PasswordForm& form,
+                                base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!form.blocked_by_user ||
          (form.username_value.empty() && form.password_value.empty()));
@@ -125,12 +126,14 @@ void PasswordStore::UpdateLogin(const PasswordForm& form) {
       form, base::BindOnce(&GetPasswordChangesOrEmptyListOnFailure)
                 .Then(base::BindOnce(
                     &PasswordStore::NotifyLoginsChangedOnMainSequence, this,
-                    LoginsChangedTrigger::Update)));
+                    LoginsChangedTrigger::Update))
+                .Then(std::move(completion)));
 }
 
 void PasswordStore::UpdateLoginWithPrimaryKey(
     const PasswordForm& new_form,
-    const PasswordForm& old_primary_key) {
+    const PasswordForm& old_primary_key,
+    base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   if (!backend_)
     return;  // Once the shutdown started, ignore new requests.
@@ -155,7 +158,8 @@ void PasswordStore::UpdateLoginWithPrimaryKey(
       2, base::BindOnce(&JoinPasswordStoreChanges)
              .Then(base::BindOnce(
                  &PasswordStore::NotifyLoginsChangedOnMainSequence, this,
-                 LoginsChangedTrigger::Update)));
+                 LoginsChangedTrigger::Update))
+             .Then(std::move(completion)));
 
   backend_->RemoveLoginAsync(old_primary_key, barrier_callback);
   backend_->AddLoginAsync(new_form_with_correct_password_issues,
@@ -530,10 +534,8 @@ void PasswordStore::InjectAffiliationAndBrandingInformation(
     std::move(callback).Run(std::move(forms_or_error));
     return;
   }
-  affiliated_match_helper_->get_affiliation_service()
-      ->InjectAffiliationAndBrandingInformation(
-          std::move(absl::get<LoginsResult>(forms_or_error)),
-          AffiliationService::StrategyOnCacheMiss::FAIL, std::move(callback));
+  affiliated_match_helper_->InjectAffiliationAndBrandingInformation(
+      std::move(absl::get<LoginsResult>(forms_or_error)), std::move(callback));
 }
 
 }  // namespace password_manager

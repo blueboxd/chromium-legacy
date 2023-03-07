@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_piece.h"
@@ -31,12 +31,22 @@
 #include "components/permissions/permissions_client.h"
 #include "components/permissions/test/permission_test_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/unloaded_extension_reason.h"
+#include "extensions/test/test_extension_dir.h"
+#endif
 
 namespace site_settings {
 
@@ -505,6 +515,87 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
 }
 
+TEST_F(SiteSettingsHelperTest, CookieExceptions) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  struct TestCase {
+    std::string primary_pattern;
+    std::string secondary_pattern;
+    ContentSetting initial_setting;
+    ContentSetting updated_setting;
+  };
+
+  auto test_cases = std::vector<TestCase>{
+      {"*", "[*.]allowed-top-frame.com", CONTENT_SETTING_ALLOW,
+       CONTENT_SETTING_ALLOW},
+      {"[*.]allowed.com", "*", CONTENT_SETTING_ALLOW, CONTENT_SETTING_ALLOW},
+      {"[*.]allowed.com", "[*.]allowed-top-frame.com", CONTENT_SETTING_ALLOW,
+       CONTENT_SETTING_ALLOW},
+      {"*", "[*.]session-top-frame.com", CONTENT_SETTING_SESSION_ONLY,
+       CONTENT_SETTING_ALLOW},
+      {"[*.]session.com", "*", CONTENT_SETTING_SESSION_ONLY,
+       CONTENT_SETTING_SESSION_ONLY},
+      {"[*.]session.com", "[*.]session-top-frame.com",
+       CONTENT_SETTING_SESSION_ONLY, CONTENT_SETTING_ALLOW},
+      {"[*.]blocked.com", "[*.]blocked-top-frame.com", CONTENT_SETTING_BLOCK,
+       CONTENT_SETTING_BLOCK},
+      {"*", "[*.]blocked-top-frame.com", CONTENT_SETTING_BLOCK,
+       CONTENT_SETTING_BLOCK},
+      {"[*.]blocked.com", "*", CONTENT_SETTING_BLOCK, CONTENT_SETTING_BLOCK},
+  };
+
+  for (const auto& test_case : test_cases) {
+    map->SetContentSettingCustomScope(
+        ContentSettingsPattern::FromString(test_case.primary_pattern),
+        ContentSettingsPattern::FromString(test_case.secondary_pattern),
+        kContentTypeCookies, test_case.initial_setting);
+  }
+
+  for (const auto feature_state : std::vector<bool>{true, false}) {
+    base::test::ScopedFeatureList feature_list_;
+    feature_list_.InitWithFeatureState(
+        privacy_sandbox::kPrivacySandboxSettings4, feature_state);
+
+    base::Value::List exceptions;
+    site_settings::GetExceptionsForContentType(kContentTypeCookies, &profile,
+                                               /*extension_registry=*/nullptr,
+                                               /*web_ui=*/nullptr,
+                                               /*incognito=*/false,
+                                               &exceptions);
+
+    // Convert the test cases, and the returned dictionary, into tuples for
+    // unordered comparison, as the order of exception is not relevant.
+    std::vector<std::tuple<std::string, std::string, std::string>> expected;
+    std::vector<std::tuple<std::string, std::string, std::string>> actual;
+    base::ranges::transform(
+        test_cases, std::back_inserter(expected), [&](const auto& test_case) {
+          // make_tuple as we've some temporary rvalues.
+          return std::make_tuple(
+              test_case.primary_pattern,
+              test_case.secondary_pattern ==
+                      ContentSettingsPattern::Wildcard().ToString()
+                  ? ""
+                  : test_case.secondary_pattern,
+              content_settings::ContentSettingToString(
+                  feature_state ? test_case.updated_setting
+                                : test_case.initial_setting));
+        });
+    base::ranges::transform(
+        exceptions, std::back_inserter(actual), [](const auto& exception) {
+          const base::Value::Dict& dict = exception.GetDict();
+          return std::forward_as_tuple(*dict.FindString(kOrigin),
+                                       *dict.FindString(kEmbeddingOrigin),
+                                       *dict.FindString(kSetting));
+        });
+
+    EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected))
+        << "Privacy Sandbox Settings 4 "
+        << (feature_state ? "enabled" : "disabled");
+  }
+}
+
 namespace {
 
 void ExpectValidChooserExceptionObject(
@@ -533,6 +624,7 @@ void ExpectValidChooserExceptionObject(
 }
 
 void ExpectValidSiteExceptionObject(const base::Value& actual_site_object,
+                                    const std::string& display_name,
                                     const GURL& origin,
                                     const std::string source,
                                     bool incognito) {
@@ -541,8 +633,7 @@ void ExpectValidSiteExceptionObject(const base::Value& actual_site_object,
   const base::Value* display_name_value =
       actual_site_object.FindKeyOfType(kDisplayName, base::Value::Type::STRING);
   ASSERT_TRUE(display_name_value);
-  EXPECT_EQ(display_name_value->GetString(),
-            origin.DeprecatedGetOriginAsURL().spec());
+  EXPECT_EQ(display_name_value->GetString(), display_name);
 
   const base::Value* origin_value =
       actual_site_object.FindKeyOfType(kOrigin, base::Value::Type::STRING);
@@ -581,99 +672,104 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
 
   // Create a chooser object for testing.
   base::Value::Dict chooser_object;
-  chooser_object.Set("name", base::Value(kObjectName));
+  chooser_object.Set("name", kObjectName);
 
-  // Add a user permission for a requesting origin of |kGoogleUrl| and an
-  // embedding origin of chromium.org.
+  // Add a user permission for an origin of |kGoogleUrl|.
   const GURL kGoogleUrl("https://google.com");
-  exception_details[std::make_pair(kGoogleUrl.DeprecatedGetOriginAsURL(),
-                                   kPreferenceSource)]
-      .insert(std::make_pair(
-          GURL("https://chromium.org").DeprecatedGetOriginAsURL(),
-          /*incognito=*/false));
-
+  exception_details.insert({kGoogleUrl.DeprecatedGetOriginAsURL(),
+                            kPreferenceSource, /*incognito=*/false});
   {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/base::Value(chooser_object.Clone()),
         /*chooser_type=*/kUsbChooserGroupName,
-        /*chooser_exception_details=*/exception_details);
+        /*chooser_exception_details=*/exception_details,
+        /*profile=*/nullptr);
     ExpectValidChooserExceptionObject(
         exception, /*chooser_type=*/kUsbChooserGroupName,
         /*display_name=*/kObjectName, chooser_object);
 
     const auto& sites_list = exception.Find(kSites)->GetList();
-    ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
-                                   /*origin=*/kGoogleUrl,
-                                   /*source=*/kPreferenceSource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[0],
+        /*display_name=*/kGoogleUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kGoogleUrl,
+        /*source=*/kPreferenceSource,
+        /*incognito=*/false);
   }
 
-  // Add a user permissions for a requesting and embedding origin pair of
+  // Add a user permissions for an origin of
   // |kAndroidUrl| granted in an off the record profile.
   const GURL kAndroidUrl("https://android.com");
-  exception_details[std::make_pair(kAndroidUrl.DeprecatedGetOriginAsURL(),
-                                   kPreferenceSource)]
-      .insert(std::make_pair(kAndroidUrl.DeprecatedGetOriginAsURL(),
-                             /*incognito=*/true));
+  exception_details.insert({kAndroidUrl.DeprecatedGetOriginAsURL(),
+                            kPreferenceSource, /*incognito=*/true});
 
   {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/base::Value(chooser_object.Clone()),
         /*chooser_type=*/kUsbChooserGroupName,
-        /*chooser_exception_details=*/exception_details);
-    ExpectValidChooserExceptionObject(exception,
-                                      /*chooser_type=*/kUsbChooserGroupName,
-                                      /*display_name=*/kObjectName,
-                                      chooser_object);
+        /*chooser_exception_details=*/exception_details,
+        /*profile=*/nullptr);
+    ExpectValidChooserExceptionObject(
+        exception,
+        /*expected_chooser_type=*/kUsbChooserGroupName,
+        /*expected_display_name=*/kObjectName, chooser_object);
 
-    // The map sorts the sites by requesting origin, so |kAndroidUrl| should
-    // be first, followed by the origin pair (kGoogleOrigin, kChromiumOrigin).
+    // The set sorts the sites by origin, so |kAndroidUrl| should
+    // be first, followed by the origin |kGoogleOrigin|.
     const auto& sites_list = exception.Find(kSites)->GetList();
-    ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
-                                   /*origin=*/kAndroidUrl,
-                                   /*source=*/kPreferenceSource,
-                                   /*incognito=*/true);
-    ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[1],
-                                   /*origin=*/kGoogleUrl,
-                                   /*source=*/kPreferenceSource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[0],
+        /*display_name=*/kAndroidUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kAndroidUrl,
+        /*source=*/kPreferenceSource,
+        /*incognito=*/true);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[1],
+        /*display_name=*/kGoogleUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kGoogleUrl,
+        /*source=*/kPreferenceSource,
+        /*incognito=*/false);
   }
 
-  // Add a policy permission for a requesting origin of |kGoogleUrl| with a
-  // wildcard embedding origin.
-  exception_details[std::make_pair(kGoogleUrl.DeprecatedGetOriginAsURL(),
-                                   kPolicySource)]
-      .insert(std::make_pair(GURL::EmptyGURL(), /*incognito=*/false));
+  // Add a policy permission for an origin of |kGoogleUrl|.
+  exception_details.insert({kGoogleUrl.DeprecatedGetOriginAsURL(),
+                            kPolicySource, /*incognito=*/false});
   {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/base::Value(chooser_object.Clone()),
         /*chooser_type=*/kUsbChooserGroupName,
-        /*chooser_exception_details=*/exception_details);
+        /*chooser_exception_details=*/exception_details,
+        /*profile=*/nullptr);
     ExpectValidChooserExceptionObject(exception,
                                       /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
                                       chooser_object);
 
-    // The map sorts the sites by requesting origin, but the
-    // CreateChooserExceptionObject method sorts the sites further by the
-    // source. Therefore, policy granted sites are listed before user granted
-    // sites.
+    // The set sorts the sites by origin, but the CreateChooserExceptionObject
+    // method sorts the sites further by the source. Therefore, policy granted
+    // sites are listed before user granted sites.
     const auto& sites_list = exception.Find(kSites)->GetList();
-    ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
-                                   /*origin=*/kGoogleUrl,
-                                   /*source=*/kPolicySource,
-                                   /*incognito=*/false);
-    ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[1],
-                                   /*origin=*/kAndroidUrl,
-                                   /*source=*/kPreferenceSource,
-                                   /*incognito=*/true);
-    ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[2],
-                                   /*origin=*/kGoogleUrl,
-                                   /*source=*/kPreferenceSource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[0],
+        /*display_name=*/kGoogleUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kGoogleUrl,
+        /*source=*/kPolicySource,
+        /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[1],
+        /*display_name=*/kAndroidUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kAndroidUrl,
+        /*source=*/kPreferenceSource,
+        /*incognito=*/true);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[2],
+        /*display_name=*/kGoogleUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kGoogleUrl,
+        /*source=*/kPreferenceSource,
+        /*incognito=*/false);
   }
 }
 
@@ -776,10 +872,9 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
       SiteSettingSourceToString(SiteSettingSource::kPreference);
 
   // The chooser exceptions are ordered by display name. Their corresponding
-  // sites are ordered by permission source precedence, then by the requesting
-  // origin and the embedding origin. User granted permissions that are also
-  // granted by policy are combined with the policy so that duplicate
-  // permissions are not displayed.
+  // sites are ordered by permission source precedence, then by the origin.
+  // User granted permissions that are also granted by policy are combined with
+  // the policy so that duplicate permissions are not displayed.
   base::Value::List exceptions_list =
       GetChooserExceptionListFromProfile(profile(), *chooser_type);
   ASSERT_EQ(exceptions_list.size(), 4u);
@@ -795,16 +890,18 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
 
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 1u);
-    ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kAndroidUrl,
-                                   /*source=*/kPolicySource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        sites_list[0],
+        /*display_name=*/kAndroidUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kAndroidUrl,
+        /*source=*/kPolicySource,
+        /*incognito=*/false);
   }
 
   // This exception should describe the permissions for any device.
   // There are no user granted permissions that intersect with this permission,
-  // and this policy only grants one permission to the following site:
-  // "https://google.com".
+  // and this policy only grants one permission to the following
+  // site: "https://google.com".
   {
     const auto& exception = exceptions_list[1];
     ExpectDisplayNameEq(exception,
@@ -812,10 +909,12 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
 
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 1u);
-    ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kGoogleUrl,
-                                   /*source=*/kPolicySource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        sites_list[0],
+        /*display_name=*/kGoogleUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kGoogleUrl,
+        /*source=*/kPolicySource,
+        /*incognito=*/false);
   }
 
   // This exception should describe the permissions for any device with the
@@ -829,10 +928,12 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
 
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 1u);
-    ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kAndroidUrl,
-                                   /*source=*/kPolicySource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        sites_list[0],
+        /*display_name=*/kAndroidUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kAndroidUrl,
+        /*source=*/kPolicySource,
+        /*incognito=*/false);
   }
 
   // This exception should describe the permissions for the "Gizmo" device.
@@ -850,14 +951,18 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
 
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 2u);
-    ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kChromiumUrl,
-                                   /*source=*/kPolicySource,
-                                   /*incognito=*/false);
-    ExpectValidSiteExceptionObject(sites_list[1],
-                                   /*origin=*/kTestUrl,
-                                   /*source=*/kPreferenceSource,
-                                   /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        sites_list[0],
+        /*display_name=*/kChromiumUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kChromiumUrl,
+        /*source=*/kPolicySource,
+        /*incognito=*/false);
+    ExpectValidSiteExceptionObject(
+        sites_list[1],
+        /*display_name=*/kTestUrl.DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/kTestUrl,
+        /*source=*/kPreferenceSource,
+        /*incognito=*/false);
   }
 }
 
@@ -923,5 +1028,112 @@ TEST_F(PersistentPermissionsSiteSettingsHelperTest,
             "/foo/bar");
   ASSERT_EQ(exceptions[1].GetDict().Find("source")->GetString(), "default");
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+class SiteSettingsHelperExtensionTest
+    : public extensions::ExtensionServiceTestBase {
+ public:
+  SiteSettingsHelperExtensionTest()
+      : extensions::ExtensionServiceTestBase(
+            std::make_unique<content::BrowserTaskEnvironment>()) {}
+
+  void SetUp() override {
+    extensions::ExtensionServiceTestBase::SetUp();
+    // The test profile is initialized in InitializeEmptyExtensionService().
+    InitializeEmptyExtensionService();
+  }
+
+  scoped_refptr<const extensions::Extension> LoadExtension(
+      const std::string& extension_name) {
+    extensions::TestExtensionDir extension_directory;
+    constexpr char kManifestTemplate[] = R"({
+          "name": "%s",
+          "version": "1",
+          "manifest_version": 3
+        })";
+    extension_directory.WriteManifest(
+        base::StringPrintf(kManifestTemplate, extension_name.c_str()));
+    extensions::ChromeTestExtensionLoader loader(profile());
+    return loader.LoadExtension(extension_directory.UnpackedPath());
+  }
+
+  void UnloadExtension(std::string extension_id) {
+    auto* extension_service =
+        extensions::ExtensionSystem::Get(profile())->extension_service();
+    ASSERT_TRUE(extension_service);
+    extension_service->UnloadExtension(
+        extension_id, extensions::UnloadedExtensionReason::DISABLE);
+  }
+};
+
+TEST_F(SiteSettingsHelperExtensionTest, CreateChooserExceptionObject) {
+  const std::string kUsbChooserGroupName(
+      ContentSettingsTypeToGroupName(ContentSettingsType::USB_CHOOSER_DATA));
+  const std::string& kPreferenceSource =
+      SiteSettingSourceToString(SiteSettingSource::kPreference);
+  const std::u16string& kObjectName = u"Gadget";
+  ChooserExceptionDetails exception_details;
+  const std::string extension_name = "Test Extension";
+
+  // Load the extension with name as |extension_name|.
+  auto extension = LoadExtension(extension_name);
+
+  // Create a chooser object for testing.
+  base::Value::Dict chooser_object;
+  chooser_object.Set("name", kObjectName);
+
+  // Add a user permissions for an extension.
+  auto extension_origin = extension->origin();
+  exception_details.insert(
+      {extension_origin.GetURL(), kPreferenceSource, /*incognito=*/false});
+
+  // When the extension is loaded, the display name is extension's name.
+  {
+    auto exception = CreateChooserExceptionObject(
+        /*display_name=*/kObjectName,
+        /*object=*/base::Value(chooser_object.Clone()),
+        /*chooser_type=*/kUsbChooserGroupName,
+        /*chooser_exception_details=*/exception_details, profile());
+    ExpectValidChooserExceptionObject(
+        exception,
+        /*expected_chooser_type=*/kUsbChooserGroupName,
+        /*expected_display_name=*/kObjectName, chooser_object);
+
+    const auto& sites_list = exception.Find(kSites)->GetList();
+    ASSERT_EQ(sites_list.size(), 1u);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[0],
+        /*display_name=*/extension_name,
+        /*origin=*/extension_origin.GetURL(),
+        /*source=*/kPreferenceSource,
+        /*incognito=*/false);
+  }
+
+  // When the extension is unloaded, the display name is extension's origin as
+  // the extension isn't available for the profile.
+  UnloadExtension(extension->id());
+  {
+    auto exception = CreateChooserExceptionObject(
+        /*display_name=*/kObjectName,
+        /*object=*/base::Value(chooser_object.Clone()),
+        /*chooser_type=*/kUsbChooserGroupName,
+        /*chooser_exception_details=*/exception_details, profile());
+    ExpectValidChooserExceptionObject(
+        exception,
+        /*expected_chooser_type=*/kUsbChooserGroupName,
+        /*expected_display_name=*/kObjectName, chooser_object);
+
+    const auto& sites_list = exception.Find(kSites)->GetList();
+    ASSERT_EQ(sites_list.size(), 1u);
+    ExpectValidSiteExceptionObject(
+        /*actual_site_object=*/sites_list[0],
+        /*display_name=*/
+        extension_origin.GetURL().DeprecatedGetOriginAsURL().spec(),
+        /*origin=*/extension_origin.GetURL(),
+        /*source=*/kPreferenceSource,
+        /*incognito=*/false);
+  }
+}
+#endif  // #if BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace site_settings

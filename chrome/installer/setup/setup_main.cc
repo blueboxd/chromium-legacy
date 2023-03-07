@@ -23,6 +23,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -51,6 +52,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/win_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_types.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service/rotate_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -490,12 +492,20 @@ installer::InstallStatus RepeatDeleteOldVersions(
       return installer::SETUP_SINGLETON_RELEASED;
     }
 
-    const bool priority_was_changed_to_background =
-        base::Process::Current().SetProcessBackgrounded(true);
+    // Note that Windows 11 22H2 has a bug whereby process priorities are not
+    // altered by PROCESS_MODE_BACKGROUND_BEGIN, but I/O and memory priorities
+    // still are. See https://crbug.com/1396155 for details.
+    base::ScopedClosureRunner restore_priority;
+    if (::SetPriorityClass(::GetCurrentProcess(),
+                           PROCESS_MODE_BACKGROUND_BEGIN) != 0) {
+      // Be aware that a process restoring itself to normal priority from
+      // background priority is inherently somewhat of a priority inversion.
+      restore_priority.ReplaceClosure(base::BindOnce([]() {
+        ::SetPriorityClass(::GetCurrentProcess(), PROCESS_MODE_BACKGROUND_END);
+      }));
+    }
     const bool delete_old_versions_success =
         installer::DeleteOldVersions(install_dir);
-    if (priority_was_changed_to_background)
-      base::Process::Current().SetProcessBackgrounded(false);
     ++num_attempts;
 
     if (delete_old_versions_success) {
@@ -1192,13 +1202,25 @@ bool HandleNonInstallCmdLineOptions(installer::ModifyParams& modify_params,
     // threaded task runner so creating one here.
     base::SingleThreadTaskExecutor executor;
 
-    *exit_code = enterprise_connectors::RotateDeviceTrustKey(
-                     enterprise_connectors::KeyRotationManager::Create(
-                         std::make_unique<
-                             enterprise_connectors::WinKeyNetworkDelegate>()),
-                     cmd_line, install_static::GetChromeChannel())
-                     ? installer::ROTATE_DTKEY_SUCCESS
-                     : installer::ROTATE_DTKEY_FAILED;
+    const auto result = enterprise_connectors::RotateDeviceTrustKey(
+        enterprise_connectors::KeyRotationManager::Create(
+            std::make_unique<enterprise_connectors::WinKeyNetworkDelegate>()),
+        cmd_line, install_static::GetChromeChannel());
+
+    switch (result) {
+      case enterprise_connectors::KeyRotationResult::kSucceeded:
+        *exit_code = installer::ROTATE_DTKEY_SUCCESS;
+        break;
+      case enterprise_connectors::KeyRotationResult::kInsufficientPermissions:
+        *exit_code = installer::ROTATE_DTKEY_FAILED_PERMISSIONS;
+        break;
+      case enterprise_connectors::KeyRotationResult::kFailedKeyConflict:
+        *exit_code = installer::ROTATE_DTKEY_FAILED_CONFLICT;
+        break;
+      case enterprise_connectors::KeyRotationResult::kFailed:
+        *exit_code = installer::ROTATE_DTKEY_FAILED;
+        break;
+    }
 #endif
   } else if (cmd_line.HasSwitch(installer::switches::kCreateShortcuts)) {
     std::string install_op_arg =

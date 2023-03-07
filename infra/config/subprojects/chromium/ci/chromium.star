@@ -11,25 +11,25 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
-    executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium",
-    pool = ci.DEFAULT_POOL,
+    executable = ci.DEFAULT_EXECUTABLE,
     os = os.LINUX_DEFAULT,
+    pool = ci.DEFAULT_POOL,
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     main_console_view = "main",
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
     name = "chromium",
     branch_selector = [
-        branches.selector.ANDROID_BRANCHES,
-        branches.selector.DESKTOP_BRANCHES,
-        branches.selector.FUCHSIA_BRANCHES,
+        branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+        branches.FUCHSIA_LTS_MILESTONE,
     ],
+    include_experimental_builds = True,
     ordering = {
         "*type*": consoles.ordering(short_names = ["dbg", "rel", "off"]),
         "android": "*type*",
@@ -38,7 +38,6 @@ consoles.console_view(
         "mac": "*type*",
         "win": "*type*",
     },
-    include_experimental_builds = True,
 )
 
 ci.builder(
@@ -164,7 +163,7 @@ ci.builder(
 
 ci.builder(
     name = "android-official",
-    branch_selector = branches.selector.ANDROID_BRANCHES,
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -199,12 +198,13 @@ ci.builder(
 
 ci.builder(
     name = "fuchsia-official",
-    branch_selector = branches.selector.FUCHSIA_BRANCHES,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
                 "fuchsia_x64",
+                "checkout_pgo_profiles",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -225,7 +225,7 @@ ci.builder(
             short_name = "off",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.selector.MAIN,
+            branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|x64",
             short_name = "off",
@@ -439,7 +439,7 @@ ci.builder(
 
 ci.builder(
     name = "linux-official",
-    branch_selector = branches.selector.LINUX_BRANCHES,
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -592,7 +592,7 @@ ci.builder(
 
 ci.builder(
     name = "mac-official",
-    branch_selector = branches.selector.MAC_BRANCHES,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -679,7 +679,7 @@ ci.builder(
 
 ci.builder(
     name = "win-official",
-    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -768,7 +768,7 @@ ci.builder(
 
 ci.builder(
     name = "win32-official",
-    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",

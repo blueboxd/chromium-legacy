@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -32,8 +33,6 @@
 #endif
 
 namespace media {
-
-namespace {
 
 class CommandBufferHelperImpl
     : public CommandBufferHelper,
@@ -206,7 +205,8 @@ class CommandBufferHelperImpl
   }
 #endif
 
-  gpu::Mailbox CreateMailbox(GLuint service_id) override {
+ private:
+  gpu::Mailbox CreateLegacyMailbox(GLuint service_id) override {
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -214,9 +214,10 @@ class CommandBufferHelperImpl
       return gpu::Mailbox();
 
     DCHECK(textures_.count(service_id));
-    return decoder_helper_->CreateMailbox(textures_[service_id].get());
+    return decoder_helper_->CreateLegacyMailbox(textures_[service_id].get());
   }
 
+ public:
   void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) override {
     DCHECK(!will_destroy_stub_cb_);
     will_destroy_stub_cb_ = std::move(will_destroy_stub_cb);
@@ -343,8 +344,6 @@ class CommandBufferHelperImpl
 
   THREAD_CHECKER(thread_checker_);
 };
-
-}  // namespace
 
 CommandBufferHelper::CommandBufferHelper(
     scoped_refptr<base::SequencedTaskRunner> task_runner)

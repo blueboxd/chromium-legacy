@@ -1,6 +1,7 @@
 ; This file is generated from a similarly-named Perl script in the BoringSSL
 ; source tree. Do not edit by hand.
 
+%ifidn __OUTPUT_FORMAT__, win64
 default	rel
 %define XMMWORD
 %define YMMWORD
@@ -792,5 +793,6 @@ ALIGN	4
 section	.xdata rdata align=8
 ALIGN	8
 $L$SEH_info_md5_block_asm_data_order:
-DB	9,0,0,0
+	DB	9,0,0,0
 	DD	se_handler wrt ..imagebase
+%endif

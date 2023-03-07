@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/task/sequenced_task_runner.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/image_processor_backend.h"
 #include "media/gpu/media_gpu_export.h"
@@ -29,6 +30,16 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessorBackend
   // after initialization. Returns nullptr if it fails to create
   // LibYUVImageProcessorBackend.
   static std::unique_ptr<ImageProcessorBackend> Create(
+      const PortConfig& input_config,
+      const PortConfig& output_config,
+      OutputMode output_mode,
+      VideoRotation relative_rotation,
+      ErrorCB error_cb);
+  // This is the same as Create() but the caller can specify
+  // |backend_task_runner_|.
+  // This should be used when LibYUVImageProcessorBackend is used without
+  // ImageProcessor.
+  static std::unique_ptr<ImageProcessorBackend> CreateWithTaskRunner(
       const PortConfig& input_config,
       const PortConfig& output_config,
       OutputMode output_mode,

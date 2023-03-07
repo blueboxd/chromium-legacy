@@ -9,8 +9,8 @@
 
 #include <queue>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_functions.h"
@@ -49,9 +49,11 @@ namespace {
 // should be higher than the preconnect one, otherwise preconnect will never
 // run.
 const base::FeatureParam<double> kPrerenderDUIConfidenceCutoff{
-    &blink::features::kPrerender2, "prerender_dui_confidence_cutoff", 0.8};
+    &features::kAutocompleteActionPredictorConfidenceCutoff,
+    "prerender_dui_confidence_cutoff", 0.8};
 const base::FeatureParam<double> kPreconnectConfidenceCutoff{
-    &blink::features::kPrerender2, "preconnect_dui_confidence_cutoff", 0.5};
+    &features::kAutocompleteActionPredictorConfidenceCutoff,
+    "preconnect_dui_confidence_cutoff", 0.5};
 
 const int kMinimumNumberOfHits = 3;
 const size_t kMaximumTransitionalMatchesSize = 1024 * 1024;  // 1 MB.
@@ -210,8 +212,7 @@ void AutocompleteActionPredictor::StartPrerendering(
     // this prerendering attempt for Prerender.
     content::PreloadingAttempt* preloading_attempt =
         preloading_data->AddPreloadingAttempt(
-            ToPreloadingPredictor(
-                ChromePreloadingPredictor::kOmniboxDirectURLInput),
+            chrome_preloading_predictor::kOmniboxDirectURLInput,
             content::PreloadingType::kPrerender, std::move(same_url_matcher));
 
     PrerenderManager::CreateForWebContents(&web_contents);
@@ -225,8 +226,7 @@ void AutocompleteActionPredictor::StartPrerendering(
     // this preloading attempt for NoStatePrefetch.
     content::PreloadingAttempt* preloading_attempt =
         preloading_data->AddPreloadingAttempt(
-            ToPreloadingPredictor(
-                ChromePreloadingPredictor::kOmniboxDirectURLInput),
+            chrome_preloading_predictor::kOmniboxDirectURLInput,
             content::PreloadingType::kNoStatePrefetch,
             std::move(same_url_matcher));
 
@@ -316,8 +316,7 @@ AutocompleteActionPredictor::RecommendAction(
     // We multiply confidence by 100 to pass the percentage and cast it into int
     // for logs.
     preloading_data->AddPreloadingPrediction(
-        ToPreloadingPredictor(
-            ChromePreloadingPredictor::kOmniboxDirectURLInput),
+        chrome_preloading_predictor::kOmniboxDirectURLInput,
         static_cast<int64_t>(confidence * 100), std::move(same_url_matcher));
   }
 

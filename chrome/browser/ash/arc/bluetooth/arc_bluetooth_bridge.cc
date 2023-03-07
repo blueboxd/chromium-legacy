@@ -19,11 +19,11 @@
 #include "ash/components/arc/bluetooth/bluetooth_type_converters.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/constants/ash_pref_names.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -31,7 +31,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1701,8 +1700,8 @@ void ArcBluetoothBridge::SendBluetoothPoweredStateBroadcast(
   if (!intent_instance)
     return;
 
-  base::DictionaryValue extras;
-  extras.SetBoolKey("enable", powered == AdapterPowerState::TURN_ON);
+  base::Value::Dict extras;
+  extras.Set("enable", powered == AdapterPowerState::TURN_ON);
   std::string extras_json;
   bool write_success = base::JSONWriter::Write(extras, &extras_json);
   DCHECK(write_success);
@@ -3305,7 +3304,9 @@ ArcBluetoothBridge::CreateBluetoothConnectSocket(
 void ArcBluetoothBridge::OnBluetoothConnectingSocketReady(
     ArcBluetoothBridge::BluetoothConnectingSocket* sock_wrapper) {
   // When connect() is ready, we will transfer this fd to Android, and Android
-  // is responsible for closing it.
+  // is responsible for closing it. The file watcher |controller| needs to be
+  // disabled first, and then the fd ownership is transferred.
+  sock_wrapper->controller.reset();
   base::ScopedFD fd = std::move(sock_wrapper->file);
 
   // Checks whether connect() succeeded.

@@ -8,9 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/buildflag.h"
 #include "components/live_caption/views/caption_bubble_model.h"
 #include "components/prefs/pref_service.h"
@@ -92,6 +93,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   bool HasActivity();
 
   views::Label* GetLabelForTesting();
+  bool IsGenericErrorMessageVisibleForTesting() const;
   base::RetainingOneShotTimer* GetInactivityTimerForTesting();
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
@@ -175,6 +177,17 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   void SetTextColor();
   void SetBackgroundColor();
 
+  // Places the bubble at the bottom center of the context widget for the active
+  // model, ensuring that it's positioned where the user will spot it. If there
+  // are multiple browser windows open, and the user plays media on the second
+  // window, the caption bubble will show up in the bottom center of the second
+  // window, which is where the user is already looking. It also ensures that
+  // the caption bubble will appear in the right workspace if a user has Chrome
+  // windows open on multiple workspaces. This method has no effect if the
+  // active model has changed between when it was posted and executed.
+  void RepositionInContextRect(const CaptionBubbleModel* model,
+                               const gfx::Rect& context_rect);
+
   // After 5 seconds of inactivity, hide the caption bubble. Activity is defined
   // as transcription received from the speech service or user interacting with
   // the bubble through focus, pressing buttons, or dragging.
@@ -239,6 +252,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   // specified interval.
   std::unique_ptr<base::RetainingOneShotTimer> inactivity_timer_;
   raw_ptr<const base::TickClock, DanglingUntriaged> tick_clock_;
+
+  base::WeakPtrFactory<CaptionBubble> weak_ptr_factory_{this};
 };
 
 BEGIN_VIEW_BUILDER(/* no export */,

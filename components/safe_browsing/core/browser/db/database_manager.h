@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/safe_browsing/core/browser/db/hit_report.h"
 #include "components/safe_browsing/core/browser/db/util.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
@@ -183,8 +184,11 @@ class SafeBrowsingDatabaseManager
   // matches the allowlist, and is false if it does not. The high confidence
   // allowlist is a list of full hashes of URLs that are expected to be safe so
   // in the case of a match on this list, the realtime full URL Safe Browsing
-  // lookup isn't performed.
-  virtual bool CheckUrlForHighConfidenceAllowlist(const GURL& url) = 0;
+  // lookup isn't performed. |metric_variation| is used for logging purposes to
+  // specify the consumer mechanism performing this check in histograms.
+  virtual bool CheckUrlForHighConfidenceAllowlist(
+      const GURL& url,
+      const std::string& metric_variation) = 0;
 
   //
   // Match*(): Methods to synchronously check if various types are safe.

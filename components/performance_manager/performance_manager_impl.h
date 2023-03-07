@@ -10,12 +10,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/public/browser_child_process_host_proxy.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/graph/worker_node.h"
@@ -32,6 +33,7 @@ class GURL;
 namespace performance_manager {
 
 class PageNodeImpl;
+struct BrowserProcessNodeTag;
 
 // The performance manager is a rendezvous point for binding to performance
 // manager interfaces.
@@ -111,8 +113,12 @@ class PerformanceManagerImpl : public PerformanceManager {
       base::TimeTicks visibility_change_time,
       PageNode::PageState page_state);
   static std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
-      content::ProcessType process_type,
+      BrowserProcessNodeTag tag);
+  static std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
       RenderProcessHostProxy proxy);
+  static std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
+      content::ProcessType process_type,
+      BrowserChildProcessHostProxy proxy);
   static std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
       const std::string& browser_context_id,
       WorkerNode::WorkerType worker_type,

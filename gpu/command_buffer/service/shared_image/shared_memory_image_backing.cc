@@ -25,7 +25,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_image_memory.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace gpu {
 namespace {
@@ -39,10 +39,8 @@ class MemoryImageRepresentationImpl : public MemoryImageRepresentation {
 
  protected:
   SkPixmap BeginReadAccess() override {
-    return SkPixmap(
-        backing()->AsSkImageInfo(),
-        shared_image_shared_memory()->shared_memory_wrapper().GetMemory(),
-        shared_image_shared_memory()->shared_memory_wrapper().GetStride());
+    DCHECK(format().is_single_plane());
+    return shared_image_shared_memory()->pixmaps()[0];
   }
 
  private:
@@ -55,10 +53,8 @@ class OverlayImageRepresentationImpl : public OverlayImageRepresentation {
  public:
   OverlayImageRepresentationImpl(SharedImageManager* manager,
                                  SharedImageBacking* backing,
-                                 MemoryTypeTracker* tracker,
-                                 scoped_refptr<gl::GLImage> gl_image)
-      : OverlayImageRepresentation(manager, backing, tracker),
-        gl_image_(std::move(gl_image)) {}
+                                 MemoryTypeTracker* tracker)
+      : OverlayImageRepresentation(manager, backing, tracker) {}
 
   ~OverlayImageRepresentationImpl() override = default;
 
@@ -69,10 +65,16 @@ class OverlayImageRepresentationImpl : public OverlayImageRepresentation {
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override {}
 
 #if BUILDFLAG(IS_WIN)
-  gl::GLImage* GetGLImage() override { return gl_image_.get(); }
+  absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage() override {
+    // This should only be called for the backing which references the Y plane,
+    // eg. plane_index=0, of an NV12 shmem GMB - see allow_shm_overlay in
+    // SharedImageFactory. This allows access to both Y and UV planes.
+    const auto& shm_wrapper = static_cast<SharedMemoryImageBacking*>(backing())
+                                  ->shared_memory_wrapper();
+    return absl::make_optional<gl::DCLayerOverlayImage>(
+        size(), shm_wrapper.GetMemory(0), shm_wrapper.GetStride(0));
+  }
 #endif
-
-  scoped_refptr<gl::GLImage> gl_image_;
 };
 
 }  // namespace
@@ -81,11 +83,6 @@ SharedMemoryImageBacking::~SharedMemoryImageBacking() = default;
 
 void SharedMemoryImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   // Intentionally no-op for now. Will be called by clients later
-}
-
-const SharedMemoryRegionWrapper&
-SharedMemoryImageBacking::shared_memory_wrapper() {
-  return shared_memory_wrapper_;
 }
 
 SharedImageBackingType SharedMemoryImageBacking::GetType() const {
@@ -99,6 +96,15 @@ gfx::Rect SharedMemoryImageBacking::ClearedRect() const {
 
 void SharedMemoryImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
   NOTREACHED();
+}
+
+const SharedMemoryRegionWrapper&
+SharedMemoryImageBacking::shared_memory_wrapper() {
+  return shared_memory_wrapper_;
+}
+
+const std::vector<SkPixmap>& SharedMemoryImageBacking::pixmaps() {
+  return pixmaps_;
 }
 
 std::unique_ptr<DawnImageRepresentation> SharedMemoryImageBacking::ProduceDawn(
@@ -139,18 +145,8 @@ SharedMemoryImageBacking::ProduceOverlay(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker) {
   if (!shared_memory_wrapper_.IsValid())
     return nullptr;
-
-  auto gl_image =
-      base::WrapRefCounted<gl::GLImageMemory>(new gl::GLImageMemory(size()));
-  if (!gl_image->Initialize(shared_memory_wrapper_.GetMemory(),
-                            ToBufferFormat(format()),
-                            shared_memory_wrapper_.GetStride(),
-                            /*disable_pbo_upload=*/true)) {
-    DLOG(ERROR) << "Failed to initialize GLImageMemory";
-    return nullptr;
-  }
-  return std::make_unique<OverlayImageRepresentationImpl>(
-      manager, this, tracker, std::move(gl_image));
+  return std::make_unique<OverlayImageRepresentationImpl>(manager, this,
+                                                          tracker);
 }
 
 std::unique_ptr<VaapiImageRepresentation>
@@ -198,15 +194,26 @@ SharedMemoryImageBacking::SharedMemoryImageBacking(
     SkAlphaType alpha_type,
     uint32_t usage,
     SharedMemoryRegionWrapper wrapper)
-    : SharedImageBacking(
-          mailbox,
-          format,
-          size,
-          color_space,
-          surface_origin,
-          alpha_type,
-          usage,
-          viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format),
-          false),
-      shared_memory_wrapper_(std::move(wrapper)) {}
+    : SharedImageBacking(mailbox,
+                         format,
+                         size,
+                         color_space,
+                         surface_origin,
+                         alpha_type,
+                         usage,
+                         format.EstimatedSizeInBytes(size),
+                         false),
+      shared_memory_wrapper_(std::move(wrapper)) {
+  DCHECK(shared_memory_wrapper_.IsValid());
+
+  for (int plane = 0; plane < format.NumberOfPlanes(); ++plane) {
+    gfx::Size plane_size = format.GetPlaneSize(plane, size);
+    auto info = SkImageInfo::Make(gfx::SizeToSkISize(plane_size),
+                                  viz::ToClosestSkColorType(
+                                      /*gpu_compositing=*/true, format, plane),
+                                  alpha_type, color_space.ToSkColorSpace());
+    pixmaps_.push_back(shared_memory_wrapper_.MakePixmapForPlane(info, plane));
+  }
+}
+
 }  // namespace gpu

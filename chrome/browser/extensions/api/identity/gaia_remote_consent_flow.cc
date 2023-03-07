@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/gaia_remote_consent_flow.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/escape.h"
 #include "build/chromeos_buildflags.h"
@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/base/multilogin_parameters.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -51,11 +52,13 @@ GaiaRemoteConsentFlow::GaiaRemoteConsentFlow(
     Delegate* delegate,
     Profile* profile,
     const ExtensionTokenKey& token_key,
-    const RemoteConsentResolutionData& resolution_data)
+    const RemoteConsentResolutionData& resolution_data,
+    const std::string& extension_name)
     : delegate_(delegate),
       profile_(profile),
       account_id_(token_key.account_info.account_id),
       resolution_data_(resolution_data),
+      extension_name_(extension_name),
       web_flow_started_(false) {}
 
 GaiaRemoteConsentFlow::~GaiaRemoteConsentFlow() {
@@ -66,7 +69,7 @@ void GaiaRemoteConsentFlow::Start() {
   if (!web_flow_) {
     web_flow_ = std::make_unique<WebAuthFlow>(
         this, profile_, resolution_data_.url, WebAuthFlow::INTERACTIVE,
-        WebAuthFlow::GET_AUTH_TOKEN);
+        WebAuthFlow::GET_AUTH_TOKEN, extension_name_);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     // `profile_` may be nullptr in tests.
     if (profile_) {
@@ -167,7 +170,7 @@ content::StoragePartition* GaiaRemoteConsentFlow::GetStoragePartition() {
   if (!storage_partition) {
     // `web_flow_` doesn't have a guest partition only when the Auth Through
     // Browser Tab flow is used.
-    DCHECK(base::FeatureList::IsEnabled(kWebAuthFlowInBrowserTab));
+    DCHECK(base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab));
     storage_partition = profile_->GetDefaultStoragePartition();
   }
 

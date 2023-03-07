@@ -10,14 +10,10 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/account_id/account_id.h"
 #include "crypto/hmac.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace base {
-class DictionaryValue;
-class Value;
-}  // namespace base
 
 namespace ash {
 namespace parent_access {
@@ -28,7 +24,7 @@ class AccessCodeConfig {
   // Returns AccessCodeConfig created from a |dictionary|, if the |dictionary|
   // contains valid config data.
   static absl::optional<AccessCodeConfig> FromDictionary(
-      const base::DictionaryValue& value);
+      const base::Value::Dict& dictionary);
 
   // TODO(agawronska): Make constructor private.
   // To create valid AccessCodeConfig:
@@ -60,7 +56,7 @@ class AccessCodeConfig {
   }
 
   // Converts the AccessCodeConfig object to its dictionary equivalent.
-  base::Value ToDictionary() const;
+  base::Value::Dict ToDictionary() const;
 
  private:
   std::string shared_secret_;

@@ -4,11 +4,11 @@
 
 #include "ios/chrome/browser/json_parser/in_process_json_parser.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 
 namespace {
@@ -43,6 +43,7 @@ void InProcessJsonParser::Parse(const std::string& unsafe_json,
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ParseJsonOnBackgroundThread,
-                     base::ThreadTaskRunnerHandle::Get(), unsafe_json,
-                     std::move(success_callback), std::move(error_callback)));
+                     base::SingleThreadTaskRunner::GetCurrentDefault(),
+                     unsafe_json, std::move(success_callback),
+                     std::move(error_callback)));
 }

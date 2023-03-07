@@ -6,7 +6,10 @@
 
 #include <mferror.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/trace_event/base_tracing.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/renderers/win/media_foundation_audio_stream.h"
@@ -18,6 +21,7 @@ namespace media {
 using Microsoft::WRL::ComPtr;
 
 namespace {
+
 // |guid_string| is a binary serialization of a GUID in network byte order
 // format.
 GUID GetGUIDFromString(const std::string& guid_string) {
@@ -112,6 +116,18 @@ MFTIME TimeDeltaToMfTime(base::TimeDelta time) {
   return time.InNanoseconds() / 100;
 }
 
+PendingInputBuffer::PendingInputBuffer(DemuxerStream::Status status,
+                                       scoped_refptr<DecoderBuffer> buffer)
+    : status(status), buffer(std::move(buffer)) {}
+
+PendingInputBuffer::PendingInputBuffer(DemuxerStream::Status status)
+    : status(status) {}
+
+PendingInputBuffer::PendingInputBuffer(const PendingInputBuffer& other) =
+    default;
+
+PendingInputBuffer::~PendingInputBuffer() = default;
+
 }  // namespace
 
 MediaFoundationStreamWrapper::MediaFoundationStreamWrapper() = default;
@@ -166,6 +182,21 @@ HRESULT MediaFoundationStreamWrapper::RuntimeClassInitialize(
                 << ", stream_type=" << DemuxerStream::GetTypeName(stream_type_);
 
   media_log_ = std::move(media_log);
+  if (base::FeatureList::IsEnabled(kMediaFoundationBatchRead)) {
+    if (kBatchReadCount.Get() < 1 || kBatchReadCount.Get() > 500) {
+      DLOG(WARNING) << "batch_read_count_=" << kBatchReadCount.Get()
+                    << " is out of range [1,500], "
+                    << (kBatchReadCount.Get() < 1
+                            ? "it shouldn't be negative or 0"
+                            : "it will spend more time "
+                              "on writing and reading and maybe impacts UX")
+                    << "; setting batch_read_count_=1";
+      batch_read_count_ = 1;
+    } else {
+      batch_read_count_ = kBatchReadCount.Get();
+    }
+  }
+  DVLOG_FUNC(1) << "batch_read_count_=" << batch_read_count_;
 
   RETURN_IF_FAILED(GenerateStreamDescriptor());
   RETURN_IF_FAILED(MFCreateEventQueue(&mf_media_event_queue_));
@@ -233,6 +264,8 @@ void MediaFoundationStreamWrapper::SetFlushed(bool flushed) {
   base::AutoLock auto_lock(lock_);
   flushed_ = flushed;
   if (flushed_) {
+    DVLOG_FUNC(2) << "flush buffer_queue_";
+    buffer_queue_.clear();
     while (!post_flush_buffers_.empty()) {
       post_flush_buffers_.pop();
     }
@@ -245,9 +278,24 @@ bool MediaFoundationStreamWrapper::HasEnded() const {
   return stream_ended_;
 }
 
+void MediaFoundationStreamWrapper::SetLastStartPosition(
+    const PROPVARIANT* start_position) {
+  // Events such as MF_MEDIA_ENGINE_EVENT_SEEKED may send a start position
+  // with VT_EMPTY, this event should be ignored since it is not a valid start
+  // time. Only VT_I8 will be used based on start of presentation:
+  // https://learn.microsoft.com/en-us/windows/win32/api/mfidl/nf-mfidl-imfmediasession-start
+  if (start_position->vt == VT_I8) {
+    base::AutoLock auto_lock(lock_);
+    last_start_time_ = start_position->hVal.QuadPart;
+  }
+}
+
 HRESULT MediaFoundationStreamWrapper::QueueStartedEvent(
     const PROPVARIANT* start_position) {
   DVLOG_FUNC(2);
+
+  // Save the new start position in the stream.
+  SetLastStartPosition(start_position);
 
   state_ = State::kStarted;
   RETURN_IF_FAILED(mf_media_event_queue_->QueueEventParamVar(
@@ -258,6 +306,9 @@ HRESULT MediaFoundationStreamWrapper::QueueStartedEvent(
 HRESULT MediaFoundationStreamWrapper::QueueSeekedEvent(
     const PROPVARIANT* start_position) {
   DVLOG_FUNC(2);
+
+  // Save the new start position in the stream.
+  SetLastStartPosition(start_position);
 
   state_ = State::kStarted;
   RETURN_IF_FAILED(mf_media_event_queue_->QueueEventParamVar(
@@ -307,13 +358,63 @@ void MediaFoundationStreamWrapper::ProcessRequestsIfPossible() {
     return;
   }
 
-  if (!demuxer_stream_ || pending_stream_read_)
+  if (!demuxer_stream_) {
     return;
+  }
 
-  demuxer_stream_->Read(
-      base::BindOnce(&MediaFoundationStreamWrapper::OnDemuxerStreamRead,
-                     weak_factory_.GetWeakPtr()));
-  pending_stream_read_ = true;
+  base::AutoLock auto_lock(lock_);
+  if (!buffer_queue_.empty()) {
+    // Using queued buffer for multi buffers read from Renderer process. If
+    // a valid buffer already exists in queued buffer, return the buffer
+    // directly without IPC calls for buffer requested from MediaEngine.
+    OnDemuxerStreamRead(buffer_queue_.front().status,
+                        std::move(buffer_queue_.front().buffer));
+    buffer_queue_.pop_front();
+    return;
+  }
+
+  // Request multi buffers by sending IPC to 'MojoDemuxerStreamImpl'.
+  if (!pending_stream_read_) {
+    DVLOG_FUNC(3) << " IPC send, batch_read_count_=" << batch_read_count_;
+    TRACE_EVENT2("media", "MFGetBuffersFromRendererByIPC",
+                 "StreamType:", DemuxerStream::GetTypeName(stream_type_),
+                 "batch_read_count_:", batch_read_count_);
+    pending_stream_read_ = true;
+    demuxer_stream_->Read(
+        batch_read_count_,
+        base::BindOnce(
+            &MediaFoundationStreamWrapper::OnDemuxerStreamReadBuffers,
+            weak_factory_.GetWeakPtr()));
+  }
+}
+
+void MediaFoundationStreamWrapper::OnDemuxerStreamReadBuffers(
+    DemuxerStream::Status status,
+    DemuxerStream::DecoderBufferVector buffers) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DVLOG_FUNC(3) << "receive data, status="
+                << DemuxerStream::GetStatusName(status)
+                << ", buffer count= " << buffers.size()
+                << ", stream type=" << DemuxerStream::GetTypeName(stream_type_);
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(pending_stream_read_);
+    pending_stream_read_ = false;
+
+    DemuxerStream::DecoderBufferVector pending_buffers =
+        (status == DemuxerStream::Status::kOk)
+            ? std::move(buffers)
+            : DemuxerStream::DecoderBufferVector{nullptr};
+    for (auto& buffer : pending_buffers) {
+      DVLOG_FUNC(3) << "push buffer to buffer_queue_, status="
+                    << DemuxerStream::GetStatusName(status) << ", buffer="
+                    << (buffer ? buffer->AsHumanReadableString(false) : "null");
+      buffer_queue_.emplace_back(PendingInputBuffer(status, std::move(buffer)));
+    }
+  }
+
+  // Restart processing of queued requests when we receive buffers.
+  ProcessRequestsIfPossible();
 }
 
 HRESULT MediaFoundationStreamWrapper::ServiceSampleRequest(
@@ -359,16 +460,46 @@ HRESULT MediaFoundationStreamWrapper::ServiceSampleRequest(
 bool MediaFoundationStreamWrapper::ServicePostFlushSampleRequest() {
   DVLOG_FUNC(3);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  HRESULT hr = S_OK;
 
   base::AutoLock auto_lock(lock_);
-  if ((flushed_ && state_ != State::kStarted) || post_flush_buffers_.empty()) {
+  if (flushed_ && state_ == State::kStarted &&
+      last_start_time_ != kInvalidTime) {
+    // Video may freeze during consecutive backward seek since MF does not
+    // cancel previous pending seek, while Chromium's source starts new seek
+    // immediately. MF's seek finishes when a sample's timestamp is equal to
+    // or greater than seek time. Thus it would cause video to freeze until
+    // source send samples with timestamps matching the previous pending seek.
+
+    // MEStreamTick event notifies a gap in data and notify downstream
+    // components not to expect any data at the specified time, allowing
+    // downstream components to cancel the first seek
+    // https://learn.microsoft.com/en-us/windows/win32/medfound/mestreamtick
+
+    // Stream ticks are continuously sent until flush completes to make sure
+    // all downsteam components have been rid of stale samples.
+    PROPVARIANT var;
+    PropVariantInit(&var);
+    var.vt = VT_I8;
+    var.hVal.QuadPart = last_start_time_;
+    hr = mf_media_event_queue_->QueueEventParamVar(MEStreamTick, GUID_NULL,
+                                                   S_OK, &var);
+    if (FAILED(hr)) {
+      // Failure would indicate mf no longer accepts events, such as when
+      // shutdown is called, thus stream ticks should no longer be needed.
+      DLOG(WARNING) << "Failed to queue stream tick: " << PrintHr(hr);
+    }
+    return false;
+
+  } else if ((flushed_ && state_ != State::kStarted) ||
+             post_flush_buffers_.empty()) {
     return false;
   }
 
   DCHECK(!pending_sample_request_tokens_.empty());
   ComPtr<IUnknown> request_token = pending_sample_request_tokens_.front();
-  HRESULT hr = ServiceSampleRequest(request_token.Get(),
-                                    post_flush_buffers_.front().get());
+  hr = ServiceSampleRequest(request_token.Get(),
+                            post_flush_buffers_.front().get());
   if (FAILED(hr)) {
     DLOG(WARNING) << "Failed to service post flush sample: " << PrintHr(hr);
     return false;
@@ -394,12 +525,8 @@ void MediaFoundationStreamWrapper::OnDemuxerStreamRead(
   DVLOG_FUNC(3) << "status=" << status
                 << (buffer ? " buffer=" + buffer->AsHumanReadableString(true)
                            : "");
-
   {
-    base::AutoLock auto_lock(lock_);
-    DCHECK(pending_stream_read_);
-    pending_stream_read_ = false;
-
+    lock_.AssertAcquired();
     ComPtr<IUnknown> token = pending_sample_request_tokens_.front();
     HRESULT hr = S_OK;
 
@@ -457,7 +584,12 @@ void MediaFoundationStreamWrapper::OnDemuxerStreamRead(
     }
   }
 
-  ProcessRequestsIfPossible();
+  // ProcessRequestsIfPossible calls OnDemuxerStreamRead, OnDemuxerStreamRead
+  // calls ProcessRequestsIfPossible, so use PostTask to avoid deadlock here.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaFoundationStreamWrapper::ProcessRequestsIfPossible,
+                     weak_factory_.GetWeakPtr()));
 }
 
 HRESULT MediaFoundationStreamWrapper::GenerateSampleFromDecoderBuffer(

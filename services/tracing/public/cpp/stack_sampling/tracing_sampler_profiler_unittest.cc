@@ -10,18 +10,21 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/module_cache.h"
 #include "base/profiler/register_context.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/profiler/unwinder.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "services/tracing/perfetto/test_utils.h"
 #include "services/tracing/public/cpp/buildflags.h"
@@ -44,7 +47,8 @@
 namespace tracing {
 namespace {
 
-using base::trace_event::TraceLog;
+using ::base::trace_event::TraceLog;
+using ::perfetto::protos::TracePacket;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Invoke;
@@ -276,19 +280,24 @@ class MockUnwinder : public base::Unwinder {
 // Note that this is relevant only for Android, since TracingSamplingProfiler
 // ignores any provided unwinder factory for non-Android platforms:
 // https://source.chromium.org/chromium/chromium/src/+/main:services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.cc;l=905-908;drc=70d839a3b8bcf1ef43c42a54a4b27f14ee149750
-std::vector<std::unique_ptr<base::Unwinder>>
-MakeMockUnwinderWithExpectations() {
-  auto mock_unwinder = std::make_unique<MockUnwinder>();
-  EXPECT_CALL(*mock_unwinder, CanUnwindFrom(_))
-      .Times(AtLeast(1))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_unwinder, TryUnwind(_, _, _))
-      .Times(AtLeast(1))
-      .WillRepeatedly(Return(base::UnwindResult::kCompleted));
+base::StackSamplingProfiler::UnwindersFactory
+MakeMockUnwinderFactoryWithExpectations() {
+  if (!TracingSamplerProfiler::IsStackUnwindingSupportedForTesting()) {
+    return base::StackSamplingProfiler::UnwindersFactory();
+  }
+  return base::BindOnce([] {
+    auto mock_unwinder = std::make_unique<MockUnwinder>();
+    EXPECT_CALL(*mock_unwinder, CanUnwindFrom(_))
+        .Times(AtLeast(1))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_unwinder, TryUnwind(_, _, _))
+        .Times(AtLeast(1))
+        .WillRepeatedly(Return(base::UnwindResult::kCompleted));
 
-  std::vector<std::unique_ptr<base::Unwinder>> mock_unwinders;
-  mock_unwinders.push_back(std::move(mock_unwinder));
-  return mock_unwinders;
+    std::vector<std::unique_ptr<base::Unwinder>> mock_unwinders;
+    mock_unwinders.push_back(std::move(mock_unwinder));
+    return mock_unwinders;
+  });
 }
 
 }  // namespace
@@ -296,7 +305,7 @@ MakeMockUnwinderWithExpectations() {
 TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
   auto profiler =
       TracingSamplerProfiler::CreateOnMainThread(base::BindRepeating(
-          [] { return base::BindOnce(&MakeMockUnwinderWithExpectations); }));
+          [] { return MakeMockUnwinderFactoryWithExpectations(); }));
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -309,7 +318,7 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   BeginTrace();
   auto profiler =
       TracingSamplerProfiler::CreateOnMainThread(base::BindRepeating(
-          [] { return base::BindOnce(&MakeMockUnwinderWithExpectations); }));
+          [] { return MakeMockUnwinderFactoryWithExpectations(); }));
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
@@ -320,7 +329,7 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
 TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
   auto profiler =
       TracingSamplerProfiler::CreateOnMainThread(base::BindRepeating(
-          [] { return base::BindOnce(&MakeMockUnwinderWithExpectations); }));
+          [] { return MakeMockUnwinderFactoryWithExpectations(); }));
   TracingSamplerProfiler::SetupStartupTracingForTesting();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -358,7 +367,7 @@ TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
   base::RunLoop().RunUntilIdle();
   auto profiler =
       TracingSamplerProfiler::CreateOnMainThread(base::BindRepeating(
-          [] { return base::BindOnce(&MakeMockUnwinderWithExpectations); }));
+          [] { return MakeMockUnwinderFactoryWithExpectations(); }));
   WaitForEvents();
   auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
   BeginTrace();
@@ -396,9 +405,8 @@ TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
       FROM_HERE,
       base::BindOnce(
           &TracingSamplerProfiler::CreateOnChildThreadWithCustomUnwinders,
-          base::BindRepeating([] {
-            return base::BindOnce(&MakeMockUnwinderWithExpectations);
-          })));
+          base::BindRepeating(
+              [] { return MakeMockUnwinderFactoryWithExpectations(); })));
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -595,7 +603,6 @@ TEST_F(TracingProfileBuilderTest, TransformELFModuleIDToBreakpadFormat) {
   EXPECT_TRUE(found_build_id);
 }
 #endif
-#endif
 
 #if BUILDFLAG(IS_ANDROID) && \
     (ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED)
@@ -632,5 +639,29 @@ TEST_F(TracingProfileBuilderTest, FullPathForJavaModulesWithMissingBuildId) {
   EXPECT_TRUE(has_full_path);
 }
 #endif
+
+TEST_F(TracingProfileBuilderTest, SetPidFromTraceLog) {
+  constexpr int kExpectedPid = 1234;
+  TraceLog::GetInstance()->SetProcessID(kExpectedPid);
+
+  TracingSamplerProfiler::TracingProfileBuilder profile_builder(
+      base::PlatformThreadId(), std::make_unique<TestTraceWriter>(producer()),
+      /*should_enable_filtering=*/false);
+  profile_builder.OnSampleCompleted(
+      {base::Frame(/*instruction_pointer=*/0, /*module=*/nullptr)},
+      base::TimeTicks());
+  EXPECT_GT(producer()->GetFinalizedPacketCount(), 0u);
+
+  bool found_pid = false;
+  for (const std::unique_ptr<TracePacket>& packet :
+       producer()->finalized_packets()) {
+    if (packet->thread_descriptor().has_pid()) {
+      found_pid = true;
+      EXPECT_EQ(packet->thread_descriptor().pid(), kExpectedPid);
+    }
+  }
+  EXPECT_TRUE(found_pid);
+}
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 }  // namespace tracing

@@ -5,12 +5,18 @@
 #ifndef CHROMEOS_ASH_SERVICES_DEVICE_SYNC_GROUP_PRIVATE_KEY_AND_BETTER_TOGETHER_METADATA_STATUS_H_
 #define CHROMEOS_ASH_SERVICES_DEVICE_SYNC_GROUP_PRIVATE_KEY_AND_BETTER_TOGETHER_METADATA_STATUS_H_
 
+#include <ostream>
+
 namespace ash::device_sync {
 
 // The group private key and better together metadata status in the
 // CryptAuthDeviceSyncer. These enums are declared in their own module so they
 // can be consumed by mojom::DeviceSync and avoid a dependency cycle.
 enum class GroupPrivateKeyStatus {
+  // When Device Sync is not initialized, it cannot access the group private key
+  // status and will return this value.
+  kStatusUnavailableBecauseDeviceSyncIsNotInitialized,
+
   // The CryptAuth SyncMetadata response that includes the encrypted group
   // private key hasn't been received yet.
   kWaitingForGroupPrivateKey,
@@ -33,10 +39,14 @@ enum class GroupPrivateKeyStatus {
 
   // The group private key was successfully decrypted. This is the expected
   // final state of this flow.
-  kGroupPrivateKeySuccessfullyDecrypted
+  kGroupPrivateKeySuccessfullyDecrypted,
 };
 
 enum class BetterTogetherMetadataStatus {
+  // When Device Sync is not initialized, it cannot access the better together
+  // metadata status and will return this value.
+  kStatusUnavailableBecauseDeviceSyncIsNotInitialized,
+
   // The attempt to process the encrypted device metadata hasn't started yet.
   // If the device sync attempt finishes and this is still the metadata
   // status, clients can inspect GroupPrivateKeyStatus to understand why.
@@ -54,6 +64,11 @@ enum class BetterTogetherMetadataStatus {
   // flow.
   kMetadataDecrypted,
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const GroupPrivateKeyStatus& state);
+std::ostream& operator<<(std::ostream& stream,
+                         const BetterTogetherMetadataStatus& state);
 
 }  // namespace ash::device_sync
 

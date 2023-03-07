@@ -25,6 +25,9 @@ E2ETestBase = class extends AccessibilityTestBase {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
+
+    // Alphabetical by file path.
+    await importModule('AsyncUtil', '/common/async_util.js');
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
     await importModule('constants', '/common/constants.js');
@@ -35,8 +38,9 @@ E2ETestBase = class extends AccessibilityTestBase {
     GEN(`
   #include "ash/accessibility/accessibility_delegate.h"
   #include "ash/shell.h"
-  #include "base/bind.h"
-  #include "base/callback.h"
+  #include "base/functional/bind.h"
+  #include "base/functional/callback.h"
+  #include "base/containers/flat_set.h"
   #include "chrome/browser/ash/accessibility/accessibility_manager.h"
   #include "chrome/browser/ash/crosapi/browser_manager.h"
   #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -71,7 +75,10 @@ E2ETestBase = class extends AccessibilityTestBase {
     `);
   }
 
-  testGenPreambleCommon(extensionIdName, failOnConsoleError = true) {
+  testGenPreambleCommon(
+      extensionIdName, failOnConsoleError = true, allowedMessages = []) {
+    const messages = allowedMessages.reduce(
+        (accumulator, message) => accumulator + `u"${message}",`, '');
     GEN(`
     WaitForExtension(extension_misc::${extensionIdName}, std::move(load_cb));
 
@@ -81,17 +88,25 @@ E2ETestBase = class extends AccessibilityTestBase {
                 extension_misc::${extensionIdName});
 
     bool fail_on_console_error = ${failOnConsoleError};
+    // Convert |allowedMessages| into a C++ set.
+    base::flat_set<std::u16string> allowed_messages({${messages}});
     content::WebContentsConsoleObserver console_observer(host->host_contents());
-    // A11y extensions should not log warnings or errors: these should cause
-    // test failures.
+    // In most cases, A11y extensions should not log warnings or errors.
+    // However, informational messages may be logged in some cases and should
+    // be specified in |allowed_messages|. All other messages should cause test
+    // failures.
     auto filter =
-        [](const content::WebContentsConsoleObserver::Message& message) {
+        [](const base::flat_set<std::u16string>& allowed,
+           const content::WebContentsConsoleObserver::Message& message) {
+          if (allowed.contains(message.message))
+            return false;
+
           return message.log_level ==
               blink::mojom::ConsoleMessageLevel::kWarning ||
               message.log_level == blink::mojom::ConsoleMessageLevel::kError;
         };
     if (fail_on_console_error) {
-      console_observer.SetFilter(base::BindRepeating(filter));
+      console_observer.SetFilter(base::BindRepeating(filter, allowed_messages));
     }
     `);
   }
@@ -235,7 +250,7 @@ E2ETestBase = class extends AccessibilityTestBase {
     return new Promise(this.newCallback(async resolve => {
       // Make sure the test doesn't finish until this function has resolved.
       let callback = this.newCallback(resolve);
-      this.desktop_ = await new Promise(r => chrome.automation.getDesktop(r));
+      this.desktop_ = await AsyncUtil.getDesktop();
       const url = opt_params.url || DocUtils.createUrlForDoc(doc);
 
       const hasLacrosChromePath = await new Promise(
@@ -255,7 +270,7 @@ E2ETestBase = class extends AccessibilityTestBase {
           // We have yet to request navigation in the Lacros tab. Do so now by
           // getting the default focus (the address bar), setting the value to
           // the url and then performing do default on the auto completion node.
-          const focus = await new Promise(r => chrome.automation.getFocus(r));
+          const focus = await AsyncUtil.getFocus();
           // It's possible focus is elsewhere; wait until it lands on the
           // address bar text field.
           if (focus.role !== chrome.automation.RoleType.TEXT_FIELD) {

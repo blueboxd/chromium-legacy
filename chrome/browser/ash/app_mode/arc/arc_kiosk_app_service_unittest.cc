@@ -25,7 +25,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper.h"
-#include "components/exo/wm_helper_chromeos.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,13 +42,18 @@ const char kAppWindowAppId[] = "org.chromium.arc.0";
 
 }  // namespace
 
-class FakeController : public KioskAppLauncher::Delegate {
+class FakeController : public KioskAppLauncher::NetworkDelegate,
+                       public KioskAppLauncher::Observer {
  public:
   explicit FakeController(ArcKioskAppService* service) : service_(service) {
-    service_->SetDelegate(this);
+    service_->SetNetworkDelegate(this);
+    service_->AddObserver(this);
   }
 
-  ~FakeController() override { service_->SetDelegate(nullptr); }
+  ~FakeController() override {
+    service_->SetNetworkDelegate(nullptr);
+    service_->RemoveObserver(this);
+  }
 
   // KioskAppLauncher::Delegate:
   bool IsNetworkReady() const override { return true; }
@@ -84,7 +88,7 @@ class ArcKioskAppServiceTest : public testing::Test {
 
   void SetUp() override {
     ash_test_helper_.SetUp();
-    wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
+    wm_helper_ = std::make_unique<exo::WMHelper>();
 
     profile_ = std::make_unique<TestingProfile>();
     profile_->set_profile_name(kAppEmail);

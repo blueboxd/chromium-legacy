@@ -25,6 +25,9 @@ extern NSString* const kConfirmationAlertSecondaryActionAccessibilityIdentifier;
 // Setting those properties will make those buttons be added to the view
 // controller.
 @interface ConfirmationAlertViewController : UIViewController
+// The navigation bar title view. Nil if not needed. If needed, must be set
+// before the view is loaded.
+@property(nonatomic, strong) UIView* titleView;
 
 // The headline below the image. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* titleString;
@@ -52,8 +55,8 @@ extern NSString* const kConfirmationAlertSecondaryActionAccessibilityIdentifier;
 @property(nonatomic, strong) UIImage* image;
 
 // Sets the custom spacing between the top and the image, if there is no
-// toolbar. Must be set before the view is loaded.
-@property(nonatomic, assign) CGFloat customSpacingBeforeImageIfNoToolbar;
+// navigation bar. Must be set before the view is loaded.
+@property(nonatomic, assign) CGFloat customSpacingBeforeImageIfNoNavigationBar;
 
 // Sets the custom spacing between the image and the title / subtitle. Must be
 // set before the view is loaded.
@@ -81,8 +84,8 @@ extern NSString* const kConfirmationAlertSecondaryActionAccessibilityIdentifier;
 // The help button item in the top left of the view. Nil if not available.
 @property(nonatomic, readonly) UIBarButtonItem* helpButton;
 
-// Controls if the toolbar dismiss button is available in the view. Default is
-// YES. Must be set before the view is loaded.
+// Controls if the navigation bar dismiss button is available in the view.
+// Default is YES. Must be set before the view is loaded.
 @property(nonatomic) BOOL showDismissBarButton;
 
 // Allows to modify the system item for the dismiss bar button (defaults to
@@ -92,13 +95,15 @@ extern NSString* const kConfirmationAlertSecondaryActionAccessibilityIdentifier;
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<ConfirmationAlertActionHandler> actionHandler;
 
-// Updates the style of the secondary title label. The default implementation
-// does nothing, but subclasses can override to customize the styling if needed.
-- (void)updateStylingForSecondaryTitleLabel:(UILabel*)secondaryTitleLabel;
+// Can be overridden by subclasses to customize the secondary title, e.g. set a
+// different style, or a UITextViewDelegate. The default implementation does
+// nothing.
+- (void)customizeSecondaryTitle:(UITextView*)secondaryTitle;
 
-// Updates the style of the subtitle label. The default implementation does
-// nothing, but subclasses can override to customize the styling if needed.
-- (void)updateStylingForSubtitleLabel:(UILabel*)subtitleLabel;
+// Can be overridden by subclasses to customize the subtitle, e.g. set a
+// different style, or a UITextViewDelegate. The default implementation does
+// nothing.
+- (void)customizeSubtitle:(UITextView*)subtitle;
 
 @end
 

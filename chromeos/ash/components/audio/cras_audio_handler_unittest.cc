@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/system/system_monitor.h"
@@ -2486,6 +2486,29 @@ TEST_P(CrasAudioHandlerTest,
   EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
   EXPECT_EQ(device.id, kInternalSpeaker->id);
   EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
+}
+
+TEST_P(CrasAudioHandlerTest,
+       ChangeOutputVolumeFromNonChromeSourceNonActiveDevice) {
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kInternalSpeaker, kHeadphone});
+  SetupCrasAudioHandlerWithActiveNodeInPref(
+      audio_nodes, audio_nodes,
+      AudioDevice(GenerateAudioNode(kInternalSpeaker)), true);
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+
+  const AudioDevice* device = GetDeviceFromId(kHeadphone->id);
+  const int kDefaultVolume = 75;
+  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
+  EXPECT_EQ(kDefaultVolume, audio_pref_handler_->GetOutputVolumeValue(device));
+
+  const int kVolume = 20;
+  fake_cras_audio_client()->NotifyOutputNodeVolumeChangedForTesting(
+      kHeadphone->id, kVolume);
+  EXPECT_EQ(1, test_observer_->output_volume_changed_count());
+  // Since the device is not active,
+  EXPECT_EQ(kDefaultVolume, cras_audio_handler_->GetOutputVolumePercent());
+  EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(device));
 }
 
 TEST_P(CrasAudioHandlerTest, SetInputGainPercent) {

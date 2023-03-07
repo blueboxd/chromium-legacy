@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js',
-]);
+GEN_INCLUDE(['../../testing/chromevox_e2e_test_base.js']);
 
 /**
  * Test fixture for editing tests.
  */
-ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxEditingTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
@@ -35,6 +33,9 @@ ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
     await importModule('LocalStorage', '/common/local_storage.js');
+
+    globalThis.EventType = chrome.automation.EventType;
+    globalThis.RoleType = chrome.automation.RoleType;
   }
 
   press(keyCode, modifiers) {

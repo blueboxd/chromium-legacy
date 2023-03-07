@@ -269,15 +269,6 @@ Config::Config() {
             number_interesting_visits_filter_threshold);
   }
 
-  // The `kJourneysCategoryFiltering` feature and child params.
-  {
-    should_use_categories_to_filter_on_prominent_ui_surfaces =
-        base::FeatureList::IsEnabled(
-            features::kOnDeviceClusteringCategoryFiltering);
-
-    categories_for_filtering = JourneysCategoryFilteringAllowlist();
-  }
-
   // The `kUseEngagementScoreCache` feature and child params.
   {
     engagement_score_cache_size = GetFieldTrialParamByFeatureAsInt(
@@ -371,16 +362,20 @@ Config::Config() {
 
   // The `kHistoryClustersNavigationContextClustering` feature and child params.
   {
+    use_navigation_context_clusters = base::FeatureList::IsEnabled(
+        internal::kHistoryClustersNavigationContextClustering);
+
     context_clustering_clean_up_duration =
         base::Minutes(GetFieldTrialParamByFeatureAsInt(
             internal::kHistoryClustersNavigationContextClustering,
             "clean_up_duration_minutes",
             context_clustering_clean_up_duration.InMinutes()));
 
-    persist_context_clusters_at_navigation = GetFieldTrialParamByFeatureAsBool(
-        internal::kHistoryClustersNavigationContextClustering,
-        "persist_context_clusters_at_navigation",
-        persist_context_clusters_at_navigation);
+    cluster_triggerability_cutoff_duration =
+        base::Minutes(GetFieldTrialParamByFeatureAsInt(
+            internal::kHistoryClustersNavigationContextClustering,
+            "cluster_triggerability_cutoff_duration_minutes",
+            cluster_triggerability_cutoff_duration.InMinutes()));
   }
 
   // Lonely features without child params.
@@ -436,23 +431,6 @@ base::flat_set<std::string> JourneysCollectionContentClusteringBlocklist() {
   return blocklist.empty()
              ? base::flat_set<std::string>()
              : base::flat_set<std::string>(blocklist.begin(), blocklist.end());
-}
-
-base::flat_set<std::string> JourneysCategoryFilteringAllowlist() {
-  const base::FeatureParam<std::string> kJourneysCategoryFilteringAllowlist{
-      &features::kOnDeviceClusteringCategoryFiltering,
-      "categories_filtering_allowlist", ""};
-  std::string allowlist_string = kJourneysCategoryFilteringAllowlist.Get();
-  if (allowlist_string.empty())
-    return {};
-
-  auto allowlist = base::SplitString(allowlist_string, ",",
-                                     base::WhitespaceHandling::TRIM_WHITESPACE,
-                                     base::SplitResult::SPLIT_WANT_NONEMPTY);
-
-  return allowlist.empty()
-             ? base::flat_set<std::string>()
-             : base::flat_set<std::string>(allowlist.begin(), allowlist.end());
 }
 
 base::flat_set<std::string> JourneysMidBlocklist() {

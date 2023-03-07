@@ -15,9 +15,9 @@
 #include "ash/quick_pair/scanning/fast_pair/fast_pair_not_discoverable_scanner_impl.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "chromeos/ash/services/quick_pair/quick_pair_process_manager.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -180,7 +180,7 @@ void ScannerBrokerImpl::StopFastPairScanning() {
 }
 
 void ScannerBrokerImpl::NotifyDeviceFound(scoped_refptr<Device> device) {
-  QP_LOG(INFO) << __func__ << ": device.metadata_id=" << device->metadata_id;
+  QP_LOG(INFO) << __func__ << ": device.metadata_id=" << device->metadata_id();
 
   for (auto& observer : observers_) {
     observer.OnDeviceFound(device);
@@ -188,7 +188,7 @@ void ScannerBrokerImpl::NotifyDeviceFound(scoped_refptr<Device> device) {
 }
 
 void ScannerBrokerImpl::NotifyDeviceLost(scoped_refptr<Device> device) {
-  QP_LOG(INFO) << __func__ << ": device.metadata_id=" << device->metadata_id;
+  QP_LOG(INFO) << __func__ << ": device.metadata_id=" << device->metadata_id();
 
   for (auto& observer : observers_) {
     observer.OnDeviceLost(device);

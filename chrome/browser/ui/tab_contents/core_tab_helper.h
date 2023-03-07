@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -39,40 +39,28 @@ class CoreTabHelper : public content::WebContentsObserver,
 
   void UpdateContentRestrictions(int content_restrictions);
 
+  // Encodes the given image to proper image format and adds to |search_args|
+  // thumbnail image content data. Returns the format the image was encoded to.
+  // Public for testing.
+  static lens::mojom::ImageFormat EncodeImageIntoSearchArgs(
+      const gfx::Image& image,
+      TemplateURLRef::SearchTermsArgs& search_args);
+
   // Open the Lens standalone experience for the image that triggered the
-  // context menu. If |is_side_panel_enabled_for_feature| is true and if the
-  // google lens supports opening requests in side panel, then the request will
-  // open in the side panel instead of new tab.
+  // context menu. If the google lens supports opening requests in side panel,
+  // then the request will open in the side panel instead of new tab.
   void SearchWithLens(content::RenderFrameHost* render_frame_host,
                       const GURL& src_url,
-                      lens::EntryPoint entry_point,
-                      bool is_side_panel_enabled_for_feature);
+                      lens::EntryPoint entry_point);
 
   // Open the Lens experience for an image. Used for sending the bitmap selected
   // via Lens Region Search. |image_original_size| is specified in case of
   // resizing that happens prior to passing the image to |CoreTabHelper|. If
-  // |is_side_panel_enabled_for_feature| is true and if the search engine
-  // supports opening requests in side panel, then the request will open in the
-  // side panel instead of a new tab.
-  // TODO (b/257281671): remove when /screenshot is cleaned up
-  void SearchWithLens(gfx::Image image,
-                      const gfx::Size& image_original_size,
-                      lens::EntryPoint entry_point,
-                      bool is_region_search_request,
-                      bool is_side_panel_enabled_for_feature);
-
-  // Open the Lens experience for an image. Used for sending the bitmap selected
-  // via Lens Region Search. |image_original_size| is specified in case of
-  // resizing that happens prior to passing the image to |CoreTabHelper|. If
-  // |is_side_panel_enabled_for_feature| is true and if the search engine
-  // supports opening requests in side panel, then the request will open in the
-  // side panel instead of a new tab.
-  void SearchWithLens(gfx::Image image,
-                      const gfx::Size& image_original_size,
-                      lens::EntryPoint entry_point,
-                      bool is_region_search_request,
-                      bool is_side_panel_enabled_for_feature,
-                      std::vector<lens::mojom::LatencyLogPtr> log_data);
+  // the search engine supports opening requests in side panel, then the request
+  // will open in the side panel instead of a new tab.
+  void RegionSearchWithLens(gfx::Image image,
+                            const gfx::Size& image_original_size,
+                            std::vector<lens::mojom::LatencyLogPtr> log_data);
 
   // Perform an image search for the image that triggered the context menu.  The
   // |src_url| is passed to the search request and is not used directly to fetch
@@ -118,6 +106,7 @@ class CoreTabHelper : public content::WebContentsObserver,
       const GURL& src_url,
       const std::string& additional_query_params,
       bool use_side_panel,
+      const std::string& thumbnail_content_type,
       const std::vector<uint8_t>& thumbnail_data,
       const gfx::Size& original_size,
       const std::string& image_extension,
@@ -125,18 +114,6 @@ class CoreTabHelper : public content::WebContentsObserver,
 
   // Wrapper method for fetching template URL service.
   TemplateURLService* GetTemplateURLService();
-
-  // Helper that returns true if the current Browser instance is a Progressive
-  // Web App
-  bool IsInProgressiveWebApp();
-
-  // Helper function to check if side panel is enabled for current browser
-  // context
-  bool IsSidePanelEnabled();
-
-  // Helper function to check if the side panel is enabled for third party
-  // default search engines (3PDSE).
-  bool IsSidePanelEnabledFor3PDse();
 
   // Posts the bytes and content type to the specified URL If |use_side_panel|
   // is true, the content will open in a side panel, otherwise it will open in

@@ -5,7 +5,7 @@
 // clang-format off
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ContentSetting, SettingsCollapseRadioButtonElement, ContentSettingsTypes,CookiePrimarySetting, SettingsCookiesPageElement, SiteSettingsPrefsBrowserProxyImpl, CookieControlsMode} from 'chrome://settings/lazy_load.js';
+import {CookieControlsMode, ContentSetting, NetworkPredictionOptions, SettingsCollapseRadioButtonElement, ContentSettingsTypes,CookiePrimarySetting, SettingsCookiesPageElement, SITE_EXCEPTION_WILDCARD, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrLinkRowElement, CrSettingsPrefs, MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes, SettingsPrefsElement, SettingsToggleButtonElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -66,15 +66,17 @@ suite('CrSettingsCookiesPageTest', function() {
   test('ElementVisibility', async function() {
     // TODO(): Remove assertFalse checks after the feature is launched.
     await flushTasks();
+    assertTrue(isChildVisible(page, '#explanationText'));
+    assertTrue(isChildVisible(page, '#generalControls'));
     assertTrue(isChildVisible(page, '#exceptionHeader'));
     assertTrue(isChildVisible(page, '#allowExceptionsList'));
-    assertTrue(isChildVisible(page, '#sessionOnlyExceptionsList'));
-    assertTrue(isChildVisible(page, '#blockExceptionsList'));
+    assertFalse(isChildVisible(page, '#sessionOnlyExceptionsList'));
+    assertFalse(isChildVisible(page, '#blockExceptionsList'));
 
     assertFalse(isChildVisible(page, '#clearOnExit'));
 
     assertTrue(isChildVisible(page, '#doNotTrack'));
-    assertTrue(isChildVisible(page, '#networkPrediction'));
+    assertTrue(isChildVisible(page, '#preloadingLinkRow'));
 
     assertTrue(isChildVisible(page, '#allowThirdParty'));
     assertTrue(isChildVisible(page, '#blockThirdParty'));
@@ -83,47 +85,103 @@ suite('CrSettingsCookiesPageTest', function() {
     assertFalse(isChildVisible(page, '#blockAll'));
   });
 
-  test('NetworkPredictionClickRecorded', async function() {
-    page.shadowRoot!.querySelector<HTMLElement>('#networkPrediction')!.click();
+  test('PreloadingClickRecorded', async function() {
+    const linkRow =
+        page.shadowRoot!.querySelector<HTMLElement>('#preloadingLinkRow');
+    assertTrue(!!linkRow);
+    linkRow.click();
+    flush();
+
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.NETWORK_PREDICTION, result);
+    assertEquals(routes.PRELOADING, Router.getInstance().getCurrentRoute());
   });
 
-  test('CookiesRadioClicksRecorded', function() {
-    // TODO(crbug.com/1378703): Add historgram tests.
+  test('PreloadingSubLabel', async function() {
+    assertTrue(isChildVisible(page, '#preloadingLinkRow'));
+    // TODO(crbug.com/1385176): Remove after crbug.com/1385176 is launched.
+    assertFalse(isChildVisible(page, '#preloadingToggle'));
+
+    const preloadingPageLinkRow =
+        page.shadowRoot!.querySelector<CrLinkRowElement>('#preloadingLinkRow');
+    assertTrue(!!preloadingPageLinkRow);
+
+    page.setPrefValue(
+        'net.network_prediction_options', NetworkPredictionOptions.DISABLED);
+    flush();
+    assertEquals(
+        preloadingPageLinkRow.subLabel,
+        page.i18n('preloadingPageNoPreloadingTitle'));
+
+    page.setPrefValue(
+        'net.network_prediction_options', NetworkPredictionOptions.EXTENDED);
+    flush();
+    assertEquals(
+        preloadingPageLinkRow.subLabel,
+        page.i18n('preloadingPageExtendedPreloadingTitle'));
+
+    page.setPrefValue(
+        'net.network_prediction_options', NetworkPredictionOptions.STANDARD);
+    flush();
+    assertEquals(
+        preloadingPageLinkRow.subLabel,
+        page.i18n('preloadingPageStandardPreloadingTitle'));
+
+    // This value is deprecated, and users cannot change their prefs to this
+    // value, but it is still the default value for the pref. It is treated the
+    // as STANDARD and the "Standard preloading" sub label is applied for this
+    // case. See chrome/browser/prefetch/prefetch_prefs.h for more info.
+    page.setPrefValue(
+        'net.network_prediction_options',
+        NetworkPredictionOptions.WIFI_ONLY_DEPRECATED);
+    flush();
+    assertEquals(
+        preloadingPageLinkRow.subLabel,
+        page.i18n('preloadingPageStandardPreloadingTitle'));
+  });
+
+  test('ThirdPartyCookiesRadioClicksRecorded', async function() {
     blockThirdParty().click();
     assertEquals(
         page.getPref('profile.cookie_controls_mode.value'),
         CookieControlsMode.BLOCK_THIRD_PARTY);
+    let result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.THIRD_PARTY_COOKIES_BLOCK, result);
+    testMetricsBrowserProxy.reset();
 
     blockThirdPartyIncognito().click();
     assertEquals(
         page.getPref('profile.cookie_controls_mode.value'),
         CookieControlsMode.INCOGNITO_ONLY);
+    result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(
+        PrivacyElementInteractions.THIRD_PARTY_COOKIES_BLOCK_IN_INCOGNITO,
+        result);
+    testMetricsBrowserProxy.reset();
 
     allowThirdParty().click();
     assertEquals(
         page.getPref('profile.cookie_controls_mode.value'),
         CookieControlsMode.OFF);
+    result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.THIRD_PARTY_COOKIES_ALLOW, result);
+    testMetricsBrowserProxy.reset();
   });
 
-  test('CookieSettingExceptions_Search', async function() {
-    // TODO(crbug.com/1378703): Update after changes to site lists.
+  test('ExceptionsSearch', async function() {
+    await siteSettingsBrowserProxy.whenCalled('getExceptionList');
+    siteSettingsBrowserProxy.resetResolver('getExceptionList');
+
     const exceptionPrefs = createSiteSettingsPrefs([], [
       createContentSettingTypeToValuePair(
           ContentSettingsTypes.COOKIES,
           [
-            createRawSiteException('http://foo-block.com', {
-              embeddingOrigin: '',
-              setting: ContentSetting.BLOCK,
-            }),
-            createRawSiteException('http://foo-allow.com', {
-              embeddingOrigin: '',
-            }),
-            createRawSiteException('http://foo-session.com', {
-              embeddingOrigin: '',
-              setting: ContentSetting.SESSION_ONLY,
+            createRawSiteException(SITE_EXCEPTION_WILDCARD, {
+              embeddingOrigin: 'foo-allow.com',
             }),
           ]),
     ]);
@@ -132,45 +190,42 @@ suite('CrSettingsCookiesPageTest', function() {
     await siteSettingsBrowserProxy.whenCalled('getExceptionList');
     flush();
 
-    const exceptionLists = page.shadowRoot!.querySelectorAll('site-list');
-    assertEquals(exceptionLists.length, 3);
-
-    for (const list of exceptionLists) {
-      assertTrue(isChildVisible(list, 'site-list-entry'));
-    }
+    const exceptionList = page.shadowRoot!.querySelector('site-list');
+    assertTrue(!!exceptionList);
+    assertTrue(isChildVisible(exceptionList, 'site-list-entry'));
 
     page.searchTerm = 'unrelated.com';
     flush();
 
-    for (const list of exceptionLists) {
-      assertFalse(isChildVisible(list, 'site-list-entry'));
-    }
+    assertFalse(isChildVisible(exceptionList, 'site-list-entry'));
   });
 
-  test('ExceptionLists_ReadOnly', function() {
-    // TODO(crbug.com/1378703): Update after changes to site lists.
-    // Check all exception lists are read only when the preference
-    // reports as managed.
+  test('ExceptionListReadOnly', function() {
+    // Check that the exception list is read only when the preference reports as
+    // managed.
     page.set('prefs.generated.cookie_default_content_setting', {
       value: ContentSetting.ALLOW,
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
     });
-    let exceptionLists = page.shadowRoot!.querySelectorAll('site-list');
-    assertEquals(exceptionLists.length, 3);
-    for (const list of exceptionLists) {
-      assertTrue(!!list.readOnlyList);
-    }
+    const exceptionList1 = page.shadowRoot!.querySelector('site-list');
+    assertTrue(!!exceptionList1);
+    assertTrue(!!exceptionList1.readOnlyList);
 
-    // Return preference to unmanaged state and check all exception lists
-    // are no longer read only.
+    // Return preference to unmanaged state and check that the exception list
+    // is no longer read only.
     page.set('prefs.generated.cookie_default_content_setting', {
       value: ContentSetting.ALLOW,
     });
-    exceptionLists = page.shadowRoot!.querySelectorAll('site-list');
-    assertEquals(exceptionLists.length, 3);
-    for (const list of exceptionLists) {
-      assertFalse(!!list.readOnlyList);
-    }
+    const exceptionList2 = page.shadowRoot!.querySelector('site-list');
+    assertTrue(!!exceptionList2);
+    assertFalse(!!exceptionList2.readOnlyList);
+  });
+
+  test('ExceptionListHasCorrectCookieExceptionType', function() {
+    const exceptionList = page.shadowRoot!.querySelector('site-list');
+    assertTrue(!!exceptionList);
+    assertEquals(
+        'third-party', exceptionList.getAttribute('cookies-exception-type'));
   });
 
   test('privacySandboxToast', async function() {
@@ -257,43 +312,8 @@ suite('CrSettingsCookiesPageTest', function() {
     testMetricsBrowserProxy.resetResolver('recordAction');
     assertFalse(page.$.toast.open);
   });
-});
 
-suite('CrSettingsCookiesPageTest_FirstPartySetsUIEnabled', function() {
-  let page: SettingsCookiesPageElement;
-  let settingsPrefs: SettingsPrefsElement;
-
-  function blockThirdParty(): SettingsCollapseRadioButtonElement {
-    return page.shadowRoot!.querySelector('#blockThirdParty')!;
-  }
-
-  function blockThirdPartyIncognito(): SettingsCollapseRadioButtonElement {
-    return page.shadowRoot!.querySelector('#blockThirdPartyIncognito')!;
-  }
-
-  function allowThirdParty(): SettingsCollapseRadioButtonElement {
-    return page.shadowRoot!.querySelector('#allowThirdParty')!;
-  }
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({firstPartySetsUIEnabled: true});
-    settingsPrefs = document.createElement('settings-prefs');
-    return CrSettingsPrefs.initialized;
-  });
-
-  setup(function() {
-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    page = document.createElement('settings-cookies-page');
-    page.prefs = settingsPrefs.prefs!;
-    document.body.appendChild(page);
-    flush();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('Disabled Toggle', function() {
+  test('disabledFPSToggle', function() {
     // Confirm that when the user has not selected the block 3PC setting, the
     // FPS toggle is disabled.
     const firstPartySetsToggle =
@@ -319,10 +339,21 @@ suite('CrSettingsCookiesPageTest_FirstPartySetsUIEnabled', function() {
         page.prefs.profile.cookie_controls_mode.value);
     assertTrue(firstPartySetsToggle.disabled, 'expect toggle to be disabled');
   });
+
+  test('blockThirdPartyIncognitoSecondBulletPointText', function() {
+    // Confirm the correct string is set.
+    const cookiesPageBlockThirdPartyIncognitoBulTwoLabel =
+        page.shadowRoot!
+            .querySelector<HTMLElement>(
+                '#blockThirdPartyIncognitoBulTwo')!.innerText.trim();
+    assertEquals(
+        loadTimeData.getString('cookiePageBlockThirdIncognitoBulTwoFps'),
+        cookiesPageBlockThirdPartyIncognitoBulTwoLabel);
+  });
 });
 
 // TODO(crbug.com/1378703): Remove after crbug/1378703 launched.
-suite('PrivacySandboxSettings4Disabled', function() {
+suite('CrSettingsCookiesPageTest_PrivacySandboxSettings4Disabled', function() {
   let siteSettingsBrowserProxy: TestSiteSettingsPrefsBrowserProxy;
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let page: SettingsCookiesPageElement;
@@ -381,10 +412,15 @@ suite('PrivacySandboxSettings4Disabled', function() {
 
   test('ElementVisibility', async function() {
     await flushTasks();
+    assertFalse(isChildVisible(page, '#explanationText'));
+    assertTrue(isChildVisible(page, '#generalControls'));
     assertTrue(isChildVisible(page, '#exceptionHeader'));
+    assertTrue(isChildVisible(page, '#allowExceptionsList'));
+    assertTrue(isChildVisible(page, '#sessionOnlyExceptionsList'));
+    assertTrue(isChildVisible(page, '#blockExceptionsList'));
     assertTrue(isChildVisible(page, '#clearOnExit'));
     assertTrue(isChildVisible(page, '#doNotTrack'));
-    assertTrue(isChildVisible(page, '#networkPrediction'));
+    assertTrue(isChildVisible(page, '#preloadingLinkRow'));
     assertTrue(isChildVisible(page, '#blockThirdPartyIncognito'));
   });
 
@@ -436,6 +472,11 @@ suite('PrivacySandboxSettings4Disabled', function() {
   });
 
   test('CookieSettingExceptions_Search', async function() {
+    while (siteSettingsBrowserProxy.getCallCount('getExceptionList') < 3) {
+      await flushTasks();
+    }
+    siteSettingsBrowserProxy.resetResolver('getExceptionList');
+
     const exceptionPrefs = createSiteSettingsPrefs([], [
       createContentSettingTypeToValuePair(
           ContentSettingsTypes.COOKIES,
@@ -455,7 +496,9 @@ suite('PrivacySandboxSettings4Disabled', function() {
     ]);
     page.searchTerm = 'foo';
     siteSettingsBrowserProxy.setPrefs(exceptionPrefs);
-    await siteSettingsBrowserProxy.whenCalled('getExceptionList');
+    while (siteSettingsBrowserProxy.getCallCount('getExceptionList') < 3) {
+      await flushTasks();
+    }
     flush();
 
     const exceptionLists = page.shadowRoot!.querySelectorAll('site-list');
@@ -495,6 +538,19 @@ suite('PrivacySandboxSettings4Disabled', function() {
     assertEquals(exceptionLists.length, 3);
     for (const list of exceptionLists) {
       assertFalse(!!list.readOnlyList);
+    }
+  });
+
+  test('ExceptionListsHaveCorrectCookieExceptionType', function() {
+    for (const listId
+             of ['#allowExceptionsList',
+                 '#sessionOnlyExceptionsList',
+                 '#blockExceptionsList',
+    ]) {
+      const exceptionList = page.shadowRoot!.querySelector(listId);
+      assertTrue(!!exceptionList);
+      assertEquals(
+          'combined', exceptionList.getAttribute('cookies-exception-type'));
     }
   });
 
@@ -595,7 +651,95 @@ suite('PrivacySandboxSettings4Disabled', function() {
     testMetricsBrowserProxy.resetResolver('recordAction');
     assertFalse(page.$.toast.open);
   });
+
+  test('blockThirdPartyIncognitoSecondBulletPointText', function() {
+    // Confirm the correct string is set.
+    const cookiesPageBlockThirdPartyIncognitoBulTwoLabel =
+        page.shadowRoot!
+            .querySelector<HTMLElement>(
+                '#cookiesPageBlockThirdPartyIncognitoBulTwo')!.innerText.trim();
+    assertEquals(
+        loadTimeData.getString('cookiePageBlockThirdIncognitoBulTwoFps'),
+        cookiesPageBlockThirdPartyIncognitoBulTwoLabel);
+  });
 });
+
+// TODO(crbug/1349370): Remove after crbug/1349370 is launched.
+suite('CrSettingsCookiesPageTest_FirstPartySetsUIDisabled', function() {
+  let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({firstPartySetsUIEnabled: false});
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-cookies-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+  });
+
+  test('blockThirdPartyIncognitoSecondBulletPointText', function() {
+    // Confirm the correct string is set.
+    const cookiesPageBlockThirdPartyIncognitoBulTwoLabel =
+        page.shadowRoot!
+            .querySelector<HTMLElement>(
+                '#blockThirdPartyIncognitoBulTwo')!.innerText.trim();
+    assertEquals(
+        loadTimeData.getString('thirdPartyCookiesPageBlockIncognitoBulTwo'),
+        cookiesPageBlockThirdPartyIncognitoBulTwoLabel);
+  });
+});
+
+// TODO(crbug/1378703): Remove after crbug/1378703 or crbug/1349370 are
+// launched.
+suite(
+    'CrSettingsCookiesPageTest_PrivacySandboxSettings4Disabled_FirstPartySetsUIDisabled',
+    function() {
+      let page: SettingsCookiesPageElement;
+      let settingsPrefs: SettingsPrefsElement;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          isPrivacySandboxSettings4: false,
+          firstPartySetsUIEnabled: false,
+        });
+        settingsPrefs = document.createElement('settings-prefs');
+        return CrSettingsPrefs.initialized;
+      });
+
+      setup(function() {
+        document.body.innerHTML = window.trustedTypes!.emptyHTML;
+        page = document.createElement('settings-cookies-page');
+        page.prefs = settingsPrefs.prefs!;
+        document.body.appendChild(page);
+        flush();
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('blockThirdPartyIncognitoSecondBulletPointText', function() {
+        // Confirm the correct string is set.
+        const cookiesPageBlockThirdPartyIncognitoBulTwoLabel =
+            page.shadowRoot!
+                .querySelector<HTMLElement>(
+                    '#cookiesPageBlockThirdPartyIncognitoBulTwo')!.innerText
+                .trim();
+        assertEquals(
+            loadTimeData.getString('cookiePageBlockThirdIncognitoBulTwo'),
+            cookiesPageBlockThirdPartyIncognitoBulTwoLabel);
+      });
+    });
 
 // <if expr="chromeos_lacros">
 // TODO(crbug/1378703): Remove after crbug/1378703 launched.
@@ -633,3 +777,45 @@ suite('CrSettingsCookiesPageTest_lacrosSecondaryProfile', function() {
   });
 });
 // </if>
+
+// TODO(crbug.com/1385176): Remove after crbug.com/1385176 is launched.
+suite('PreloadingDesktopSettingsSubPageDisabled', function() {
+  let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+  let testMetricsBrowserProxy: TestMetricsBrowserProxy;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      showPreloadingSubPage: false,
+    });
+
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
+
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-cookies-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    flush();
+  });
+
+  test('NetworkPredictionClickRecorded', async function() {
+    const preloadingToggle =
+        page.shadowRoot!.querySelector<HTMLElement>('#preloadingToggle');
+    assertTrue(!!preloadingToggle);
+    preloadingToggle.click();
+    const result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.NETWORK_PREDICTION, result);
+  });
+
+  test('PreloadingToggleShown', function() {
+    assertTrue(isChildVisible(page, '#preloadingToggle'));
+    assertFalse(isChildVisible(page, '#preloadingLinkRow'));
+  });
+});

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/connectors_internals/connectors_internals_ui.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,10 +23,9 @@ namespace enterprise_connectors {
 
 ConnectorsInternalsUI::ConnectorsInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUIConnectorsInternalsHost);
-
   Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIConnectorsInternalsHost);
 
   source->AddBoolean("isOtr", profile->IsOffTheRecord());
   source->AddBoolean("deviceTrustConnectorEnabled",
@@ -43,8 +42,6 @@ ConnectorsInternalsUI::ConnectorsInternalsUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::TrustedTypes,
       "trusted-types static-types;");
-
-  content::WebUIDataSource::Add(profile, source);
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(ConnectorsInternalsUI)

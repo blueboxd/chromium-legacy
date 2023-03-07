@@ -7,12 +7,12 @@
 #include <unistd.h>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "remoting/base/file_path_util_linux.h"
@@ -140,8 +139,7 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
     return DaemonController::STATE_NOT_IMPLEMENTED;
   } else {
     LOG(ERROR) << "Unknown status string returned from  \""
-               << command_line.GetCommandLineString()
-               << "\": " << status;
+               << command_line.GetCommandLineString() << "\": " << status;
     return DaemonController::STATE_UNKNOWN;
   }
 }
@@ -149,8 +147,9 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
 absl::optional<base::Value::Dict> DaemonControllerDelegateLinux::GetConfig() {
   absl::optional<base::Value::Dict> host_config(
       HostConfigFromJsonFile(GetConfigPath()));
-  if (!host_config.has_value())
+  if (!host_config.has_value()) {
     return absl::nullopt;
+  }
 
   base::Value::Dict result;
   std::string* value = host_config->FindString(kHostIdConfigPath);
@@ -236,8 +235,9 @@ void DaemonControllerDelegateLinux::UpdateConfig(
   std::vector<std::string> args = {"--reload",
                                    "--config=" + GetConfigPath().value()};
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
-  if (RunHostScript(args))
+  if (RunHostScript(args)) {
     result = DaemonController::RESULT_OK;
+  }
 
   std::move(done).Run(result);
 }
@@ -247,8 +247,9 @@ void DaemonControllerDelegateLinux::Stop(
   std::vector<std::string> args = {"--stop",
                                    "--config=" + GetConfigPath().value()};
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
-  if (RunHostScript(args))
+  if (RunHostScript(args)) {
     result = DaemonController::RESULT_OK;
+  }
 
   std::move(done).Run(result);
 }

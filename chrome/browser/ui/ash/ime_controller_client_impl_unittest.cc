@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ime_info.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -245,7 +245,7 @@ TEST_F(ImeControllerClientImplTest, ShowImeMenuOnShelf) {
 TEST_F(ImeControllerClientImplTest, InputMethodChanged) {
   auto mock_candidate_window =
       std::make_unique<ash::MockIMECandidateWindowHandler>();
-  ui::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  ash::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
   ImeControllerClientImpl client(&input_method_manager_);
   client.Init();

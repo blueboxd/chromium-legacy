@@ -7,9 +7,9 @@
 #include <queue>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -225,9 +225,9 @@ class MockAsyncSharedStorageDatabase : public AsyncSharedStorageDatabase {
   void PurgeStale(base::OnceCallback<void(OperationResult)> callback) override {
     Run(std::move(callback));
   }
-  void FetchOrigins(base::OnceCallback<
-                        void(std::vector<mojom::StorageUsageInfoPtr>)> callback,
-                    bool exclude_empty_origins = true) override {
+  void FetchOrigins(
+      base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
+          callback) override {
     Run(std::move(callback));
   }
   void MakeBudgetWithdrawal(
@@ -252,6 +252,11 @@ class MockAsyncSharedStorageDatabase : public AsyncSharedStorageDatabase {
   void GetEntriesForDevTools(
       url::Origin context_origin,
       base::OnceCallback<void(EntriesResult)> callback) override {
+    Run(std::move(callback));
+  }
+  void ResetBudgetForDevTools(
+      url::Origin context_origin,
+      base::OnceCallback<void(OperationResult)> callback) override {
     Run(std::move(callback));
   }
 
@@ -679,25 +684,20 @@ class SharedStorageManagerTest : public testing::Test {
     return future.Get();
   }
 
-  void FetchOrigins(std::vector<mojom::StorageUsageInfoPtr>* out_result,
-                    bool exclude_empty_origins = true) {
+  void FetchOrigins(std::vector<mojom::StorageUsageInfoPtr>* out_result) {
     DCHECK(out_result);
     DCHECK(GetManager());
     DCHECK(receiver_);
 
     auto callback = receiver_->MakeInfosCallback(
-        DBOperation(Type::DB_FETCH_ORIGINS,
-                    {TestDatabaseOperationReceiver::SerializeBool(
-                        exclude_empty_origins)}),
-        out_result);
-    GetManager()->FetchOrigins(std::move(callback), exclude_empty_origins);
+        DBOperation(Type::DB_FETCH_ORIGINS), out_result);
+    GetManager()->FetchOrigins(std::move(callback));
   }
 
-  std::vector<mojom::StorageUsageInfoPtr> FetchOriginsSync(
-      bool exclude_empty_origins = true) {
+  std::vector<mojom::StorageUsageInfoPtr> FetchOriginsSync() {
     DCHECK(GetManager());
     base::test::TestFuture<std::vector<mojom::StorageUsageInfoPtr>> future;
-    GetManager()->FetchOrigins(future.GetCallback(), exclude_empty_origins);
+    GetManager()->FetchOrigins(future.GetCallback());
     return future.Take();
   }
 
@@ -817,6 +817,16 @@ class SharedStorageManagerTest : public testing::Test {
     GetManager()->GetEntriesForDevTools(std::move(context_origin),
                                         future.GetCallback());
     return future.Take();
+  }
+
+  OperationResult ResetBudgetForDevToolsSync(
+      const url::Origin& context_origin) {
+    DCHECK(GetManager());
+
+    base::test::TestFuture<OperationResult> future;
+    GetManager()->ResetBudgetForDevTools(std::move(context_origin),
+                                         future.GetCallback());
+    return future.Get();
   }
 
  protected:
@@ -1506,6 +1516,30 @@ TEST_P(SharedStorageManagerParamTest, SyncMakeBudgetWithdrawal) {
   EXPECT_EQ(1, GetTotalNumBudgetEntriesSync());
 }
 
+TEST_P(SharedStorageManagerParamTest, ResetBudgetForDevTools) {
+  // There should be no entries in the budget table.
+  EXPECT_EQ(0, GetTotalNumBudgetEntriesSync());
+
+  // SQL database hasn't yet been lazy-initialized. Nevertheless, remaining
+  // budgets should be returned as the max possible.
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("http://www.example1.test"));
+  EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin1).bits);
+
+  // Make withdrawal.
+  EXPECT_EQ(OperationResult::kSuccess,
+            MakeBudgetWithdrawalSync(kOrigin1, 1.75));
+  EXPECT_DOUBLE_EQ(kBitBudget - 1.75, GetRemainingBudgetSync(kOrigin1).bits);
+  EXPECT_EQ(1, GetNumBudgetEntriesSync(kOrigin1));
+  EXPECT_EQ(1, GetTotalNumBudgetEntriesSync());
+
+  // Reset budget.
+  EXPECT_EQ(OperationResult::kSuccess, ResetBudgetForDevToolsSync(kOrigin1));
+  EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin1).bits);
+  EXPECT_EQ(0, GetNumBudgetEntriesSync(kOrigin1));
+  EXPECT_EQ(0, GetTotalNumBudgetEntriesSync());
+}
+
 class SharedStorageManagerErrorParamTest
     : public SharedStorageManagerTest,
       public testing::WithParamInterface<SharedStorageWrappedBool> {
@@ -1902,9 +1936,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
   url::Origin kOrigin5 = url::Origin::Create(GURL("http://www.example5.test"));
 
   std::queue<DBOperation> operation_list;
-  operation_list.push(
-      DBOperation(Type::DB_FETCH_ORIGINS,
-                  {TestDatabaseOperationReceiver::SerializeBool(true)}));
+  operation_list.push(DBOperation(Type::DB_FETCH_ORIGINS));
 
   base::Time threshold1 = base::Time::Now();
   StorageKeyPolicyMatcherFunctionUtility matcher_utility;
@@ -1984,9 +2016,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
                        SetBehavior::kDefault)}));
   operation_list.push(DBOperation(Type::DB_LENGTH, kOrigin5));
 
-  operation_list.push(
-      DBOperation(Type::DB_FETCH_ORIGINS,
-                  {TestDatabaseOperationReceiver::SerializeBool(true)}));
+  operation_list.push(DBOperation(Type::DB_FETCH_ORIGINS));
 
   base::Time threshold2 = base::Time::Now() + base::Days(1);
   base::Time override_time1 = threshold2 + base::Milliseconds(5);
@@ -2010,9 +2040,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
   operation_list.push(DBOperation(Type::DB_LENGTH, kOrigin4));
   operation_list.push(DBOperation(Type::DB_LENGTH, kOrigin5));
 
-  operation_list.push(
-      DBOperation(Type::DB_FETCH_ORIGINS,
-                  {TestDatabaseOperationReceiver::SerializeBool(true)}));
+  operation_list.push(DBOperation(Type::DB_FETCH_ORIGINS));
 
   base::Time threshold3 = threshold2 + base::Days(1);
   operation_list.push(
@@ -2045,9 +2073,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
                   {TestDatabaseOperationReceiver::SerializeMemoryPressureLevel(
                       MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL)}));
 
-  operation_list.push(
-      DBOperation(Type::DB_FETCH_ORIGINS,
-                  {TestDatabaseOperationReceiver::SerializeBool(true)}));
+  operation_list.push(DBOperation(Type::DB_FETCH_ORIGINS));
 
   operation_list.push(DBOperation(Type::DB_GET, kOrigin2, {u"key1"}));
   operation_list.push(DBOperation(Type::DB_GET, kOrigin4, {u"key1"}));

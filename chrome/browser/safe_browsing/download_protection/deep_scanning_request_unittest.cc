@@ -6,12 +6,12 @@
 
 #include <unordered_map>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -291,16 +291,6 @@ class DeepScanningRequestTest : public testing::Test {
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
-  void EnableAllFeatures() {
-    SetFeatures({enterprise_connectors::kEnterpriseConnectorsEnabled},
-                {enterprise_connectors::kSafeBrowsingRealtimeReporting});
-  }
-
-  void DisableAllFeatures() {
-    SetFeatures({}, {enterprise_connectors::kSafeBrowsingRealtimeReporting,
-                     enterprise_connectors::kEnterpriseConnectorsEnabled});
-  }
-
   void ValidateDefaultSettings(
       const absl::optional<enterprise_connectors::AnalysisSettings>& settings) {
     ASSERT_TRUE(settings.has_value());
@@ -365,23 +355,10 @@ class DeepScanningRequestTest : public testing::Test {
   DownloadCheckResult last_result_;
 };
 
-class DeepScanningRequestFeaturesEnabledTest
-    : public DeepScanningRequestTest,
-      public testing::WithParamInterface<bool> {
- public:
-  DeepScanningRequestFeaturesEnabledTest() {
-    if (GetParam())
-      EnableAllFeatures();
-    else
-      DisableAllFeatures();
-  }
+class DeepScanningRequestFeaturesEnabledTest : public DeepScanningRequestTest {
 };
 
-INSTANTIATE_TEST_SUITE_P(,
-                         DeepScanningRequestFeaturesEnabledTest,
-                         testing::Bool());
-
-TEST_P(DeepScanningRequestFeaturesEnabledTest, ChecksFeatureFlags) {
+TEST_F(DeepScanningRequestFeaturesEnabledTest, ChecksFeatureFlags) {
   SetAnalysisConnector(profile_->GetPrefs(),
                        enterprise_connectors::FILE_DOWNLOADED,
                        kScanForDlpAndMalware);
@@ -433,10 +410,7 @@ TEST_P(DeepScanningRequestFeaturesEnabledTest, ChecksFeatureFlags) {
 }
 
 class DeepScanningRequestAllFeaturesEnabledTest
-    : public DeepScanningRequestTest {
- public:
-  DeepScanningRequestAllFeaturesEnabledTest() { EnableAllFeatures(); }
-};
+    : public DeepScanningRequestTest {};
 
 TEST_F(DeepScanningRequestAllFeaturesEnabledTest,
        GeneratesCorrectRequestFromPolicy) {
@@ -565,20 +539,9 @@ TEST_F(DeepScanningRequestAllFeaturesEnabledTest,
   }
 }
 
-class DeepScanningAPPRequestTest : public DeepScanningRequestTest,
-                                   public testing::WithParamInterface<bool> {
- public:
-  DeepScanningAPPRequestTest() {
-    // APP requests should be correct even when the Connectors feature is
-    // disabled.
-    if (GetParam())
-      DisableAllFeatures();
-  }
-};
+class DeepScanningAPPRequestTest : public DeepScanningRequestTest {};
 
-INSTANTIATE_TEST_SUITE_P(, DeepScanningAPPRequestTest, testing::Bool());
-
-TEST_P(DeepScanningAPPRequestTest, GeneratesCorrectRequestForAPP) {
+TEST_F(DeepScanningAPPRequestTest, GeneratesCorrectRequestForAPP) {
   enterprise_connectors::AnalysisSettings settings;
   settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
   DeepScanningRequest request(
@@ -602,8 +565,6 @@ TEST_P(DeepScanningAPPRequestTest, GeneratesCorrectRequestForAPP) {
 
 class DeepScanningReportingTest : public DeepScanningRequestTest {
  public:
-  DeepScanningReportingTest() { EnableAllFeatures(); }
-
   void SetUp() override {
     DeepScanningRequestTest::SetUp();
 
@@ -630,7 +591,7 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKeyForTest, "fake_serial_number");
+        ash::system::kSerialNumberKeyForTest, "fake_serial_number");
 #endif
 
     SetAnalysisConnector(profile_->GetPrefs(),
@@ -649,7 +610,7 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
   signin::IdentityTestEnvironment identity_test_environment_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 #endif
 };
 
@@ -1734,14 +1695,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
 }
 
 class DeepScanningRequestConnectorsFeatureTest
-    : public DeepScanningRequestTest {
- public:
-  DeepScanningRequestConnectorsFeatureTest() {
-    SetFeatures(
-        /*enabled*/ {enterprise_connectors::kEnterpriseConnectorsEnabled},
-        /*disabled*/ {});
-  }
-};
+    : public DeepScanningRequestTest {};
 
 TEST_F(DeepScanningRequestConnectorsFeatureTest,
        ShouldUploadBinary_MalwareListPolicy) {

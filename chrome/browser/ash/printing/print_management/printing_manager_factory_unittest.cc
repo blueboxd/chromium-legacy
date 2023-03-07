@@ -6,8 +6,8 @@
 
 #include "chrome/browser/ash/printing/print_management/printing_manager.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +61,7 @@ TEST(PrintingManagerFactoryTest, OffTheRecordProfileHasService) {
 TEST(PrintingManagerFactoryTest, SigninProfileNoService) {
   content::BrowserTaskEnvironment task_environment;
   std::unique_ptr<Profile> signin_profile =
-      CreateProfile(chrome::kInitialProfile);
+      CreateProfile(ash::kSigninBrowserContextBaseName);
 
   EXPECT_EQ(nullptr,
             PrintingManagerFactory::GetForProfile(signin_profile.get()));
@@ -70,7 +70,7 @@ TEST(PrintingManagerFactoryTest, SigninProfileNoService) {
 TEST(PrintingManagerFactoryTest, LockScreenProfileNoService) {
   content::BrowserTaskEnvironment task_environment;
   std::unique_ptr<Profile> lockscreen_profile =
-      CreateProfile(chrome::kLockScreenAppProfile);
+      CreateProfile(ash::kLockScreenAppBrowserContextBaseName);
 
   EXPECT_EQ(nullptr,
             PrintingManagerFactory::GetForProfile(lockscreen_profile.get()));

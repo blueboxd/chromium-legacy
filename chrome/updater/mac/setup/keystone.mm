@@ -7,11 +7,11 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -104,6 +104,11 @@ bool CopyKeystoneBundle(UpdaterScope scope) {
                << "' to '" << dest_keystone_bundle_path.value() << "' failed.";
     return false;
   }
+
+  if (!RemoveQuarantineAttributes(dest_keystone_bundle_path)) {
+    VLOG(1) << "Couldn't remove quarantine bits for Keystone.";
+  }
+
   return true;
 }
 

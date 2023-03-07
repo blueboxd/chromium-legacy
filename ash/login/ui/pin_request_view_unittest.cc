@@ -22,8 +22,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
@@ -67,8 +67,9 @@ class PinRequestViewTest : public LoginTestBase,
 
     // If the test did not explicitly dismissed the widget, destroy it now.
     PinRequestWidget* pin_request_widget = PinRequestWidget::Get();
-    if (pin_request_widget)
+    if (pin_request_widget) {
       pin_request_widget->Close(false /* validation success */);
+    }
   }
 
   PinRequestView::SubmissionResult OnPinSubmitted(

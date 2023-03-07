@@ -1,0 +1,36 @@
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../tools/build_cr_component.gni")
+
+assert(!is_android && !is_ios)
+
+build_cr_component("build") {
+  grd_prefix = "cr_components_omnibox"
+  web_component_files = [
+    "realbox_action.ts",
+    "realbox_dropdown.ts",
+    "realbox_icon.ts",
+    "realbox_match.ts",
+  ]
+  non_web_component_files = [
+    "realbox_browser_proxy.ts",
+    "utils.ts",
+  ]
+  css_files = [ "realbox_dropdown_shared_style.css" ]
+
+  mojo_files_deps =
+      [ "//components/omnibox/browser:mojo_bindings_ts__generator" ]
+  mojo_files =
+      [ "$root_gen_dir/components/omnibox/browser/omnibox.mojom-webui.ts" ]
+
+  tsc_dir =
+      "$root_gen_dir/ui/webui/resources/preprocessed/cr_components/omnibox"
+  ts_deps = [
+    "//third_party/polymer/v3_0:library",
+    "//ui/webui/resources:library",
+    "//ui/webui/resources/js/metrics_reporter:build_ts",
+    "//ui/webui/resources/mojo:library",
+  ]
+}

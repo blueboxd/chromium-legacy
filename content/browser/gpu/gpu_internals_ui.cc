@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/environment.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -653,11 +653,12 @@ base::Value::List GetVideoAcceleratorsInfo() {
     std::string codec_string =
         base::StringPrintf("Encode %s", GetProfileName(profile.profile));
     std::string resolution_string = base::StringPrintf(
-        "%s to %s pixels, and/or %.3f fps",
+        "%s to %s pixels, and/or %.3f fps%s.",
         profile.min_resolution.ToString().c_str(),
         profile.max_resolution.ToString().c_str(),
         static_cast<double>(profile.max_framerate_numerator) /
-            profile.max_framerate_denominator);
+            profile.max_framerate_denominator,
+        profile.is_software_codec ? " (software codec)" : "");
     info.Append(display::BuildGpuInfoEntry(codec_string, resolution_string));
   }
   return info;

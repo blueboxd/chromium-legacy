@@ -4,7 +4,7 @@
 
 #include "chromeos/ash/services/libassistant/test_support/fake_assistant_client.h"
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/test/bind.h"
 #include "chromeos/ash/services/libassistant/grpc/utils/timer_utils.h"
 #include "chromeos/ash/services/libassistant/public/cpp/assistant_timer.h"
@@ -83,9 +83,6 @@ void FakeAssistantClient::SendVoicelessInteraction(
 
 void FakeAssistantClient::RegisterActionModule(
     assistant_client::ActionModule* action_module) {}
-
-void FakeAssistantClient::SendScreenContextRequest(
-    const std::vector<std::string>& context_protos) {}
 
 void FakeAssistantClient::StartVoiceInteraction() {}
 

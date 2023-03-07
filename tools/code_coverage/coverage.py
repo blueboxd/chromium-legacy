@@ -35,8 +35,12 @@
   vpython3 tools/code_coverage/coverage.py unit_tests -b out/coverage \\
       -o out/report -c 'python testing/xvfb.py out/coverage/unit_tests'
 
-  If you are building a fuzz target, you need to add "use_libfuzzer=true" GN
-  flag as well.
+  If you are building a fuzz target, in addition to "use_clang_coverage=true"
+  and "is_component_build=false", you must have the following GN flags as well:
+    optimize_for_fuzzing=false
+    use_remoteexec=false
+    is_asan=false (ASAN & other sanitizers are incompatible with coverage)
+    use_libfuzzer=true
 
   * Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
 
@@ -70,6 +74,7 @@ from __future__ import print_function
 import sys
 
 import argparse
+import glob
 import json
 import logging
 import multiprocessing
@@ -460,7 +465,17 @@ def _SplitCommand(command):
   """Split a command string into parts in a platform-specific way."""
   if coverage_utils.GetHostPlatform() == 'win':
     return command.split()
-  return shlex.split(command)
+  split_command = shlex.split(command)
+  # Python's subprocess does not do glob expansion, so we expand it out here.
+  new_command = []
+  for item in split_command:
+    if '*' in item:
+      files = glob.glob(item)
+      for file in files:
+        new_command.append(file)
+    else:
+      new_command.append(item)
+  return new_command
 
 
 def _ExecuteCommand(target, command, output_file_path):

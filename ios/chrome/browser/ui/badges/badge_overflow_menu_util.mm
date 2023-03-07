@@ -6,7 +6,6 @@
 
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badges_histograms.h"
@@ -28,12 +27,7 @@ UIImage* GetPasswordImage() {
     return CustomSymbolTemplateWithPointSize(kPasswordSymbol,
                                              kInfobarSymbolPointSize);
   } else {
-    NSString* passwordImageName =
-        base::FeatureList::IsEnabled(
-            password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)
-            ? @"password_key"
-            : @"legacy_password_key";
-    return [[UIImage imageNamed:passwordImageName]
+    return [[UIImage imageNamed:@"password_key"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   }
 }
@@ -90,14 +84,6 @@ UIAction* GetOverflowMenuElementForBadgeType(
                                                        kInfobarSymbolPointSize)
                            : [UIImage imageNamed:@"infobar_translate_icon"];
       image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-      break;
-    case kBadgeTypeAddToReadingList:
-      action_identifier = kBadgeButtonReadingListActionIdentifier;
-      title = l10n_util::GetNSString(IDS_IOS_READING_LIST_MESSAGES_MODAL_TITLE);
-      image = UseSymbols() ? DefaultSymbolWithPointSize(kReadLaterActionSymbol,
-                                                        kInfobarSymbolPointSize)
-                           : [UIImage imageNamed:@"infobar_reading_list"];
-      histogram_type = MobileMessagesInfobarType::Translate;
       break;
     case kBadgeTypePermissionsCamera:
       action_identifier = kBadgeButtonPermissionsActionIdentifier;

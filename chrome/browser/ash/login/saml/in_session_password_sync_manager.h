@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/time/clock.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,7 +30,6 @@ namespace ash {
 
 class AuthSessionAuthenticator;
 class AuthenticationError;
-class ExtendedAuthenticator;
 class PasswordUpdateFlow;
 
 using PasswordChangedCallback = ::base::RepeatingClosure;
@@ -129,7 +128,6 @@ class InSessionPasswordSyncManager
   std::unique_ptr<PasswordSyncTokenFetcher> password_sync_token_fetcher_;
 
   // Used to authenticate the user.
-  scoped_refptr<ExtendedAuthenticator> extended_authenticator_;
   scoped_refptr<AuthSessionAuthenticator> auth_session_authenticator_;
   std::unique_ptr<PasswordUpdateFlow> password_update_flow_;
 

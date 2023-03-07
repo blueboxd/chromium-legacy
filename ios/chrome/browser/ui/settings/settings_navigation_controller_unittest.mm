@@ -8,7 +8,7 @@
 
 #import <memory>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/test/metrics/user_action_tester.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
@@ -23,6 +23,8 @@
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -54,20 +56,23 @@ class SettingsNavigationControllerTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        IOSChromePasswordStoreFactory::GetInstance(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<
+                web::BrowserState, password_manager::TestPasswordStore>));
     chrome_browser_state_ = test_cbs_builder.Build();
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
+    browser_state_ = TestChromeBrowserState::Builder().Build();
+
+    scene_state_ = [[SceneState alloc] initWithAppState:nil];
+    SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
     mockDelegate_ = [OCMockObject
         niceMockForProtocol:@protocol(SettingsNavigationControllerDelegate)];
-
-    IOSChromePasswordStoreFactory::GetInstance()->SetTestingFactory(
-        browser_->GetBrowserState(),
-        base::BindRepeating(
-            &password_manager::BuildPasswordStore<
-                web::BrowserState, password_manager::TestPasswordStore>));
 
     TemplateURLService* template_url_service =
         ios::TemplateURLServiceFactory::GetForBrowserState(
@@ -95,8 +100,10 @@ class SettingsNavigationControllerTest : public PlatformTest {
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
   id mockDelegate_;
   NSString* initialValueForSpdyProxyEnabled_;
+  SceneState* scene_state_;
 };
 
 // When navigation stack has more than one view controller,

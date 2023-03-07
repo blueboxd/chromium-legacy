@@ -9,9 +9,9 @@
 #include <string>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -269,7 +269,7 @@ class WebAppIconManagerTest : public WebAppTest {
 
   WebAppRegistrar& registrar() { return provider().registrar_unsafe(); }
   WebAppInstallManager& install_manager() { return *install_manager_; }
-  WebAppSyncBridge& sync_bridge() { return provider().sync_bridge(); }
+  WebAppSyncBridge& sync_bridge() { return provider().sync_bridge_unsafe(); }
   WebAppIconManager& icon_manager() { return *icon_manager_; }
   TestFileUtils& file_utils() {
     DCHECK(file_utils_);
@@ -686,6 +686,59 @@ TEST_F(WebAppIconManagerTest, ReadAllIconsLastUpdateTime) {
   EXPECT_EQ(2u, time_data_map.size());
   EXPECT_FALSE(time_data_map[sizes_px[0]].is_null());
   EXPECT_FALSE(time_data_map[sizes_px[1]].is_null());
+}
+
+TEST_F(WebAppIconManagerTest, ReadAllShortcutMenuIconsWithTimestamp) {
+  auto web_app = test::CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const int num_menu_items = 2;
+
+  const std::vector<int> sizes = {icon_size::k64, icon_size::k128};
+  const std::vector<SkColor> colors = {SK_ColorRED, SK_ColorRED};
+
+  WriteGeneratedShortcutsMenuIcons(app_id,
+                                   {{IconPurpose::ANY, sizes, colors},
+                                    {IconPurpose::MASKABLE, sizes, colors},
+                                    {IconPurpose::MONOCHROME, sizes, colors}},
+                                   num_menu_items);
+  web_app->SetDownloadedShortcutsMenuIconsSizes(
+      CreateDownloadedShortcutsMenuIconsSizes(sizes, sizes, sizes,
+                                              num_menu_items));
+
+  AddAppToRegistry(std::move(web_app));
+
+  WebAppIconManager::ShortcutIconDataVector time_data_map;
+  base::test::TestFuture<WebAppIconManager::ShortcutIconDataVector> future;
+  {
+    icon_manager().ReadAllShortcutMenuIconsWithTimestamp(app_id,
+                                                         future.GetCallback());
+    time_data_map = future.Get();
+  }
+
+  ASSERT_THAT(time_data_map.size(), num_menu_items);
+
+  ASSERT_FALSE(time_data_map[0][IconPurpose::ANY][icon_size::k64].is_null());
+  ASSERT_FALSE(time_data_map[0][IconPurpose::ANY][icon_size::k128].is_null());
+  ASSERT_FALSE(
+      time_data_map[0][IconPurpose::MASKABLE][icon_size::k64].is_null());
+  ASSERT_FALSE(
+      time_data_map[0][IconPurpose::MASKABLE][icon_size::k128].is_null());
+  ASSERT_FALSE(
+      time_data_map[0][IconPurpose::MONOCHROME][icon_size::k64].is_null());
+  ASSERT_FALSE(
+      time_data_map[0][IconPurpose::MONOCHROME][icon_size::k128].is_null());
+
+  ASSERT_FALSE(time_data_map[1][IconPurpose::ANY][icon_size::k64].is_null());
+  ASSERT_FALSE(time_data_map[1][IconPurpose::ANY][icon_size::k128].is_null());
+  ASSERT_FALSE(
+      time_data_map[1][IconPurpose::MASKABLE][icon_size::k64].is_null());
+  ASSERT_FALSE(
+      time_data_map[1][IconPurpose::MASKABLE][icon_size::k128].is_null());
+  ASSERT_FALSE(
+      time_data_map[1][IconPurpose::MONOCHROME][icon_size::k64].is_null());
+  ASSERT_FALSE(
+      time_data_map[1][IconPurpose::MONOCHROME][icon_size::k128].is_null());
 }
 
 TEST_F(WebAppIconManagerTest, ReadAllIcons_AnyAndMaskable) {

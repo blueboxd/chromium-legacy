@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
@@ -61,13 +61,12 @@ class AttributionSimulatorInputParser {
   AttributionSimulatorInputParser& operator=(
       AttributionSimulatorInputParser&&) = delete;
 
-  absl::optional<AttributionSimulationEventAndValues> Parse(
-      base::Value input) && {
+  absl::optional<AttributionSimulationEvents> Parse(base::Value input) && {
     if (!EnsureDictionary(input))
       return absl::nullopt;
 
     static constexpr char kKeyCookies[] = "cookies";
-    if (base::Value* cookies = input.FindKey(kKeyCookies)) {
+    if (base::Value* cookies = input.GetDict().Find(kKeyCookies)) {
       auto context = PushContext(kKeyCookies);
       ParseList(
           std::move(*cookies),
@@ -76,7 +75,7 @@ class AttributionSimulatorInputParser {
     }
 
     static constexpr char kKeyDataClears[] = "data_clears";
-    if (base::Value* data_clears = input.FindKey(kKeyDataClears)) {
+    if (base::Value* data_clears = input.GetDict().Find(kKeyDataClears)) {
       auto context = PushContext(kKeyDataClears);
       ParseList(
           std::move(*data_clears),
@@ -85,7 +84,7 @@ class AttributionSimulatorInputParser {
     }
 
     static constexpr char kKeySources[] = "sources";
-    if (base::Value* sources = input.FindKey(kKeySources)) {
+    if (base::Value* sources = input.GetDict().Find(kKeySources)) {
       auto context = PushContext(kKeySources);
       ParseList(
           std::move(*sources),
@@ -94,7 +93,7 @@ class AttributionSimulatorInputParser {
     }
 
     static constexpr char kKeyTriggers[] = "triggers";
-    if (base::Value* triggers = input.FindKey(kKeyTriggers)) {
+    if (base::Value* triggers = input.GetDict().Find(kKeyTriggers)) {
       auto context = PushContext(kKeyTriggers);
       ParseList(
           std::move(*triggers),
@@ -112,7 +111,7 @@ class AttributionSimulatorInputParser {
   const base::Time offset_time_;
   AttributionParserErrorManager error_manager_;
 
-  std::vector<AttributionSimulationEventAndValue> events_;
+  std::vector<AttributionSimulationEvent> events_;
 
   [[nodiscard]] std::unique_ptr<AttributionParserErrorManager::ScopedContext>
   PushContext(AttributionParserErrorManager::Context context) {
@@ -178,12 +177,10 @@ class AttributionSimulatorInputParser {
     if (has_error())
       return;
 
-    events_.emplace_back(
-        AttributionSimulatorCookie{
-            .cookie = std::move(*canonical_cookie),
-            .source_url = std::move(url),
-        },
-        std::move(cookie));
+    events_.push_back(AttributionSimulatorCookie{
+        .cookie = std::move(*canonical_cookie),
+        .source_url = std::move(url),
+    });
   }
 
   void ParseDataClear(base::Value&& data_clear) {
@@ -221,19 +218,22 @@ class AttributionSimulatorInputParser {
           }));
     }
 
+    bool delete_rate_limit_data =
+        ParseBool(dict, "delete_rate_limit_data").value_or(true);
+
     if (has_error())
       return;
 
-    events_.emplace_back(AttributionDataClear(time, delete_begin, delete_end,
-                                              std::move(origin_set)),
-                         std::move(data_clear));
+    events_.push_back(AttributionDataClear(time, delete_begin, delete_end,
+                                           std::move(origin_set),
+                                           delete_rate_limit_data));
   }
 
   void ParseSource(base::Value&& source) {
     if (!EnsureDictionary(source))
       return;
 
-    const base::Value::Dict& source_dict = source.GetDict();
+    base::Value::Dict& source_dict = source.GetDict();
 
     base::Time source_time = ParseTime(source_dict, kTimestampKey);
     absl::optional<SuitableOrigin> source_origin =
@@ -248,11 +248,11 @@ class AttributionSimulatorInputParser {
 
     ParseAttributionEvent(
         source_dict, "Attribution-Reporting-Register-Source",
-        base::BindLambdaForTesting([&](const base::Value::Dict& dict) {
+        base::BindLambdaForTesting([&](base::Value::Dict dict) {
           base::expected<StorableSource,
                          attribution_reporting::mojom::SourceRegistrationError>
               storable_source = ParseSourceRegistration(
-                  dict.Clone(), source_time, std::move(*reporting_origin),
+                  std::move(dict), source_time, std::move(*reporting_origin),
                   std::move(*source_origin), *source_type,
                   /*is_within_fenced_frame=*/false);
 
@@ -261,7 +261,7 @@ class AttributionSimulatorInputParser {
             return;
           }
 
-          events_.emplace_back(std::move(*storable_source), std::move(source));
+          events_.push_back(std::move(*storable_source));
         }));
   }
 
@@ -269,7 +269,7 @@ class AttributionSimulatorInputParser {
     if (!EnsureDictionary(trigger))
       return;
 
-    const base::Value::Dict& trigger_dict = trigger.GetDict();
+    base::Value::Dict& trigger_dict = trigger.GetDict();
 
     base::Time trigger_time = ParseTime(trigger_dict, kTimestampKey);
     absl::optional<SuitableOrigin> reporting_origin =
@@ -282,24 +282,23 @@ class AttributionSimulatorInputParser {
 
     ParseAttributionEvent(
         trigger_dict, "Attribution-Reporting-Register-Trigger",
-        base::BindLambdaForTesting([&](const base::Value::Dict& dict) {
+        base::BindLambdaForTesting([&](base::Value::Dict dict) {
           auto trigger_registration =
-              attribution_reporting::TriggerRegistration::Parse(dict.Clone());
+              attribution_reporting::TriggerRegistration::Parse(
+                  std::move(dict));
           if (!trigger_registration.has_value()) {
             *Error() << trigger_registration.error();
             return;
           }
 
-          events_.emplace_back(
-              AttributionTriggerAndTime{
-                  .trigger =
-                      AttributionTrigger(std::move(*reporting_origin),
-                                         std::move(*trigger_registration),
-                                         std::move(*destination_origin),
-                                         /*is_within_fenced_frame=*/false),
-                  .time = trigger_time,
-              },
-              std::move(trigger));
+          events_.push_back(AttributionTriggerAndTime{
+              .trigger = AttributionTrigger(std::move(*reporting_origin),
+                                            std::move(*trigger_registration),
+                                            std::move(*destination_origin),
+                                            /*attestation=*/absl::nullopt,
+                                            /*is_within_fenced_frame=*/false),
+              .time = trigger_time,
+          });
         }));
   }
 
@@ -341,6 +340,23 @@ class AttributionSimulatorInputParser {
     return base::Time();
   }
 
+  absl::optional<bool> ParseBool(const base::Value::Dict& dict,
+                                 base::StringPiece key) {
+    auto context = PushContext(key);
+
+    const base::Value* v = dict.Find(key);
+    if (!v) {
+      return absl::nullopt;
+    }
+
+    if (!v->is_bool()) {
+      *Error() << "must be a bool";
+      return absl::nullopt;
+    }
+
+    return v->GetBool();
+  }
+
   absl::optional<AttributionSourceType> ParseSourceType(
       const base::Value::Dict& dict) {
     static constexpr char kKey[] = "source_type";
@@ -368,12 +384,12 @@ class AttributionSimulatorInputParser {
   }
 
   bool ParseAttributionEvent(
-      const base::Value::Dict& value,
+      base::Value::Dict& value,
       base::StringPiece key,
-      base::OnceCallback<void(const base::Value::Dict&)> callback) {
+      base::OnceCallback<void(base::Value::Dict)> callback) {
     auto context = PushContext(key);
 
-    const base::Value* dict = value.Find(key);
+    base::Value* dict = value.Find(key);
     if (!dict) {
       *Error() << "must be present";
       return false;
@@ -382,7 +398,7 @@ class AttributionSimulatorInputParser {
     if (!EnsureDictionary(*dict))
       return false;
 
-    std::move(callback).Run(dict->GetDict());
+    std::move(callback).Run(std::move(*dict).TakeDict());
     return true;
   }
 
@@ -401,11 +417,13 @@ AttributionDataClear::AttributionDataClear(
     base::Time time,
     base::Time delete_begin,
     base::Time delete_end,
-    absl::optional<base::flat_set<url::Origin>> origins)
+    absl::optional<base::flat_set<url::Origin>> origins,
+    bool delete_rate_limit_data)
     : time(time),
       delete_begin(delete_begin),
       delete_end(delete_end),
-      origins(std::move(origins)) {}
+      origins(std::move(origins)),
+      delete_rate_limit_data(delete_rate_limit_data) {}
 
 AttributionDataClear::~AttributionDataClear() = default;
 
@@ -420,10 +438,10 @@ AttributionDataClear& AttributionDataClear::operator=(
 AttributionDataClear& AttributionDataClear::operator=(AttributionDataClear&&) =
     default;
 
-absl::optional<AttributionSimulationEventAndValues>
-ParseAttributionSimulationInput(base::Value input,
-                                const base::Time offset_time,
-                                std::ostream& error_stream) {
+absl::optional<AttributionSimulationEvents> ParseAttributionSimulationInput(
+    base::Value input,
+    const base::Time offset_time,
+    std::ostream& error_stream) {
   return AttributionSimulatorInputParser(offset_time, error_stream)
       .Parse(std::move(input));
 }

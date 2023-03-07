@@ -10,7 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"

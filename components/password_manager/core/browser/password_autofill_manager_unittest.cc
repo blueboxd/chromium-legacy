@@ -286,8 +286,7 @@ autofill::AutofillClient::PopupOpenArgs CreateReopenArgsWithTestSuggestions(
   return {gfx::RectF(), base::i18n::LEFT_TO_RIGHT,
           CreateTestSuggestions(has_opt_in_and_fill, has_opt_in_and_generate,
                                 has_re_signin),
-          autofill::AutoselectFirstSuggestion(false),
-          autofill::PopupType::kPasswords};
+          autofill::AutoselectFirstSuggestion(false)};
 }
 
 }  // namespace
@@ -339,8 +338,6 @@ class PasswordAutofillManagerTest : public testing::Test {
 #endif
     ON_CALL(*client, GetWebAuthnCredentialsDelegateForDriver)
         .WillByDefault(Return(webauthn_credentials_delegate_.get()));
-    ON_CALL(*webauthn_credentials_delegate_, IsWebAuthnAutofillEnabled)
-        .WillByDefault(Return(false));
   }
 
   autofill::PasswordFormFillData CreateTestFormFillData() {
@@ -605,7 +602,6 @@ TEST_F(PasswordAutofillManagerTest, ShowOptInAndFillButton) {
 #endif
                   autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY)));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 // Test that a popup without entries doesn't show "Manage all Passwords".
@@ -627,7 +623,6 @@ TEST_F(PasswordAutofillManagerTest, SuppressManageAllWithoutPasswords) {
               SuggestionVectorIdsAre(ElementsAre(
                   autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN)));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 // Test that the popup is updated once account-stored suggestions are unlocked.
@@ -653,7 +648,6 @@ TEST_F(PasswordAutofillManagerTest, ShowResigninButton) {
 #endif
                   autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY)));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 // Test that the popup is updated once "opt in and fill" is clicked.
@@ -1134,7 +1128,6 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
           testing::Contains(std::vector<std::vector<Suggestion::Text>>{
               {Suggestion::Text(u"android://com.example1.android/")}})));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
@@ -1168,7 +1161,6 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
           Suggestion::Text(GetManagePasswordsTitle(),
                            Suggestion::Text::IsPrimary(true)))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 // Verify that typing "foo" into the username field will match usernames
@@ -1213,7 +1205,6 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
                   Suggestion::Text(GetManagePasswordsTitle(),
                                    Suggestion::Text::IsPrimary(true)))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 // Verify that typing "oo" into the username field will not match any usernames
@@ -1290,7 +1281,6 @@ TEST_F(PasswordAutofillManagerTest,
                   Suggestion::Text(GetManagePasswordsTitle(),
                                    Suggestion::Text::IsPrimary(true)))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 // Verify that typing "example" into the username field will match and order
@@ -1338,7 +1328,6 @@ TEST_F(PasswordAutofillManagerTest,
                                    Suggestion::Text::IsPrimary(true)))));
 
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
@@ -1478,7 +1467,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
           Suggestion::Text(GetManagePasswordsTitle(),
                            Suggestion::Text::IsPrimary(true)))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 TEST_F(PasswordAutofillManagerTest,
@@ -1665,7 +1653,6 @@ TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
               testing::Ge(1u));  // No footer on Android.
   EXPECT_THAT(open_args.suggestions[0].trailing_icon, "google");
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
-  EXPECT_EQ(open_args.popup_type, PopupType::kPasswords);
 }
 
 TEST_F(PasswordAutofillManagerTest, FillsSuggestionIfAuthNotAvailable) {
@@ -2125,8 +2112,6 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
   webauthn_credential.frontend_id = autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL;
   webauthn_credential.payload = Suggestion::BackendId(kId);
   webauthn_credential.labels = {{Suggestion::Text(kAuthenticator)}};
-  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   absl::optional<std::vector<autofill::Suggestion>> webauthn_credential_list =
@@ -2195,8 +2180,6 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSignInWithAnotherDevice) {
   // Enable WebAuthn autofill.
   absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
       absl::in_place);
-  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
@@ -2249,8 +2232,6 @@ TEST_F(PasswordAutofillManagerTest, WebAuthnFaviconWithoutPasswords) {
   webauthn_credential.labels = {{Suggestion::Text(kAuthenticator)}};
   absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials =
       std::vector{std::move(webauthn_credential)};
-  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
@@ -2289,8 +2270,6 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSignInWithoutPasswordData) {
   // Enable WebAuthn autofill.
   absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
       absl::in_place);
-  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)

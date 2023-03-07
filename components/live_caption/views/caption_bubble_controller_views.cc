@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "components/live_caption/caption_bubble_context.h"
 #include "components/live_caption/live_caption_controller.h"
 #include "components/live_caption/views/caption_bubble.h"
@@ -169,11 +169,21 @@ bool CaptionBubbleControllerViews::IsWidgetVisibleForTesting() {
   return caption_widget_ && caption_widget_->IsVisible();
 }
 
+bool CaptionBubbleControllerViews::IsGenericErrorMessageVisibleForTesting() {
+  return caption_bubble_ &&
+         caption_bubble_->IsGenericErrorMessageVisibleForTesting();  // IN-TEST
+}
+
 std::string CaptionBubbleControllerViews::GetBubbleLabelTextForTesting() {
   return caption_bubble_
              ? base::UTF16ToUTF8(
                    caption_bubble_->GetLabelForTesting()->GetText())  // IN-TEST
              : "";
+}
+
+void CaptionBubbleControllerViews::CloseActiveModelForTesting() {
+  if (active_model_)
+    active_model_->Close();
 }
 
 }  // namespace captions

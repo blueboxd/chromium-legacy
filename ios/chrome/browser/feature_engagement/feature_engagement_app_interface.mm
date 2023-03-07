@@ -6,7 +6,7 @@
 
 #import <memory>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/memory/singleton.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
@@ -208,27 +208,6 @@ class ScopedFeatureListHolder {
       .InitAndEnableFeatureWithParameters(
           feature_engagement::kIPHDefaultSiteViewFeature,
           default_site_view_tip_params);
-  return LoadFeatureEngagementTracker();
-}
-
-+ (BOOL)enablePasswordSuggestionsTipTriggering {
-  std::map<std::string, std::string> password_suggestions_tip_params;
-
-  password_suggestions_tip_params["availability"] = "any";
-  password_suggestions_tip_params["session_rate"] = "any";
-  password_suggestions_tip_params["event_used"] =
-      "name:password_suggestions_shown;comparator:==0;window:90;"
-      "storage:360";
-  password_suggestions_tip_params["event_trigger"] =
-      "name:password_suggestions_iph_triggered;comparator:==0;window:1825;"
-      "storage:1825";
-
-  ScopedFeatureListHolder::GetInstance()
-      ->CreateList()
-      .InitAndEnableFeatureWithParameters(
-          feature_engagement::kIPHPasswordSuggestionsFeature,
-          password_suggestions_tip_params);
-
   return LoadFeatureEngagementTracker();
 }
 

@@ -44,8 +44,11 @@ generated directory (|target_gen_dir|).
 ```
 in_files: specifies the list of files to process with respect to the
           |in_folder|.
-template: html_to_wrapper only. Defaults to "polymer", set to "native" if using
-          the rule to wrap the HTML of a non-Polymer Web Component.
+template: html_to_wrapper only. Valid values are:
+          - "polymer" (default)
+          - "native" (use when wrapping the HTML template of a non-Polymer web
+             component)
+          - "detect" (use when there are both Polymer and native web components)
 in_folder: Specifies the input folder where files are located. If not specified,
            the current directory (of the BUILD.gn file) is used.
 out_folder: Specifies the location to write the wrapped files. If not specified,
@@ -233,16 +236,11 @@ input: The location of the input files to be bundled.
 js_module_in_files: The names of the root files to bundle. These files should
                     import all other dependencies (directly or indirectly).
                     These should be specified with respect to |input|.
-js_out_files: The names of the final bundled files to output. If only one
-              |js_module_in_files| is provided, there should be 1 file name
-              specified. If 2 |js_module_in_files| are provided, there should
-              be 3 file names (1 for each input, plus 1 for the shared bundle,
-              which should be the last output file name).
 out_manifest: File location to write the manifest of all output files created
               by optimize_webui(). Useful for generating grds.
 deps: Targets generating any files being bundled. Note that this should include
       targets generating shared resources that are expected to be bundled in
-      the UI, e.g. //ui/webui/resources:preprocess.
+      the UI, e.g. //ui/webui/resources:library.
 excludes: Paths of files that are not bundled. Often used for large mojo files
           that would otherwise be in many bundles, and for cr.js which relies
           on global variables.
@@ -266,7 +264,7 @@ if (optimize_webui) {
     # build_ts.
     deps = [
       ":build_ts",
-      "//ui/webui/resources:preprocess",
+      "//ui/webui/resources:library",
     ]
     excludes = [
       "chrome://resources/js/cr.js",
@@ -413,7 +411,7 @@ from other parts of the build.
 ```
 
 List of files params:
-static_files: Required parameter. List of
+static_files: Optional parameter. List of
               1) non Web Component HTML/CSS files (don't confuse with
                  |css_files| below). These are passed to preprocess_if_expr()
               2) JPG/PNG/SVG files. These are included in the build verbatim
@@ -461,10 +459,11 @@ optimize: Specifies whether any optimization steps will be used, defaults to
 optimize_webui_excludes: See |excludes| in optimize_webui().
 optimize_webui_host: See |host| in optimize_webui().
 optimize_webui_in_files: See |in_files| in optimize_webui().
-optimize_webui_out_files: See |out_files| in optimize_webui().
 
 Other params:
 grd_prefix: See |grd_prefix| in generate_grd(). Required parameter.
+grd_resource_path_prefix: See |resource_path_prefix| in generate_grd(). Optional
+                          parameter.
 html_to_wrapper_template: See |template| in html_to_wrapper().
 extra_grdp_deps: List of external generate_grd() targets that generate .grdp
                  files. These will be included in the final generated
@@ -595,6 +594,101 @@ build_webui_tests("build") {
   ]
 }
 
+```
+
+### **build_cr_component**
+
+The flow diagram below shows a high level view of how a typical modern
+cr_component is built
+
+![cr_component build pipeline flow diagram](images/webui_build_cr_component.png)
+
+```
+This umbrella rule captures the most common build pipeline
+configuration for building WebUI cr_components and aims to hide the complexity
+of having to define multiple other targets directly. Using build_cr_component()
+is the recommended approach for any code that resides under
+ui/webui/resources/cr_components/.
+
+Under the cover, build_cr_component() defines the following targets
+
+preprocess_if_expr("preprocess")
+html_to_wrapper("html_wrapper_files")
+css_to_wrapper("css_wrapper_files")
+copy("copy_mojo")
+ts_library("build_ts")
+generate_grd("build_grd")
+
+Some targets are only conditionally defined based on build_cr_component() input
+parameters.
+
+Only the ":build_ts" and ":generate_grd" targets are public and can be referred
+to from other parts of the build.
+```
+
+#### **Arguments**
+```
+
+List of files params:
+static_files: Same as build_webui()
+web_component_files: Same as build_webui()
+non_web_component_files: Same as build_webui()
+icons_html_files: Same as build_webui()
+css_files: Same as build_webui()
+mojo_files: Same as build_webui()
+mojo_files_deps: Same as build_webui()
+
+TypeScript (ts_library()) related params:
+tsc_dir: See |output_dir| in ts_library()
+ts_definitions: Same as build_webui()
+ts_deps: Same as build_webui()
+ts_extra_deps: Same as build_webui()
+ts_path_mappings: Same as build_webui()
+ts_use_local_config: Same as build_webui()
+
+Other params:
+grd_prefix: See |grd_prefix| in generate_grd(). Required parameter.
+resource_path_prefix: See |resource_path_prefix| in generate_grd(). Required
+                      parameter.
+optimize: Optional parameter, defaults to false. If specified it is passed as
+          the |minify| parameter to the underlying html_to_wrapper() and
+          css_to_wrapper() targets.
+```
+
+#### **Example**
+```
+import("//ui/webui/resources/cr_components/build_cr_component.gni")
+
+build_cr_component("build") {
+  grd_prefix = "cr_components_history_clusters"
+
+  web_component_files = [
+    "cluster.ts",
+    "url_visit.ts",
+  ]
+
+  non_web_component_files = [
+    "browser_proxy.ts",
+    "utils.ts",
+  ]
+
+  css_files = [
+    "shared_vars.css",
+  ]
+
+  mojo_files_deps = [ ":mojo_bindings_ts__generator" ]
+  mojo_files = [ "$root_gen_dir/ui/webui/resources/cr_components/history_clusters/history_clusters.mojom-webui.ts" ]
+
+  tsc_dir = "$root_gen_dir/ui/webui/resources/preprocessed/cr_components/history_clusters"
+  ts_definitions = [ "//tools/typescript/definitions/metrics_private.d.ts" ]
+  ts_deps = [
+    "//third_party/polymer/v3_0:library",
+    "//ui/webui/resources:library",
+    "//ui/webui/resources/mojo:library",
+  ]
+
+  optimize = optimize_webui
+}
 ```
 
 ## Example build configurations

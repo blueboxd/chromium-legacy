@@ -44,10 +44,11 @@ scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
       .Set("version", version_)
       .Set("manifest_version", 2);
 
-  std::unique_ptr<base::DictionaryValue> background =
+  base::Value background = base::Value(
       DictionaryBuilder()
-          .Set("scripts", ListBuilder().Append("background.js").Build())
-          .Build();
+          .Set("scripts",
+               base::Value(ListBuilder().Append("background.js").Build()))
+          .Build());
 
   switch (type_) {
     case extensions::Manifest::TYPE_PLATFORM_APP:

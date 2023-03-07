@@ -7,12 +7,13 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "chromeos/ash/components/phonehub/app_stream_launcher_data_model.h"
 #include "chromeos/ash/components/phonehub/app_stream_manager.h"
 #include "chromeos/ash/components/phonehub/feature_setup_response_processor.h"
 #include "chromeos/ash/components/phonehub/icon_decoder.h"
 #include "chromeos/ash/components/phonehub/phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/public/cpp/attestation_certificate_generator.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
@@ -59,7 +60,9 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
       secure_channel::SecureChannelClient* secure_channel_client,
       std::unique_ptr<BrowserTabsModelProvider> browser_tabs_model_provider,
       std::unique_ptr<CameraRollDownloadManager> camera_roll_download_manager,
-      const base::RepeatingClosure& show_multidevice_setup_dialog_callback);
+      const base::RepeatingClosure& show_multidevice_setup_dialog_callback,
+      std::unique_ptr<AttestationCertificateGenerator>
+          attestation_certificate_generator);
 
   ~PhoneHubManagerImpl() override;
 

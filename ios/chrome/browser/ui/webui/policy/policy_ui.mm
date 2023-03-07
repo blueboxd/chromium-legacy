@@ -7,7 +7,7 @@
 #import <memory>
 #import <string>
 
-#import "components/grit/dev_ui_components_resources.h"
+#import "components/grit/policy_resources.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/webui/policy/policy_ui_handler.h"
@@ -40,6 +40,7 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
       {"labelClientId", IDS_POLICY_LABEL_CLIENT_ID},
       {"labelDirectoryApiId", IDS_POLICY_LABEL_DIRECTORY_API_ID},
       {"labelError", IDS_POLICY_LABEL_ERROR},
+      {"labelWarning", IDS_POLICY_HEADER_WARNING},
       {"labelGaiaId", IDS_POLICY_LABEL_GAIA_ID},
       {"labelIsAffiliated", IDS_POLICY_LABEL_IS_AFFILIATED},
       {"labelLastCloudReportSentTimestamp",
@@ -80,6 +81,7 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
       {"signinProfile", IDS_POLICY_SIGNIN_PROFILE},
       {"status", IDS_POLICY_STATUS},
       {"statusErrorManagedNoPolicy", IDS_POLICY_STATUS_ERROR_MANAGED_NO_POLICY},
+      {"statusFlexOrgNoPolicy", IDS_POLICY_STATUS_FLEX_ORG_NO_POLICY},
       {"statusDevice", IDS_POLICY_STATUS_DEVICE},
       {"statusMachine", IDS_POLICY_STATUS_MACHINE},
       {"statusUser", IDS_POLICY_STATUS_USER},
@@ -91,9 +93,9 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
 
   source->AddBoolean("hideExportButton", true);
 
-  source->AddResourcePath("policy.css", IDR_POLICY_CSS);
-  source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);
-  source->AddResourcePath("policy.js", IDR_POLICY_JS);
+  source->AddResourcePath("policy.css", IDR_POLICY_POLICY_CSS);
+  source->AddResourcePath("policy_base.js", IDR_POLICY_POLICY_BASE_JS);
+  source->AddResourcePath("policy.js", IDR_POLICY_POLICY_JS);
   source->AddResourcePath("policy_conflict.html.js",
                           IDR_POLICY_POLICY_CONFLICT_HTML_JS);
   source->AddResourcePath("policy_conflict.js", IDR_POLICY_POLICY_CONFLICT_JS);
@@ -108,7 +110,7 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
   source->AddResourcePath("policy_table.js", IDR_POLICY_POLICY_TABLE_JS);
   source->AddResourcePath("status_box.html.js", IDR_POLICY_STATUS_BOX_HTML_JS);
   source->AddResourcePath("status_box.js", IDR_POLICY_STATUS_BOX_JS);
-  source->SetDefaultResource(IDR_POLICY_HTML);
+  source->SetDefaultResource(IDR_POLICY_POLICY_HTML);
   source->EnableReplaceI18nInJS();
   return source;
 }

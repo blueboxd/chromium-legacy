@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/cpu.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
@@ -487,8 +487,8 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
   computer_model = base::mac::GetModelIdentifier();
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   if (const absl::optional<base::StringPiece> computer_model_statistic =
-          chromeos::system::StatisticsProvider::GetInstance()
-              ->GetMachineStatistic(chromeos::system::kHardwareClassKey)) {
+          ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+              ash::system::kHardwareClassKey)) {
     computer_model = std::string(computer_model_statistic.value());
   }
 #endif

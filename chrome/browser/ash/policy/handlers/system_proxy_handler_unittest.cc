@@ -77,24 +77,22 @@ class SystemProxyHandlerTest : public testing::Test {
   void SetPolicy(bool system_proxy_enabled,
                  const std::string& system_services_username,
                  const std::string& system_services_password) {
-    base::DictionaryValue dict;
-    dict.SetKey("system_proxy_enabled", base::Value(system_proxy_enabled));
-    dict.SetKey("system_services_username",
-                base::Value(system_services_username));
-    dict.SetKey("system_services_password",
-                base::Value(system_services_password));
+    base::Value::Dict dict;
+    dict.Set("system_proxy_enabled", system_proxy_enabled);
+    dict.Set("system_services_username", system_services_username);
+    dict.Set("system_services_password", system_services_password);
     scoped_testing_cros_settings_.device_settings()->Set(
-        ash::kSystemProxySettings, dict);
+        ash::kSystemProxySettings, base::Value(std::move(dict)));
     task_environment_.RunUntilIdle();
   }
 
   void SetManagedProxy(Profile* profile) {
     // Configure a proxy via user policy.
-    base::Value proxy_config(base::Value::Type::DICTIONARY);
-    proxy_config.SetKey("mode",
-                        base::Value(ProxyPrefs::kFixedServersProxyModeName));
-    proxy_config.SetKey("server", base::Value(kProxyAuthUrl));
-    profile->GetPrefs()->Set(proxy_config::prefs::kProxy, proxy_config);
+    base::Value::Dict proxy_config;
+    proxy_config.Set("mode", ProxyPrefs::kFixedServersProxyModeName);
+    proxy_config.Set("server", kProxyAuthUrl);
+    profile->GetPrefs()->SetDict(proxy_config::prefs::kProxy,
+                                 std::move(proxy_config));
     task_environment_.RunUntilIdle();
   }
 

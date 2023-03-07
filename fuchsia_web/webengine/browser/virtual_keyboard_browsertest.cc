@@ -6,11 +6,11 @@
 #include <fuchsia/ui/input3/cpp/fidl.h>
 #include <lib/fit/function.h>
 
-#include "base/callback.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/koid.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/test_component_context_for_process.h"
+#include "base/functional/callback.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -94,6 +94,11 @@ class VirtualKeyboardTest : public WebEngineBrowserTest {
     ASSERT_EQ(
         base::GetKoid(controller_->view_ref().reference).value(),
         base::GetKoid(scenic_test_helper_.CloneViewRef().reference).value());
+  }
+
+  void TearDownOnMainThread() override {
+    frame_for_test_ = {};
+    WebEngineBrowserTest::TearDownOnMainThread();
   }
 
   // The tests expect to have input processed immediately, even if the

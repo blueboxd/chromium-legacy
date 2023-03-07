@@ -38,11 +38,11 @@ void ChangeMemoryTaggingModeForCurrentThread(TagViolationReportingMode);
 namespace internal {
 
 constexpr int kMemTagGranuleSize = 16u;
-#if defined(PA_HAS_MEMORY_TAGGING)
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
 constexpr uint64_t kPtrTagMask = 0xff00000000000000uLL;
 #else
 constexpr uint64_t kPtrTagMask = 0;
-#endif  // defined(PA_HAS_MEMORY_TAGGING)
+#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 constexpr uint64_t kPtrUntagMask = ~kPtrTagMask;
 
 #if BUILDFLAG(IS_ANDROID)
@@ -65,10 +65,9 @@ PA_COMPONENT_EXPORT(PARTITION_ALLOC) void InitializeMTESupportIfNeeded();
 // They are designed to be callable without taking a branch. They are initially
 // set to no-op functions in tagging.cc, but can be replaced with MTE-capable
 // ones through InitializeMTEIfNeeded(). This is conceptually similar to an
-// ifunc (but less secure) - we do it this way for now because the CrazyLinker
-// (needed for supporting old Android versions) doesn't support them. Initial
-// solution should be good enough for fuzzing/debug, ideally needs fixing for
-// async deployment on end-user devices.
+// IFUNC, even though less secure. These function pointers were introduced to
+// support older Android releases. With the removal of support for Android M,
+// it became possible to use IFUNC instead.
 // TODO(bartekn): void* -> uintptr_t
 using RemaskPtrInternalFn = void*(void* ptr);
 using TagMemoryRangeIncrementInternalFn = void*(void* ptr, size_t size);
@@ -90,7 +89,7 @@ extern PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 // TODO(bartekn): Consider removing the return value.
 template <typename T>
 PA_ALWAYS_INLINE T* TagMemoryRangeIncrement(T* ptr, size_t size) {
-#if defined(PA_HAS_MEMORY_TAGGING)
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
   return reinterpret_cast<T*>(global_tag_memory_range_increment_fn(ptr, size));
 #else
   return ptr;
@@ -108,7 +107,7 @@ template <typename T>
 PA_ALWAYS_INLINE T* TagMemoryRangeRandomly(T* ptr,
                                            size_t size,
                                            uint64_t mask = 0u) {
-#if defined(PA_HAS_MEMORY_TAGGING)
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
   return reinterpret_cast<T*>(
       global_tag_memory_range_randomly_fn(ptr, size, mask));
 #else
@@ -124,7 +123,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t ptr,
 // Gets a version of ptr that's safe to dereference.
 template <typename T>
 PA_ALWAYS_INLINE T* TagPtr(T* ptr) {
-#if defined(PA_HAS_MEMORY_TAGGING)
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
   return reinterpret_cast<T*>(global_remask_void_ptr_fn(ptr));
 #else
   return ptr;
@@ -139,7 +138,7 @@ PA_ALWAYS_INLINE void* TagAddr(uintptr_t address) {
 
 // Strips the tag bits off |address|.
 PA_ALWAYS_INLINE uintptr_t UntagAddr(uintptr_t address) {
-#if defined(PA_HAS_MEMORY_TAGGING)
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
   return address & internal::kPtrUntagMask;
 #else
   return address;

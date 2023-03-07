@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_renderer_sink.h"
@@ -151,7 +152,7 @@ media::OutputDeviceInfo AudioRendererSinkCache::GetSinkInfo(
   // Ignore session id.
   {
     base::AutoLock auto_lock(cache_lock_);
-    auto cache_iter = FindCacheEntry_Locked(source_frame_token, device_id);
+    auto* cache_iter = FindCacheEntry_Locked(source_frame_token, device_id);
     if (cache_iter != cache_.end()) {
       // A matching cached sink is found.
       UMA_HISTOGRAM_ENUMERATION(
@@ -203,7 +204,7 @@ void AudioRendererSinkCache::DeleteSink(
     base::AutoLock auto_lock(cache_lock_);
 
     // Looking up the sink by its pointer.
-    auto cache_iter = base::ranges::find(
+    auto* cache_iter = base::ranges::find(
         cache_, sink_ptr, [](const CacheEntry& val) { return val.sink.get(); });
 
     if (cache_iter == cache_.end())
@@ -264,7 +265,7 @@ void AudioRendererSinkCache::MaybeCacheSink(
 void AudioRendererSinkCache::DropSinksForFrame(
     const LocalFrameToken& source_frame_token) {
   base::AutoLock auto_lock(cache_lock_);
-  base::EraseIf(cache_, [source_frame_token](const CacheEntry& val) {
+  WTF::EraseIf(cache_, [source_frame_token](const CacheEntry& val) {
     if (val.source_frame_token == source_frame_token) {
       val.sink->Stop();
       return true;
@@ -273,7 +274,7 @@ void AudioRendererSinkCache::DropSinksForFrame(
   });
 }
 
-size_t AudioRendererSinkCache::GetCacheSizeForTesting() {
+wtf_size_t AudioRendererSinkCache::GetCacheSizeForTesting() {
   base::AutoLock auto_lock(cache_lock_);
   return cache_.size();
 }

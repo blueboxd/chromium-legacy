@@ -131,7 +131,7 @@ void OneDriveUploadHandler::OnEndUpload(const FileSystemURL& uploaded_file_url,
   // Resolve notifications.
   if (notification_manager_) {
     if (uploaded_file_url.is_valid()) {
-      notification_manager_->ShowUploadComplete();
+      notification_manager_->MarkUploadComplete();
     } else if (!error_message.empty()) {
       LOG(ERROR) << "Upload to OneDrive: " << error_message;
       notification_manager_->ShowUploadError(error_message);
@@ -179,6 +179,8 @@ void OneDriveUploadHandler::OnIOTaskStatus(
         notification_manager_->ShowUploadProgress(
             100 * status.bytes_transferred / status.total_bytes);
       }
+      return;
+    case file_manager::io_task::State::kPaused:
       return;
     case file_manager::io_task::State::kSuccess:
       notification_manager_->ShowUploadProgress(100);

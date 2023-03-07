@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -1793,97 +1794,6 @@ TEST_F(InputMethodMacTest, SetMarkedText) {
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("SetComposition", GetMessageNames(events));
-}
-
-// This test makes sure that selectedRange and markedRange are updated correctly
-// in various scenarios.
-TEST_F(InputMethodMacTest, MarkedRangeSelectedRange) {
-  // If the replacement range is valid, the range should be replaced with the
-  // new text.
-  {
-    NSString* text = @"sample text";
-    NSRange selectedRange = NSMakeRange(2, 4);
-    NSRange replacementRange = NSMakeRange(1, 1);
-
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-    [tab_GetInProcessNSView() setMarkedText:text
-                              selectedRange:selectedRange
-                           replacementRange:replacementRange];
-
-    NSRange actualSelectedRange = [tab_GetInProcessNSView() selectedRange];
-    NSRange actualMarkedRange = [tab_GetInProcessNSView() markedRange];
-
-    EXPECT_EQ((signed)actualMarkedRange.location, 1);
-    EXPECT_EQ((signed)actualMarkedRange.length, 11);
-    EXPECT_EQ((signed)actualSelectedRange.location, 3);
-    EXPECT_EQ((signed)actualSelectedRange.length, 4);
-  }
-
-  // If the text is empty, the marked range should be reset and the selection
-  // should be collapsed to the begining of the old marked range.
-  {
-    NSString* text = @"";
-    NSRange selectedRange = NSMakeRange(0, 0);
-    NSRange replacementRange = NSMakeRange(NSNotFound, 0);
-
-    EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-    [tab_GetInProcessNSView() setMarkedText:text
-                              selectedRange:selectedRange
-                           replacementRange:replacementRange];
-
-    NSRange actualSelectedRange = [tab_GetInProcessNSView() selectedRange];
-    NSRange actualMarkedRange = [tab_GetInProcessNSView() markedRange];
-
-    EXPECT_EQ((signed)actualMarkedRange.location, (signed)NSNotFound);
-    EXPECT_EQ((signed)actualMarkedRange.length, 0);
-    EXPECT_EQ((signed)actualSelectedRange.location, 1);
-    EXPECT_EQ((signed)actualSelectedRange.length, 0);
-  }
-
-  // If no marked range and no replacement range, the current selection should
-  // be replaced.
-  {
-    NSString* text = @"sample2";
-    NSRange selectedRange = NSMakeRange(3, 2);
-    NSRange replacementRange = NSMakeRange(NSNotFound, 0);
-
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-    [tab_GetInProcessNSView() setMarkedText:text
-                              selectedRange:selectedRange
-                           replacementRange:replacementRange];
-
-    NSRange actualSelectedRange = [tab_GetInProcessNSView() selectedRange];
-    NSRange actualMarkedRange = [tab_GetInProcessNSView() markedRange];
-
-    EXPECT_EQ((signed)actualMarkedRange.location, 1);
-    EXPECT_EQ((signed)actualMarkedRange.length, 7);
-    EXPECT_EQ((signed)actualSelectedRange.location, 4);
-    EXPECT_EQ((signed)actualSelectedRange.length, 2);
-  }
-
-  // If the marked range is valid and there is no replacement range, the current
-  // marked range should be replaced.
-  {
-    NSString* text = @"new";
-    NSRange selectedRange = NSMakeRange(2, 1);
-    NSRange replacementRange = NSMakeRange(NSNotFound, 0);
-
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-    [tab_GetInProcessNSView() setMarkedText:text
-                              selectedRange:selectedRange
-                           replacementRange:replacementRange];
-
-    NSRange actualSelectedRange = [tab_GetInProcessNSView() selectedRange];
-    NSRange actualMarkedRange = [tab_GetInProcessNSView() markedRange];
-
-    EXPECT_EQ((signed)actualMarkedRange.location, 1);
-    EXPECT_EQ((signed)actualMarkedRange.length, 3);
-    EXPECT_EQ((signed)actualSelectedRange.location, 3);
-    EXPECT_EQ((signed)actualSelectedRange.length, 1);
-  }
 }
 
 // This test verifies that calling insertText on the cocoa view will lead to a

@@ -22,6 +22,7 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
+#include "ash/wm/float/scoped_window_tucker.h"
 #include "ash/wm/float/tablet_mode_float_window_resizer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -38,6 +39,7 @@
 #include "base/containers/contains.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/header_view.h"
@@ -879,6 +881,9 @@ class TabletWindowFloatTest : public WindowFloatTest,
     on_tablet_state_changed_callback_.Run(state);
   }
 
+ protected:
+  base::UserActionTester user_action_tester_;
+
  private:
   // Called when the tablet state changes.
   base::RepeatingCallback<void(display::TabletState)>
@@ -1294,6 +1299,35 @@ TEST_F(TabletWindowFloatTest, UntuckWindowOnActivation) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
 }
 
+// Tests that the tucked window is invisible while it is fully tucked.
+TEST_F(TabletWindowFloatTest, TuckedWindowVisibility) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Fling to tuck the window in the bottom right. Test that the window is
+  // invisible once the animation is finished.
+  auto* float_controller = Shell::Get()->float_controller();
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  EXPECT_TRUE(window->IsVisible());
+  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  EXPECT_FALSE(window->IsVisible());
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Tests that there is an overview item created for the tucked window.
+  ToggleOverview();
+  WaitForOverviewEnterAnimation();
+  EXPECT_TRUE(GetOverviewItemForWindow(window.get()));
+
+  // Tests that after we activate the window, the window is visible again as it
+  // is getting untucked.
+  wm::ActivateWindow(window.get());
+  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  EXPECT_TRUE(window->IsVisible());
+}
+
 // Tests that the expected window gets activation after tucking a floated
 // window, and that on untucking the floated window, it gains activation.
 TEST_F(TabletWindowFloatTest, WindowActivationAfterTuckingUntucking) {
@@ -1357,14 +1391,18 @@ TEST_F(TabletWindowFloatTest, TuckWindowLeft) {
 
   // Magnetize the window to the top left.
   MagnetizeWindow(window.get(), FloatController::MagnetismCorner::kTopLeft);
-
   auto* float_controller = Shell::Get()->float_controller();
+
+  // Verify user action initial states.
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kTuckUserAction));
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kUntuckUserAction));
 
   // Fling the window left and up. Test that it tucks in the top left.
   FlingWindow(window.get(), /*left=*/true, /*up=*/true);
   ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   const int padding = chromeos::wm::kFloatedWindowPaddingDp;
   EXPECT_EQ(gfx::Point(0, padding), window->bounds().top_right());
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kTuckUserAction));
 
   // Test that the tuck handle is aligned with the window.
   views::Widget* tuck_handle_widget =
@@ -1377,6 +1415,7 @@ TEST_F(TabletWindowFloatTest, TuckWindowLeft) {
   GestureTapOn(tuck_handle_widget->GetContentsView());
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kTopLeft);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kUntuckUserAction));
 
   // Fling the window left and down. Test that it tucks in the bottom left.
   FlingWindow(window.get(), /*left=*/true, /*up=*/false);
@@ -1385,12 +1424,14 @@ TEST_F(TabletWindowFloatTest, TuckWindowLeft) {
                                   ->user_work_area_bounds();
   EXPECT_EQ(gfx::Point(0, work_area.bottom() - padding),
             window->bounds().bottom_right());
+  EXPECT_EQ(2, user_action_tester_.GetActionCount(kTuckUserAction));
 
   // Untuck the window. Test that it magnetizes to the bottom left.
   tuck_handle_widget = float_controller->GetTuckHandleWidget(window.get());
   GestureTapOn(tuck_handle_widget->GetContentsView());
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomLeft);
+  EXPECT_EQ(2, user_action_tester_.GetActionCount(kUntuckUserAction));
 }
 
 // Tests the functionality of tucking a window in tablet mode.
@@ -1401,15 +1442,19 @@ TEST_F(TabletWindowFloatTest, TuckWindowRight) {
   // The window is magnetized to the bottom right by default.
   std::unique_ptr<aura::Window> window = CreateFloatedWindow();
   auto* float_controller = Shell::Get()->float_controller();
-
   const gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
                                   ->user_work_area_bounds();
+
+  // Verify user action initial states.
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kTuckUserAction));
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kUntuckUserAction));
 
   // Fling the window right and up. Test that it tucks in the top right.
   FlingWindow(window.get(), /*left=*/false, /*up=*/true);
   ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   const int padding = chromeos::wm::kFloatedWindowPaddingDp;
   EXPECT_EQ(gfx::Point(work_area.right(), padding), window->bounds().origin());
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kTuckUserAction));
 
   // Test that the tuck handle is aligned with the window.
   views::Widget* tuck_handle_widget =
@@ -1422,18 +1467,21 @@ TEST_F(TabletWindowFloatTest, TuckWindowRight) {
   GestureTapOn(tuck_handle_widget->GetContentsView());
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kTopRight);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kUntuckUserAction));
 
   // Fling the window right and down. Test that it tucks in the bottom right.
   FlingWindow(window.get(), /*left=*/false, /*up=*/false);
   ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   EXPECT_EQ(gfx::Point(work_area.right(), work_area.bottom() - padding),
             window->bounds().bottom_left());
+  EXPECT_EQ(2, user_action_tester_.GetActionCount(kTuckUserAction));
 
   // Untuck the window. Test that it magnetizes to the bottom right.
   tuck_handle_widget = float_controller->GetTuckHandleWidget(window.get());
   GestureTapOn(tuck_handle_widget->GetContentsView());
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomRight);
+  EXPECT_EQ(2, user_action_tester_.GetActionCount(kUntuckUserAction));
 }
 
 // Tests that the window gets tucked to the closer edge and corner based on the
@@ -1491,6 +1539,36 @@ TEST_F(TabletWindowFloatTest, ClickOnEdgeDoesNotUntuck) {
   EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 }
 
+// Tests that the tuck handle is offscreen in overview mode.
+TEST_F(TabletWindowFloatTest, TuckHandleOffscreenInOverview) {
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  auto* float_controller = Shell::Get()->float_controller();
+
+  // Tuck the window in the bottom right.
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // The tuck handle widget is normally onscreen.
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidget(window.get());
+  EXPECT_TRUE(
+      display_bounds.Contains(tuck_handle_widget->GetWindowBoundsInScreen()));
+
+  // Tests that on entering overview, the tuck handle is offscreen.
+  EnterOverview();
+  EXPECT_FALSE(
+      display_bounds.Contains(tuck_handle_widget->GetWindowBoundsInScreen()));
+
+  // Tests that on leaving overview, the tuck handle is onscreen again.
+  ExitOverview();
+  EXPECT_TRUE(
+      display_bounds.Contains(tuck_handle_widget->GetWindowBoundsInScreen()));
+}
+
 TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   // The window is magnetized to the bottom right by default.
@@ -1510,6 +1588,7 @@ TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {
       start, start + gfx::Vector2d(0, -8), base::Milliseconds(100),
       /*steps=*/3);
   ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kUntuckUserAction));
 
   // Swipe left on the handle. Test that it untucks and magnetizes to the bottom
   // right.
@@ -1518,6 +1597,7 @@ TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {
       /*steps=*/3);
   EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomRight);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kUntuckUserAction));
 }
 
 // Tests that flinging the window straight up or down does not tuck the window.
@@ -1534,6 +1614,7 @@ TEST_F(TabletWindowFloatTest, FlingVertical) {
   auto* float_controller = Shell::Get()->float_controller();
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomRight);
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kTuckUserAction));
 
   // Fling the window straight up. Test that it moves to the top right.
   GetEventGenerator()->GestureScrollSequence(
@@ -1541,6 +1622,7 @@ TEST_F(TabletWindowFloatTest, FlingVertical) {
       /*steps=*/1);
   ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kTopRight);
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kTuckUserAction));
 }
 
 using TabletWindowFloatSplitviewTest = TabletWindowFloatTest;
@@ -1552,11 +1634,11 @@ TEST_F(TabletWindowFloatSplitviewTest, BothSnappedToFloat) {
 
   // Create two windows and snap one on each side.
   auto left_window = CreateAppWindow();
-  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(left_window.get())->OnWMEvent(&snap_left);
 
   auto right_window = CreateAppWindow();
-  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(right_window.get())->OnWMEvent(&snap_right);
 
   auto* split_view_controller =
@@ -1583,7 +1665,7 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
 
   // If there are no other windows, expect to enter overview. The hotseat will
   // extended and users can pick a second app from there.
-  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window.get())->OnWMEvent(&snap_left);
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_TRUE(split_view_controller->InSplitViewMode());
@@ -1606,6 +1688,40 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
   EXPECT_TRUE(split_view_controller->BothSnapped());
   EXPECT_EQ(split_view_controller->primary_window(), window.get());
   EXPECT_EQ(split_view_controller->secondary_window(), other_window.get());
+}
+
+// When reset a floated window that's previously snapped, maximize instead of
+// snap.
+TEST_F(TabletWindowFloatSplitviewTest, ResetFloatToMaximize) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  // Create two windows and snap one on each side.
+  std::unique_ptr<aura::Window> window_1 = CreateAppWindow();
+  std::unique_ptr<aura::Window> window_2 = CreateAppWindow();
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  WindowState::Get(window_1.get())->OnWMEvent(&snap_left);
+  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  WindowState::Get(window_2.get())->OnWMEvent(&snap_right);
+  EXPECT_TRUE(split_view_controller->BothSnapped());
+  EXPECT_EQ(split_view_controller->primary_window(), window_1.get());
+  EXPECT_EQ(split_view_controller->secondary_window(), window_2.get());
+
+  // Float `window_1`, `window_2` should be maximized.
+  wm::ActivateWindow(window_1.get());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window_1.get())->IsFloated());
+  ASSERT_TRUE(WindowState::Get(window_2.get())->IsMaximized());
+
+  // Float `window_2`, previously floated `window_1` should be maximized instead
+  // of restoring back to snapped.
+  wm::ActivateWindow(window_2.get());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window_2.get())->IsFloated());
+  ASSERT_TRUE(WindowState::Get(window_1.get())->IsMaximized());
 }
 
 }  // namespace ash

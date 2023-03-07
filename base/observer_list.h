@@ -22,6 +22,7 @@
 #include "base/observer_list_internal.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
+#include "build/build_config.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -339,17 +340,19 @@ class ObserverList {
   }
 
   std::string GetObserversCreationStackString() const {
-#if EXPENSIVE_DCHECKS_ARE_ON()
+#if DCHECK_IS_ON()
     std::string result;
+#if BUILDFLAG(IS_IOS)
+    result += "Use go/observer-list-empty to interpret.\n";
+#endif
     for (const auto& observer : observers_) {
       result += observer.GetCreationStackString();
       result += "\n";
     }
     return result;
 #else
-    return "For observer stack traces, build with "
-           "`enable_expensive_dchecks=true`.";
-#endif  // EXPENSIVE_DCHECKS_ARE_ON()
+    return "For observer stack traces, build with `dcheck_always_on=true`.";
+#endif  // DCHECK_IS_ON()
   }
 
   std::vector<ObserverStorageType> observers_;

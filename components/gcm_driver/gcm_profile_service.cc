@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_constants.h"
@@ -19,8 +20,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "components/gcm_driver/gcm_driver_android.h"
 #else
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/account_tracker.h"
 #include "components/gcm_driver/gcm_account_tracker.h"
@@ -183,9 +184,17 @@ GCMProfileService::GCMProfileService(
 }
 #endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
-GCMProfileService::GCMProfileService() {}
+GCMProfileService::GCMProfileService(std::unique_ptr<GCMDriver> gcm_driver)
+    : driver_(std::move(gcm_driver)) {
+#if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
+  if (identity_observer_) {
+    identity_observer_ = std::make_unique<IdentityObserver>(
+        identity_manager_, url_loader_factory_, driver_.get());
+  }
+#endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
+}
 
-GCMProfileService::~GCMProfileService() {}
+GCMProfileService::~GCMProfileService() = default;
 
 void GCMProfileService::Shutdown() {
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
@@ -195,17 +204,6 @@ void GCMProfileService::Shutdown() {
     driver_->Shutdown();
     driver_.reset();
   }
-}
-
-void GCMProfileService::SetDriverForTesting(std::unique_ptr<GCMDriver> driver) {
-  driver_ = std::move(driver);
-
-#if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
-  if (identity_observer_) {
-    identity_observer_ = std::make_unique<IdentityObserver>(
-        identity_manager_, url_loader_factory_, driver.get());
-  }
-#endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 }
 
 }  // namespace gcm

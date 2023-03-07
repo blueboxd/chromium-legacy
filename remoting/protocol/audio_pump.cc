@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
@@ -42,8 +42,8 @@ std::unique_ptr<remoting::AudioPacket> AudioBusToAudioPacket(
     const media::AudioBus& packet) {
   std::unique_ptr<remoting::AudioPacket> result =
       std::make_unique<remoting::AudioPacket>();
-  result->add_data()->resize(
-      packet.channels() * packet.frames() * sizeof(int16_t));
+  result->add_data()->resize(packet.channels() * packet.frames() *
+                             sizeof(int16_t));
   packet.ToInterleaved<media::SignedInt16SampleTypeTraits>(
       packet.frames(),
       reinterpret_cast<int16_t*>(&(result->mutable_data(0)->at(0))));

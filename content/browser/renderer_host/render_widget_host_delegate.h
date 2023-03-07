@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "content/common/content_export.h"
@@ -262,8 +262,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual bool IsWidgetForPrimaryMainFrame(RenderWidgetHostImpl*);
 
   // Returns the object that tracks the start of content to visible events for
-  // the WebContents. May return nullptr if there is no RenderWidgetHostView.
-  virtual VisibleTimeRequestTrigger* GetVisibleTimeRequestTrigger();
+  // the WebContents.
+  virtual VisibleTimeRequestTrigger& GetVisibleTimeRequestTrigger() = 0;
 
   // Inner WebContents Helpers -------------------------------------------------
   //

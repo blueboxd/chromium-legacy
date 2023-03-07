@@ -11,8 +11,9 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
@@ -64,9 +65,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
     virtual scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() = 0;
 
-    // Binds a RunLoop::Delegate and TaskRunnerHandle to the thread. The
-    // underlying MessagePump will have its |timer_slack| set to the specified
-    // amount.
+    // Binds a RunLoop::Delegate and task runner CurrentDefaultHandle to the
+    // thread. The underlying MessagePump will have its |timer_slack| set to the
+    // specified amount.
     virtual void BindToCurrentThread(TimerSlack timer_slack) = 0;
   };
 
@@ -321,7 +322,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // The thread's Delegate and RunLoop are valid only while the thread is
   // alive. Set by the created thread.
   std::unique_ptr<Delegate> delegate_;
-  RunLoop* run_loop_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION RunLoop* run_loop_ = nullptr;
 
   // Stores Options::timer_slack_ until the sequence manager has been bound to
   // a thread.

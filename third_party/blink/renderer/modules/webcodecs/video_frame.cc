@@ -7,9 +7,9 @@
 #include <limits>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/time/time.h"
@@ -1298,7 +1298,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
                                                orientation_enum),
         crop_rect, options);
     return ImageBitmapSource::FulfillImageBitmap(script_state, image_bitmap,
-                                                 exception_state);
+                                                 options, exception_state);
   }
 
   auto* execution_context =
@@ -1335,7 +1335,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
   auto* image_bitmap =
       MakeGarbageCollected<ImageBitmap>(image, crop_rect, options);
   return ImageBitmapSource::FulfillImageBitmap(script_state, image_bitmap,
-                                               exception_state);
+                                               options, exception_state);
 }
 
 void VideoFrame::Trace(Visitor* visitor) const {

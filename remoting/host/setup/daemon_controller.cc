@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_runner.h"
@@ -196,8 +196,9 @@ void DaemonController::OnServicingDone() {
 
 void DaemonController::ServiceOrQueueRequest(base::OnceClosure request) {
   pending_requests_.push(std::move(request));
-  if (!servicing_request_)
+  if (!servicing_request_) {
     ServiceNextRequest();
+  }
 }
 
 void DaemonController::ServiceNextRequest() {

@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "components/autofill/core/browser/payments/payments_requests/get_details_for_enrollment_request.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
@@ -85,7 +85,7 @@ TEST_P(GetDetailsForEnrollmentRequestTest, ParseResponse) {
       "{ \"google_legal_message\": {}, \"external_legal_message\": {}, "
       "\"context_token\": \"some_token\" }");
   ASSERT_TRUE(response.has_value());
-  GetRequest()->ParseResponse(response.value());
+  GetRequest()->ParseResponse(response->GetDict());
 
   EXPECT_EQ(GetParsedResponse().vcn_context_token, "some_token");
   EXPECT_TRUE(GetParsedResponse().issuer_legal_message.empty());

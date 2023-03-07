@@ -31,8 +31,8 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/functional/function_ref.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -1478,21 +1478,21 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
       root.IsLayoutFlowThread())
     return false;
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    // Do not pre-layout objects that are fully managed by LayoutNG; it is not
-    // necessary and may lead to double layouts. We do need to pre-layout
-    // objects whose containing block is a legacy object so that it can
-    // properly compute its intrinsic size.
-    if (IsManagedByLayoutNG(root))
-      return false;
+  // Do not pre-layout objects that are fully managed by LayoutNG; it is not
+  // necessary and may lead to double layouts. We do need to pre-layout objects
+  // whose containing block is a legacy object so that it can properly compute
+  // its intrinsic size.
+  if (IsManagedByLayoutNG(root)) {
+    return false;
+  }
 
-    // If the root is legacy but has |CachedLayoutResult|, its parent is NG,
-    // which called |RunLegacyLayout()|. This parent not only needs to run
-    // pre-layout, but also clearing |NeedsLayout()| without updating
-    // |CachedLayoutResult| is harmful.
-    if (const auto* box = DynamicTo<LayoutBox>(root)) {
-      if (box->GetSingleCachedLayoutResult())
-        return false;
+  // If the root is legacy but has |CachedLayoutResult|, its parent is NG, which
+  // called |RunLegacyLayout()|. This parent not only needs to run pre-layout,
+  // but also clearing |NeedsLayout()| without updating |CachedLayoutResult| is
+  // harmful.
+  if (const auto* box = DynamicTo<LayoutBox>(root)) {
+    if (box->GetSingleCachedLayoutResult()) {
+      return false;
     }
   }
 
@@ -2502,8 +2502,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       continue;
 
     // ViewTransition mutates the tree and mirrors post layout transform for
-    // shared elements to UA created elements. This may dirty style/layout
-    // requiring another lifecycle update.
+    // transitioning elements to UA created elements. This may dirty
+    // style/layout requiring another lifecycle update.
     needs_to_repeat_lifecycle = RunViewTransitionSteps(target_state);
     if (!needs_to_repeat_lifecycle)
       break;
@@ -2778,8 +2778,9 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
 
   bool needed_update;
   {
-    PaintControllerCycleScope cycle_scope(PaintDebugInfoEnabled());
-    bool repainted = PaintTree(benchmark_mode, cycle_scope);
+    PaintControllerCycleScope cycle_scope(EnsurePaintController(),
+                                          PaintDebugInfoEnabled());
+    bool repainted = PaintTree(benchmark_mode);
 
     if (paint_artifact_compositor_ &&
         benchmark_mode ==
@@ -2906,8 +2907,7 @@ void LocalFrameView::EnqueueScrollEvents() {
   });
 }
 
-bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
-                               PaintControllerCycleScope& cycle_scope) {
+bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
   SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(), LocalFrameUkmAggregator::kPaint);
 
   DCHECK(GetFrame().IsLocalRoot());
@@ -2953,12 +2953,6 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
 
   bool repainted = false;
   bool needs_clear_repaint_flags = false;
-
-  // TODO(paint-dev): We should be able to get rid of AddController entirely
-  // after non-CAP code is removed. The call to EnsurePaintController() will
-  // need to be moved up the call stack.
-  EnsurePaintController();
-  cycle_scope.AddController(*paint_controller_);
 
   PaintChunkSubset previous_chunks(paint_controller_->GetPaintArtifactShared());
 
@@ -3067,6 +3061,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 
   SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
                            LocalFrameUkmAggregator::kCompositingCommit);
+  DEVTOOLS_TIMELINE_TRACE_EVENT("Layerize", inspector_layerize_event::Data,
+                                frame_.Get());
 
   // Skip updating property trees, pushing cc::Layers, and issuing raster
   // invalidations if possible.
@@ -3154,7 +3150,7 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   if (ShouldThrottleRendering() || !frame_->GetDocument()->IsActive())
     return;
 
-  TRACE_EVENT0("blink,benchmark",
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                "LocalFrameView::updateStyleAndLayoutIfNeededRecursive");
 
   UpdateStyleAndLayout();
@@ -3282,26 +3278,32 @@ void LocalFrameView::UpdateStyleAndLayout() {
 bool LocalFrameView::UpdateStyleAndLayoutInternal() {
   PostStyleUpdateScope post_style_update_scope(*frame_->GetDocument());
 
-  {
-    frame_->GetDocument()->UpdateStyleAndLayoutTreeForThisDocument();
+  bool layout_updated = false;
 
-    // Update style for all embedded SVG documents underneath this frame, so
-    // that intrinsic size computation for any embedded objects has up-to-date
-    // information before layout.
-    ForAllChildLocalFrameViews([](LocalFrameView& view) {
-      Document& document = *view.GetFrame().GetDocument();
-      if (document.IsSVGDocument())
-        document.UpdateStyleAndLayoutTreeForThisDocument();
-    });
-  }
+  do {
+    {
+      frame_->GetDocument()->UpdateStyleAndLayoutTreeForThisDocument();
 
-  if (NeedsLayout()) {
-    SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
-                             LocalFrameUkmAggregator::kLayout);
-    UpdateLayout();
-    return true;
-  }
-  return false;
+      // Update style for all embedded SVG documents underneath this frame, so
+      // that intrinsic size computation for any embedded objects has up-to-date
+      // information before layout.
+      ForAllChildLocalFrameViews([](LocalFrameView& view) {
+        Document& document = *view.GetFrame().GetDocument();
+        if (document.IsSVGDocument()) {
+          document.UpdateStyleAndLayoutTreeForThisDocument();
+        }
+      });
+    }
+
+    if (NeedsLayout()) {
+      SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
+                               LocalFrameUkmAggregator::kLayout);
+      UpdateLayout();
+      layout_updated = true;
+    }
+  } while (post_style_update_scope.Apply());
+
+  return layout_updated;
 }
 
 void LocalFrameView::EnableAutoSizeMode(const gfx::Size& min_size,
@@ -4109,12 +4111,12 @@ void LocalFrameView::PaintForTest(const CullRect& cull_rect) {
       .UpdateForTesting(CullRect::Infinite());
 }
 
-sk_sp<PaintRecord> LocalFrameView::GetPaintRecord() const {
+PaintRecord LocalFrameView::GetPaintRecord(const gfx::Rect* cull_rect) const {
   DCHECK_EQ(DocumentLifecycle::kPaintClean, Lifecycle().GetState());
   DCHECK(frame_->IsLocalRoot());
   DCHECK(paint_controller_);
   return paint_controller_->GetPaintArtifact().GetPaintRecord(
-      PropertyTreeState::Root());
+      PropertyTreeState::Root(), cull_rect);
 }
 
 gfx::Rect LocalFrameView::ConvertToRootFrame(

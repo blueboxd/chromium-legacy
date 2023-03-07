@@ -53,6 +53,21 @@ void WaylandManager::AddCapturerMetadataCallback(
   capturer_metadata_callback_ = std::move(callback);
 }
 
+void WaylandManager::AddCapturerDestroyedCallback(base::OnceClosure callback) {
+  if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WaylandManager::AddCapturerDestroyedCallback,
+                       base::Unretained(this),
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  capturer_destroyed_callback_ = std::move(callback);
+}
+
 void WaylandManager::OnDesktopCapturerMetadata(
     webrtc::DesktopCaptureMetadata metadata) {
   if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
@@ -66,6 +81,22 @@ void WaylandManager::OnDesktopCapturerMetadata(
     capturer_metadata_callback_.Run(std::move(metadata));
   } else {
     LOG(ERROR) << "Expected the capturer metadata observer to have register "
+               << "a callback by now";
+  }
+}
+
+void WaylandManager::OnDesktopCapturerDestroyed() {
+  if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WaylandManager::OnDesktopCapturerDestroyed,
+                                  base::Unretained(this)));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (capturer_destroyed_callback_) {
+    std::move(capturer_destroyed_callback_).Run();
+  } else {
+    LOG(ERROR) << "Expected the capturer destruction observer to have register "
                << "a callback by now";
   }
 }
@@ -137,6 +168,18 @@ void WaylandManager::OnUpdateScreenResolution(ScreenResolution resolution,
   }
 }
 
+void WaylandManager::SetSeatPresentCallback(
+    WaylandSeat::OnSeatPresentCallback callback) {
+  if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WaylandManager::SetSeatPresentCallback,
+                                  base::Unretained(this), std::move(callback)));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  wayland_connection_->SetSeatPresentCallback(std::move(callback));
+}
+
 void WaylandManager::SetKeyboardLayoutCallback(
     KeyboardLayoutCallback callback) {
   if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
@@ -151,8 +194,9 @@ void WaylandManager::SetKeyboardLayoutCallback(
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   keyboard_layout_callback_ = std::move(callback);
-  if (keymap_)
+  if (keymap_) {
     keyboard_layout_callback_.Run(std::move(keymap_));
+  }
 }
 
 void WaylandManager::OnKeyboardLayout(XkbKeyMapUniquePtr keymap) {
@@ -163,10 +207,11 @@ void WaylandManager::OnKeyboardLayout(XkbKeyMapUniquePtr keymap) {
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (keyboard_layout_callback_)
+  if (keyboard_layout_callback_) {
     keyboard_layout_callback_.Run(std::move(keymap));
-  else
+  } else {
     keymap_ = std::move(keymap);
+  }
 }
 
 void WaylandManager::AddKeyboardModifiersCallback(
@@ -183,6 +228,56 @@ void WaylandManager::AddKeyboardModifiersCallback(
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   keyboard_modifier_callbacks_.AddUnsafe(std::move(callback));
+}
+
+void WaylandManager::SetKeyboardCapabilityCallback(base::OnceClosure callback) {
+  if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WaylandManager::SetKeyboardCapabilityCallback,
+                       base::Unretained(this),
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  keyboard_capability_callback_ = std::move(callback);
+  if (is_keyboard_capability_acquired_) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(keyboard_capability_callback_));
+  }
+}
+
+void WaylandManager::OnSeatKeyboardCapabilityRevoked() {
+  if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WaylandManager::OnSeatKeyboardCapabilityRevoked,
+                       base::Unretained(this)));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_keyboard_capability_acquired_ = false;
+}
+
+void WaylandManager::OnSeatKeyboardCapability() {
+  if (!ui_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WaylandManager::OnSeatKeyboardCapability,
+                                  base::Unretained(this)));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_keyboard_capability_acquired_ = true;
+
+  const uint32_t seat_id = wayland_connection_->GetSeatId();
+  if (!keyboard_capability_callback_) {
+    LOG(WARNING) << "Seat (" << seat_id << ") gained keyboard capability "
+                 << "before a listener is registered.";
+  } else {
+    std::move(keyboard_capability_callback_).Run();
+  }
 }
 
 void WaylandManager::OnKeyboardModifiers(uint32_t group) {

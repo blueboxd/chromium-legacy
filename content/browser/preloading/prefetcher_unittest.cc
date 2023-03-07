@@ -24,8 +24,7 @@ namespace {
 
 class MockSpeculationHostDelegate : public SpeculationHostDelegate {
  public:
-  explicit MockSpeculationHostDelegate(
-      content::RenderFrameHost& render_frame_host) {}
+  explicit MockSpeculationHostDelegate(RenderFrameHost& render_frame_host) {}
   ~MockSpeculationHostDelegate() override = default;
 
   void ProcessCandidates(
@@ -148,33 +147,10 @@ class PrefetcherTest : public RenderViewHostTestHarness {
   std::unique_ptr<TestPrefetchService> prefetch_service_;
 };
 
-TEST_F(PrefetcherTest, PrefetcherWithDelegate) {
-  MockContentBrowserClient browser_client;
-  auto prefetcher = Prefetcher(GetPrimaryMainFrame());
-  auto* delegate = browser_client.GetDelegate();
-  EXPECT_TRUE(delegate != nullptr);
-
-  // Create list of SpeculationCandidatePtrs.
-  std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
-
-  auto candidate1 = blink::mojom::SpeculationCandidate::New();
-  candidate1->action = blink::mojom::SpeculationAction::kPrefetch;
-  candidate1->requires_anonymous_client_ip_when_cross_origin = true;
-  candidate1->url = GetCrossOriginUrl("/candidate1.html");
-  candidate1->referrer = blink::mojom::Referrer::New();
-  candidates.push_back(std::move(candidate1));
-
-  prefetcher.ProcessCandidatesForPrefetch(candidates);
-  EXPECT_EQ(1u, delegate->Candidates().size());
-
-  EXPECT_TRUE(prefetcher.IsPrefetchAttemptFailedOrDiscarded(
-      GetCrossOriginUrl("/candidate1.html")));
-}
-
-TEST_F(PrefetcherTest, PrefetcherWithoutDelegate) {
+TEST_F(PrefetcherTest, ProcessCandidatesForPrefetch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      content::features::kPrefetchUseContentRefactor,
+      features::kPrefetchUseContentRefactor,
       {{"proxy_host", "https://testproxyhost.com"}});
 
   MockContentBrowserClient browser_client;
@@ -206,7 +182,7 @@ TEST_F(PrefetcherTest, PrefetcherWithoutDelegate) {
 
 class MockPrefetcher : public Prefetcher {
  public:
-  explicit MockPrefetcher(content::RenderFrameHost& render_frame_host)
+  explicit MockPrefetcher(RenderFrameHost& render_frame_host)
       : Prefetcher(render_frame_host) {}
 
   void OnStartSinglePrefetch(const std::string& request_id,
@@ -242,7 +218,7 @@ class MockPrefetcher : public Prefetcher {
 TEST_F(PrefetcherTest, MockPrefetcher) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      content::features::kPrefetchUseContentRefactor,
+      features::kPrefetchUseContentRefactor,
       {{"proxy_host", "https://testproxyhost.com"}});
 
   MockContentBrowserClient browser_client;

@@ -14,14 +14,16 @@ namespace updater {
 // The GroupPolicyManager returns policies for domain-joined machines.
 class GroupPolicyManager : public PolicyManager {
  public:
-  GroupPolicyManager();
+  explicit GroupPolicyManager(bool should_take_policy_critical_section);
   GroupPolicyManager(const GroupPolicyManager&) = delete;
   GroupPolicyManager& operator=(const GroupPolicyManager&) = delete;
-  ~GroupPolicyManager() override;
 
   // Overrides for PolicyManagerInterface.
   std::string source() const override;
   bool HasActiveDevicePolicies() const override;
+
+ private:
+  ~GroupPolicyManager() override;
 };
 
 }  // namespace updater

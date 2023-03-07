@@ -8,11 +8,11 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -41,9 +41,12 @@ void LogVideoCaptureError(media::VideoCaptureError error) {
 }
 
 const base::UnguessableToken& FakeSessionId() {
+  // TODO(https://crbug.com/1406985): Investigate whether there's a better way
+  // to accomplish this (without using UnguessableToken::Deserialize).
   static const base::UnguessableToken fake_session_id(
-      base::UnguessableToken::Deserialize(0xFFFFFFFFFFFFFFFFU,
-                                          0xFFFFFFFFFFFFFFFFU));
+      base::UnguessableToken::Deserialize2(0xFFFFFFFFFFFFFFFFU,
+                                           0xFFFFFFFFFFFFFFFFU)
+          .value());
   return fake_session_id;
 }
 

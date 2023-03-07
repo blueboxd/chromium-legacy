@@ -61,11 +61,13 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="SegmentationModel">
+  <variant name="AdaptiveToolbar"/>
   <variant name="ChromeLowUserEngagement"/>
   <variant name="ChromeStartAndroid"/>
   <variant name="ChromeStartAndroidV2"/>
   <variant name="ContextualPageActionPriceTracking"/>
   <variant name="CrossDeviceUser"/>
+  <variant name="DeviceSwitcher"/>
   <variant name="Dummy"/>
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUserSegment"/>
@@ -120,7 +122,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2023-06-11">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2023-07-23">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -540,7 +542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SelectionFailedReason"
-    enum="SegmentationSelectionFailureReason" expires_after="2023-06-11">
+    enum="SegmentationSelectionFailureReason" expires_after="2023-07-23">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>

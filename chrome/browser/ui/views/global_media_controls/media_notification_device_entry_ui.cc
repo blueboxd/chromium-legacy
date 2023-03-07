@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_entry_ui.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -27,8 +27,8 @@ void ChangeEntryColor(views::ImageView* image_view,
                       SkColor foreground_color,
                       SkColor background_color) {
   if (image_view) {
-    image_view->SetImage(
-        gfx::CreateVectorIcon(*icon, kDeviceIconSize, foreground_color));
+    image_view->SetImage(ui::ImageModel::FromVectorIcon(*icon, foreground_color,
+                                                        kDeviceIconSize));
   }
 
   title_view->SetDisplayedOnBackgroundColor(background_color);
@@ -50,8 +50,8 @@ void ChangeEntryColor(views::ImageView* image_view,
 
 std::unique_ptr<views::ImageView> GetAudioDeviceIcon() {
   auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(gfx::CreateVectorIcon(
-      vector_icons::kHeadsetIcon, kDeviceIconSize, gfx::kPlaceholderColor));
+  icon_view->SetImage(ui::ImageModel::FromVectorIcon(
+      vector_icons::kHeadsetIcon, gfx::kPlaceholderColor, kDeviceIconSize));
   icon_view->SetBorder(views::CreateEmptyBorder(kDeviceIconBorder));
   return icon_view;
 }

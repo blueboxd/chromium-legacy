@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
@@ -135,13 +135,14 @@ bool ToCdmVideoFrame(const VideoFrame& video_frame,
 }
 
 // Media VideoDecoders typically assumes a global environment where a lot of
-// things are already setup in the process, e.g. base::ThreadTaskRunnerHandle
-// and base::CommandLine. These will be available in the component build because
-// the CDM and the host is depending on the same base/ target. In static build,
-// they will not be available and we have to setup it by ourselves.
+// things are already setup in the process,
+// e.g. base::SingleThreadTaskRunnerCurrentDefautHandle and
+// base::CommandLine. These will be available in the component build because the
+// CDM and the host is depending on the same base/ target. In static build, they
+// will not be available and we have to setup it by ourselves.
 void SetupGlobalEnvironmentIfNeeded() {
   // Creating a base::SingleThreadTaskExecutor to setup
-  // base::ThreadTaskRunnerHandle.
+  // base::SingleThreadTaskRunner::CurrentDefaultHandle.
   if (!base::SingleThreadTaskRunner::HasCurrentDefault()) {
     static base::NoDestructor<base::SingleThreadTaskExecutor> task_executor;
   }

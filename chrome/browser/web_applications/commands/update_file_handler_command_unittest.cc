@@ -15,7 +15,6 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -29,15 +28,13 @@ class UpdateFileHandlerCommandTest
   const GURL kTestAppUrl = GURL("https://example.com");
 
   UpdateFileHandlerCommandTest() {
-    if (GetParam() == OsIntegrationSubManagersState::kEnabled) {
+    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
       scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}},
-           {blink::features::kFileHandlingAPI, {}}},
+          {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
           /*disabled_features=*/{});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {blink::features::kFileHandlingAPI},
-          {features::kOsIntegrationSubManagers});
+          {}, {features::kOsIntegrationSubManagers});
     }
   }
 
@@ -64,18 +61,6 @@ class UpdateFileHandlerCommandTest
   }
 
   WebAppProvider* provider() { return provider_; }
-
-  void EnableFileHandlingAPI() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kFileHandlingAPI);
-  }
-
-  void DisableFileHandlingAPI() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndDisableFeature(
-        blink::features::kFileHandlingAPI);
-  }
 
  private:
   raw_ptr<FakeWebAppProvider> provider_;
@@ -122,42 +107,10 @@ TEST_P(UpdateFileHandlerCommandTest, UserChoiceDisallowPersisted) {
           app_id));
 }
 
-TEST_P(UpdateFileHandlerCommandTest, UpdateFileHandler) {
-  const AppId app_id =
-      test::InstallDummyWebApp(profile(), kTestAppName, kTestAppUrl);
-  EXPECT_EQ(
-      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
-      ApiApprovalState::kRequiresPrompt);
-
-  DisableFileHandlingAPI();
-
-  base::RunLoop run_loop;
-  provider()->scheduler().UpdateFileHandlerOsIntegration(
-      app_id, run_loop.QuitClosure());
-  run_loop.Run();
-
-  EXPECT_EQ(
-      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
-      ApiApprovalState::kRequiresPrompt);
-  EXPECT_FALSE(
-      provider()->registrar_unsafe().ExpectThatFileHandlersAreRegisteredWithOs(
-          app_id));
-
-  EnableFileHandlingAPI();
-
-  base::RunLoop run_loop_2;
-  provider()->scheduler().UpdateFileHandlerOsIntegration(
-      app_id, run_loop_2.QuitClosure());
-  run_loop_2.Run();
-  EXPECT_TRUE(
-      provider()->registrar_unsafe().ExpectThatFileHandlersAreRegisteredWithOs(
-          app_id));
-}
-
 INSTANTIATE_TEST_SUITE_P(
     All,
     UpdateFileHandlerCommandTest,
-    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+    ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
                       OsIntegrationSubManagersState::kDisabled),
     test::GetOsIntegrationSubManagersTestName);
 

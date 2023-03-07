@@ -11,9 +11,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -492,7 +492,7 @@ FileManagerPrivateInternalGetEntryPropertiesFunction::Run() {
         break;
       case storage::kFileSystemTypeDriveFs:
         file_manager::util::SingleEntryPropertiesGetterForDriveFs::Start(
-            file_system_url, profile, std::move(callback));
+            file_system_url, profile, names_as_set, std::move(callback));
         break;
       case storage::kFileSystemTypeArcDocumentsProvider:
         SingleEntryPropertiesGetterForDocumentsProvider::Start(
@@ -817,16 +817,13 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
   }
 
   result.has_cellular_network_access =
-      chromeos::NetworkHandler::Get()
-          ->network_state_handler()
-          ->FirstNetworkByType(chromeos::NetworkTypePattern::Mobile());
+      ash::NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
+          ash::NetworkTypePattern::Mobile());
 
   const auto& enabled_extensions =
       extensions::ExtensionRegistry::Get(browser_context())
           ->enabled_extensions();
   result.can_pin_hosted_files =
-      base::FeatureList::IsEnabled(
-          ash::features::kDriveFsBidirectionalNativeMessaging) &&
       enabled_extensions.Contains(extension_misc::kDocsOfflineExtensionId) &&
       enabled_extensions.Contains(
           GURL(drive::kDriveFsNativeMessageHostOrigins[0]).host());
@@ -874,22 +871,15 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
     return;
   }
   download_url_ = std::move(download_url);
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context()));
-  // This class doesn't care about browser sync consent.
-  const CoreAccountId& account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
-  std::vector<std::string> scopes;
-  scopes.emplace_back(GaiaConstants::kDriveReadOnlyOAuth2Scope);
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      browser_context()
-          ->GetDefaultStoragePartition()
-          ->GetURLLoaderFactoryForBrowserProcess();
-  auth_service_ = std::make_unique<google_apis::AuthService>(
-      identity_manager, account_id, url_loader_factory, scopes);
-  auth_service_->StartAuthentication(base::BindOnce(
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(
+          Profile::FromBrowserContext(browser_context()));
+
+  // Integration service was used to fetch this download url, so should still be
+  // present, even if DriveFS has unmounted or experienced an error.
+  DCHECK(integration_service);
+  integration_service->GetReadOnlyAuthenticationToken(base::BindOnce(
       &FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched, this));
 }
 
@@ -973,14 +963,11 @@ FileManagerPrivateNotifyDriveDialogResultFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivatePollDriveHostedFilePinStatesFunction::Run() {
-  if (base::FeatureList::IsEnabled(
-          ash::features::kDriveFsBidirectionalNativeMessaging)) {
-    Profile* const profile = Profile::FromBrowserContext(browser_context());
-    drive::DriveIntegrationService* integration_service =
-        drive::util::GetIntegrationServiceByProfile(profile);
-    if (integration_service) {
-      integration_service->PollHostedFilePinStates();
-    }
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (integration_service) {
+    integration_service->PollHostedFilePinStates();
   }
   return RespondNow(WithArguments());
 }

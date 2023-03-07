@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -83,6 +83,14 @@ base::Value::List GetUiDevToolsTargets() {
     targets.Append(std::move(target_data));
   }
   return targets;
+}
+
+void CreateAndAddInspectUIHTMLSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIInspectHost);
+  source->AddResourcePath("inspect.css", IDR_INSPECT_CSS);
+  source->AddResourcePath("inspect.js", IDR_INSPECT_JS);
+  source->SetDefaultResource(IDR_INSPECT_HTML);
 }
 
 // DevToolsFrontEndObserver ----------------------------------------
@@ -460,7 +468,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui), WebContentsObserver(web_ui->GetWebContents()) {
   web_ui->AddMessageHandler(std::make_unique<InspectMessageHandler>(this));
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
+  CreateAndAddInspectUIHTMLSource(profile);
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
@@ -649,15 +657,6 @@ void InspectUI::StopListeningNotifications() {
   port_status_serializer_.reset();
 
   pref_change_registrar_.RemoveAll();
-}
-
-content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIInspectHost);
-  source->AddResourcePath("inspect.css", IDR_INSPECT_CSS);
-  source->AddResourcePath("inspect.js", IDR_INSPECT_JS);
-  source->SetDefaultResource(IDR_INSPECT_HTML);
-  return source;
 }
 
 void InspectUI::UpdateDiscoverUsbDevicesEnabled() {

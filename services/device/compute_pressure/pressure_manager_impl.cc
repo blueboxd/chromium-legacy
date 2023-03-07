@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -66,12 +66,12 @@ void PressureManagerImpl::AddClient(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!collector_.has_probe()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(mojom::PressureStatus::kNotSupported);
     return;
   }
   clients_.Add(std::move(client));
   collector_.EnsureStarted();
-  std::move(callback).Run(true);
+  std::move(callback).Run(mojom::PressureStatus::kOk);
 }
 
 void PressureManagerImpl::UpdateClients(mojom::PressureState state) {
@@ -83,7 +83,7 @@ void PressureManagerImpl::UpdateClients(mojom::PressureState state) {
 
   mojom::PressureUpdate update(state, {}, timestamp);
   for (auto& client : clients_) {
-    client->PressureStateChanged(update.Clone());
+    client->OnPressureUpdated(update.Clone());
   }
 }
 

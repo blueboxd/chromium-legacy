@@ -123,7 +123,6 @@ void SharedImageStub::ExecuteDeferredRequest(
 }
 
 bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
-                                        int client_id,
                                         gfx::GpuMemoryBufferHandle handle,
                                         gfx::BufferFormat format,
                                         gfx::BufferPlane plane,
@@ -144,9 +143,9 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
     OnError();
     return false;
   }
-  if (!factory_->CreateSharedImage(mailbox, client_id, std::move(handle),
-                                   format, plane, size, color_space,
-                                   surface_origin, alpha_type, usage)) {
+  if (!factory_->CreateSharedImage(mailbox, std::move(handle), format, plane,
+                                   size, color_space, surface_origin,
+                                   alpha_type, usage)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return false;
@@ -300,11 +299,10 @@ void SharedImageStub::OnCreateGMBSharedImage(
     mojom::CreateGMBSharedImageParamsPtr params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateGMBSharedImage", "width",
                params->size.width(), "height", params->size.height());
-  if (!CreateSharedImage(params->mailbox, channel_->client_id(),
-                         std::move(params->buffer_handle), params->format,
-                         params->plane, params->size, params->color_space,
-                         params->surface_origin, params->alpha_type,
-                         params->usage)) {
+  if (!CreateSharedImage(params->mailbox, std::move(params->buffer_handle),
+                         params->format, params->plane, params->size,
+                         params->color_space, params->surface_origin,
+                         params->alpha_type, params->usage)) {
     return;
   }
 
@@ -485,14 +483,11 @@ ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
     return ContextResult::kTransientFailure;
   }
 
-  gpu::GpuMemoryBufferFactory* gmb_factory =
-      channel_manager->gpu_memory_buffer_factory();
   factory_ = std::make_unique<SharedImageFactory>(
       channel_manager->gpu_preferences(),
       channel_manager->gpu_driver_bug_workarounds(),
       channel_manager->gpu_feature_info(), context_state_.get(),
-      channel_manager->shared_image_manager(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
+      channel_manager->shared_image_manager(), this,
       /*is_for_display_compositor=*/false);
   return ContextResult::kSuccess;
 }

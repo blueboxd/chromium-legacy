@@ -40,8 +40,9 @@ bool SyncedBookmarksObserverBridge::HasSyncConsent() {
 }
 
 bool SyncedBookmarksObserverBridge::IsPerformingInitialSync() {
-  if (!HasSyncConsent())
+  if (!HasSyncConsent()) {
     return false;
+  }
 
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state_);

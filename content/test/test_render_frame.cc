@@ -8,8 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/functional/callback_helpers.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/frame.mojom.h"
@@ -269,7 +268,8 @@ void TestRenderFrame::Navigate(
       std::move(pending_factory_bundle), absl::nullopt,
       blink::mojom::ControllerServiceWorkerInfoPtr(),
       blink::mojom::ServiceWorkerContainerInfoForClientPtr(),
-      mojo::NullRemote() /* prefetch_loader_factory */, blink::DocumentToken(),
+      mojo::NullRemote() /* prefetch_loader_factory */,
+      mojo::NullRemote() /* topics_loader_factory */, blink::DocumentToken(),
       base::UnguessableToken::Create(), blink::ParsedPermissionsPolicy(),
       blink::mojom::PolicyContainer::New(
           blink::mojom::PolicyContainerPolicies::New(),

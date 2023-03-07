@@ -16,35 +16,24 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_notifier.h"
-#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/ash_typography.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
-#include "base/bind.h"
 #include "base/dcheck_is_on.h"
 #include "base/time/time.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/events/event.h"
-#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -62,14 +51,9 @@ constexpr static base::TimeDelta kIdentityTranslationDuration =
 
 constexpr static base::TimeDelta kFastFadeInDuration = base::Milliseconds(0);
 
-// TODO(crbug.com/1199206): Move this into SharedAppListConfig once the UI for
-// categories is more developed.
-constexpr size_t kMaxResultsWithCategoricalSearch = 3;
-constexpr int kAnswerCardMaxResults = 1;
-
 // Show animations for search result views and titles have a translation
 // distance of 'kAnimatedOffsetMultiplier' * i where i is the position of the
-// view in the 'ProductivityLauncherSearchView'.
+// view in the 'AppListSearchView'.
 constexpr int kAnimatedOffsetMultiplier = 4;
 
 // Maps 'AppListSearchResultCategory' to 'SearchResultListType'.
@@ -118,7 +102,7 @@ SearchResultListView::SearchResultListView(
       std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
   title_label_ = AddChildView(std::make_unique<views::Label>(
-      u"", CONTEXT_SEARCH_RESULT_CATEGORY_LABEL, STYLE_PRODUCTIVITY_LAUNCHER));
+      u"", CONTEXT_SEARCH_RESULT_CATEGORY_LABEL, STYLE_LAUNCHER));
   title_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   title_label_->SetEnabledColorId(kColorAshTextColorSecondary);
@@ -133,7 +117,8 @@ SearchResultListView::SearchResultListView(
   results_container_->AddChildView(title_label_);
 
   size_t result_count =
-      kMaxResultsWithCategoricalSearch +
+      ash::SharedAppListConfig::instance()
+          .max_results_with_categorical_search() +
       SharedAppListConfig::instance().max_assistant_search_result_list_items();
 
   for (size_t i = 0; i < result_count; ++i) {
@@ -464,10 +449,7 @@ const char* SearchResultListView::GetClassName() const {
 }
 
 void SearchResultListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // With productivity launcher disabled, the parent search result page view
-  // will have the list box role.
-  if (ash::features::IsProductivityLauncherEnabled())
-    node_data->role = ax::mojom::Role::kListBox;
+  node_data->role = ax::mojom::Role::kListBox;
 }
 
 int SearchResultListView::GetHeightForWidth(int w) const {
@@ -481,9 +463,6 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
     return;
 
   auto* result = view->result();
-
-  RecordSearchResultOpenSource(result, view_delegate_->GetAppListViewState(),
-                               view_delegate_->IsInTabletMode());
 
   AppListLaunchType launch_type =
       IsAppListSearchResultAnApp(result->result_type())
@@ -550,14 +529,15 @@ std::vector<SearchResult*> SearchResultListView::GetCategorizedSearchResults() {
             return result.display_type() ==
                    SearchResultDisplayType::kAnswerCard;
           }),
-          kAnswerCardMaxResults);
+          ash::SharedAppListConfig::instance().answer_card_max_results());
     case SearchResultListType::kBestMatch:
       // Filter results based on whether they have the best_match label.
       return SearchModel::FilterSearchResultsByFunction(
           results(),
           base::BindRepeating(&SearchResultListView::FilterBestMatches,
                               base::Unretained(this)),
-          kMaxResultsWithCategoricalSearch);
+          ash::SharedAppListConfig::instance()
+              .max_results_with_categorical_search());
     case SearchResultListType::kApps:
     case SearchResultListType::kAppShortcuts:
     case SearchResultListType::kWeb:
@@ -573,7 +553,8 @@ std::vector<SearchResult*> SearchResultListView::GetCategorizedSearchResults() {
           base::BindRepeating(
               &SearchResultListView::FilterSearchResultsByCategory,
               base::Unretained(this), search_category),
-          kMaxResultsWithCategoricalSearch);
+          ash::SharedAppListConfig::instance()
+              .max_results_with_categorical_search());
   }
 }
 

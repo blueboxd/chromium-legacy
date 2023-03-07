@@ -16,6 +16,7 @@ import android.system.Os;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.build.gtest_apk.NativeTestIntent;
 import org.chromium.test.reporter.TestStatusReporter;
@@ -54,6 +55,10 @@ public class NativeTest {
         }
     }
 
+    /**
+     * This method is called on cronet so it needs to support at least Kitkat (API 19). See this
+     * CL for context: https://crrev.com/c/3198091.
+     */
     public void preCreate(Activity activity) {
         String coverageDeviceFile =
                 activity.getIntent().getStringExtra(NativeTestIntent.EXTRA_COVERAGE_DEVICE_FILE);
@@ -64,25 +69,20 @@ public class NativeTest {
                 Log.w(TAG, "failed to set LLVM_PROFILE_FILE", e);
             }
         }
-        // To use Os.setenv, need to check Android API level, because
-        // it requires API level 21 and Kitkat(API 19) doesn't match.
-        // See crbug.com/1042122.
+        // To use Os.setenv, need to check Android API level, because it requires API level 21 and
+        // Kitkat (API 19) doesn't match. See crbug.com/1042122.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Set TMPDIR to make perfetto_unittests not to use /data/local/tmp
-            // as temporary directory.
+            // Set TMPDIR to make perfetto_unittests not to use /data/local/tmp as a tmp directory.
             try {
                 Os.setenv(
                         "TMPDIR", activity.getApplicationContext().getCacheDir().getPath(), false);
             } catch (Exception e) {
-                // Need to use Exception for Android Kitkat, because
-                // Kitkat doesn't know ErrnoException is an exception class.
-                // When dalvikvm(Kitkat) verifies preCreate method, it finds
-                // that unknown method:Os.setenv is used without any exception
-                // class. So dalvikvm rejects preCreate method and also rejects
-                // NativeClass. All native tests will crash.
-                // The verification is executed before running preCreate.
-                // The above Build.VERSION check doesn't work to avoid
-                // the crash.
+                // Need to use Exception for Android Kitkat, because Kitkat doesn't know
+                // ErrnoException is an exception class. When dalvikvm(Kitkat) verifies preCreate
+                // method, it finds that unknown method:Os.setenv is used without any exception
+                // class. So dalvikvm rejects preCreate method and also rejects NativeClass. All
+                // native tests will crash. The verification is executed before running preCreate.
+                // The above Build.VERSION check doesn't work to avoid the crash.
                 Log.w(TAG, "failed to set TMPDIR", e);
             }
         }
@@ -174,8 +174,8 @@ public class NativeTest {
     }
 
     private void runTests(Activity activity) {
-        nativeRunTests(mCommandLineFlags.toString(), mCommandLineFilePath, mStdoutFilePath,
-                activity.getApplicationContext(), UrlUtils.getIsolatedTestRoot());
+        NativeTestJni.get().runTests(mCommandLineFlags.toString(), mCommandLineFilePath,
+                mStdoutFilePath, activity.getApplicationContext(), UrlUtils.getIsolatedTestRoot());
         activity.finish();
         mReporter.testRunFinished(Process.myPid());
     }
@@ -187,6 +187,9 @@ public class NativeTest {
         Log.e(TAG, "[ RUNNER_FAILED ] could not load native library");
     }
 
-    private native void nativeRunTests(String commandLineFlags, String commandLineFilePath,
-            String stdoutFilePath, Context appContext, String testDataDir);
+    @NativeMethods
+    interface Natives {
+        void runTests(String commandLineFlags, String commandLineFilePath, String stdoutFilePath,
+                Context appContext, String testDataDir);
+    }
 }

@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
-#include "components/cast_streaming/renderer/decoder_buffer_reader.h"
+#include "components/cast_streaming/public/decoder_buffer_reader.h"
 #include "components/cast_streaming/renderer/public/decoder_buffer_provider.h"
 #include "media/base/decoder_buffer.h"
 #include "media/mojo/mojom/media_types.mojom-forward.h"
@@ -35,9 +35,10 @@ class DecoderBufferProviderImpl : public DecoderBufferProvider<TConfigType> {
 
     // Requests a new buffer be provided to this class, which will be returned
     // via call to |on_buffer_received|.
+    using BufferProviderRequestCB =
+        base::OnceCallback<void(media::mojom::DecoderBufferPtr)>;
     virtual void RequestBufferAsync(
-        base::OnceCallback<void(media::mojom::DecoderBufferPtr)>
-            on_buffer_received) = 0;
+        BufferProviderRequestCB n_buffer_received) = 0;
   };
 
   DecoderBufferProviderImpl(
@@ -103,6 +104,12 @@ class DecoderBufferProviderImpl : public DecoderBufferProvider<TConfigType> {
       return;
     }
 
+    DCHECK(new_buffer_callback_);
+    if (!buffer) {
+      buffer_reader_->ClearReadPending();
+      std::move(new_buffer_callback_).Run(nullptr);
+      return;
+    }
     buffer_reader_->ProvideBuffer(std::move(buffer));
   }
 

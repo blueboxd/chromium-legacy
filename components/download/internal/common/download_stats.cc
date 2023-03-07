@@ -6,8 +6,8 @@
 
 #include <map>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -692,6 +692,24 @@ void RecordDownloadManagerMemoryUsage(size_t bytes_used) {
 
 void RecordDownloadLaterEvent(DownloadLaterEvent event) {
   base::UmaHistogramEnumeration("Download.Later.Events", event);
+}
+
+void RecordInputStreamReadError(MojoResult mojo_result) {
+  InputStreamReadError error = InputStreamReadError::kUnknown;
+  switch (mojo_result) {
+    case MOJO_RESULT_INVALID_ARGUMENT:
+      error = InputStreamReadError::kInvalidArgument;
+      break;
+    case MOJO_RESULT_OUT_OF_RANGE:
+      error = InputStreamReadError::kOutOfRange;
+      break;
+    case MOJO_RESULT_BUSY:
+      error = InputStreamReadError::kBusy;
+      break;
+    default:
+      NOTREACHED();
+  }
+  base::UmaHistogramEnumeration("Download.InputStreamReadError", error);
 }
 
 #if BUILDFLAG(IS_ANDROID)

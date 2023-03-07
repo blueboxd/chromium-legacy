@@ -6,13 +6,12 @@
 
 #include <utility>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_connections.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 
-namespace location {
 namespace nearby {
 namespace connections {
 
@@ -142,4 +141,3 @@ BooleanMediumSelector MediumSelectorFromMojom(
 
 }  // namespace connections
 }  // namespace nearby
-}  // namespace location

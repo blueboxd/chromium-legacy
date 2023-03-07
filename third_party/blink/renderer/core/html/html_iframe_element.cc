@@ -485,9 +485,10 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
   if (!trust_token_)
     return nullptr;
 
+  // TODO(crbug.com/1264024): Deprecate JSON comments here, if possible.
   JSONParseError parse_error;
   std::unique_ptr<JSONValue> parsed_attribute =
-      ParseJSON(trust_token_, &parse_error);
+      ParseJSONWithCommentsDeprecated(trust_token_, &parse_error);
   if (!parsed_attribute) {
     GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
@@ -509,35 +510,26 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
     return nullptr;
   }
 
-  // Trust token redemption and signing (but not issuance) require that the
-  // trust-token-redemption permissions policy be present.
-  bool operation_requires_permissions_policy =
-      parsed_params->type ==
-          network::mojom::blink::TrustTokenOperationType::kRedemption ||
-      parsed_params->type ==
-          network::mojom::blink::TrustTokenOperationType::kSigning;
+  // Only the send-redemption-record (the kSigning variant) operation is
+  // valid in the iframe context.
+  if (parsed_params->operation !=
+      network::mojom::blink::TrustTokenOperationType::kSigning) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Trust Tokens: Attempted a trusttoken operation which isn't "
+        "send-redemption-record in an iframe."));
+    return nullptr;
+  }
 
-  if (operation_requires_permissions_policy &&
-      (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kTrustTokenRedemption))) {
+  if (!GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::PermissionsPolicyFeature::kTrustTokenRedemption)) {
     GetExecutionContext()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
             mojom::blink::ConsoleMessageSource::kOther,
             mojom::blink::ConsoleMessageLevel::kError,
             "Trust Tokens: Attempted redemption or signing without the "
             "trust-token-redemption Permissions Policy feature present."));
-    return nullptr;
-  }
-
-  if (parsed_params->type ==
-          network::mojom::blink::TrustTokenOperationType::kIssuance &&
-      !IsTrustTokenIssuanceAvailableInExecutionContext(
-          *GetExecutionContext())) {
-    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kOther,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "Private State Tokens issuance is disabled except in "
-        "contexts with the PrivateStateTokens Origin Trial enabled."));
     return nullptr;
   }
 

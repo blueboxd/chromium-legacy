@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -116,7 +116,10 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     DataTypeController::State state = controller->state();
     DCHECK(state == DataTypeController::NOT_RUNNING ||
            state == DataTypeController::STOPPING ||
-           state == DataTypeController::FAILED);
+           state == DataTypeController::FAILED)
+        << " actual=" << DataTypeController::StateToString(state) << " for "
+        << ModelTypeToDebugString(type);
+
     if (state == DataTypeController::FAILED) {
       existing_errors[type] =
           SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
@@ -623,8 +626,15 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
   configurer_->DisconnectDataType(type);
   configured_proxy_types_.Remove(type);
 
+  // If the type is newly-failed (i.e. has not already failed before), then
+  // reconfigure.
+  bool should_reconfigure =
+      error.IsSet() && !data_type_status_table_.GetFailedTypes().Has(type);
   if (error.IsSet()) {
+    // Update the status table with the new error either way.
     data_type_status_table_.UpdateFailedDataType(type, error);
+  }
+  if (should_reconfigure) {
     needs_reconfigure_ = true;
     last_requested_context_.reason =
         GetReasonForProgrammaticReconfigure(last_requested_context_.reason);

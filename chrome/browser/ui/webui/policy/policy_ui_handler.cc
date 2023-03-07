@@ -10,12 +10,12 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
@@ -71,6 +71,10 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "components/policy/core/common/policy_logger.h"
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
@@ -175,6 +179,14 @@ void PolicyUIHandler::RegisterMessages() {
       "copyPoliciesJSON",
       base::BindRepeating(&PolicyUIHandler::HandleCopyPoliciesJson,
                           base::Unretained(this)));
+
+#if BUILDFLAG(IS_ANDROID)
+  web_ui()->RegisterMessageCallback(
+      "getPolicyLogs",
+      base::BindRepeating(&PolicyUIHandler::HandleGetPolicyLogs,
+                          base::Unretained(this)));
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if !BUILDFLAG(IS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "uploadReport", base::BindRepeating(&PolicyUIHandler::HandleUploadReport,
@@ -284,6 +296,15 @@ void PolicyUIHandler::HandleCopyPoliciesJson(const base::Value::List& args) {
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(base::UTF8ToUTF16(policies_json));
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void PolicyUIHandler::HandleGetPolicyLogs(const base::Value::List& args) {
+  DCHECK(policy::PolicyLogger::GetInstance()->IsPolicyLoggingEnabled());
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0],
+                            policy::PolicyLogger::GetInstance()->GetAsValue());
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS)
 void PolicyUIHandler::HandleUploadReport(const base::Value::List& args) {

@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "dbus/object_proxy.h"
 
 namespace dbus {
@@ -97,10 +97,5 @@ class COMPONENT_EXPORT(SYSTEM_CLOCK) SystemClockClient {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::SystemClockClient;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_SYSTEM_CLOCK_SYSTEM_CLOCK_CLIENT_H_

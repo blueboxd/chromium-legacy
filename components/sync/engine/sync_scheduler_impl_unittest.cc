@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -1707,7 +1707,7 @@ TEST_F(SyncSchedulerImplTest, PollFromCanaryAfterAuthError) {
       .WillOnce(
           DoAll(Invoke(SimulatePollSuccess), RecordSyncShare(&times, true)));
   scheduler()->OnCredentialsUpdated();
-  connection()->SetServerResponse(HttpResponse::ForSuccess());
+  connection()->SetServerResponse(HttpResponse::ForSuccessForTest());
   RunLoop();
   StopSyncScheduler();
 }

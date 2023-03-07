@@ -16,8 +16,8 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -228,8 +228,9 @@ ScrollableUsersListView::~ScrollableUsersListView() = default;
 LoginUserView* ScrollableUsersListView::GetUserView(
     const AccountId& account_id) {
   for (auto* view : user_views_) {
-    if (view->current_user().basic_user_info.account_id == account_id)
+    if (view->current_user().basic_user_info.account_id == account_id) {
       return view;
+    }
   }
   return nullptr;
 }
@@ -251,8 +252,9 @@ void ScrollableUsersListView::Layout() {
   if (parent()) {
     int parent_height = parent()->size().height();
     ClipHeightTo(parent_height, parent_height);
-    if (height() != parent_height)
+    if (height() != parent_height) {
       PreferredSizeChanged();
+    }
   }
 
   UpdateUserViewHostLayoutInsets();
@@ -282,8 +284,9 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
       // Draws symmetrical linear gradient at the top and bottom of the view.
       SkScalar view_height = render_bounds.height();
       SkScalar gradient_height = gradient_params_.height;
-      if (gradient_height == 0)
+      if (gradient_height == 0) {
         gradient_height = view_height;
+      }
 
       // Start and end point of the drawing in view space.
       SkPoint in_view_coordinates[2] = {SkPoint(),

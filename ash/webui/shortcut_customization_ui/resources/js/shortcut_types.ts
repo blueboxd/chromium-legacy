@@ -28,6 +28,8 @@ export enum Modifier {
 }
 
 export type TextAcceleratorPart = AcceleratorInfoTypes.TextAcceleratorPart;
+export type TextAcceleratorPartType =
+    AcceleratorInfoTypes.TextAcceleratorPartType;
 export const TextAcceleratorPartType =
     AcceleratorInfoTypes.TextAcceleratorPartType;
 
@@ -87,21 +89,20 @@ export type MojoAccelerator = AcceleratorTypes.Accelerator;
 
 
 
-export type DefaultAcceleratorInfo =
+export type StandardAcceleratorInfo =
     Omit<AcceleratorInfoTypes.AcceleratorInfo, 'layoutProperties'>&{
       layoutProperties:
-          {defaultAccelerator: {accelerator: Accelerator, keyDisplay: string}},
+          {standardAccelerator: {accelerator: Accelerator, keyDisplay: string}},
     };
 
 export type TextAcceleratorInfo =
     Omit<AcceleratorInfoTypes.AcceleratorInfo, 'layoutProperties'>&{
       layoutProperties: {
-        textAccelerator:
-            {textAccelerator: AcceleratorInfoTypes.TextAcceleratorPart[]},
+        textAccelerator: {parts: AcceleratorInfoTypes.TextAcceleratorPart[]},
       },
     };
 
-export type AcceleratorInfo = TextAcceleratorInfo|DefaultAcceleratorInfo;
+export type AcceleratorInfo = TextAcceleratorInfo|StandardAcceleratorInfo;
 
 /**
  * Type alias for the Mojo version of AcceleratorInfo.

@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/callback.h"
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -24,7 +24,6 @@
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_profile_manager.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kidschromemanagement_messages.pb.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
-#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -37,11 +36,14 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/tribool.h"
+#include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_type.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/startup/browser_params_proxy.h"
 #else
@@ -331,8 +333,8 @@ void ChildAccountServiceImpl::StartFetchingFamilyInfo() {
     list_family_members_fetcher_ = FetchListFamilyMembers(
         *identity_manager_, profile_->GetURLLoaderFactory(),
         KidsManagementService::GetEndpointUrl(),
-        BindOnce(&ChildAccountServiceImpl::ConsumeListFamilyMembers,
-                 base::Unretained(this)));
+        base::BindOnce(&ChildAccountServiceImpl::ConsumeListFamilyMembers,
+                       base::Unretained(this)));
   } else {
     family_fetcher_ = std::make_unique<FamilyInfoFetcher>(
         this, identity_manager_,

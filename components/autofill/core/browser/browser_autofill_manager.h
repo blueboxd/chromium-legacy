@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -27,8 +27,8 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/fast_checkout_delegate.h"
 #include "components/autofill/core/browser/field_filler.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
@@ -151,8 +151,6 @@ class BrowserAutofillManager : public AutofillManager,
 #endif
 
   // Called from our external delegate so they cannot be private.
-  // FillCreditCardForm() is also called by Autofill Assistant through
-  // ContentAutofillDriver::FillFormForAssistant().
   // TODO(crbug.com/1330108): Clean up the API.
   virtual void FillOrPreviewForm(mojom::RendererFormDataAction action,
                                  const FormData& form,
@@ -175,8 +173,6 @@ class BrowserAutofillManager : public AutofillManager,
                                            const FormFieldData& field,
                                            const CreditCard* credit_card);
 
-  // Called only from Autofill Assistant through
-  // ContentAutofillDriver::FillFormForAssistant().
   // TODO(crbug.com/1330108): Clean up the API.
   void FillProfileFormImpl(const FormData& form,
                            const FormFieldData& field,
@@ -315,6 +311,19 @@ class BrowserAutofillManager : public AutofillManager,
                                           const std::u16string& value,
                                           int frontend_id);
 
+  // Sets where the accepted autofill suggestion came from: touch to fill,
+  // keyboard accessory, etc.
+  virtual void SetSuggestionOriginMetricState(AutofillSuggestionMethod state);
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual void SetShouldSuppressKeyboard(bool suppress);
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual bool CanShowAutofillUi() const;
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual void TriggerReparseInAllFrames();
+
   void SetExternalDelegateForTest(
       std::unique_ptr<AutofillExternalDelegate> external_delegate) {
     external_delegate_ = std::move(external_delegate);
@@ -323,11 +332,6 @@ class BrowserAutofillManager : public AutofillManager,
   void SetTouchToFillDelegateImplForTest(
       std::unique_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate) {
     touch_to_fill_delegate_ = std::move(touch_to_fill_delegate);
-  }
-
-  void SetFastCheckoutDelegateForTest(
-      std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate) {
-    fast_checkout_delegate_ = std::move(fast_checkout_delegate);
   }
 
   static void DeterminePossibleFieldTypesForUploadForTest(
@@ -709,10 +713,13 @@ class BrowserAutofillManager : public AutofillManager,
   void SetDataList(const std::vector<std::u16string>& values,
                    const std::vector<std::u16string>& labels);
 
+  // Iterate through all the fields in the form to process the log events for
+  // each field and record into FieldInfo UKM event.
+  void ProcessFieldLogEventsInForm(const FormStructure& form_structure);
+
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
-  std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate_;
   std::unique_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
 
   std::string app_locale_;
@@ -805,6 +812,13 @@ class BrowserAutofillManager : public AutofillManager,
   // value="6" label="Phone Collected, WebOTP Used, OTC Not Used"
   // value="7" label="Phone Collected, WebOTP Used, OTC Used"
   uint32_t phone_collection_metric_state_ = 0;
+
+  // Used to record metrics. It is supposed to be set right after the user
+  // selects an autofill suggestions and reflects 'and reflects the method how
+  // the accepted suggestion was offered to the user:: touch to fill, keyboard
+  // accessory, etc.
+  AutofillSuggestionMethod autofill_suggestion_method_ =
+      AutofillSuggestionMethod::kUnknown;
 
   // List of callbacks to be called for sending blur votes. Only one callback is
   // stored per FormSignature. We rely on FormSignatures rather than

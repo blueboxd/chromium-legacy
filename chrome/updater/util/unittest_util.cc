@@ -4,6 +4,7 @@
 
 #include "chrome/updater/util/unittest_util.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,6 +12,8 @@
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -18,12 +21,18 @@
 #include "base/process/launch.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
+#include "chrome/updater/test_scope.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +41,9 @@
 #if BUILDFLAG(IS_WIN)
 #include <shlobj.h>
 
-#include "base/win/windows_version.h"
+#include "base/strings/string_number_conversions_win.h"
+#include "base/win/scoped_handle.h"
+#include "chrome/test/base/process_inspector_win.h"
 #include "chrome/updater/util/win_util.h"
 #endif
 
@@ -125,7 +136,30 @@ bool WaitForProcessesToExit(const base::FilePath::StringType& executable_name,
 
 bool KillProcesses(const base::FilePath::StringType& executable_name,
                    int exit_code) {
-  return base::KillProcesses(executable_name, exit_code, nullptr);
+  bool result = true;
+  for (const base::ProcessEntry& entry :
+       base::NamedProcessIterator(executable_name, nullptr).Snapshot()) {
+    base::Process process = base::Process::Open(entry.pid());
+    if (!process.IsValid()) {
+      PLOG(ERROR) << "Process invalid for PID: " << executable_name << ": "
+                  << entry.pid();
+      result = false;
+      continue;
+    }
+
+    const bool process_terminated = process.Terminate(exit_code, true);
+
+#if BUILDFLAG(IS_WIN)
+    PLOG_IF(ERROR, !process_terminated &&
+                       !::TerminateProcess(process.Handle(),
+                                           static_cast<UINT>(exit_code)))
+        << "::TerminateProcess failed: " << executable_name << ": "
+        << entry.pid();
+#endif  // BUILDFLAG(IS_WIN)
+
+    result &= process_terminated;
+  }
+  return result;
 }
 
 scoped_refptr<PolicyService> CreateTestPolicyService() {
@@ -173,26 +207,22 @@ base::FilePath GetLogDestinationDir() {
   return var ? base::FilePath::FromUTF8Unsafe(var) : base::FilePath();
 }
 
-void InitLoggingForUnitTest() {
-  base::FilePath file_exe;
-  if (!base::PathService::Get(base::FILE_EXE, &file_exe)) {
-    return;
-  }
-  const absl::optional<base::FilePath> log_file_path =
-      [](const base::FilePath& file_exe) {
-        const base::FilePath dest_dir = GetLogDestinationDir();
-        return dest_dir.empty() ? absl::nullopt
-                                : absl::make_optional(dest_dir.Append(
-                                      file_exe.BaseName().ReplaceExtension(
-                                          FILE_PATH_LITERAL("log"))));
-      }(file_exe);
+void InitLoggingForUnitTest(const base::FilePath& log_base_path) {
+  const absl::optional<base::FilePath> log_file_path = [&log_base_path]() {
+    const base::FilePath dest_dir = GetLogDestinationDir();
+    return dest_dir.empty()
+               ? absl::nullopt
+               : absl::make_optional(dest_dir.Append(log_base_path));
+  }();
   if (log_file_path) {
     logging::LoggingSettings settings;
     settings.log_file_path = (*log_file_path).value().c_str();
     settings.logging_dest = logging::LOG_TO_ALL;
     logging::InitLogging(settings);
-    VLOG(0) << "Log initialized for " << file_exe.value() << " -> "
-            << settings.log_file_path;
+    base::FilePath file_exe;
+    const bool succeeded = base::PathService::Get(base::FILE_EXE, &file_exe);
+    VLOG_IF(0, succeeded) << "Log initialized for " << file_exe.value()
+                          << " -> " << settings.log_file_path;
   }
   logging::SetLogItems(/*enable_process_id=*/true,
                        /*enable_thread_id=*/true,
@@ -215,11 +245,6 @@ void MaybeExcludePathsFromWindowsDefender() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kTestLauncherExcludePathsFromWindowDefender))
     return;
-
-  if (base::win::GetVersion() <= base::win::Version::WIN7) {
-    VLOG(1) << "Skip changing Windows Defender settings for Win7 and below.";
-    return;
-  }
 
   if (!IsServiceRunning(L"WinDefend")) {
     VLOG(1) << "WinDefend is not running, no need to add exclusion paths.";
@@ -255,11 +280,6 @@ void MaybeExcludePathsFromWindowsDefender() {
 }
 
 base::FilePath StartProcmonLogging() {
-  if (base::win::GetVersion() <= base::win::Version::WIN7) {
-    LOG(WARNING) << __func__ << ": skipping procmon logging on Win7.";
-    return {};
-  }
-
   if (!::IsUserAnAdmin()) {
     LOG(WARNING) << __func__
                  << ": user is not an admin, skipping procmon logging";
@@ -302,8 +322,11 @@ base::FilePath StartProcmonLogging() {
       start_time.second)));
 
   const std::wstring& cmdline = base::StrCat(
-      {kProcmonPath, L" /AcceptEula /LoadConfig \"", pmc_path.value(),
-       L"\" /BackingFile \"", pml_file.value(), L"\" /Quiet /externalcapture"});
+      {kProcmonPath, L" /AcceptEula /LoadConfig ",
+       base::CommandLine::QuoteForCommandLineToArgvW(pmc_path.value()),
+       L" /BackingFile ",
+       base::CommandLine::QuoteForCommandLineToArgvW(pml_file.value()),
+       L" /Quiet /externalcapture"});
   base::LaunchOptions options;
   options.start_hidden = true;
   VLOG(1) << __func__ << ": running: " << cmdline;
@@ -313,6 +336,12 @@ base::FilePath StartProcmonLogging() {
     LOG(ERROR) << __func__ << ": failed to run: " << cmdline;
     return {};
   }
+
+  // Gives time for the procmon process to start logging. Without a sleep,
+  // `procmon` is unable to fully initialize the logging, and subsequently when
+  // `procmon /Terminate` is called to terminate the logging `procmon`, it
+  // causes the PML log file to corrupt.
+  base::PlatformThread::Sleep(base::Seconds(3));
 
   return pml_file;
 }
@@ -324,10 +353,7 @@ void StopProcmonLogging(const base::FilePath& pml_file) {
   }
 
   for (const std::wstring& cmdline :
-       {base::StrCat({kProcmonPath, L" /Terminate"}),
-        base::StrCat({kProcmonPath, L" /AcceptEula /OpenLog \"",
-                      pml_file.value(), L"\" /SaveAs \"",
-                      pml_file.ReplaceExtension(L".CSV").value(), L"\""})}) {
+       {base::StrCat({kProcmonPath, L" /Terminate"})}) {
     base::LaunchOptions options;
     options.start_hidden = true;
     options.wait = true;
@@ -343,6 +369,68 @@ void StopProcmonLogging(const base::FilePath& pml_file) {
     LOG(ERROR) << __func__ << ": failed to backup pml file";
 }
 
+const base::ProcessIterator::ProcessEntries FindProcesses(
+    const base::FilePath::StringType& executable_name) {
+  return base::NamedProcessIterator(executable_name, nullptr).Snapshot();
+}
+
+base::FilePath::StringType PrintProcesses(
+    const base::FilePath::StringType& executable_name) {
+  base::FilePath::StringType message(L"Found processes:\n");
+  base::FilePath::StringType demarcation(72, L'=');
+  demarcation += L'\n';
+  message += demarcation;
+
+  for (const base::ProcessEntry& entry : FindProcesses(executable_name)) {
+    message += base::StrCat(
+        {entry.exe_file(), L", pid=", base::NumberToWString(entry.pid()),
+         L", creation time=",
+         [](base::ProcessId pid) {
+           const base::Process process = base::Process::Open(pid);
+           return process.IsValid() ? base::ASCIIToWide(base::TimeFormatHTTP(
+                                          process.CreationTime()))
+                                    : L"n/a";
+         }(entry.pid()),
+         L", cmdline=",
+         [](base::ProcessId pid) {
+           std::unique_ptr<ProcessInspector> process_inspector =
+               ProcessInspector::Create(base::Process::OpenWithAccess(
+                   pid, PROCESS_ALL_ACCESS | PROCESS_VM_READ));
+           return process_inspector ? process_inspector->command_line()
+                                    : L"n/a";
+         }(entry.pid()),
+         L"\n"});
+  }
+
+  return message + demarcation;
+}
+
+EventHolder CreateWaitableEventForTest() {
+  NamedObjectAttributes attr = GetNamedObjectAttributes(
+      base::NumberToWString(::GetCurrentProcessId()).c_str(), GetTestScope());
+  return {base::WaitableEvent(base::win::ScopedHandle(
+              ::CreateEvent(&attr.sa, FALSE, FALSE, attr.name.c_str()))),
+          attr.name};
+}
+
 #endif  // BUILDFLAG(IS_WIN)
+
+bool WaitFor(base::RepeatingCallback<bool()> predicate,
+             base::RepeatingClosure still_waiting) {
+  constexpr base::TimeDelta kOutputInterval = base::Seconds(10);
+  auto notify_next = base::TimeTicks::Now() + kOutputInterval;
+  const auto deadline = base::TimeTicks::Now() + TestTimeouts::action_timeout();
+  while (base::TimeTicks::Now() < deadline) {
+    if (predicate.Run()) {
+      return true;
+    }
+    if (notify_next < base::TimeTicks::Now()) {
+      still_waiting.Run();
+      notify_next += kOutputInterval;
+    }
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+  return false;
+}
 
 }  // namespace updater::test

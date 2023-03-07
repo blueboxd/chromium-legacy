@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -281,6 +281,8 @@ ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
   std::vector<std::u16string> builtins_to_provide;
   builtins_to_provide.push_back(
       base::ASCIIToUTF16(chrome::kChromeUIChromeURLsURL));
+  builtins_to_provide.push_back(
+      base::ASCIIToUTF16(chrome::kChromeUIFlagsURL));
 #if !BUILDFLAG(IS_ANDROID)
   builtins_to_provide.push_back(
       base::ASCIIToUTF16(chrome::kChromeUISettingsURL));
@@ -427,10 +429,12 @@ bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
   const TemplateURLService* template_url_service = GetTemplateURLService();
   return AutocompleteMatch::GURLToStrippedGURL(
              url1, *input, template_url_service, std::u16string(),
-             /*keep_search_intent_params=*/false) ==
+             /*keep_search_intent_params=*/false,
+             /*normalize_search_terms=*/false) ==
          AutocompleteMatch::GURLToStrippedGURL(
              url2, *input, template_url_service, std::u16string(),
-             /*keep_search_intent_params=*/false);
+             /*keep_search_intent_params=*/false,
+             /*normalize_search_terms=*/false);
 }
 
 void ChromeAutocompleteProviderClient::OpenSharingHub() {
@@ -468,8 +472,7 @@ void ChromeAutocompleteProviderClient::CloseIncognitoWindows() {
 
 bool ChromeAutocompleteProviderClient::OpenJourneys(const std::string& query) {
 #if !BUILDFLAG(IS_ANDROID)
-  if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel) ||
-      !base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) ||
+  if (!base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) ||
       !history_clusters::kSidePanelJourneysOpensFromOmnibox.Get()) {
     return false;
   }

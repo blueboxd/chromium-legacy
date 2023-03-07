@@ -4,7 +4,7 @@
 
 #include "content/browser/permissions/permission_controller_impl.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -54,6 +54,10 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
       return blink::scheduler::WebSchedulerTrackedFeature::
           kRequestedBackgroundWorkPermission;
     case PermissionType::STORAGE_ACCESS_GRANT:
+    // These two permissions are in the process of being split; they share logic
+    // for now. TODO(crbug.com/1385156): split and consolidate as much as
+    // possible.
+    case PermissionType::TOP_LEVEL_STORAGE_ACCESS:
       return blink::scheduler::WebSchedulerTrackedFeature::
           kRequestedStorageAccessGrant;
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
@@ -275,15 +279,12 @@ PermissionControllerImpl::SubscriptionsStatusMap
 PermissionControllerImpl::GetSubscriptionsStatuses(
     const absl::optional<GURL>& origin) {
   SubscriptionsStatusMap statuses;
-
-  if (!origin.has_value()) {
-    return statuses;
-  }
   for (SubscriptionsMap::iterator iter(&subscriptions_); !iter.IsAtEnd();
        iter.Advance()) {
     Subscription* subscription = iter.GetCurrentValue();
-    if (subscription->requesting_origin != *origin)
+    if (origin.has_value() && subscription->requesting_origin != *origin) {
       continue;
+    }
     statuses[iter.GetCurrentKey()] = GetSubscriptionCurrentValue(*subscription);
   }
   return statuses;

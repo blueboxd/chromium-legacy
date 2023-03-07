@@ -11,8 +11,8 @@
 
 #include <components/exo/wayland/protocol/aura-shell-client-protocol.h>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
@@ -350,7 +350,7 @@ class OzonePlatformWayland : public OzonePlatform,
             (wl::get_version_of_object(
                  connection_->zaura_shell()->wl_object()) >=
              ZAURA_SURFACE_SHOW_TOOLTIP_SINCE_VERSION) &&
-            connection_->zaura_shell()->HasBugFix(1400226);
+            connection_->zaura_shell()->HasBugFix(1402158);
       }
 
       if (surface_factory_) {

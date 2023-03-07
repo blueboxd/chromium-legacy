@@ -38,6 +38,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -101,9 +102,10 @@ public class TouchToFillRenderTest {
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
-                    .setRevision(1)
+                    .setRevision(3)
                     .setBugComponent(Component.UI_BROWSER_AUTOFILL)
                     .build();
+
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
@@ -118,6 +120,7 @@ public class TouchToFillRenderTest {
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
+        mActivityTestRule.waitForActivityCompletelyLoaded();
         mBottomSheetController = mActivityTestRule.getActivity()
                                          .getRootUiCoordinatorForTesting()
                                          .getBottomSheetController();
@@ -173,6 +176,34 @@ public class TouchToFillRenderTest {
     @Feature({"RenderTest"})
     @DisableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID,
             ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsOneCredentialOldHalfState() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            addHeader(mActivityTestRule.getActivity().getString(
+                    org.chromium.chrome.browser.touch_to_fill.R.string
+                            .touch_to_fill_sheet_uniform_title));
+            mModel.get(SHEET_ITEMS).addAll(asList(buildCredentialItem(ARON)));
+            mModel.set(MANAGE_BUTTON_TEXT,
+                    mActivityTestRule.getActivity().getString(
+                            org.chromium.chrome.browser.touch_to_fill.R.string.manage_passwords));
+            addButton(ARON);
+            mModel.set(VISIBLE, true);
+        });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "ttf_shows_one_credential_old_ui_half_state");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @DisableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID,
+            ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING})
     public void
     stShowsTwoCredentialsOld() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -197,6 +228,35 @@ public class TouchToFillRenderTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID,
+            ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    stShowsTwoCredentialsOldHalfState() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            addHeader(mActivityTestRule.getActivity().getString(
+                    org.chromium.chrome.browser.touch_to_fill.R.string
+                            .touch_to_fill_sheet_uniform_title));
+            mModel.get(SHEET_ITEMS);
+            mModel.get(SHEET_ITEMS)
+                    .addAll(asList(buildCredentialItem(ARON), buildCredentialItem(BOB)));
+            mModel.set(MANAGE_BUTTON_TEXT,
+                    mActivityTestRule.getActivity().getString(
+                            org.chromium.chrome.browser.touch_to_fill.R.string.manage_passwords));
+            mModel.set(VISIBLE, true);
+        });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "ttf_shows_two_credentials_old_ui_half_state");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
     @EnableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID})
     public void testShowsOneCredentialModern() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -215,6 +275,33 @@ public class TouchToFillRenderTest {
 
         View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
         mRenderTestRule.render(bottomSheetView, "ttf_shows_one_credential_modern_ui");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @EnableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsOneCredentialModernHalfState() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            addHeader(mActivityTestRule.getActivity().getString(
+                    org.chromium.chrome.browser.touch_to_fill.R.string
+                            .touch_to_fill_sheet_uniform_title));
+            mModel.get(SHEET_ITEMS).addAll(asList(buildCredentialItem(ARON)));
+            mModel.set(MANAGE_BUTTON_TEXT,
+                    mActivityTestRule.getActivity().getString(
+                            org.chromium.chrome.browser.touch_to_fill.R.string.manage_passwords));
+            addButton(ARON);
+            mModel.set(VISIBLE, true);
+        });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "ttf_shows_one_credential_modern_ui_half_state");
     }
 
     @Test
@@ -245,6 +332,34 @@ public class TouchToFillRenderTest {
     @MediumTest
     @Feature({"RenderTest"})
     @EnableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsTwoCredentialsModernHalfState() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            addHeader(mActivityTestRule.getActivity().getString(
+                    org.chromium.chrome.browser.touch_to_fill.R.string
+                            .touch_to_fill_sheet_uniform_title));
+            mModel.get(SHEET_ITEMS);
+            mModel.get(SHEET_ITEMS)
+                    .addAll(asList(buildCredentialItem(ARON), buildCredentialItem(BOB)));
+            mModel.set(MANAGE_BUTTON_TEXT,
+                    mActivityTestRule.getActivity().getString(
+                            org.chromium.chrome.browser.touch_to_fill.R.string.manage_passwords));
+            mModel.set(VISIBLE, true);
+        });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "ttf_shows_two_credentials_modern_ui_half_state");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @EnableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID})
     public void testShowsThreeCredentialsModern() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             addHeader(mActivityTestRule.getActivity().getString(
@@ -263,6 +378,34 @@ public class TouchToFillRenderTest {
 
         View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
         mRenderTestRule.render(bottomSheetView, "ttf_shows_three_credentials_modern_ui");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @EnableFeatures({ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsThreeCredentialsModernHalfState() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            addHeader(mActivityTestRule.getActivity().getString(
+                    org.chromium.chrome.browser.touch_to_fill.R.string
+                            .touch_to_fill_sheet_uniform_title));
+            mModel.get(SHEET_ITEMS)
+                    .addAll(asList(buildCredentialItem(ARON), buildCredentialItem(BOB),
+                            buildCredentialItem(MARIAM)));
+            mModel.set(MANAGE_BUTTON_TEXT,
+                    mActivityTestRule.getActivity().getString(
+                            org.chromium.chrome.browser.touch_to_fill.R.string.manage_passwords));
+            mModel.set(VISIBLE, true);
+        });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "ttf_shows_three_credentials_modern_ui_half_state");
     }
 
     private MVCListAdapter.ListItem buildCredentialItem(Credential credential) {

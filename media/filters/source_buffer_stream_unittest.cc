@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -5107,6 +5107,62 @@ TEST_F(SourceBufferStreamTest,
   Seek(0);
   CheckExpectedBuffers("0K 10 20 30K 40 2000K 2010");
   CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, GetLowestPresentationTimestamp_NonMuxed) {
+  EXPECT_EQ(base::TimeDelta(), stream_->GetLowestPresentationTimestamp());
+
+  NewCodedFrameGroupAppend("100K 110K");
+  EXPECT_EQ(base::Milliseconds(100), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(110, 120, 120);
+  EXPECT_EQ(base::Milliseconds(100), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(100, 110, 120);
+  EXPECT_EQ(base::TimeDelta(), stream_->GetLowestPresentationTimestamp());
+
+  NewCodedFrameGroupAppend("100K 110K");
+  EXPECT_EQ(base::Milliseconds(100), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(100, 110, 120);
+  EXPECT_EQ(base::Milliseconds(110), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(110, 120, 120);
+  EXPECT_EQ(base::TimeDelta(), stream_->GetLowestPresentationTimestamp());
+}
+
+TEST_F(SourceBufferStreamTest, GetLowestPresentationTimestamp_Muxed) {
+  // Simulate `stream_` being one of multiple resulting from parsing and
+  // buffering a muxed bytestream. In this case, it is common for range start
+  // times across the streams in the same muxed segment to not precisely align.
+  // The frame processing algorithm indicates the segment's "coded frame group
+  // start time" to the SourceBufferStream, and the underlying range remembers
+  // this even if the corresponding actual start time in the underlying range is
+  // later than that start time. However, if the start of that range is removed,
+  // then the underlying range no longer attempts to maintain the original
+  // "coded frame group start time" as the lowest timestamp. This impacts
+  // GetLowestPresentationTimestamp(), since the underlying range start time of
+  // the first range is involved and is conditional. See also
+  // SourceBufferRange::GetStartTimestamp().
+  EXPECT_EQ(base::TimeDelta(), stream_->GetLowestPresentationTimestamp());
+
+  NewCodedFrameGroupAppend(base::Milliseconds(50), "100K 110K");
+  EXPECT_EQ(base::Milliseconds(50), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(110, 120, 120);
+  EXPECT_EQ(base::Milliseconds(50), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(100, 110, 120);
+  EXPECT_EQ(base::TimeDelta(), stream_->GetLowestPresentationTimestamp());
+
+  NewCodedFrameGroupAppend(base::Milliseconds(50), "100K 110K");
+  EXPECT_EQ(base::Milliseconds(50), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(100, 110, 120);
+  EXPECT_EQ(base::Milliseconds(110), stream_->GetLowestPresentationTimestamp());
+
+  RemoveInMs(110, 120, 120);
+  EXPECT_EQ(base::TimeDelta(), stream_->GetLowestPresentationTimestamp());
 }
 
 TEST_F(SourceBufferStreamTest, GetHighestPresentationTimestamp) {

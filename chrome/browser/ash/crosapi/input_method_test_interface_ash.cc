@@ -9,21 +9,23 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_ash.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace crosapi {
 namespace {
 
-ui::InputMethodAsh* GetInputMethod() {
-  const ui::IMEBridge* bridge = ui::IMEBridge::Get();
+ash::InputMethodAsh* GetInputMethod() {
+  const ash::IMEBridge* bridge = ash::IMEBridge::Get();
   if (!bridge)
     return nullptr;
 
-  ui::TextInputTarget* handler = bridge->GetInputContextHandler();
+  ash::TextInputTarget* handler = bridge->GetInputContextHandler();
   if (!handler)
     return nullptr;
 
-  // Guaranteed to be an ui::InputMethodAsh*.
-  return static_cast<ui::InputMethodAsh*>(handler->GetInputMethod());
+  // Guaranteed to be an ash::InputMethodAsh*.
+  return static_cast<ash::InputMethodAsh*>(handler->GetInputMethod());
 }
 
 }  // namespace
@@ -63,6 +65,18 @@ void InputMethodTestInterfaceAsh::SetComposition(
   composition.text = base::UTF8ToUTF16(text);
 
   input_method_->UpdateCompositionText(composition, index, /*visible=*/true);
+  std::move(callback).Run();
+}
+
+void InputMethodTestInterfaceAsh::SendKeyEvent(mojom::KeyEventPtr event,
+                                               SendKeyEventCallback callback) {
+  ui::KeyEvent key_press(
+      event->type == mojom::KeyEventType::kKeyPress ? ui::ET_KEY_PRESSED
+                                                    : ui::ET_KEY_RELEASED,
+      static_cast<ui::KeyboardCode>(event->key_code),
+      static_cast<ui::DomCode>(event->dom_code), ui::EF_NONE,
+      static_cast<ui::DomKey>(event->dom_key), ui::EventTimeForNow());
+  input_method_->SendKeyEvent(&key_press);
   std::move(callback).Run();
 }
 

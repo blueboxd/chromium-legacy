@@ -13,7 +13,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
@@ -60,14 +59,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {
-        if (!hasValidTab()) return;
-        mTab.loadUrl(loadUrlParams);
-    }
-
-    @Override
     public boolean isApplicationInForeground() {
-        return mTab.getBrowser().isResumed();
+        return mTab.getBrowser().getBrowserFragment().isVisible();
     }
 
     @Override
@@ -134,7 +127,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public WindowAndroid getWindowAndroid() {
-        return mTab.getBrowser().getWindowAndroid();
+        return mTab.getBrowser().getBrowserFragment().getWindowAndroid();
     }
 
     @Override

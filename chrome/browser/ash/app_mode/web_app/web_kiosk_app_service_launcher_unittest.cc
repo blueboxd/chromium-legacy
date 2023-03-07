@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
@@ -19,15 +19,16 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -44,6 +45,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using ::base::test::TestFuture;
 using ::testing::_;
@@ -63,21 +65,27 @@ namespace {
     EXPECT_TRUE(waiter.Wait());                       \
   })
 
-class MockAppLauncherDelegate : public WebKioskAppServiceLauncher::Delegate {
+class MockAppLauncherDelegate : public KioskAppLauncher::NetworkDelegate {
  public:
   MockAppLauncherDelegate() = default;
   ~MockAppLauncherDelegate() override = default;
 
   MOCK_METHOD0(InitializeNetwork, void());
+
+  MOCK_CONST_METHOD0(IsNetworkReady, bool());
+  MOCK_CONST_METHOD0(IsShowingNetworkConfigScreen, bool());
+};
+
+class MockAppLauncherObserver : public KioskAppLauncher::Observer {
+ public:
+  MockAppLauncherObserver() = default;
+  ~MockAppLauncherObserver() override = default;
+
   MOCK_METHOD0(OnAppInstalling, void());
   MOCK_METHOD0(OnAppPrepared, void());
   MOCK_METHOD0(OnAppLaunched, void());
   MOCK_METHOD0(OnAppWindowCreated, void());
   MOCK_METHOD1(OnLaunchFailed, void(KioskAppLaunchError::Error));
-
-  MOCK_CONST_METHOD0(IsNetworkReady, bool());
-  MOCK_CONST_METHOD0(IsShowingNetworkConfigScreen, bool());
-  MOCK_CONST_METHOD0(ShouldSkipAppInstallation, bool());
 };
 
 const char kAppEmail[] = "lala@example.com";
@@ -103,9 +111,8 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
     externally_managed_app_manager().SetSubsystems(
-        &app_registrar(), /*ui_manager=*/nullptr,
-        /*finalizer=*/nullptr, /*command_manager=*/nullptr,
-        /*sync_bridge=*/nullptr);
+        /*ui_manager=*/nullptr, /*finalizer=*/nullptr,
+        /*command_scheduler=*/nullptr);
     externally_managed_app_manager().SetHandleInstallRequestCallback(
         base::BindLambdaForTesting(
             [this](const web_app::ExternalInstallOptions& install_options)
@@ -157,14 +164,13 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
 
     app_manager_ = std::make_unique<WebKioskAppManager>();
 
-    delegate_ = std::make_unique<MockAppLauncherDelegate>();
     launcher_ = std::make_unique<WebKioskAppServiceLauncher>(
-        profile(), AccountId::FromUserEmail(kAppEmail), delegate_.get());
+        profile(), AccountId::FromUserEmail(kAppEmail), &delegate_);
+    launcher_->AddObserver(&observer_);
   }
 
   void TearDown() override {
     launcher_.reset();
-    delegate_.reset();
     app_manager_.reset();
     fake_web_app_provider_->Shutdown();
     BrowserWithTestWindowTest::TearDown();
@@ -180,7 +186,7 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
                    web_app::ExternallyManagedAppManager::InstallResult>
             install_result;
         web_app::ExternalInstallOptions install_options(
-            GURL(kAppInstallUrl), web_app::UserDisplayMode::kStandalone,
+            GURL(kAppInstallUrl), web_app::mojom::UserDisplayMode::kStandalone,
             web_app::ExternalInstallSource::kKiosk);
 
         externally_managed_app_manager().Install(install_options,
@@ -200,7 +206,8 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
     return app_manager_->GetAppByAccountId(account_id_);
   }
 
-  MockAppLauncherDelegate* delegate() { return delegate_.get(); }
+  MockAppLauncherDelegate& delegate() { return delegate_; }
+  MockAppLauncherObserver& observer() { return observer_; }
   KioskAppLauncher* launcher() { return launcher_.get(); }
 
  protected:
@@ -278,7 +285,8 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
 
   raw_ptr<web_app::FakeWebAppProvider> fake_web_app_provider_;
 
-  std::unique_ptr<MockAppLauncherDelegate> delegate_;
+  MockAppLauncherDelegate delegate_;
+  MockAppLauncherObserver observer_;
   std::unique_ptr<WebKioskAppServiceLauncher> launcher_;
 
   webapps::InstallResultCode install_result_code_ =
@@ -292,17 +300,14 @@ TEST_F(WebKioskAppServiceLauncherTest, NormalFlowNotInstalled) {
 
   SetupAppData(/*installed=*/false);
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), *delegate(),
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
-  EXPECT_CALL(*delegate(), OnAppInstalling());
-  EXEC_AND_WAIT_FOR_CALL(launcher()->ContinueWithNetworkReady(), *delegate(),
+  EXPECT_CALL(observer(), OnAppInstalling());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->ContinueWithNetworkReady(), observer(),
                          OnAppPrepared());
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), *delegate(), OnAppLaunched());
-
-  EXPECT_EQ(app_data()->status(), WebKioskAppData::Status::kInstalled);
-  EXPECT_EQ(app_data()->launch_url(), kAppLaunchUrl);
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), observer(), OnAppLaunched());
 
   // App isn't always ready by the time it's being launched. Therefore we check
   // the total count of kLaunchAppReadinessUMA instead of individual cases.
@@ -313,15 +318,27 @@ TEST_F(WebKioskAppServiceLauncherTest, NormalFlowNotInstalled) {
       webapps::InstallResultCode::kSuccessNewInstall, 1);
 }
 
+TEST_F(WebKioskAppServiceLauncherTest,
+       KioskOriginShouldGetUnlimitedStorageGrantedDuringInstallFlow) {
+  SetupAppData(/*installed=*/false);
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
+                         InitializeNetwork());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->ContinueWithNetworkReady(), observer(),
+                         OnAppPrepared());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), observer(), OnAppLaunched());
+
+  EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      GURL(kAppInstallUrl)));
+}
+
 TEST_F(WebKioskAppServiceLauncherTest, NormalFlowAlreadyInstalled) {
   base::HistogramTester histogram;
 
   SetupAppData(/*installed=*/true);
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), *delegate(),
-                         OnAppPrepared());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), observer(), OnAppPrepared());
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), *delegate(), OnAppLaunched());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), observer(), OnAppLaunched());
 
   // App isn't always ready by the time it's being launched. Therefore we check
   // the total count of kLaunchAppReadinessUMA instead of individual cases.
@@ -331,19 +348,29 @@ TEST_F(WebKioskAppServiceLauncherTest, NormalFlowAlreadyInstalled) {
       WebKioskAppServiceLauncher::kWebAppInstallResultUMA, 0);
 }
 
+TEST_F(WebKioskAppServiceLauncherTest,
+       KioskOriginShouldGetUnlimitedStorageGrantedIfAppAlreadyInstalled) {
+  SetupAppData(/*installed=*/true);
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), observer(), OnAppPrepared());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), observer(), OnAppLaunched());
+
+  EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      GURL(kAppInstallUrl)));
+}
+
 TEST_F(WebKioskAppServiceLauncherTest, FailedToInstall) {
   base::HistogramTester histogram;
 
   SetupAppData(/*installed=*/false);
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), *delegate(),
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
   set_install_result_code(webapps::InstallResultCode::kInstallURLLoadFailed);
 
-  EXPECT_CALL(*delegate(), OnAppInstalling());
+  EXPECT_CALL(observer(), OnAppInstalling());
   EXEC_AND_WAIT_FOR_CALL(
-      launcher()->ContinueWithNetworkReady(), *delegate(),
+      launcher()->ContinueWithNetworkReady(), observer(),
       OnLaunchFailed(KioskAppLaunchError::Error::kUnableToInstall));
 
   EXPECT_NE(app_data()->status(), WebKioskAppData::Status::kInstalled);
@@ -363,14 +390,14 @@ TEST_F(WebKioskAppServiceLauncherTest, PlaceholderReplaced) {
 
   set_install_placeholder(false);
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), *delegate(),
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
-  EXPECT_CALL(*delegate(), OnAppInstalling());
-  EXEC_AND_WAIT_FOR_CALL(launcher()->ContinueWithNetworkReady(), *delegate(),
+  EXPECT_CALL(observer(), OnAppInstalling());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->ContinueWithNetworkReady(), observer(),
                          OnAppPrepared());
 
-  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), *delegate(), OnAppLaunched());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), observer(), OnAppLaunched());
 
   EXPECT_EQ(app_data()->status(), WebKioskAppData::Status::kInstalled);
   EXPECT_EQ(app_data()->launch_url(), kAppLaunchUrl);

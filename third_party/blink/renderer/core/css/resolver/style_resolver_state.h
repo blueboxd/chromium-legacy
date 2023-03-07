@@ -76,9 +76,10 @@ class CORE_EXPORT StyleResolverState {
     return element_context_.ParentNode();
   }
   const ComputedStyle* RootElementStyle() const {
-    if (const auto* root_element_style = element_context_.RootElementStyle())
+    if (const auto* root_element_style = element_context_.RootElementStyle()) {
       return root_element_style;
-    return Style();
+    }
+    return style_builder_.InternalStyle();
   }
   EInsideLink ElementLinkState() const {
     return element_context_.ElementLinkState();
@@ -89,8 +90,6 @@ class CORE_EXPORT StyleResolverState {
   }
 
   void SetStyle(scoped_refptr<ComputedStyle>);
-  const ComputedStyle* Style() const { return style_builder_.InternalStyle(); }
-  ComputedStyle* Style() { return style_builder_.MutableInternalStyle(); }
   ComputedStyleBuilder& StyleBuilder() { return style_builder_; }
   const ComputedStyleBuilder& StyleBuilder() const { return style_builder_; }
   scoped_refptr<ComputedStyle> TakeStyle();
@@ -98,13 +97,19 @@ class CORE_EXPORT StyleResolverState {
   const CSSToLengthConversionData& CssToLengthConversionData() const {
     return css_to_length_conversion_data_;
   }
-  CSSToLengthConversionData FontSizeConversionData() const;
-  CSSToLengthConversionData UnzoomedLengthConversionData() const;
+  CSSToLengthConversionData FontSizeConversionData();
+  CSSToLengthConversionData UnzoomedLengthConversionData();
 
   ScopedCSSToLengthConversionData GetScopedCSSToLengthConversionData(
       const TreeScope* scope) const {
     return ScopedCSSToLengthConversionData(css_to_length_conversion_data_,
                                            scope);
+  }
+
+  CSSToLengthConversionData::Flags TakeLengthConversionFlags() {
+    CSSToLengthConversionData::Flags flags = length_conversion_flags_;
+    length_conversion_flags_ = 0;
+    return flags;
   }
 
   void SetConversionFontSizes(
@@ -210,7 +215,7 @@ class CORE_EXPORT StyleResolverState {
  private:
   void UpdateLengthConversionData();
   CSSToLengthConversionData UnzoomedLengthConversionData(
-      const ComputedStyle* font_style) const;
+      const ComputedStyle* font_style);
 
   ElementResolveContext element_context_;
   Document* document_;
@@ -218,6 +223,7 @@ class CORE_EXPORT StyleResolverState {
   // The primary output for each element's style resolve.
   ComputedStyleBuilder style_builder_;
 
+  CSSToLengthConversionData::Flags length_conversion_flags_ = 0;
   CSSToLengthConversionData css_to_length_conversion_data_;
 
   // parent_style_ is not always just ElementResolveContext::ParentStyle(),

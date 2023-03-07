@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/x11/x11_canvas_surface.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_display_util.h"
@@ -41,7 +41,7 @@ bool X11CanvasSurface::SupportsAsyncBufferSwap() const {
 }
 
 void X11CanvasSurface::OnSwapBuffers(SwapBuffersCallback swap_ack_callback,
-                                     gl::FrameData data) {
+                                     gfx::FrameData data) {
   x11_software_bitmap_presenter_.OnSwapBuffers(std::move(swap_ack_callback));
 }
 

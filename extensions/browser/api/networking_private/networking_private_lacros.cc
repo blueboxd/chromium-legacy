@@ -6,15 +6,12 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/ash/crosapi/crosapi_ash.h"
-#include "chrome/browser/ash/crosapi/crosapi_manager.h"
-#include "chrome/browser/ash/crosapi/extension_info_private_ash.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -180,16 +177,17 @@ ValueMojoCallback ValueAdapterCallback(ValueDelegateCallback result_callback) {
 // base::Value::List object.
 using ValueListMojoCallback =
     base::OnceCallback<void(absl::optional<base::Value::List>)>;
+using ValueListDelegateCallback =
+    base::OnceCallback<void(base::Value::List result)>;
 ValueListMojoCallback ValueListAdapterCallback(
-    ValueDelegateCallback result_callback) {
+    ValueListDelegateCallback result_callback) {
   return base::BindOnce(
-      [](ValueDelegateCallback callback,
+      [](ValueListDelegateCallback callback,
          absl::optional<base::Value::List> result) {
         if (!result) {
-          std::move(callback).Run(std::make_unique<base::Value>());
+          std::move(callback).Run(base::Value::List());
         } else {
-          std::move(callback).Run(
-              std::make_unique<base::Value>(std::move(*result)));
+          std::move(callback).Run(std::move(*result));
         }
       },
       std::move(result_callback));
@@ -491,7 +489,7 @@ void NetworkingPrivateLacros::GetEnabledNetworkTypes(
     EnabledNetworkTypesCallback callback) {
   auto* networking_private = GetNetworkingPrivateRemote();
   if (!networking_private) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(base::Value::List());
     return;
   }
   (*networking_private)

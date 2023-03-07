@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
@@ -213,18 +214,18 @@ class FakeProtocolHandlerDelegate : public ExternalProtocolHandler::Delegate {
       delete;
   FakeProtocolHandlerDelegate& operator=(
       const FakeProtocolHandlerDelegate& other) = delete;
-  class FakeDefaultProtocolClientWorker
-      : public shell_integration::DefaultProtocolClientWorker {
+  class FakeDefaultSchemeClientWorker
+      : public shell_integration::DefaultSchemeClientWorker {
    public:
-    explicit FakeDefaultProtocolClientWorker(const GURL& url)
-        : DefaultProtocolClientWorker(url) {}
-    FakeDefaultProtocolClientWorker(
-        const FakeDefaultProtocolClientWorker& other) = delete;
-    FakeDefaultProtocolClientWorker& operator=(
-        const FakeDefaultProtocolClientWorker& other) = delete;
+    explicit FakeDefaultSchemeClientWorker(const GURL& url)
+        : DefaultSchemeClientWorker(url) {}
+    FakeDefaultSchemeClientWorker(const FakeDefaultSchemeClientWorker& other) =
+        delete;
+    FakeDefaultSchemeClientWorker& operator=(
+        const FakeDefaultSchemeClientWorker& other) = delete;
 
    private:
-    ~FakeDefaultProtocolClientWorker() override = default;
+    ~FakeDefaultSchemeClientWorker() override = default;
     shell_integration::DefaultWebClientState CheckIsDefaultImpl() override {
       return shell_integration::DefaultWebClientState::NOT_DEFAULT;
     }
@@ -238,9 +239,9 @@ class FakeProtocolHandlerDelegate : public ExternalProtocolHandler::Delegate {
   };
 
  private:
-  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-  CreateShellWorker(const GURL& url) override {
-    return base::MakeRefCounted<FakeDefaultProtocolClientWorker>(url);
+  scoped_refptr<shell_integration::DefaultSchemeClientWorker> CreateShellWorker(
+      const GURL& url) override {
+    return base::MakeRefCounted<FakeDefaultSchemeClientWorker>(url);
   }
 
   void BlockRequest() override { FAIL(); }

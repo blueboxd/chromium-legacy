@@ -7,9 +7,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/test/accessibility_controller_test_api.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
@@ -19,7 +19,6 @@
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/preferences.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "components/account_id/account_id.h"
 #include "components/live_caption/pref_names.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -889,6 +889,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ChromeVoxPanel) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TtsDlcTypeToPath) {
   EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-de-de/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSDEDE));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-en-us/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSENUS));
+  EXPECT_EQ(
       base::FilePath("/run/imageloader/tts-es-es/package/root/voice.zvoice"),
       TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSESES));
   EXPECT_EQ(
@@ -900,6 +906,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TtsDlcTypeToPath) {
   EXPECT_EQ(
       base::FilePath("/run/imageloader/tts-hi-in/package/root/voice.zvoice"),
       TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSHIIN));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-it-it/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSITIT));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-ja-jp/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSJAJP));
   EXPECT_EQ(
       base::FilePath("/run/imageloader/tts-nl-nl/package/root/voice.zvoice"),
       TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSNLNL));
@@ -1498,7 +1510,7 @@ class AccessibilityManagerLoginTest : public OobeBaseTest {
   void StartUserSession(const AccountId& account_id) {
     profiles::testing::CreateProfileSync(
         g_browser_process->profile_manager(),
-        ProfileHelper::GetProfilePathByUserIdHash(
+        BrowserContextHelper::Get()->GetBrowserContextPathByUserIdHash(
             user_manager::UserManager::Get()
                 ->FindUser(account_id)
                 ->username_hash()));

@@ -25,8 +25,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/functional/bind.h"
 #include "base/scoped_observation.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -360,8 +360,7 @@ class HoldingSpaceTrayBubble::ChildBubbleContainer
         bounds().width() - kHoldingSpaceChildBubblePadding.width();
 
     // Cache `color` which is consistent across separators.
-    SkColor color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kSeparatorColor);
+    SkColor color = GetColorProvider()->GetColor(kColorAshSeparatorColor);
 
     // Iterate over all children, drawing separators between visible siblings.
     const views::View* last_visible_child = nullptr;

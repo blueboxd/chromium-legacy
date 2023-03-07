@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 
 import * as routesMojomWebui from '../mojom-webui/routes.mojom-webui.js';
@@ -145,6 +143,15 @@ function createOSSettingsRoutes() {
     r.PER_DEVICE_KEYBOARD = createSubpage(
         r.DEVICE, routesMojomWebui.PER_DEVICE_KEYBOARD_SUBPAGE_PATH,
         Subpage.kPerDeviceKeyboard);
+    r.PER_DEVICE_MOUSE = createSubpage(
+        r.DEVICE, routesMojomWebui.PER_DEVICE_MOUSE_SUBPAGE_PATH,
+        Subpage.kPerDeviceMouse);
+    r.PER_DEVICE_POINTING_STICK = createSubpage(
+        r.DEVICE, routesMojomWebui.PER_DEVICE_POINTING_STICK_SUBPAGE_PATH,
+        Subpage.kPerDevicePointingStick);
+    r.PER_DEVICE_TOUCHPAD = createSubpage(
+        r.DEVICE, routesMojomWebui.PER_DEVICE_TOUCHPAD_SUBPAGE_PATH,
+        Subpage.kPerDeviceTouchpad);
   }
   r.STORAGE = createSubpage(
       r.DEVICE, routesMojomWebui.STORAGE_SUBPAGE_PATH, Subpage.kStorage);
@@ -357,6 +364,9 @@ function createOSSettingsRoutes() {
     r.SMB_SHARES = createSubpage(
         r.FILES, routesMojomWebui.NETWORK_FILE_SHARES_SUBPAGE_PATH,
         Subpage.kNetworkFileShares);
+    r.OFFICE = createSubpage(
+        r.FILES, routesMojomWebui.OFFICE_FILES_SUBPAGE_PATH,
+        Subpage.kOfficeFiles);
   }
 
   // Printing section.

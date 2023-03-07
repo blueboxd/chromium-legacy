@@ -26,20 +26,20 @@ import '../os_reset_page/os_powerwash_dialog.js';
 import './detailed_build_info.js';
 import './update_warning_dialog.js';
 
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../../i18n_setup.js';
 import {LifetimeBrowserProxyImpl} from '../../lifetime_browser_proxy.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../router.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
-import {MainPageMixin, MainPageMixinInterface} from '../main_page_mixin.js';
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {MainPageMixin} from '../main_page_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
+import {Route, Router} from '../router.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, RegulatoryInfo, TpmFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent} from './about_page_browser_proxy.js';
 import {getTemplate} from './os_about_page.html.js';
@@ -57,16 +57,8 @@ interface OsSettingsAboutPageElement {
   };
 }
 
-const OsSettingsAboutPageBaseElement =
-    mixinBehaviors(
-        [
-          DeepLinkingBehavior,
-        ],
-        MainPageMixin(I18nMixin(WebUiListenerMixin(PolymerElement)))) as {
-      new (): PolymerElement & WebUiListenerMixinInterface &
-          I18nMixinInterface & MainPageMixinInterface &
-          DeepLinkingBehaviorInterface,
-    };
+const OsSettingsAboutPageBaseElement = DeepLinkingMixin(
+    MainPageMixin(I18nMixin(WebUiListenerMixin(PolymerElement))));
 
 class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   static get is() {
@@ -186,11 +178,6 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
             'currentUpdateStatusEvent_, hasCheckedForUpdates_, hasEndOfLife_)',
       },
 
-      showFirmwareUpdatesApp_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('isFirmwareUpdaterAppEnabled'),
-      },
-
       focusConfig_: {
         type: Object,
         value() {
@@ -228,11 +215,11 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kCheckForOsUpdate,
           Setting.kSeeWhatsNew,
           Setting.kGetHelpWithChromeOs,
@@ -274,14 +261,12 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   private showButtonContainer_: boolean;
   private showRelaunch_: boolean;
   private showCheckUpdates_: boolean;
-  protected showFirmwareUpdatesApp_: boolean;
   private focusConfig_: Map<string, string>;
   private showUpdateWarningDialog_: boolean;
   private showTPMFirmwareUpdateLineItem_: boolean;
   private showTPMFirmwareUpdateDialog_: boolean;
   private updateInfo_?: AboutPageUpdateInfo;
   private isPendingOsUpdateDeepLink_: boolean;
-  override supportedSettingIds: Set<Setting>;
 
   private aboutBrowserProxy_: AboutPageBrowserProxy;
 
@@ -321,11 +306,9 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
       this.hasInternetConnection_ = result;
     });
 
-    if (this.showFirmwareUpdatesApp_) {
-      this.aboutBrowserProxy_.getFirmwareUpdateCount().then(result => {
-        this.firmwareUpdateCount_ = result;
-      });
-    }
+    this.aboutBrowserProxy_.getFirmwareUpdateCount().then(result => {
+      this.firmwareUpdateCount_ = result;
+    });
 
     if (Router.getInstance().getQueryParameters().get('checkForUpdate') ===
         'true') {
@@ -398,7 +381,6 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   }
 
   private onFirmwareUpdatesClick_() {
-    assert(this.showFirmwareUpdatesApp_);
     this.aboutBrowserProxy_.openFirmwareUpdatesPage();
     recordSettingChange(Setting.kFirmwareUpdates);
   }
@@ -461,7 +443,7 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   }
 
   private shouldShowFirmwareUpdatesBadge_(): boolean {
-    return this.showFirmwareUpdatesApp_ && this.firmwareUpdateCount_ > 0;
+    return this.firmwareUpdateCount_ > 0;
   }
 
   private getUpdateStatusMessage_(): TrustedHTML {

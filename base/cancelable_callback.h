@@ -35,8 +35,8 @@
 //
 // CancelableOnceClosure timeout(
 //     base::BindOnce(&TimeoutCallback, "Test timed out."));
-// ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, timeout.callback(),
-//                                                Seconds(4));
+// SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+//     FROM_HERE, timeout.callback(), Seconds(4));
 // RunIntensiveTest();
 // run_loop.Run();
 // timeout.Cancel();  // Hopefully this is hit before the timeout callback runs.
@@ -47,10 +47,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_internal.h"
 #include "base/memory/weak_ptr.h"
 

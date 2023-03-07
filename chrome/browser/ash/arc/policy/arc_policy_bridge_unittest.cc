@@ -17,8 +17,8 @@
 #include "ash/components/arc/test/fake_arc_session.h"
 #include "ash/components/arc/test/fake_policy_instance.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -115,12 +115,12 @@ constexpr char kTestUserEmail[] = "user@gmail.com";
 constexpr char kChromeAppId[] = "chromeappid";
 constexpr char kAndroidAppId[] = "android.app.id";
 
-void AddKeyPermissionForAppId(base::Value* key_permissions,
+void AddKeyPermissionForAppId(base::Value::Dict& key_permissions,
                               const std::string& app_id,
                               bool allowed) {
-  base::Value cert_key_permission(base::Value::Type::DICTIONARY);
-  cert_key_permission.SetKey("allowCorporateKeyUsage", base::Value(allowed));
-  key_permissions->SetKey(app_id, std::move(cert_key_permission));
+  base::Value::Dict cert_key_permission;
+  cert_key_permission.Set("allowCorporateKeyUsage", base::Value(allowed));
+  key_permissions.Set(app_id, std::move(cert_key_permission));
 }
 
 MATCHER_P(ValueEquals, expected, "value matches") {
@@ -200,8 +200,7 @@ class ArcPolicyBridgeTestBase {
 
   void DoSetUp(bool is_affiliated) {
     // Set up fake StatisticsProvider.
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    ash::system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 
     // Set up ArcBridgeService.
     bridge_service_ = std::make_unique<ArcBridgeService>();
@@ -325,7 +324,7 @@ class ArcPolicyBridgeTestBase {
   TestingProfile* profile() { return profile_; }
   ArcBridgeService* bridge_service() { return bridge_service_.get(); }
   CertStoreService* cert_store_service() { return cert_store_service_; }
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  ash::system::FakeStatisticsProvider statistics_provider_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -513,12 +512,12 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
 }
 
 TEST_F(ArcPolicyBridgeTest, WallpaperImageSetTest) {
-  base::DictionaryValue dict;
-  dict.SetStringKey("url", "https://example.com/wallpaper.jpg");
-  dict.SetStringKey("hash", "somehash");
+  base::Value::Dict dict;
+  dict.Set("url", "https://example.com/wallpaper.jpg");
+  dict.Set("hash", "somehash");
   policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   dict.Clone(), nullptr);
+                   base::Value(std::move(dict)).Clone(), nullptr);
   GetPoliciesAndVerifyResult("{\"apkCacheEnabled\":true,\"guid\":\"" +
                              instance_guid() + "\"," +
                              kMountPhysicalMediaDisabledPolicySetting + "," +
@@ -526,12 +525,12 @@ TEST_F(ArcPolicyBridgeTest, WallpaperImageSetTest) {
 }
 
 TEST_F(ArcPolicyBridgeTest, WallpaperImageSet_NotCompletePolicyTest) {
-  base::DictionaryValue dict;
-  dict.SetString("url", "https://example.com/wallpaper.jpg");
+  base::Value::Dict dict;
+  dict.Set("url", "https://example.com/wallpaper.jpg");
   // "hash" attribute is missing, so the policy shouldn't be set
   policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   dict.Clone(), nullptr);
+                   base::Value(std::move(dict)).Clone(), nullptr);
   GetPoliciesAndVerifyResult("{\"apkCacheEnabled\":true,\"guid\":\"" +
                              instance_guid() + "\"," +
                              kMountPhysicalMediaDisabledPolicySetting + "}");
@@ -897,13 +896,13 @@ TEST_F(ArcPolicyBridgeCertStoreTest, KeyPermissionsBasicTest) {
   // One certificate is required to be installed.
   cert_store_service()->set_required_cert_names_for_testing({kFakeCertName});
 
-  base::Value key_permissions(base::Value::Type::DICTIONARY);
-  AddKeyPermissionForAppId(&key_permissions, kAndroidAppId, true /* allowed */);
-  AddKeyPermissionForAppId(&key_permissions, kChromeAppId, true /* allowed */);
+  base::Value::Dict key_permissions;
+  AddKeyPermissionForAppId(key_permissions, kAndroidAppId, true /* allowed */);
+  AddKeyPermissionForAppId(key_permissions, kChromeAppId, true /* allowed */);
 
   policy_map().Set(policy::key::kKeyPermissions, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   std::move(key_permissions),
+                   base::Value(std::move(key_permissions)),
                    /* external_data_fetcher */ nullptr);
   GetPoliciesAndVerifyResult(base::StrCat(
       {"{\"apkCacheEnabled\":true,",
@@ -918,17 +917,16 @@ TEST_F(ArcPolicyBridgeCertStoreTest, KeyPermissionsBasicTest) {
 // Tests that if cert store service is non-null, corporate usage key exists and
 // not to any ARC apps, ChoosePrivateKeyRules policy is not set.
 TEST_F(ArcPolicyBridgeCertStoreTest, KeyPermissionsEmptyTest) {
-  base::Value key_permissions(base::Value::Type::DICTIONARY);
-  AddKeyPermissionForAppId(&key_permissions, kAndroidAppId,
-                           false /* allowed */);
-  AddKeyPermissionForAppId(&key_permissions, kChromeAppId, true /* allowed */);
+  base::Value::Dict key_permissions;
+  AddKeyPermissionForAppId(key_permissions, kAndroidAppId, false /* allowed */);
+  AddKeyPermissionForAppId(key_permissions, kChromeAppId, true /* allowed */);
 
   // One certificate is required to be installed.
   cert_store_service()->set_required_cert_names_for_testing({kFakeCertName});
 
   policy_map().Set(policy::key::kKeyPermissions, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   std::move(key_permissions),
+                   base::Value(std::move(key_permissions)),
                    /* external_data_fetcher */ nullptr);
   GetPoliciesAndVerifyResult(base::StrCat(
       {"{\"apkCacheEnabled\":true,\"guid\":\"", instance_guid(), "\",",
@@ -940,15 +938,15 @@ TEST_F(ArcPolicyBridgeCertStoreTest, KeyPermissionsEmptyTest) {
 // exist, but in theory are available to ARC apps, ChoosePrivateKeyRules policy
 // is not set.
 TEST_F(ArcPolicyBridgeCertStoreTest, KeyPermissionsNoCertsTest) {
-  base::Value key_permissions(base::Value::Type::DICTIONARY);
-  AddKeyPermissionForAppId(&key_permissions, kAndroidAppId, true /* allowed */);
-  AddKeyPermissionForAppId(&key_permissions, kChromeAppId, true /* allowed */);
+  base::Value::Dict key_permissions;
+  AddKeyPermissionForAppId(key_permissions, kAndroidAppId, true /* allowed */);
+  AddKeyPermissionForAppId(key_permissions, kChromeAppId, true /* allowed */);
 
   cert_store_service()->set_required_cert_names_for_testing({});
 
   policy_map().Set(policy::key::kKeyPermissions, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   std::move(key_permissions),
+                   base::Value(std::move(key_permissions)),
                    /* external_data_fetcher */ nullptr);
   GetPoliciesAndVerifyResult(
       base::StrCat({"{\"apkCacheEnabled\":true,\"guid\":\"", instance_guid(),

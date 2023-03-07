@@ -9,10 +9,10 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -773,7 +773,7 @@ bool Layer::GetTargetVisibility() const {
   return visible_;
 }
 
-bool Layer::IsDrawn() const {
+bool Layer::IsVisible() const {
   const Layer* layer = this;
   while (layer && layer->visible_)
     layer = layer->parent_;
@@ -1198,10 +1198,13 @@ SkColor Layer::background_color() const {
 }
 
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-  if (type_ == LAYER_SOLID_COLOR && !texture_layer_)
+  if (type_ == LAYER_NOT_DRAWN ||
+      (type_ == LAYER_SOLID_COLOR && !texture_layer_)) {
     return false;
-  if (type_ == LAYER_NINE_PATCH)
+  }
+  if (type_ == LAYER_NINE_PATCH) {
     return false;
+  }
   if (!delegate_ && transfer_resource_.mailbox_holder.mailbox.IsZero())
     return false;
 
@@ -1215,9 +1218,14 @@ bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
 }
 
 void Layer::ScheduleDraw() {
+  // Do not schedule draw if this layer does not contribute the content.
+  if (type_ == LAYER_NOT_DRAWN && children_.size() == 0) {
+    return;
+  }
   Compositor* compositor = GetCompositor();
-  if (compositor)
+  if (compositor) {
     compositor->ScheduleDraw();
+  }
 }
 
 void Layer::SendDamagedRects() {
@@ -1507,8 +1515,9 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
   if (bounds.size() == old_bounds.size()) {
     // Don't schedule a draw if we're invisible. We'll schedule one
     // automatically when we get visible.
-    if (IsDrawn())
+    if (IsVisible()) {
       ScheduleDraw();
+    }
   } else {
     // Always schedule a paint, even if we're invisible.
     SchedulePaint(gfx::Rect(bounds.size()));

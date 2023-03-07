@@ -134,11 +134,14 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   void RecordTimeToClick() override;
 
   // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletPhysicalStateChanged() override;
 
   // ShelfObserver:
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
+
+  // Updates the bubble height based on if it's going to show the main page or
+  // the detailed page.
+  void UpdateBubbleHeight(bool is_showing_detiled_view);
 
   UnifiedSystemTrayView* unified_view() { return unified_view_; }
 

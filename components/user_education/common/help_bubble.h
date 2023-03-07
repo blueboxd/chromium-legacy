@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_USER_EDUCATION_COMMON_HELP_BUBBLE_H_
 #define COMPONENTS_USER_EDUCATION_COMMON_HELP_BUBBLE_H_
 
-#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/functional/callback.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/framework_specific_implementation.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace user_education {
+
+DECLARE_CUSTOM_ELEMENT_EVENT_TYPE(kHelpBubbleAnchorBoundsChangedEvent);
 
 // HelpBubble is an interface for the lifecycle of an IPH or tutorial bubble.
 // it is implemented by a framework's bubble. It is returned as the result of

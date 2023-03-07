@@ -4,24 +4,21 @@
 
 #include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
 
-#include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -185,8 +182,6 @@ class WebAppShimManagerDelegateTest : public WebAppTest {
 
  private:
   web_app::AppId app_id_;
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kFileHandlingAPI};
 };
 
 TEST_F(WebAppShimManagerDelegateTest, LaunchApp) {
@@ -467,7 +462,8 @@ TEST_F(WebAppShimManagerDelegateTest, GetAppShortcutsMenuItemInfos) {
     web_app_info->title = u"WebAppTestWithShortcutMenuItems";
     web_app_info->scope = web_app_info->start_url;
     web_app_info->description = web_app_info->title;
-    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    web_app_info->user_display_mode =
+        web_app::mojom::UserDisplayMode::kStandalone;
 
     shortcut_info1.name = u"shortcut_info1";
     shortcut_info1.url = GURL(".");

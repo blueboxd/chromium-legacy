@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/base/features.h"
@@ -1991,7 +1991,7 @@ TEST_P(FrameThrottlingTest, PrintThrottledFrame) {
   cc::PaintRecorder recorder;
   web_frame->PrintPage(0, recorder.beginRecording());
   auto record = recorder.finishRecordingAsPicture();
-  String record_string = RecordAsDebugString(*record);
+  String record_string = RecordAsDebugString(record);
   EXPECT_TRUE(record_string.Contains("drawTextBlob")) << record_string.Utf8();
   web_frame->PrintEnd();
 }

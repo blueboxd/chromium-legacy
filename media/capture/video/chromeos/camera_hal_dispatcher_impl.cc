@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
@@ -1079,6 +1079,34 @@ void CameraHalDispatcherImpl::SetCameraEffects(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImpl::SetCameraEffectsOnProxyThread,
                      base::Unretained(this), std::move(config)));
+}
+
+void CameraHalDispatcherImpl::GetCameraEffects(
+    VideoCaptureDevice::GetPhotoStateCallback callback,
+    media::mojom::PhotoStatePtr photo_state) {
+  // All calls must be on the `proxy_task_runner`, so re-post the call if
+  // needed.
+  if (!proxy_task_runner_->BelongsToCurrentThread()) {
+    proxy_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CameraHalDispatcherImpl::GetCameraEffects,
+                                  base::Unretained(this),
+                                  media::BindToCurrentLoop(std::move(callback)),
+                                  std::move(photo_state)));
+    return;
+  }
+
+  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+
+  if (!current_effects_.is_null()) {
+    photo_state->supported_background_blur_modes = {
+        mojom::BackgroundBlurMode::BLUR, mojom::BackgroundBlurMode::OFF};
+
+    photo_state->background_blur_mode = current_effects_->blur_enabled
+                                            ? mojom::BackgroundBlurMode::BLUR
+                                            : mojom::BackgroundBlurMode::OFF;
+  }
+
+  std::move(callback).Run(std::move(photo_state));
 }
 
 void CameraHalDispatcherImpl::SetCameraEffectsOnProxyThread(

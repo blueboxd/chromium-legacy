@@ -10,8 +10,8 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -70,7 +70,7 @@ TEST_F(CrosapiUtilTest, GetInterfaceVersions) {
 
 TEST_F(CrosapiUtilTest, IsSigninProfileOrBelongsToAffiliatedUserSigninProfile) {
   TestingProfile::Builder builder;
-  builder.SetPath(base::FilePath(FILE_PATH_LITERAL(chrome::kInitialProfile)));
+  builder.SetPath(base::FilePath(ash::kSigninBrowserContextBaseName));
   std::unique_ptr<Profile> signin_profile = builder.Build();
 
   EXPECT_TRUE(browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
@@ -112,8 +112,7 @@ TEST_F(CrosapiUtilTest,
 TEST_F(CrosapiUtilTest,
        IsSigninProfileOrBelongsToAffiliatedUserLockScreenProfile) {
   TestingProfile::Builder builder;
-  builder.SetPath(
-      base::FilePath(FILE_PATH_LITERAL(chrome::kLockScreenProfile)));
+  builder.SetPath(base::FilePath(ash::kLockScreenBrowserContextBaseName));
   std::unique_ptr<Profile> lock_screen_profile = builder.Build();
 
   EXPECT_FALSE(browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
@@ -166,14 +165,14 @@ TEST_F(CrosapiUtilTest, DeviceSettingsWithData) {
       ->SetInteger(ash::kReportDeviceNetworkTelemetryCollectionRateMs,
                    kReportDeviceNetworkTelemetryCollectionRateMs);
 
-  base::Value allowlist(base::Value::Type::LIST);
-  base::Value ids(base::Value::Type::DICTIONARY);
-  ids.SetIntKey(ash::kUsbDetachableAllowlistKeyVid, 2);
-  ids.SetIntKey(ash::kUsbDetachableAllowlistKeyPid, 3);
+  base::Value::List allowlist;
+  base::Value::Dict ids;
+  ids.Set(ash::kUsbDetachableAllowlistKeyVid, 2);
+  ids.Set(ash::kUsbDetachableAllowlistKeyPid, 3);
   allowlist.Append(std::move(ids));
 
   testing_profile_.ScopedCrosSettingsTestHelper()->GetStubbedProvider()->Set(
-      ash::kUsbDetachableAllowlist, std::move(allowlist));
+      ash::kUsbDetachableAllowlist, base::Value(std::move(allowlist)));
 
   auto settings = browser_util::GetDeviceSettings();
   testing_profile_.ScopedCrosSettingsTestHelper()

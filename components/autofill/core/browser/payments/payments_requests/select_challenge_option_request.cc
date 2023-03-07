@@ -4,7 +4,7 @@
 
 #include "components/autofill/core/browser/payments/payments_requests/select_challenge_option_request.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -54,9 +54,10 @@ std::string SelectChallengeOptionRequest::GetRequestContent() {
       CardUnmaskChallengeOptionType::kSmsOtp) {
     base::Value::Dict sms_challenge_option;
     // We only get and set the challenge id.
-    if (!request_details_.selected_challenge_option.id.empty()) {
-      sms_challenge_option.Set("challenge_id",
-                               request_details_.selected_challenge_option.id);
+    if (!request_details_.selected_challenge_option.id.value().empty()) {
+      sms_challenge_option.Set(
+          "challenge_id",
+          request_details_.selected_challenge_option.id.value());
     }
     selected_idv_method.Set("sms_otp_challenge_option",
                             std::move(sms_challenge_option));
@@ -74,9 +75,10 @@ std::string SelectChallengeOptionRequest::GetRequestContent() {
   return request_content;
 }
 
-void SelectChallengeOptionRequest::ParseResponse(const base::Value& response) {
+void SelectChallengeOptionRequest::ParseResponse(
+    const base::Value::Dict& response) {
   const std::string* updated_context_token =
-      response.FindStringKey("context_token");
+      response.FindString("context_token");
   updated_context_token_ =
       updated_context_token ? *updated_context_token : std::string();
 }

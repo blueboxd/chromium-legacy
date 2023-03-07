@@ -9,9 +9,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_reader.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/publisher_host.h"
 #include "chrome/browser/apps/app_service/subscriber_crosapi.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -28,8 +29,6 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
-#include "components/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 // Avoid including this header file directly or referring directly to
@@ -52,6 +51,9 @@ class InstanceRegistryUpdater;
 class BrowserAppInstanceRegistry;
 class BrowserAppInstanceTracker;
 class UninstallDialog;
+
+struct PromiseApp;
+using PromiseAppPtr = std::unique_ptr<PromiseApp>;
 
 struct PauseData {
   int hours = 0;
@@ -90,9 +92,6 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                  gfx::NativeWindow parent_window) override;
   void OnApps(std::vector<AppPtr> deltas,
               AppType app_type,
-              bool should_notify_initialized) override;
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
-              apps::mojom::AppType app_type,
               bool should_notify_initialized) override;
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
@@ -138,6 +137,13 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                            const IconKey& icon_key,
                            IconType icon_type,
                            LoadIconCallback callback);
+
+  // Get reference to the PromiseAppRegistryCache which holds all promise
+  // apps.
+  apps::PromiseAppRegistryCache& PromiseAppRegistryCache();
+
+  // Add a promise app to the Promise App Registry Cache.
+  void AddPromiseApp(PromiseAppPtr app);
 
  private:
   // For access to Initialize.
@@ -251,7 +257,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void ReadIcons(AppType app_type,
                  const std::string& app_id,
                  int32_t size_in_dip,
-                 const IconKey& icon_key,
+                 std::unique_ptr<IconKey> icon_key,
                  IconType icon_type,
                  LoadIconCallback callback) override;
 
@@ -266,12 +272,25 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                   IconValuePtr iv);
 
   // Invoked after writing icon image files to the local disk.
-  void OnIconInstalled(const std::string& app_id,
+  void OnIconInstalled(AppType app_type,
+                       const std::string& app_id,
                        int32_t size_in_dip,
                        IconEffects icon_effects,
                        IconType icon_type,
                        LoadIconCallback callback,
                        bool install_success);
+
+  // Invoked when the icon folders for `app_ids` has being deleted. The saved
+  // `ReadIcons` requests in `pending_read_icon_requests_` are run to request
+  // the new raw icon from the app platforms, then load icons for `app_ids`.
+  void PostIconFoldersDeletion(const std::vector<std::string>& app_ids);
+
+  // Returns an instance of `IntentLaunchInfo` created based on `intent`,
+  // `filter`, and `update`.
+  IntentLaunchInfo CreateIntentLaunchInfo(
+      const apps::IntentPtr& intent,
+      const apps::IntentFilterPtr& filter,
+      const apps::AppUpdate& update) override;
 
   SubscriberCrosapi* crosapi_subscriber_ = nullptr;
 
@@ -291,6 +310,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   std::unique_ptr<apps::InstanceRegistryUpdater>
       browser_app_instance_app_service_updater_;
 
+  apps::PromiseAppRegistryCache promise_app_registry_cache_;
+
   // When PauseApps is called, the app is added to |pending_pause_requests|.
   // When the user clicks the OK from the pause app dialog, the pause status is
   // updated in AppRegistryCache by the publisher, then the app is removed from
@@ -299,6 +320,14 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   PausedApps pending_pause_requests_;
 
   UninstallDialogs uninstall_dialogs_;
+
+  // When the icon folder is being deleted, the `ReadIcons` request is added to
+  // `pending_read_icon_requests_` to wait for the deletion. When the icon
+  // folder has being deleted, the saved `ReadIcons` requests in
+  // `pending_read_icon_requests_` are run to get the new raw icon from the
+  // app platforms, then load icons.
+  std::map<std::string, std::vector<base::OnceCallback<void()>>>
+      pending_read_icon_requests_;
 
   std::unique_ptr<apps::AppPlatformMetricsService>
       app_platform_metrics_service_;

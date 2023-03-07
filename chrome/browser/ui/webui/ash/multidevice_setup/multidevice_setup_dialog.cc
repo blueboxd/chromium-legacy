@@ -8,7 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
@@ -112,8 +112,8 @@ void MultiDeviceSetupDialog::AdjustWidgetInitParams(
 
 MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIMultiDeviceSetupHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUIMultiDeviceSetupHost);
 
   source->DisableTrustedTypesCSP();
 
@@ -129,7 +129,6 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
 
   web_ui->AddMessageHandler(std::make_unique<MultideviceSetupHandler>());
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 MultiDeviceSetupDialogUI::~MultiDeviceSetupDialogUI() = default;

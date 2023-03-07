@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -20,6 +20,7 @@
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util_internal.h"

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -68,6 +68,11 @@ void SimpleDevToolsProtocolClient::AttachToBrowser() {
 void SimpleDevToolsProtocolClient::AttachToWebContents(
     content::WebContents* web_contents) {
   AttachClient(DevToolsAgentHost::GetOrCreateFor(web_contents));
+}
+
+std::string SimpleDevToolsProtocolClient::GetTargetId() {
+  DCHECK(agent_host_);
+  return agent_host_->GetId();
 }
 
 std::unique_ptr<SimpleDevToolsProtocolClient>

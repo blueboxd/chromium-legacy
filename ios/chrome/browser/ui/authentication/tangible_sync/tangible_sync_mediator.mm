@@ -133,7 +133,7 @@
 
 #pragma mark - ChromeAccountManagerServiceObserver
 
-- (void)identityChanged:(id<SystemIdentity>)identity {
+- (void)identityUpdated:(id<SystemIdentity>)identity {
   id<SystemIdentity> primaryIdentity =
       _authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if ([primaryIdentity isEqual:identity]) {
@@ -147,6 +147,12 @@
     (const signin::PrimaryAccountChangeEvent&)event {
   if (event.GetEventTypeFor(signin::ConsentLevel::kSignin) ==
       signin::PrimaryAccountChangeEvent::Type::kCleared) {
+    // In rare cases, the auth flow may change the primary account.
+    // Ignore any primary account cleared event if a sign-in operation
+    // is in progress.
+    if (_authenticationFlow) {
+      return;
+    }
     [self.delegate tangibleSyncMediatorUserRemoved:self];
   }
 }

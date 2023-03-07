@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -55,6 +55,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#include "components/user_manager/user.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
@@ -296,7 +297,7 @@ void PdfPrinterHandler::StartPrint(
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   use_drive_mount_ =
       settings.FindBool(kSettingPrintToGoogleDrive).value_or(false);
 #endif
@@ -412,7 +413,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* service = chromeos::LacrosService::Get();
-  if (service &&
+  if (use_drive_mount_ && service &&
       service->IsAvailable<crosapi::mojom::DriveIntegrationService>()) {
     service->GetRemote<crosapi::mojom::DriveIntegrationService>()
         ->GetMountPointPath(

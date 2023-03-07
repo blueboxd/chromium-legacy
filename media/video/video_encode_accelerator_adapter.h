@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
@@ -61,6 +61,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   // VideoEncoder implementation.
   void Initialize(VideoCodecProfile profile,
                   const Options& options,
+                  EncoderInfoCB info_cb,
                   OutputCB output_cb,
                   EncoderStatusCB done_cb) override;
   void Encode(scoped_refptr<VideoFrame> frame,
@@ -109,6 +110,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   void InitCompleted(EncoderStatus status);
   void InitializeOnAcceleratorThread(VideoCodecProfile profile,
                                      const Options& options,
+                                     EncoderInfoCB info_cb,
                                      OutputCB output_cb,
                                      EncoderStatusCB done_cb);
   void InitializeInternalOnAcceleratorThread();
@@ -123,10 +125,8 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   template <class T>
   T WrapCallback(T cb);
   EncoderStatus::Or<scoped_refptr<VideoFrame>> PrepareGpuFrame(
-      const gfx::Size& size,
       scoped_refptr<VideoFrame> src_frame);
   EncoderStatus::Or<scoped_refptr<VideoFrame>> PrepareCpuFrame(
-      const gfx::Size& size,
       scoped_refptr<VideoFrame> src_frame);
 
   scoped_refptr<ReadOnlyRegionPool> input_pool_;
@@ -185,6 +185,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   VideoEncodeAccelerator::SupportedRateControlMode supported_rc_modes_ =
       VideoEncodeAccelerator::kNoMode;
   Options options_;
+  EncoderInfoCB info_cb_;
   OutputCB output_cb_;
 
   gfx::Size input_coded_size_;

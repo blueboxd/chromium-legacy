@@ -12,14 +12,9 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/isolation_info.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "url/origin.h"
-
-namespace network {
-class SharedURLLoaderFactory;
-}
 
 namespace autofill {
 
@@ -56,9 +51,6 @@ class AutofillDriver {
  public:
   virtual ~AutofillDriver() = default;
 
-  // Returns whether the user is currently operating in an incognito context.
-  virtual bool IsIncognito() const = 0;
-
   // Returns whether the AutofillDriver instance is associated with an active
   // frame in the MPArch sense.
   virtual bool IsInActiveFrame() const = 0;
@@ -76,12 +68,16 @@ class AutofillDriver {
   // frame.
   virtual bool CanShowAutofillUi() const = 0;
 
+  // Sets whether the keyboard should be suppressed. Used to keep the keyboard
+  // hidden while the bottom sheet (e.g. Touch To Fill) is shown. Forwarded to
+  // the last-queried source remembered by `ContentAutofillRouter`.
+  virtual void SetShouldSuppressKeyboard(bool suppress) = 0;
+
+  // Triggers a reparse on all frames of the same frame tree.
+  virtual void TriggerReparseInAllFrames() = 0;
+
   // Returns the ax tree id associated with this driver.
   virtual ui::AXTreeID GetAxTreeId() const = 0;
-
-  // Returns the URL loader factory associated with this driver.
-  virtual scoped_refptr<network::SharedURLLoaderFactory>
-  GetURLLoaderFactory() = 0;
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;

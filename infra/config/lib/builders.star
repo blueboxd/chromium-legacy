@@ -140,10 +140,7 @@ reclient = struct(
 )
 
 def _rotation(name):
-    return branches.value(
-        branch_selector = branches.selector.MAIN,
-        value = [name],
-    )
+    return branches.value({branches.MAIN: [name]})
 
 # Sheriff rotations that a builder can be added to (only takes effect on trunk)
 # Arbitrary elements can't be added, new rotations must be added in SoM code
@@ -179,9 +176,9 @@ xcode = struct(
     # A newer Xcode 13 version used on beta bots.
     x13betabots = xcode_enum("13f17a"),
     # Xcode14 RC will be used to build Main iOS
-    x14main = xcode_enum("14b47b"),
+    x14main = xcode_enum("14c18"),
     # A newer Xcode 14 RC  used on beta bots.
-    x14betabots = xcode_enum("14b47b"),
+    x14betabots = xcode_enum("14c18"),
     # in use by ios-webkit-tot
     x13wk = xcode_enum("13a1030dwk"),
 )
@@ -425,7 +422,7 @@ defaults = args.defaults(
 def builder(
         *,
         name,
-        branch_selector = branches.selector.MAIN,
+        branch_selector = branches.MAIN,
         bucket = args.DEFAULT,
         executable = args.DEFAULT,
         notifies = None,

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/bubble/bubble_contents_wrapper_service.h"
 #include "chrome/browser/ui/views/bubble/bubble_contents_wrapper_service_factory.h"
 #include "chrome/browser/ui/views/bubble/webui_bubble_dialog_view.h"
+#include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/emoji_picker_resources.h"
@@ -23,10 +24,9 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/ime_bridge.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace {
-constexpr gfx::Size kDefaultWindowSize(396, 454);
 constexpr gfx::Size kExtensionWindowSize(420, 480);
 constexpr int kPaddingAroundCursor = 8;
 
@@ -50,9 +50,9 @@ namespace ash {
 EmojiUI::EmojiUI(content::WebUI* web_ui)
     : ui::MojoBubbleWebUIController(web_ui,
                                     true /* Needed for webui browser tests */) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIEmojiPickerHost);
-  source->UseStringsJs();
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      chrome::kChromeUIEmojiPickerHost);
 
   // Add required resources.
   webui::SetupWebUIDataSource(
@@ -60,8 +60,9 @@ EmojiUI::EmojiUI(content::WebUI* web_ui)
       IDR_EMOJI_PICKER_INDEX_HTML);
   source->DisableTrustedTypesCSP();
 
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                source);
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::URLDataSource::Add(profile,
+                              std::make_unique<SanitizedImageSource>(profile));
 }
 
 EmojiUI::~EmojiUI() = default;
@@ -73,7 +74,7 @@ void EmojiUI::Show(Profile* profile) {
   }
 
   ui::InputMethod* input_method =
-      ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+      IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
   ui::TextInputClient* input_client =
       input_method ? input_method->GetTextInputClient() : nullptr;
   const bool incognito_mode =
@@ -92,10 +93,7 @@ void EmojiUI::Show(Profile* profile) {
     caret_bounds.set_y(0);
   }
 
-  gfx::Size window_size =
-      base::FeatureList::IsEnabled(features::kImeSystemEmojiPickerExtension)
-          ? kExtensionWindowSize
-          : kDefaultWindowSize;
+  gfx::Size window_size = kExtensionWindowSize;
   // This rect is used for positioning the emoji picker. It anchors either top
   // right / bottom left of the emoji picker window depending on where the text
   // field is. 8px padding around cursor is applied so that the emoji picker

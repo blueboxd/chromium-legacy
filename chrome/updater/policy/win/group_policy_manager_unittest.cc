@@ -4,10 +4,12 @@
 
 #include "chrome/updater/policy/win/group_policy_manager.h"
 
-#include <memory>
 #include <string>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -29,6 +31,8 @@ class GroupPolicyManagerTests : public ::testing::Test {
 
  private:
   void DeletePolicyKey();
+
+  base::test::TaskEnvironment environment_;
 };
 
 void GroupPolicyManagerTests::SetUp() {
@@ -48,8 +52,8 @@ void GroupPolicyManagerTests::DeletePolicyKey() {
 }
 
 TEST_F(GroupPolicyManagerTests, NoPolicySet) {
-  std::unique_ptr<PolicyManagerInterface> policy_manager =
-      std::make_unique<GroupPolicyManager>();
+  scoped_refptr<PolicyManagerInterface> policy_manager =
+      base::MakeRefCounted<GroupPolicyManager>(true);
   EXPECT_FALSE(policy_manager->HasActiveDevicePolicies());
 
   EXPECT_EQ(policy_manager->source(), "GroupPolicy");
@@ -118,8 +122,8 @@ TEST_F(GroupPolicyManagerTests, PolicyRead) {
   EXPECT_EQ(ERROR_SUCCESS,
             key.WriteValue(L"RollbackToTargetVersion" TEST_APP_ID, 1));
 
-  std::unique_ptr<PolicyManagerInterface> policy_manager =
-      std::make_unique<GroupPolicyManager>();
+  scoped_refptr<PolicyManagerInterface> policy_manager =
+      base::MakeRefCounted<GroupPolicyManager>(true);
   EXPECT_EQ(policy_manager->HasActiveDevicePolicies(),
             base::win::IsEnrolledToDomain());
 
@@ -190,8 +194,8 @@ TEST_F(GroupPolicyManagerTests, WrongPolicyValueType) {
   EXPECT_EQ(ERROR_SUCCESS,
             key.WriteValue(L"RollbackToTargetVersion" TEST_APP_ID, L"1"));
 
-  std::unique_ptr<PolicyManagerInterface> policy_manager =
-      std::make_unique<GroupPolicyManager>();
+  scoped_refptr<PolicyManagerInterface> policy_manager =
+      base::MakeRefCounted<GroupPolicyManager>(true);
 
   EXPECT_EQ(policy_manager->GetLastCheckPeriod(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetUpdatesSuppressedTimes(), absl::nullopt);

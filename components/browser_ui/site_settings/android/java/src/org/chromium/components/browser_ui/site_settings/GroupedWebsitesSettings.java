@@ -4,23 +4,26 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 
+import org.chromium.components.browser_ui.settings.CustomDividerFragment;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.settings.TextMessagePreference;
 
 /**
  * Shows the permissions and other settings for a group of websites.
  */
-public class GroupedWebsitesSettings
-        extends SiteSettingsPreferenceFragment implements Preference.OnPreferenceClickListener {
+public class GroupedWebsitesSettings extends SiteSettingsPreferenceFragment
+        implements Preference.OnPreferenceClickListener, CustomDividerFragment {
     public static final String EXTRA_GROUP = "org.chromium.chrome.preferences.site_group";
 
     // Preference keys, see grouped_websites_preferences.xml.
@@ -30,6 +33,8 @@ public class GroupedWebsitesSettings
     public static final String PREF_RELATED_SITES = "related_sites";
     public static final String PREF_SITES_IN_GROUP = "sites_in_group";
     public static final String PREF_RESET_GROUP = "reset_group_button";
+
+    private final SiteDataCleaner mSiteDataCleaner = new SiteDataCleaner();
 
     private WebsiteGroup mSiteGroup;
 
@@ -45,7 +50,11 @@ public class GroupedWebsitesSettings
     public void onActivityCreated(Bundle savedInstanceState) {
         init();
         super.onActivityCreated(savedInstanceState);
-        setDivider(null);
+    }
+
+    @Override
+    public boolean hasDivider() {
+        return false;
     }
 
     private void init() {
@@ -97,6 +106,10 @@ public class GroupedWebsitesSettings
         signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_message);
         TextView offlineText = dialogView.findViewById(R.id.offline_text);
         offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
+        if (getSiteSettingsDelegate().isPrivacySandboxSettings4Enabled()) {
+            TextView adPersonalizationText = dialogView.findViewById(R.id.ad_personalization_text);
+            adPersonalizationText.setVisibility(View.VISIBLE);
+        }
         mConfirmationDialog =
                 new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
                         .setView(dialogView)
@@ -109,8 +122,26 @@ public class GroupedWebsitesSettings
         return true;
     }
 
-    private void resetGroup() {
-        // TODO(crbug.com/1342991): Implement the deletion and UI logic for handling it.
+    private final Runnable mDataClearedCallback = () -> {
+        Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        // TODO(crbug.com/1342991): This always navigates the user back to the "All sites" page
+        // regardless of whether there are any non-resettable permissions left in the sites within
+        // the group. Consider calculating those and refreshing the screen in place for a slightly
+        // smoother user experience. However, due to the complexity involved in refreshing the
+        // already fetched data and a very marginal benefit, it may not be worth it.
+        getActivity().finish();
+    };
+
+    @VisibleForTesting
+    public void resetGroup() {
+        if (getActivity() == null) return;
+        mSiteDataCleaner.resetPermissions(
+                getSiteSettingsDelegate().getBrowserContextHandle(), mSiteGroup);
+        mSiteDataCleaner.clearData(getSiteSettingsDelegate().getBrowserContextHandle(), mSiteGroup,
+                mDataClearedCallback);
     }
 
     private void setUpClearDataPreference() {
@@ -120,8 +151,9 @@ public class GroupedWebsitesSettings
         if (storage > 0 || cookies > 0) {
             preference.setTitle(SiteSettingsUtil.generateStorageUsageText(
                     preference.getContext(), storage, cookies));
-            // TODO(crbug.com/1342991): Get clearingApps information from underlying sites.
-            preference.setDataForDisplay(mSiteGroup.getDomainAndRegistry(), /*clearingApps=*/false);
+            preference.setDataForDisplay(mSiteGroup.getDomainAndRegistry(),
+                    mSiteGroup.hasInstalledApp(
+                            getSiteSettingsDelegate().getOriginsWithInstalledApp()));
             if (mSiteGroup.isCookieDeletionDisabled(
                         getSiteSettingsDelegate().getBrowserContextHandle())) {
                 preference.setEnabled(false);

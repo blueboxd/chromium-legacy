@@ -9,9 +9,7 @@
 #include "third_party/blink/renderer/core/animation/view_timeline.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/core/style/scoped_css_name.h"
 #include "third_party/blink/renderer/core/style/timeline_inset.h"
-#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 
 namespace blink {
 
@@ -41,8 +39,12 @@ class CORE_EXPORT CSSViewTimeline : public ViewTimeline {
   bool Matches(const Options&) const;
 };
 
-using CSSViewTimelineMap =
-    HeapHashMap<Member<const ScopedCSSName>, Member<CSSViewTimeline>>;
+template <>
+struct DowncastTraits<CSSViewTimeline> {
+  static bool AllowFrom(const AnimationTimeline& value) {
+    return value.IsViewTimeline();
+  }
+};
 
 }  // namespace blink
 

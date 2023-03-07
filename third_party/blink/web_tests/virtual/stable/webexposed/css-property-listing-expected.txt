@@ -82,6 +82,7 @@ All changes to this list should go through Blink's feature review process: http:
     background-repeat-y
     background-size
     baseline-shift
+    baseline-source
     block-size
     border-block-end-color
     border-block-end-style
@@ -190,6 +191,7 @@ All changes to this list should go through Blink's feature review process: http:
     font-synthesis-small-caps
     font-synthesis-style
     font-synthesis-weight
+    font-variant-alternates
     font-variant-caps
     font-variant-east-asian
     font-variant-ligatures
@@ -581,13 +583,18 @@ All changes to this list should go through Blink's feature review process: http:
         flex-wrap
     font
         font-family
+        font-feature-settings
+        font-kerning
+        font-optical-sizing
         font-size
         font-stretch
         font-style
+        font-variant-alternates
         font-variant-caps
         font-variant-east-asian
         font-variant-ligatures
         font-variant-numeric
+        font-variation-settings
         font-weight
         line-height
     font-synthesis
@@ -595,6 +602,7 @@ All changes to this list should go through Blink's feature review process: http:
         font-synthesis-style
         font-synthesis-weight
     font-variant
+        font-variant-alternates
         font-variant-caps
         font-variant-east-asian
         font-variant-ligatures

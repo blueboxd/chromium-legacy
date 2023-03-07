@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -353,14 +353,14 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
                 .Set("extensionId", extension->id())
                 .Set("extensionName", extension->name())
                 .Set("provisional", true)
-                .BuildDict());
+                .Build());
       }
     }
   }
 
   DCHECK_GT(pending_enumeration_count_, 0);
   pending_enumeration_count_--;
-  base::Value::List list = std::move(printer_list.Build()->GetList());
+  base::Value::List list = printer_list.Build();
   if (!list.empty())
     callback.Run(std::move(list));
   if (pending_enumeration_count_ == 0)

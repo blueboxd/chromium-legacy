@@ -12,12 +12,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
 #include "base/mac/bundle_locations.h"
@@ -266,8 +266,8 @@ void SetupSystemUpdater() {
   NSString* prompt = l10n_util::GetNSStringFWithFixup(
       IDS_PROMOTE_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  base::mac::ScopedAuthorizationRef authorization(
-      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt)));
+  base::mac::ScopedAuthorizationRef authorization =
+      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt));
   if (!authorization.get()) {
     VLOG(0) << "Could not get authorization to run as root.";
     return;

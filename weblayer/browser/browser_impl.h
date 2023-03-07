@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -62,10 +62,6 @@ class BrowserImpl : public Browser {
   // Called from BrowserPersister when restore has completed.
   void OnRestoreCompleted();
 
-  void set_is_minimal_restore_in_progress(bool value) {
-    is_minimal_restore_in_progress_ = value;
-  }
-
 #if BUILDFLAG(IS_ANDROID)
   bool CompositorHasSurface();
 
@@ -80,18 +76,12 @@ class BrowserImpl : public Browser {
   void PrepareForShutdown(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jstring> GetPersistenceId(JNIEnv* env);
   void SaveBrowserPersisterIfNecessary(JNIEnv* env);
-  base::android::ScopedJavaLocalRef<jbyteArray> GetBrowserPersisterCryptoKey(
-      JNIEnv* env);
   base::android::ScopedJavaLocalRef<jbyteArray> GetMinimalPersistenceState(
       JNIEnv* env,
       int max_navigations_per_tab);
   void RestoreStateIfNecessary(
       JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& j_persistence_id,
-      const base::android::JavaParamRef<jbyteArray>& j_persistence_crypto_key);
-  void RestoreMinimalState(JNIEnv* env,
-                           const base::android::JavaParamRef<jbyteArray>&
-                               j_minimal_persistence_state);
+      const base::android::JavaParamRef<jstring>& j_persistence_id);
   void WebPreferencesChanged(JNIEnv* env);
   void OnFragmentStart(JNIEnv* env);
   void OnFragmentResume(JNIEnv* env);
@@ -134,7 +124,6 @@ class BrowserImpl : public Browser {
   Tab* CreateTab() override;
   void PrepareForShutdown() override;
   std::string GetPersistenceId() override;
-  std::vector<uint8_t> GetMinimalPersistenceState() override;
   bool IsRestoringPreviousState() override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
@@ -178,7 +167,6 @@ class BrowserImpl : public Browser {
   std::string persistence_id_;
   std::unique_ptr<BrowserPersister> browser_persister_;
   base::OnceClosure visible_security_state_changed_callback_for_tests_;
-  bool is_minimal_restore_in_progress_ = false;
   PrefChangeRegistrar profile_pref_change_registrar_;
 };
 

@@ -8,8 +8,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "components/sync/engine/cancelation_signal.h"
 #include "components/sync/engine/net/http_post_provider.h"
@@ -119,10 +119,8 @@ HttpResponse Connection::Init(const GURL& sync_request_url,
 
 bool Connection::ReadBufferResponse(std::string* buffer_out,
                                     HttpResponse* response) {
-  if (net::HTTP_OK != response->http_status_code) {
-    response->server_status = HttpResponse::SYNC_SERVER_ERROR;
-    return false;
-  }
+  DCHECK_EQ(response->server_status, HttpResponse::SERVER_CONNECTION_OK);
+  DCHECK_EQ(response->http_status_code, net::HTTP_OK);
 
   if (response->content_length <= 0)
     return false;

@@ -13,8 +13,6 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
-#import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
-#import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/web/public/navigation/referrer.h"
@@ -23,9 +21,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface HistoryClearBrowsingDataCoordinator ()<
-    UIViewControllerTransitioningDelegate,
-    TableViewPresentationControllerDelegate>
+@interface HistoryClearBrowsingDataCoordinator ()
 
 // ViewControllers being managed by this Coordinator.
 @property(strong, nonatomic)
@@ -61,22 +57,10 @@
           initWithTable:self.clearBrowsingDataTableViewController];
   self.historyClearBrowsingDataNavigationController.toolbarHidden = YES;
 
-  BOOL useCustomPresentation = YES;
   [self.historyClearBrowsingDataNavigationController
       setModalPresentationStyle:UIModalPresentationFormSheet];
   self.historyClearBrowsingDataNavigationController.presentationController
       .delegate = self.clearBrowsingDataTableViewController;
-  useCustomPresentation = NO;
-
-  if (useCustomPresentation) {
-    // Stacks on top of history "bubble" for non-compact devices.
-    self.historyClearBrowsingDataNavigationController.transitioningDelegate =
-        self;
-    self.historyClearBrowsingDataNavigationController.modalPresentationStyle =
-        UIModalPresentationCustom;
-    self.historyClearBrowsingDataNavigationController.modalTransitionStyle =
-        UIModalTransitionStyleCoverVertical;
-  }
 
   [self.baseViewController
       presentViewController:self.historyClearBrowsingDataNavigationController
@@ -131,32 +115,6 @@
 - (void)clearBrowsingDataTableViewControllerWasRemoved:
     (ClearBrowsingDataTableViewController*)controller {
   DCHECK_EQ(self.clearBrowsingDataTableViewController, controller);
-  [self stopWithCompletion:nil];
-}
-
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (UIPresentationController*)
-presentationControllerForPresentedViewController:(UIViewController*)presented
-                        presentingViewController:(UIViewController*)presenting
-                            sourceViewController:(UIViewController*)source {
-  TableViewPresentationController* controller =
-      [[TableViewPresentationController alloc]
-          initWithPresentedViewController:presented
-                 presentingViewController:presenting];
-  controller.modalDelegate = self;
-  return controller;
-}
-
-#pragma mark - TableViewPresentationControllerDelegate
-
-- (BOOL)presentationControllerShouldDismissOnTouchOutside:
-    (TableViewPresentationController*)controller {
-  return YES;
-}
-
-- (void)presentationControllerWillDismiss:
-    (TableViewPresentationController*)controller {
   [self stopWithCompletion:nil];
 }
 

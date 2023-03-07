@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -117,8 +117,9 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
   }
 
   EXPECT_CALL(*client_clipboard_,
-              InjectClipboardEvent(Property(&protocol::ClipboardEvent::data,
-                                            Eq("Test data.")))).Times(1);
+              InjectClipboardEvent(
+                  Property(&protocol::ClipboardEvent::data, Eq("Test data."))))
+      .Times(1);
 
   base::RunLoop run_loop;
   task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(

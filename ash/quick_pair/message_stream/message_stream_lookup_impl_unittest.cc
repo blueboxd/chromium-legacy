@@ -10,7 +10,7 @@
 #include "ash/quick_pair/message_stream/fake_bluetooth_socket.h"
 #include "ash/quick_pair/message_stream/message_stream.h"
 #include "ash/quick_pair/message_stream/message_stream_lookup.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -637,6 +637,23 @@ TEST_F(MessageStreamLookupImplTest,
   device_->AddUUID(kMessageStreamUuid);
   SetConnectToServiceError(kMessageStreamConnectToServiceError);
   DeviceAdded();
+  UnsuccessfulAttemptCreateMessageStream(/*num_unsuccessful_attempts=*/5);
+  task_environment_.FastForwardBy(base::Seconds(33));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetMessageStream(), nullptr);
+}
+
+TEST_F(MessageStreamLookupImplTest,
+       ConnectFailInitial_NoCrashIfDeviceLostBetweenRetries) {
+  device_->AddUUID(kMessageStreamUuid);
+  SetConnectToServiceError(kMessageStreamConnectToServiceError);
+  DeviceAdded();
+
+  // Simulate the device being removed from adapter immediately following
+  // pairing.
+  adapter_->RemoveMockDevice(kTestDeviceAddress);
+
+  // Expect the retries to not crash.
   UnsuccessfulAttemptCreateMessageStream(/*num_unsuccessful_attempts=*/5);
   task_environment_.FastForwardBy(base::Seconds(33));
   base::RunLoop().RunUntilIdle();

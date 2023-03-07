@@ -22,7 +22,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "components/media_message_center/notification_theme.h"
@@ -264,6 +264,10 @@ views::Widget* MediaTray::GetBubbleWidget() const {
   return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
 }
 
+TrayBubbleView* MediaTray::GetBubbleView() {
+  return bubble_ ? bubble_->GetBubbleView() : nullptr;
+}
+
 void MediaTray::ShowBubble() {
   DCHECK(MediaNotificationProvider::Get());
   SetNotificationColorTheme();
@@ -292,7 +296,7 @@ void MediaTray::ShowBubble() {
 
   content_view_ = bubble_view->AddChildView(
       MediaNotificationProvider::Get()->GetMediaNotificationListView(
-          kMenuSeparatorWidth));
+          kMenuSeparatorWidth, /*should_clip_height=*/true));
 
   bubble_ = std::make_unique<TrayBubbleWrapper>(this);
   bubble_->ShowBubble(std::move(bubble_view));

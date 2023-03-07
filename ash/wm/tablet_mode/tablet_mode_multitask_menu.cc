@@ -6,13 +6,17 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/system_shadow.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu_event_handler.h"
 #include "ash/wm/window_state.h"
+#include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
+#include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/window_util.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
@@ -70,17 +74,44 @@ class TabletModeMultitaskMenuView : public views::View {
     uint8_t buttons = chromeos::MultitaskMenuView::kFullscreen;
     if (SplitViewController::Get(window)->CanSnapWindow(window)) {
       buttons |= chromeos::MultitaskMenuView::kHalfSplit;
+    }
+
+    // TODO(sophiewen): Refactor from SplitViewController.
+    DCHECK(window->delegate());
+    const bool horizontal = chromeos::IsDisplayLayoutHorizontal(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window));
+    const gfx::Size min_size = window->delegate()->GetMinimumSize();
+    const int min_length = horizontal ? min_size.width() : min_size.height();
+    const gfx::Rect work_area = display::Screen::GetScreen()
+                                    ->GetDisplayNearestWindow(window)
+                                    .work_area();
+    const int work_area_length =
+        horizontal ? work_area.width() : work_area.height();
+    if (min_length <= work_area_length * chromeos::kTwoThirdSnapRatio) {
+      // If `min_length` <= 2/3, it can fit into 2/3 split, so ensure that
+      // we show the full partial button.
       buttons |= chromeos::MultitaskMenuView::kPartialSplit;
     }
+
     if (chromeos::wm::CanFloatWindow(window))
       buttons |= chromeos::MultitaskMenuView::kFloat;
 
-    menu_view_for_testing_ =
+    menu_view_base_ =
         AddChildView(std::make_unique<chromeos::MultitaskMenuView>(
             window, std::move(callback), buttons));
 
-    auto* layout = menu_view_for_testing_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(
+    if (menu_view_base_->partial_button() &&
+        min_length > work_area_length * chromeos::kOneThirdSnapRatio) {
+      // If `min_length` > 1/3, it can't fit into 1/3 split, so disable
+      // the 1/3 option in the partial button. Note that `GetRightBottomButton`
+      // must be disabled after `partial_button` is initialized to update the
+      // color in `SplitButton::OnPaintBackground()`.
+      menu_view_base_->partial_button()->GetRightBottomButton()->SetEnabled(
+          false);
+    }
+
+    auto* layout =
+        menu_view_base_->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal, kInsideBorderInsets,
             kBetweenButtonSpacing));
     layout->set_main_axis_alignment(
@@ -102,14 +133,12 @@ class TabletModeMultitaskMenuView : public views::View {
       delete;
   ~TabletModeMultitaskMenuView() override = default;
 
+  chromeos::MultitaskMenuView* menu_view_base() { return menu_view_base_; }
+
   SystemShadow* shadow() { return shadow_.get(); }
 
-  chromeos::MultitaskMenuView* menu_view_for_testing() {
-    return menu_view_for_testing_;
-  }
-
  private:
-  raw_ptr<chromeos::MultitaskMenuView> menu_view_for_testing_ = nullptr;
+  raw_ptr<chromeos::MultitaskMenuView> menu_view_base_ = nullptr;
 
   std::unique_ptr<SystemShadow> shadow_;
 };
@@ -153,13 +182,20 @@ TabletModeMultitaskMenu::TabletModeMultitaskMenu(
   // Set the widget on the top center of the window.
   const gfx::Size menu_size(menu_view_->GetPreferredSize());
   const gfx::Rect window_bounds(window_->GetBoundsInScreen());
-  gfx::Rect widget_bounds(window_bounds);
+
   // The invisible widget needs to be big enough to include both the menu and
-  // shadow otherwise it would mask parts out.
-  widget_bounds.ClampToCenteredSize(
-      gfx::Size(menu_size.width() + kShadowOutset * 2,
-                menu_size.height() + kShadowOutset * 2));
-  widget_bounds.set_y(window_bounds.y());
+  // shadow otherwise it would mask parts out. Explicitly set the widget size
+  // since `window` may be narrower than the menu and clamp to its bounds.
+  const int widget_width = menu_size.width() + kShadowOutset * 2;
+  gfx::Rect widget_bounds = gfx::Rect(
+      window_bounds.CenterPoint().x() - widget_width / 2, window_bounds.y(),
+      widget_width, menu_size.height() + kShadowOutset * 2);
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window);
+  if (!work_area.Contains(widget_bounds)) {
+    widget_bounds.AdjustToFit(work_area);
+  }
+
   widget_->SetBounds(widget_bounds);
   widget_->Show();
 
@@ -171,10 +207,14 @@ TabletModeMultitaskMenu::TabletModeMultitaskMenu(
   menu_view_->layer()->SetTransform(initial_transform);
   menu_view_->shadow()->SetContentBounds(gfx::Rect(menu_size));
 
-  widget_observation_.Observe(widget_.get());
+  // Showing the widget can change native focus (which would result in an
+  // immediate closing of the menu). Only start observing after shown.
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
-TabletModeMultitaskMenu::~TabletModeMultitaskMenu() = default;
+TabletModeMultitaskMenu::~TabletModeMultitaskMenu() {
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
+}
 
 void TabletModeMultitaskMenu::Animate(bool show) {
   ui::Layer* view_layer = menu_view_->layer();
@@ -210,30 +250,37 @@ void TabletModeMultitaskMenu::AnimateFadeOut() {
       .SetOpacity(view_layer, 0.0f, gfx::Tween::LINEAR);
 }
 
-void TabletModeMultitaskMenu::BeginDrag(float initial_y) {
-  // Try to match the bottom of the menu with the drag location.
-  // TODO(sophiewen): The drag location may not always be at the bottom of the
-  // menu.
-  float delta_y = initial_y - menu_view_->bounds().bottom();
-  menu_view_->layer()->SetTransform(
-      gfx::Transform::MakeTranslation(0, delta_y));
+void TabletModeMultitaskMenu::BeginDrag(float initial_y, bool down) {
+  if (down) {
+    // If we are dragging down, the menu hasn't been created yet, so match the
+    // bottom of the menu with `initial_y` and save it as `initial_y_`.
+    const float translation_y = initial_y - menu_view_->bounds().bottom();
+    initial_y_ = menu_view_->bounds().bottom();
+    menu_view_->layer()->SetTransform(
+        gfx::Transform::MakeTranslation(0, translation_y));
+  } else {
+    // Drag up can start from anywhere in the menu; simply save `initial_y` to
+    // update drag relative to it.
+    initial_y_ = initial_y;
+  }
 }
 
-void TabletModeMultitaskMenu::UpdateDrag(float current_y) {
-  float transform_y = current_y - menu_view_->bounds().bottom();
+void TabletModeMultitaskMenu::UpdateDrag(float current_y, bool down) {
+  const float translation_y = current_y - initial_y_;
   // Stop translating the menu if the drag moves out of bounds.
-  if (transform_y > 0)
+  if (down && translation_y >= 0.f) {
     return;
+  }
   menu_view_->layer()->SetTransform(
-      gfx::Transform::MakeTranslation(0, transform_y));
+      gfx::Transform::MakeTranslation(0, translation_y));
 }
 
 void TabletModeMultitaskMenu::EndDrag() {
   // Calculate the `current_translation_y` relative to `max_translation_y`. Both
   // negative values and relative to the menu position.
-  float current_translation_y =
+  const float current_translation_y =
       menu_view_->layer()->transform().To2dTranslation().y();
-  float max_translation_y =
+  const float max_translation_y =
       -menu_view_->GetPreferredSize().height() - kVerticalPosition;
   const float translated_ratio =
       base::clamp(current_translation_y / max_translation_y, 0.f, 1.f);
@@ -254,12 +301,10 @@ void TabletModeMultitaskMenu::OnWindowDestroying(aura::Window* window) {
   Reset();
 }
 
-void TabletModeMultitaskMenu::OnWidgetActivationChanged(views::Widget* widget,
-                                                        bool active) {
-  // `widget` gets deactivated when the window state changes.
-  DCHECK(widget_observation_.IsObservingSource(widget));
-  if (!active) {
-    // Will destroy `this` at the end of animation.
+void TabletModeMultitaskMenu::OnNativeFocusChanged(
+    gfx::NativeView focused_now) {
+  if (widget_->GetNativeView() != focused_now) {
+    // Destroys `this` at the end of animation.
     AnimateFadeOut();
   }
 }
@@ -278,16 +323,15 @@ void TabletModeMultitaskMenu::OnDisplayMetricsChanged(
                           .id()) {
     return;
   }
-  // TODO(shidi): Will do the rotate transition on a separate cl. Close the
-  // menu at rotation for now.
-  if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)
-    event_handler_->ResetMultitaskMenu();
+  if (changed_metrics) {
+    AnimateFadeOut();
+  }
 }
 
 chromeos::MultitaskMenuView*
 TabletModeMultitaskMenu::GetMultitaskMenuViewForTesting() {
   return static_cast<TabletModeMultitaskMenuView*>(menu_view_)
-      ->menu_view_for_testing();  // IN-TEST
+      ->menu_view_base();  // IN-TEST
 }
 
 }  // namespace ash

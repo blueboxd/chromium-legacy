@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/quick_pair/common/constants.h"
 #include "ash/quick_pair/common/device.h"
+#include "ash/quick_pair/common/fake_bluetooth_adapter.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/common/protocol.h"
@@ -41,7 +42,9 @@
 
 namespace {
 
+constexpr base::TimeDelta kRetroactiveDevicePairingTimeout = base::Seconds(60);
 constexpr char kTestDeviceAddress[] = "11:12:13:14:15:16";
+constexpr char kTestDeviceAddress2[] = "11:12:13:14:15:17";
 constexpr char kTestBleDeviceName[] = "Test Device Name";
 constexpr char kValidModelId[] = "718c17";
 const std::string kUserEmail = "test@test.test";
@@ -97,36 +100,16 @@ CreateTestBluetoothDevice(std::string address) {
 namespace ash {
 namespace quick_pair {
 
-class RetroactivePairingDetectorFakeBluetoothAdapter
-    : public testing::NiceMock<device::MockBluetoothAdapter> {
- public:
-  device::BluetoothDevice* GetDevice(const std::string& address) override {
-    for (const auto& it : mock_devices_) {
-      if (it->GetAddress() == address)
-        return it.get();
-    }
-
-    return nullptr;
-  }
-
-  void NotifyDevicePairedChanged(device::BluetoothDevice* device,
-                                 bool new_paired_status) {
-    device::BluetoothAdapter::NotifyDevicePairedChanged(device,
-                                                        new_paired_status);
-  }
-
- private:
-  ~RetroactivePairingDetectorFakeBluetoothAdapter() = default;
-};
-
 class RetroactivePairingDetectorTest
     : public AshTestBase,
       public RetroactivePairingDetector::Observer {
  public:
+  RetroactivePairingDetectorTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
   void SetUp() override {
     AshTestBase::SetUp();
-    adapter_ =
-        base::MakeRefCounted<RetroactivePairingDetectorFakeBluetoothAdapter>();
+    adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
     pairer_broker_ = std::make_unique<MockPairerBroker>();
@@ -217,7 +200,7 @@ class RetroactivePairingDetectorTest
   bool retroactive_pair_found_ = false;
   scoped_refptr<Device> retroactive_device_;
 
-  scoped_refptr<RetroactivePairingDetectorFakeBluetoothAdapter> adapter_;
+  scoped_refptr<FakeBluetoothAdapter> adapter_;
   std::unique_ptr<PairerBroker> pairer_broker_;
   MockPairerBroker* mock_pairer_broker_ = nullptr;
 
@@ -469,8 +452,8 @@ TEST_F(RetroactivePairingDetectorTest, MessageStream_Ble_ModelId_FlagEnabled) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest, MessageStream_Ble_ModelId_FlagDisabled) {
@@ -503,8 +486,8 @@ TEST_F(RetroactivePairingDetectorTest, MessageStream_Ble_ModelId_FlagDisabled) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -537,8 +520,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -571,8 +554,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -648,8 +631,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -678,8 +661,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -707,8 +690,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -736,8 +719,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -763,8 +746,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -790,8 +773,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -816,8 +799,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -842,8 +825,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -1027,8 +1010,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest,
@@ -1741,8 +1724,8 @@ TEST_F(RetroactivePairingDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(retroactive_pair_found_);
-  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
-  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+  EXPECT_EQ(retroactive_device_->ble_address(), kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id(), kModelId);
 }
 
 TEST_F(RetroactivePairingDetectorTest, DontNotifyIfAlreadySavedToAcount) {
@@ -1777,6 +1760,210 @@ TEST_F(RetroactivePairingDetectorTest, DontNotifyIfAlreadySavedToAcount) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(retroactive_pair_found_);
+}
+
+// There are two ways to get to `CheckAndRemoveIfDeviceExpired `. One is by
+// `GetModelIdAndAddressFromMessageStream` which is triggered when the
+// MessageStream already has the model id and BLE address messages on
+// connection. The second way is through `CheckPairingInformation` which is
+// triggered when the MessageStream does not have the model id and BLE
+// address on connection, and the model id and BLE address are observed later
+// on.
+TEST_F(RetroactivePairingDetectorTest,
+       DontNotify_ExpiryTimeoutReached_GetModelIdAndAddressFromMessageStream) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Pair a device with classic Bluetooth pairing and set the MessageStream
+  // with model id and BLE address bytes to successfully detect the scenario.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp.
+  SetMessageStream(kModelIdBleAddressBytes);
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+
+  // Fast forward by |kRetroactiveDevicePairingTimeout| in order to simulate
+  // that the device's |expiry_timestamp| has been reached. Because the
+  // timeout has been reached, we expect that the retroactive pairing
+  // scenario to not be triggered.
+  task_environment()->FastForwardBy(kRetroactiveDevicePairingTimeout);
+  fake_socket_->TriggerReceiveCallback();
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
+TEST_F(RetroactivePairingDetectorTest,
+       DontNotify_ExpiryTimeoutReached_CheckPairingInformation) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Pair a device with classic Bluetooth pairing and set the MessageStream
+  // with no bytes to successfully detect the scenario.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp. Because there are no BLE address bytes or model id
+  // bytes in the connected MessageStream, the RetroactivePairingDetector adds
+  // itself as an observer to wait for these messages.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+
+  // Fast forward by |kRetroactiveDevicePairingTimeout| in order to simulate
+  // that the device's |expiry_timestamp| has been reached. Because the
+  // timeout has been reached, we expect that the retroactive pairing
+  // scenario to not be triggered.
+  task_environment()->FastForwardBy(kRetroactiveDevicePairingTimeout);
+
+  // Set up the socket with the model id bytes and BLE address bytes to
+  // successfully detect the scenario, and trigger the bytes being received
+  // after the timeout to trigger the check in `CheckPairingInformation`
+  // which happens in the overridden observed red functions for
+  // `OnModelIdMessage` and `OnBleAddressUpdateMessage`.
+  fake_socket_->SetIOBufferFromBytes(kModelIdBleAddressBytes);
+
+  // TODO(b/263391358): Refactor `TriggerReceiveCallback` to take a
+  // base::RunLoop parameter and remove `base::RunLoop().RunUntilIdle()`.
+  fake_socket_->TriggerReceiveCallback();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
+TEST_F(RetroactivePairingDetectorTest,
+       DontNotify_ExpiryTimeoutReached_DifferentDeviceTriggerRemoval) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Simulate a first device being found with classic Bluetooth pairing.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp. This device does not have a MessageStream associated,
+  // so `CheckPairingInformation` will never be fired because it doesn't have
+  // a model id or BLE event, and thus alone, its expiry event will never be
+  // triggered.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+
+  // Fast forward by |kRetroactiveDevicePairingTimeout| in order to simulate
+  // that the device's |expiry_timestamp| has been reached.
+  task_environment()->FastForwardBy(kRetroactiveDevicePairingTimeout);
+
+  // Simulate another device being found for retroactive pairing. This device
+  // will also be added to `device_pairing_information_` map with an expiry
+  // timeout, and its addition will trigger
+  // `RemoveExpiredDevicesFromStoredDeviceData`, which will remove the
+  // first device since it has expired.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress2);
+
+  // Trigger a Message Stream event for the first device with the model id and
+  // BLE address. Although there is a check in `CheckPairingInformation`,
+  // the device was already removed in
+  // `RemoveExpiredDevicesFromStoredDeviceData`.
+  SetMessageStream(kModelIdBleAddressBytes);
+  fake_socket_->TriggerReceiveCallback();
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
+TEST_F(RetroactivePairingDetectorTest, NotifyAfterDeviceRepairs) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Pair a device with classic Bluetooth pairing and set the MessageStream
+  // with model id and BLE address bytes to successfully detect the scenario.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp.
+  SetMessageStream(kModelIdBleAddressBytes);
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+
+  // Simulate the device being unpaired, and paired again.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/false, kTestDeviceAddress);
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+
+  // When the model id and BLE address fire, we expect the retroactive pairing
+  // event to still be detected, even if the device was unpaired and repeated.
+  fake_socket_->TriggerReceiveCallback();
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(retroactive_pair_found_);
+}
+
+TEST_F(RetroactivePairingDetectorTest, NoCrashWhenFootprintsResponseIsSlow) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kFastPairSavedDevices,
+                             features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Delay the response so we can trigger it after OnDevicePaired.
+  fast_pair_repository_.SetIsDeviceSavedToAccountCallbackDelayed(
+      /*is_delayed=*/true);
+
+  // The naming for these are confusing.
+  // This calls DevicePairedChanged.
+  PairFastPairDeviceWithClassicBluetooth(true, kTestDeviceAddress);
+
+  // This calls OnDevicePaired.
+  PairFastPairDeviceWithFastPair(kTestDeviceAddress);
+
+  fake_socket_->TriggerReceiveCallback();
+  base::RunLoop().RunUntilIdle();
+
+  // Add a real message stream so the check passes.
+  AddMessageStream(kModelIdBleAddressBytes);
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+  base::RunLoop().RunUntilIdle();
+
+  // Trigger the response.
+  fast_pair_repository_.TriggerIsDeviceSavedToAccountCallback();
 }
 
 }  // namespace quick_pair

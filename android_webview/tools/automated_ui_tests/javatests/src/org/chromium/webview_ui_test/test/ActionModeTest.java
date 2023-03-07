@@ -189,7 +189,7 @@ public class ActionModeTest {
     @SmallTest
     @UseLayout("edittext_webview")
     public void testAssist() {
-        // The assist option is only available on N
+        // The assist option is only available on N (not supported on O or higher)
         assumeTrue(Build.VERSION.SDK_INT == Build.VERSION_CODES.N);
         longClickOnLastWord(R.id.webview);
         clickPopupAction(ASSIST_ACTION);

@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/file.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -83,8 +83,7 @@ NativeMessagingReader::Core::Core(
     : read_stream_(std::move(file)),
       reader_(reader),
       caller_task_runner_(caller_task_runner),
-      read_task_runner_(read_task_runner) {
-}
+      read_task_runner_(read_task_runner) {}
 
 NativeMessagingReader::Core::~Core() = default;
 

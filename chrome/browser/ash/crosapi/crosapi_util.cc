@@ -125,6 +125,7 @@
 #include "chromeos/crosapi/mojom/wallpaper.mojom.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
+#include "chromeos/services/machine_learning/public/cpp/ml_switches.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/startup/startup.h"
 #include "chromeos/ui/wm/features.h"
@@ -232,10 +233,9 @@ mojom::DevicePropertiesPtr GetDeviceProperties() {
   policy::BrowserPolicyConnectorAsh* policy_connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
   result->directory_device_id = policy_connector->GetDirectoryApiID();
-  result->serial_number =
-      std::string(chromeos::system::StatisticsProvider::GetInstance()
-                      ->GetMachineID()
-                      .value_or(""));
+  result->serial_number = std::string(
+      ash::system::StatisticsProvider::GetInstance()->GetMachineID().value_or(
+          ""));
   result->annotated_asset_id = policy_connector->GetDeviceAssetID();
   result->annotated_location = policy_connector->GetDeviceAnnotatedLocation();
   auto* device_name_policy_handler =
@@ -498,10 +498,10 @@ void InjectBrowserInitParams(
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kOndeviceHandwritingSwitch)) {
+          ::switches::kOndeviceHandwritingSwitch)) {
     const auto handwriting_switch =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            ash::switches::kOndeviceHandwritingSwitch);
+            ::switches::kOndeviceHandwritingSwitch);
 
     // TODO(https://crbug.com/1168978): Query mlservice instead of using
     // hard-coded values.

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import static org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.M26_GOOGLE_COM;
-import static org.chromium.chrome.browser.tasks.ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.app.Activity;
@@ -100,7 +99,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StartSurfaceTestUtils {
     public static final String INSTANT_START_TEST_BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:"
-            + ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0";
+            + StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS_PARAM + "/0";
     public static final String START_SURFACE_TEST_SINGLE_ENABLED_PARAMS =
             "force-fieldtrial-params=Study.Group:show_last_active_tab_only/false"
             + "/open_ntp_instead_of_start/false/open_start_as_homepage/true";
@@ -116,7 +115,7 @@ public class StartSurfaceTestUtils {
 
     /**
      * Set up StartSurfaceTest* based on whether it's immediateReturn or not.
-     * @param immediateReturn Whether feature {@link ChromeFeatureList#TAB_SWITCHER_ON_RETURN} is
+     * @param immediateReturn Whether feature {@link ChromeFeatureList#START_SURFACE_RETURN_TIME} is
      *                        enabled as "immediately". When immediate return is enabled, the Start
      *                        surface is showing when Chrome is launched.
      * @param activityTestRule The test rule of activity under test.
@@ -134,8 +133,8 @@ public class StartSurfaceTestUtils {
             createTabStateFile(tabIDs);
         }
         if (immediateReturn) {
-            TAB_SWITCHER_ON_RETURN_MS.setForTesting(0);
-            assertEquals(0, ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+            StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
+            assertEquals(0, StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue());
             assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
 
             // Need to start main activity from launcher for immediate return to be effective.
@@ -473,6 +472,23 @@ public class StartSurfaceTestUtils {
     }
 
     /**
+     * Click "more_tabs" to navigate to tab switcher surface.
+     * @param cta The ChromeTabbedActivity under test.
+     */
+    public static void clickMoreTabs(ChromeTabbedActivity cta) {
+        // Note that onView(R.id.more_tabs).perform(click()) can not be used since it requires 90
+        // percent of the view's area is displayed to the users. However, this view has negative
+        // margin which makes the percentage is less than 90.
+        // TODO(crbug.com/1186752): Investigate whether this would be a problem for real users.
+        try {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> cta.findViewById(R.id.more_tabs).performClick());
+        } catch (ExecutionException e) {
+            fail("Failed to tap 'more tabs' " + e.toString());
+        }
+    }
+
+    /**
      * Set MV tiles on start surface by setting suggestionsDeps.
      * @param suggestionsDeps The SuggestionsDependenciesRule under test.
      * @return The MostVisitedSites the test used.
@@ -531,6 +547,14 @@ public class StartSurfaceTestUtils {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
         ChromeApplicationTestUtils.waitUntilChromeInBackground();
+    }
+
+    /**
+     * Gets the "tab_list_view" from the carousel tab switcher module on Start surface.
+     */
+    static View getCarouselTabSwitcherTabListView(ChromeTabbedActivity cta) {
+        return cta.findViewById(R.id.carousel_tab_switcher_container)
+                .findViewById(org.chromium.chrome.test.R.id.tab_list_view);
     }
 
     /**

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
@@ -18,6 +18,8 @@ const char AudioDeviceDescription::kCommunicationsDeviceId[] = "communications";
 const char AudioDeviceDescription::kLoopbackInputDeviceId[] = "loopback";
 const char AudioDeviceDescription::kLoopbackWithMuteDeviceId[] =
     "loopbackWithMute";
+const char AudioDeviceDescription::kLoopbackWithoutChromeId[] =
+    "loopbackWithoutChrome";
 
 namespace {
 constexpr char kAirpodsNameSubstring[] = "AirPods";
@@ -46,8 +48,9 @@ bool AudioDeviceDescription::IsCommunicationsDevice(
 
 // static
 bool AudioDeviceDescription::IsLoopbackDevice(const std::string& device_id) {
-  return device_id.compare(kLoopbackInputDeviceId) == 0 ||
-         device_id.compare(kLoopbackWithMuteDeviceId) == 0;
+  return device_id == kLoopbackInputDeviceId ||
+         device_id == kLoopbackWithMuteDeviceId ||
+         device_id == kLoopbackWithoutChromeId;
 }
 
 // static

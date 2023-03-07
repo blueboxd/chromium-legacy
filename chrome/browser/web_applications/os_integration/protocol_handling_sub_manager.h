@@ -12,26 +12,30 @@
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 
+class Profile;
+
 namespace web_app {
 
 class WebAppRegistrar;
 
 class ProtocolHandlingSubManager : public OsIntegrationSubManager {
  public:
-  explicit ProtocolHandlingSubManager(WebAppRegistrar& registrar);
+  explicit ProtocolHandlingSubManager(Profile* profile,
+                                      WebAppRegistrar& registrar);
   ~ProtocolHandlingSubManager() override;
   void Start() override;
   void Shutdown() override;
   void Configure(const AppId& app_id,
                  proto::WebAppOsIntegrationState& desired_state,
                  base::OnceClosure configure_done) override;
-  void Execute(
-      const AppId& app_id,
-      const proto::WebAppOsIntegrationState& desired_state,
-      const absl::optional<proto::WebAppOsIntegrationState>& current_state,
-      base::OnceClosure callback) override;
+  void Execute(const AppId& app_id,
+               const absl::optional<SynchronizeOsOptions>& synchronize_options,
+               const proto::WebAppOsIntegrationState& desired_state,
+               const proto::WebAppOsIntegrationState& current_state,
+               base::OnceClosure callback) override;
 
  private:
+  const raw_ptr<Profile> profile_;
   const raw_ref<WebAppRegistrar> registrar_;
 
   base::WeakPtrFactory<ProtocolHandlingSubManager> weak_ptr_factory_{this};

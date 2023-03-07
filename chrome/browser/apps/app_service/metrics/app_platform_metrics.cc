@@ -78,6 +78,7 @@ std::set<apps::AppTypeName>& GetAppTypeNameSet() {
     app_type_name_map->insert(apps::AppTypeName::kExtension);
     app_type_name_map->insert(apps::AppTypeName::kStandaloneBrowserExtension);
     app_type_name_map->insert(apps::AppTypeName::kStandaloneBrowserWebApp);
+    app_type_name_map->insert(apps::AppTypeName::kBruschetta);
   }
   return *app_type_name_map;
 }
@@ -162,6 +163,8 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
       return apps::AppTypeNameV2::kExtension;
     case apps::AppType::kStandaloneBrowserExtension:
       return apps::AppTypeNameV2::kStandaloneBrowserExtension;
+    case apps::AppType::kBruschetta:
+      return apps::AppTypeNameV2::kBruschetta;
   }
 }
 
@@ -210,6 +213,8 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
       return apps::AppTypeNameV2::kBorealis;
     case apps::AppType::kSystemWeb:
       return apps::AppTypeNameV2::kSystemWeb;
+    case apps::AppType::kBruschetta:
+      return apps::AppTypeNameV2::kBruschetta;
     case apps::AppType::kStandaloneBrowserChromeApp: {
       apps::AppTypeName app_type_name =
           apps::GetAppTypeNameForStandaloneBrowserChromeApp(profile, app_id,
@@ -322,6 +327,8 @@ std::string GetAppTypeHistogramNameV2(apps::AppTypeNameV2 app_type_name) {
       return kStandaloneBrowserWebAppWindowHistogramName;
     case apps::AppTypeNameV2::kStandaloneBrowserWebAppTab:
       return kStandaloneBrowserWebAppTabHistogramName;
+    case apps::AppTypeNameV2::kBruschetta:
+      return kBruschettaHistogramName;
   }
 }
 
@@ -412,6 +419,7 @@ AppPlatformMetrics::AppPlatformMetrics(
   user_type_by_device_type_ = GetUserTypeByDeviceTypeMetrics();
   InitRunningDuration();
   LoadAppsUsageTimeUkmFromPref();
+  ReadInstalledApps();
 }
 
 AppPlatformMetrics::~AppPlatformMetrics() {
@@ -491,6 +499,7 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(Profile* profile,
     case AppType::kBorealis:
       source_id = GetSourceIdForBorealis(profile, app_id);
       break;
+    case AppType::kBruschetta:
     case AppType::kUnknown:
     case AppType::kMacOs:
     case AppType::kPluginVm:
@@ -992,6 +1001,12 @@ void AppPlatformMetrics::ClearRunningDuration() {
 
   profile_->GetPrefs()->SetDict(kAppRunningDuration, base::Value::Dict());
   profile_->GetPrefs()->SetDict(kAppActivatedCount, base::Value::Dict());
+}
+
+void AppPlatformMetrics::ReadInstalledApps() {
+  app_registry_cache_.ForEachApp([this](const apps::AppUpdate& update) {
+    RecordAppsInstallUkm(update, InstallTime::kInit);
+  });
 }
 
 void AppPlatformMetrics::RecordAppsCount(AppType app_type) {

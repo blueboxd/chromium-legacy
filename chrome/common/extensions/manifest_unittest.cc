@@ -5,6 +5,7 @@
 #include "extensions/common/manifest.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <set>
 #include <string>
@@ -21,6 +22,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using extensions::mojom::ManifestLocation;
 
@@ -52,33 +54,39 @@ class ManifestUnitTest : public testing::Test {
   }
 
   // Helper function that replaces the Manifest held by |manifest| with a copy
-  // with its |key| changed to |value|. If |value| is nullptr, then |key| will
-  // instead be deleted.
-  void MutateManifest(std::unique_ptr<Manifest>* manifest,
+  // with its |key| changed to |value|.
+  void MutateManifest(std::unique_ptr<Manifest>& manifest,
                       const std::string& key,
-                      std::unique_ptr<base::Value> value) {
-    base::Value::Dict manifest_value = (*manifest)->value()->Clone();
-    if (value)
-      manifest_value.SetByDottedPath(key, std::move(*value));
-    else
-      manifest_value.RemoveByDottedPath(key);
-    ExtensionId extension_id = manifest->get()->extension_id();
-    *manifest = std::make_unique<Manifest>(
+                      base::Value value) {
+    base::Value::Dict manifest_value = manifest->value()->Clone();
+    manifest_value.SetByDottedPath(key, std::move(value));
+    ExtensionId extension_id = manifest->extension_id();
+    manifest = std::make_unique<Manifest>(
+        ManifestLocation::kInternal, std::move(manifest_value), extension_id);
+  }
+
+  // Helper function to delete the |key| from |manifest|.
+  void DeleteManifestKey(std::unique_ptr<Manifest>& manifest,
+                         const std::string& key) {
+    base::Value::Dict manifest_value = manifest->value()->Clone();
+    manifest_value.RemoveByDottedPath(key);
+    ExtensionId extension_id = manifest->extension_id();
+    manifest = std::make_unique<Manifest>(
         ManifestLocation::kInternal, std::move(manifest_value), extension_id);
   }
 
   // Helper function that replaces the manifest held by |manifest| with a copy
   // and uses the |for_login_screen| during creation to determine its type.
-  void MutateManifestForLoginScreen(std::unique_ptr<Manifest>* manifest,
+  void MutateManifestForLoginScreen(std::unique_ptr<Manifest>& manifest,
                                     bool for_login_screen) {
-    auto manifest_value = (*manifest)->value()->Clone();
-    ExtensionId extension_id = manifest->get()->extension_id();
+    auto manifest_value = manifest->value()->Clone();
+    ExtensionId extension_id = manifest->extension_id();
     if (for_login_screen) {
-      *manifest = Manifest::CreateManifestForLoginScreen(
+      manifest = Manifest::CreateManifestForLoginScreen(
           ManifestLocation::kExternalPolicy, std::move(manifest_value),
           extension_id);
     } else {
-      *manifest = std::make_unique<Manifest>(
+      manifest = std::make_unique<Manifest>(
           ManifestLocation::kInternal, std::move(manifest_value), extension_id);
     }
   }
@@ -123,7 +131,7 @@ TEST_F(ManifestUnitTest, Extension) {
       crx_file::id_util::GenerateId("extid"));
   EXPECT_TRUE(manifest->EqualsForTesting(*manifest2));
   EXPECT_TRUE(manifest2->EqualsForTesting(*manifest));
-  MutateManifest(&manifest, "foo", std::make_unique<base::Value>("blah"));
+  MutateManifest(manifest, "foo", base::Value("blah"));
   EXPECT_FALSE(manifest->EqualsForTesting(*manifest2));
 }
 
@@ -132,6 +140,8 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
   base::Value::Dict value;
   value.Set(keys::kName, "extension");
   value.Set(keys::kVersion, "1");
+
+  const base::Value empty_dict(base::Value::Type::DICT);
 
   std::unique_ptr<Manifest> manifest(
       new Manifest(ManifestLocation::kInternal, std::move(value),
@@ -146,47 +156,43 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
 
   // Login screen extension
-  MutateManifestForLoginScreen(&manifest, true);
+  MutateManifestForLoginScreen(manifest, true);
   AssertType(manifest.get(), Manifest::TYPE_LOGIN_SCREEN_EXTENSION);
-  MutateManifestForLoginScreen(&manifest, false);
+  MutateManifestForLoginScreen(manifest, false);
 
   // Theme.
-  MutateManifest(&manifest, keys::kTheme,
-                 std::make_unique<base::DictionaryValue>());
+  MutateManifest(manifest, keys::kTheme, base::Value(base::Value::Dict()));
   AssertType(manifest.get(), Manifest::TYPE_THEME);
-  MutateManifest(&manifest, keys::kTheme, nullptr);
+  DeleteManifestKey(manifest, keys::kTheme);
 
   // Shared module.
-  MutateManifest(&manifest, api::shared_module::ManifestKeys::kExport,
-                 std::make_unique<base::DictionaryValue>());
+  MutateManifest(manifest, api::shared_module::ManifestKeys::kExport,
+                 base::Value(base::Value::Dict()));
   AssertType(manifest.get(), Manifest::TYPE_SHARED_MODULE);
-  MutateManifest(&manifest, api::shared_module::ManifestKeys::kExport, nullptr);
+  DeleteManifestKey(manifest, api::shared_module::ManifestKeys::kExport);
 
   // Packaged app.
-  MutateManifest(&manifest, keys::kApp,
-                 std::make_unique<base::DictionaryValue>());
+  MutateManifest(manifest, keys::kApp, base::Value(base::Value::Dict()));
   AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   // Packaged app for login screen remains a packaged app.
-  MutateManifestForLoginScreen(&manifest, true);
+  MutateManifestForLoginScreen(manifest, true);
   AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
-  MutateManifestForLoginScreen(&manifest, false);
+  MutateManifestForLoginScreen(manifest, false);
 
   // Platform app with event page.
-  MutateManifest(&manifest, keys::kPlatformAppBackground,
-                 std::make_unique<base::DictionaryValue>());
+  MutateManifest(manifest, keys::kPlatformAppBackground,
+                 base::Value(base::Value::Dict()));
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
-  MutateManifest(&manifest, keys::kPlatformAppBackground, nullptr);
+  DeleteManifestKey(manifest, keys::kPlatformAppBackground);
 
   // Hosted app.
-  MutateManifest(&manifest, keys::kWebURLs,
-                 std::make_unique<base::ListValue>());
+  MutateManifest(manifest, keys::kWebURLs, base::Value(base::Value::List()));
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
-  MutateManifest(&manifest, keys::kWebURLs, nullptr);
-  MutateManifest(&manifest, keys::kLaunchWebURL,
-                 std::make_unique<base::Value>("foo"));
+  DeleteManifestKey(manifest, keys::kWebURLs);
+  MutateManifest(manifest, keys::kLaunchWebURL, base::Value("foo"));
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
-  MutateManifest(&manifest, keys::kLaunchWebURL, nullptr);
+  DeleteManifestKey(manifest, keys::kLaunchWebURL);
 }
 
 // Verifies that the getters filter restricted keys taking into account the
@@ -196,7 +202,7 @@ TEST_F(ManifestUnitTest, RestrictedKeys_ManifestVersion) {
                                 .Set(keys::kName, "extension")
                                 .Set(keys::kVersion, "1")
                                 .Set(keys::kManifestVersion, 2)
-                                .BuildDict();
+                                .Build();
 
   auto manifest =
       std::make_unique<Manifest>(ManifestLocation::kInternal, std::move(value),
@@ -208,14 +214,13 @@ TEST_F(ManifestUnitTest, RestrictedKeys_ManifestVersion) {
   EXPECT_TRUE(warnings.empty());
 
   // "host_permissions" requires manifest version 3.
-  MutateManifest(&manifest, keys::kHostPermissions,
-                 std::make_unique<base::Value>(base::Value::Type::LIST));
+  MutateManifest(manifest, keys::kHostPermissions,
+                 base::Value(base::Value::List()));
   EXPECT_FALSE(manifest->FindKey(keys::kHostPermissions));
 
   // Update the extension to be manifest_version: 3; the host_permissions
   // should then be available.
-  MutateManifest(&manifest, keys::kManifestVersion,
-                 std::make_unique<base::Value>(3));
+  MutateManifest(manifest, keys::kManifestVersion, base::Value(3));
   EXPECT_TRUE(manifest->FindKey(keys::kHostPermissions));
 }
 
@@ -227,7 +232,7 @@ TEST_F(ManifestUnitTest, RestrictedKeys_ItemType) {
                                 .Set(keys::kVersion, "1")
                                 .Set(keys::kManifestVersion, 2)
                                 .Set(keys::kPageAction, base::Value::Dict())
-                                .BuildDict();
+                                .Build();
 
   auto manifest =
       std::make_unique<Manifest>(ManifestLocation::kInternal, std::move(value),
@@ -242,8 +247,8 @@ TEST_F(ManifestUnitTest, RestrictedKeys_ItemType) {
   // Extensions can specify "page_action"...
   EXPECT_TRUE(manifest->FindKey(keys::kPageAction));
 
-  MutateManifest(&manifest, keys::kPlatformAppBackground,
-                 std::make_unique<base::DictionaryValue>());
+  MutateManifest(manifest, keys::kPlatformAppBackground,
+                 base::Value(base::Value::Dict()));
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   // ...But platform apps may not.
   EXPECT_FALSE(manifest->FindKey(keys::kPageAction));

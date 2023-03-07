@@ -10,6 +10,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -21,7 +22,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
@@ -125,11 +125,6 @@ public class FlagsFragmentTest {
         mRule.launchActivity(intent);
 
         waitForInflatedFlagFragment();
-
-        // Always close the soft keyboard when the activity is launched which is sometimes shown
-        // because flags search TextView has input focus by default. The keyboard may cover up some
-        // Views causing test flakiness/failures.
-        Espresso.closeSoftKeyboard();
     }
 
     @After
@@ -147,6 +142,11 @@ public class FlagsFragmentTest {
         ViewUtils.waitForView(withId(R.id.flag_search_bar));
         ViewUtils.waitForView(withId(R.id.flags_list));
         ViewUtils.waitForView(withId(R.id.reset_flags_button));
+
+        // Always close the soft keyboard when the activity is launched which is sometimes shown
+        // because flags search TextView has input focus by default. The keyboard may cover up some
+        // Views causing test flakiness/failures.
+        Espresso.closeSoftKeyboard();
     }
 
     private CallbackHelper getFlagUiSearchBarListener() {
@@ -512,8 +512,17 @@ public class FlagsFragmentTest {
      */
     private DataInteraction toggleFlag(DataInteraction flagInteraction, Boolean state) {
         String stateText = state == null ? "Default" : state ? "Enabled" : "Disabled";
+        // We first select the spinner on the list of flags.
+        // That will make a dialog appear witch the option we wish to select.
         flagInteraction.onChildView(withId(R.id.flag_toggle)).perform(click());
-        onData(allOf(is(instanceOf(String.class)), is(stateText))).perform(click());
+        // We then select the state we want from the dialog.
+        // We cannot use onData because in rare conditions,
+        // the onData check can be performed before the dialog has been displayed.
+        // Adding the inRoot check below ensures that we don't match with the spinner that also
+        // have the state we are waiting for (see crbug.com/1400515 for more details).
+        onView(withText(stateText)).inRoot(isDialog()).perform(click());
+        // Finally we confirm that the original spinner was updated after the dialog option has
+        // been selected.
         flagInteraction.onChildView(withId(R.id.flag_toggle))
                 .check(matches(withSpinnerText(containsString(stateText))));
 

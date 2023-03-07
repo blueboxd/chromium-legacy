@@ -564,6 +564,7 @@ void TexturePassthrough::MarkContextLost() {
   have_context_ = false;
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 void TexturePassthrough::SetLevelImage(GLenum target,
                                        GLint level,
                                        gl::GLImage* image) {
@@ -579,14 +580,30 @@ gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
 
   return level_images_[face_idx][level].image.get();
 }
+#endif
 
-void TexturePassthrough::SetStreamLevelImage(GLenum target,
-                                             GLint level,
-                                             gl::GLImage* stream_texture_image,
-                                             GLuint service_id) {
-  SetLevelImageInternal(target, level, stream_texture_image, service_id);
-  UpdateStreamTextureServiceId(target, level);
+#if BUILDFLAG(IS_ANDROID)
+void TexturePassthrough::BindToServiceId(GLuint service_id) {
+  if (service_id != 0 && service_id != service_id_) {
+    service_id_ = service_id;
+  }
+
+  if (gl::g_current_gl_driver->ext.b_GL_ANGLE_texture_external_update) {
+    // Notify the texture that its size has changed.
+    LevelInfo* level_0_info = GetLevelInfo(target_, 0);
+    GLint prev_texture = 0;
+    glGetIntegerv(GetTextureBindingQuery(target_), &prev_texture);
+    glBindTexture(target_, service_id_);
+
+    glTexImage2DExternalANGLE(
+        target_, /*level=*/0, level_0_info->internal_format,
+        level_0_info->width, level_0_info->height, level_0_info->border,
+        level_0_info->format, level_0_info->type);
+
+    glBindTexture(target_, prev_texture);
+  }
 }
+#endif
 
 void TexturePassthrough::SetEstimatedSize(size_t size) {
   estimated_size_ = size;
@@ -613,6 +630,7 @@ bool TexturePassthrough::LevelInfoExists(GLenum target,
   return true;
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 void TexturePassthrough::SetLevelImageInternal(
     GLenum target,
     GLint level,
@@ -625,24 +643,7 @@ void TexturePassthrough::SetLevelImageInternal(
     service_id_ = service_id;
   }
 }
-
-void TexturePassthrough::UpdateStreamTextureServiceId(GLenum target,
-                                                      GLint level) {
-  if (gl::g_current_gl_driver->ext.b_GL_ANGLE_texture_external_update) {
-    LevelInfo* level_info = GetLevelInfo(target, level);
-    // Notify the texture that its size has changed
-    GLint prev_texture = 0;
-    glGetIntegerv(GetTextureBindingQuery(target_), &prev_texture);
-    glBindTexture(target_, service_id_);
-
-    glTexImage2DExternalANGLE(target_, level, level_info->internal_format,
-                              level_info->width, level_info->height,
-                              level_info->border, level_info->format,
-                              level_info->type);
-
-    glBindTexture(target_, prev_texture);
-  }
-}
+#endif
 
 TexturePassthrough::LevelInfo* TexturePassthrough::GetLevelInfo(GLenum target,
                                                                 GLint level) {
@@ -1904,13 +1905,9 @@ void Texture::SetLevelImage(GLenum target,
 }
 
 #if BUILDFLAG(IS_ANDROID)
-void Texture::SetLevelStreamTextureImage(GLenum target,
-                                         GLint level,
-                                         gl::GLImage* image,
-                                         ImageState state,
-                                         GLuint service_id) {
+void Texture::BindToServiceId(GLuint service_id) {
   SetStreamTextureServiceId(service_id);
-  SetLevelImageInternal(target, level, image, state);
+  UpdateCanRenderCondition();
 }
 #endif
 
@@ -1974,19 +1971,11 @@ void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
       std::string level_dump_name = base::StringPrintf(
           "%s/face_%d/level_%d", dump_name.c_str(), face_index, level_index);
 
-      // If a level has a GLImage, ask the GLImage to dump itself.
-      // If a level does not have a GLImage bound to it, then dump the
-      // texture allocation also as the storage is not provided by the
-      // GLImage in that case.
-      if (level_infos[level_index].image) {
-        level_infos[level_index].image->OnMemoryDump(pmd, client_tracing_id,
-                                                     level_dump_name);
-      } else {
-        MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(level_dump_name);
-        dump->AddScalar(
-            MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
-            static_cast<uint64_t>(level_infos[level_index].estimated_size));
-      }
+      // Dump the texture allocation.
+      MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(level_dump_name);
+      dump->AddScalar(
+          MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
+          static_cast<uint64_t>(level_infos[level_index].estimated_size));
     }
   }
 }
@@ -2605,19 +2594,6 @@ void TextureManager::SetLevelImage(TextureRef* ref,
   DCHECK(ref);
   ref->texture()->SetLevelImage(target, level, image, state);
 }
-
-#if BUILDFLAG(IS_ANDROID)
-void TextureManager::SetLevelStreamTextureImage(TextureRef* ref,
-                                                GLenum target,
-                                                GLint level,
-                                                gl::GLImage* image,
-                                                Texture::ImageState state,
-                                                GLuint service_id) {
-  DCHECK(ref);
-  ref->texture()->SetLevelStreamTextureImage(target, level, image, state,
-                                             service_id);
-}
-#endif
 
 void TextureManager::SetLevelImageState(TextureRef* ref,
                                         GLenum target,

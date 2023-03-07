@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -122,6 +122,21 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
 bool MessageCenterImpl::IsMessageCenterVisible() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return visible_;
+}
+
+ExpandState MessageCenterImpl::GetNotificationExpandState(
+    const std::string& id) {
+  DCHECK(FindVisibleNotificationById(id));
+
+  return notification_list_->GetNotificationExpandState(id);
+}
+
+void MessageCenterImpl::SetNotificationExpandState(
+    const std::string& id,
+    const ExpandState expand_state) {
+  DCHECK(FindVisibleNotificationById(id));
+
+  notification_list_->SetNotificationExpandState(id, expand_state);
 }
 
 void MessageCenterImpl::SetHasMessageCenterView(bool has_message_center_view) {

@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/values_util.h"
@@ -74,7 +74,6 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -98,6 +97,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/media/cdm_document_service_impl.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
 #endif
 
 using extensions::mojom::APIPermissionID;
@@ -233,6 +236,22 @@ void CreateOrAppendSiteGroupEntry(
     const GURL& url,
     bool url_is_origin_with_cookies = false,
     absl::optional<std::string> partition_etld_plus1 = absl::nullopt) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // As extension doesn't have ETLD+1, handle it in a different logic.
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    // |url| for an extension should always be in the format of
+    // "chrome-extension://<extension_id>" and it will be a single origin site
+    // group. So insert single origin site group to |site_group_map| if it
+    // doesn't exist.
+    if (site_group_map->find(url.spec()) == site_group_map->end()) {
+      site_group_map->emplace(url.spec(),
+                              std::set<std::pair<std::string, bool>>(
+                                  {{url.spec(), /*is_partitioned=*/false}}));
+    }
+    return;
+  }
+#endif
+
   bool is_partitioned = partition_etld_plus1.has_value();
   std::string effective_etld_plus1_string =
       is_partitioned
@@ -784,6 +803,12 @@ void SiteSettingsHandler::RegisterMessages() {
       "getNumCookiesString",
       base::BindRepeating(&SiteSettingsHandler::HandleGetNumCookiesString,
                           base::Unretained(this)));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  web_ui()->RegisterMessageCallback(
+      "getExtensionName",
+      base::BindRepeating(&SiteSettingsHandler::HandleGetExtensionName,
+                          base::Unretained(this)));
+#endif
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -1504,12 +1529,16 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
 
   // Show an infobar reminding the user to reload tabs where their site
   // permissions have been updated.
+  // Info bar should only be shown on pages with the same origin and
+  // on the same profile
   for (auto* it : *BrowserList::GetInstance()) {
     TabStripModel* tab_strip = it->tab_strip_model();
     for (int i = 0; i < tab_strip->count(); ++i) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(i);
       GURL tab_url = web_contents->GetLastCommittedURL();
-      if (url::IsSameOriginWith(origin, tab_url)) {
+      if (url::IsSameOriginWith(origin, tab_url) &&
+          it->profile()->GetOriginalProfile() ==
+              profile_->GetOriginalProfile()) {
         infobars::ContentInfoBarManager* infobar_manager =
             infobars::ContentInfoBarManager::FromWebContents(web_contents);
         PageInfoInfoBarDelegate::Create(infobar_manager);
@@ -1651,7 +1680,7 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
 
 void SiteSettingsHandler::HandleResetChooserExceptionForSite(
     const base::Value::List& args) {
-  CHECK_EQ(4U, args.size());
+  CHECK_EQ(3U, args.size());
 
   const std::string& chooser_type_str = args[0].GetString();
   const site_settings::ChooserTypeNameEntry* chooser_type =
@@ -1659,17 +1688,12 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
   CHECK(chooser_type);
 
   const std::string& origin_str = args[1].GetString();
-  GURL requesting_origin(origin_str);
-  CHECK(requesting_origin.is_valid());
-
-  const std::string& embedding_origin_str = args[2].GetString();
-  GURL embedding_origin(embedding_origin_str);
-  CHECK(embedding_origin.is_valid());
+  GURL origin(origin_str);
+  CHECK(origin.is_valid());
 
   permissions::ObjectPermissionContextBase* chooser_context =
       chooser_type->get_context(profile_);
-  chooser_context->RevokeObjectPermission(url::Origin::Create(embedding_origin),
-                                          args[3]);
+  chooser_context->RevokeObjectPermission(url::Origin::Create(origin), args[2]);
 }
 
 void SiteSettingsHandler::HandleIgnoreOriginsForNotificationPermissionReview(
@@ -2198,6 +2222,27 @@ void SiteSettingsHandler::HandleGetNumCookiesString(
 
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void SiteSettingsHandler::HandleGetExtensionName(
+    const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
+  std::string callback_id;
+  callback_id = args[0].GetString();
+  std::string extension_id = args[1].GetString();
+
+  AllowJavascript();
+  const auto* extension_registry = extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension = extension_registry->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (extension) {
+    ResolveJavascriptCallback(base::Value(callback_id),
+                              base::Value(extension->name()));
+  } else {
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value(""));
+  }
+}
+#endif
 
 void SiteSettingsHandler::RemoveNonTreeModelData(
     const std::vector<url::Origin>& origins) {

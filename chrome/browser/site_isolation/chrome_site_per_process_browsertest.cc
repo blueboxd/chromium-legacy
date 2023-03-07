@@ -5,11 +5,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -368,9 +368,9 @@ class MailtoExternalProtocolHandlerDelegate
       const absl::optional<url::Origin>& initiating_origin,
       const std::u16string& program_name) override {}
 
-  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-  CreateShellWorker(const GURL& url) override {
-    return new shell_integration::DefaultProtocolClientWorker(url);
+  scoped_refptr<shell_integration::DefaultSchemeClientWorker> CreateShellWorker(
+      const GURL& url) override {
+    return new shell_integration::DefaultSchemeClientWorker(url);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Resume the pending navigation in the original tab and ensure it finishes
   // loading successfully.
-  manager.WaitForNavigationFinished();
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
   EXPECT_EQ(b_url,
             opener_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
 }

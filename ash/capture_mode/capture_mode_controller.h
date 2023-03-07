@@ -14,8 +14,8 @@
 #include "ash/capture_mode/video_recording_watcher.h"
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "ash/public/cpp/session/session_observer.h"
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -236,13 +236,13 @@ class ASH_EXPORT CaptureModeController
 
   // Returns the current parent window for the on-capture-surface widgets such
   // as `CaptureModeCameraController::camera_preview_widget_` and
-  // `CaptureModeDemoToolsController::demo_tools_widget_`.
+  // `CaptureModeDemoToolsController::key_combo_widget_`.
   aura::Window* GetOnCaptureSurfaceWidgetParentWindow() const;
 
   // Returns the bounds, within which the on-capture-surface widgets (such as
-  // the camera preview and the demo tools widget) will be confined. The bounds
-  // is in screen coordinate when capture source is `kFullscreen` or 'kRegion',
-  // but in window's coordinate when it is 'kWindow' type.
+  // the camera preview widget and the key combo widget) will be confined. The
+  // bounds is in screen coordinate when capture source is `kFullscreen` or
+  // 'kRegion', but in window's coordinate when it is 'kWindow' type.
   gfx::Rect GetCaptureSurfaceConfineBounds() const;
 
   // recording::mojom::RecordingServiceClient:

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -196,34 +196,6 @@ const CGFloat kBubblePresentationDelay = 1;
     return;
 
   self.discoverFeedHeaderMenuTipBubblePresenter = presenter;
-}
-
-- (void)presentReadingListBottomToolbarTipBubble {
-  if (![self canPresentBubble])
-    return;
-
-  BubbleArrowDirection arrowDirection =
-      IsSplitToolbarMode(self.rootViewController) ? BubbleArrowDirectionDown
-                                                  : BubbleArrowDirectionUp;
-  NSString* text = l10n_util::GetNSString(IDS_IOS_READING_LIST_MESSAGES_IPH);
-  CGPoint toolsMenuAnchor = [self anchorPointToGuide:kToolsMenuGuide
-                                           direction:arrowDirection];
-
-  // If the feature engagement tracker does not consider it valid to display
-  // the tip, then end early to prevent the potential reassignment of the
-  // existing `readingListTipBubblePresenter` to nil.
-  BubbleViewControllerPresenter* presenter = [self
-      presentBubbleForFeature:feature_engagement::kIPHReadingListMessagesFeature
-                    direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
-                         text:text
-        voiceOverAnnouncement:l10n_util::GetNSString(
-                                  IDS_IOS_READING_LIST_MESSAGES_IPH)
-                  anchorPoint:toolsMenuAnchor];
-  if (!presenter)
-    return;
-
-  self.readingListTipBubblePresenter = presenter;
 }
 
 - (void)presentFollowWhileBrowsingTipBubble {
@@ -631,16 +603,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // settings.
   if (feature.name == feature_engagement::kIPHFollowWhileBrowsingFeature.name &&
       experimental_flags::ShouldAlwaysShowFollowIPH()) {
-    return YES;
-  }
-
-  // Always present the price notifications IPH if it's triggered by system
-  // experimental settings.
-  if (feature.name ==
-          feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature.name &&
-      base::FeatureList::IsEnabled(
-          feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature) &&
-      IsPriceNotificationsEnabled()) {
     return YES;
   }
 

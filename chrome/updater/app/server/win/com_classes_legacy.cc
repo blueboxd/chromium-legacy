@@ -12,11 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -1004,6 +1004,7 @@ STDMETHODIMP PolicyStatusImpl::get_lastCheckedTime(DATE* last_checked) {
 
             const base::Time last_checked_time =
                 base::MakeRefCounted<const PersistedData>(
+                    GetUpdaterScope(),
                     AppServerSingletonInstance()->prefs()->GetPrefService())
                     ->GetLastChecked();
             if (last_checked_time.is_null())

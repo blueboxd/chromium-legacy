@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/notreached.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
@@ -186,6 +186,12 @@ void FidoAuthenticator::ReadLargeBlob(
   NOTREACHED();
 }
 
+void FidoAuthenticator::GarbageCollectLargeBlob(
+    const pin::TokenResponse& pin_uv_auth_token,
+    base::OnceCallback<void(CtapDeviceResponseCode)> callback) {
+  NOTREACHED();
+}
+
 absl::optional<base::span<const int32_t>> FidoAuthenticator::GetAlgorithms() {
   return absl::nullopt;
 }
@@ -228,6 +234,10 @@ bool FidoAuthenticator::SupportsCredBlobOfSize(size_t num_bytes) const {
 }
 
 bool FidoAuthenticator::SupportsDevicePublicKey() const {
+  return false;
+}
+
+bool FidoAuthenticator::SupportsLargeBlobs() const {
   return false;
 }
 

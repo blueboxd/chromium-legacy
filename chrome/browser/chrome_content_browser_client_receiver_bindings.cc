@@ -6,8 +6,9 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -21,7 +22,9 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/signin/google_accounts_private_api_host.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/content_capture/browser/onscreen_content_provider.h"
 #include "components/metrics/call_stack_profile_collector.h"
@@ -522,6 +525,17 @@ void ChromeContentBrowserClient::
           },
           &render_frame_host));
 #endif  // !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
+    associated_registry.AddInterface<
+        chrome::mojom::GoogleAccountsPrivateApiExtension>(base::BindRepeating(
+        [](content::RenderFrameHost* render_frame_host,
+           mojo::PendingAssociatedReceiver<
+               chrome::mojom::GoogleAccountsPrivateApiExtension> receiver) {
+          GoogleAccountsPrivateApiHost::BindHost(std::move(receiver),
+                                                 render_frame_host);
+        },
+        &render_frame_host));
+  }
   associated_registry.AddInterface<
       content_capture::mojom::ContentCaptureReceiver>(base::BindRepeating(
       [](content::RenderFrameHost* render_frame_host,

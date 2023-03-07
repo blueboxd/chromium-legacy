@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
@@ -348,13 +348,8 @@ void LanguageSettingsPrivateApiTest::RunGetLanguageListTest() {
   // only reports spellchecking is supported for these languages if the language
   // pack is installed.
 #if BUILDFLAG(IS_WIN)
-  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
-    languages_to_test.push_back({"ar", "ar-SA", true, true});
-    languages_to_test.push_back({"bn", "bn-IN", false, true});
-  } else {
-    languages_to_test.push_back({"ar", "ar-SA", true, false});
-    languages_to_test.push_back({"bn", "bn-IN", false, false});
-  }
+  languages_to_test.push_back({"ar", "ar-SA", true, true});
+  languages_to_test.push_back({"bn", "bn-IN", false, true});
 #else
   languages_to_test.push_back({"ar", "ar-SA", true, false});
   languages_to_test.push_back({"bn", "bn-IN", false, false});

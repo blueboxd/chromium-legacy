@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -266,7 +266,7 @@ uint32_t WaylandBufferManagerHost::GetBufferFormat(WaylandSurface* requestor,
 void WaylandBufferManagerHost::CommitOverlays(
     gfx::AcceleratedWidget widget,
     uint32_t frame_id,
-    const gl::FrameData& data,
+    const gfx::FrameData& data,
     std::vector<wl::WaylandOverlayConfig> overlays) {
   DCHECK(base::CurrentUIThread::IsSet());
 

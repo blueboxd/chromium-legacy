@@ -10,8 +10,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
@@ -128,7 +128,7 @@ viz::SurfaceId MakeSurfaceId(const viz::FrameSinkId& frame_sink_id,
   return viz::SurfaceId(
       frame_sink_id,
       viz::LocalSurfaceId(parent_id,
-                          base::UnguessableToken::Deserialize(0, 1u)));
+                          base::UnguessableToken::CreateForTesting(0, 1u)));
 }
 
 struct TestFrameData : public LayerTreeHostImpl::FrameData {
@@ -245,8 +245,8 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void DidActivateSyncTree() override {
     // Make sure the active tree always has a valid LocalSurfaceId.
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(viz::LocalSurfaceId(
+        1, base::UnguessableToken::CreateForTesting(2u, 3u)));
   }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override { did_prepare_tiles_ = true; }
@@ -323,8 +323,8 @@ class LayerTreeHostImplTest : public testing::Test,
     bool init = host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
     host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1, 1, 1);
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(viz::LocalSurfaceId(
+        1, base::UnguessableToken::CreateForTesting(2u, 3u)));
     // Set the viz::BeginFrameArgs so that methods which use it are able to.
     auto args = viz::CreateBeginFrameArgsForTesting(
         BEGINFRAME_FROM_HERE, 0, 1, base::TimeTicks() + base::Milliseconds(1));
@@ -5310,8 +5310,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     host_impl_->active_tree()->DidBecomeActive();
     host_impl_->active_tree()->HandleScrollbarShowRequests();
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(viz::LocalSurfaceId(
+        1, base::UnguessableToken::CreateForTesting(2u, 3u)));
 
     DrawFrame();
 
@@ -11272,7 +11272,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   CopyProperties(root, child);
   child->SetOffsetToTransformParent(gfx::Vector2dF(12, 13));
   layer_tree_host_impl->active_tree()->SetLocalSurfaceIdFromParent(
-      viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+      viz::LocalSurfaceId(1, base::UnguessableToken::CreateForTesting(2u, 3u)));
   UpdateDrawProperties(layer_tree_host_impl->active_tree());
 
   TestFrameData frame;
@@ -17558,7 +17558,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
   int worklet_id = input->WorkletId();
 
   PaintWorkletJob painted_job(worklet_id, input, {});
-  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  PaintRecord record;
   painted_job.SetOutput(record);
 
   auto painted_job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
@@ -17569,8 +17569,9 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
   // Finally, 'paint' the content. This should unlock tile preparation and
   // update the PictureLayerImpl's map.
   std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
-  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second.second,
-            record);
+  EXPECT_TRUE(root->GetPaintWorkletRecordMap()
+                  .find(input)
+                  ->second.second->EqualsForTesting(record));
   EXPECT_TRUE(did_prepare_tiles_);
 }
 
@@ -17596,7 +17597,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   // Pretend that our worklets were already painted.
   ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
   root->SetPaintWorkletRecord(root->GetPaintWorkletRecordMap().begin()->first,
-                              sk_make_sp<PaintRecord>());
+                              PaintRecord());
 
   // Since there are no dirty PaintWorklets, the commit should immediately
   // prepare tiles.
@@ -17654,7 +17655,7 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
   int worklet_id = input->WorkletId();
 
   PaintWorkletJob painted_job(worklet_id, input, {});
-  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  PaintRecord record;
   painted_job.SetOutput(record);
 
   auto painted_job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
@@ -17667,8 +17668,9 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
   // updated, but since the tree was force activated there should be no tile
   // preparation.
   std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
-  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second.second,
-            record);
+  EXPECT_TRUE(root->GetPaintWorkletRecordMap()
+                  .find(input)
+                  ->second.second->EqualsForTesting(record));
   EXPECT_FALSE(did_prepare_tiles_);
 }
 

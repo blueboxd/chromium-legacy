@@ -206,6 +206,16 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // TODO(https://crbug.com/1011446): Make this private.
   void DialogModelChanged();
 
+  // Input protection is triggered upon prompt creation and updated on
+  // visibility changes. Other situations such as top window changes in certain
+  // situations should trigger the input protection manually by calling this
+  // method. Input protection protects against certain kinds of clickjacking.
+  // Essentially it prevents clicks that happen within a user's double click
+  // interval from when the protection is started as well as any following
+  // clicks that happen in shorter succession than the user's double click
+  // interval. Refer to InputEventActivationProtector for more information.
+  void TriggerInputProtection();
+
   void set_use_round_corners(bool round) { params_.round_corners = round; }
   void set_corner_radius(int corner_radius) {
     params_.corner_radius = corner_radius;
@@ -336,9 +346,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Use a fixed dialog width for dialog. Used by DialogClientView.
   int fixed_width_ = 0;
 
-  // The time the dialog is created.
-  base::TimeTicks creation_time_;
-
   // Dialog parameters for this dialog.
   Params params_;
 
@@ -391,7 +398,7 @@ template View* DialogDelegate::SetExtraView<View>(std::unique_ptr<View>);
 template View* DialogDelegate::SetFootnoteView<View>(std::unique_ptr<View>);
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, DialogDelegateView, View)
-VIEW_BUILDER_PROPERTY(ax::mojom::Role, AccessibleRole)
+VIEW_BUILDER_PROPERTY(ax::mojom::Role, AccessibleWindowRole)
 VIEW_BUILDER_PROPERTY(std::u16string, AccessibleTitle)
 VIEW_BUILDER_PROPERTY(bool, CanMaximize)
 VIEW_BUILDER_PROPERTY(bool, CanMinimize)

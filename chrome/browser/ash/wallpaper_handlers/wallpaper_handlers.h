@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -228,6 +228,33 @@ class GooglePhotosAlbumsFetcher
       delete;
 
   ~GooglePhotosAlbumsFetcher() override;
+
+  virtual void AddRequestAndStartIfNecessary(
+      const absl::optional<std::string>& resume_token,
+      base::OnceCallback<void(GooglePhotosAlbumsCbkArgs)> callback);
+
+ protected:
+  // GooglePhotosFetcher:
+  GooglePhotosAlbumsCbkArgs ParseResponse(
+      const base::Value::Dict* response) override;
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosAlbumsCbkArgs& result) override;
+};
+
+using GooglePhotosAlbumsCbkArgs =
+    ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponsePtr;
+// Downloads the Google Photos albums a user has created.
+class GooglePhotosSharedAlbumsFetcher
+    : public GooglePhotosFetcher<GooglePhotosAlbumsCbkArgs> {
+ public:
+  explicit GooglePhotosSharedAlbumsFetcher(Profile* profile);
+
+  GooglePhotosSharedAlbumsFetcher(const GooglePhotosSharedAlbumsFetcher&) =
+      delete;
+  GooglePhotosSharedAlbumsFetcher& operator=(
+      const GooglePhotosSharedAlbumsFetcher&) = delete;
+
+  ~GooglePhotosSharedAlbumsFetcher() override;
 
   virtual void AddRequestAndStartIfNecessary(
       const absl::optional<std::string>& resume_token,

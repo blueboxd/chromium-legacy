@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -95,7 +95,8 @@ class AttributionReportNetworkSenderTest : public testing::Test {
 
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  base::MockCallback<base::OnceCallback<void(AttributionReport, SendResult)>>
+  base::MockCallback<
+      base::OnceCallback<void(const AttributionReport&, SendResult)>>
       callback_;
 
   // Unique ptr so it can be reset during testing.
@@ -157,6 +158,7 @@ TEST_F(AttributionReportNetworkSenderTest, ReportSent_ReportBodySetCorrectly) {
        R"({"attribution_destination":"https://conversion.test",)"
        R"("randomized_trigger_rate":0.2,)"
        R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+       R"("scheduled_report_time":"3600",)"
        R"("source_event_id":"100",)"
        R"("source_type":"navigation",)"
        R"("trigger_data":"5"})"},
@@ -164,18 +166,21 @@ TEST_F(AttributionReportNetworkSenderTest, ReportSent_ReportBodySetCorrectly) {
        R"({"attribution_destination":"https://conversion.test",)"
        R"("randomized_trigger_rate":0.2,)"
        R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+       R"("scheduled_report_time":"3600",)"
        R"("source_event_id":"100",)"
        R"("source_type":"event",)"
        R"("trigger_data":"5"})"},
   };
 
   for (const auto& test_case : kTestCases) {
-    auto impression = SourceBuilder(base::Time())
+    auto impression = SourceBuilder(base::Time::UnixEpoch())
                           .SetSourceEventId(100)
                           .SetSourceType(test_case.source_type)
                           .BuildStored();
     AttributionReport report =
-        ReportBuilder(AttributionInfoBuilder(impression).Build())
+        ReportBuilder(AttributionInfoBuilder(impression)
+                          .SetTime(base::Time::UnixEpoch() + base::Seconds(1))
+                          .Build())
             .SetTriggerData(5)
             .SetRandomizedTriggerRate(0.2)
             .Build();
@@ -207,6 +212,7 @@ TEST_F(AttributionReportNetworkSenderTest,
           R"({"attribution_destination":["https://b.test","https://d.test"],)"
           R"("randomized_trigger_rate":0.0,)"
           R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+          R"("scheduled_report_time":"3600",)"
           R"("source_event_id":"123",)"
           R"("source_type":"navigation",)"
           R"("trigger_data":"0"})",
@@ -219,17 +225,20 @@ TEST_F(AttributionReportNetworkSenderTest,
           R"({"attribution_destination":"https://d.test",)"
           R"("randomized_trigger_rate":0.0,)"
           R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+          R"("scheduled_report_time":"3600",)"
           R"("source_event_id":"123",)"
           R"("source_type":"navigation",)"
           R"("trigger_data":"0"})",
       }};
 
   for (const auto& test_case : kTestCases) {
-    auto source = SourceBuilder(base::Time())
+    auto source = SourceBuilder(base::Time::UnixEpoch())
                       .SetDestinationOrigins(test_case.destination_origins)
                       .BuildStored();
     AttributionReport report =
-        ReportBuilder(AttributionInfoBuilder(std::move(source)).Build())
+        ReportBuilder(AttributionInfoBuilder(std::move(source))
+                          .SetTime(base::Time::UnixEpoch() + base::Seconds(1))
+                          .Build())
             .Build();
     network_sender_->SendReport(report, /*is_debug_report=*/false,
                                 base::DoNothing());
@@ -252,13 +261,18 @@ TEST_F(AttributionReportNetworkSenderTest,
       R"({"attribution_destination":"https://conversion.test",)"
       R"("randomized_trigger_rate":0.2,)"
       R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+      R"("scheduled_report_time":"3600",)"
       R"("source_event_id":"100",)"
       R"("source_type":"navigation",)"
       R"("trigger_data":"5"})";
 
-  auto source = SourceBuilder().SetSourceEventId(100).BuildStored();
+  auto source = SourceBuilder(base::Time::UnixEpoch())
+                    .SetSourceEventId(100)
+                    .BuildStored();
   const AttributionReport report =
-      ReportBuilder(AttributionInfoBuilder(source).Build())
+      ReportBuilder(AttributionInfoBuilder(source)
+                        .SetTime(base::Time::UnixEpoch() + base::Seconds(1))
+                        .Build())
           .SetTriggerData(5)
           .SetRandomizedTriggerRate(0.2)
           .Build();
@@ -294,6 +308,7 @@ TEST_F(AttributionReportNetworkSenderTest,
        R"({"attribution_destination":"https://conversion.test",)"
        R"("randomized_trigger_rate":0.2,)"
        R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+       R"("scheduled_report_time":"3600",)"
        R"("source_event_id":"100",)"
        R"("source_type":"navigation",)"
        R"("trigger_data":"5"})"},
@@ -301,6 +316,7 @@ TEST_F(AttributionReportNetworkSenderTest,
        R"({"attribution_destination":"https://conversion.test",)"
        R"("randomized_trigger_rate":0.2,)"
        R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+       R"("scheduled_report_time":"3600",)"
        R"("source_debug_key":"7",)"
        R"("source_event_id":"100",)"
        R"("source_type":"navigation",)"
@@ -309,6 +325,7 @@ TEST_F(AttributionReportNetworkSenderTest,
        R"({"attribution_destination":"https://conversion.test",)"
        R"("randomized_trigger_rate":0.2,)"
        R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+       R"("scheduled_report_time":"3600",)"
        R"("source_event_id":"100",)"
        R"("source_type":"navigation",)"
        R"("trigger_data":"5",)"
@@ -317,6 +334,7 @@ TEST_F(AttributionReportNetworkSenderTest,
        R"({"attribution_destination":"https://conversion.test",)"
        R"("randomized_trigger_rate":0.2,)"
        R"("report_id":"21abd97f-73e8-4b88-9389-a9fee6abda5e",)"
+       R"("scheduled_report_time":"3600",)"
        R"("source_debug_key":"7",)"
        R"("source_event_id":"100",)"
        R"("source_type":"navigation",)"
@@ -325,12 +343,13 @@ TEST_F(AttributionReportNetworkSenderTest,
   };
 
   for (const auto& test_case : kTestCases) {
-    auto impression = SourceBuilder(base::Time())
+    auto impression = SourceBuilder(base::Time::UnixEpoch())
                           .SetSourceEventId(100)
                           .SetDebugKey(test_case.source_debug_key)
                           .BuildStored();
     AttributionReport report =
         ReportBuilder(AttributionInfoBuilder(impression)
+                          .SetTime(base::Time::UnixEpoch() + base::Seconds(1))
                           .SetDebugKey(test_case.trigger_debug_key)
                           .Build())
             .SetTriggerData(5)
@@ -636,9 +655,42 @@ TEST_F(AttributionReportNetworkSenderTest,
   const network::ResourceRequest* pending_request;
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kAggregatableReportUrl,
                                                  &pending_request));
+  EXPECT_FALSE(pending_request->headers.HasHeader(
+      "Sec-Attribution-Reporting-Private-State-Token"));
   EXPECT_EQ(kExpectedReportBody, network::GetUploadData(*pending_request));
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
       kAggregatableReportUrl, ""));
+}
+
+TEST_F(AttributionReportNetworkSenderTest,
+       ReportAttestationHeaderSetCorrectly) {
+  const struct {
+    bool is_debug_report;
+    const char* url;
+  } kTestCases[] = {
+      {true, kDebugAggregatableReportUrl},
+      {false, kAggregatableReportUrl},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    AttributionReport report =
+        ReportBuilder(
+            AttributionInfoBuilder(SourceBuilder().BuildStored()).Build())
+            .SetAttestationToken("attestation-token")
+            .BuildAggregatableAttribution();
+
+    network_sender_->SendReport(report, test_case.is_debug_report,
+                                base::DoNothing());
+
+    const network::ResourceRequest* pending_request;
+    EXPECT_TRUE(
+        test_url_loader_factory_.IsPending(test_case.url, &pending_request));
+
+    std::string added_header;
+    pending_request->headers.GetHeader(
+        "Sec-Attribution-Reporting-Private-State-Token", &added_header);
+    EXPECT_EQ(added_header, "attestation-token");
+  }
 }
 
 TEST_F(AttributionReportNetworkSenderTest,

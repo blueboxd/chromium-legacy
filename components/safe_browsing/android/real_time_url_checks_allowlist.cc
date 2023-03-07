@@ -4,7 +4,7 @@
 
 #include "components/safe_browsing/android/real_time_url_checks_allowlist.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -157,7 +157,7 @@ RealTimeUrlChecksAllowlist::IsInAllowlistInternal(const GURL& url) {
     return IsInAllowlistResult::kAllowlistUnavailable;
   }
 
-  std::vector<FullHash> full_hashes;
+  std::vector<FullHashStr> full_hashes;
   V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
   for (auto fh : full_hashes) {
     auto truncated_hash = fh.substr(0, kHashSizeInBytes);

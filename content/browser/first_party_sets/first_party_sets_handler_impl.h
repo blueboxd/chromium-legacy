@@ -8,10 +8,10 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
@@ -48,28 +48,6 @@ class BrowserContext;
 // the current First-Party Sets data to disk.
 class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
  public:
-  // The outcome types of clearing site data for data types covered in
-  // FirstPartySetsSiteDataRemover. We only clear
-  // `BrowsingDataRemover::DATA_TYPE_COOKIES` and
-  // `BrowsingDataRemover::DATA_TYPE_DOM_STORAGE` for now. Cache is "cleared"
-  // with a different approach.
-  //
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class ClearSiteDataOutcomeType {
-    kSuccess = 0,
-    // Failed to clear data type of `BrowsingDataRemover::DATA_TYPE_COOKIES`.
-    kCookieFailed = 1,
-    // Failed to clear data type of
-    // `BrowsingDataRemover::DATA_TYPE_DOM_STORAGE`.
-    kStorageFailed = 2,
-    // Failed to clear both `BrowsingDataRemover::DATA_TYPE_COOKIES` and
-    // `BrowsingDataRemover::DATA_TYPE_DOM_STORAGE` data types.
-    kCookieAndStorageFailed = 3,
-
-    kMaxValue = kCookieAndStorageFailed,
-  };
-
   using SetsReadyOnceCallback =
       base::OnceCallback<void(net::GlobalFirstPartySets)>;
 

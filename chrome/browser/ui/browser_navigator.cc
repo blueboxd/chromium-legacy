@@ -103,12 +103,18 @@ namespace {
 
 // Returns true if |params.browser| exists and can open a new tab for
 // |params.url|. Not all browsers support multiple tabs, such as app frames and
-// popups. TYPE_APP will only open a new tab if the URL is within the app scope.
+// popups. TYPE_APP will open a new tab if the browser was launched from a
+// template, otherwise only if the URL is within the app scope.
 bool WindowCanOpenTabs(const NavigateParams& params) {
-  if (!params.browser)
+  if (!params.browser) {
     return false;
+  }
 
-  if (params.browser->app_controller() &&
+  // If the browser is created from a template, we do not need to check if the
+  // url is in the app scope since we know it was saved directly from the app.
+  if (params.browser->creation_source() !=
+          Browser::CreationSource::kDeskTemplate &&
+      params.browser->app_controller() &&
       !params.browser->app_controller()->IsUrlInAppScope(params.url)) {
     return false;
   }
@@ -163,7 +169,6 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
   return true;
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 gfx::Rect CalculateInitialPictureInPictureWindowBounds(
     float initial_aspect_ratio) {
   DCHECK(initial_aspect_ratio > 0);
@@ -191,7 +196,6 @@ gfx::Rect CalculateInitialPictureInPictureWindowBounds(
 
   return window_bounds;
 }
-#endif  // !IS_CHROMEOS_LACROS
 
 // Returns a Browser and tab index. The browser can host the navigation or
 // tab addition specified in |params|.  This might just return the same
@@ -289,7 +293,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       // re-run with NEW_WINDOW.
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
-#if !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       if (!base::FeatureList::IsEnabled(
               blink::features::kDocumentPictureInPictureAPI)) {
         return {nullptr, -1};
@@ -319,13 +323,12 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
 
         return {Browser::Create(browser_params), -1};
       }
-#else   // !IS_CHROMEOS_LACROS && !IS_ANDROID
-      // TODO(crbug.com/1320453): Document Picture-in-Picture is turned off in
-      // lacros.
+#else   // !IS_ANDROID
       // For TYPE_PICTURE_IN_PICTURE
       NOTIMPLEMENTED_LOG_ONCE();
       return {nullptr, -1};
-#endif  // !IS_CHROMEOS_LACROS && !IS_ANDROID
+#endif  // !IS_ANDROID
+
     case WindowOpenDisposition::NEW_POPUP: {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
@@ -453,6 +456,7 @@ base::WeakPtr<content::NavigationHandle> LoadURLInContents(
   load_url_params.initiator_frame_token = params->initiator_frame_token;
   load_url_params.initiator_process_id = params->initiator_process_id;
   load_url_params.initiator_origin = params->initiator_origin;
+  load_url_params.initiator_base_url = params->initiator_base_url;
   load_url_params.source_site_instance = params->source_site_instance;
   load_url_params.referrer = params->referrer;
   load_url_params.frame_name = params->frame_name;

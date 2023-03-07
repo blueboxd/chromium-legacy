@@ -12,7 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -442,23 +442,6 @@ void ArcInputOverlayManager::OnWindowRemovingFromRootWindow(
   UnRegisterWindow(window);
 }
 
-void ArcInputOverlayManager::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
-  if (!window || window != registered_top_level_window_)
-    return;
-  if (display_overlay_controller_)
-    display_overlay_controller_->OnWindowBoundsChanged();
-
-  auto it = input_overlay_enabled_windows_.find(window);
-  if (it == input_overlay_enabled_windows_.end())
-    return;
-
-  it->second->UpdateForWindowBoundsChanged();
-}
-
 void ArcInputOverlayManager::Shutdown() {
   UnRegisterWindow(registered_top_level_window_);
   window_observations_.RemoveAllObservations();
@@ -517,7 +500,7 @@ void ArcInputOverlayManager::OnDisplayMetricsChanged(
   if (it == input_overlay_enabled_windows_.end())
     return;
 
-  it->second->UpdateForDisplayMetricsChanged();
+  it->second->UpdatePositionsForRegister();
 }
 
 void ArcInputOverlayManager::ResetForPendingTouchInjector(

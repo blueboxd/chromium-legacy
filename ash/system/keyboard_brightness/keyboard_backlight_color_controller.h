@@ -14,6 +14,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
 #include "base/scoped_observation.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -30,7 +32,11 @@ class ASH_EXPORT KeyboardBacklightColorController
       public SessionObserver,
       public WallpaperControllerObserver {
  public:
-  KeyboardBacklightColorController();
+  // Default brightness to be set by the `KeyboardBacklightColorController` when
+  // the backlight is off and the user configures a new color.
+  static constexpr double kDefaultBacklightBrightness = 40.0;
+
+  explicit KeyboardBacklightColorController(PrefService* local_state);
 
   KeyboardBacklightColorController(const KeyboardBacklightColorController&) =
       delete;
@@ -61,6 +67,11 @@ class ASH_EXPORT KeyboardBacklightColorController
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
 
+  // Callback function for PrefChangeRegistrar, when policy value populates the
+  // local state during the sign-in screen, display the keyboard backlight
+  // color.
+  void OnKeyboardBacklightColorLocalStateChanged();
+
   KeyboardBacklightColorNudgeController*
   keyboard_backlight_color_nudge_controller() {
     return keyboard_backlight_color_nudge_controller_.get();
@@ -85,7 +96,6 @@ class ASH_EXPORT KeyboardBacklightColorController
   void KeyboardBrightnessPercentReceived(absl::optional<double> percentage);
 
   SkColor displayed_color_for_testing_ = SK_ColorTRANSPARENT;
-  bool keyboard_brightness_on_for_testing_ = false;
 
   base::ScopedObservation<SessionControllerImpl, SessionObserver>
       session_observer_{this};
@@ -95,6 +105,10 @@ class ASH_EXPORT KeyboardBacklightColorController
 
   std::unique_ptr<KeyboardBacklightColorNudgeController>
       keyboard_backlight_color_nudge_controller_;
+
+  const raw_ptr<PrefService> local_state_ = nullptr;
+
+  PrefChangeRegistrar pref_change_registrar_local_;
 
   base::WeakPtrFactory<KeyboardBacklightColorController> weak_ptr_factory_{
       this};

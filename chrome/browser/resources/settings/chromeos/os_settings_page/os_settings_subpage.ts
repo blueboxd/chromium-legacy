@@ -25,8 +25,9 @@ import {listenOnce} from '//resources/js/util_ts.js';
 import {IronResizableBehavior} from '//resources/polymer/v3_0/iron-resizable-behavior/iron-resizable-behavior.js';
 import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
-import {loadTimeData} from '../../i18n_setup.js';
+import {Constructor} from '../common/types.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 import {getSettingIdParameter} from '../setting_id_param_util.js';
@@ -42,10 +43,9 @@ export interface OsSettingsSubpageElement {
 const OsSettingsSubpageElementBase =
     mixinBehaviors(
         [IronResizableBehavior],
-        RouteObserverMixin(FindShortcutMixin(I18nMixin(PolymerElement)))) as {
-      new (): PolymerElement & FindShortcutMixinInterface & I18nMixinInterface &
-          RouteObserverMixinInterface,
-    };
+        RouteObserverMixin(FindShortcutMixin(I18nMixin(PolymerElement)))) as
+    Constructor<PolymerElement&FindShortcutMixinInterface&I18nMixinInterface&
+                RouteObserverMixinInterface>;
 
 export class OsSettingsSubpageElement extends OsSettingsSubpageElementBase {
   static get is() {
@@ -280,6 +280,10 @@ export class OsSettingsSubpageElement extends OsSettingsSubpageElementBase {
 
   private getBackButtonAriaRoleDescription_() {
     return this.i18n('subpageBackButtonAriaRoleDescription', this.pageTitle);
+  }
+
+  private getLearnMoreAriaLabel_() {
+    return this.i18n('subpageLearnMoreAriaLabel', this.pageTitle);
   }
 
   // Override FindShortcutMixin methods.

@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/class_property.h"
@@ -35,25 +35,14 @@ class BaseViewBuilderT : public internal::ViewBuilderCore {
   BaseViewBuilderT& operator=(BaseViewBuilderT&&) = default;
   ~BaseViewBuilderT() override = default;
 
-  template <typename View>
-  Builder& CopyAddressTo(View** view_address) & {
+  template <typename ViewPtr>
+  Builder& CopyAddressTo(ViewPtr* view_address) & {
     *view_address = view_ ? view_.get() : root_view_.get();
     return *static_cast<Builder*>(this);
   }
 
-  template <typename View>
-  Builder&& CopyAddressTo(View** view_address) && {
-    return std::move(this->CopyAddressTo(view_address));
-  }
-
-  template <typename View, typename Option>
-  Builder& CopyAddressTo(raw_ptr<View, Option>* view_address) & {
-    *view_address = view_ ? view_.get() : root_view_.get();
-    return *static_cast<Builder*>(this);
-  }
-
-  template <typename View, typename Option>
-  Builder&& CopyAddressTo(raw_ptr<View, Option>* view_address) && {
+  template <typename ViewPtr>
+  Builder&& CopyAddressTo(ViewPtr* view_address) && {
     return std::move(this->CopyAddressTo(view_address));
   }
 

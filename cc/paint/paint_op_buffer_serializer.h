@@ -55,20 +55,20 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   // save/restore and includes any translations, scales, and clearing as
   // specified by the preamble.  This should generally be used for top level
   // rastering of an entire tile.
-  void Serialize(const PaintOpBuffer* buffer,
+  void Serialize(const PaintOpBuffer& buffer,
                  const std::vector<size_t>* offsets,
                  const Preamble& preamble);
   // Serialize the buffer without a preamble. This function serializes the whole
   // buffer without any extra ops added.  No clearing is done.  This should
   // generally be used for internal PaintOpBuffers that want to be sent as-is.
-  void Serialize(const PaintOpBuffer* buffer);
+  void Serialize(const PaintOpBuffer& buffer);
   // Serialize the buffer with a scale and a playback rect.  This should
   // generally be used for internal PaintOpBuffers in PaintShaders and
   // PaintFilters that need to guarantee the nested buffer is rasterized at the
   // specific scale to a separate image. This ensures that scale-dependent
   // analysis made during serialization is consistent with analysis done during
   // rasterization.
-  void Serialize(const PaintOpBuffer* buffer,
+  void Serialize(const PaintOpBuffer& buffer,
                  const gfx::Rect& playback_rect,
                  const gfx::SizeF& post_scale);
 
@@ -79,18 +79,18 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
                          const Preamble& preamble,
                          const PlaybackParams& params);
   void SerializeBuffer(SkCanvas* canvas,
-                       const PaintOpBuffer* buffer,
+                       const PaintOpBuffer& buffer,
                        const std::vector<size_t>* offsets);
   // Returns whether searilization of |op| succeeded and we need to serialize
   // the next PaintOp in the PaintOpBuffer.
   bool WillSerializeNextOp(const PaintOp& op,
                            SkCanvas* canvas,
                            const PlaybackParams& params,
-                           uint8_t alpha);
+                           float alpha);
   bool SerializeOpWithFlags(SkCanvas* canvas,
                             const PaintOpWithFlags& flags_op,
                             const PlaybackParams& params,
-                            uint8_t alpha);
+                            float alpha);
   bool SerializeOp(SkCanvas* canvas,
                    const PaintOp& op,
                    const PaintFlags* flags_to_serialize,

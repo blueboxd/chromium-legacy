@@ -5,7 +5,6 @@
 #include "ash/style/ash_color_mixer.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/harmonized_colors.h"
@@ -63,9 +62,7 @@ void AddShieldAndBaseColors(ui::ColorMixer& mixer,
   }
 
   const bool use_dark_color =
-      features::IsDarkLightModeEnabled()
-          ? key.color_mode == ui::ColorProviderManager::ColorMode::kDark
-          : DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
+      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
 
   // Colors of the Shield and Base layers.
   const SkColor default_background_color =
@@ -103,9 +100,7 @@ void AddShieldAndBaseColors(ui::ColorMixer& mixer,
 void AddControlsColors(ui::ColorMixer& mixer,
                        const ui::ColorProviderManager::Key& key) {
   const bool use_dark_color =
-      features::IsDarkLightModeEnabled()
-          ? key.color_mode == ui::ColorProviderManager::ColorMode::kDark
-          : DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
+      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
 
   // ControlsLayer colors
   mixer[kColorAshHairlineBorderColor] =
@@ -128,9 +123,7 @@ void AddControlsColors(ui::ColorMixer& mixer,
 void AddContentColors(ui::ColorMixer& mixer,
                       const ui::ColorProviderManager::Key& key) {
   const bool use_dark_color =
-      features::IsDarkLightModeEnabled()
-          ? key.color_mode == ui::ColorProviderManager::ColorMode::kDark
-          : DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
+      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
 
   // ContentLayer colors.
   mixer[kColorAshScrollBarColor] =
@@ -172,12 +165,9 @@ void AddContentColors(ui::ColorMixer& mixer,
       ui::SetAlpha(kColorAshAppStateIndicatorColor, kDisabledColorOpacity);
   mixer[kColorAshShelfHandleColor] = {cros_tokens::kIconColorSecondary};
   mixer[kColorAshShelfTooltipBackgroundColor] = {
-      features::IsDarkLightModeEnabled() ? kColorAshInvertedShieldAndBase80
-                                         : kColorAshShieldAndBase80};
+      kColorAshInvertedShieldAndBase80};
   mixer[kColorAshShelfTooltipForegroundColor] = {
-      features::IsDarkLightModeEnabled()
-          ? cros_tokens::kTextColorPrimaryInverted
-          : cros_tokens::kTextColorPrimary};
+      cros_tokens::kTextColorPrimaryInverted};
   mixer[kColorAshSliderColorActive] = {kColorAshTextColorURL};
   mixer[kColorAshSliderColorInactive] = {kColorAshScrollBarColor};
   mixer[kColorAshRadioColorActive] = {kColorAshTextColorURL};
@@ -384,11 +374,7 @@ void AddRefPalette(ui::ColorMixer& mixer,
 void AddCrosStylesColorMixer(ui::ColorProvider* provider,
                              const ui::ColorProviderManager::Key& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
-  bool dark_mode =
-      features::IsDarkLightModeEnabled()
-          ? key.color_mode == ui::ColorProviderManager::ColorMode::kDark
-          : DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
-
+  bool dark_mode = key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
   if (ash::features::IsJellyEnabled()) {
     AddRefPalette(mixer, key);
   } else {
@@ -409,9 +395,7 @@ void AddAshColorMixer(ui::ColorProvider* provider,
                       const ui::ColorProviderManager::Key& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
   const bool use_dark_color =
-      features::IsDarkLightModeEnabled()
-          ? key.color_mode == ui::ColorProviderManager::ColorMode::kDark
-          : DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
+      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
 
   AddShieldAndBaseColors(mixer, key);
   AddControlsColors(mixer, key);
@@ -452,19 +436,6 @@ void AddAshColorMixer(ui::ColorProvider* provider,
 
   mixer[ui::kColorAshOnboardingFocusRing] = {cros_tokens::kColorProminentDark};
 
-  if (!features::IsDarkLightModeEnabled()) {
-    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
-    mixer[ui::kColorAshSystemUILightBorderColor1] = {
-        ui::kColorHighlightBorderBorder1};
-    mixer[ui::kColorAshSystemUILightBorderColor2] = {
-        ui::kColorHighlightBorderBorder2};
-    mixer[ui::kColorAshSystemUILightHighlightColor1] = {
-        ui::kColorHighlightBorderHighlight1};
-    mixer[ui::kColorAshSystemUILightHighlightColor2] = {
-        ui::kColorHighlightBorderHighlight2};
-    return;
-  }
-
   mixer[ui::kColorAshSystemUIMenuBackground] = {kColorAshShieldAndBase80};
   mixer[ui::kColorAshSystemUIMenuIcon] = {kColorAshIconColorPrimary};
   mixer[ui::kColorAshSystemUIMenuItemBackgroundSelected] = {kColorAshInkDrop};
@@ -486,6 +457,18 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[kColorAshIconColorBlocked] = {gfx::kGoogleGrey100};
 
   mixer[kColorAshEcheIconColorStreaming] = {ui::ColorTransform(SK_ColorGREEN)};
+
+  mixer[kColorAshMultiSelectTextColor] =
+      use_dark_color ? ui::ColorTransform(gfx::kGoogleBlue100)
+                     : ui::ColorTransform(gfx::kGoogleBlue800);
+
+  mixer[kColorAshCheckmarkIconColor] =
+      use_dark_color ? ui::ColorTransform(gfx::kGoogleGrey900)
+                     : ui::ColorTransform(SK_ColorWHITE);
+
+  mixer[kColorAshDragImageOverflowBadgeTextColor] =
+      use_dark_color ? ui::ColorTransform(gfx::kGoogleGrey900)
+                     : ui::ColorTransform(gfx::kGoogleGrey200);
 }
 
 }  // namespace ash

@@ -41,6 +41,7 @@ struct CreditCardCloudTokenData;
 struct FormFieldData;
 class IBAN;
 struct PaymentsCustomerData;
+struct VirtualCardUsageData;
 
 // This class manages the various Autofill tables within the SQLite database
 // passed to the constructor. It expects the following schemas:
@@ -464,6 +465,11 @@ struct PaymentsCustomerData;
 //                      help identifying the semantics of the profile. The user
 //                      can choose an arbitrary string in principle, but the
 //                      values '$HOME$' and '$WORK$' indicate a special meaning.
+//   initial_creator_id The application that initially created the profile.
+//                      Represented as an integer. See AutofillProfile.
+//   last_modifier_id   The application that performed the last non-metadata
+//                      modification of the profile.
+//                      Represented as an integer. See AutofillProfile.
 //
 // contact_info_type_tokens
 //                      Contains the values for all relevant ServerFieldTypes of
@@ -480,6 +486,19 @@ struct PaymentsCustomerData;
 //                      from a structured subcomponent, or if the value was
 //                      observed in a form submission, or even validated by the
 //                      user in the settings.
+//
+// virtual_card_usage_data
+//                      Contains data related to retrieval attempts of a virtual
+//                      card on a particular merchant domain
+//
+//  id                  Unique identifier for retrieval data. Generated
+//                      originally in chrome sync server.
+//  instrument_id       The instrument id of the actual card that the virtual
+//                      card is related to.
+//  merchant_domain     The merchant domain the usage data is linked to.
+//  last_four           The last four digits of the virtual card number. This is
+//                      tied to the usage data because the virtual card number
+//                      may vary depending on merchants.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -688,6 +707,14 @@ class AutofillTable : public WebDatabaseTable,
   bool GetAutofillOffers(
       std::vector<std::unique_ptr<AutofillOfferData>>* autofill_offer_data);
 
+  // |virtual_card_usage_data| must include all existing virtual card usage
+  // data, since table will be completely overwritten.
+  void SetVirtualCardUsageData(
+      const std::vector<VirtualCardUsageData>& virtual_card_usage_data);
+  bool GetVirtualCardUsageData(
+      std::vector<std::unique_ptr<VirtualCardUsageData>>*
+          virtual_card_usage_data);
+
   // Adds |upi_id| to the saved UPI IDs.
   bool InsertUpiId(const std::string& upi_id);
 
@@ -788,6 +815,8 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion106RecreateAutofillIBANTable();
   bool MigrateToVersion107AddContactInfoTables();
   bool MigrateToVersion108AddCardIssuerIdColumn();
+  bool MigrateToVersion109AddVirtualCardUsageDataTable();
+  bool MigrateToVersion110AddInitialCreatorIdAndLastModifierId();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -903,6 +932,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitOfferMerchantDomainTable();
   bool InitContactInfoTable();
   bool InitContactInfoTypeTokensTable();
+  bool InitVirtualCardUsageDataTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 };

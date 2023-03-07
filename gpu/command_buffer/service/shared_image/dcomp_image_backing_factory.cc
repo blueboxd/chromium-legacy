@@ -87,7 +87,6 @@ std::unique_ptr<SharedImageBacking> DCompImageBackingFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageBacking> DCompImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat format,
     gfx::BufferPlane plane,
@@ -134,7 +133,7 @@ bool DCompImageBackingFactory::IsSupported(
   // dc overlays are to be used for rgb10, the caller should use swap chains
   // instead.
   if (usage == kDCompSurfaceUsage &&
-      format.resource_format() == viz::ResourceFormat::RGBA_1010102) {
+      format == viz::SinglePlaneFormat::kRGBA_1010102) {
     return false;
   }
 

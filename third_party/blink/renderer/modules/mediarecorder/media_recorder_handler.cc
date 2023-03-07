@@ -56,7 +56,7 @@ VideoTrackRecorder::CodecId CodecIdFromMediaVideoCodec(media::VideoCodec id) {
       return VideoTrackRecorder::CodecId::kVp8;
     case media::VideoCodec::kVP9:
       return VideoTrackRecorder::CodecId::kVp9;
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case media::VideoCodec::kH264:
       return VideoTrackRecorder::CodecId::kH264;
 #endif
@@ -73,7 +73,7 @@ media::VideoCodec MediaVideoCodecFromCodecId(VideoTrackRecorder::CodecId id) {
       return media::VideoCodec::kVP8;
     case VideoTrackRecorder::CodecId::kVp9:
       return media::VideoCodec::kVP9;
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case VideoTrackRecorder::CodecId::kH264:
       return media::VideoCodec::kH264;
 #endif
@@ -111,7 +111,7 @@ VideoTrackRecorder::CodecProfile VideoStringToCodecProfile(
     codec_id = VideoTrackRecorder::CodecId::kVp8;
   if (codecs_str.Find("vp9") != kNotFound)
     codec_id = VideoTrackRecorder::CodecId::kVp9;
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (codecs_str.Find("h264") != kNotFound)
     codec_id = VideoTrackRecorder::CodecId::kH264;
   wtf_size_t avc1_start = codecs_str.Find("avc1");
@@ -145,15 +145,6 @@ AudioTrackRecorder::CodecId AudioStringToCodecId(const String& codecs) {
 
 }  // anonymous namespace
 
-MediaRecorderHandler::MediaRecorderHandler(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : video_codec_profile_(VideoTrackRecorder::CodecId::kLast),
-      audio_codec_id_(AudioTrackRecorder::CodecId::kLast),
-      recorder_(nullptr),
-      task_runner_(std::move(task_runner)) {}
-
-MediaRecorderHandler::~MediaRecorderHandler() = default;
-
 bool MediaRecorderHandler::CanSupportMimeType(const String& type,
                                               const String& web_codecs) {
   DCHECK(IsMainThread());
@@ -174,7 +165,7 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   static const char* const kVideoCodecs[] = {
     "vp8",
     "vp9",
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     "h264",
     "avc1",
 #endif
@@ -321,15 +312,18 @@ bool MediaRecorderHandler::Start(int timeslice) {
       video_recorders_.emplace_back(
           std::make_unique<VideoTrackRecorderPassthrough>(
               video_tracks_[0], std::move(on_passthrough_video_cb),
-              std::move(on_track_source_changed_cb), task_runner_));
+              std::move(on_track_source_changed_cb)));
     } else {
       const VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
           media::BindToCurrentLoop(WTF::BindRepeating(
               &MediaRecorderHandler::OnEncodedVideo, WrapWeakPersistent(this)));
+      auto on_video_error_cb = media::BindToCurrentLoop(
+          WTF::BindOnce(&MediaRecorderHandler::OnVideoEncodingError,
+                        WrapWeakPersistent(this)));
       video_recorders_.emplace_back(std::make_unique<VideoTrackRecorderImpl>(
           video_codec_profile_, video_tracks_[0],
           std::move(on_encoded_video_cb), std::move(on_track_source_changed_cb),
-          video_bits_per_second_, task_runner_));
+          std::move(on_video_error_cb), video_bits_per_second_));
     }
   }
 
@@ -363,13 +357,17 @@ void MediaRecorderHandler::Stop() {
   DCHECK(IsMainThread());
   // Don't check |recording_| since we can go directly from pause() to stop().
 
+  // TODO(crbug.com/719023): The video recorder needs to be flushed to retrieve
+  // the last N frames with some codecs.
+
+  // Ensure any stored data inside the muxer is flushed out before invalidation.
+  muxer_ = nullptr;
   invalidated_ = true;
 
   recording_ = false;
   timeslice_ = base::Milliseconds(0);
   video_recorders_.clear();
   audio_recorders_.clear();
-  muxer_.reset();
 }
 
 void MediaRecorderHandler::Pause() {
@@ -468,7 +466,7 @@ String MediaRecorderHandler::ActualMimeType() {
       case VideoTrackRecorder::CodecId::kVp9:
         mime_type.Append("video/webm;codecs=");
         break;
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
       case VideoTrackRecorder::CodecId::kH264:
         mime_type.Append("video/x-matroska;codecs=");
         break;
@@ -486,7 +484,7 @@ String MediaRecorderHandler::ActualMimeType() {
       case VideoTrackRecorder::CodecId::kVp9:
         mime_type.Append("vp9");
         break;
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
       case VideoTrackRecorder::CodecId::kH264:
         mime_type.Append("avc1");
         if (video_codec_profile_.profile && video_codec_profile_.level) {
@@ -613,7 +611,7 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(IsMainThread());
-
+  DVLOG(3) << __func__ << " " << data.length() << "B";
   if (invalidated_)
     return;
 
@@ -731,6 +729,12 @@ void MediaRecorderHandler::Trace(Visitor* visitor) const {
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);
   visitor->Trace(recorder_);
+}
+
+void MediaRecorderHandler::OnVideoEncodingError() {
+  if (recorder_) {
+    recorder_->OnError("Video encoding failed.");
+  }
 }
 
 }  // namespace blink

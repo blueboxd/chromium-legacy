@@ -122,8 +122,6 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
-  ObservePolicy OnPrerenderStart(content::NavigationHandle* navigation_handle,
-                                 const GURL& currently_committed_url) override;
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
@@ -200,6 +198,8 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
       const gfx::Rect& main_frame_intersection_rect) override {}
   void OnMainFrameViewportRectChanged(
       const gfx::Rect& main_frame_viewport_rect) override {}
+  void OnMainFrameImageAdRectsChanged(const base::flat_map<int, gfx::Rect>&
+                                          main_frame_image_ad_rects) override {}
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const mojom::PageLoadTiming& timing) override;
   void OnComplete(const mojom::PageLoadTiming& timing) override {}

@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -152,7 +152,7 @@ class V4Database {
   // database, filtered by |stores_to_check|, and returns the identifier of the
   // store along with the matching hash prefix in |matched_hash_prefix_map|.
   virtual void GetStoresMatchingFullHash(
-      const FullHash& full_hash,
+      const FullHashStr& full_hash,
       const StoresToCheck& stores_to_check,
       StoreAndHashPrefixes* matched_store_and_full_hashes);
 

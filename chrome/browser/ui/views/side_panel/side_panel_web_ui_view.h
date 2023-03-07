@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/bubble/bubble_contents_wrapper.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
@@ -35,7 +35,6 @@ class SidePanelWebUIView : public views::WebView,
   ~SidePanelWebUIView() override;
 
   // views::WebView:
-  void SetVisible(bool visible) override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
 

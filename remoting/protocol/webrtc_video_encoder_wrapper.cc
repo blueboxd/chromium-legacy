@@ -10,13 +10,14 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
@@ -153,6 +154,12 @@ WebrtcVideoEncoderWrapper::WebrtcVideoEncoderWrapper(
               << (lossless_color ? "true" : "false");
       encoder_ = std::make_unique<WebrtcVideoEncoderAV1>();
       encoder_->SetLosslessColor(lossless_color);
+      absl::optional<int> encoder_speed =
+          session_options.GetInt("Av1-Encoder-Speed");
+      if (encoder_speed) {
+        VLOG(0) << "Setting AV1 encoder speed to " << encoder_speed.value();
+        encoder_->SetEncoderSpeed(encoder_speed.value());
+      }
       break;
     }
     case webrtc::kVideoCodecH264:

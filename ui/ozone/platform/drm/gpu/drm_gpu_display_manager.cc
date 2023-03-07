@@ -162,13 +162,22 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
         current_drm_display = std::make_unique<DrmDisplay>(drm);
       }
 
+      // Create list of supported drm formats and modifiers
+      display::DrmFormatsAndModifiers drm_formats_and_modifiers;
+      for (uint32_t format : drm->plane_manager()->GetSupportedFormats()) {
+        std::vector<uint64_t> modifiers =
+            drm->plane_manager()->GetFormatModifiers(
+                display_info->crtc()->crtc_id, format);
+        drm_formats_and_modifiers.emplace(format, modifiers);
+      }
+
       // Create the new DisplaySnapshot and resolve display ID collisions.
       std::unique_ptr<display::DisplaySnapshot> current_display_snapshot =
-          CreateDisplaySnapshot(display_info.get(),
-                                current_drm_display->drm()->get_fd(),
-                                current_drm_display->drm()->device_path(),
-                                static_cast<uint8_t>(device_index),
-                                current_drm_display->origin());
+          CreateDisplaySnapshot(
+              display_info.get(), current_drm_display->drm()->get_fd(),
+              current_drm_display->drm()->device_path(),
+              static_cast<uint8_t>(device_index), current_drm_display->origin(),
+              drm_formats_and_modifiers);
 
       const auto colliding_display_snapshot_iter = edid_id_collision_map.find(
           current_display_snapshot->edid_display_id());

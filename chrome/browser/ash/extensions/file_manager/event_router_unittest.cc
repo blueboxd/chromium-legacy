@@ -49,13 +49,13 @@ TEST(EventRouterTest, PopulateCrostiniEvent) {
             extensions::api::file_manager_private::CROSTINI_EVENT_TYPE_UNSHARE);
   EXPECT_EQ(ext_event.vm_name, "vmname");
   EXPECT_EQ(ext_event.entries.size(), 1u);
-  base::DictionaryValue ext_props;
-  ext_props.SetStringKey(
+  base::Value::Dict ext_props;
+  ext_props.Set(
       "fileSystemRoot",
       "filesystem:chrome-extension://extensionid/external/mountname/");
-  ext_props.SetStringKey("fileSystemName", "filesystemname");
-  ext_props.SetStringKey("fileFullPath", "/full/path");
-  ext_props.SetBoolKey("fileIsDirectory", true);
+  ext_props.Set("fileSystemName", "filesystemname");
+  ext_props.Set("fileFullPath", "/full/path");
+  ext_props.Set("fileIsDirectory", true);
   EXPECT_EQ(ext_event.entries[0].additional_properties, ext_props);
 
   extensions::api::file_manager_private::CrostiniEvent swa_event;
@@ -70,12 +70,12 @@ TEST(EventRouterTest, PopulateCrostiniEvent) {
             extensions::api::file_manager_private::CROSTINI_EVENT_TYPE_SHARE);
   EXPECT_EQ(swa_event.vm_name, "vmname");
   EXPECT_EQ(swa_event.entries.size(), 1u);
-  base::DictionaryValue swa_props;
-  swa_props.SetStringKey(
-      "fileSystemRoot", "filesystem:chrome://file-manager/external/mountname/");
-  swa_props.SetStringKey("fileSystemName", "filesystemname");
-  swa_props.SetStringKey("fileFullPath", "/full/path");
-  swa_props.SetBoolKey("fileIsDirectory", true);
+  base::Value::Dict swa_props;
+  swa_props.Set("fileSystemRoot",
+                "filesystem:chrome://file-manager/external/mountname/");
+  swa_props.Set("fileSystemName", "filesystemname");
+  swa_props.Set("fileFullPath", "/full/path");
+  swa_props.Set("fileIsDirectory", true);
   EXPECT_EQ(swa_event.entries[0].additional_properties, swa_props);
 }
 
@@ -176,14 +176,13 @@ class FileManagerEventRouterTest : public testing::Test {
 // the `field` against the `expected_value`.
 MATCHER_P3(ExpectEventArgString, index, field, expected_value, "") {
   EXPECT_GE(arg.size(), 1u);
-  const base::Value* outputs =
-      arg[0].FindKeyOfType("outputs", base::Value::Type::LIST);
+  const base::Value::List* outputs = arg[0].GetDict().FindList("outputs");
   EXPECT_TRUE(outputs) << "The outputs field is not available on the event";
-  EXPECT_GT((*outputs).GetList().size(), index)
+  EXPECT_GT(outputs->size(), index)
       << "The supplied index on outputs is not available, size: "
-      << (*outputs).GetList().size() << ", index: " << index;
+      << outputs->size() << ", index: " << index;
   const std::string* actual_value =
-      (*outputs).GetList()[index].FindStringKey(field);
+      (*outputs)[index].GetDict().FindString(field);
   EXPECT_TRUE(actual_value) << "Could not find the string with key: " << field;
   return testing::ExplainMatchResult(expected_value, *actual_value,
                                      result_listener);

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -241,7 +241,7 @@ TEST_F(RTCRtpSenderImplTest, GetStats) {
   EXPECT_EQ(report->Size(), 1u);
   auto stats = report->GetStats(blink::WebString::FromUTF8("stats-id"));
   EXPECT_TRUE(stats);
-  EXPECT_EQ(stats->Timestamp(), 1.234);
+  EXPECT_EQ(stats->TimestampMs(), 1.234);
 }
 
 TEST_F(RTCRtpSenderImplTest, CopiedSenderSharesInternalStates) {

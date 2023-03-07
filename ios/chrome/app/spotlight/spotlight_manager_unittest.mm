@@ -11,6 +11,8 @@
 #import "base/location.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/task/single_thread_task_runner.h"
 #import "base/test/task_environment.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
@@ -79,7 +81,8 @@ class SpotlightManagerTest : public PlatformTest {
                            favicon_base::FaviconRawBitmapCallback callback,
                            base::CancelableTaskTracker* tracker) {
           return tracker->PostTask(
-              base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+              base::SingleThreadTaskRunner::GetCurrentDefault().get(),
+              FROM_HERE,
               base::BindOnce(std::move(callback), CreateTestBitmap(24, 24)));
         });
   }

@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/process/process.h"
@@ -35,6 +35,10 @@ namespace content {
 class NavigationHandle;
 class WebContents;
 }  // namespace content
+
+namespace media_control {
+class MediaBlocker;
+}  // namespace media_control
 
 namespace url_rewrite {
 class UrlRequestRewriteRulesManager;
@@ -184,6 +188,7 @@ class CastWebContents : public mojom::CastWebContents {
   virtual PageState page_state() const = 0;
   virtual url_rewrite::UrlRequestRewriteRulesManager*
   url_rewrite_rules_manager() = 0;
+  virtual const media_control::MediaBlocker* media_blocker() const = 0;
 
   // mojom::CastWebContents implementation:
   void SetAppProperties(const std::string& app_id,

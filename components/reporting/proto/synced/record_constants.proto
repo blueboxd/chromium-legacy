@@ -88,6 +88,14 @@ enum Destination {
   // |OS_EVENTS| is for events regarding updates, rollbacks or powerwashes.
   OS_EVENTS = 24;
 
+  // |LEGACY_TECH| is for chrome deprecated features encountered on the
+  // client side.
+  LEGACY_TECH = 25;
+
+  // |CROS_SECURITY_NETWORK| is for events that are occurring over
+  // the network.
+  CROS_SECURITY_NETWORK = 26;
+
   reserved 8;
 }
 

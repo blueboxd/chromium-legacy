@@ -661,6 +661,20 @@ The updater does not delete this file.
 * This installerdata is not persisted anywhere else, and it is not sent as a
 part of pings to the update server.
 
+#### Application logo shown in the UI
+
+The app logo is expected to be hosted at
+`{APP_LOGO_URL}{url escaped app_id_}.bmp`.
+
+If `{url escaped app_id_}.bmp` exists, a logo is shown in the updater UI for
+that app install.
+
+For example, if `app_id_` is `{8A69D345-D564-463C-AFF1-A69D9E530F96}`, the
+`{url escaped app_id_}.bmp` is `%7b8A69D345-D564-463C-AFF1-A69D9E530F96%7d.bmp`.
+
+`APP_LOGO_URL` is specified in chrome/updater/branding.gni.
+[branding.gni](https://source.chromium.org/chromium/chromium/src/+/main:chrome/updater/branding.gni?q=APP_LOGO_URL)
+
 ### Update Formats
 The updater accepts updates packaged as CRX₃ files. All files are signed with a
 publisher key. The corresponding public key is hardcoded into the updater.
@@ -937,6 +951,14 @@ respectively, a command format of:
 becomes the command line
   `echo.exe AA %2 %BB`
 
+#### Signature verification
+Signature verification is not done on the app command executables, since the
+AppCommands will always be running from a secure location for system, and the
+key that defines the application command path is in HKLM, both of which mitigate
+the threat of a non-admin attacker. An Admin attacker would already be able to
+bypass any signature checking by binplanting a DLL, or just by performing
+whatever changes they like on the system, so is outside the threat model.
+
 ### Policy Status API
 The feature allows Chrome and other applications to query the policies that are
 currently in effect.
@@ -967,7 +989,7 @@ app is considered uninstalled.
 
 On Windows, the updater registers a "UninstallCmdLine" under the `Software\
 {Company}\Updater` key. This command line can be invoked by application
-uninstallers to cause the updater to  update its registrations. The updater
+uninstallers to cause the updater to update its registrations. The updater
 also checks for uninstallations in every periodic task execution.
 
 When the last registered application is uninstalled, the updater uninstalls

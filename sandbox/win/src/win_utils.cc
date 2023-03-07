@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <ntstatus.h>
 #include <psapi.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -154,7 +155,7 @@ NTSTATUS WrapQueryObject(HANDLE handle,
                          std::vector<uint8_t>& buffer,
                          PULONG reqd) {
   if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
-    return NTSTATUS_INVALID_PARAMETER;
+    return STATUS_INVALID_PARAMETER;
   NtQueryObjectFunction NtQueryObject = sandbox::GetNtExports()->QueryObject;
   ULONG size = static_cast<ULONG>(buffer.size());
   __try {
@@ -162,7 +163,7 @@ NTSTATUS WrapQueryObject(HANDLE handle,
   } __except (GetExceptionCode() == STATUS_INVALID_HANDLE
                   ? EXCEPTION_EXECUTE_HANDLER
                   : EXCEPTION_CONTINUE_SEARCH) {
-    return NTSTATUS_INVALID_PARAMETER;
+    return STATUS_INVALID_PARAMETER;
   }
 }
 
@@ -539,7 +540,7 @@ void* GetProcessBaseAddress(HANDLE process) {
   if (STATUS_SUCCESS != status)
     return nullptr;
 
-  PEB peb = {};
+  NT_PEB peb = {};
   SIZE_T bytes_read = 0;
   if (!::ReadProcessMemory(process, process_basic_info.PebBaseAddress, &peb,
                            sizeof(peb), &bytes_read) ||

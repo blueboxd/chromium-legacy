@@ -16,8 +16,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "base/values.h"
 
@@ -154,10 +154,5 @@ std::string TranslateShillTypeToONC(const std::string& type);
 
 }  // namespace network_util
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-namespace network_util = ::ash::network_util;
-}  // namespace chromeos
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_UTIL_H_

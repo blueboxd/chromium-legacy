@@ -44,15 +44,17 @@ const int64_t kFolderNone = -1;
   *folderId = prefService->GetInt64(prefs::kIosBookmarkCachedFolderId);
 
   // If the cache was at root node, consider it as nothing was cached.
-  if (*folderId == kFolderNone || *folderId == model->root_node()->id())
+  if (*folderId == kFolderNone || *folderId == model->root_node()->id()) {
     return NO;
+  }
 
   // Create bookmark Path.
   const BookmarkNode* bookmark =
       bookmark_utils_ios::FindFolderById(model, *folderId);
   // The bookmark node is gone from model, maybe deleted remotely.
-  if (!bookmark)
+  if (!bookmark) {
     return NO;
+  }
 
   *topMostRow = prefService->GetInteger(prefs::kIosBookmarkCachedTopMostRow);
   return YES;

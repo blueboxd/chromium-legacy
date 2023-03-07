@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/app_preload_service/app_preload_server_connector.h"
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/strings/strcat.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_preload_service/almanac_api_util.h"
@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/apps/app_preload_service/proto/app_provisioning.pb.h"
 #include "chrome/browser/apps/user_type_filter.h"
+#include "components/version_info/channel.h"
 #include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -21,7 +22,7 @@ namespace {
 
 // Endpoint for requesting app preload data on the ChromeOS Almanac API.
 constexpr char kAppPreloadAlmanacEndpoint[] =
-    "/v1/app_provisioning/apps?alt=proto";
+    "v1/app_provisioning/apps?alt=proto";
 
 // Maximum accepted size of an APS Response. 1MB.
 constexpr int kMaxResponseSizeInBytes = 1024 * 1024;
@@ -62,6 +63,22 @@ ConvertStringUserTypeToProto(const std::string& user_type) {
   return apps::proto::AppProvisioningListAppsRequest::USERTYPE_UNKNOWN;
 }
 
+apps::proto::AppProvisioningListAppsRequest::Channel ConvertChannelTypeToProto(
+    const version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::CANARY:
+      return apps::proto::AppProvisioningListAppsRequest::CHANNEL_CANARY;
+    case version_info::Channel::DEV:
+      return apps::proto::AppProvisioningListAppsRequest::CHANNEL_DEV;
+    case version_info::Channel::BETA:
+      return apps::proto::AppProvisioningListAppsRequest::CHANNEL_BETA;
+    case version_info::Channel::STABLE:
+      return apps::proto::AppProvisioningListAppsRequest::CHANNEL_STABLE;
+    case version_info::Channel::UNKNOWN:
+      return apps::proto::AppProvisioningListAppsRequest::CHANNEL_UNDEFINED;
+  }
+}
+
 std::string BuildGetAppsForFirstLoginRequestBody(const apps::DeviceInfo& info) {
   apps::proto::AppProvisioningListAppsRequest request_proto;
   request_proto.set_board(info.board);
@@ -75,6 +92,8 @@ std::string BuildGetAppsForFirstLoginRequestBody(const apps::DeviceInfo& info) {
       info.version_info.ash_chrome);
   request_proto.mutable_chrome_os_version()->set_platform(
       info.version_info.platform);
+  request_proto.mutable_chrome_os_version()->set_channel(
+      ConvertChannelTypeToProto(info.version_info.channel));
 
   return request_proto.SerializeAsString();
 }

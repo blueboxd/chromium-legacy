@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/process/process.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
@@ -48,8 +48,8 @@ WaylandBufferManagerGpu::WaylandBufferManagerGpu(
   // happen, and a surface will never be registered. Thus, the following two
   // cases are possible:
   // 1) The WaylandBufferManagerGpu runs normally outside tests.
-  // ThreadTaskRunnerHandle is set and it is passed during construction and
-  // never changes.
+  // SingleThreadTaskRunner::CurrentDefaultHandle is set and it is passed during
+  // construction and never changes.
   // 2) The WaylandBufferManagerGpu runs in unit tests and when it's created,
   // the task runner is not available and must be set later when ::Initialize is
   // called. In this case, there is no race between ::Initialize and
@@ -61,7 +61,8 @@ WaylandBufferManagerGpu::WaylandBufferManagerGpu(
     gpu_thread_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   } else {
     // In tests, the further calls might happen on a different sequence.
-    // Otherwise, ThreadTaskRunnerHandle should have already been set.
+    // Otherwise, SingleThreadTaskRunner::CurrentDefaultHandle should have
+    // already been set.
     DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
   }
 }
@@ -115,11 +116,17 @@ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
   auto it = commit_thread_runners_.find(widget);
   if (it == commit_thread_runners_.end())
     return;
-  it->second->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
-                     base::Unretained(this), widget, buffer_id, swap_result,
-                     std::move(release_fence)));
+
+  if (it->second->BelongsToCurrentThread()) {
+    SubmitSwapResultOnOriginThread(widget, buffer_id, swap_result,
+                                   std::move(release_fence));
+  } else {
+    it->second->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
+                       base::Unretained(this), widget, buffer_id, swap_result,
+                       std::move(release_fence)));
+  }
 }
 
 void WaylandBufferManagerGpu::OnPresentation(
@@ -133,10 +140,16 @@ void WaylandBufferManagerGpu::OnPresentation(
   auto it = commit_thread_runners_.find(widget);
   if (it == commit_thread_runners_.end())
     return;
-  it->second->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WaylandBufferManagerGpu::SubmitPresentationOnOriginThread,
-                     base::Unretained(this), widget, buffer_id, feedback));
+
+  if (it->second->BelongsToCurrentThread()) {
+    SubmitPresentationOnOriginThread(widget, buffer_id, feedback);
+  } else {
+    it->second->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WaylandBufferManagerGpu::SubmitPresentationOnOriginThread,
+            base::Unretained(this), widget, buffer_id, feedback));
+  }
 }
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
@@ -247,7 +260,7 @@ void WaylandBufferManagerGpu::CreateSolidColorBuffer(SkColor4f color,
 void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
                                            uint32_t frame_id,
                                            uint32_t buffer_id,
-                                           gl::FrameData data,
+                                           gfx::FrameData data,
                                            const gfx::Rect& bounds_rect,
                                            const gfx::RoundedCornersF& corners,
                                            float surface_scale_factor,
@@ -269,7 +282,7 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
 void WaylandBufferManagerGpu::CommitOverlays(
     gfx::AcceleratedWidget widget,
     uint32_t frame_id,
-    gl::FrameData data,
+    gfx::FrameData data,
     std::vector<wl::WaylandOverlayConfig> overlays) {
   DCHECK(gpu_thread_runner_);
   if (!gpu_thread_runner_->BelongsToCurrentThread()) {
@@ -499,7 +512,7 @@ void WaylandBufferManagerGpu::CreateSolidColorBufferTask(SkColor4f color,
 void WaylandBufferManagerGpu::CommitOverlaysTask(
     gfx::AcceleratedWidget widget,
     uint32_t frame_id,
-    gl::FrameData data,
+    gfx::FrameData data,
     std::vector<wl::WaylandOverlayConfig> overlays) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   DCHECK(remote_host_);

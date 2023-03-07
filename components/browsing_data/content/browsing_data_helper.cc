@@ -13,7 +13,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
-#include "components/origin_trials/browser/prefservice_persistence_provider.h"
 #include "components/origin_trials/common/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/site_isolation/pref_names.h"
@@ -193,6 +192,18 @@ void RemoveFederatedSiteSettingsData(
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::FEDERATED_IDENTITY_SHARING, delete_begin, delete_end,
       pattern_predicate);
+}
+
+int GetUniqueHostCount(
+    const browsing_data::LocalSharedObjectsContainer& local_shared_objects,
+    const BrowsingDataModel& browsing_data_model) {
+  std::set<std::string> unique_hosts = local_shared_objects.GetHosts();
+
+  for (auto entry : browsing_data_model) {
+    unique_hosts.insert(entry.primary_host.get());
+  }
+
+  return unique_hosts.size();
 }
 
 }  // namespace browsing_data

@@ -13,12 +13,11 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_controller.h"
 #include "components/media_router/browser/issue_manager.h"
 #include "components/media_router/browser/logger_impl.h"
@@ -106,7 +105,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void Initialize() override;
 
   // Requests MRPs to update media sinks.
-  void UpdateMediaSinks(const MediaSource::Id& source_id);
+  void DiscoverSinksNow();
 
   // Called when the Mojo pointer for |provider_id| has a connection error.
   // Removes the pointer from |media_route_providers_|.

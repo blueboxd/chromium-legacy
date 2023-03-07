@@ -10,7 +10,7 @@ import("//ui/webui/resources/tools/generate_grd.gni")
 assert(is_chromeos, "Nearby Share is CrOS only")
 
 os_settings_dir = "$root_gen_dir/chrome/browser/resources/settings/chromeos"
-preprocess_folder = "tsc/shared"
+preprocessed_folder = "tsc_input/shared"
 preprocess_gen_v3_manifest = "preprocessed_gen_v3_manifest.json"
 preprocess_v3_manifest = "preprocessed_v3_manifest.json"
 
@@ -54,10 +54,7 @@ non_web_component_files = [
 generate_grd("build_v3_grdp") {
   grd_prefix = "nearby_share"
   out_grd = "$target_gen_dir/${grd_prefix}_resources_v3.grdp"
-  deps = [
-    ":preprocess_gen_v3",
-    ":preprocess_v3",
-  ]
+  deps = [ ":preprocess" ]
   manifest_files = [
     "$target_gen_dir/$preprocess_gen_v3_manifest",
     "$target_gen_dir/$preprocess_v3_manifest",
@@ -65,17 +62,24 @@ generate_grd("build_v3_grdp") {
   resource_path_prefix = "shared"
 }
 
+group("preprocess") {
+  public_deps = [
+    ":preprocess_gen_v3",
+    ":preprocess_v3",
+  ]
+}
+
 preprocess_if_expr("preprocess_gen_v3") {
   deps = [ ":html_wrapper_files" ]
   in_folder = target_gen_dir
   in_files = html_wrapper_files
-  out_folder = "$os_settings_dir/$preprocess_folder"
+  out_folder = "$os_settings_dir/$preprocessed_folder"
   out_manifest = "$target_gen_dir/$preprocess_gen_v3_manifest"
 }
 
 preprocess_if_expr("preprocess_v3") {
   in_files = web_component_files + non_web_component_files
-  out_folder = "$os_settings_dir/$preprocess_folder"
+  out_folder = "$os_settings_dir/$preprocessed_folder"
   out_manifest = "$target_gen_dir/$preprocess_v3_manifest"
 }
 
@@ -86,13 +90,20 @@ html_to_wrapper("html_wrapper_files") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  closure_flags =
-      default_closure_args + [
-        "js_module_root=" +
-            rebase_path("//chrome/browser/resources/nearby_share/shared/",
-                        root_build_dir),
-        "js_module_root=./gen/chrome/browser/resources/nearby_share/shared/",
-      ]
+  closure_flags = default_closure_args + mojom_js_args + [
+                    "js_module_root=" + rebase_path(
+                            "//chrome/browser/resources/nearby_share/shared/",
+                            root_build_dir),
+                    "js_module_root=./gen/chrome/browser/resources/nearby_share/shared/",
+
+                    # For typechecking nearby share Mojo WebUI bindings:
+                    # - Add the Mojo WebUI binding gen directory to the module root
+                    # - Replace import prefix so the bindings can be resolved correctly
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/nearby_share/",
+                            root_build_dir),
+                    "browser_resolver_prefix_replacements=\"/mojo/=./\"",
+                  ]
 
   deps = [
     ":nearby_contact_manager",
@@ -115,7 +126,7 @@ js_type_check("closure_compile_module") {
 js_library("nearby_contact_manager") {
   deps = [
     "//ash/webui/common/resources:cr.m",
-    "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js_library_for_compile",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
   ]
 }
 
@@ -127,6 +138,7 @@ js_library("nearby_contact_visibility") {
     "//ash/webui/common/resources:cr.m",
     "//ash/webui/common/resources:i18n_behavior",
     "//ash/webui/common/resources:load_time_data.m",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   externs_list = [ "//ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_externs.js" ]
@@ -134,9 +146,8 @@ js_library("nearby_contact_visibility") {
 
 js_library("nearby_device_icon") {
   deps = [
-    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
-    "//chrome/browser/ui/webui/nearby_share:share_type_js_library_for_compile",
-    "//chromeos/ash/services/nearby/public/mojom:nearby_share_target_types_js_library_for_compile",
+    "//chrome/browser/ui/webui/nearby_share:mojom_webui_js",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -144,6 +155,7 @@ js_library("nearby_device_icon") {
 js_library("nearby_device") {
   deps = [
     ":nearby_device_icon",
+    "//chrome/browser/ui/webui/nearby_share:mojom_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -154,6 +166,7 @@ js_library("nearby_onboarding_one_page") {
     ":nearby_page_template",
     ":nearby_share_settings_behavior",
     "//ash/webui/common/resources:i18n_behavior",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -164,6 +177,7 @@ js_library("nearby_onboarding_page") {
     ":nearby_page_template",
     ":nearby_share_settings_behavior",
     "//ash/webui/common/resources:i18n_behavior",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -176,9 +190,8 @@ js_library("nearby_preview") {
   deps = [
     "//ash/webui/common/resources:assert",
     "//ash/webui/common/resources:i18n_behavior",
-    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
-    "//chrome/browser/ui/webui/nearby_share:share_type_js_library_for_compile",
-    "//chromeos/ash/services/nearby/public/mojom:nearby_share_target_types_js_library_for_compile",
+    "//chrome/browser/ui/webui/nearby_share:mojom_webui_js",
+    "//chrome/browser/ui/webui/nearby_share:share_type_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -186,6 +199,7 @@ js_library("nearby_preview") {
 js_library("nearby_progress") {
   deps = [
     ":nearby_device_icon",
+    "//chrome/browser/ui/webui/nearby_share:mojom_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -194,14 +208,14 @@ js_library("nearby_share_settings_behavior") {
   deps = [
     ":nearby_share_settings",
     "//ash/webui/common/resources:cr.m",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
   ]
 }
 
 js_library("nearby_share_settings") {
   deps = [
     "//ash/webui/common/resources:cr.m",
-    "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js_library_for_compile",
-    "//url/mojom:url_mojom_gurl_js_library_for_compile",
+    "//chromeos/ash/services/nearby/public/mojom:nearby_share_settings_webui_js",
   ]
 }
 

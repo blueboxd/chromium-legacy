@@ -22,24 +22,18 @@
 
 namespace apps {
 
-// Caches all of the apps::mojom::AppPtr's seen by an apps::mojom::Subscriber.
-// A Subscriber sees a stream of "deltas", or changes in app state. This cache
-// also keeps the "sum" of those previous deltas, so that observers of this
-// object are presented with AppUpdate's, i.e. "state-and-delta"s.
+// Caches all of the apps::AppPtr. AppServiceProxy sees a stream of "deltas", or
+// changes in app state. This cache also keeps the "sum" of those previous
+// deltas, so that observers of this object are presented with AppUpdate's, i.e.
+// "state-and-delta"s.
 //
 // It can also be queried synchronously, providing answers from its in-memory
-// cache, even though the underlying App Registry (and its App Publishers)
-// communicate asynchronously, possibly across process boundaries, via Mojo
-// IPC. Synchronous APIs can be more suitable for e.g. UI programming that
+// cache. Synchronous APIs can be more suitable for e.g. UI programming that
 // should not block an event loop on I/O.
 //
 // This class is not thread-safe.
 //
 // See components/services/app_service/README.md for more details.
-//
-// TODO(crbug.com/1253250): Remove all apps::mojom related code.
-// 1. Modify comments.
-// 2. Replace mojom related functions with non-mojom functions.
 class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
  public:
   class COMPONENT_EXPORT(APP_UPDATE) Observer : public base::CheckedObserver {
@@ -113,12 +107,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   // processing b1 (and then c1), which means that processing c2 is delayed
   // until after the second OnApps call returns.
   //
-  // The callee will consume the deltas. An apps::mojom::AppPtr has the
-  // ownership semantics of a unique_ptr, and will be deleted when out of
-  // scope. The caller presumably calls OnApps(std::move(deltas)).
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
-              apps::mojom::AppType app_type,
-              bool should_notify_initialized);
+  // The callee will consume the deltas. An apps::AppPtr has the ownership
+  // semantics of a unique_ptr, and will be deleted when out of scope. The
+  // caller presumably calls OnApps(std::move(deltas)).
   void OnApps(std::vector<AppPtr> deltas,
               apps::AppType app_type,
               bool should_notify_initialized);
@@ -132,7 +123,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   // Calls f, a void-returning function whose arguments are (const
   // apps::AppUpdate&), on each app in the cache.
   //
-  // f's argument is an apps::AppUpdate instead of an apps::mojom::AppPtr so
+  // f's argument is an apps::AppUpdate instead of an apps::AppPtr so
   // that callers can more easily share code with Observer::OnAppUpdate (which
   // also takes an apps::AppUpdate), and an apps::AppUpdate also has a
   // StateIsNull method.
@@ -205,7 +196,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   friend class AppRegistryCacheTest;
   friend class PublisherTest;
 
-  void DoOnApps(std::vector<apps::mojom::AppPtr> deltas);
   void DoOnApps(std::vector<AppPtr> deltas);
 
   void OnAppTypeInitialized();
@@ -213,7 +203,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   base::ObserverList<Observer> observers_;
 
   // Maps from app_id to the latest state: the "sum" of all previous deltas.
-  std::map<std::string, apps::mojom::AppPtr> mojom_states_;
   std::map<std::string, AppPtr> states_;
 
   // Track the deltas being processed or are about to be processed by OnApps.
@@ -222,18 +211,16 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   //
   // OnApps calls DoOnApps zero or more times. If we're nested, so that there's
   // multiple OnApps call to this AppRegistryCache in the call stack, the
-  // deeper OnApps call simply adds work to mojom_deltas_pending_ and returns
+  // deeper OnApps call simply adds work to deltas_pending_ and returns
   // without calling DoOnApps. If we're not nested, OnApps calls DoOnApps one or
   // more times; "more times" happens if DoOnApps notifying observers leads to
-  // more OnApps calls that enqueue mojom_deltas_pending_ work. The
-  // mojom_deltas_in_progress_ map (keyed by app_id) contains those deltas being
+  // more OnApps calls that enqueue deltas_pending_ work. The
+  // deltas_in_progress_ map (keyed by app_id) contains those deltas being
   // considered by DoOnApps.
   //
   // Nested OnApps calls are expected to be rare (but still dealt with
   // sensibly). In the typical case, OnApps should call DoOnApps exactly once,
-  // and mojom_deltas_pending_ will stay empty.
-  std::map<std::string, apps::mojom::App*> mojom_deltas_in_progress_;
-  std::vector<apps::mojom::AppPtr> mojom_deltas_pending_;
+  // and deltas_pending_ will stay empty.
   std::map<std::string, App*> deltas_in_progress_;
   std::vector<AppPtr> deltas_pending_;
 

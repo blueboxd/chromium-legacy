@@ -9,9 +9,9 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -369,6 +369,14 @@ void NotificationChannelsProviderAndroid::ClearAllContentSettingsRules(
 
 void NotificationChannelsProviderAndroid::ShutdownOnUIThread() {
   RemoveAllObservers();
+}
+
+bool NotificationChannelsProviderAndroid::ResetLastVisitTime(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type) {
+  // Last visited tracking is not implemented for this type.
+  return false;
 }
 
 bool NotificationChannelsProviderAndroid::UpdateLastVisitTime(

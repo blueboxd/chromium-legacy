@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "chromeos/ash/components/multidevice/remote_device_ref.h"
@@ -78,6 +78,10 @@ class DeviceSyncClient {
       mojom::DeviceSync::ForceEnrollmentNowCallback callback) = 0;
   virtual void ForceSyncNow(
       mojom::DeviceSync::ForceSyncNowCallback callback) = 0;
+  virtual void GetBetterTogetherMetadataStatus(
+      mojom::DeviceSync::GetBetterTogetherMetadataStatusCallback callback) = 0;
+  virtual void GetGroupPrivateKeyStatus(
+      mojom::DeviceSync::GetGroupPrivateKeyStatusCallback callback) = 0;
   virtual multidevice::RemoteDeviceRefList GetSyncedDevices() = 0;
   virtual absl::optional<multidevice::RemoteDeviceRef>
   GetLocalDeviceMetadata() = 0;

@@ -36,6 +36,16 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::DeprecatedFencedFrameMode,
+               blink::FencedFrame::DeprecatedFencedFrameMode> {
+  static blink::mojom::DeprecatedFencedFrameMode ToMojom(
+      blink::FencedFrame::DeprecatedFencedFrameMode input);
+  static bool FromMojom(blink::mojom::DeprecatedFencedFrameMode input,
+                        blink::FencedFrame::DeprecatedFencedFrameMode* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::FencedFrameReportingDataView,
                  blink::FencedFrame::FencedFrameReporting> {
   static const base::flat_map<blink::FencedFrame::ReportingDestination,
@@ -65,6 +75,10 @@ struct BLINK_COMMON_EXPORT
   static const url::Origin& origin(
       const blink::FencedFrame::SharedStorageBudgetMetadata& input);
   static double budget_to_charge(
+      const blink::FencedFrame::SharedStorageBudgetMetadata& input);
+  static bool top_navigated(
+      const blink::FencedFrame::SharedStorageBudgetMetadata& input);
+  static bool report_event_called(
       const blink::FencedFrame::SharedStorageBudgetMetadata& input);
 
   static bool Read(blink::mojom::SharedStorageBudgetMetadataDataView data,
@@ -227,7 +241,7 @@ struct BLINK_COMMON_EXPORT
       const blink::FencedFrame::RedactedFencedFrameConfig& config) {
     // Whenever a redacted config is sent over an IPC, its `urn_` member is
     // expected to be non-nullopt.
-    return config.urn_.value();
+    return config.urn_uuid_.value();
   }
   static const absl::optional<Prop<GURL>>& mapped_url(
       const blink::FencedFrame::RedactedFencedFrameConfig& config) {
@@ -265,6 +279,11 @@ struct BLINK_COMMON_EXPORT
   reporting_metadata(
       const blink::FencedFrame::RedactedFencedFrameConfig& config) {
     return config.reporting_metadata_;
+  }
+
+  static const blink::FencedFrame::DeprecatedFencedFrameMode& mode(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.mode_;
   }
 
   static bool Read(blink::mojom::FencedFrameConfigDataView data,
@@ -310,6 +329,10 @@ struct BLINK_COMMON_EXPORT
   reporting_metadata(
       const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
     return properties.reporting_metadata_;
+  }
+  static const blink::FencedFrame::DeprecatedFencedFrameMode& mode(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.mode_;
   }
 
   static bool Read(

@@ -50,6 +50,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient:
+  bool IsOffTheRecord() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   CreditCardCVCAuthenticator* GetCVCAuthenticator() override;
@@ -99,11 +101,12 @@ class WebViewAutofillClientIOS : public AutofillClient {
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
+  bool TryToShowFastCheckout(const FormData& form,
+                             const FormFieldData& field,
+                             AutofillDriver* driver) override;
+  void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
-  bool IsFastCheckoutTriggerForm(const FormData& form,
-                                 const FormFieldData& field) override;
-  bool ShowFastCheckout(base::WeakPtr<FastCheckoutDelegate> delegate) override;
-  void HideFastCheckout() override;
+  bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
@@ -130,7 +133,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   autofill::FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;

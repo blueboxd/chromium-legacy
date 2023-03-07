@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
@@ -2804,7 +2803,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   // at a source scale that the rasterized layer will not be larger than the
   // viewport.
   contents_scale = 0.1f;
-  maximum_animation_scale = 11.f;
+  maximum_animation_scale = 12.f;
 
   SetContentsAndAnimationScalesOnBothLayers(contents_scale, device_scale,
                                             page_scale, maximum_animation_scale,
@@ -2899,7 +2898,7 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimationWideLayer) {
   // at a source scale that the rasterized visible rect will not be larger than
   // the viewport.
   contents_scale = 0.1f;
-  maximum_animation_scale = 11.f;
+  maximum_animation_scale = 12.f;
 
   SetContentsAndAnimationScalesOnBothLayers(contents_scale, device_scale,
                                             page_scale, maximum_animation_scale,
@@ -5289,6 +5288,10 @@ TEST_F(LegacySWPictureLayerImplTest, ScrollPropagatesToPending) {
 TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextInvalidatesPendingTree) {
   gfx::Size layer_bounds(100, 100);
   SetupPendingTree(FakeRasterSource::CreateFilledWithText(layer_bounds));
+  // LCD text is disallowed before SetContentsOpaque(true).
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->UpdateTiles();
 
   EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
@@ -5330,6 +5333,10 @@ TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {
   float page_scale = 4.f;
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
                                     page_scale);
+  // LCD text is disallowed before SetContentsOpaque(true).
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->UpdateTiles();
   EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->can_use_lcd_text());
   ActivateTree();
@@ -5368,6 +5375,10 @@ TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTreeWith2dScale) {
   float page_scale = 4.f;
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), ideal_scale, 1.0f,
                                     page_scale);
+  // LCD text is disallowed before SetContentsOpaque(true).
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->UpdateTiles();
   EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->can_use_lcd_text());
   ActivateTree();
@@ -6211,7 +6222,7 @@ TEST_F(LegacySWPictureLayerImplTest, PaintWorkletInputs) {
   EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input2));
 
   // Specify a record for one of the inputs.
-  sk_sp<PaintRecord> record1 = sk_make_sp<PaintOpBuffer>();
+  PaintRecord record1;
   pending_layer()->SetPaintWorkletRecord(input1, record1);
 
   // Now activate and make sure the active layer is registered as well, with the
@@ -6220,7 +6231,7 @@ TEST_F(LegacySWPictureLayerImplTest, PaintWorkletInputs) {
   EXPECT_EQ(active_layer()->GetPaintWorkletRecordMap().size(), 2u);
   auto it = active_layer()->GetPaintWorkletRecordMap().find(input1);
   ASSERT_NE(it, active_layer()->GetPaintWorkletRecordMap().end());
-  EXPECT_EQ(it->second.second, record1);
+  EXPECT_TRUE(it->second.second->EqualsForTesting(record1));
   EXPECT_TRUE(active_layer()->GetPaintWorkletRecordMap().contains(input2));
 
   // Committing new PaintWorkletInputs (in a new raster source) should replace
@@ -6249,6 +6260,7 @@ TEST_F(LegacySWPictureLayerImplTest, NoTilingsUsesScaleOne) {
   ActivateTree();
 
   active_layer()->SetContentsOpaque(true);
+  active_layer()->SetSafeOpaqueBackgroundColor(SkColors::kWhite);
   active_layer()->draw_properties().visible_layer_rect =
       gfx::Rect(0, 0, 1000, 1000);
   active_layer()->UpdateTiles();

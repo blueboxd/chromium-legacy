@@ -41,6 +41,8 @@
 namespace web_app {
 namespace {
 
+// TODO(https://crbug.com/1403999): This test should be refactored to remove the
+// MockOsIntegrationManager.
 class WebAppUninstallCommandTest : public WebAppTest {
  public:
   WebAppUninstallCommandTest() = default;
@@ -78,12 +80,13 @@ TEST_F(WebAppUninstallCommandTest, SimpleUninstallInternal) {
                                     WebAppManagement::kSync);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
   OsHooksErrors result;
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));
@@ -113,12 +116,13 @@ TEST_F(WebAppUninstallCommandTest, SimpleUninstallExternal) {
                                     WebAppManagement::kDefault);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
   OsHooksErrors result;
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));
@@ -149,12 +153,13 @@ TEST_F(WebAppUninstallCommandTest, FailedDataDeletion) {
                                     WebAppManagement::kSync);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
   OsHooksErrors result;
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));
@@ -184,13 +189,14 @@ TEST_F(WebAppUninstallCommandTest, FailedOsHooksSetting) {
                                     WebAppManagement::kSync);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
   OsHooksErrors result;
   result.set(true);
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));
@@ -220,7 +226,8 @@ TEST_F(WebAppUninstallCommandTest, TryToUninstallNonExistentApp) {
                                     WebAppManagement::kSync);
   AppId app_id = web_app->app_id();
 
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .Times(0);
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .Times(0);
@@ -250,11 +257,12 @@ TEST_F(WebAppUninstallCommandTest, CommandManagerShutdownThrowsError) {
                                     WebAppManagement::kSync);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .Times(0);
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .Times(0);
@@ -285,14 +293,15 @@ TEST_F(WebAppUninstallCommandTest, UserUninstalledPrefsFilled) {
   web_app->AddInstallURLToManagementExternalConfigMap(
       WebAppManagement::kDefault, GURL("https://www.example.com/install"));
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
   EXPECT_FALSE(UserUninstalledPreinstalledWebAppPrefs(profile()->GetPrefs())
                    .DoesAppIdExist(app_id));
 
   OsHooksErrors result;
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));
@@ -324,12 +333,13 @@ TEST_F(WebAppUninstallCommandTest, ExternalConfigMapMissing) {
                                     WebAppManagement::kDefault);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
   EXPECT_TRUE(provider()->registrar_unsafe().IsLocallyInstalled(app_id));
   OsHooksErrors result;
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));
@@ -367,11 +377,12 @@ TEST_F(WebAppUninstallCommandTest, RemoveSourceAndTriggerOSUninstallation) {
   EXPECT_FALSE(web_app->CanUserUninstallWebApp());
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .Times(0);
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .Times(0);
@@ -385,7 +396,8 @@ TEST_F(WebAppUninstallCommandTest, RemoveSourceAndTriggerOSUninstallation) {
   EXPECT_CALL(*os_integration_manager_,
               RegisterWebAppOsUninstallation(app_id, testing::_))
       .Times(1);
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
 #else
   EXPECT_CALL(*os_integration_manager_,
@@ -441,12 +453,13 @@ TEST_P(WebAppUninstallCommandSourceTest, RunTestForUninstallSource) {
                                     WebAppManagement::kSync);
   AppId app_id = web_app->app_id();
   {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
+    ScopedRegistryUpdate update(&provider()->sync_bridge_unsafe());
     update->CreateApp(std::move(web_app));
   }
 
   OsHooksErrors result;
-  EXPECT_CALL(*os_integration_manager_, Synchronize(app_id, testing::_))
+  EXPECT_CALL(*os_integration_manager_,
+              Synchronize(app_id, testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>());
   EXPECT_CALL(*os_integration_manager_, UninstallAllOsHooks(app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(result));

@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,6 +21,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/trace_event_analyzer.h"
@@ -28,6 +29,7 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_active_scenario.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
@@ -35,10 +37,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/tracing/perfetto/privacy_filtering_check.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -406,6 +411,11 @@ class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::PreRunTestOnMainThread();
   }
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ContentBrowserTest::SetUpOnMainThread();
+  }
+
   const base::ScopedTempDir& tmp_dir() const { return tmp_dir_; }
 
  private:
@@ -447,8 +457,9 @@ std::unique_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
   base::Value::List rules_list;
   {
     base::Value::Dict rules_dict;
-    rules_dict.Set("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
+    rules_dict.Set("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     rules_dict.Set("trigger_name", "reactive_test");
+    rules_dict.Set("trigger_delay", 15);
     rules_list.Append(std::move(rules_dict));
   }
   dict.Set("configs", std::move(rules_list));
@@ -590,6 +601,76 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("src_file"));
   EXPECT_FALSE(
       trace_receiver_helper.TraceHasMatchingString("test_not_allowlist"));
+}
+
+// Regression test for https://crbug.com/1405341.
+// Tests that RenderFrameHostImpl destruction is finished without crashing when
+// tracing is enabled.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       TracingRenderFrameHostImplDtor) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  TestBackgroundTracingHelper background_tracing_helper;
+  TestTraceReceiverHelper trace_receiver_helper;
+
+  std::unique_ptr<BackgroundTracingConfig> config =
+      BackgroundTracingConfigImpl::FromDict(base::JSONReader::Read(R"JSON(
+        {
+          "mode": "PREEMPTIVE_TRACING_MODE",
+          "custom_categories": "content",
+          "configs": [
+            {
+              "rule": "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED",
+              "trigger_name": "content_test"
+            }
+          ]
+        }
+      )JSON")
+                                                .value()
+                                                .TakeDict());
+
+  BackgroundTracingManager::TriggerHandle handle =
+      BackgroundTracingManager::GetInstance().RegisterTriggerType(
+          "content_test");
+
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()
+                  .SetActiveScenarioWithReceiveCallback(
+                      std::move(config),
+                      trace_receiver_helper.get_receive_callback(),
+                      BackgroundTracingManager::NO_DATA_FILTERING));
+
+  background_tracing_helper.WaitForTracingEnabled();
+
+  TestTriggerHelper trigger_helper;
+  BackgroundTracingManager::GetInstance().TriggerNamedEvent(
+      handle, trigger_helper.receive_closure(true));
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  auto* rfhi = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetPrimaryMainFrame());
+
+  // Audible audio output should cause the media stream count to increment.
+  rfhi->OnAudibleStateChanged(true);
+
+  RenderFrameDeletedObserver delete_frame(rfhi);
+
+  // The old RenderFrameHost might have entered the BackForwardCache. Disable
+  // back-forward cache to ensure that the RenderFrameHost gets deleted.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  GURL cross_site_url = embedded_test_server()->GetURL("b.com", "/title2.html");
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+  delete_frame.WaitUntilDeleted();
+
+  trace_receiver_helper.WaitForTraceReceived();
+  BackgroundTracingManager::GetInstance().AbortScenarioForTesting();
+  background_tracing_helper.WaitForScenarioAborted();
+
+  EXPECT_TRUE(trace_receiver_helper.trace_received());
 }
 
 // Tests that events emitted by the browser process immediately after the
@@ -982,7 +1063,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   base::Value::List rules_list;
   {
     base::Value::Dict rules_dict;
-    rules_dict.Set("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
+    rules_dict.Set("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     rules_dict.Set("trigger_name", "reactive_test1");
     rules_dict.Set("trigger_chance", 0.0);
 
@@ -1610,10 +1691,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   {
     base::Value::Dict rules_dict;
     rules_dict.Set("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
-    rules_dict.Set("trigger_name", "startup-config");
+    rules_dict.Set("trigger_name", "startup");
     rules_dict.Set("stop_tracing_on_repeated_reactive", false);
     rules_dict.Set("trigger_delay", 600);
-    rules_dict.Set("category", "BENCHMARK_STARTUP");
     rules_list.Append(std::move(rules_dict));
   }
   dict.Set("configs", std::move(rules_list));
@@ -1746,8 +1826,10 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
   background_tracing_helper.WaitForTracingEnabled();
 
   // Add track event with blocked args.
-  TRACE_LOG_MESSAGE("test_file.cc",
-                    base::StringPiece("My Password is xyzpasswow"), 100);
+  TRACE_EVENT_INSTANT("log", "LogMessage", [&](perfetto::EventContext ctx) {
+    ctx.event()->set_log_message()->set_body_iid(
+        base::trace_event::InternedLogMessage::Get(&ctx, std::string("test")));
+  });
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
 
@@ -1800,8 +1882,10 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ReceiveCallback) {
   background_tracing_helper.WaitForTracingEnabled();
 
   // Add track event with blocked args.
-  TRACE_LOG_MESSAGE("test_file.cc",
-                    base::StringPiece("My Password is xyzpasswow"), 100);
+  TRACE_EVENT_INSTANT("log", "LogMessage", [&](perfetto::EventContext ctx) {
+    ctx.event()->set_log_message()->set_body_iid(
+        base::trace_event::InternedLogMessage::Get(&ctx, std::string("test")));
+  });
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
 

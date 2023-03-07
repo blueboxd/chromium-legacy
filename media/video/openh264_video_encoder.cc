@@ -15,6 +15,7 @@
 #include "media/base/svc_scalability_mode.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "media/video/video_encoder_info.h"
 
 namespace media {
 
@@ -50,6 +51,9 @@ void SetUpOpenH264Params(const VideoEncoder::Options& options,
   int num_temporal_layers = 1;
   if (options.scalability_mode) {
     switch (options.scalability_mode.value()) {
+      case SVCScalabilityMode::kL1T1:
+        // Nothing to do
+        break;
       case SVCScalabilityMode::kL1T2:
         num_temporal_layers = 2;
         break;
@@ -126,6 +130,7 @@ OpenH264VideoEncoder::~OpenH264VideoEncoder() = default;
 
 void OpenH264VideoEncoder::Initialize(VideoCodecProfile profile,
                                       const Options& options,
+                                      EncoderInfoCB info_cb,
                                       OutputCB output_cb,
                                       EncoderStatusCB done_cb) {
   done_cb = BindCallbackToCurrentLoopIfNeeded(std::move(done_cb));
@@ -195,6 +200,12 @@ void OpenH264VideoEncoder::Initialize(VideoCodecProfile profile,
   options_ = options;
   output_cb_ = BindCallbackToCurrentLoopIfNeeded(std::move(output_cb));
   codec_ = std::move(codec);
+
+  VideoEncoderInfo info;
+  info.implementation_name = "OpenH264VideoEncoder";
+  info.is_hardware_accelerated = false;
+  BindCallbackToCurrentLoopIfNeeded(std::move(info_cb)).Run(info);
+
   std::move(done_cb).Run(EncoderStatus::Codes::kOk);
 }
 

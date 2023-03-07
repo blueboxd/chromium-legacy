@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "ash/public/cpp/network_config_service.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,7 +29,7 @@
 #include "chromeos/ash/services/nearby/public/mojom/nearby_decoder.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/sharing.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/tcp_socket_factory.mojom.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -38,7 +38,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/nearby/src/connections/implementation/mock_service_controller_router.h"
 
-namespace location {
 namespace nearby {
 namespace connections {
 
@@ -208,7 +207,7 @@ class NearbyConnectionsTest : public testing::Test {
 
     nearby_connections_ = std::make_unique<NearbyConnections>(
         remote_.BindNewPipeAndPassReceiver(),
-        location::nearby::api::LogMessage::Severity::kInfo,
+        nearby::api::LogMessage::Severity::kInfo,
         base::BindOnce(&NearbyConnectionsTest::OnDisconnect,
                        base::Unretained(this)));
     nearby_connections_->SetServiceControllerRouterForTesting(
@@ -424,7 +423,7 @@ class NearbyConnectionsTest : public testing::Test {
   mojo::Remote<mojom::NearbyConnections> remote_;
   bluetooth::FakeAdapter bluetooth_adapter_;
   sharing::MockWebRtcDependencies webrtc_dependencies_;
-  std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
+  std::unique_ptr<ash::network_config::CrosNetworkConfigTestHelper>
       cros_network_config_test_helper_;
   mojo::SelfOwnedReceiverRef<sharing::mojom::FirewallHoleFactory>
       firewall_hole_factory_self_owned_receiver_ref_;
@@ -1321,4 +1320,3 @@ TEST_F(NearbyConnectionsTest, ReceiveStreamPayload) {
 
 }  // namespace connections
 }  // namespace nearby
-}  // namespace location

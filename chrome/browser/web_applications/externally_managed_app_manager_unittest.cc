@@ -7,21 +7,21 @@
 #include <sstream>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -86,7 +86,7 @@ class ExternallyManagedAppManagerTest
                 web_app->AddInstallURLToManagementExternalConfigMap(
                     WebAppManagement::kDefault, install_url);
                 {
-                  ScopedRegistryUpdate update(&provider().sync_bridge());
+                  ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
                   update->CreateApp(std::move(web_app));
                 }
 
@@ -106,7 +106,7 @@ class ExternallyManagedAppManagerTest
               absl::optional<AppId> app_id =
                   app_registrar().LookupExternalAppId(app_url);
               if (app_id.has_value()) {
-                ScopedRegistryUpdate update(&provider().sync_bridge());
+                ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
                 update->DeleteApp(app_id.value());
                 deduped_uninstall_count_++;
               }
@@ -123,7 +123,7 @@ class ExternallyManagedAppManagerTest
     install_options_list.reserve(urls.size());
     for (const auto& url : urls) {
       install_options_list.emplace_back(
-          url, UserDisplayMode::kStandalone,
+          url, mojom::UserDisplayMode::kStandalone,
           ExternalInstallSource::kInternalDefault);
     }
 
@@ -192,10 +192,10 @@ class ExternallyManagedAppManagerTest
 TEST_P(ExternallyManagedAppManagerTest, DestroyDuringInstallInSynchronize) {
   std::vector<ExternalInstallOptions> install_options_list;
   install_options_list.emplace_back(GURL("https://foo.example"),
-                                    UserDisplayMode::kStandalone,
+                                    mojom::UserDisplayMode::kStandalone,
                                     ExternalInstallSource::kInternalDefault);
   install_options_list.emplace_back(GURL("https://bar.example"),
-                                    UserDisplayMode::kStandalone,
+                                    mojom::UserDisplayMode::kStandalone,
                                     ExternalInstallSource::kInternalDefault);
 
   externally_managed_app_manager().SynchronizeInstalledApps(
@@ -215,7 +215,7 @@ TEST_P(ExternallyManagedAppManagerTest, DestroyDuringUninstallInSynchronize) {
   {
     std::vector<ExternalInstallOptions> install_options_list;
     install_options_list.emplace_back(GURL("https://foo.example"),
-                                      UserDisplayMode::kStandalone,
+                                      mojom::UserDisplayMode::kStandalone,
                                       ExternalInstallSource::kInternalDefault);
     base::RunLoop run_loop;
     externally_managed_app_manager().SynchronizeInstalledApps(

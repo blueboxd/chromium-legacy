@@ -22,6 +22,50 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<!-- Do not confuse this with FileManagerVolumeType, which is an enum
+     defined in enums.xml, and can be emitted as the value of a given
+     UMA. This is a list of variants that can be used to pattern UMAs
+     that should capture the same data across volume types (eg. how
+     long it takes to list a directory in that volume type).
+
+    This list should be kept in sync with the
+    VolumeManagerCommon.RootType object in
+    ui/file_manager/file_manager/common/js/volume_manager_types.js with
+    the exception of the last entry ("unknown") which only exists here.
+    The order of these variants does not need to match
+    VolumeManagerCommon.RootType.
+  -->
+
+<variants name="VolumeManagerRootType">
+  <variant name="android_files" summary="Android 'Play Files'"/>
+  <variant name="archive" summary="Mounted Archive (eg. ZIP, RAR, etc)"/>
+  <variant name="computer" summary="Root of a specific Computer"/>
+  <variant name="computers_grand_root"
+      summary="Root of Drive's 'Computers' view"/>
+  <variant name="crostini" summary="Crostini Home Directory"/>
+  <variant name="documents_provider" summary="ARC DocumentsProvider"/>
+  <variant name="downloads" summary="Downloads directory"/>
+  <variant name="drive" summary="Google Drive"/>
+  <variant name="drive_fake_root" summary="Fake root of all My Drive etc"/>
+  <variant name="drive_offline" summary="Drive's 'Offline' view"/>
+  <variant name="drive_recent" summary="Recent files on Drive"/>
+  <variant name="drive_shared_with_me" summary="Drive's 'Shared with Me' view"/>
+  <variant name="external_media"
+      summary="Root of an external media folder under Computers grand root"/>
+  <variant name="guest_os" summary="GuestOS"/>
+  <variant name="media_view" summary="ARC MediaView"/>
+  <variant name="mtp" summary="MTP device (eg. phone, camera)"/>
+  <variant name="my_files" summary="My Files"/>
+  <variant name="provided" summary="fileSystemProvider"/>
+  <variant name="recent" summary="Recent view"/>
+  <variant name="removable" summary="Removable storage (eg. USB)"/>
+  <variant name="shared_drives_grand_root" summary="Root of 'Shared Drives'"/>
+  <variant name="smb" summary="Server Message Block"/>
+  <variant name="team_drive" summary="Root of a specific Shared Drive"/>
+  <variant name="trash" summary="Trash folder"/>
+  <variant name="unknown" summary="Unknown root type"/>
+</variants>
+
 <histogram name="DriveCommon.Lifecycle.FirstLaunchTime" units="ms"
     expires_after="M112">
   <owner>simmonsjosh@google.com</owner>
@@ -32,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DriveCommon.Lifecycle.Mount" enum="DriveMountStatus"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Records outcomes of attempts to mount Google Drive.</summary>
@@ -143,7 +187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ChangeDirectory.RootType"
-    enum="FileManagerRootType" expires_after="2023-04-30">
+    enum="FileManagerRootType" expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -197,13 +241,25 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DirectoryScan" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
     Chrome OS File Browser: time to scan a directory. Measured on every File
     Browser directory change.
   </summary>
+</histogram>
+
+<histogram name="FileBrowser.DirectoryTree.Expand.{RootType}" units="ms"
+    expires_after="2024-01-04">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    How long it takes to expand a directory. Measured each time a directory is
+    expanded from the directory tree or file list / grid and patterned for all
+    known volume types.
+  </summary>
+  <token key="RootType" variants="VolumeManagerRootType"/>
 </histogram>
 
 <histogram name="FileBrowser.DownloadDestination.IsGoogleDrive.Changed"
@@ -227,7 +283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectoryPercentageOfDiskUsage"
-    units="%" expires_after="2023-04-16">
+    units="%" expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -238,7 +294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectorySizeMiB" units="MiB"
-    expires_after="2023-04-17">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -249,7 +305,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DownloadsCount" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -261,6 +317,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.DriveDuplicateFinder.LongComputeHash" units="ms"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -361,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Glitch" enum="FileManagerGlitch"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>majewski@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -376,7 +435,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="FileBrowser.HoldingSpace.TimeFromFirstWelcomeBannerShowToFirstPin"
-    units="ms" expires_after="2023-04-16">
+    units="ms" expires_after="2023-06-25">
   <owner>dmblack@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -389,6 +448,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.ImportController.DeviceYanked" enum="Boolean"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -399,6 +461,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.ImportController.ImportCancelled"
     enum="BooleanCanceled" expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -479,7 +544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.TopLevel"
-    enum="FileManagerRootType" expires_after="2023-04-15">
+    enum="FileManagerRootType" expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -491,6 +556,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.Cancelled" enum="BooleanCanceled"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -514,6 +582,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.ErrorCount" units="count"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -523,6 +594,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.ImportCount" units="count"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -533,6 +607,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.ImportMB" units="MBytes"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -543,6 +620,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.Started" enum="BooleanAttempted"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -561,7 +641,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Notification.Show"
-    enum="FileManagerNotificationType" expires_after="2023-04-30">
+    enum="FileManagerNotificationType" expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -623,7 +703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.UseOutsideDrive"
-    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-04-16">
+    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-06-18">
   <owner>cassycc@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -634,7 +714,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType"
-    expires_after="2023-04-15">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -681,7 +761,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.FilterByType"
-    enum="FileManagerRecentFilterType" expires_after="2023-04-16">
+    enum="FileManagerRecentFilterType" expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -690,7 +770,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadArcMedia" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -700,7 +780,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadCrostini" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -720,7 +800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadDrive" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -730,7 +810,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadTotal" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -772,7 +852,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ToggleFileListType" enum="FileManagerListType"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -940,7 +1020,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2023-04-15">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -950,7 +1030,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ZipMountTime.{RootType}" units="ms"
-    expires_after="M112">
+    expires_after="2024-01-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -991,26 +1071,6 @@ chromium-metrics-reviews@google.com.
   <summary>The result of FileSystemDirectoryDatabase repair.</summary>
 </histogram>
 
-<histogram name="FileSystem.OpenFileSystem" enum="OpenFileSystemResult"
-    expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The success or the cause of failure for each call to OpenFileSystem().
-  </summary>
-</histogram>
-
-<histogram name="FileSystem.OpenFileSystemDetail" enum="FileSystemErrors"
-    expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>The result of opening a filesystem.</summary>
-</histogram>
-
-<histogram name="FileSystem.OpenFileSystemDetailNonthrottled"
-    enum="FileSystemErrors" expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>The result of opening a non-throttled filesystem.</summary>
-</histogram>
-
 <histogram name="FileSystem.OriginDatabaseInit"
     enum="FileSystemDatabaseInitResult" expires_after="never">
 <!-- expires-never: core storage metric; consumed in separate dashboard (go/chrome-storage-dashboard) -->
@@ -1018,28 +1078,6 @@ chromium-metrics-reviews@google.com.
   <owner>dmurph@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>The result of FileSystemOriginDatabase initialization.</summary>
-</histogram>
-
-<histogram name="FileSystem.PersistentOriginsCount" units="units"
-    expires_after="2018-08-30">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    Number of origins that have persistent filesystem. Measured when the Quota
-    system queries the filesystem subsystem about its entire usage, which
-    usually happens when one of the storage subsystem methods is called for the
-    first time.
-  </summary>
-</histogram>
-
-<histogram name="FileSystem.TemporaryOriginsCount" units="units"
-    expires_after="2018-08-30">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    Number of origins that have temporary filesystem. Measured when the Quota
-    system queries the filesystem subsystem about its entire usage, which
-    usually happens when one of the storage subsystem methods is called for the
-    first time.
-  </summary>
 </histogram>
 
 <histogram name="Unzipper.DetectEncoding.Result" enum="ContentEncoding"

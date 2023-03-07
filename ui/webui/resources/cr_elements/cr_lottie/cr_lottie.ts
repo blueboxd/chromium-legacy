@@ -19,9 +19,8 @@
  * drawn on is resized.
  */
 
+import {assert, assertNotReached} from '//resources/js/assert_ts.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {assert, assertNotReached} from '../../js/assert_ts.js';
 
 import {getTemplate} from './cr_lottie.html.js';
 
@@ -47,11 +46,6 @@ function getLottieWorkerURL(): TrustedScriptURL {
   }
 
   return workerLoaderPolicy.createScriptURL('');
-}
-
-interface OffscreenCanvas {
-  width: number;
-  height: number;
 }
 
 interface MessageData {

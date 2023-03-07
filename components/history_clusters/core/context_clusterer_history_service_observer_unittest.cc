@@ -166,7 +166,8 @@ class ContextClustererHistoryServiceObserverTest : public testing::Test {
   // code path.
   void SetPersistenceExpectedConfig() {
     Config config;
-    config.persist_context_clusters_at_navigation = true;
+    config.persist_clusters_in_history_db = true;
+    config.use_navigation_context_clusters = true;
     SetConfigForTesting(config);
   }
 
@@ -189,14 +190,19 @@ class ContextClustererHistoryServiceObserverTest : public testing::Test {
                 base::Time visit_time,
                 history::VisitID opener_visit = history::kInvalidVisitID,
                 history::VisitID referring_visit = history::kInvalidVisitID,
-                bool is_known_to_sync = false) {
+                bool is_synced_visit = false,
+                bool is_visible_visit = true) {
     history::URLRow url_row(url);
     history::VisitRow new_visit;
     new_visit.visit_id = visit_id;
     new_visit.visit_time = visit_time;
     new_visit.opener_visit = opener_visit;
     new_visit.referring_visit = referring_visit;
-    new_visit.is_known_to_sync = is_known_to_sync;
+    new_visit.originator_cache_guid = is_synced_visit ? "otherdevice" : "";
+    new_visit.transition = ui::PageTransitionFromInt(
+        (is_visible_visit ? ui::PAGE_TRANSITION_LINK
+                          : ui::PAGE_TRANSITION_AUTO_SUBFRAME) |
+        ui::PAGE_TRANSITION_CHAIN_END);
     observer_->OnURLVisited(history_service_.get(), url_row, new_visit);
   }
 
@@ -281,6 +287,12 @@ TEST_F(ContextClustererHistoryServiceObserverTest,
 
   EXPECT_EQ(1, GetNumClustersCreated());
   EXPECT_THAT(GetClusterVisitIds(got_cluster_visits), ElementsAre(1, 2));
+
+  // Add a visit that is not visible to the user but refers to one of the visits
+  // in the cluster. Should not be persisted.
+  VisitURL(GURL("https://example.com/notvisible"), 3,
+           base::Time::FromTimeT(124), 1, history::kInvalidVisitID, false,
+           false);
 }
 
 TEST_F(ContextClustererHistoryServiceObserverTest,
@@ -402,7 +414,7 @@ TEST_F(ContextClustererHistoryServiceObserverTest, SkipsSyncedVisits) {
 
   VisitURL(GURL("https://example.com"), 1, base::Time::FromTimeT(123),
            history::kInvalidVisitID, history::kInvalidVisitID,
-           /*is_known_to_sync=*/true);
+           /*is_synced_visit=*/true);
 
   EXPECT_EQ(0, GetNumClustersCreated());
 }

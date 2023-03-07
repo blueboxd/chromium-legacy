@@ -8,8 +8,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
@@ -1176,37 +1175,6 @@ TEST_F(PasswordStoreAndroidBackendTest,
 
   constexpr char kAPIErrorMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.APIError.NoAuthError";
-
-  histogram_tester.ExpectBucketCount(kAPIErrorMetric, kInternalErrorCode, 1);
-}
-
-TEST_F(PasswordStoreAndroidBackendTest,
-       OnExternalErrorInCombinationWithTransientSyncError) {
-  base::HistogramTester histogram_tester;
-
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
-                        base::RepeatingClosure(), base::DoNothing());
-  backend().OnSyncServiceInitialized(sync_service());
-
-  sync_service()->SetTransientAuthError();
-
-  base::MockCallback<LoginsOrErrorReply> mock_reply;
-  EXPECT_CALL(*bridge_helper(), GetAllLogins).WillOnce(Return(kJobId));
-  backend().GetAllLoginsAsync(mock_reply.Get());
-  EXPECT_CALL(
-      mock_reply,
-      Run(ExpectError(PasswordStoreBackendErrorType::kUncategorized,
-                      PasswordStoreBackendErrorRecoveryType::kUnrecoverable)));
-  AndroidBackendError error{AndroidBackendErrorType::kExternalError};
-  // Simulate receiving INTERNAL_ERROR code.
-  int kInternalErrorCode =
-      static_cast<int>(AndroidBackendAPIErrorCode::kInternalError);
-  error.api_error_code = absl::optional<int>(kInternalErrorCode);
-  consumer().OnError(kJobId, std::move(error));
-  RunUntilIdle();
-
-  constexpr char kAPIErrorMetric[] =
-      "PasswordManager.PasswordStoreAndroidBackend.APIError.TransientAuthError";
 
   histogram_tester.ExpectBucketCount(kAPIErrorMetric, kInternalErrorCode, 1);
 }

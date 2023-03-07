@@ -51,7 +51,18 @@ JSON schema for the input of the simulator.
         "aggregation_keys": {
             // Value is uint128 formatted as a base-16 string.
             "a": "0x1"
-        }
+        },
+
+        // Optional int64 in seconds formatted as a base-10 string.
+        // Default to expiry.
+        "event_report_window": "86400000",
+
+        // Optional int64 in seconds formatted as a base-10 string.
+        // Default to expiry.
+        "aggregatable_report_window": "86400000",
+
+        // Optional boolean. Defaults to false.
+        "debug_reporting": true
       }
     }
   ],
@@ -138,7 +149,13 @@ JSON schema for the input of the simulator.
         "filters": {
           "a": ["b", "c"],
           "d": []
-        }
+        },
+
+        // Optional uint64 formatted as a base-10 string. Defaults to null.
+        "aggregatable_deduplication_key": "456",
+
+        // Optional boolean. Defaults to false.
+        "debug_reporting": true
       }
     }
   ],
@@ -200,11 +217,6 @@ JSON schema for the output of the simulator.
       // URL to which the report would have been sent.
       "report_url": "https://reporting.example/.well-known/attribution-reporting/report-event-attribution",
 
-      "test_info": {
-        // Whether fake reports were generated.
-        "randomized_trigger": false
-      },
-
       // The report itself. See
       // https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#attribution-reports
       // for details about its fields.
@@ -248,50 +260,18 @@ JSON schema for the output of the simulator.
   // List of debug aggregatable reports. Omitted if empty.
   "debug_aggregatable_reports": [],
 
-  // List of rejected sources. Omitted if empty.
-  "rejected_sources": [
+  // List of verbose debug reports. Omitted if empty.
+  "verbose_debug_reports": [
     {
-      // Why the source was rejected.
-      "reason": "excessiveReportingOrigins",
-
-      // The original input JSON corresponding to the source.
-      "source": {}
-    }
-  ],
-
-  // List of rejected triggers. Omitted if empty.
-  "rejected_triggers": [
-    {
-      // Why the trigger was rejected.
-      "reason": "deduplicated",
-
-      // The original input JSON corresponding to the trigger.
-      "trigger": {}
-    }
-  ],
-
-  // List of replaced event-level reports. Omitted if empty.
-  // These reports were never sent, but were replaced by higher-priority ones.
-  "replaced_event_level_reports": [
-    {
-      // Time at which the report was replaced in milliseconds since the UNIX
-      // epoch formatted as a base-10 string.
-      "replacement_time": "123",
-
-      // The report id that the report was replaced by. Omitted if
-      // `remove_report_ids` option is true.
-      "replaced_by": "21abd97f-73e8-4b88-9389-a9fee6abda5e",
+      // Time at which the report would have been sent in milliseconds since
+      // the UNIX epoch formatted as a base-10 string.
+      "report_time": "123",
 
       // URL to which the report would have been sent.
-      "report_url": "https://reporting.example/.well-known/attribution-reporting/report-event-attribution",
-
-      "test_info": {
-        // Whether fake reports were generated.
-        "randomized_trigger": false
-      },
+      "report_url": "https://reporting.example/.well-known/attribution-reporting/debug/verbose",
 
       // The report itself. See
-      // https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#attribution-reports
+      // https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#verbose-debugging-reports
       // for details about its fields.
       "report": {}
     }

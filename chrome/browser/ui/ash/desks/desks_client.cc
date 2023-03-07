@@ -23,15 +23,19 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_instance_observer.h"
+#include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -68,6 +72,8 @@ constexpr base::TimeDelta kLaunchPerformanceTimeout = base::Minutes(3);
 constexpr char kTimeToLoadTemplateHistogramName[] =
     "Ash.DeskTemplate.TimeToLoadTemplate";
 
+constexpr char kCrxAppPrefix[] = "_crx_";
+
 // Launch data is cleared after this time.
 constexpr base::TimeDelta kClearLaunchDataDuration = base::Seconds(20);
 
@@ -101,6 +107,48 @@ void RecordTimeToLoadTemplateHistogram(const base::Time time_started) {
 }
 
 }  // namespace
+
+// Listens to `BrowserAppInstanceRegistry` events. Its job is to store app ids
+// for lacros windows so that when a lacros window is part of a saved desk, we
+// can figure out the app id (if any).
+class LacrosAppWindowObserver : public apps::BrowserAppInstanceObserver {
+ public:
+  explicit LacrosAppWindowObserver(
+      apps::BrowserAppInstanceRegistry& browser_app_instance_registry) {
+    browser_app_instance_registry_observation_.Observe(
+        &browser_app_instance_registry);
+  }
+
+  LacrosAppWindowObserver(const LacrosAppWindowObserver&) = delete;
+  LacrosAppWindowObserver& operator=(const LacrosAppWindowObserver&) = delete;
+  ~LacrosAppWindowObserver() override = default;
+
+  // BrowserAppInstanceObserver:
+  void OnBrowserAppAdded(const apps::BrowserAppInstance& instance) override {
+    if (!instance.app_id.empty()) {
+      app_ids_by_window_[instance.window] = instance.app_id;
+    }
+  }
+
+  void OnBrowserAppRemoved(const apps::BrowserAppInstance& instance) override {
+    app_ids_by_window_.erase(instance.window);
+  }
+
+  absl::optional<std::string> GetAppIdForWindow(aura::Window* window) const {
+    auto it = app_ids_by_window_.find(window);
+    if (it == app_ids_by_window_.end()) {
+      return absl::nullopt;
+    }
+    return kCrxAppPrefix + it->second;
+  }
+
+ private:
+  base::flat_map<aura::Window*, std::string> app_ids_by_window_;
+
+  base::ScopedObservation<apps::BrowserAppInstanceRegistry,
+                          apps::BrowserAppInstanceObserver>
+      browser_app_instance_registry_observation_{this};
+};
 
 // Tracks a set of WindowIDs through the launching process, records a
 // launch performance metric when the set of window_ids have all been
@@ -176,13 +224,17 @@ class DesksClient::LaunchPerformanceTracker
 DesksClient::DesksClient() : desks_controller_(ash::DesksController::Get()) {
   DCHECK(!g_desks_client_instance);
   g_desks_client_instance = this;
-  ash::SessionController::Get()->AddObserver(this);
+  if (ash::SessionController::Get()) {
+    ash::SessionController::Get()->AddObserver(this);
+  }
 }
 
 DesksClient::~DesksClient() {
   DCHECK_EQ(this, g_desks_client_instance);
   g_desks_client_instance = nullptr;
-  ash::SessionController::Get()->RemoveObserver(this);
+  if (ash::SessionController::Get()) {
+    ash::SessionController::Get()->RemoveObserver(this);
+  }
 }
 
 // static
@@ -195,6 +247,14 @@ void DesksClient::OnActiveUserSessionChanged(const AccountId& account_id) {
       ash::ProfileHelper::Get()->GetProfileByAccountId(account_id);
   if (profile == active_profile_ || !IsSupportedProfile(profile))
     return;
+
+  // Start lacros app window observer.
+  if (auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile)) {
+    if (auto* registry = proxy->BrowserAppInstanceRegistry()) {
+      lacros_app_window_observer_ =
+          std::make_unique<LacrosAppWindowObserver>(*registry);
+    }
+  }
 
   active_profile_ = profile;
   DCHECK(active_profile_);
@@ -397,6 +457,14 @@ void DesksClient::LaunchAppsFromTemplate(
   if (restore_data->app_id_to_launch_list().empty())
     return;
 
+  // Since we default the browser to launch as ash chrome, we want to to check
+  // to see if lacros is enabled and primary. If so, update the app id of the
+  // browser app to launch lacros instead of ash.
+  if (crosapi::browser_util::IsLacrosEnabled() &&
+      crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    restore_data->UpdateBrowserAppIdToLacros();
+  }
+
   // Make window IDs of the template unique. This is a requirement for launching
   // templates concurrently since the contained window IDs are used as lookup
   // keys in many places. We must also do this *before* creating the performance
@@ -414,8 +482,9 @@ void DesksClient::LaunchAppsFromTemplate(
   auto& handler = app_launch_handlers_[launch_id];
   // Some tests reach into this class and install a handler ahead of time. In
   // all other cases, we create a handler for the launch here.
-  if (!handler)
+  if (!handler) {
     handler = std::make_unique<DesksTemplatesAppLaunchHandler>(active_profile_);
+  }
 
   handler->LaunchTemplate(*desk_template);
 
@@ -531,6 +600,13 @@ absl::optional<DesksClient::DeskActionError> DesksClient::SwitchDesk(
 
   desks_controller_->ActivateDesk(desk, ash::DesksSwitchSource::kApiSwitch);
   return absl::nullopt;
+}
+
+absl::optional<std::string> DesksClient::GetAppIdForLacrosWindow(
+    aura::Window* window) const {
+  return lacros_app_window_observer_
+             ? lacros_app_window_observer_->GetAppIdForWindow(window)
+             : absl::nullopt;
 }
 
 void DesksClient::OnGetTemplateForDeskLaunch(

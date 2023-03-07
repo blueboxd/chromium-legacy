@@ -12,7 +12,6 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
-#include "base/bind.h"
 #include "base/functional/bind.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_finish_view.h"
@@ -88,17 +87,6 @@ DisplayOverlayController::~DisplayOverlayController() {
   RemoveOverlayIfAny();
 }
 
-void DisplayOverlayController::OnWindowBoundsChanged() {
-  auto mode = display_mode_;
-  SetDisplayMode(DisplayMode::kNone);
-  // Transition to |kView| mode except while on |kEducation| mode since
-  // displaying this UI needs to be ensured as the user shouldn't be able to
-  // manually access said view.
-  if (mode != DisplayMode::kEducation)
-    mode = DisplayMode::kView;
-  SetDisplayMode(mode);
-}
-
 // For test:
 gfx::Rect DisplayOverlayController::GetInputMappingViewBoundsForTesting() {
   return input_mapping_view_ ? input_mapping_view_->bounds() : gfx::Rect();
@@ -118,6 +106,10 @@ void DisplayOverlayController::AddOverlay(DisplayMode display_mode) {
   params.focusable = true;
   shell_surface_base->AddOverlay(std::move(params));
 
+  auto* overlay_widget = GetOverlayWidget();
+  if (overlay_widget)
+    overlay_widget->AddObserver(this);
+
   SetDisplayMode(display_mode);
 }
 
@@ -129,6 +121,11 @@ void DisplayOverlayController::RemoveOverlayIfAny() {
   if (shell_surface_base && shell_surface_base->HasOverlay()) {
     // Call |RemoveInputMenuView| explicitly to make sure UMA stats is updated.
     RemoveInputMenuView();
+
+    auto* overlay_widget = GetOverlayWidget();
+    if (overlay_widget)
+      overlay_widget->RemoveObserver(this);
+
     shell_surface_base->RemoveOverlay();
   }
 }
@@ -205,7 +202,7 @@ void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
   auto menu_entry = std::make_unique<MenuEntryView>(
       base::BindRepeating(&DisplayOverlayController::OnMenuEntryPressed,
                           base::Unretained(this)),
-      base::BindRepeating(&DisplayOverlayController::OnMenuEntryDragEnd,
+      base::BindRepeating(&DisplayOverlayController::OnMenuEntryPositionChanged,
                           base::Unretained(this)));
   menu_entry->SetImage(views::Button::STATE_NORMAL, game_icon);
   menu_entry->SetBackground(views::CreateRoundedRectBackground(
@@ -213,8 +210,6 @@ void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
   menu_entry->SetSize(gfx::Size(kMenuEntrySize, kMenuEntrySize));
   menu_entry->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   menu_entry->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  // TODO(djacobo): Set proper positioning based on specs and responding to
-  // resize.
   menu_entry->SetPosition(CalculateMenuEntryPosition());
   menu_entry->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA));
@@ -256,13 +251,12 @@ void DisplayOverlayController::OnMenuEntryPressed() {
   menu_entry_->SetVisible(false);
 }
 
-void DisplayOverlayController::OnMenuEntryDragEnd(
+void DisplayOverlayController::OnMenuEntryPositionChanged(
+    bool leave_focus,
     absl::optional<gfx::Point> location) {
-  // When menu entry is in dragging, input events target at overlay layer. When
-  // finishing drag, input events should target on the app content layer
-  // underneath the overlay. Set display mode to |kView| to make event target
-  // leave from the overlay layer.
-  SetDisplayMode(DisplayMode::kView);
+  if (leave_focus)
+    SetDisplayMode(DisplayMode::kView);
+
   if (location)
     touch_injector_->SaveMenuEntryLocation(*location);
 }
@@ -676,6 +670,27 @@ void DisplayOverlayController::OnColorModeChanged(bool dark_mode_enabled) {
   SetDisplayMode(DisplayMode::kEducation);
 }
 
+void DisplayOverlayController::OnWidgetBoundsChanged(
+    views::Widget* widget,
+    const gfx::Rect& new_bounds) {
+  touch_injector_->UpdateForOverlayBoundsChanged(gfx::RectF(new_bounds));
+
+  // Overlay |widget| is null for test.
+  if (!widget)
+    return;
+
+  auto mode = display_mode_;
+  SetDisplayMode(DisplayMode::kNone);
+  // Transition to |kView| mode except while on |kEducation| mode since
+  // displaying this UI needs to be ensured as the user shouldn't be able to
+  // manually access said view.
+  if (mode != DisplayMode::kEducation) {
+    mode = DisplayMode::kView;
+  }
+
+  SetDisplayMode(mode);
+}
+
 bool DisplayOverlayController::HasMenuView() const {
   return input_menu_view_ != nullptr;
 }
@@ -747,6 +762,13 @@ void DisplayOverlayController::ProcessPressedEvent(
 
 void DisplayOverlayController::DismissEducationalViewForTesting() {
   OnEducationalViewDismissed();
+}
+
+void DisplayOverlayController::TriggerWidgetBoundsChangedForTesting() {
+  auto bounds = CalculateWindowContentBounds(touch_injector_->window());
+  OnWidgetBoundsChanged(
+      /*widget=*/nullptr,
+      gfx::Rect(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
 }
 
 }  // namespace arc::input_overlay

@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "net/http/http_status_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -147,6 +147,10 @@ class FakeGaia {
   // /ServiceLoginAuth request comes in for that user, it will be redirected
   // to the associated redirect endpoint.
   void RegisterSamlUser(const std::string& account_id, const GURL& saml_idp);
+
+  // Remove association between given user and their SAML IdP. This simulates a
+  // switch from SAML to GAIA.
+  void RemoveSamlIdpForUser(const std::string& account_id);
 
   // Associates a SAML `sso_profile` with a SAML IdP redirect endpoint. When a
   // /samlredirect request comes in for this SSO Profile, it will be redirected

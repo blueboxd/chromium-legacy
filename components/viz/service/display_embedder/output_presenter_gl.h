@@ -48,14 +48,14 @@ class VIZ_SERVICE_EXPORT OutputPresenterGL : public OutputPresenter {
                                              gfx::Size image_size) final;
   void SwapBuffers(SwapCompletionCallback completion_callback,
                    BufferPresentedCallback presentation_callback,
-                   gl::FrameData data) final;
+                   gfx::FrameData data) final;
   void PostSubBuffer(const gfx::Rect& rect,
                      SwapCompletionCallback completion_callback,
                      BufferPresentedCallback presentation_callback,
-                     gl::FrameData data) final;
+                     gfx::FrameData data) final;
   void CommitOverlayPlanes(SwapCompletionCallback completion_callback,
                            BufferPresentedCallback presentation_callback,
-                           gl::FrameData data) final;
+                           gfx::FrameData data) final;
   void SchedulePrimaryPlane(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane,
       Image* image,
@@ -64,7 +64,9 @@ class VIZ_SERVICE_EXPORT OutputPresenterGL : public OutputPresenter {
       const OutputPresenter::OverlayPlaneCandidate& overlay_plane_candidate,
       ScopedOverlayAccess* access,
       std::unique_ptr<gfx::GpuFence> acquire_fence) final;
-
+  bool SupportsGpuVSync() const final;
+  void SetGpuVSyncEnabled(bool enabled) final;
+  void SetVSyncDisplayID(int64_t display_id) final;
 #if BUILDFLAG(IS_MAC)
   void SetCALayerErrorCode(gfx::CALayerResult ca_layer_error_code) final;
 #endif

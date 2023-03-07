@@ -5,9 +5,7 @@
 #include "chrome/browser/webauthn/local_credential_management_mac.h"
 #include "chrome/browser/webauthn/local_credential_management.h"
 
-#include "base/bind.h"
-#include "base/feature_list.h"
-#include "content/public/common/content_features.h"
+#include "base/functional/bind.h"
 #include "device/fido/mac/credential_store.h"
 
 LocalCredentialManagementMac::LocalCredentialManagementMac(
@@ -24,14 +22,10 @@ std::unique_ptr<LocalCredentialManagement> LocalCredentialManagement::Create(
 
 void LocalCredentialManagementMac::HasCredentials(
     base::OnceCallback<void(bool)> callback) {
-  if (!base::FeatureList::IsEnabled(features::kWebAuthConditionalUI)) {
-    std::move(callback).Run(false);
-    return;
-  }
   Enumerate(
       base::BindOnce(
           [](absl::optional<std::vector<device::DiscoverableCredentialMetadata>>
-                 metadata) { return !metadata->empty(); })
+                 metadata) { return metadata ? !metadata->empty() : false; })
           .Then(std::move(callback)));
 }
 
@@ -44,7 +38,8 @@ void LocalCredentialManagementMac::Enumerate(
       credential_store.FindResidentCredentials(/*rp_id=*/absl::nullopt);
 
   if (!credentials) {
-    std::move(callback).Run(/*credentials=*/{});
+    // FindResidentCredentials() encountered an error.
+    std::move(callback).Run(absl::nullopt);
     return;
   }
   std::vector<device::DiscoverableCredentialMetadata> credential_metadata;

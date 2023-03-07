@@ -6,6 +6,8 @@ source_set("bookmarks") {
   sources = [
     "bookmark_client_impl.cc",
     "bookmark_client_impl.h",
+    "bookmark_model_bridge_observer.h",
+    "bookmark_model_bridge_observer.mm",
     "bookmark_model_factory.cc",
     "bookmark_model_factory.h",
     "bookmark_sync_service_factory.cc",
@@ -25,14 +27,14 @@ source_set("bookmarks") {
     "//components/prefs",
     "//components/sync_bookmarks",
     "//components/undo",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:system_identity",
+    "//ios/chrome/browser/signin:system_identity_manager",
     "//ios/chrome/browser/undo",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin",
     "//ios/web",
   ]
   public_deps = [ ":bookmarks_utils" ]
@@ -56,5 +58,42 @@ source_set("bookmarks_utils") {
     "//components/prefs",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/prefs:pref_names",
+  ]
+}
+
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "bookmark_ios_unit_test_support.h",
+    "bookmark_ios_unit_test_support.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "bookmark_model_bridge_observer_unittest.mm" ]
+  deps = [
+    ":bookmarks",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//components/bookmarks/browser",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test",
+    "//testing/gtest",
   ]
 }

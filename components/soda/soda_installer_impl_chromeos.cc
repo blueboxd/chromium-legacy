@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
@@ -99,6 +99,12 @@ void SodaInstallerImplChromeOS::InstallLanguage(const std::string& language,
                      base::Time::Now()),
       base::BindRepeating(&SodaInstallerImplChromeOS::OnLanguageProgress,
                           base::Unretained(this)));
+}
+
+void SodaInstallerImplChromeOS::UninstallLanguage(const std::string& language,
+                                                  PrefService* global_prefs) {
+  // TODO(crbug.com/1161569): SODA is only available for en-US right now.
+  // Update this to uninstall the language pack.
 }
 
 std::vector<std::string> SodaInstallerImplChromeOS::GetAvailableLanguages()

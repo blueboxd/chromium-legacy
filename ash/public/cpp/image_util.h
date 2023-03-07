@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom-shared.h"
 
 namespace base {
@@ -27,6 +27,9 @@ namespace image_util {
 ASH_PUBLIC_EXPORT gfx::ImageSkia CreateEmptyImage(const gfx::Size& size);
 
 using DecodeImageCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
+
+// TESTING NOTE: See ash::InProcessImageDecoder for unit testing code that
+// calls any of the DecodeImage*() functions below.
 
 // Reads contents at |file_path| and calls |callback| with a decoded image.
 // Calls |callback| with an empty image on failure to read the file or decode

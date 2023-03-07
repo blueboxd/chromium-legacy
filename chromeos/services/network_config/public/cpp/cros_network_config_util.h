@@ -7,8 +7,7 @@
 
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
-namespace chromeos {
-namespace network_config {
+namespace chromeos::network_config {
 
 // Returns true if |network_type| matches |match_type|, which may include kAll
 // or kWireless.
@@ -34,7 +33,15 @@ bool IsInhibited(const mojom::DeviceStateProperties* device);
 base::Value::Dict UserApnListToOnc(const std::string& network_guid,
                                    const base::Value::List* user_apn_list);
 
-}  // namespace network_config
-}  // namespace chromeos
+// Converts a list of APN types in the ONC representation to the Mojo enum
+// representation.
+std::vector<mojom::ApnType> OncApnTypesToMojo(
+    const std::vector<std::string>& apn_types);
+
+// Creates a Mojo APN from a ONC dictionary.
+mojom::ApnPropertiesPtr GetApnProperties(const base::Value::Dict& onc_apn,
+                                         bool is_apn_revamp_enabled);
+
+}  // namespace chromeos::network_config
 
 #endif  // CHROMEOS_SERVICES_NETWORK_CONFIG_PUBLIC_CPP_CROS_NETWORK_CONFIG_UTIL_H_

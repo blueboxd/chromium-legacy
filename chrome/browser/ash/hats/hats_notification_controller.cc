@@ -8,9 +8,9 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/escape.h"
@@ -141,12 +141,9 @@ HatsNotificationController::HatsNotificationController(
       product_specific_data_(product_specific_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (features::IsHatsUseNewHistogramsEnabled()) {
-    std::string histogram_name =
-        HatsFinchHelper::GetHistogramName(hats_config_);
-    if (!histogram_name.empty()) {
-      base::UmaHistogramSparse(histogram_name, kSurveyTriggeredEnumeration);
-    }
+  std::string histogram_name = HatsFinchHelper::GetHistogramName(hats_config_);
+  if (!histogram_name.empty()) {
+    base::UmaHistogramSparse(histogram_name, kSurveyTriggeredEnumeration);
   }
 
   base::ThreadPool::PostTaskAndReplyWithResult(

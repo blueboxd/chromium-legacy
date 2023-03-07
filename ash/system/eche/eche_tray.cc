@@ -25,7 +25,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/style/icon_button.h"
 #include "ash/system/eche/eche_icon_loading_indicator_view.h"
 #include "ash/system/phonehub/phone_hub_tray.h"
@@ -38,8 +37,8 @@
 #include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
-#include "base/bind.h"
-#include "base/callback_forward.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -103,12 +102,7 @@ constexpr auto kHeaderDefaultSpacing = gfx::Insets::VH(0, 6);
 
 constexpr auto kBubblePadding = gfx::Insets::VH(8, 8);
 
-constexpr gfx::Insets kAppStreamingTitleTextInset =
-    gfx::Insets::TLBR(0, 45, 0, 25);
-constexpr int kAppStreamingTitlTextWidth = 140;
 constexpr int kAppStreamingTitleTextFontSize = 14;
-constexpr int kAppStreamingTitleDotSize = 4;
-constexpr int kAppStreamingTitleSpacing = 4;
 
 constexpr float kDefaultAspectRatio = 16.0 / 9.0f;
 constexpr gfx::Size kDefaultBubbleSize(360, 360 * kDefaultAspectRatio);
@@ -164,12 +158,10 @@ std::unique_ptr<views::Button> CreateButton(
     views::Button::PressedCallback callback,
     const gfx::VectorIcon& icon,
     int message_id) {
-  SkColor color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconColorPrimary);
-  SkColor disabled_color = SkColorSetA(color, gfx::kDisabledControlAlpha);
   auto button = views::CreateVectorImageButton(std::move(callback));
-  views::SetImageFromVectorIconWithColor(button.get(), icon, color,
-                                         disabled_color);
+  views::SetImageFromVectorIconWithColorId(button.get(), icon,
+                                           kColorAshIconColorPrimary,
+                                           kColorAshButtonIconDisabledColor);
   button->SetTooltipText(l10n_util::GetStringUTF16(message_id));
   button->SizeToPreferredSize();
 
@@ -178,96 +170,24 @@ std::unique_ptr<views::Button> CreateButton(
   return button;
 }
 
-// Draws a dot with no shadow.
-class StatusDotView : public views::View {
- public:
-  StatusDotView() = default;
-  StatusDotView(const StatusDotView&) = delete;
-  StatusDotView& operator=(const StatusDotView&) = delete;
-  ~StatusDotView() override = default;
+void ConfigureLabelText(views::Label* title) {
+  title->SetMultiLine(false);
+  title->SetAllowCharacterBreak(true);
+  title->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded,
+                               /*adjust_height_for_width =*/true)
+          .WithWeight(1));
+  title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    DCHECK_EQ(width(), height());
-    const float radius = width() / 2.0f;
-    const float scale = canvas->UndoDeviceScaleFactor();
-    gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
-    center.Scale(scale);
-
-    cc::PaintFlags flags;
-    flags.setColor(
-        GetColorProvider()->GetColor(kColorAshEcheIconColorStreaming));
-    flags.setAntiAlias(true);
-    canvas->DrawCircle(center, scale * radius, flags);
-  }
-
-  void OnThemeChanged() override {
-    views::View::OnThemeChanged();
-    SchedulePaint();
-  }
-};
-
-class AppStreamingTitleView : public views::View {
- public:
-  explicit AppStreamingTitleView(const std::u16string& title) {
-    auto title_text = std::make_unique<views::Label>(title);
-    title_text->SetMultiLine(false);
-    title_text->SetAllowCharacterBreak(true);
-    title_text->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    title_text->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
-    title_text->SetMaximumWidthSingleLine(kAppStreamingTitlTextWidth);
-
-    gfx::Font default_font;
-    gfx::Font text_font = default_font.Derive(
-        kAppStreamingTitleTextFontSize - default_font.GetFontSize(),
-        gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
-    gfx::FontList font_list(text_font);
-    title_text->SetFontList(font_list);
-
-    title_ = AddChildView(std::move(title_text));
-
-    icon_ = AddChildView(std::make_unique<StatusDotView>());
-    icon_->SetVisible(true);
-  }
-  ~AppStreamingTitleView() override = default;
-  AppStreamingTitleView(AppStreamingTitleView&) = delete;
-  AppStreamingTitleView operator=(AppStreamingTitleView&) = delete;
-
-  // views::View:
-  void Layout() override {
-    SetLayoutManager(std::make_unique<views::FlexLayout>())
-        ->SetCollapseMargins(false)
-        .SetMinimumCrossAxisSize(kHeaderHeight)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-
-    SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                 views::MaximumFlexSizeRule::kUnbounded,
-                                 /*adjust_height_for_width =*/true)
-            .WithWeight(1));
-
-    // Manually calculate the position where the status dot should be placed.
-    // Otherwise the status dot does not display. TODO(pushi): can we let layout
-    // manager handle this?
-    gfx::Rect rect(GetContentsBounds());
-    gfx::Rect title_bounds = gfx::Rect(rect);
-    title_bounds.Inset(kAppStreamingTitleTextInset);
-    title_bounds.ClampToCenteredSize(title_->GetPreferredSize());
-    title_->SetBoundsRect(title_bounds);
-
-    icon_->SetBounds(title_bounds.x() - kAppStreamingTitleDotSize -
-                         kAppStreamingTitleSpacing,
-                     title_bounds.y() + title_bounds.height() / 2 -
-                         kAppStreamingTitleDotSize / 2,
-                     kAppStreamingTitleDotSize, kAppStreamingTitleDotSize);
-  }
-  const char* GetClassName() const override { return "AppStreamingTitleView"; }
-
- private:
-  StatusDotView* icon_ = nullptr;
-  views::Label* title_ = nullptr;
-};
+  gfx::Font default_font;
+  gfx::Font text_font = default_font.Derive(
+      kAppStreamingTitleTextFontSize - default_font.GetFontSize(),
+      gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+  gfx::FontList font_list(text_font);
+  title->SetFontList(font_list);
+}
 
 }  // namespace
 
@@ -308,10 +228,8 @@ EcheTray::EcheTray(Shelf* shelf)
   // Note: `ScreenLayoutObserver` starts observing at its constructor.
   observed_session_.Observe(Shell::Get()->session_controller());
   icon_->SetTooltipText(GetAccessibleNameForTray());
-  icon_->SetImage(CreateVectorIcon(
-      kPhoneHubPhoneIcon,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary)));
+  icon_->SetImage(ui::ImageModel::FromVectorIcon(kPhoneHubPhoneIcon,
+                                                 kColorAshIconColorPrimary));
   shelf_observation_.Observe(shelf);
   tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
   shell_observer_.Observe(Shell::Get());
@@ -424,6 +342,11 @@ void EcheTray::OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
 
 bool EcheTray::CacheBubbleViewForHide() const {
   return true;
+}
+
+void EcheTray::OnThemeChanged() {
+  TrayBackgroundView::OnThemeChanged();
+  RefreshHeaderView();
 }
 
 std::u16string EcheTray::GetAccessibleNameForBubble() {
@@ -604,25 +527,25 @@ void EcheTray::InitBubble(const std::u16string& phone_name) {
   init_params.translucent = true;
   init_params.reroute_event_handler = false;
   init_params.corner_radius = kTrayItemCornerRadius;
+  phone_name_ = phone_name;
 
   auto bubble_view = std::make_unique<TrayBubbleView>(init_params);
   bubble_view->SetCanActivate(true);
   bubble_view->SetBorder(views::CreateEmptyBorder(kBubblePadding));
 
-  auto* header_view =
-      bubble_view->AddChildView(CreateBubbleHeaderView(phone_name));
+  header_view_ = bubble_view->AddChildView(CreateBubbleHeaderView(phone_name));
 
   // We need the header be always visible with the same size.
   static_cast<views::BoxLayout*>(bubble_view->GetLayoutManager())
-      ->SetFlexForView(header_view, 0, true);
+      ->SetFlexForView(header_view_, 0, true);
   static_cast<views::BoxLayout*>(bubble_view->GetLayoutManager())
       ->set_inside_border_insets(kBubblePadding);
 
   // In dark light mode, we switch TrayBubbleView to use a textured layer
   // instead of solid color layer, so no need to create an extra layer here.
   if (!features::IsDarkLightModeEnabled()) {
-    header_view->SetPaintToLayer();
-    header_view->layer()->SetFillsBoundsOpaquely(false);
+    header_view_->SetPaintToLayer();
+    header_view_->layer()->SetFillsBoundsOpaquely(false);
   }
 
   AshWebView::InitParams params;
@@ -707,9 +630,12 @@ std::unique_ptr<views::View> EcheTray::CreateBubbleHeaderView(
                                        weak_factory_.GetWeakPtr()),
                    kEcheArrowBackIcon, IDS_APP_ACCNAME_BACK));
 
-  header->AddChildView(
-      std::make_unique<AppStreamingTitleView>(l10n_util::GetStringFUTF16(
-          ID_ASH_ECHE_APP_STREAMING_BUBBLE_TITLE, phone_name)));
+  views::Label* title = header->AddChildView(std::make_unique<views::Label>(
+      l10n_util::GetStringFUTF16(ID_ASH_ECHE_APP_STREAMING_BUBBLE_TITLE,
+                                 phone_name),
+      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY,
+      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
+  ConfigureLabelText(title);
 
   // Add minimize button
   minimize_button_ = header->AddChildView(CreateButton(
@@ -790,6 +716,22 @@ EcheIconLoadingIndicatorView* EcheTray::GetLoadingIndicator() {
   if (!phone_hub_tray)
     return nullptr;
   return phone_hub_tray->eche_loading_indicator();
+}
+
+void EcheTray::RefreshHeaderView() {
+  if (!header_view_ || !bubble_) {
+    return;
+  }
+
+  auto* bubble_view = bubble_->GetBubbleView();
+  bubble_view->RemoveChildView(header_view_);
+  header_view_ = bubble_view->AddChildViewAt(
+      CreateBubbleHeaderView(phone_name_), /* index= */ 0);
+
+  static_cast<views::BoxLayout*>(bubble_view->GetLayoutManager())
+      ->SetFlexForView(header_view_, 0, true);
+  static_cast<views::BoxLayout*>(bubble_view->GetLayoutManager())
+      ->set_inside_border_insets(kBubblePadding);
 }
 
 void EcheTray::UpdateEcheSizeAndBubbleBounds() {

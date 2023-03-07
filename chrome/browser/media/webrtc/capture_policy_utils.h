@@ -65,6 +65,9 @@ bool IsGetDisplayMediaSetSelectAllScreensAllowed(
     content::BrowserContext* context,
     const GURL& url);
 
+bool IsGetDisplayMediaSetSelectAllScreensAllowedForAnySite(
+    content::BrowserContext* context);
+
 }  // namespace capture_policy
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_CAPTURE_POLICY_UTILS_H_

@@ -14,8 +14,8 @@ import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT, getBookmarkFromElement
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
 import {BookmarksDragManager} from './bookmarks_drag_manager.js';
 import {getTemplate} from './bookmarks_list.html.js';
-import {BookmarkProductInfo} from './commerce/shopping_list.mojom-webui.js';
 import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from './commerce/shopping_list_api_proxy.js';
+import {BookmarkProductInfo} from './shopping_list.mojom-webui.js';
 
 // Key for localStorage object that refers to all the open folders.
 export const LOCAL_STORAGE_OPEN_FOLDERS_KEY = 'openFolders';
@@ -86,11 +86,11 @@ export class BookmarksListElement extends PolymerElement {
   override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'tree');
-    if (loadTimeData.getBoolean('unifiedSidePanel')) {
-      listenOnce(this.$.bookmarksContainer, 'dom-change', () => {
-        setTimeout(() => this.bookmarksApi_.showUi(), 0);
-      });
-    }
+
+    listenOnce(this.$.bookmarksContainer, 'dom-change', () => {
+      setTimeout(() => this.bookmarksApi_.showUi(), 0);
+    });
+
     this.focusOutlineManager_ = FocusOutlineManager.forDocument(document);
     this.bookmarksApi_.getFolders().then(folders => {
       this.folders_ = folders;

@@ -15,15 +15,16 @@
 #import "ios/web/favicon/favicon_java_script_feature.h"
 #import "ios/web/find_in_page/find_in_page_java_script_feature.h"
 #import "ios/web/js_features/context_menu/context_menu_java_script_feature.h"
+#import "ios/web/js_features/error_page/error_page_java_script_feature.h"
 #import "ios/web/js_features/scroll_helper/scroll_helper_java_script_feature.h"
 #import "ios/web/js_features/window_error/window_error_java_script_feature.h"
-#import "ios/web/js_messaging/script_command_java_script_feature.h"
 #import "ios/web/js_messaging/web_frames_manager_java_script_feature.h"
 #import "ios/web/navigation/navigation_java_script_feature.h"
 #import "ios/web/navigation/session_restore_java_script_feature.h"
 #import "ios/web/public/js_messaging/java_script_feature.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/text_fragments/text_fragments_java_script_feature.h"
+#import "ios/web/webui/web_ui_messaging_java_script_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -126,16 +127,17 @@ std::vector<JavaScriptFeature*> GetBuiltInJavaScriptFeatures(
     BrowserState* browser_state) {
   std::vector<JavaScriptFeature*> features = {
       ContextMenuJavaScriptFeature::FromBrowserState(browser_state),
+      ErrorPageJavaScriptFeature::GetInstance(),
       FindInPageJavaScriptFeature::GetInstance(),
       GetFaviconJavaScriptFeature(),
       GetScrollHelperJavaScriptFeature(),
       GetShareWorkaroundJavaScriptFeature(),
       GetWindowErrorJavaScriptFeature(),
       NavigationJavaScriptFeature::GetInstance(),
-      ScriptCommandJavaScriptFeature::GetInstance(),
       SessionRestoreJavaScriptFeature::FromBrowserState(browser_state),
       TextFragmentsJavaScriptFeature::GetInstance(),
-      WebFramesManagerJavaScriptFeature::FromBrowserState(browser_state)};
+      WebFramesManagerJavaScriptFeature::FromBrowserState(browser_state),
+      WebUIMessagingJavaScriptFeature::GetInstance()};
 
   // Plugin Placeholder is no longer used as of iOS 14.5 as <applet> support is
   // completely removed.

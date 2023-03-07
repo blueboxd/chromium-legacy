@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 
 #import "base/compiler_specific.h"
+#import "base/immediate_crash.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/task/thread_pool.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -15,7 +16,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
@@ -97,11 +98,7 @@ NOINLINE void InduceBrowserCrash(const GURL& url) {
   if (!net::GetValueForKeyInQuery(url, "crash", &crash_string) ||
       (crash_string == "" || crash_string == "true")) {
     // Induce an intentional crash in the browser process.
-    CHECK(false) << "User triggered inducebrowsercrashforrealz.";
-    // Call another function, so that the above CHECK can't be tail call
-    // optimized. This ensures that this method's name will show up in the stack
-    // for easier identification.
-    CHECK(true);
+    base::ImmediateCrash();
   }
 }
 }  // namespace

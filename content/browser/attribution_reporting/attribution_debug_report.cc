@@ -5,11 +5,11 @@
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -25,9 +25,34 @@ namespace content {
 
 namespace {
 
-using DebugDataType = ::content::AttributionDebugReport::DataType;
 using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
 using AggregatableResult = ::content::AttributionTrigger::AggregatableResult;
+
+constexpr char kAttributionDestination[] = "attribution_destination";
+
+enum class DebugDataType {
+  kSourceDestinationLimit,
+  kSourceNoised,
+  kSourceStorageLimit,
+  kSourceUnknownError,
+  kTriggerNoMatchingSource,
+  kTriggerAttributionsPerSourceDestinationLimit,
+  kTriggerNoMatchingFilterData,
+  kTriggerReportingOriginLimit,
+  kTriggerEventDeduplicated,
+  kTriggerEventNoMatchingConfigurations,
+  kTriggerEventNoise,
+  kTriggerEventLowPriority,
+  kTriggerEventExcessiveReports,
+  kTriggerEventStorageLimit,
+  kTriggerEventReportWindowPassed,
+  kTriggerAggregateDeduplicated,
+  kTriggerAggregateNoContributions,
+  kTriggerAggregateInsufficientBudget,
+  kTriggerAggregateStorageLimit,
+  kTriggerAggregateReportWindowPassed,
+  kTriggerUnknownError,
+};
 
 absl::optional<DebugDataType> DataTypeIfCookieSet(DebugDataType data_type,
                                                   bool is_debug_cookie_set) {
@@ -205,11 +230,6 @@ void SetSourceData(base::Value::Dict& data_body,
   }
 }
 
-void SetAttributionDestination(base::Value::Dict& data_body,
-                               const net::SchemefulSite& destination) {
-  data_body.Set("attribution_destination", destination.Serialize());
-}
-
 template <typename T>
 void SetLimit(base::Value::Dict& data_body, absl::optional<T> limit) {
   DCHECK(limit.has_value());
@@ -224,7 +244,8 @@ base::Value::Dict GetReportDataBody(
 
   const CommonSourceInfo& common_info = source.common_info();
   base::Value::Dict data_body;
-  SetAttributionDestination(data_body, common_info.DestinationSite());
+  data_body.Set(kAttributionDestination,
+                common_info.SerializeDestinationSites());
   SetSourceData(data_body, common_info);
 
   switch (data_type) {
@@ -262,17 +283,24 @@ base::Value::Dict GetReportDataBody(
   return data_body;
 }
 
+// `original_report_time` must be non-null when `data_type`'s body will contain
+// a `scheduled_report_time` field, which is only true for certain event-level
+// failures that use the entire body of the report that would have been stored
+// if attribution had succeeded.
 base::Value::Dict GetReportDataBody(DebugDataType data_type,
                                     const AttributionTrigger& trigger,
-                                    const CreateReportResult& result) {
+                                    const CreateReportResult& result,
+                                    base::Time* original_report_time) {
   base::Value::Dict data_body;
-  SetAttributionDestination(data_body,
-                            net::SchemefulSite(trigger.destination_origin()));
-  if (absl::optional<uint64_t> debug_key = trigger.registration().debug_key)
+  data_body.Set(kAttributionDestination,
+                net::SchemefulSite(trigger.destination_origin()).Serialize());
+  if (absl::optional<uint64_t> debug_key = trigger.registration().debug_key) {
     data_body.Set("trigger_debug_key", base::NumberToString(*debug_key));
+  }
 
-  if (result.source())
+  if (result.source()) {
     SetSourceData(data_body, result.source()->common_info());
+  }
 
   switch (data_type) {
     case DebugDataType::kTriggerNoMatchingSource:
@@ -307,6 +335,9 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
     case DebugDataType::kTriggerEventLowPriority:
     case DebugDataType::kTriggerEventExcessiveReports:
       DCHECK(result.dropped_event_level_report());
+      DCHECK(original_report_time);
+      *original_report_time =
+          result.dropped_event_level_report()->OriginalReportTime();
       return result.dropped_event_level_report()->ReportBody();
     case DebugDataType::kSourceDestinationLimit:
     case DebugDataType::kSourceNoised:
@@ -319,62 +350,36 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
   return data_body;
 }
 
-}  // namespace
-
-class AttributionDebugReport::ReportData {
- public:
-  ReportData(DataType type, base::Value::Dict body);
-  ~ReportData();
-
-  ReportData(const ReportData&) = delete;
-  ReportData& operator=(const ReportData&) = delete;
-
-  ReportData(ReportData&&);
-  ReportData& operator=(ReportData&&);
-
-  base::Value::Dict SerializeAsJson() const;
-
- private:
-  DataType type_;
-  base::Value::Dict body_;
-};
-
-AttributionDebugReport::ReportData::ReportData(DataType type,
-                                               base::Value::Dict body)
-    : type_(type), body_(std::move(body)) {}
-
-AttributionDebugReport::ReportData::~ReportData() = default;
-
-AttributionDebugReport::ReportData::ReportData(ReportData&&) = default;
-
-AttributionDebugReport::ReportData&
-AttributionDebugReport::ReportData::operator=(ReportData&&) = default;
-
-base::Value::Dict AttributionDebugReport::ReportData::SerializeAsJson() const {
+base::Value::Dict GetReportData(DebugDataType type, base::Value::Dict body) {
   base::Value::Dict dict;
-  dict.Set("type", SerializeReportDataType(type_));
-  dict.Set("body", body_.Clone());
+  dict.Set("type", SerializeReportDataType(type));
+  dict.Set("body", std::move(body));
   return dict;
 }
+
+}  // namespace
 
 // static
 absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     const StorableSource& source,
     bool is_debug_cookie_set,
     const AttributionStorage::StoreSourceResult& result) {
-  if (!source.debug_reporting() || source.is_within_fenced_frame())
+  if (!source.debug_reporting() || source.is_within_fenced_frame()) {
     return absl::nullopt;
+  }
 
-  absl::optional<DataType> data_type =
+  absl::optional<DebugDataType> data_type =
       GetReportDataType(result.status, is_debug_cookie_set);
-  if (!data_type)
+  if (!data_type) {
     return absl::nullopt;
+  }
 
-  std::vector<ReportData> report_data;
-  report_data.emplace_back(*data_type,
-                           GetReportDataBody(*data_type, source, result));
-  return AttributionDebugReport(std::move(report_data),
-                                source.common_info().reporting_origin());
+  base::Value::List report_body;
+  report_body.Append(
+      GetReportData(*data_type, GetReportDataBody(*data_type, source, result)));
+  return AttributionDebugReport(std::move(report_body),
+                                source.common_info().reporting_origin(),
+                                /*original_report_time=*/base::Time());
 }
 
 // static
@@ -387,38 +392,44 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     return absl::nullopt;
   }
 
-  std::vector<ReportData> report_data;
+  base::Value::List report_body;
+  base::Time original_report_time;
 
-  absl::optional<DataType> event_level_data_type =
+  absl::optional<DebugDataType> event_level_data_type =
       GetReportDataType(result.event_level_status(), is_debug_cookie_set);
   if (event_level_data_type) {
-    report_data.emplace_back(
-        *event_level_data_type,
-        GetReportDataBody(*event_level_data_type, trigger, result));
+    report_body.Append(
+        GetReportData(*event_level_data_type,
+                      GetReportDataBody(*event_level_data_type, trigger, result,
+                                        &original_report_time)));
   }
 
-  if (absl::optional<DataType> aggregatable_data_type =
+  if (absl::optional<DebugDataType> aggregatable_data_type =
           GetReportDataType(result.aggregatable_status(), is_debug_cookie_set);
       aggregatable_data_type &&
       aggregatable_data_type != event_level_data_type) {
-    report_data.emplace_back(
+    report_body.Append(GetReportData(
         *aggregatable_data_type,
-        GetReportDataBody(*aggregatable_data_type, trigger, result));
+        GetReportDataBody(*aggregatable_data_type, trigger, result,
+                          /*original_report_time=*/nullptr)));
   }
 
-  if (report_data.empty())
+  if (report_body.empty()) {
     return absl::nullopt;
+  }
 
-  return AttributionDebugReport(std::move(report_data),
-                                trigger.reporting_origin());
+  return AttributionDebugReport(
+      std::move(report_body), trigger.reporting_origin(), original_report_time);
 }
 
 AttributionDebugReport::AttributionDebugReport(
-    std::vector<ReportData> report_data,
-    attribution_reporting::SuitableOrigin reporting_origin)
-    : report_data_(std::move(report_data)),
-      reporting_origin_(std::move(reporting_origin)) {
-  DCHECK(!report_data_.empty());
+    base::Value::List report_body,
+    attribution_reporting::SuitableOrigin reporting_origin,
+    base::Time original_report_time)
+    : report_body_(std::move(report_body)),
+      reporting_origin_(std::move(reporting_origin)),
+      original_report_time_(original_report_time) {
+  DCHECK(!report_body_.empty());
 }
 
 AttributionDebugReport::~AttributionDebugReport() = default;
@@ -428,14 +439,6 @@ AttributionDebugReport::AttributionDebugReport(AttributionDebugReport&&) =
 
 AttributionDebugReport& AttributionDebugReport::operator=(
     AttributionDebugReport&&) = default;
-
-base::Value::List AttributionDebugReport::ReportBody() const {
-  base::Value::List report_body;
-  for (const ReportData& data : report_data_) {
-    report_body.Append(data.SerializeAsJson());
-  }
-  return report_body;
-}
 
 GURL AttributionDebugReport::ReportURL() const {
   static constexpr char kPath[] =

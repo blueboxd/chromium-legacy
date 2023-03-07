@@ -6,16 +6,15 @@
 
 #include "chrome/browser/webauthn/local_credential_management_mac.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/credential_store.h"
 #include "device/fido/mac/fake_keychain.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/test_callback_receiver.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -39,27 +38,7 @@ class LocalCredentialManagementTest : public testing::Test {
   device::fido::mac::ScopedFakeKeychain keychain_{
       config_.keychain_access_group};
   device::fido::mac::TouchIdCredentialStore store_{config_};
-  base::test::ScopedFeatureList scoped_feature_list_{
-      features::kWebAuthConditionalUI};
 };
-
-class WebAuthConditionalUIFlagOffTest : public LocalCredentialManagementTest {
- protected:
-  WebAuthConditionalUIFlagOffTest() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndDisableFeature(features::kWebAuthConditionalUI);
-  }
-};
-
-TEST_F(WebAuthConditionalUIFlagOffTest, FeatureFlagOff) {
-  device::test::TestCallbackReceiver<bool> callback;
-  auto credential = store_.CreateCredential(
-      kRpId, kUser, device::fido::mac::TouchIdCredentialStore::kDiscoverable);
-  EXPECT_TRUE(credential);
-  local_cred_man_.HasCredentials(callback.callback());
-  callback.WaitForCallback();
-  EXPECT_FALSE(std::get<0>(callback.TakeResult()));
-}
 
 TEST_F(LocalCredentialManagementTest, NoCredentials) {
   device::test::TestCallbackReceiver<bool> callback;
@@ -177,6 +156,47 @@ TEST_F(LocalCredentialManagementTest, EditUnknownCredential) {
   local_cred_man_.Edit(credential_id, "new-username", callback.callback());
   callback.WaitForCallback();
   EXPECT_FALSE(std::get<0>(callback.TakeResult()));
+}
+
+class ScopedMockKeychain : device::fido::mac::Keychain {
+ public:
+  ScopedMockKeychain() { SetInstanceOverride(this); }
+  ~ScopedMockKeychain() override { ClearInstanceOverride(); }
+
+  MOCK_METHOD(OSStatus,
+              ItemCopyMatching,
+              (CFDictionaryRef query, CFTypeRef* result),
+              (override));
+};
+
+class MockKeychainLocalCredentialManagementTest : public testing::Test {
+ protected:
+  content::BrowserTaskEnvironment task_environment_;
+  ScopedMockKeychain mock_keychain_;
+  LocalCredentialManagementMac local_cred_man_{
+      {.keychain_access_group = "test-keychain-access-group",
+       .metadata_secret = "TestMetadataSecret"}};
+};
+
+// Regression test for crbug.com/1401342.
+TEST_F(MockKeychainLocalCredentialManagementTest, KeychainError) {
+  EXPECT_CALL(mock_keychain_, ItemCopyMatching)
+      .WillOnce(testing::Return(errSecInternalComponent));
+  device::test::TestCallbackReceiver<bool> callback;
+  local_cred_man_.HasCredentials(callback.callback());
+  callback.WaitForCallback();
+  EXPECT_FALSE(std::get<0>(callback.TakeResult()));
+  testing::Mock::VerifyAndClearExpectations(&mock_keychain_);
+
+  EXPECT_CALL(mock_keychain_, ItemCopyMatching)
+      .WillOnce(testing::Return(errSecInternalComponent));
+  device::test::TestCallbackReceiver<
+      absl::optional<std::vector<device::DiscoverableCredentialMetadata>>>
+      enumerate_callback;
+  local_cred_man_.Enumerate(enumerate_callback.callback());
+  enumerate_callback.WaitForCallback();
+  auto result = std::get<0>(enumerate_callback.TakeResult());
+  EXPECT_FALSE(result.has_value());
 }
 
 }  // namespace

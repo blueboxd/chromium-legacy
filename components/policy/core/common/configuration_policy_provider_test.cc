@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
@@ -21,8 +21,8 @@
 #include "components/policy/core/common/policy_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using ::testing::Mock;
 using ::testing::_;
+using ::testing::Mock;
 
 namespace policy {
 
@@ -272,13 +272,13 @@ TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
 }
 
 TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
-  base::ListValue expected_value;
+  base::Value::List expected_value;
   expected_value.Append("first");
   expected_value.Append("second");
-  CheckValue(test_keys::kKeyStringList, expected_value,
+  CheckValue(test_keys::kKeyStringList, base::Value(expected_value.Clone()),
              base::BindOnce(&PolicyProviderTestHarness::InstallStringListPolicy,
                             base::Unretained(test_harness_.get()),
-                            test_keys::kKeyStringList, &expected_value));
+                            test_keys::kKeyStringList, expected_value.Clone()));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {

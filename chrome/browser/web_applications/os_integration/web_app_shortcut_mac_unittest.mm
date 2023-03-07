@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_common.h"
@@ -130,9 +130,9 @@ class WebAppShortcutCreatorTest : public testing::Test {
   void SetUp() override {
     base::mac::SetBaseBundleID(kFakeChromeBundleId);
 
-    override_registration_ = ShortcutOverrideForTesting::OverrideForTesting();
+    override_registration_ = OsIntegrationTestOverride::OverrideForTesting();
     destination_dir_ =
-        override_registration_->shortcut_override->chrome_apps_folder.GetPath();
+        override_registration_->test_override->chrome_apps_folder();
 
     EXPECT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
     user_data_dir_ = temp_user_data_dir_.GetPath();
@@ -169,9 +169,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
     // override DCHECK fails if the directories are not empty. To bypass this in
     // this unittest, we manually delete it.
     // TODO: If these unittests leave OS hook artifacts on bots, undo that here.
-    if (override_registration_->shortcut_override->chrome_apps_folder.IsValid())
-      EXPECT_TRUE(override_registration_->shortcut_override->chrome_apps_folder
-                      .Delete());
+    override_registration_->test_override->DeleteChromeAppsDir();
     override_registration_.reset();
     testing::Test::TearDown();
   }
@@ -190,7 +188,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath shim_base_name_;
   base::FilePath shim_path_;
 
-  std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
+  std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
       override_registration_;
 };
 
@@ -893,8 +891,7 @@ TEST_F(WebAppShortcutCreatorTest, RunShortcut) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, CreateFailure) {
-  ASSERT_TRUE(
-      override_registration_->shortcut_override->chrome_apps_folder.Delete());
+  ASSERT_TRUE(override_registration_->test_override->DeleteChromeAppsDir());
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());

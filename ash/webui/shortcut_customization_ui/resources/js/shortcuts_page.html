@@ -4,12 +4,12 @@
   }
 
   #container accelerator-subsection:not(:first-child)::part(container) {
-    margin-top: 40px;
+    margin-top: 20px;
   }
 </style>
 
 <div id="container">
-  <template id="subsections" is="dom-repeat" items="[[subcategories_]]">
+  <template id="subsections" is="dom-repeat" items="[[subcategories]]">
     <accelerator-subsection category="[[initialData.category]]"
         subcategory="[[item]]">
     </accelerator-subsection>

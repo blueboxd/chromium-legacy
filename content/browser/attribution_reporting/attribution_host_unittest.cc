@@ -9,6 +9,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -52,8 +53,8 @@ using ::attribution_reporting::SuitableOrigin;
 using testing::_;
 using testing::Return;
 
+using ::attribution_reporting::mojom::RegistrationType;
 using ::blink::mojom::AttributionNavigationType;
-using ::blink::mojom::AttributionRegistrationType;
 
 const char kConversionUrl[] = "https://b.com";
 
@@ -68,7 +69,7 @@ class MockDataHostManager : public AttributionDataHostManager {
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
        SuitableOrigin context_origin,
        bool is_within_fenced_frame,
-       AttributionRegistrationType),
+       RegistrationType),
       (override));
 
   MOCK_METHOD(
@@ -76,8 +77,7 @@ class MockDataHostManager : public AttributionDataHostManager {
       RegisterNavigationDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
        const blink::AttributionSrcToken& attribution_src_token,
-       AttributionInputEvent input_event,
-       AttributionNavigationType),
+       AttributionInputEvent input_event),
       (override));
 
   MOCK_METHOD(void,
@@ -87,14 +87,16 @@ class MockDataHostManager : public AttributionDataHostManager {
                SuitableOrigin reporting_origin,
                const SuitableOrigin& source_origin,
                AttributionInputEvent input_event,
-               AttributionNavigationType),
+               AttributionNavigationType,
+               bool is_within_fenced_frame),
               (override));
 
   MOCK_METHOD(void,
               NotifyNavigationForDataHost,
               (const blink::AttributionSrcToken& attribution_src_token,
                const SuitableOrigin& source_origin,
-               AttributionNavigationType),
+               AttributionNavigationType,
+               bool is_within_fenced_frame),
               (override));
 
   MOCK_METHOD(void,
@@ -177,7 +179,8 @@ TEST_F(AttributionHostTest, ValidAttributionSrc_ForwardedToManager) {
               NotifyNavigationForDataHost(
                   impression.attribution_src_token,
                   *SuitableOrigin::Deserialize("https://secure_impression.com"),
-                  impression.nav_type));
+                  impression.nav_type,
+                  /*is_within_fenced_frame=*/false));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
   auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
@@ -363,11 +366,10 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn(kOriginTrustworthyChecksTestCases));
 
 TEST_F(AttributionHostTest, DataHost_RegisteredWithContext) {
-  EXPECT_CALL(
-      *mock_data_host_manager(),
-      RegisterDataHost(_, *SuitableOrigin::Deserialize("https://top.example"),
-                       /*is_within_fenced_frame=*/false,
-                       AttributionRegistrationType::kSource));
+  EXPECT_CALL(*mock_data_host_manager(),
+              RegisterDataHost(
+                  _, *SuitableOrigin::Deserialize("https://top.example"),
+                  /*is_within_fenced_frame=*/false, RegistrationType::kSource));
 
   contents()->NavigateAndCommit(GURL("https://top.example"));
   SetCurrentTargetFrameForTesting(main_rfh());
@@ -378,8 +380,7 @@ TEST_F(AttributionHostTest, DataHost_RegisteredWithContext) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(),
-      AttributionRegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
 
   // Run loop to allow the bad message code to run if a bad message was
   // triggered.
@@ -398,8 +399,7 @@ TEST_F(AttributionHostTest, DISABLED_DataHostOnInsecurePage_BadMessage) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(),
-      AttributionRegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
 
   EXPECT_EQ(
       "blink.mojom.ConversionHost can only be used with a secure top-level "
@@ -420,7 +420,7 @@ TEST_F(AttributionHostTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterNavigationDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(),
-      blink::AttributionSrcToken(), AttributionNavigationType::kAnchor);
+      blink::AttributionSrcToken());
 
   EXPECT_EQ(
       "blink.mojom.ConversionHost can only be used with a secure top-level "
@@ -442,7 +442,7 @@ TEST_F(AttributionHostTest, DuplicateAttributionSrcToken_BadMessage) {
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterNavigationDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(),
-      blink::AttributionSrcToken(), AttributionNavigationType::kAnchor);
+      blink::AttributionSrcToken());
 
   EXPECT_EQ(
       "Renderer attempted to register a data host with a duplicate "
@@ -451,11 +451,10 @@ TEST_F(AttributionHostTest, DuplicateAttributionSrcToken_BadMessage) {
 }
 
 TEST_F(AttributionHostTest, DataHostInSubframe_ContextIsOutermostFrame) {
-  EXPECT_CALL(
-      *mock_data_host_manager(),
-      RegisterDataHost(_, *SuitableOrigin::Deserialize("https://top.example"),
-                       /*is_within_fenced_frame=*/false,
-                       AttributionRegistrationType::kSource));
+  EXPECT_CALL(*mock_data_host_manager(),
+              RegisterDataHost(
+                  _, *SuitableOrigin::Deserialize("https://top.example"),
+                  /*is_within_fenced_frame=*/false, RegistrationType::kSource));
 
   contents()->NavigateAndCommit(GURL("https://top.example"));
 
@@ -472,8 +471,7 @@ TEST_F(AttributionHostTest, DataHostInSubframe_ContextIsOutermostFrame) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(),
-      AttributionRegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
 
   // Run loop to allow the bad message code to run if a bad message was
   // triggered.
@@ -499,8 +497,7 @@ TEST_F(AttributionHostTest,
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(),
-      AttributionRegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
 
   EXPECT_EQ(
       "blink.mojom.ConversionHost can only be used with a secure top-level "
@@ -509,11 +506,10 @@ TEST_F(AttributionHostTest,
 }
 
 TEST_F(AttributionHostTest, DataHost_RegisteredWithFencedFrame) {
-  EXPECT_CALL(
-      *mock_data_host_manager(),
-      RegisterDataHost(_, *SuitableOrigin::Deserialize("https://top.example"),
-                       /*is_within_fenced_frame=*/true,
-                       AttributionRegistrationType::kSource));
+  EXPECT_CALL(*mock_data_host_manager(),
+              RegisterDataHost(
+                  _, *SuitableOrigin::Deserialize("https://top.example"),
+                  /*is_within_fenced_frame=*/true, RegistrationType::kSource));
 
   contents()->NavigateAndCommit(GURL("https://top.example"));
   RenderFrameHost* fenced_frame =
@@ -529,8 +525,7 @@ TEST_F(AttributionHostTest, DataHost_RegisteredWithFencedFrame) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   conversion_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(),
-      AttributionRegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
 
   // Run loop to allow the bad message code to run if a bad message was
   // triggered.

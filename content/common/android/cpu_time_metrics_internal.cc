@@ -10,10 +10,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/cpu.h"
+#include "base/functional/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -31,7 +31,6 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -302,8 +301,10 @@ class ProcessCpuTimeMetrics::DetailedCpuTimeMetrics {
     // only depends on the process type, which also doesn't change.
     static const char* histogram_name =
         GetPerThreadHistogramNameForProcessType(process_type_);
-    UMA_HISTOGRAM_SCALED_ENUMERATION(histogram_name, type,
-                                     cpu_time_delta.InMicroseconds(),
+    // Histograms use int internally. Make sure it doesn't overflow.
+    int capped_value = std::min<int64_t>(cpu_time_delta.InMicroseconds(),
+                                         std::numeric_limits<int>::max());
+    UMA_HISTOGRAM_SCALED_ENUMERATION(histogram_name, type, capped_value,
                                      base::Time::kMicrosecondsPerSecond);
   }
 

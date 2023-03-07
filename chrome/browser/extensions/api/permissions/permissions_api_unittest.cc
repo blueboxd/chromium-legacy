@@ -38,7 +38,7 @@ constexpr char kNotInManifestError[] =
 using permissions_test_util::GetPatternsAsStrings;
 
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
-    std::unique_ptr<base::Value> permissions,
+    base::Value::List permissions,
     const std::string& name,
     bool allow_file_access) {
   int creation_flags = Extension::NO_FLAGS;
@@ -52,7 +52,7 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
                        .Set("manifest_version", 2)
                        .Set("version", "0.1.2.3")
                        .Set("permissions", std::move(permissions))
-                       .BuildDict())
+                       .Build())
       .AddFlags(creation_flags)
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
@@ -60,7 +60,7 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
 
 // Helper function to create a base::Value from a list of strings.
 base::Value::List StringVectorToValue(const std::vector<std::string>& strings) {
-  return ListBuilder().Append(strings.begin(), strings.end()).BuildList();
+  return ListBuilder().Append(strings.begin(), strings.end()).Build();
 }
 
 // Runs permissions.request() with the provided |args|, and returns the result
@@ -252,10 +252,11 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
       return origins;
     }
 
-    const base::Value* origins_value =
-        (*results)[0].FindKeyOfType("origins", base::Value::Type::LIST);
-    for (const auto& value : origins_value->GetList())
+    const base::Value::List* origins_value =
+        (*results)[0].GetDict().FindList("origins");
+    for (const auto& value : *origins_value) {
       origins.push_back(value.GetString());
+    }
 
     return origins;
   };

@@ -2,9 +2,8 @@
   "linux-rel-cft": {
     "gn_args": {
       "dcheck_always_on": false,
-      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "is_chrome_for_testing_branded": true,
+      "is_chrome_for_testing": true,
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
@@ -15,9 +14,8 @@
   "mac-rel-cft": {
     "gn_args": {
       "dcheck_always_on": false,
-      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "is_chrome_for_testing_branded": true,
+      "is_chrome_for_testing": true,
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
@@ -28,9 +26,8 @@
   "win-rel-cft": {
     "gn_args": {
       "dcheck_always_on": false,
-      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "is_chrome_for_testing_branded": true,
+      "is_chrome_for_testing": true,
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,

@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -164,12 +164,6 @@ PasswordReuseLookup::ReputationVerdict GetVerdictToLogFromResponse(
   }
   NOTREACHED() << "Unexpected response_verdict: " << response_verdict;
   return PasswordReuseLookup::VERDICT_UNSPECIFIED;
-}
-
-// Records changes in the phished status of saved credential.
-void LogCredentialPhishedStatusChanged(CredentialPhishedStatus status) {
-  base::UmaHistogramEnumeration("SafeBrowsing.CredentialPhishedStatusChange",
-                                status);
 }
 
 // Given a |web_contents|, returns the navigation id of its last committed
@@ -1717,8 +1711,6 @@ void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
     if (!password_store) {
       continue;
     }
-    LogCredentialPhishedStatusChanged(
-        CredentialPhishedStatus::kMarkedAsPhished);
     add_phished_credentials_.Run(password_store, credential);
   }
 }
@@ -1736,8 +1728,6 @@ void ChromePasswordProtectionService::RemovePhishedSavedPasswordCredential(
     if (!password_store) {
       continue;
     }
-    LogCredentialPhishedStatusChanged(
-        CredentialPhishedStatus::kSiteMarkedAsLegitimate);
     remove_phished_credentials_.Run(password_store, credential);
   }
 }

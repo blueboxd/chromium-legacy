@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
@@ -21,15 +21,17 @@
 #include "gpu/command_buffer/service/gles2_external_framebuffer.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/progress_reporter.h"
+#include "ui/gl/scoped_make_current.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing_factory.h"
@@ -1032,9 +1034,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         "GL_ANGLE_instanced_arrays",
         "GL_ANGLE_memory_object_flags",
         "GL_ANGLE_pack_reverse_row_order",
-        "GL_ANGLE_texture_compression_dxt1",
-        "GL_ANGLE_texture_compression_dxt3",
-        "GL_ANGLE_texture_compression_dxt5",
         "GL_ANGLE_translated_shader_source",
         "GL_CHROMIUM_path_rendering",
         "GL_EXT_blend_minmax",
@@ -1044,8 +1043,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         "GL_EXT_occlusion_query_boolean",
         "GL_EXT_sRGB",
         "GL_EXT_sRGB_write_control",
-        "GL_EXT_texture_compression_dxt1",
-        "GL_EXT_texture_compression_s3tc_srgb",
         "GL_EXT_texture_format_BGRA8888",
         "GL_EXT_texture_norm16",
         "GL_EXT_texture_rg",
@@ -1054,15 +1051,12 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         "GL_EXT_unpack_subimage",
         "GL_KHR_parallel_shader_compile",
         "GL_KHR_robust_buffer_access_behavior",
-        "GL_KHR_texture_compression_astc_hdr",
-        "GL_KHR_texture_compression_astc_ldr",
 #if BUILDFLAG(IS_CHROMEOS)
         // Required for Webgl to display in overlay on ChromeOS devices.
         // TODO(crbug.com/1379081): Consider for other platforms.
         "GL_MESA_framebuffer_flip_y",
 #endif
         "GL_NV_pack_subimage",
-        "GL_OES_compressed_ETC1_RGB8_texture",
         "GL_OES_depth32",
         "GL_OES_packed_depth_stencil",
         "GL_OES_rgb8_rgba8",
@@ -1233,11 +1227,14 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     emulated_back_buffer_ = std::make_unique<EmulatedDefaultFramebuffer>(
         api(), emulated_default_framebuffer_format_, feature_info_.get(),
         supports_separate_fbo_bindings_);
-    // Make sure to use a non-empty offscreen surface so that the framebuffer is
-    // complete.
+    // If we're an offscreen surface with zero width and/or height, set to a
+    // non-zero size so that we have a complete framebuffer for operations like
+    // glClear. Furthermore, on some ChromeOS platforms (particularly MediaTek
+    // devices), there are driver limitations on the minimum size of a buffer.
+    // Thus, we set the initial size to 64x64 here instead of 1x1.
     gfx::Size initial_size(
-        std::max(1, attrib_helper.offscreen_framebuffer_size.width()),
-        std::max(1, attrib_helper.offscreen_framebuffer_size.height()));
+        std::max(64, attrib_helper.offscreen_framebuffer_size.width()),
+        std::max(64, attrib_helper.offscreen_framebuffer_size.height()));
     if (!emulated_back_buffer_->Resize(initial_size, feature_info_.get())) {
       bool was_lost = CheckResetStatus();
       Destroy(true);
@@ -2091,7 +2088,7 @@ void GLES2DecoderPassthroughImpl::AttachImageToTextureWithDecoderBinding(
   BindImageInternal(client_texture_id, texture_target, image,
                     /*can_bind_to_sampler=*/false);
 }
-#else
+#elif !BUILDFLAG(IS_ANDROID)
 void GLES2DecoderPassthroughImpl::AttachImageToTextureWithClientBinding(
     uint32_t client_texture_id,
     uint32_t texture_target,
@@ -2101,6 +2098,7 @@ void GLES2DecoderPassthroughImpl::AttachImageToTextureWithClientBinding(
 }
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
 void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
                                                     uint32_t texture_target,
                                                     gl::GLImage* image,
@@ -2121,9 +2119,6 @@ void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
   passthrough_texture->set_bind_pending();
 #else
   CHECK(can_bind_to_sampler);
-#if BUILDFLAG(IS_ANDROID)
-  passthrough_texture->clear_bind_pending();
-#endif
 #endif
 
   GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
@@ -2134,8 +2129,9 @@ void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
   // Reference the image even if it is not bound as a sampler.
   passthrough_texture->SetLevelImage(texture_target, 0, image);
 }
+#endif
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 void GLES2DecoderPassthroughImpl::BindOnePendingImage(
     GLenum target,
     TexturePassthrough* texture) {
@@ -2157,7 +2153,7 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // here.  In that case, just ignore it.
   //
   // Similarly, we might not even get here if an image was bound to a
-  // texture that requries bind/copy, but that texture was already bound
+  // texture that requires binding, but that texture was already bound
   // to a sampler in this decoder.
   if (!image) {
     UMA_HISTOGRAM_BOOLEAN(
@@ -2176,12 +2172,9 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   api()->glBindTextureFn(texture_type, texture->service_id());
 
   // TODO: internalformat?
-  if (image->ShouldBindOrCopy() == gl::GLImage::BIND)
-    image->BindTexImage(target);
-  else
-    image->CopyTexImage(target);
+  image->BindTexImage(target);
 
-  // If copy / bind fail, then we could keep the bind state the same.
+  // If bind fails, then we could keep the bind state the same.
   // However, for now, we only try once.
   texture->clear_bind_pending();
 
@@ -2471,6 +2464,55 @@ GLES2DecoderPassthroughImpl::PatchGetFramebufferAttachmentParameter(
   }
 
   return error::kNoError;
+}
+
+GLES2DecoderPassthroughImpl::LazySharedContextState::LazySharedContextState(
+    GLES2DecoderPassthroughImpl* impl)
+    : impl_(impl) {
+  auto gl_surface = gl::init::CreateOffscreenGLSurface(
+      impl_->context_->GetGLDisplayEGL(), gfx::Size());
+  DCHECK(gl_surface);
+
+  gl::GLContextAttribs attribs;
+  attribs.global_texture_share_group = true;
+  attribs.global_semaphore_share_group = true;
+  auto gl_context = gl::init::CreateGLContext(impl_->context_->share_group(),
+                                              gl_surface.get(), attribs);
+  DCHECK(gl_context);
+
+  // Make current context using `gl_context` and `gl_surface`
+  ui::ScopedMakeCurrent smc(gl_context.get(), gl_surface.get());
+
+  ContextGroup* group = impl_->GetContextGroup();
+  const GpuPreferences& gpu_preferences = group->gpu_preferences();
+  const GpuDriverBugWorkarounds& workarounds =
+      group->feature_info()->workarounds();
+
+  shared_context_state_ = base::MakeRefCounted<SharedContextState>(
+      impl_->context_->share_group(), std::move(gl_surface),
+      std::move(gl_context),
+      /*use_virtualized_gl_contexts=*/false, base::DoNothing());
+  auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
+      workarounds, group->gpu_feature_info());
+  if (!shared_context_state_->InitializeGL(gpu_preferences, feature_info)) {
+    impl_->InsertError(GL_INVALID_OPERATION,
+                       "ContextResult::kFatalFailure: Failed to Initialize GL "
+                       "for SharedContextState");
+    return;
+  }
+  if (!shared_context_state_->InitializeGrContext(gpu_preferences, workarounds,
+                                                  /*cache=*/nullptr)) {
+    impl_->InsertError(GL_INVALID_OPERATION,
+                       "ContextResult::kFatalFailure: Failed to Initialize "
+                       "GrContext for SharedContextState");
+    return;
+  }
+}
+
+GLES2DecoderPassthroughImpl::LazySharedContextState::~LazySharedContextState() {
+  ui::ScopedMakeCurrent smc(shared_context_state_->context(),
+                            shared_context_state_->surface());
+  shared_context_state_.reset();
 }
 
 void GLES2DecoderPassthroughImpl::InsertError(GLenum error,

@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
@@ -37,7 +37,7 @@
 namespace {
 constexpr int kInterceptionBubbleWithoutGuestHeight = 326;
 constexpr int kInterceptionBubbleGuestFooterHeight = 36;
-constexpr int kInterceptionBubbleManagedDisclaimerHeight = 52;
+constexpr int kInterceptionBubbleManagedDisclaimerHeight = 84;
 constexpr int kInterceptionBubbleExtraTextHeight = 30;
 constexpr int kInterceptionBubbleWidth = 290;
 

@@ -10,9 +10,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -20,11 +20,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/child_process_host_flags.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -137,12 +137,18 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 void ChromeContentClient::AddPlugins(
     std::vector<content::ContentPluginInfo>* plugins) {
 #if BUILDFLAG(ENABLE_PDF)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  static constexpr char kPDFPluginName[] = "Chrome PDF Plugin";
+#else
+  static constexpr char kPDFPluginName[] = "Chromium PDF Plugin";
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   static constexpr char kPDFPluginExtension[] = "pdf";
   static constexpr char kPDFPluginDescription[] = "Portable Document Format";
+
   content::ContentPluginInfo pdf_info;
   pdf_info.is_internal = true;
   pdf_info.is_out_of_process = true;
-  pdf_info.name = ChromeContentClient::kPDFInternalPluginName;
+  pdf_info.name = kPDFPluginName;
   pdf_info.description = kPDFPluginDescription;
   pdf_info.path = base::FilePath(ChromeContentClient::kPDFInternalPluginPath);
   content::WebPluginMimeType pdf_mime_type(
@@ -320,23 +326,6 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
-
-#if BUILDFLAG(IS_MAC)
-base::FilePath ChromeContentClient::GetChildProcessPath(
-    int child_flags,
-    const base::FilePath& helpers_path) {
-  std::string helper_name(chrome::kHelperProcessExecutableName);
-  if (child_flags == chrome::kChildProcessHelperAlerts) {
-    helper_name += chrome::kMacHelperSuffixAlerts;
-    return helpers_path.Append(helper_name + ".app")
-        .Append("Contents")
-        .Append("MacOS")
-        .Append(helper_name);
-  }
-  NOTREACHED() << "Unsupported child process flags!";
-  return {};
-}
-#endif  // BUILDFLAG(IS_MAC)
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 #if BUILDFLAG(ENABLE_NACL)

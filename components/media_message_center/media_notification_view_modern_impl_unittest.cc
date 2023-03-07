@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -147,7 +147,7 @@ class MediaNotificationViewModernImplTest : public views::ViewsTestBase {
   MediaNotificationViewModernImpl* view() const { return view_; }
 
   const std::u16string& accessible_name() const {
-    return view()->accessible_name_;
+    return view()->GetAccessibleName();
   }
 
   test::MockMediaNotificationItem& item() { return item_; }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/style_recalc_context.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -19,12 +20,15 @@ Element* ClosestInclusiveAncestorContainer(Element& element,
     const ComputedStyle* style = container->GetComputedStyle();
     if (!style) {
       // TODO(crbug.com/1400631): Eliminate all invalid calls to
-      // StyleRecalcContext::From[Inclusive]Ancestors.
-      NOTREACHED();
+      // StyleRecalcContext::From[Inclusive]Ancestors, then either turn
+      // if (!style) into CHECK(style) or simplify into checking:
+      // container->GetComputedStyle()->IsContainerForSizeContainerQueries()
+      base::debug::DumpWithoutCrashing();
       return nullptr;
     }
-    if (style->IsContainerForSizeContainerQueries())
+    if (style->IsContainerForSizeContainerQueries()) {
       return container;
+    }
   }
   return nullptr;
 }
@@ -38,8 +42,9 @@ StyleRecalcContext StyleRecalcContext::FromInclusiveAncestors(
 
 StyleRecalcContext StyleRecalcContext::FromAncestors(Element& element) {
   // TODO(crbug.com/1145970): Avoid this work if we're not inside a container
-  if (Element* shadow_including_parent = element.ParentOrShadowHostElement())
+  if (Element* shadow_including_parent = element.ParentOrShadowHostElement()) {
     return FromInclusiveAncestors(*shadow_including_parent);
+  }
   return StyleRecalcContext();
 }
 
@@ -47,14 +52,16 @@ StyleRecalcContext StyleRecalcContext::ForSlotChildren(
     const HTMLSlotElement& slot) const {
   // If the container is in a different tree scope, it is already in the shadow-
   // including inclusive ancestry of the host.
-  if (!container || container->GetTreeScope() != slot.GetTreeScope())
+  if (!container || container->GetTreeScope() != slot.GetTreeScope()) {
     return *this;
+  }
 
   // No assigned nodes means we will render the light tree children of the
   // slot as a fallback. Those children are in the same tree scope as the slot
   // which means the current container is the correct one.
-  if (slot.AssignedNodes().empty())
+  if (slot.AssignedNodes().empty()) {
     return *this;
+  }
 
   // The slot's flat tree children are children of the slot's shadow host, and
   // their container is in the shadow-including inclusive ancestors of the host.
@@ -80,8 +87,9 @@ StyleRecalcContext StyleRecalcContext::ForSlottedRules(
 StyleRecalcContext StyleRecalcContext::ForPartRules(Element& host) const {
   DCHECK(IsShadowHost(host));
 
-  if (!container)
+  if (!container) {
     return *this;
+  }
 
   // The closest container for matching ::part rules is the originating host.
   return StyleRecalcContext{ClosestInclusiveAncestorContainer(host)};

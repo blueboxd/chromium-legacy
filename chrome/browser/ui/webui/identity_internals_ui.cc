@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -305,7 +305,8 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
   : content::WebUIController(web_ui) {
   // chrome://identity-internals source.
   content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUIIdentityInternalsHost);
+      content::WebUIDataSource::CreateAndAdd(
+          Profile::FromWebUI(web_ui), chrome::kChromeUIIdentityInternalsHost);
 
   // Required resources
   html_source->AddResourcePaths(base::make_span(
@@ -316,7 +317,6 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::TrustedTypes,
       "trusted-types static-types;");
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 
   web_ui->AddMessageHandler(
       std::make_unique<IdentityInternalsUIMessageHandler>());

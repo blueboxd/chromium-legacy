@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/safe_ref.h"
 #include "build/build_config.h"
@@ -656,6 +656,16 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                                     const GURL& url,
                                     int error_code) {}
+
+  // Called by the primary main frame to close the current tab/window.
+  virtual void Close() {}
+
+  // True if the delegate is currently showing a JavaScript dialog.
+  virtual bool IsJavaScriptDialogShowing() const;
+
+  // If a timer for an unresponsive renderer fires, whether it should be
+  // ignored.
+  virtual bool ShouldIgnoreUnresponsiveRenderer();
 
  protected:
   virtual ~RenderFrameHostDelegate() = default;

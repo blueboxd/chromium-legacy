@@ -6,6 +6,7 @@ import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './checkup_section.js';
+import './checkup_details_section.js';
 import './passwords_section.js';
 import './password_details_section.js';
 import './settings_section.js';
@@ -56,6 +57,14 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
         type: Boolean,
         observer: 'onNarrowChanged_',
       },
+
+      /*
+       * Mirroring the enum so that it can be used from HTML bindings.
+       */
+      pagesValueEnum_: {
+        type: Object,
+        value: Page,
+      },
     };
   }
 
@@ -75,6 +84,14 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
 
   override currentRouteChanged(route: Route): void {
     this.selectedPage_ = route.page;
+    setTimeout(() => {  // Async to allow page to load.
+      if (route.page === Page.CHECKUP_DETAILS) {
+        this.enableShadowBehavior(false);
+        this.showDropShadows();
+      } else {
+        this.enableShadowBehavior(true);
+      }
+    }, 0);
   }
 
   private onNarrowChanged_() {
@@ -89,6 +106,10 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
 
   setNarrowForTesting(state: boolean) {
     this.narrow_ = state;
+  }
+
+  private showPage(currentPage: string, pageToShow: string): boolean {
+    return currentPage === pageToShow;
   }
 }
 declare global {

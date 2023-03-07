@@ -19,7 +19,8 @@
           "-v",
           "--browser=android-chrome-bundle",
           "--upload-results",
-          "--test-shard-map-filename=android-pixel2-perf-aab-fyi_map.json"
+          "--test-shard-map-filename=android-pixel2-perf-aab-fyi_map.json",
+          "--ignore-benchmark-exit-code"
         ],
         "isolate_name": "performance_test_suite_android_clank_monochrome_bundle",
         "merge": {
@@ -68,6 +69,7 @@
           "--browser=exact",
           "--upload-results",
           "--test-shard-map-filename=android-pixel2-perf-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
           "--device=android",
           "--output-format=histograms",
@@ -137,6 +139,7 @@
           "--browser=cros-chrome",
           "--upload-results",
           "--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--remote=variable_chromeos_device_hostname"
         ],
         "isolate_name": "performance_test_suite",
@@ -189,7 +192,8 @@
   "fuchsia-builder-perf-x64": {
     "additional_compile_targets": [
       "chrome_pkg",
-      "base_perftests"
+      "base_perftests",
+      "sync_performance_tests"
     ]
   },
   "fuchsia-perf-ast": {
@@ -200,10 +204,11 @@
           "--browser=web-engine-shell",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-ast_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -252,10 +257,11 @@
           "--browser=fuchsia-chrome",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-atlas-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=workstation_eng.chromebook-x64"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -304,10 +310,11 @@
           "--browser=web-engine-shell",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -356,10 +363,11 @@
           "--browser=web-engine-shell",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-nsn_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/nelson-release/smart_display_m3_eng_paused"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -408,10 +416,11 @@
           "--browser=fuchsia-chrome",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-nuc-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=workstation_eng.x64"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -460,10 +469,11 @@
           "--browser=web-engine-shell",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-sherlock-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/sherlock-release/smart_display_max_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -512,10 +522,11 @@
           "--browser=web-engine-shell",
           "--upload-results",
           "--test-shard-map-filename=fuchsia-perf-shk_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=check",
+          "--os-check=update",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/sherlock-release/smart_display_max_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -564,6 +575,7 @@
           "--browser=release",
           "--upload-results",
           "--test-shard-map-filename=linux-perf-fyi_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics"
         ],
@@ -613,6 +625,7 @@
           "--browser=release_x64",
           "--upload-results",
           "--test-shard-map-filename=win-10_laptop_low_end-perf_hp-candidate_map.json",
+          "--ignore-benchmark-exit-code",
           "--output-format=histograms",
           "--experimental-tbmv3-metrics"
         ],

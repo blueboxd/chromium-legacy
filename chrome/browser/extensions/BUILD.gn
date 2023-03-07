@@ -196,6 +196,8 @@ static_library("extensions") {
     "api/identity/identity_token_cache.h",
     "api/identity/web_auth_flow.cc",
     "api/identity/web_auth_flow.h",
+    "api/identity/web_auth_flow_info_bar_delegate.cc",
+    "api/identity/web_auth_flow_info_bar_delegate.h",
     "api/idltest/idltest_api.cc",
     "api/idltest/idltest_api.h",
     "api/image_writer_private/destroy_partitions_operation.cc",
@@ -777,7 +779,9 @@ static_library("extensions") {
     "//chrome/browser:browser_process",
     "//chrome/browser:ntp_background_proto",
     "//chrome/browser:theme_properties",
+    "//chrome/browser/apps/app_service:constants",
     "//chrome/browser/autofill",
+    "//chrome/browser/bitmap_fetcher",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
@@ -833,6 +837,7 @@ static_library("extensions") {
     "//components/feedback",
     "//components/gcm_driver",
     "//components/guest_view/browser",
+    "//components/guest_view/common:mojom",
     "//components/history/core/browser",
     "//components/infobars/content",
     "//components/infobars/core",
@@ -944,6 +949,7 @@ static_library("extensions") {
     "//ui/base",
     "//ui/base/clipboard",
     "//ui/base/dragdrop/mojom:mojom_shared",
+    "//ui/base/idle",
     "//ui/base/ime",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -1202,6 +1208,7 @@ static_library("extensions") {
       "//ui/ozone",
       "//ui/views",
     ]
+
     allow_circular_includes_from += [ "//chrome/browser/ash/crosapi" ]
 
     if (is_cfm) {
@@ -1337,6 +1344,7 @@ static_library("extensions") {
 
   if (enable_pdf) {
     deps += [
+      "//chrome/browser/pdf",
       "//components/pdf/browser",
       "//pdf:buildflags",
     ]

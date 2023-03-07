@@ -13,9 +13,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
@@ -134,7 +134,7 @@ TEST_F(DisplayResourceProviderSkiaTest, LockForExternalUse) {
   gpu::SyncToken sync_token1(gpu::CommandBufferNamespace::GPU_IO,
                              gpu::CommandBufferId::FromUnsafeValue(0x123),
                              0x42);
-  auto mailbox = gpu::Mailbox::Generate();
+  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   constexpr gfx::Size size(64, 64);
   TransferableResource gl_resource = TransferableResource::MakeGpu(
       mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1, size, RGBA_8888,
@@ -161,7 +161,7 @@ TEST_F(DisplayResourceProviderSkiaTest, LockForExternalUse) {
 
   ResourceId parent_id = resource_map[list.front().id];
 
-  auto format = SharedImageFormat::kRGBA_8888;
+  auto format = SinglePlaneFormat::kRGBA_8888;
   auto owned_image_context = std::make_unique<ExternalUseClient::ImageContext>(
       gpu::MailboxHolder(mailbox, sync_token1, GL_TEXTURE_2D), size, format,
       /*ycbcr_info=*/absl::nullopt, /*color_space=*/nullptr);
@@ -215,7 +215,7 @@ TEST_F(DisplayResourceProviderSkiaTest, LockForExternalUseWebView) {
   gpu::SyncToken sync_token1(gpu::CommandBufferNamespace::GPU_IO,
                              gpu::CommandBufferId::FromUnsafeValue(0x123),
                              0x42);
-  auto mailbox = gpu::Mailbox::Generate();
+  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   constexpr gfx::Size size(64, 64);
   TransferableResource gl_resource = TransferableResource::MakeGpu(
       mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1, size, RGBA_8888,
@@ -242,7 +242,7 @@ TEST_F(DisplayResourceProviderSkiaTest, LockForExternalUseWebView) {
 
   ResourceId parent_id = resource_map[list.front().id];
 
-  auto format = SharedImageFormat::kRGBA_8888;
+  auto format = SinglePlaneFormat::kRGBA_8888;
   auto owned_image_context = std::make_unique<ExternalUseClient::ImageContext>(
       gpu::MailboxHolder(mailbox, sync_token1, GL_TEXTURE_2D), size, format,
       /*ycbcr_info=*/absl::nullopt, /*color_space=*/nullptr);

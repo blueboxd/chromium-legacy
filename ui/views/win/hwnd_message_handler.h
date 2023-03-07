@@ -368,9 +368,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
     CR_MESSAGE_HANDLER_EX(WM_NCUAHDRAWCAPTION, OnNCUAHDrawCaption)
     CR_MESSAGE_HANDLER_EX(WM_NCUAHDRAWFRAME, OnNCUAHDrawFrame)
 
-    // Vista and newer
-    CR_MESSAGE_HANDLER_EX(WM_DWMCOMPOSITIONCHANGED, OnDwmCompositionChanged)
-
     // Win 8.1 and newer
     CR_MESSAGE_HANDLER_EX(WM_DPICHANGED, OnDpiChanged)
 
@@ -450,7 +447,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
     CR_MSG_WM_NCCREATE(OnNCCreate)
     CR_MSG_WM_NCHITTEST(OnNCHitTest)
     CR_MSG_WM_NCPAINT(OnNCPaint)
-    CR_MSG_WM_NOTIFY(OnNotify)
     CR_MSG_WM_PAINT(OnPaint)
     CR_MSG_WM_SETFOCUS(OnSetFocus)
     CR_MSG_WM_SETICON(OnSetIcon)
@@ -481,7 +477,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void OnDestroy();
   void OnDisplayChange(UINT bits_per_pixel, const gfx::Size& screen_size);
   LRESULT OnDpiChanged(UINT msg, WPARAM w_param, LPARAM l_param);
-  LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param, LPARAM l_param);
   void OnEnterMenuLoop(BOOL from_track_popup_menu);
   void OnEnterSizeMove();
   LRESULT OnEraseBkgnd(HDC dc);
@@ -508,7 +503,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void OnNCPaint(HRGN rgn);
   LRESULT OnNCUAHDrawCaption(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnNotify(int w_param, NMHDR* l_param);
   void OnPaint(HDC dc);
   LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnScrollMessage(UINT message, WPARAM w_param, LPARAM l_param);
@@ -744,11 +738,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // This member variable is set to true if the window is transitioning to
   // glass. Defaults to false.
   bool dwm_transition_desired_;
-
-  // Is DWM composition currently enabled?
-  // Note: According to MSDN docs for DwmIsCompositionEnabled(), this is always
-  // true starting in Windows 8.
-  bool dwm_composition_enabled_;
 
   // True if HandleWindowSizeChanging has been called in the delegate, but not
   // HandleClientSizeChanged.

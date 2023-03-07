@@ -20,6 +20,7 @@
 #include "base/process/launch.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/string_util_impl_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
@@ -105,48 +106,6 @@ HRESULT LoadLegacyProcessLauncherFormat(const std::wstring& app_id,
   return E_INVALIDARG;
 }
 
-// Formats a single `parameter` and returns the result. Any placeholder `%N` in
-// `parameter` is replaced with substitutions[N - 1]. Any literal `%` needs to
-// be escaped with a `%`.
-//
-// Returns `absl::nullopt` if:
-// * a placeholder %N is encountered where N > substitutions.size().
-// * a literal `%` is not escaped with a `%`.
-//
-// See examples in the WinUtil*FormatAppCommandLine unit tests.
-absl::optional<std::wstring> FormatParameter(
-    const std::vector<std::wstring>& substitutions,
-    const std::wstring& parameter) {
-  DCHECK_LE(substitutions.size(), 9U);
-
-  std::wstring formatted_parameter;
-  for (auto i = parameter.begin(); i != parameter.end(); ++i) {
-    if (*i != '%') {
-      formatted_parameter.push_back(*i);
-      continue;
-    }
-
-    if (++i == parameter.end())
-      return absl::nullopt;
-
-    if (*i == '%') {
-      formatted_parameter.push_back('%');
-      continue;
-    }
-
-    if (*i < '1' || *i > '9')
-      return absl::nullopt;
-
-    const size_t index = *i - '1';
-    if (index >= substitutions.size())
-      return absl::nullopt;
-
-    formatted_parameter.append(substitutions[index]);
-  }
-
-  return formatted_parameter;
-}
-
 bool IsParentOf(int key, const base::FilePath& child) {
   base::FilePath path;
   return base::PathService::Get(key, &path) && path.IsParent(child);
@@ -168,6 +127,7 @@ AppCommandRunner& AppCommandRunner::operator=(const AppCommandRunner&) =
     default;
 AppCommandRunner::~AppCommandRunner() = default;
 
+// static
 HResultOr<AppCommandRunner> AppCommandRunner::LoadAppCommand(
     UpdaterScope scope,
     const std::wstring& app_id,
@@ -192,6 +152,7 @@ HResultOr<AppCommandRunner> AppCommandRunner::LoadAppCommand(
   return app_command_runner;
 }
 
+// static
 std::vector<AppCommandRunner>
 AppCommandRunner::LoadAutoRunOnOsUpgradeAppCommands(
     UpdaterScope scope,
@@ -234,6 +195,7 @@ HRESULT AppCommandRunner::Run(const std::vector<std::wstring>& substitutions,
   return ExecuteAppCommand(executable_, parameters_, substitutions, process);
 }
 
+// static
 HRESULT AppCommandRunner::StartProcess(const base::FilePath& executable,
                                        const std::wstring& parameters,
                                        base::Process& process) {
@@ -257,7 +219,8 @@ HRESULT AppCommandRunner::StartProcess(const base::FilePath& executable,
 
   process = base::LaunchProcess(
       base::StrCat(
-          {QuoteForCommandLineToArgvW(executable.value()), L" ", parameters}),
+          {base::CommandLine::QuoteForCommandLineToArgvW(executable.value()),
+           L" ", parameters}),
       options);
   if (!process.IsValid()) {
     const HRESULT hr = HRESULTFromLastError();
@@ -269,6 +232,7 @@ HRESULT AppCommandRunner::StartProcess(const base::FilePath& executable,
   return S_OK;
 }
 
+// static
 HRESULT AppCommandRunner::GetAppCommandFormatComponents(
     UpdaterScope scope,
     std::wstring command_format,
@@ -299,21 +263,38 @@ HRESULT AppCommandRunner::GetAppCommandFormatComponents(
   return S_OK;
 }
 
+// static
+absl::optional<std::wstring> AppCommandRunner::FormatParameter(
+    const std::wstring& parameter,
+    const std::vector<std::wstring>& substitutions) {
+  return base::internal::DoReplaceStringPlaceholders(
+      /*format_string*/ parameter, /*subst*/ substitutions,
+      /*placeholder_prefix*/ L'%',
+      /*should_escape_multiple_placeholder_prefixes*/ false,
+      /*is_strict_mode*/ true, /*offsets*/ nullptr);
+}
+
+// static
 absl::optional<std::wstring> AppCommandRunner::FormatAppCommandLine(
     const std::vector<std::wstring>& parameters,
     const std::vector<std::wstring>& substitutions) {
   std::wstring formatted_command_line;
   for (size_t i = 0; i < parameters.size(); ++i) {
     absl::optional<std::wstring> formatted_parameter =
-        FormatParameter(substitutions, parameters[i]);
+        FormatParameter(parameters[i], substitutions);
     if (!formatted_parameter) {
       VLOG(1) << __func__ << " FormatParameter failed: " << parameters[i]
               << ": " << substitutions.size();
       return absl::nullopt;
     }
 
+    constexpr wchar_t kQuotableCharacters[] = L" \t\\\"";
     formatted_command_line.append(
-        QuoteForCommandLineToArgvW(*formatted_parameter));
+        formatted_parameter->find_first_of(kQuotableCharacters) ==
+                std::wstring::npos
+            ? *formatted_parameter  // no quoting needed, use as-is.
+            : base::CommandLine::QuoteForCommandLineToArgvW(
+                  *formatted_parameter));
 
     if (i + 1 < parameters.size())
       formatted_command_line.push_back(L' ');
@@ -322,6 +303,7 @@ absl::optional<std::wstring> AppCommandRunner::FormatAppCommandLine(
   return formatted_command_line;
 }
 
+// static
 HRESULT AppCommandRunner::ExecuteAppCommand(
     const base::FilePath& executable,
     const std::vector<std::wstring>& parameters,

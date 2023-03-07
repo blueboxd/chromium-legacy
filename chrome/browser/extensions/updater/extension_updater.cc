@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -274,9 +274,9 @@ void ExtensionUpdater::UpdateImmediatelyForFirstRun() {
 }
 
 void ExtensionUpdater::SetBackoffPolicyForTesting(
-    const net::BackoffEntry::Policy* backoff_policy) {
+    const net::BackoffEntry::Policy& backoff_policy) {
   EnsureDownloaderCreated();
-  downloader_->SetBackoffPolicyForTesting(backoff_policy);
+  downloader_->SetBackoffPolicy(backoff_policy);
 }
 
 // static

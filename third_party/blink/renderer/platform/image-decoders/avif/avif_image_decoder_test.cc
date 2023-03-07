@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 #include <ostream>
+#include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -16,17 +17,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
-#include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/libavif/src/include/avif/avif.h"
-
-// If the AV1 decoder library supports the bit depth 12, define
-// HAVE_AVIF_BIT_DEPTH_12_SUPPORT.
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-#define HAVE_AVIF_BIT_DEPTH_12_SUPPORT
-#endif
 
 #define FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM 0
 #define FIXME_SUPPORT_ICC_PROFILE_TRANSFORM 0
@@ -572,7 +566,7 @@ void TestInvalidStaticImage(const char* avif_file, ErrorPhase error_phase) {
 
   scoped_refptr<SharedBuffer> data = ReadFile(avif_file);
   ASSERT_TRUE(data.get());
-  decoder->SetData(data.get(), true);
+  decoder->SetData(std::move(data), true);
 
   if (error_phase == ErrorPhase::kParse) {
     EXPECT_FALSE(decoder->IsSizeAvailable());
@@ -607,7 +601,7 @@ void ReadYUV(const char* file_name,
   ASSERT_TRUE(data);
 
   auto decoder = CreateAVIFDecoder();
-  decoder->SetData(data.get(), true);
+  decoder->SetData(std::move(data), true);
 
   ASSERT_TRUE(decoder->IsDecodedSizeAvailable());
   ASSERT_TRUE(decoder->CanDecodeToYUV());
@@ -700,10 +694,6 @@ void TestYUVRed(const char* file_name,
                 const gfx::Size& expected_uv_size,
                 SkColorType color_type = kGray_8_SkColorType,
                 int bit_depth = 8) {
-#if !defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
-  if (bit_depth == 12)
-    return;
-#endif
   SCOPED_TRACE(base::StringPrintf("file_name=%s, color_type=%d", file_name,
                                   int{color_type}));
 
@@ -768,7 +758,6 @@ TEST(AnimatedAVIFTests, ValidImages) {
       &CreateAVIFDecoder,
       "/images/resources/avif/star-animated-10bpc-with-alpha.avif", 5u,
       kAnimationLoopInfinite);
-#if defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
   TestByteByByteDecode(&CreateAVIFDecoder,
                        "/images/resources/avif/star-animated-12bpc.avif", 5u,
                        0);
@@ -776,7 +765,6 @@ TEST(AnimatedAVIFTests, ValidImages) {
       &CreateAVIFDecoder,
       "/images/resources/avif/star-animated-12bpc-with-alpha.avif", 5u,
       kAnimationLoopInfinite);
-#endif
   // TODO(ryoh): Add animated avif files with EditListBox.
 }
 
@@ -828,7 +816,7 @@ TEST(StaticAVIFTests, NoCrashWhenCheckingForMultipleSubImages) {
   constexpr char kHeader[] = {0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70};
   auto buffer = SharedBuffer::Create();
   buffer->Append(kHeader, std::size(kHeader));
-  decoder->SetData(buffer.get(), false);
+  decoder->SetData(std::move(buffer), false);
   EXPECT_FALSE(decoder->ImageHasBothStillAndAnimatedSubImages());
 }
 
@@ -860,12 +848,10 @@ TEST(StaticAVIFTests, ValidImages) {
       &CreateAVIFDecoder,
       "/images/resources/avif/red-at-12-oclock-with-color-profile-10bpc.avif",
       1, kAnimationNone);
-#if defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
   TestByteByByteDecode(
       &CreateAVIFDecoder,
       "/images/resources/avif/red-at-12-oclock-with-color-profile-12bpc.avif",
       1, kAnimationNone);
-#endif
   TestByteByByteDecode(&CreateAVIFDecoder,
                        "/images/resources/avif/tiger_3layer_1res.avif", 1,
                        kAnimationNone);
@@ -878,12 +864,10 @@ TEST(StaticAVIFTests, ValidImages) {
   TestByteByByteDecode(&CreateAVIFDecoder,
                        "/images/resources/avif/dice_444_10b_grid4x3.avif", 1,
                        kAnimationNone);
-#if defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
   TestByteByByteDecode(
       &CreateAVIFDecoder,
       "/images/resources/avif/gracehopper_422_12b_grid2x4.avif", 1,
       kAnimationNone);
-#endif
 }
 
 TEST(StaticAVIFTests, YUV) {
@@ -1113,10 +1097,6 @@ INSTANTIATE_TEST_SUITE_P(Parameterized,
 
 TEST_P(StaticAVIFColorTests, InspectImage) {
   const StaticColorCheckParam& param = GetParam();
-#if !defined(HAVE_AVIF_BIT_DEPTH_12_SUPPORT)
-  if (param.bit_depth == 12)
-    return;
-#endif
   // TODO(ryoh): Add tests with ImageDecoder::kHighBitDepthToHalfFloat
   std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoderWithOptions(
       param.alpha_option, ImageDecoder::kDefaultBitDepth, param.color_behavior,
@@ -1127,7 +1107,7 @@ TEST_P(StaticAVIFColorTests, InspectImage) {
   EXPECT_EQ(param.compression_format,
             ImageDecoder::GetCompressionFormat(data, "image/avif"));
 #endif
-  decoder->SetData(data.get(), true);
+  decoder->SetData(std::move(data), true);
   EXPECT_EQ(1u, decoder->FrameCount());
   EXPECT_EQ(kAnimationNone, decoder->RepetitionCount());
   EXPECT_EQ(param.bit_depth > 8, decoder->ImageIsHighBitDepth());

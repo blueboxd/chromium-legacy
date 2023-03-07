@@ -8,10 +8,10 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,7 +21,6 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/win/conflicts/module_blocklist_cache_util.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
@@ -206,8 +205,7 @@ ModuleBlocklistCacheUpdater::~ModuleBlocklistCacheUpdater() {
 
 // static
 bool ModuleBlocklistCacheUpdater::IsBlockingEnabled() {
-  return base::win::GetVersion() >= base::win::Version::WIN8 &&
-         base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking);
+  return base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking);
 }
 
 // static

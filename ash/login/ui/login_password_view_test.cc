@@ -7,7 +7,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/shell.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -41,6 +41,9 @@ class LoginPasswordViewTest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     view_ = new LoginPasswordView();
+    // Focusable views are expected to have accessible names in order to pass
+    // the accessibility paint checks.
+    view_->SetAccessibleName(u"Password");
     view_->Init(
         base::BindRepeating(&LoginPasswordViewTest::OnPasswordSubmit,
                             base::Unretained(this)),

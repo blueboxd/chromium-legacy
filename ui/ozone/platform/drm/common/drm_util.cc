@@ -259,21 +259,6 @@ display::PanelOrientation GetPanelOrientation(int fd,
   return static_cast<display::PanelOrientation>(connector->prop_values[index]);
 }
 
-int ConnectorIndex8(int device_index, int display_index) {
-  DCHECK_LT(device_index, 16);
-  DCHECK_LT(display_index, 16);
-  return ((device_index << 4) + display_index) & 0xFF;
-}
-
-// A connector's index is a combination of:
-// 1) |display_index| the display's index in DRM       bits 0-7
-// 2) |device_index| the display's DRM's index         bits 8-15
-// e.g. - A 3rd display in a 2nd DRM would produce a connector index == 0x0102
-//        (since display index == 2 and DRM index == 1)
-uint16_t ConnectorIndex16(uint8_t device_index, uint8_t display_index) {
-  return ((device_index << 8) + display_index) & 0xFFFF;
-}
-
 bool HasPerPlaneColorCorrectionMatrix(const int fd, drmModeCrtc* crtc) {
   ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(fd));
   DCHECK(plane_resources);
@@ -538,10 +523,12 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     int fd,
     const base::FilePath& sys_path,
     uint8_t device_index,
-    const gfx::Point& origin) {
-  const uint8_t display_index = ConnectorIndex8(device_index, info->index());
+    const gfx::Point& origin,
+    const display::DrmFormatsAndModifiers& drm_formats_and_modifiers) {
+  const uint8_t display_index =
+      display::ConnectorIndex8(device_index, info->index());
   const uint16_t connector_index =
-      ConnectorIndex16(device_index, info->index());
+      display::ConnectorIndex16(device_index, info->index());
   const gfx::Size physical_size =
       gfx::Size(info->connector()->mmWidth, info->connector()->mmHeight);
   const display::DisplayConnectionType type = GetDisplayType(info->connector());
@@ -631,7 +618,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       display_color_space, bits_per_channel, hdr_static_metadata, display_name,
       sys_path, std::move(modes), panel_orientation, edid, current_mode,
       native_mode, product_code, year_of_manufacture, maximum_cursor_size,
-      variable_refresh_rate_state, vertical_display_range_limits);
+      variable_refresh_rate_state, vertical_display_range_limits,
+      drm_formats_and_modifiers);
 }
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {

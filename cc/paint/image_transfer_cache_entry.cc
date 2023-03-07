@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
+#include "third_party/skia/include/gpu/GpuTypes.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
@@ -202,11 +203,16 @@ size_t TargetColorParamsSize(
   // uint32 for whether or not there are going to be parameters.
   size_t target_color_params_size = sizeof(uint32_t);
   if (target_color_params) {
+    // x64 has 8-byte alignment for uint64_t even though x86 has 4-byte
+    // alignment.  Always use 8 byte alignment.
+    const size_t align = sizeof(uint64_t);
+
     // The target color space.
     target_color_params_size +=
         sizeof(uint64_t) +
         target_color_params->color_space.ToSkColorSpace()->writeToMemory(
-            nullptr);
+            nullptr) +
+        align;
     // Floats for the SDR and HDR maximum luminance.
     target_color_params_size += sizeof(float);
     target_color_params_size += sizeof(float);
@@ -499,7 +505,7 @@ bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     base::CheckedNumeric<size_t> safe_total_size(0u);
     for (size_t plane = 0; plane < plane_images.size(); plane++) {
       plane_images[plane] = plane_images[plane]->makeTextureImage(
-          context_, GrMipMapped::kYes, SkBudgeted::kNo);
+          context_, GrMipMapped::kYes, skgpu::Budgeted::kNo);
       if (!plane_images[plane]) {
         DLOG(ERROR) << "Could not generate mipmap chain for plane " << plane;
         return false;
@@ -600,7 +606,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
         return false;
       }
       plane = plane->makeTextureImage(context_, mip_mapped_for_upload,
-                                      SkBudgeted::kNo);
+                                      skgpu::Budgeted::kNo);
       if (!plane) {
         DLOG(ERROR) << "Failed to upload plane pixmap to texture image";
         return false;
@@ -632,7 +638,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
         rgba_pixmap.width() <= max_size && rgba_pixmap.height() <= max_size;
     if (fits_on_gpu_) {
       image_ = rgba_pixmap_image->makeTextureImage(
-          context, mip_mapped_for_upload, SkBudgeted::kNo);
+          context, mip_mapped_for_upload, skgpu::Budgeted::kNo);
       if (!image_) {
         DLOG(ERROR) << "Failed to upload pixmap to texture image";
         return false;
@@ -676,8 +682,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
     // If mipmaps were requested, create them after color conversion.
     if (has_mips_ && fits_on_gpu_) {
-      image_ =
-          image_->makeTextureImage(context, GrMipMapped::kYes, SkBudgeted::kNo);
+      image_ = image_->makeTextureImage(context, GrMipMapped::kYes,
+                                        skgpu::Budgeted::kNo);
       if (!image_) {
         DLOG(ERROR) << "Failed to generate mipmaps after color conversion";
         return false;
@@ -728,7 +734,7 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     for (size_t plane = 0; plane < plane_images_.size(); plane++) {
       DCHECK(plane_images_.at(plane));
       sk_sp<SkImage> mipped_plane = plane_images_.at(plane)->makeTextureImage(
-          context_, GrMipMapped::kYes, SkBudgeted::kNo);
+          context_, GrMipMapped::kYes, skgpu::Budgeted::kNo);
       if (!mipped_plane)
         return;
       mipped_planes.push_back(std::move(mipped_plane));
@@ -749,8 +755,8 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     plane_sizes_ = std::move(mipped_plane_sizes);
     image_ = std::move(mipped_image);
   } else {
-    sk_sp<SkImage> mipped_image =
-        image_->makeTextureImage(context_, GrMipMapped::kYes, SkBudgeted::kNo);
+    sk_sp<SkImage> mipped_image = image_->makeTextureImage(
+        context_, GrMipMapped::kYes, skgpu::Budgeted::kNo);
     if (!mipped_image) {
       DLOG(ERROR) << "Failed to mipmapped image";
       return;

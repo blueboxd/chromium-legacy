@@ -9,11 +9,11 @@
 
 #include <shlobj.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,8 +22,8 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/chrome_pwa_launcher/chrome_pwa_launcher_util.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/os_integration/web_app_handler_registration_utils_win.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_win.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,15 +48,14 @@ void RegisterProtocolHandlersWithOSInBackground(
     const std::wstring& app_name_extension) {
   base::AssertLongCPUWorkAllowed();
 
-  if (web_app::GetShortcutOverrideForTesting()) {  // IN-TEST
+  if (web_app::GetOsIntegrationTestOverride()) {  // IN-TEST
     // Instead of modifying the registry, add them to the testing data.
     std::vector<std::string> protocols_registered;
     for (apps::ProtocolHandlerInfo& info : protocol_handlers) {
       protocols_registered.push_back(info.protocol);
     }
-    web_app::GetShortcutOverrideForTesting()
-        ->protocol_scheme_registrations.emplace_back(
-            app_id, std::move(protocols_registered));
+    web_app::GetOsIntegrationTestOverride()->RegisterProtocolSchemes(
+        app_id, std::move(protocols_registered));
     return;
   }
 
@@ -102,7 +101,7 @@ void UnregisterProtocolHandlersWithOsInBackground(
     const base::FilePath& profile_path) {
   base::AssertLongCPUWorkAllowed();
 
-  if (web_app::GetShortcutOverrideForTesting()) {  // IN-TEST
+  if (web_app::GetOsIntegrationTestOverride()) {  // IN-TEST
     // The unregistration is not tested due to complication in the
     // implementation of other OS's. Instead, we check if the updated
     // registrations are empty / don't have the offending protocol.
@@ -140,10 +139,9 @@ void RegisterProtocolHandlersWithOs(
     std::vector<apps::ProtocolHandlerInfo> protocol_handlers,
     ResultCallback callback) {
   if (protocol_handlers.empty()) {
-    if (web_app::GetShortcutOverrideForTesting()) {  // IN-TEST
-      web_app::GetShortcutOverrideForTesting()
-          ->protocol_scheme_registrations.emplace_back(
-              app_id, std::vector<std::string>());
+    if (web_app::GetOsIntegrationTestOverride()) {  // IN-TEST
+      web_app::GetOsIntegrationTestOverride()->RegisterProtocolSchemes(
+          app_id, std::vector<std::string>());
     }
     std::move(callback).Run(Result::kOk);
     return;

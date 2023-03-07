@@ -32,7 +32,7 @@ declare_args() {
 
 buildflag_header("buildflags") {
   header = "form_parsing/buildflags.h"
-  flags = [ "USE_INTERNAL_AUTOFILL_HEADERS=$use_internal_autofill_patterns" ]
+  flags = [ "USE_INTERNAL_AUTOFILL_PATTERNS=$use_internal_autofill_patterns" ]
 }
 
 action("regex_patterns_inl_h") {
@@ -141,8 +141,6 @@ static_library("browser") {
     "data_model/autofill_structured_address_utils.h",
     "data_model/autofill_wallet_usage_data.cc",
     "data_model/autofill_wallet_usage_data.h",
-    "data_model/autofillable_data.cc",
-    "data_model/autofillable_data.h",
     "data_model/birthdate.cc",
     "data_model/birthdate.h",
     "data_model/borrowed_transliterator.cc",
@@ -165,9 +163,6 @@ static_library("browser") {
     "data_model/phone_number.h",
     "data_model/test_data_creator.cc",
     "data_model/test_data_creator.h",
-    "fast_checkout_delegate.h",
-    "fast_checkout_delegate_impl.cc",
-    "fast_checkout_delegate_impl.h",
     "field_filler.cc",
     "field_filler.h",
     "field_type_utils.cc",
@@ -269,10 +264,16 @@ static_library("browser") {
     "metrics/form_events/form_event_logger_base.cc",
     "metrics/form_events/form_event_logger_base.h",
     "metrics/form_events/form_events.h",
+    "metrics/log_event.cc",
+    "metrics/log_event.h",
+    "metrics/payments/better_auth_metrics.cc",
+    "metrics/payments/better_auth_metrics.h",
     "metrics/payments/card_metadata_metrics.cc",
     "metrics/payments/card_metadata_metrics.h",
     "metrics/payments/card_unmask_authentication_metrics.cc",
     "metrics/payments/card_unmask_authentication_metrics.h",
+    "metrics/payments/card_unmask_flow_metrics.cc",
+    "metrics/payments/card_unmask_flow_metrics.h",
     "metrics/payments/credit_card_save_metrics.cc",
     "metrics/payments/credit_card_save_metrics.h",
     "metrics/payments/local_card_migration_metrics.cc",
@@ -287,6 +288,8 @@ static_library("browser") {
     "metrics/payments/virtual_card_manual_fallback_bubble_metrics.h",
     "metrics/shadow_prediction_metrics.cc",
     "metrics/shadow_prediction_metrics.h",
+    "metrics/suggestions_list_metrics.cc",
+    "metrics/suggestions_list_metrics.h",
     "payments/account_info_getter.h",
     "payments/autofill_error_dialog_context.cc",
     "payments/autofill_error_dialog_context.h",
@@ -294,6 +297,7 @@ static_library("browser") {
     "payments/autofill_offer_manager.h",
     "payments/autofill_wallet_model_type_controller.cc",
     "payments/autofill_wallet_model_type_controller.h",
+    "payments/card_unmask_challenge_option.cc",
     "payments/card_unmask_challenge_option.h",
     "payments/card_unmask_delegate.cc",
     "payments/card_unmask_delegate.h",
@@ -470,8 +474,6 @@ static_library("browser") {
     sources += [
       "autofill_save_update_address_profile_delegate_ios.cc",
       "autofill_save_update_address_profile_delegate_ios.h",
-      "keyboard_accessory_metrics_logger.h",
-      "keyboard_accessory_metrics_logger.mm",
     ]
   }
 
@@ -686,8 +688,6 @@ static_library("test_support") {
     "test_autofill_client.h",
     "test_autofill_clock.cc",
     "test_autofill_clock.h",
-    "test_autofill_download_manager.cc",
-    "test_autofill_download_manager.h",
     "test_autofill_driver.cc",
     "test_autofill_driver.h",
     "test_autofill_external_delegate.cc",
@@ -708,6 +708,8 @@ static_library("test_support") {
     "test_utils/test_profiles.cc",
     "test_utils/test_profiles.h",
     "test_utils/vote_uploads_test_matchers.h",
+    "ui/mock_autofill_popup_delegate.cc",
+    "ui/mock_autofill_popup_delegate.h",
     "ui/suggestion_test_helpers.h",
     "webdata/autofill_sync_bridge_test_util.cc",
     "webdata/autofill_sync_bridge_test_util.h",
@@ -851,7 +853,6 @@ source_set("unit_tests") {
     "data_model/credit_card_unittest.cc",
     "data_model/iban_unittest.cc",
     "data_model/phone_number_unittest.cc",
-    "fast_checkout_delegate_impl_unittest.cc",
     "field_filler_unittest.cc",
     "field_type_utils_unittest.cc",
     "field_types_unittest.cc",
@@ -894,6 +895,7 @@ source_set("unit_tests") {
     "metrics/autofill_metrics_unittest.cc",
     "metrics/payments/offers_metrics_unittest.cc",
     "metrics/shadow_prediction_metrics_unittest.cc",
+    "metrics/suggestions_list_metrics_unittest.cc",
     "payments/autofill_offer_manager_unittest.cc",
     "payments/credit_card_access_manager_unittest.cc",
     "payments/credit_card_cvc_authenticator_unittest.cc",

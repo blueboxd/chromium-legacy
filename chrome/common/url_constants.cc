@@ -17,6 +17,9 @@ const char kAccessCodeCastLearnMoreURL[] =
 const char kAccessibilityLabelsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=image_descriptions";
 
+const char kAdPrivacyLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ad_privacy";
+
 const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
@@ -145,6 +148,9 @@ const char kExtensionControlledSettingLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_settings_api_extension";
 
 const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
+
+const char kFirstPartySetsLearnMoreURL[] =
+    "https://developer.chrome.com/docs/privacy-sandbox/first-party-sets/";
 
 const char kFlashDeprecationLearnMoreURL[] =
     "https://blog.chromium.org/2017/07/so-long-and-thanks-for-all-flash.html";
@@ -424,6 +430,12 @@ const char kGoogleEulaOnlineURLPath[] =
 
 const char kCrosEulaOnlineURLPath[] =
     "https://www.google.com/intl/%s/chrome/terms/";
+
+const char kArcTosOnlineURLPath[] =
+    "https://play.google.com/about/play-terms/embedded/";
+
+const char kPrivacyPolicyOnlineURLPath[] =
+    "https://policies.google.com/privacy/embedded";
 
 const char kOsSettingsSearchHelpURL[] =
     "https://support.google.com/chromebook/?p=settings_search_help";

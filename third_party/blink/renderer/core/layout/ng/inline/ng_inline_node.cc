@@ -8,6 +8,7 @@
 #include <numeric>
 
 #include "base/containers/adapters.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
@@ -235,7 +237,40 @@ void CollectInlinesInternal(ItemsBuilder* builder,
   const LayoutObject* symbol =
       LayoutNGListItem::FindSymbolMarkerLayoutText(block);
   while (node) {
-    if (auto* layout_text = DynamicTo<LayoutText>(node)) {
+    if (auto* counter = DynamicTo<LayoutCounter>(node)) {
+      // According to
+      // https://w3c.github.io/csswg-drafts/css-counter-styles/#simple-symbolic,
+      // disclosure-* should have special rendering paths.
+      if (counter->IsDirectionalSymbolMarker()) {
+        const String& text = counter->GetText();
+        // We assume the text representation length for a predefined symbol
+        // marker is always 1.
+        if (text.length() <= 1) {
+          builder->AppendText(counter, previous_data);
+          builder->SetIsSymbolMarker();
+        } else {
+          // The text must be in the following form:
+          // Symbol, separator, symbol, separator, symbol, ...
+          builder->AppendText(text.Substring(0, 1), counter);
+          builder->SetIsSymbolMarker();
+          const AtomicString& separator = counter->Separator();
+          for (wtf_size_t i = 1; i < text.length();) {
+            if (separator.length() > 0) {
+              DCHECK_EQ(separator, text.Substring(i, separator.length()));
+              builder->AppendText(separator, counter);
+              i += separator.length();
+              DCHECK_LT(i, text.length());
+            }
+            builder->AppendText(text.Substring(i, 1), counter);
+            builder->SetIsSymbolMarker();
+            ++i;
+          }
+        }
+      } else {
+        builder->AppendText(counter, previous_data);
+      }
+      builder->ClearNeedsLayout(counter);
+    } else if (auto* layout_text = DynamicTo<LayoutText>(node)) {
       builder->AppendText(layout_text, previous_data);
 
       if (symbol == layout_text)
@@ -287,7 +322,6 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       builder->ClearNeedsLayout(layout_inline);
     } else {
       DCHECK(!node->IsInline());
-      DCHECK(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled());
       builder->AppendBlockInInline(node);
       builder->ClearInlineFragment(node);
     }
@@ -1004,7 +1038,7 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
     // TODO(kojii): This shouldn't happen, but is not easy to fix all cases.
     // Return nullptr so that callers can chose to fail gracefully, or
     // null-deref. crbug.com/946004
-    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
     return nullptr;
   }
 
@@ -1091,31 +1125,19 @@ const SvgTextChunkOffsets* NGInlineNode::FindSvgTextChunks(
   // Compute DOM offsets of text chunks.
   mapping_builder.SetDestinationString(ifc_text_content);
   NGOffsetMapping* mapping = mapping_builder.Build();
-  // Index in a UTF-32 sequence
-  unsigned last_addressable = 0;
-  // Index in a UTF-16 sequence for last_addressable.
-  unsigned text_content_offset = 0;
   StringView ifc_text_view(ifc_text_content);
-  for (const auto& char_data : data.svg_node_data_->character_data_list) {
+  for (wtf_size_t i = 0; i < data.svg_node_data_->character_data_list.size();
+       ++i) {
+    const std::pair<unsigned, NGSvgCharacterData>& char_data =
+        data.svg_node_data_->character_data_list[i];
     if (!char_data.second.anchored_chunk)
       continue;
     unsigned addressable_offset = char_data.first;
     if (addressable_offset == 0u)
       continue;
-    while (last_addressable < addressable_offset) {
-      ++last_addressable;
-      text_content_offset =
-          ifc_text_view.NextCodePointOffset(text_content_offset);
-    }
+    unsigned text_content_offset = svg_attr_builder.IfcTextContentOffsetAt(i);
     const auto* unit = mapping->GetLastMappingUnit(text_content_offset);
-    // |text_content_offset| might point a control character not in any
-    // DOM nodes.
-    while (!unit) {
-      text_content_offset =
-          ifc_text_view.NextCodePointOffset(text_content_offset);
-      DCHECK_LT(text_content_offset, ifc_text_view.length());
-      unit = mapping->GetLastMappingUnit(text_content_offset);
-    }
+    DCHECK(unit);
     auto result = data.svg_node_data_->chunk_offsets.insert(
         To<LayoutText>(&unit->GetLayoutObject()), Vector<unsigned>());
     result.stored_value->value.push_back(
@@ -1303,7 +1325,9 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     // Symbol marker is painted as graphics. Create a ShapeResult of space
     // glyphs with the desired size to make it less special for line breaker.
     if (UNLIKELY(start_item.IsSymbolMarker())) {
-      LayoutUnit symbol_width = ListMarker::WidthOfSymbol(start_style);
+      LayoutUnit symbol_width = ListMarker::WidthOfSymbol(
+          start_style,
+          LayoutCounter::ListStyle(start_item.GetLayoutObject(), start_style));
       DCHECK_GE(symbol_width, 0);
       start_item.shape_result_ = ShapeResult::CreateForSpaces(
           &font, direction, start_item.StartOffset(), start_item.Length(),
@@ -1327,6 +1351,9 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
       if (item.Type() == NGInlineItem::kText) {
         if (!item.Length())
           continue;
+        if (item.TextType() == NGTextType::kSymbolMarker) {
+          break;
+        }
         if (ShouldBreakShapingBeforeText(item, start_item, start_style, font,
                                          direction)) {
           break;

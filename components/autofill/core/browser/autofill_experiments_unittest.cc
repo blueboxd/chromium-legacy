@@ -4,7 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_experiments.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -284,8 +284,10 @@ TEST_F(AutofillExperimentsTest,
 TEST_F(
     AutofillExperimentsTest,
     IsCardUploadEnabled_UserEmailWithSupportedAdditionalDomain_NotAllowedIfFlagOff) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillUpstreamAllowAdditionalEmailDomains);
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{}, /*disabled_features=*/{
+          features::kAutofillUpstreamAllowAdditionalEmailDomains,
+          features::kAutofillUpstreamAllowAllEmailDomains});
   EXPECT_FALSE(IsCreditCardUploadEnabled(
       "cool.user@hotmail.com",
       AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled));

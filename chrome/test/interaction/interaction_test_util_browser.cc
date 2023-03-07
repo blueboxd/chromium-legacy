@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -15,15 +16,18 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/interaction/tracked_element_webcontents.h"
 #include "chrome/test/interaction/webcontents_interaction_test_util.h"
 #include "ui/base/interaction/element_tracker.h"
+#include "ui/base/interaction/interaction_test_util.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/event.h"
 #include "ui/events/types/event_type.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/interaction/interaction_test_util_views.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 
@@ -33,6 +37,7 @@
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define SUPPORTS_PIXEL_TESTS 1
+#include "base/command_line.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
 #else
 #define SUPPORTS_PIXEL_TESTS 0
@@ -86,29 +91,73 @@ class InteractionTestUtilSimulatorBrowser
   // Browser accelerators must be sent via key events to the window on Mac or
   // they don't work properly. Dialog accelerators still appear to work the same
   // as on other platforms.
-  bool SendAccelerator(ui::TrackedElement* element,
-                       const ui::Accelerator& accelerator) override {
+  ui::test::ActionResult SendAccelerator(ui::TrackedElement* element,
+                                         ui::Accelerator accelerator) override {
     Browser* const browser =
         InteractionTestUtilBrowser::GetBrowserFromContext(element->context());
     if (!browser)
-      return false;
+      return ui::test::ActionResult::kNotAttempted;
 
-    CHECK(ui_controls::SendKeyPress(
-        browser->window()->GetNativeWindow(), accelerator.key_code(),
-        accelerator.IsCtrlDown(), accelerator.IsShiftDown(),
-        accelerator.IsAltDown(), accelerator.IsCmdDown()));
-
-    return true;
+    if (!ui_controls::SendKeyPress(
+            browser->window()->GetNativeWindow(), accelerator.key_code(),
+            accelerator.IsCtrlDown(), accelerator.IsShiftDown(),
+            accelerator.IsAltDown(), accelerator.IsCmdDown())) {
+      LOG(ERROR) << "Failed to send accelerator"
+                 << accelerator.GetShortcutText() << " to " << *element;
+      return ui::test::ActionResult::kFailed;
+    }
+    return ui::test::ActionResult::kSucceeded;
   }
 #endif  // BUILDFLAG(IS_MAC)
 
-  bool SelectTab(ui::TrackedElement* tab_collection,
-                 size_t index,
-                 InputType input_type) override {
+  // Chrome has better and more thorough functionality for bringing a browser
+  // window to the front, but it's expensive, so only actually use it for
+  // browser windows on platforms where activation requires extra steps.
+  ui::test::ActionResult ActivateSurface(ui::TrackedElement* el) override {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+    if (!el->IsA<views::TrackedElementViews>()) {
+      return ui::test::ActionResult::kNotAttempted;
+    }
+
+    // Get the browser and browser window associated with the current context.
+    // If there is none, do not use this implementation.
+    auto* const browser =
+        InteractionTestUtilBrowser::GetBrowserFromContext(el->context());
+    if (!browser) {
+      return ui::test::ActionResult::kNotAttempted;
+    }
+    auto* const browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+    if (!browser_view) {
+      return ui::test::ActionResult::kNotAttempted;
+    }
+
+    // If the target widget is not the primary window widget, do not use this
+    // implementation.
+    if (browser_view->GetWidget() !=
+        el->AsA<views::TrackedElementViews>()->view()->GetWidget()) {
+      return ui::test::ActionResult::kNotAttempted;
+    }
+
+    // Bring the browser window to the front using the most aggressive method
+    // for the current platform. If this is not done, then mouse events might
+    // not get routed to the correct surface.
+    if (!ui_test_utils::BringBrowserWindowToFront(browser)) {
+      LOG(ERROR) << "BringBrowserWindowToFront() failed.";
+      return ui::test::ActionResult::kFailed;
+    }
+    return ui::test::ActionResult::kSucceeded;
+#else
+    return ui::test::ActionResult::kNotAttempted;
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  }
+
+  ui::test::ActionResult SelectTab(ui::TrackedElement* tab_collection,
+                                   size_t index,
+                                   InputType input_type) override {
     // This handler *explicitly* only handles Browser and TabStrip; it will
     // reject any other element or View type.
     if (!tab_collection->IsA<views::TrackedElementViews>())
-      return false;
+      return ui::test::ActionResult::kNotAttempted;
     auto* const view =
         tab_collection->AsA<views::TrackedElementViews>()->view();
     TabStrip* tab_strip = nullptr;
@@ -118,36 +167,43 @@ class InteractionTestUtilSimulatorBrowser
       tab_strip = views::AsViewClass<TabStrip>(view);
     }
     if (!tab_strip)
-      return false;
+      return ui::test::ActionResult::kNotAttempted;
 
     // Verify that the tab index is in range; at this point it's a fatal error
     // if it's out of bounds.
-    CHECK_LT(static_cast<int>(index), tab_strip->GetTabCount())
-        << "Tab strip tab index " << index << " is out of bounds.";
+    if (static_cast<int>(index) >= tab_strip->GetTabCount()) {
+      LOG(ERROR) << "Tabstrip index " << index
+                 << " is out of bounds, there are " << tab_strip->GetTabCount()
+                 << " tabs.";
+      return ui::test::ActionResult::kFailed;
+    }
 
     // Tabs can be selected using a default action; no special input logic is
     // needed.
     Tab* const tab = tab_strip->tab_at(index);
     views::test::InteractionTestUtilSimulatorViews::DoDefaultAction(tab,
                                                                     input_type);
-    CHECK_EQ(static_cast<int>(index), tab_strip->GetActiveIndex().value());
-    return true;
+    if (static_cast<int>(index) != tab_strip->GetActiveIndex()) {
+      LOG(ERROR) << "Failed to select tabstrip tab " << index;
+      return ui::test::ActionResult::kFailed;
+    }
+    return ui::test::ActionResult::kSucceeded;
   }
 
-  bool Confirm(ui::TrackedElement* element) override {
+  ui::test::ActionResult Confirm(ui::TrackedElement* element) override {
     // This handler *explicitly* only handles OmniboxView; it will reject any
     // other element or View type.
     if (!element->IsA<views::TrackedElementViews>())
-      return false;
+      return ui::test::ActionResult::kNotAttempted;
     auto* const view = element->AsA<views::TrackedElementViews>()->view();
     if (auto* const omnibox = views::AsViewClass<OmniboxViewViews>(view)) {
       ui::KeyEvent press(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
       omnibox->OnKeyEvent(&press);
       ui::KeyEvent release(ui::ET_KEY_RELEASED, ui::VKEY_RETURN, ui::EF_NONE);
       omnibox->OnKeyEvent(&release);
-      return true;
+      return ui::test::ActionResult::kSucceeded;
     }
-    return false;
+    return ui::test::ActionResult::kNotAttempted;
   }
 };
 
@@ -176,23 +232,37 @@ Browser* InteractionTestUtilBrowser::GetBrowserFromContext(
 }
 
 // static
-bool InteractionTestUtilBrowser::CompareScreenshot(
+ui::test::ActionResult InteractionTestUtilBrowser::CompareScreenshot(
     ui::TrackedElement* element,
     const std::string& screenshot_name,
     const std::string& baseline) {
-#if SUPPORTS_PIXEL_TESTS
   views::View* view = nullptr;
   if (auto* const view_el = element->AsA<views::TrackedElementViews>()) {
     view = view_el->view();
   } else if (auto* const page_el = element->AsA<TrackedElementWebContents>()) {
     view = page_el->owner()->GetWebView();
   }
+  if (!view) {
+    return ui::test::ActionResult::kNotAttempted;
+  }
 
-  CHECK(view);
+#if SUPPORTS_PIXEL_TESTS
+  // pixel_browser_tests and pixel_interactive_ui_tests specify this command
+  // line, which is checked by TestBrowserUi before attempting any screen
+  // capture; otherwise screenshotting is a silent no-op.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "browser-ui-tests-verify-pixels")) {
+    LOG(WARNING)
+        << "Cannot take screenshot: pixel test command line not set. This is "
+           "normal for non-pixel-test jobs such as vanilla browser_tests.";
+    return ui::test::ActionResult::kKnownIncompatible;
+  }
 
   PixelTestUi pixel_test_ui(view, screenshot_name, baseline);
-  return pixel_test_ui.VerifyUi();
+  return pixel_test_ui.VerifyUi() ? ui::test::ActionResult::kSucceeded
+                                  : ui::test::ActionResult::kFailed;
 #else  // !SUPPORTS_PIXEL_TESTS
-  return true;
+  LOG(WARNING) << "Current platform does not support pixel tests.";
+  return ui::test::ActionResult::kKnownIncompatible;
 #endif
 }

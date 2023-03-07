@@ -83,8 +83,7 @@ class CORE_EXPORT MatchedPropertiesCache {
     bool IsValid() const {
       // If hash_ happens to compute to the empty value or the deleted value,
       // the corresponding MatchResult can't be cached.
-      return hash_ != HashTraits<unsigned>::EmptyValue() &&
-             !HashTraits<unsigned>::IsDeletedValue(hash_);
+      return !WTF::IsHashTraitsEmptyOrDeletedValue<HashTraits<unsigned>>(hash_);
     }
 
    private:
@@ -115,10 +114,7 @@ class CORE_EXPORT MatchedPropertiesCache {
   // long as *all* properties referred to by the entry are alive. This requires
   // custom weakness which is managed through
   // |RemoveCachedMatchedPropertiesWithDeadEntries|.
-  using Cache = HeapHashMap<unsigned,
-                            Member<CachedMatchedProperties>,
-                            DefaultHash<unsigned>,
-                            HashTraits<unsigned>>;
+  using Cache = HeapHashMap<unsigned, Member<CachedMatchedProperties>>;
 
   void RemoveCachedMatchedPropertiesWithDeadEntries(const LivenessBroker&);
 

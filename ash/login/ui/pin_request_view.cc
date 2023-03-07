@@ -14,7 +14,8 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "base/task/single_thread_task_runner.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -505,8 +506,9 @@ void PinRequestView::SetInputEnabled(bool input_enabled) {
 
 void PinRequestView::UpdatePreferredSize() {
   SetPreferredSize(CalculatePreferredSize());
-  if (GetWidget())
+  if (GetWidget()) {
     GetWidget()->CenterWindow(GetPreferredSize());
+  }
 }
 
 void PinRequestView::FocusSubmitButton() {
@@ -557,8 +559,9 @@ gfx::Size PinRequestView::GetPinRequestViewSize() const {
       std::min(static_cast<int>(description_label_->GetRequiredLines()),
                kDescriptionMaxLines) *
           kDescriptionTextLineHeightDp;
-  if (PinKeyboardVisible())
+  if (PinKeyboardVisible()) {
     height += kPinKeyboardHeightDp;
+  }
   return gfx::Size(kPinRequestViewWidthDp, height);
 }
 

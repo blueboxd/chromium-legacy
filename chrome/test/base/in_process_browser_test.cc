@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/no_destructor.h"
@@ -321,9 +321,7 @@ void InProcessBrowserTest::Initialize() {
 
   // In-product help can conflict with tests' expected window activation and
   // focus. Individual tests can re-enable IPH.
-  for (const base::Feature* feature : feature_engagement::GetAllFeatures()) {
-    disabled_features.push_back(*feature);
-  }
+  block_all_iph_feature_list_.InitWithNoFeaturesAllowed();
 
   scoped_feature_list_.InitWithFeatures({}, disabled_features);
 

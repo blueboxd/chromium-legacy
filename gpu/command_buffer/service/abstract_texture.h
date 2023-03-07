@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_ABSTRACT_TEXTURE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_ABSTRACT_TEXTURE_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/gpu_gles2_export.h"
@@ -56,17 +56,13 @@ class GPU_GLES2_EXPORT AbstractTexture {
   virtual void SetParameteri(GLenum pname, GLint param) = 0;
 
 #if BUILDFLAG(IS_ANDROID)
-  // Set |image| to be our stream texture image, using |service_id| in place
-  // of our real service id when the client tries to bind us.  This must also
-  // guarantee that CopyTexImage() is called before drawing, so that |image|
-  // may update the stream texture.  This will do nothing if the texture has
+  // Binds the texture to |service_id|. This will do nothing if the texture has
   // been destroyed.
   //
-  // It is not required to SetCleared() if one binds an image.
+  // It is not required to SetCleared() if one calls this method.
   //
   // The context must be current.
-  virtual void BindStreamTextureImage(gl::GLImage* image,
-                                      GLuint service_id) = 0;
+  virtual void BindToServiceId(GLuint service_id) = 0;
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
@@ -79,7 +75,7 @@ class GPU_GLES2_EXPORT AbstractTexture {
   //
   // The context must be current.
   virtual void SetUnboundImage(gl::GLImage* image) = 0;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   // Attaches |image| to the AbstractTexture. The decoder does not call
   // GLImage::Copy/Bind. Further, the decoder guarantees that
   // ScheduleOverlayPlane will be called if the texture is ever promoted to an

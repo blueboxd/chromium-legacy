@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstring>
 #include <memory>
 #include <unordered_map>
 
 #include "ash/constants/ash_features.h"
 #include "ash/webui/file_manager/url_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
@@ -20,6 +21,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
@@ -33,7 +37,11 @@
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/provider_interface.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
@@ -65,6 +73,7 @@
 #include "services/network/test/test_network_connection_tracker.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 
 using web_app::kMediaAppId;
@@ -73,15 +82,23 @@ namespace file_manager {
 namespace file_tasks {
 namespace {
 
+const char* blockedUrl = "https://blocked.com";
+
+static const char kOneDriveSampleUrl[] = "https://1drv.ms/123";
+
 // A list of file extensions (`/` delimited) representing a selection of files
 // and the app expected to be the default to open these files.
 // A null app_id indicates there is no preferred default.
 // A mime_type can be set to a result normally given by sniffing when
 // net::GetMimeTypeFromFile() would not provide a result.
+// A source_url can be set when testing DLP restrictions and is also used to
+// determine whether fetched tasks should be blocked. If null, the task should
+// never be blocked.
 struct Expectation {
   const char* file_extensions;
   const char* app_id;
   const char* mime_type = nullptr;
+  const char* dlp_source_url = nullptr;
 };
 
 // Verifies that a single default task expectation (i.e. the expected
@@ -127,11 +144,58 @@ void VerifyAsyncTask(int* remaining,
   std::move(quit_closure).Run();
 }
 
+// Verifies that all tasks are either blocked or not by DLP, according to
+// |expectation|. Decrements the provided |remaining| integer to provide
+// additional verification that this function is invoked an expected number of
+// times (i.e. even if the callback could be invoked asynchronously).
+void VerifyDlpStatus(int* remaining,
+                     Expectation expectation,
+                     std::unique_ptr<ResultingTasks> resulting_tasks) {
+  ASSERT_TRUE(resulting_tasks) << expectation.file_extensions;
+  --*remaining;
+
+  bool expect_dlp_blocked = expectation.dlp_source_url &&
+                            strcmp(expectation.dlp_source_url, blockedUrl) == 0;
+  EXPECT_EQ(expect_dlp_blocked,
+            base::ranges::all_of(resulting_tasks->tasks,
+                                 &FullTaskDescriptor::is_dlp_blocked));
+}
+
 // Installs a chrome app that handles .tiff.
 scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
     Profile* profile) {
   return test::InstallTestingChromeApp(
       profile, "extensions/api_test/file_browser/app_file_handler");
+}
+
+// Populates |entries|, |file_urls|, and |dlp_source_urls| based on |test|.
+void ConvertExpectation(const Expectation& test,
+                        std::vector<extensions::EntryInfo>& entries,
+                        std::vector<GURL>& file_urls,
+                        std::vector<std::string>& dlp_source_urls) {
+  const base::FilePath prefix = base::FilePath().AppendASCII("file");
+  std::vector<base::StringPiece> all_extensions = base::SplitStringPiece(
+      test.file_extensions, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (base::StringPiece extension : all_extensions) {
+    base::FilePath path = prefix.AddExtension(extension);
+    std::string mime_type;
+    net::GetMimeTypeFromFile(path, &mime_type);
+    if (test.mime_type != nullptr) {
+      // Sniffing isn't used when GetMimeTypeFromFile() succeeds, so there
+      // shouldn't be a hard-coded mime type configured.
+      EXPECT_TRUE(mime_type.empty())
+          << "Did not expect mime match " << mime_type << " for " << path;
+      mime_type = test.mime_type;
+    } else {
+      EXPECT_FALSE(mime_type.empty()) << "No mime type for " << path;
+    }
+    entries.emplace_back(path, mime_type, false);
+    GURL url = GURL(base::JoinString(
+        {"filesystem:https://site.com/isolated/foo.", extension}, ""));
+    ASSERT_TRUE(url.is_valid());
+    file_urls.push_back(url);
+    dlp_source_urls.push_back(test.dlp_source_url ? test.dlp_source_url : "");
+  }
 }
 
 class FileTasksBrowserTest : public TestProfileTypeMixin<InProcessBrowserTest> {
@@ -147,37 +211,17 @@ class FileTasksBrowserTest : public TestProfileTypeMixin<InProcessBrowserTest> {
   void TestExpectationsAgainstDefaultTasks(
       const std::vector<Expectation>& expectations) {
     int remaining = expectations.size();
-    const base::FilePath prefix = base::FilePath().AppendASCII("file");
 
     for (const Expectation& test : expectations) {
       std::vector<extensions::EntryInfo> entries;
       std::vector<GURL> file_urls;
-      std::vector<base::StringPiece> all_extensions =
-          base::SplitStringPiece(test.file_extensions, "/",
-                                 base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-      for (base::StringPiece extension : all_extensions) {
-        base::FilePath path = prefix.AddExtension(extension);
-        std::string mime_type;
-        net::GetMimeTypeFromFile(path, &mime_type);
-        if (test.mime_type != nullptr) {
-          // Sniffing isn't used when GetMimeTypeFromFile() succeeds, so there
-          // shouldn't be a hard-coded mime type configured.
-          EXPECT_TRUE(mime_type.empty())
-              << "Did not expect mime match " << mime_type << " for " << path;
-          mime_type = test.mime_type;
-        } else {
-          EXPECT_FALSE(mime_type.empty()) << "No mime type for " << path;
-        }
-        entries.emplace_back(path, mime_type, false);
-        GURL url = GURL(base::JoinString(
-            {"filesystem:https://site.com/isolated/foo.", extension}, ""));
-        ASSERT_TRUE(url.is_valid());
-        file_urls.push_back(url);
-      }
+      std::vector<std::string> dlp_source_urls;
+      ConvertExpectation(test, entries, file_urls, dlp_source_urls);
 
       // task_verifier callback is invoked synchronously from
       // FindAllTypesOfTasks.
       FindAllTypesOfTasks(browser()->profile(), entries, file_urls,
+                          dlp_source_urls,
                           base::BindOnce(&VerifyTasks, &remaining, test));
     }
     EXPECT_EQ(0, remaining);
@@ -419,7 +463,7 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ProvidedFileSystemFileSource) {
       base::BindLambdaForTesting([&](const std::string& mime_type) {
         entries[0].mime_type = mime_type;
         EXPECT_EQ(entries[0].mime_type, "image/gif");
-        FindAllTypesOfTasks(profile, entries, urls, std::move(verifier));
+        FindAllTypesOfTasks(profile, entries, urls, {""}, std::move(verifier));
       }));
   run_loop.Run();
   EXPECT_EQ(remaining_expectations, 0);
@@ -618,6 +662,80 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, FallbackFailsNoQuickOffice) {
                             ash::office_fallback::FallbackReason::kOffline));
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+// Tests that apply DLP policies before fetching tasks and verify expectations
+// on the blocked status.
+class FileTasksPolicyBrowserTest : public FileTasksBrowserTest {
+ public:
+  // Tests that fetched tasks are marked as blocked by DLP, if expected.
+  void TestExpectationsAgainstDlp(
+      const std::vector<Expectation>& expectations) {
+    int remaining = expectations.size();
+
+    for (const Expectation& test : expectations) {
+      std::vector<extensions::EntryInfo> entries;
+      std::vector<GURL> file_urls;
+      std::vector<std::string> dlp_source_urls;
+      ConvertExpectation(test, entries, file_urls, dlp_source_urls);
+
+      // task_verifier callback is invoked synchronously from
+      // FindAllTypesOfTasks.
+      FindAllTypesOfTasks(browser()->profile(), entries, file_urls,
+                          dlp_source_urls,
+                          base::BindOnce(&VerifyDlpStatus, &remaining, test));
+    }
+    EXPECT_EQ(0, remaining);
+  }
+
+  std::unique_ptr<KeyedService> SetDlpRulesManager(
+      content::BrowserContext* context) {
+    auto dlp_rules_manager =
+        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
+    rules_manager_ = dlp_rules_manager.get();
+    return dlp_rules_manager;
+  }
+
+ protected:
+  policy::MockDlpRulesManager* rules_manager_ = nullptr;
+};
+
+IN_PROC_BROWSER_TEST_P(FileTasksPolicyBrowserTest, TasksMarkedAsBlocked) {
+  if (profile_type() != TestProfileType::kRegular) {
+    // Early return: DLP is only supported for regular profiles.
+    return;
+  }
+
+  Profile* profile = browser()->profile();
+
+  policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
+      profile,
+      base::BindRepeating(&FileTasksPolicyBrowserTest::SetDlpRulesManager,
+                          base::Unretained(this)));
+  ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
+
+  ON_CALL(*rules_manager_, IsFilesPolicyEnabled)
+      .WillByDefault(testing::Return(true));
+  std::unique_ptr<policy::DlpFilesController> files_controller_ =
+      std::make_unique<policy::DlpFilesController>(*rules_manager_);
+  ON_CALL(*rules_manager_, GetDlpFilesController)
+      .WillByDefault(testing::Return(files_controller_.get()));
+
+  EXPECT_CALL(*rules_manager_, IsRestrictedDestination)
+      .Times(testing::AtLeast(1))
+      .WillRepeatedly(testing::Return(policy::DlpRulesManager::Level::kAllow));
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedDestination(GURL(blockedUrl), testing::_, testing::_,
+                                      testing::_, testing::_))
+      .Times(testing::AtLeast(1))
+      .WillRepeatedly(testing::Return(policy::DlpRulesManager::Level::kBlock));
+
+  std::vector<Expectation> expectations = {
+      {"jpg/gif", kMediaAppId, nullptr, "https://example.com"},
+      {"jpg/mp4", kMediaAppId, nullptr, "https://blocked.com"},
+  };
+
+  TestExpectationsAgainstDlp(expectations);
+}
 
 // TODO(cassycc): move this class to a more appropriate spot.
 // Fake DriveFs specific to the `DriveTest`. Allows a test file to
@@ -936,28 +1054,16 @@ IN_PROC_BROWSER_TEST_F(DriveTest, FileNotInDriveOpensSetUpDialog) {
 class FakeProvidedFileSystemOneDrive
     : public ash::file_system_provider::FakeProvidedFileSystem {
  public:
-  FakeProvidedFileSystemOneDrive(
-      const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
-      base::OnceClosure callback)
-      : FakeProvidedFileSystem(file_system_info),
-        callback_(std::move(callback)) {}
-
-  ash::file_system_provider::AbortCallback ExecuteAction(
+  explicit FakeProvidedFileSystemOneDrive(
+      const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info)
+      : FakeProvidedFileSystem(file_system_info) {}
+  ash::file_system_provider::AbortCallback GetActions(
       const std::vector<base::FilePath>& entry_paths,
-      const std::string& action_id,
-      storage::AsyncFileUtil::StatusCallback callback) override {
-    // When the "OPEN_WEB" action is observed, notify the
-    // `OneDriveTest` via the `callback_`.
-    if (action_id == file_manager::file_tasks::kActionIdOpenWeb) {
-      std::move(callback_).Run();
-    }
-    return FakeProvidedFileSystem::ExecuteAction(entry_paths, action_id,
-                                                 std::move(callback));
+      GetActionsCallback callback) override {
+    std::move(callback).Run({{"HIDDEN_ONEDRIVE_URL", kOneDriveSampleUrl}},
+                            base::File::FILE_OK);
+    return ash::file_system_provider::AbortCallback();
   }
-
- protected:
-  // OneDriveTest::OpenWebAction.
-  base::OnceClosure callback_;
 };
 
 // TODO(cassycc): move this class to a more appropriate spot
@@ -970,13 +1076,12 @@ class FakeExtensionProviderOneDrive
   static std::unique_ptr<ProviderInterface> Create(
       const extensions::ExtensionId& extension_id,
       const base::FilePath relative_test_file_path,
-      std::string test_file_name,
-      base::OnceClosure callback) {
+      std::string test_file_name) {
     ash::file_system_provider::Capabilities default_capabilities(
         false, false, false, extensions::SOURCE_NETWORK);
     return std::unique_ptr<ProviderInterface>(new FakeExtensionProviderOneDrive(
         extension_id, default_capabilities, relative_test_file_path,
-        test_file_name, std::move(callback)));
+        test_file_name));
   }
 
   std::unique_ptr<ash::file_system_provider::ProvidedFileSystemInterface>
@@ -986,8 +1091,7 @@ class FakeExtensionProviderOneDrive
       override {
     DCHECK(profile);
     std::unique_ptr<FakeProvidedFileSystemOneDrive> fake_provided_file_system =
-        std::make_unique<FakeProvidedFileSystemOneDrive>(file_system_info,
-                                                         std::move(callback_));
+        std::make_unique<FakeProvidedFileSystemOneDrive>(file_system_info);
     // Add test file.
     fake_provided_file_system->AddEntry(
         relative_test_file_path_, false, test_file_name_, 0, base::Time::Now(),
@@ -1002,17 +1106,75 @@ class FakeExtensionProviderOneDrive
       const extensions::ExtensionId& extension_id,
       const ash::file_system_provider::Capabilities& capabilities,
       const base::FilePath relative_test_file_path,
-      std::string test_file_name,
-      base::OnceClosure callback)
+      std::string test_file_name)
       : FakeExtensionProvider(extension_id, capabilities),
-        callback_(std::move(callback)),
         relative_test_file_path_(relative_test_file_path),
         test_file_name_(test_file_name) {}
 
-  // OneDriveTest::OpenWebAction.
-  base::OnceClosure callback_;
   const base::FilePath relative_test_file_path_;
   std::string test_file_name_;
+};
+
+// Fake app service web app publisher to test when an app is launched.
+class FakeWebAppPublisher : public apps::AppPublisher {
+ public:
+  struct LaunchEvent {
+    std::string app_id;
+    std::string intent_url;
+  };
+  explicit FakeWebAppPublisher(Profile* profile)
+      : AppPublisher(apps::AppServiceProxyFactory::GetForProfile(profile)) {
+    RegisterPublisher(apps::AppType::kWeb);
+
+    std::vector<apps::AppPtr> apps;
+    apps.push_back(std::make_unique<apps::App>(apps::AppType::kWeb,
+                                               web_app::kMicrosoftOfficeAppId));
+    Publish(std::move(apps), apps::AppType::kWeb,
+            /*should_notify_initialized=*/true);
+  }
+
+  void LoadIcon(const std::string& app_id,
+                const apps::IconKey& icon_key,
+                apps::IconType icon_type,
+                int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
+                apps::LoadIconCallback callback) override {
+    // Never called in these tests.
+    NOTREACHED();
+  }
+
+  void Launch(const std::string& app_id,
+              int32_t event_flags,
+              apps::LaunchSource launch_source,
+              apps::WindowInfoPtr window_info) override {
+    // Never called in these tests.
+    NOTREACHED();
+  }
+
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           apps::IntentPtr intent,
+                           apps::LaunchSource launch_source,
+                           apps::WindowInfoPtr window_info,
+                           apps::LaunchCallback callback) override {
+    launches_.push_back({
+        .app_id = app_id,
+        .intent_url = (intent && intent->url) ? intent->url->spec() : "",
+    });
+  }
+
+  void LaunchAppWithParams(apps::AppLaunchParams&& params,
+                           apps::LaunchCallback callback) override {
+    // Never called in these tests.
+    NOTREACHED();
+  }
+
+  void ClearPastLaunches() { launches_.clear(); }
+
+  std::vector<LaunchEvent> GetLaunches() { return launches_; }
+
+ private:
+  std::vector<LaunchEvent> launches_;
 };
 
 // TODO(cassycc or petermarshall) share this class with other test files for
@@ -1036,10 +1198,6 @@ class OneDriveTest : public InProcessBrowserTest {
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
   }
 
-  // Callback for when the `FakeProvidedFileSystemOneDrive` observes that a file
-  // in the ODFS was opened.
-  void OpenWebAction() { file_opened_ = true; }
-
   // Creates and mounts fake provided file system for OneDrive with a test file
   // added. Installs QuickOffice for the check in GetUserFallbackChoice() before
   // the dialog can launched.
@@ -1053,8 +1211,7 @@ class OneDriveTest : public InProcessBrowserTest {
     // `FakeProvidedFileSystemOneDrive`. The use of `base::Unretained()` is safe
     // because the class will exist for the duration of the test.
     service_->RegisterProvider(FakeExtensionProviderOneDrive::Create(
-        kODFSExtensionId, relative_test_file_path_, test_file_name_,
-        base::BindOnce(&OneDriveTest::OpenWebAction, base::Unretained(this))));
+        kODFSExtensionId, relative_test_file_path_, test_file_name_));
     provider_id_ = ash::file_system_provider::ProviderId::CreateFromExtensionId(
         kODFSExtensionId);
     ash::file_system_provider::MountOptions options(file_system_id_, "ODFS");
@@ -1066,6 +1223,8 @@ class OneDriveTest : public InProcessBrowserTest {
         profile(),
         file_manager::util::GetFileManagerFileSystemContext(profile()),
         observed_one_drive_path());
+
+    web_app_publisher_ = std::make_unique<FakeWebAppPublisher>(profile());
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -1096,8 +1255,8 @@ class OneDriveTest : public InProcessBrowserTest {
   }
 
  protected:
-  bool file_opened_;
   FileSystemURL one_drive_test_file_url_;
+  std::unique_ptr<FakeWebAppPublisher> web_app_publisher_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1131,9 +1290,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackTryAgain) {
       expected_dialog_URL);
   navigation_observer_dialog.StartWatchingNewWebContents();
 
-  // This boolean only becomes `True` if the fake provided ODFS
-  // observes the test file being opened.
-  file_opened_ = false;
+  web_app_publisher_->ClearPastLaunches();
 
   // Fails as system is offline and thus will open office fallback dialog.
   ExecuteFileTask(
@@ -1146,7 +1303,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackTryAgain) {
   navigation_observer_dialog.Wait();
   ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 
-  ASSERT_FALSE(file_opened_);
+  CHECK_EQ(0u, web_app_publisher_->GetLaunches().size());
 
   SetConnectionOnline();
 
@@ -1155,7 +1312,10 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackTryAgain) {
   OnDialogChoiceReceived(profile(), open_in_office_task, file_urls,
                          ash::office_fallback::kDialogChoiceTryAgain);
 
-  ASSERT_TRUE(file_opened_);
+  auto launches = web_app_publisher_->GetLaunches();
+  ASSERT_EQ(1u, launches.size());
+  CHECK_EQ(launches[0].app_id, web_app::kMicrosoftOfficeAppId);
+  CHECK_EQ(launches[0].intent_url, kOneDriveSampleUrl);
 }
 
 // Test to check that the test file fails to open when the system is offline and
@@ -1178,9 +1338,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackCancel) {
       expected_dialog_URL);
   navigation_observer_dialog.StartWatchingNewWebContents();
 
-  // This boolean only becomes `True` if the fake provided ODFS
-  // observes the test file being opened.
-  file_opened_ = false;
+  web_app_publisher_->ClearPastLaunches();
 
   // Fails as system is offline and thus will open office fallback dialog.
   ExecuteFileTask(
@@ -1193,7 +1351,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackCancel) {
   navigation_observer_dialog.Wait();
   ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 
-  ASSERT_FALSE(file_opened_);
+  ASSERT_EQ(0u, web_app_publisher_->GetLaunches().size());
 
   SetConnectionOnline();
 
@@ -1202,7 +1360,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackCancel) {
   OnDialogChoiceReceived(profile(), open_in_office_task, file_urls,
                          ash::office_fallback::kDialogChoiceCancel);
 
-  ASSERT_FALSE(file_opened_);
+  ASSERT_EQ(0u, web_app_publisher_->GetLaunches().size());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -1214,14 +1372,15 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OpenFileInOneDrive) {
 
   std::vector<storage::FileSystemURL> file_urls{one_drive_test_file_url_};
 
-  // This boolean only becomes `True` if the fake provided ODFS
-  // observes the test file being opened.
-  file_opened_ = false;
+  web_app_publisher_->ClearPastLaunches();
 
   ash::cloud_upload::OpenOrMoveFiles(
       profile(), file_urls, ash::cloud_upload::CloudProvider::kOneDrive);
 
-  ASSERT_TRUE(file_opened_);
+  auto launches = web_app_publisher_->GetLaunches();
+  ASSERT_EQ(1u, launches.size());
+  CHECK_EQ(launches[0].app_id, web_app::kMicrosoftOfficeAppId);
+  CHECK_EQ(launches[0].intent_url, kOneDriveSampleUrl);
 }
 
 // Test that OpenOrMoveFiles() will open the Move Confirmation dialog when the
@@ -1306,6 +1465,8 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, FileNotInOneDriveOpensSetUpDialog) {
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_ALL_PROFILE_TYPES_P(
     FileTasksBrowserTest);
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_ALL_PROFILE_TYPES_P(
+    FileTasksPolicyBrowserTest);
 
 }  // namespace file_tasks
 }  // namespace file_manager

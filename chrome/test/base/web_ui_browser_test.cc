@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
@@ -470,8 +470,7 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
 
     // Register data sources for chrome://webui-test/ URLs
     // e.g. `chrome://webui-test/chai_assert.js`.
-    content::WebUIDataSource* source = webui::CreateWebUITestDataSource();
-    content::WebUIDataSource::Add(browser()->profile(), source);
+    webui::CreateAndAddWebUITestDataSource(browser()->profile());
   }
 
   test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();

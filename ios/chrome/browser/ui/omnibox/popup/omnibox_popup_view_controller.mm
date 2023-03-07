@@ -41,15 +41,8 @@
 #endif
 
 namespace {
-const CGFloat kTopAndBottomPadding = 8.0;
-const CGFloat kTopPaddingVariation1 = 0.0;
-const CGFloat kTopPaddingVariation2 = 10.0;
-const CGFloat kTopBottomPaddingVariation2Ipad = 16.0;
-const CGFloat kTopPaddingVariation2IpadPopoutOmnibox = 8.0;
-const CGFloat kBottomPaddingVariation2IpadPopoutOmnibox = -12.0;
-const CGFloat kSidePaddingVariation2IpadPopoutOmnibox = 8.0;
-const CGFloat kFooterHeightVariation1 = 12.0;
-const CGFloat kFooterHeightVariation2 = 16.0;
+const CGFloat kBottomPadding = 8.0;
+const CGFloat kFooterHeight = 12.0;
 /// Percentage of the suggestion height that needs to be visible in order to
 /// consider the suggestion as visible.
 const CGFloat kVisibleSuggestionThreshold = 0.6;
@@ -182,11 +175,9 @@ BOOL ShouldDismissKeyboardOnScroll() {
            largeIconService:self.largeIconService];
     _carouselAttributeProvider.cache = self.largeIconCache;
   }
-  UITableViewStyle style = IsOmniboxActionsVisualTreatment2()
-                               ? UITableViewStyleInsetGrouped
-                               : UITableViewStyleGrouped;
-  self.tableView = [[SelfSizingTableView alloc] initWithFrame:CGRectZero
-                                                        style:style];
+  self.tableView =
+      [[SelfSizingTableView alloc] initWithFrame:CGRectZero
+                                           style:UITableViewStyleGrouped];
   self.tableView.delegate = self;
   self.tableView.dataSource = self;
   self.view = self.tableView;
@@ -262,7 +253,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
   self.tableView.contentInsetAdjustmentBehavior =
       UIScrollViewContentInsetAdjustmentAutomatic;
   [self.tableView setDirectionalLayoutMargins:NSDirectionalEdgeInsetsMake(
-                                                  0, 0, self.bottomPadding, 0)];
+                                                  0, 0, kBottomPadding, 0)];
 
   self.tableView.sectionHeaderHeight = 0.1;
   self.tableView.estimatedRowHeight = 0;
@@ -285,9 +276,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  if (IsOmniboxActionsEnabled()) {
-    [self adjustMarginsToMatchOmniboxWidth];
-  }
+  [self adjustMarginsToMatchOmniboxWidth];
 
   self.viewAppearanceTime = base::TimeTicks::Now();
 }
@@ -314,14 +303,12 @@ BOOL ShouldDismissKeyboardOnScroll() {
   [self.tableView setEditing:NO animated:NO];
   self.shouldUpdateVisibleSuggestionCount = YES;
 
-  if (IsOmniboxActionsEnabled()) {
-    [coordinator
-        animateAlongsideTransition:^(
-            id<UIViewControllerTransitionCoordinatorContext> context) {
-          [self adjustMarginsToMatchOmniboxWidth];
-        }
-                        completion:nil];
-  }
+  [coordinator
+      animateAlongsideTransition:^(
+          id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self adjustMarginsToMatchOmniboxWidth];
+      }
+                      completion:nil];
 }
 
 - (void)adjustMarginsToMatchOmniboxWidth {
@@ -342,18 +329,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
                                   omniboxFrame.size.width
                             : 0;
 
-  if (IsOmniboxActionsVisualTreatment2()) {
-    if (IsIpadPopoutOmniboxEnabled() && IsRegularXRegularSizeClass(self)) {
-      leftMargin += kSidePaddingVariation2IpadPopoutOmnibox;
-      rightMargin += kSidePaddingVariation2IpadPopoutOmnibox;
-    }
-
-    // Adjust the table view to be aligned with the omnibox textfield.
-    self.tableView.layoutMargins =
-        UIEdgeInsetsMake(self.tableView.layoutMargins.top, leftMargin,
-                         self.tableView.layoutMargins.bottom, rightMargin);
-  } else if (IsOmniboxActionsVisualTreatment1() &&
-             base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
+  if (base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
     // Adjust the carousel to be aligned with the omnibox textfield.
     UIEdgeInsets margins = self.carouselCell.layoutMargins;
     self.carouselCell.layoutMargins =
@@ -649,19 +625,12 @@ BOOL ShouldDismissKeyboardOnScroll() {
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  if (!IsOmniboxActionsEnabled() &&
-      !base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
-    return FLT_MIN;
-  }
   BOOL hasTitle = self.currentResult[section].title.length > 0;
   return hasTitle ? UITableViewAutomaticDimension : FLT_MIN;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
-  if (!IsOmniboxActionsEnabled()) {
-    return FLT_MIN;
-  }
   // Don't show the footer on the last section, to not increase the size of the
   // popup on iPad.
   if (section == (tableView.numberOfSections - 1)) {
@@ -674,24 +643,15 @@ BOOL ShouldDismissKeyboardOnScroll() {
     return FLT_MIN;
   }
 
-  return IsOmniboxActionsVisualTreatment1() ? kFooterHeightVariation1
-                                            : kFooterHeightVariation2;
+  return kFooterHeight;
 }
 
 - (UIView*)tableView:(UITableView*)tableView
     viewForFooterInSection:(NSInteger)section {
-  if (!IsOmniboxActionsEnabled()) {
-    return nil;
-  }
-
   // Do not show footer for the last section
   if (section == (tableView.numberOfSections - 1)) {
     return nil;
   }
-  if (IsOmniboxActionsVisualTreatment2()) {
-    return [[UIView alloc] init];
-  }
-
   // When most visited tiles are enabled, only allow section separator under the
   // verbatim suggestion.
   if (base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles) && section > 0) {
@@ -797,7 +757,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
 
   // Inset the header to match the omnibox width, similar to
   // `adjustMarginsToMatchOmniboxWidth` method.
-  if (IsOmniboxActionsVisualTreatment1() && IsRegularXRegularSizeClass(self)) {
+  if (IsRegularXRegularSizeClass(self)) {
     NamedGuide* layoutGuide = [NamedGuide guideWithName:kOmniboxGuide
                                                    view:self.view];
     if (layoutGuide) {
@@ -838,6 +798,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
           (NSUInteger)indexPath.row <
           self.currentResult[indexPath.section].suggestions.count - 1;
       cell.delegate = self;
+      cell.layoutGuideCenter = self.layoutGuideCenter;
       return cell;
     }
     case SuggestionGroupDisplayStyleCarousel: {
@@ -928,10 +889,9 @@ BOOL ShouldDismissKeyboardOnScroll() {
   CGFloat windowHeight = CGRectGetHeight(currentWindow.bounds);
   CGFloat bottomInset = windowHeight - self.tableView.visibleSize.height -
                         self.keyboardHeight - absoluteRect.origin.y -
-                        self.bottomPadding - self.topPadding;
-  bottomInset = MAX(self.bottomPadding, -bottomInset);
-  self.tableView.contentInset =
-      UIEdgeInsetsMake(self.topPadding, 0, bottomInset, 0);
+                        kBottomPadding;
+  bottomInset = MAX(kBottomPadding, -bottomInset);
+  self.tableView.contentInset = UIEdgeInsetsMake(0, 0, bottomInset, 0);
   self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
 }
 
@@ -940,12 +900,6 @@ BOOL ShouldDismissKeyboardOnScroll() {
 - (void)updateBackgroundColor {
   ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
       initWithStyle:self.incognito ? INCOGNITO : NORMAL];
-
-  if (IsOmniboxActionsVisualTreatment2()) {
-    self.view.backgroundColor =
-        [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
-    return;
-  }
 
   if (IsRegularXRegularSizeClass(self)) {
     self.view.backgroundColor = configuration.backgroundColor;
@@ -1080,46 +1034,14 @@ BOOL ShouldDismissKeyboardOnScroll() {
                                .height;
   // Add padding to the estimated row height and set its minimum to be at
   // `kOmniboxPopupCellMinimumHeight`.
-  CGFloat estimatedRowHeight = MAX(fontSizeHeight + 2 * kTopAndBottomPadding,
-                                   kOmniboxPopupCellMinimumHeight);
+  CGFloat estimatedRowHeight =
+      MAX(fontSizeHeight + 2 * kBottomPadding, kOmniboxPopupCellMinimumHeight);
   CGFloat visibleRows = visibleTableViewHeight / estimatedRowHeight;
   // A row is considered visible if `kVisibleSuggestionTreshold` percent of its
   // height is visible.
   self.visibleSuggestionCount =
       floor(visibleRows + (1.0 - kVisibleSuggestionThreshold));
   self.shouldUpdateVisibleSuggestionCount = NO;
-}
-
-- (CGFloat)topPadding {
-  CGFloat topPadding = kTopAndBottomPadding;
-  if (IsOmniboxActionsVisualTreatment1()) {
-    topPadding = kTopPaddingVariation1;
-  }
-  if (IsOmniboxActionsVisualTreatment2()) {
-    // On iPad, even in compact width, the popup is displayed differently than
-    // on the iPhone (it's "under" the always visible toolbar). So the check
-    // here is intentionally for device type, not size class.
-    BOOL isIpad = ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
-    topPadding =
-        isIpad ? kTopBottomPaddingVariation2Ipad : kTopPaddingVariation2;
-
-    if (IsIpadPopoutOmniboxEnabled()) {
-      topPadding = kTopPaddingVariation2IpadPopoutOmnibox;
-    }
-  }
-  return topPadding;
-}
-
-- (CGFloat)bottomPadding {
-  if (IsOmniboxActionsVisualTreatment2() &&
-      (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)) {
-    if (IsIpadPopoutOmniboxEnabled()) {
-      return kBottomPaddingVariation2IpadPopoutOmnibox;
-    }
-
-    return kTopBottomPaddingVariation2Ipad;
-  }
-  return kTopAndBottomPadding;
 }
 
 - (NSArray<CarouselItem*>*)

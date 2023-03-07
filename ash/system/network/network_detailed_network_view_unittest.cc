@@ -17,8 +17,9 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-shared.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
@@ -30,11 +31,9 @@ namespace ash {
 
 namespace {
 
-using chromeos::network_config::CrosNetworkConfigTestHelper;
-
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
+using network_config::CrosNetworkConfigTestHelper;
 
 const char kStubCellularDevicePath[] = "/device/stub_cellular_device";
 const char kStubCellularDeviceName[] = "stub_cellular_device";
@@ -94,6 +93,7 @@ class FakeNetworkDetailedNetworkViewDelegate
   size_t network_list_item_selected_count_ = 0;
   NetworkStatePropertiesPtr last_network_list_item_selected_;
 };
+
 }  // namespace
 
 class NetworkDetailedNetworkViewTest : public AshTestBase {
@@ -159,8 +159,8 @@ class NetworkDetailedNetworkViewTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  NetworkListNetworkItemView* AddNetworkListItem() {
-    return network_detailed_network_view()->AddNetworkListItem();
+  NetworkListNetworkItemView* AddNetworkListItem(NetworkType type) {
+    return network_detailed_network_view()->AddNetworkListItem(type);
   }
 
   void NotifyNetworkListChanged() {
@@ -217,7 +217,8 @@ class NetworkDetailedNetworkViewTest : public AshTestBase {
 };
 
 TEST_F(NetworkDetailedNetworkViewTest, ViewsAreCreated) {
-  NetworkListNetworkItemView* network_list_item = AddNetworkListItem();
+  NetworkListNetworkItemView* network_list_item =
+      AddNetworkListItem(NetworkType::kWiFi);
   ASSERT_NE(nullptr, network_list_item);
   EXPECT_STREQ("NetworkListNetworkItemView", network_list_item->GetClassName());
 
@@ -248,7 +249,8 @@ TEST_F(NetworkDetailedNetworkViewTest, ToggleInteractions) {
 
 TEST_F(NetworkDetailedNetworkViewTest, ListItemClicked) {
   EXPECT_EQ(0u, delegate()->network_list_item_selected_count());
-  NetworkListNetworkItemView* network_list_item = AddNetworkListItem();
+  NetworkListNetworkItemView* network_list_item =
+      AddNetworkListItem(NetworkType::kWiFi);
   ASSERT_NE(nullptr, network_list_item);
   NotifyNetworkListChanged();
   LeftClickOn(network_list_item);

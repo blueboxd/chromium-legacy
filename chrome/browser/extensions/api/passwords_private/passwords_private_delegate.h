@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/strings/string_piece_forward.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -185,6 +185,10 @@ class PasswordsPrivateDelegate : public KeyedService {
   // compromised (leaked or phished) or has reused or weak password.
   virtual std::vector<api::passwords_private::PasswordUiEntry>
   GetInsecureCredentials() = 0;
+
+  // Obtains all credentials which reuse passwords.
+  virtual std::vector<api::passwords_private::PasswordUiEntryList>
+  GetCredentialsWithReusedPassword() = 0;
 
   // Attempts to mute |credential| from the password store. Returns whether
   // the mute succeeded.

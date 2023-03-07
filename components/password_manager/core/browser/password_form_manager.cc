@@ -38,6 +38,7 @@
 #include "components/password_manager/core/browser/possible_username_data.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/votes_uploader.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -178,7 +179,7 @@ PasswordFormManager::PasswordFormManager(
 
     WebAuthnCredentialsDelegate* delegate =
         client_->GetWebAuthnCredentialsDelegateForDriver(driver_.get());
-    if (delegate && delegate->IsWebAuthnAutofillEnabled()) {
+    if (delegate) {
       delegate->RetrieveWebAuthnSuggestions(
           async_predictions_waiter_.CreateClosure());
     }
@@ -504,11 +505,9 @@ bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
 
 void PasswordFormManager::PresaveGeneratedPassword(
     const FormData& form_data,
-    const std::u16string& password_value) {
-  // TODO(https://crbug.com/831123): Propagate generated password independently
-  // of PasswordForm when PasswordForm goes away from the renderer process.
-  PresaveGeneratedPasswordInternal(form_data,
-                                   password_value /*generated_password*/);
+    const std::u16string& generated_password) {
+  *mutable_observed_form() = form_data;
+  PresaveGeneratedPasswordInternal(form_data, generated_password);
 }
 
 void PasswordFormManager::PasswordNoLongerGenerated() {
@@ -545,10 +544,6 @@ bool PasswordFormManager::IsPasswordUpdate() const {
   return password_save_manager_->IsPasswordUpdate();
 }
 
-bool PasswordFormManager::IsSamePassword() const {
-  return password_save_manager_->IsSamePassword();
-}
-
 base::WeakPtr<PasswordManagerDriver> PasswordFormManager::GetDriver() const {
   return driver_;
 }
@@ -558,16 +553,6 @@ const PasswordForm* PasswordFormManager::GetSubmittedForm() const {
 }
 
 #if BUILDFLAG(IS_IOS)
-void PasswordFormManager::PresaveGeneratedPassword(
-    PasswordManagerDriver* driver,
-    const FormData& form,
-    const std::u16string& generated_password,
-    FieldRendererId generation_element) {
-  *mutable_observed_form() = form;
-  PresaveGeneratedPasswordInternal(form, generated_password);
-  votes_uploader_.set_generation_element(generation_element);
-}
-
 void PasswordFormManager::UpdateStateOnUserInput(
     FormRendererId form_id,
     FieldRendererId field_id,
@@ -746,7 +731,7 @@ void PasswordFormManager::OnTimeout() {
 bool PasswordFormManager::WebAuthnCredentialsAvailable() const {
   WebAuthnCredentialsDelegate* delegate =
       client_->GetWebAuthnCredentialsDelegateForDriver(driver_.get());
-  if (delegate && delegate->IsWebAuthnAutofillEnabled()) {
+  if (delegate) {
     return delegate->GetWebAuthnSuggestions().has_value();
   }
   return false;
@@ -760,13 +745,6 @@ void PasswordFormManager::CreatePendingCredentials() {
   password_save_manager_->CreatePendingCredentials(
       *parsed_submitted_form_, observed_form(), submitted_form_, IsHttpAuth(),
       IsCredentialAPISave());
-}
-
-void PasswordFormManager::ResetState() {
-  parsed_submitted_form_.reset();
-  submitted_form_ = FormData();
-  password_save_manager_->ResetPendingCredentials();
-  is_submitted_ = false;
 }
 
 bool PasswordFormManager::ProvisionallySave(
@@ -783,10 +761,12 @@ bool PasswordFormManager::ProvisionallySave(
   bool have_password_to_save =
       parsed_submitted_form &&
       parsed_submitted_form->HasNonEmptyPasswordValue();
-
   if (!have_password_to_save) {
     // In case of error during parsing, reset the state.
-    ResetState();
+    parsed_submitted_form_.reset();
+    submitted_form_ = FormData();
+    password_save_manager_->ResetPendingCredentials();
+    is_submitted_ = false;
     return false;
   }
 
@@ -798,9 +778,10 @@ bool PasswordFormManager::ProvisionallySave(
   metrics_recorder_->set_possible_username_used(false);
   votes_uploader_.clear_single_username_vote_data();
 
+  bool password_form_had_username = false;
   // TODO(crbug.com/959776): Reset possible username after it's used.
-  if (parsed_submitted_form_->username_value.empty() &&
-      !parsed_submitted_form_->password_value.empty()) {
+  if (IsPasswordFormAfterSingleUsernameForm(possible_username,
+                                            password_form_had_username)) {
     if (IsPossibleSingleUsernameAvailable(possible_username)) {
       // Suggest the possible username value in a prompt if the server confirmed
       // it is a single username field. Otherwise, |possible_username| is used
@@ -819,13 +800,13 @@ bool PasswordFormManager::ProvisionallySave(
       votes_uploader_.set_single_username_vote_data(
           possible_username->renderer_id, possible_username->value,
           possible_username->form_predictions.value_or(FormPredictions()),
-          form_fetcher_->GetBestMatches());
+          form_fetcher_->GetBestMatches(), password_form_had_username);
     } else {  // !IsPossibleSingleUsernameAvailable(possible_username)
       // If no single username typing preceded single password typing, set
       // empty single username vote data for the fallback classifier.
       votes_uploader_.set_single_username_vote_data(
           FieldRendererId(), std::u16string(), FormPredictions(),
-          form_fetcher_->GetBestMatches());
+          form_fetcher_->GetBestMatches(), password_form_had_username);
     }
   }
   CreatePendingCredentials();
@@ -969,6 +950,22 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
 
 void PasswordFormManager::MarkWasUnblocklisted() {
   was_unblocklisted_while_on_page_ = true;
+}
+
+bool PasswordFormManager::FormHasPossibleUsername(
+    const PossibleUsernameData* possible_username) const {
+  if (!possible_username) {
+    return false;
+  }
+  if (possible_username->driver_id == driver_id_) {
+    for (const auto& field : observed_form()->fields) {
+      if (field.unique_renderer_id == possible_username->renderer_id) {
+        LogUsingPossibleUsername(client_, /*is_used*/ false, "Same form");
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 PasswordFormManager::PasswordFormManager(
@@ -1158,16 +1155,35 @@ bool PasswordFormManager::IsPossibleSingleUsernameAvailable(
 
   // The username candidate field should not be in |observed_form()|, otherwise
   // that is a task of FormParser to choose it from |observed_form()|.
-  if (possible_username->driver_id == driver_id_) {
-    for (const auto& field : observed_form()->fields) {
-      if (field.unique_renderer_id == possible_username->renderer_id) {
-        LogUsingPossibleUsername(client_, /*is_used*/ false, "Same form");
-        return false;
-      }
-    }
+  if (FormHasPossibleUsername(possible_username)) {
+    return false;
   }
 
   return true;
+}
+
+// |possible_username| is considered for single username vote in 2 cases:
+// 1) There is a password field and no username field in the current form.
+// 2) There is a password field and username value matches username value in the
+// single username form.
+bool PasswordFormManager::IsPasswordFormAfterSingleUsernameForm(
+    const PossibleUsernameData* possible_username,
+    bool& password_form_had_username) {
+  if (parsed_submitted_form_->password_value.empty()) {
+    return false;
+  }
+  if (parsed_submitted_form_->username_value.empty()) {
+    // Regular single password form - the username field is absent.
+    return true;
+  }
+
+  // In some username-first flows, the second form contains a username field as
+  // well as a password field.
+  password_form_had_username =
+      possible_username &&
+      base::EqualsCaseInsensitiveASCII(possible_username->value,
+                                       parsed_submitted_form_->username_value);
+  return password_form_had_username;
 }
 
 void PasswordFormManager::UpdatePredictionsForObservedForm(

@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -372,7 +372,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
   //      }
   //   }
   // }
-  std::unordered_map<std::string, base::DictionaryValue> filters_map;
+  std::unordered_map<std::string, base::Value::Dict> filters_map;
   for (const auto& pattern_filter_str : pref->GetValue()->GetList()) {
     if (!pattern_filter_str.is_string()) {
       NOTREACHED();
@@ -387,27 +387,27 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    const base::Value* pattern = pattern_filter->FindKey("pattern");
-    const base::Value* filter = pattern_filter->FindKey("filter");
+    const base::Value::Dict& pattern_filter_dict = pattern_filter->GetDict();
+    const std::string* pattern = pattern_filter_dict.FindString("pattern");
+    const base::Value* filter = pattern_filter_dict.Find("filter");
     if (!pattern || !filter) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
               << " Missing pattern or filter.";
       continue;
     }
 
-    const std::string& pattern_str = pattern->GetString();
+    const std::string& pattern_str = *pattern;
     if (filters_map.find(pattern_str) == filters_map.end())
-      filters_map[pattern_str].SetKey("filters",
-                                      base::Value(base::Value::Type::LIST));
+      filters_map[pattern_str].Set("filters", base::Value::List());
 
     // Don't pass removed values from `pattern_filter`, because base::Values
     // read with JSONReader use a shared string buffer. Instead, Clone() here.
-    filters_map[pattern_str].FindKey("filters")->Append(filter->Clone());
+    filters_map[pattern_str].Find("filters")->Append(filter->Clone());
   }
 
   for (const auto& it : filters_map) {
     const std::string& pattern_str = it.first;
-    const base::Value& setting = it.second;
+    const base::Value::Dict& setting = it.second;
 
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromString(pattern_str);
@@ -420,7 +420,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
     value_map->SetValue(pattern, ContentSettingsPattern::Wildcard(),
                         ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-                        setting.Clone(), {});
+                        base::Value(setting.Clone()), {});
   }
 }
 

@@ -21,6 +21,7 @@ group("resources") {
     "emoji_picker:resources",
     "gaia_action_buttons:resources",
     "launcher_internals:resources",
+    "lock_screen_reauth:resources",
     "login:conditional_resources",
     "login:unconditional_resources",
     "manage_mirrorsync:resources",
@@ -28,6 +29,8 @@ group("resources") {
     "network_ui:resources",
     "notification_tester:resources",
     "password_change:resources",
+    "supervision:resources",
+    "vc_tray_tester:resources",
   ]
 }
 
@@ -82,8 +85,6 @@ group("closure_compile") {
     "gaia_action_buttons:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
-    "keyboard:closure_compile",
-    "keyboard:closure_compile_module",
     "login:closure_compile",
     "multidevice_internals:closure_compile",
     "multidevice_setup:closure_compile",
@@ -92,6 +93,7 @@ group("closure_compile") {
     "password_change:closure_compile",
     "set_time_dialog:closure_compile",
     "smb_shares:closure_compile",
+    "supervision:closure_compile",
     "sys_internals:closure_compile",
     "vm:closure_compile",
   ]

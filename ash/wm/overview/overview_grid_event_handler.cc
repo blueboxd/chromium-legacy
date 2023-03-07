@@ -14,7 +14,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -143,10 +143,10 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 void OverviewGridEventHandler::HandleClickOrTap(ui::Event* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
 
-  // If the user is renaming a desk or template, rather than closing overview
+  // If the user is renaming a desk or saved desk, rather than closing overview
   // the focused name view should lose focus.
   if (grid_->IsDeskNameBeingModified() ||
-      grid_->IsTemplateNameBeingModified()) {
+      grid_->IsSavedDeskNameBeingModified()) {
     grid_->CommitNameChanges();
     event->StopPropagation();
     return;

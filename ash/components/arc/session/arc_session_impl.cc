@@ -18,11 +18,11 @@
 #include "ash/components/arc/session/arc_bridge_host_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
@@ -163,7 +163,13 @@ void ApplyDisableDownloadProvider(StartParams* params) {
 }
 
 void ApplyDisableUreadahed(StartParams* params) {
-  params->disable_ureadahead = IsUreadaheadDisabled();
+  // Host ureadahead generation implies disabling ureadahead.
+  params->disable_ureadahead =
+      IsUreadaheadDisabled() || IsHostUreadaheadGeneration();
+}
+
+void ApplyHostUreadahedGeneration(StartParams* params) {
+  params->host_ureadahead_generation = IsHostUreadaheadGeneration();
 }
 
 // Real Delegate implementation to connect Mojo.
@@ -406,8 +412,7 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
 
 ArcSessionImpl::ArcSessionImpl(
     std::unique_ptr<Delegate> delegate,
-    chromeos::SchedulerConfigurationManagerBase*
-        scheduler_configuration_manager,
+    ash::SchedulerConfigurationManagerBase* scheduler_configuration_manager,
     AdbSideloadingAvailabilityDelegate* adb_sideloading_availability_delegate)
     : delegate_(std::move(delegate)),
       client_(delegate_->CreateClient()),
@@ -510,6 +515,7 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
   ApplyUsapProfile(system_memory_info_callback_, &params);
   ApplyDisableDownloadProvider(&params);
   ApplyDisableUreadahed(&params);
+  ApplyHostUreadahedGeneration(&params);
 
   client_->StartMiniArc(std::move(params),
                         base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,

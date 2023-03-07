@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.MODE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_OFFSET;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
@@ -17,7 +18,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -30,14 +30,12 @@ import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
@@ -69,8 +67,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherV
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.chrome.tab_ui.R;
-import org.chromium.components.browser_ui.util.FirstDrawDetector;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -82,13 +79,8 @@ import java.util.List;
 class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView.VisibilityListener,
                                      TabListMediator.GridCardOnClickListenerProvider,
                                      PriceMessageService.PriceWelcomeMessageReviewActionProvider,
-                                     TabSwitcherCustomViewManager.Delegate {
+                                     TabSwitcherCustomViewManager.Delegate, BackPressHandler {
     private static final String TAG = "TabSwitcherMediator";
-
-    // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
-    // to be on the 2nd row.
-    static final int INITIAL_SCROLL_INDEX_OFFSET_GTS = 2;
-    static final int INITIAL_SCROLL_INDEX_OFFSET_CAROUSEL = 1;
 
     private static final int DEFAULT_TOP_PADDING = 0;
 
@@ -157,7 +149,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             .TabSelectionEditorController mTabSelectionEditorController;
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
     private PriceMessageService mPriceMessageService;
-    private boolean mIsOnHomepage;
 
     /**
      * This allows to check if re-auth is pending when tab switcher is shown in Incognito mode.
@@ -189,24 +180,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     private boolean mShowTabsInMruOrder;
 
-    private static class FirstMeaningfulPaintRecorder {
-        private final long mActivityCreationTimeMs;
-
-        private FirstMeaningfulPaintRecorder(long activityCreationTimeMs) {
-            mActivityCreationTimeMs = activityCreationTimeMs;
-        }
-
-        private void record(int numOfThumbnails) {
-            assert numOfThumbnails >= 0;
-            long elapsed = SystemClock.elapsedRealtime() - mActivityCreationTimeMs;
-            PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT,
-                    ()
-                            -> ReturnToChromeUtil.recordTimeToGTSFirstMeaningfulPaint(
-                                    elapsed, numOfThumbnails));
-        }
-    }
-    private FirstMeaningfulPaintRecorder mFirstMeaningfulPaintRecorder;
-    private boolean mRegisteredFirstMeaningfulPaintRecorder;
     private @TabListCoordinator.TabListMode int mMode;
     private Context mContext;
     private SnackbarManager mSnackbarManager;
@@ -301,6 +274,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      * @param mode One of the {@link TabListMode}.
      * @param incognitoReauthControllerSupplier {@link OneshotSupplier<IncognitoReauthController>}
      *         to detect pending re-auth when tab switcher is shown.
+     * @param backPressManager {@link BackPressManager} to handle back press gesture.
      */
     TabSwitcherMediator(Context context, ResetHandler resetHandler,
             PropertyModel containerViewModel, TabModelSelector tabModelSelector,
@@ -308,14 +282,15 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             TabContentManager tabContentManager, MessageItemsController messageItemsController,
             PriceWelcomeMessageController priceWelcomeMessageController,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher, @TabListMode int mode,
-            @Nullable OneshotSupplier<IncognitoReauthController>
-                    incognitoReauthControllerSupplier) {
+            @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
+            @Nullable BackPressManager backPressManager) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
         mBrowserControlsStateProvider = browserControlsStateProvider;
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
         mMode = mode;
+        mContainerViewModel.set(MODE, mode);
         mContext = context;
 
         if (incognitoReauthControllerSupplier != null) {
@@ -518,6 +493,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mMode == TabListMode.GRID) {
             mContainerViewModel.set(BOTTOM_PADDING,
                     (int) context.getResources().getDimension(R.dimen.tab_grid_bottom_padding));
+            if (backPressManager != null && BackPressManager.isEnabled()) {
+                backPressManager.addHandler(this, BackPressHandler.Type.TAB_SWITCHER);
+                notifyBackPressStateChangedInternal();
+            }
         }
 
         mContainerView = containerView;
@@ -763,34 +742,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
     }
 
-    void registerFirstMeaningfulPaintRecorder() {
-        ThreadUtils.assertOnUiThread();
-
-        if (mFirstMeaningfulPaintRecorder == null) return;
-        if (mRegisteredFirstMeaningfulPaintRecorder) return;
-        mRegisteredFirstMeaningfulPaintRecorder = true;
-
-        boolean hasTabs = getTabCount() > 0;
-
-        if (!hasTabs) {
-            FirstDrawDetector.waitForFirstDraw(
-                    mContainerView, this::notifyOnFirstMeaningfulPaintNoTab);
-        } else {
-            mTabContentManager.addOnLastThumbnailListener(this::notifyOnFirstMeaningfulPaint);
-        }
-    }
-
-    private void notifyOnFirstMeaningfulPaintNoTab() {
-        notifyOnFirstMeaningfulPaint(0);
-    }
-
-    private void notifyOnFirstMeaningfulPaint(int numOfThumbnails) {
-        ThreadUtils.assertOnUiThread();
-
-        mFirstMeaningfulPaintRecorder.record(numOfThumbnails);
-        mFirstMeaningfulPaintRecorder = null;
-    }
-
     boolean prepareTabSwitcherView() {
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
@@ -807,12 +758,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     private void setInitialScrollIndexOffset() {
-        int offset = mMode == TabListMode.CAROUSEL ? INITIAL_SCROLL_INDEX_OFFSET_CAROUSEL
-                                                   : INITIAL_SCROLL_INDEX_OFFSET_GTS;
-        int initialPosition = Math.max(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
-                        - offset,
-                0);
+        int initialPosition =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
+
         // In MRU order, selected Tab is always at the first position.
         if (mShowTabsInMruOrder) initialPosition = 0;
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
@@ -880,7 +828,15 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     @Override
-    public boolean onBackPressed(boolean isOnHomepage) {
+    public boolean onBackPressed() {
+        boolean ret = onBackPressedInternal();
+        if (ret) {
+            BackPressManager.record(BackPressHandler.Type.TAB_SWITCHER);
+        }
+        return ret;
+    }
+
+    private boolean onBackPressedInternal() {
         // The TabSelectionEditor dialog can be shown on the Start surface without showing the Grid
         // Tab switcher, so skip the check of visibility of mContainerViewModel here.
         if (mTabSelectionEditorController != null
@@ -903,7 +859,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
 
         // When the Start surface is showing, we no longer need to call onTabSelecting().
-        if (isOnHomepage && mMode == TabListCoordinator.TabListMode.CAROUSEL) return false;
+        if (mMode == TabListCoordinator.TabListMode.CAROUSEL) return false;
 
         if (mTabModelSelector.getCurrentTab() == null) {
             assert !BackPressManager.isEnabled() : "No tab: Backpress must be handled";
@@ -917,7 +873,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     @Override
     public void handleBackPress() {
-        boolean ret = onBackPressed(mIsOnHomepage);
+        boolean ret = onBackPressedInternal();
         assert ret;
     }
 
@@ -944,11 +900,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     @Override
-    public void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {
-        mFirstMeaningfulPaintRecorder = new FirstMeaningfulPaintRecorder(activityCreateTimeMs);
-    }
-
-    @Override
     public void onOverviewShownAtLaunch(long activityCreationTimeMs) {}
 
     @Override
@@ -966,8 +917,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     @Override
-    public void onHomepageChanged(boolean isOnHomepage) {
-        mIsOnHomepage = isOnHomepage;
+    public void onHomepageChanged() {
         notifyBackPressStateChangedInternal();
     }
 
@@ -1169,7 +1119,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (!mContainerViewModel.get(IS_VISIBLE)) return false;
 
         // When the Start surface is showing, we no longer need to call onTabSelecting().
-        if (mIsOnHomepage && mMode == TabListCoordinator.TabListMode.CAROUSEL) return false;
+        if (mMode == TabListCoordinator.TabListMode.CAROUSEL) return false;
 
         if (mTabModelSelector.getCurrentTab() == null) return false;
 

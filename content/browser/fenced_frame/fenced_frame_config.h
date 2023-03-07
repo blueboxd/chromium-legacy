@@ -69,8 +69,8 @@
 #ifndef CONTENT_BROWSER_FENCED_FRAME_FENCED_FRAME_CONFIG_H_
 #define CONTENT_BROWSER_FENCED_FRAME_FENCED_FRAME_CONFIG_H_
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -88,6 +88,7 @@ extern const char kUrnUuidPrefix[];
 GURL CONTENT_EXPORT GenerateUrnUuid();
 
 using AdAuctionData = blink::FencedFrame::AdAuctionData;
+using DeprecatedFencedFrameMode = blink::FencedFrame::DeprecatedFencedFrameMode;
 using ReportingMetadata = blink::FencedFrame::FencedFrameReporting;
 using SharedStorageBudgetMetadata =
     blink::FencedFrame::SharedStorageBudgetMetadata;
@@ -193,9 +194,9 @@ class CONTENT_EXPORT FencedFrameProperty {
 struct CONTENT_EXPORT FencedFrameConfig {
   FencedFrameConfig();
   explicit FencedFrameConfig(const GURL& mapped_url);
-  FencedFrameConfig(GURL urn, const GURL& url);
+  FencedFrameConfig(const GURL& urn_uuid, const GURL& url);
   FencedFrameConfig(
-      GURL urn,
+      const GURL& urn_uuid,
       const GURL& url,
       const SharedStorageBudgetMetadata& shared_storage_budget_metadata,
       const ReportingMetadata& reporting_metadata = ReportingMetadata());
@@ -209,7 +210,7 @@ struct CONTENT_EXPORT FencedFrameConfig {
   blink::FencedFrame::RedactedFencedFrameConfig RedactFor(
       FencedFrameEntity entity) const;
 
-  absl::optional<GURL> urn_;
+  absl::optional<GURL> urn_uuid_;
 
   absl::optional<FencedFrameProperty<GURL>> mapped_url_;
 
@@ -256,6 +257,14 @@ struct CONTENT_EXPORT FencedFrameConfig {
   // If reporting events from fenced frames are registered, then this
   // information gets filled here.
   absl::optional<FencedFrameProperty<ReportingMetadata>> reporting_metadata_;
+
+  // The mode for the resulting fenced frame: `kDefault` or `kOpaqueAds`.
+  // TODO(crbug.com/1347953): This field is currently unused. Replace the
+  // `mode` attribute of HTMLFencedFrameElement with this field in the config.
+  // TODO(crbug.com/1347953): Decompose this field into flags that directly
+  // control the behavior of the frame, e.g. sandbox flags. We do not want
+  // mode to exist as a concept going forward.
+  DeprecatedFencedFrameMode mode_ = DeprecatedFencedFrameMode::kDefault;
 };
 
 // Contains a set of fenced frame properties. These are generated at
@@ -290,8 +299,6 @@ struct CONTENT_EXPORT FencedFrameProperties {
 
   blink::FencedFrame::RedactedFencedFrameProperties RedactFor(
       FencedFrameEntity entity) const;
-
-  absl::optional<GURL> urn_;
 
   absl::optional<FencedFrameProperty<GURL>> mapped_url_;
 
@@ -329,6 +336,8 @@ struct CONTENT_EXPORT FencedFrameProperties {
   absl::optional<FencedFrameProperty<ReportingMetadata>> reporting_metadata_;
 
   absl::optional<FencedFrameProperty<base::UnguessableToken>> partition_nonce_;
+
+  DeprecatedFencedFrameMode mode_ = DeprecatedFencedFrameMode::kDefault;
 };
 
 }  // namespace content

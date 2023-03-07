@@ -31,7 +31,6 @@
       "build_angle_deqp_tests": true,
       "dcheck_always_on": true,
       "enable_run_ios_unittests_with_xctest": true,
-      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
@@ -60,7 +59,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win-angle-chromium-x64-try": {

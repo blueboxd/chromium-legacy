@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -54,7 +54,8 @@ class StreamFactory final : public media::mojom::AudioStreamFactory {
   // If not nullptr, then |aecdump_recording_manager| must outlive the factory.
   explicit StreamFactory(
       media::AudioManager* audio_manager,
-      media::AecdumpRecordingManager* aecdump_recording_manager);
+      media::AecdumpRecordingManager* aecdump_recording_manager,
+      bool run_audio_processing);
 
   StreamFactory(const StreamFactory&) = delete;
   StreamFactory& operator=(const StreamFactory&) = delete;

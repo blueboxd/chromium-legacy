@@ -4,7 +4,7 @@
 
 #include "remoting/host/native_messaging/log_message_handler.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -54,16 +54,15 @@ LogMessageHandler::~LogMessageHandler() {
 const char* LogMessageHandler::kDebugMessageTypeName = "_debug_log";
 
 // static
-bool LogMessageHandler::OnLogMessage(
-    logging::LogSeverity severity,
-    const char* file,
-    int line,
-    size_t message_start,
-    const std::string& str) {
+bool LogMessageHandler::OnLogMessage(logging::LogSeverity severity,
+                                     const char* file,
+                                     int line,
+                                     size_t message_start,
+                                     const std::string& str) {
   base::AutoLock lock(g_log_message_handler_lock.Get());
   if (g_log_message_handler) {
-    g_log_message_handler->PostLogMessageToCorrectThread(
-        severity, file, line, message_start, str);
+    g_log_message_handler->PostLogMessageToCorrectThread(severity, file, line,
+                                                         message_start, str);
   }
   return false;
 }
@@ -101,12 +100,11 @@ void LogMessageHandler::PostLogMessageToCorrectThread(
                                 line, message_start, str));
 }
 
-void LogMessageHandler::SendLogMessageToClient(
-    logging::LogSeverity severity,
-    const char* file,
-    int line,
-    size_t message_start,
-    const std::string& str) {
+void LogMessageHandler::SendLogMessageToClient(logging::LogSeverity severity,
+                                               const char* file,
+                                               int line,
+                                               size_t message_start,
+                                               const std::string& str) {
   suppress_logging_ = true;
 
   std::string severity_string = "log";

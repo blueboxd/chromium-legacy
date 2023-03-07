@@ -13,6 +13,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {NavigationViewPanelElement} from 'chrome://resources/ash/common/navigation_view_panel.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AcceleratorEditDialogElement} from './accelerator_edit_dialog.js';
@@ -21,7 +22,7 @@ import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {ShowEditDialogEvent} from './accelerator_row.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
 import {getTemplate} from './shortcut_customization_app.html.js';
-import {AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorType, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
+import {AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorType, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
 import {getCategoryNameStringId, isCustomizationDisabled} from './shortcut_utils.js';
 
 export interface ShortcutCustomizationAppElement {
@@ -48,93 +49,93 @@ const ShortcutCustomizationAppElementBase = I18nMixin(PolymerElement);
 
 export class ShortcutCustomizationAppElement extends
     ShortcutCustomizationAppElementBase {
-  static get is() {
+  static get is(): string {
     return 'shortcut-customization-app';
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
-      dialogShortcutTitle_: {
+      dialogShortcutTitle: {
         type: String,
         value: '',
       },
 
-      dialogAccelerators_: {
+      dialogAccelerators: {
         type: Array,
-        value: () => {},
+        value: () => [],
       },
 
-      dialogAction_: {
+      dialogAction: {
         type: Number,
         value: 0,
       },
 
-      dialogSource_: {
+      dialogSource: {
         type: Number,
         value: 0,
       },
 
-      showEditDialog_: {
+      showEditDialog: {
         type: Boolean,
         value: false,
       },
 
-      showRestoreAllDialog_: {
+      showRestoreAllDialog: {
         type: Boolean,
         value: false,
       },
     };
   }
 
-  protected showRestoreAllDialog_: boolean;
-  protected dialogShortcutTitle_: string;
-  protected dialogAccelerators_: AcceleratorInfo[];
-  protected dialogAction_: number;
-  protected dialogSource_: AcceleratorSource;
-  protected showEditDialog_: boolean;
-  private shortcutProvider_: ShortcutProviderInterface = getShortcutProvider();
-  private acceleratorLookupManager_: AcceleratorLookupManager =
+  protected showRestoreAllDialog: boolean;
+  protected dialogShortcutTitle: string;
+  protected dialogAccelerators: AcceleratorInfo[];
+  protected dialogAction: number;
+  protected dialogSource: AcceleratorSource;
+  protected showEditDialog: boolean;
+  private shortcutProvider: ShortcutProviderInterface = getShortcutProvider();
+  private acceleratorlookupManager: AcceleratorLookupManager =
       AcceleratorLookupManager.getInstance();
 
-  override connectedCallback() {
+  override connectedCallback(): void {
     super.connectedCallback();
 
-    this.fetchAccelerators_();
-    this.addEventListener('show-edit-dialog', this.showDialog_);
-    this.addEventListener('edit-dialog-closed', this.onDialogClosed_);
+    this.fetchAccelerators();
+    this.addEventListener('show-edit-dialog', this.showDialog);
+    this.addEventListener('edit-dialog-closed', this.onDialogClosed);
     this.addEventListener(
-        'request-update-accelerator', this.onRequestUpdateAccelerators_);
+        'request-update-accelerator', this.onRequestUpdateAccelerators);
   }
 
-  override disconnectedCallback() {
+  override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.removeEventListener('show-edit-dialog', this.showDialog_);
-    this.removeEventListener('edit-dialog-closed', this.onDialogClosed_);
+    this.removeEventListener('show-edit-dialog', this.showDialog);
+    this.removeEventListener('edit-dialog-closed', this.onDialogClosed);
     this.removeEventListener(
-        'request-update-accelerator', this.onRequestUpdateAccelerators_);
+        'request-update-accelerator', this.onRequestUpdateAccelerators);
   }
 
-  private fetchAccelerators_() {
+  private fetchAccelerators(): void {
     // Kickoff fetching accelerators by first fetching the accelerator configs.
-    this.shortcutProvider_.getAccelerators().then(
-        ({config}) => this.onAcceleratorConfigFetched_(config));
+    this.shortcutProvider.getAccelerators().then(
+        ({config}) => this.onAcceleratorConfigFetched(config));
   }
 
-  private onAcceleratorConfigFetched_(config: MojoAcceleratorConfig) {
-    this.acceleratorLookupManager_.setAcceleratorLookup(config);
+  private onAcceleratorConfigFetched(config: MojoAcceleratorConfig): void {
+    this.acceleratorlookupManager.setAcceleratorLookup(config);
     // After fetching the config infos, fetch the layout infos next.
-    this.shortcutProvider_.getAcceleratorLayoutInfos().then(
-        ({layoutInfos}) => this.onLayoutInfosFetched_(layoutInfos));
+    this.shortcutProvider.getAcceleratorLayoutInfos().then(
+        ({layoutInfos}) => this.onLayoutInfosFetched(layoutInfos));
   }
 
-  private onLayoutInfosFetched_(layoutInfos: MojoLayoutInfo[]): void {
-    this.addNavigationSelectors_(layoutInfos);
-    this.acceleratorLookupManager_.setAcceleratorLayoutLookup(layoutInfos);
+  private onLayoutInfosFetched(layoutInfos: MojoLayoutInfo[]): void {
+    this.addNavigationSelectors(layoutInfos);
+    this.acceleratorlookupManager.setAcceleratorLayoutLookup(layoutInfos);
     // Notify pages to update their accelerators.
     this.$.navigationPanel.notifyEvent('updateAccelerators');
   }
 
-  private addNavigationSelectors_(layoutInfos: MojoLayoutInfo[]): void {
+  private addNavigationSelectors(layoutInfos: MojoLayoutInfo[]): void {
     // A Set is used here to remove duplicates from the array of categories.
     const uniqueCategoriesInOrder =
         new Set(layoutInfos.map(layoutInfo => layoutInfo.category));
@@ -148,26 +149,26 @@ export class ShortcutCustomizationAppElement extends
     this.$.navigationPanel.addSelectors(pages);
   }
 
-  private showDialog_(e: ShowEditDialogEvent) {
-    this.dialogShortcutTitle_ = e.detail.description;
-    this.dialogAccelerators_ = e.detail.accelerators;
-    this.dialogAction_ = e.detail.action;
-    this.dialogSource_ = e.detail.source;
-    this.showEditDialog_ = true;
+  private showDialog(e: ShowEditDialogEvent): void {
+    this.dialogShortcutTitle = e.detail.description;
+    this.dialogAccelerators = e.detail.accelerators;
+    this.dialogAction = e.detail.action;
+    this.dialogSource = e.detail.source;
+    this.showEditDialog = true;
   }
 
-  private onDialogClosed_() {
-    this.showEditDialog_ = false;
-    this.dialogShortcutTitle_ = '';
-    this.dialogAccelerators_ = [];
+  private onDialogClosed(): void {
+    this.showEditDialog = false;
+    this.dialogShortcutTitle = '';
+    this.dialogAccelerators = [];
   }
 
-  private onRequestUpdateAccelerators_(e: RequestUpdateAcceleratorEvent) {
+  private onRequestUpdateAccelerators(e: RequestUpdateAcceleratorEvent): void {
     this.$.navigationPanel.notifyEvent('updateSubsections');
     const updatedAccels =
-        this.acceleratorLookupManager_
-            .getAcceleratorInfos(e.detail.source, e.detail.action)
-            ?.filter((accel) => {
+        this.acceleratorlookupManager
+            .getStandardAcceleratorInfos(e.detail.source, e.detail.action)
+            ?.filter((accel: StandardAcceleratorInfo) => {
               // Hide accelerators that are default and disabled.
               return !(
                   accel.type === AcceleratorType.kDefault &&
@@ -178,27 +179,27 @@ export class ShortcutCustomizationAppElement extends
         .updateDialogAccelerators(updatedAccels as AcceleratorInfo[]);
   }
 
-  protected onRestoreAllDefaultClicked_() {
-    this.showRestoreAllDialog_ = true;
+  protected onRestoreAllDefaultClicked(): void {
+    this.showRestoreAllDialog = true;
   }
 
-  protected onCancelRestoreButtonClicked_() {
-    this.closeRestoreAllDialog_();
+  protected onCancelRestoreButtonClicked(): void {
+    this.closeRestoreAllDialog();
   }
 
-  protected onConfirmRestoreButtonClicked_() {
+  protected onConfirmRestoreButtonClicked(): void {
     // TODO(jimmyxgong): Implement this function.
   }
 
-  protected closeRestoreAllDialog_() {
-    this.showRestoreAllDialog_ = false;
+  protected closeRestoreAllDialog(): void {
+    this.showRestoreAllDialog = false;
   }
 
-  protected shouldHideRestoreAllButton_() {
+  protected shouldHideRestoreAllButton(): boolean {
     return isCustomizationDisabled();
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 }

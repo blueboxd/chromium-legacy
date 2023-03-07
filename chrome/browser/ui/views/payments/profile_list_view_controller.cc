@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -385,6 +385,11 @@ void ProfileListViewController::FillContentView(views::View* content_view) {
   std::unique_ptr<views::View> list_view = list_.CreateListView();
   list_view->SetID(static_cast<int>(GetDialogViewId()));
   content_view->AddChildView(list_view.release());
+}
+
+base::WeakPtr<PaymentRequestSheetController>
+ProfileListViewController::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace payments

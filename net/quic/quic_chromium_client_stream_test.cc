@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -148,6 +148,7 @@ MockQuicClientSessionBase::MockQuicClientSessionBase(
     quic::QuicConnection* connection,
     quic::QuicClientPushPromiseIndex* push_promise_index)
     : quic::QuicSpdyClientSessionBase(connection,
+                                      /*visitor=*/nullptr,
                                       push_promise_index,
                                       quic::test::DefaultQuicConfig(),
                                       connection->supported_versions()) {

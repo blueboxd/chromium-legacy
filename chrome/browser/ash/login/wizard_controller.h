@@ -64,6 +64,7 @@
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/theme_selection_screen.h"
+#include "chrome/browser/ash/login/screens/touchpad_scroll_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
@@ -240,7 +241,7 @@ class WizardController : public OobeUI::Observer {
   void ShowFamilyLinkNoticeScreen();
 
   // Show Cryptohome recovery screen.
-  void ShowCryptohomeRecoveryScreen(const AccountId& account_id);
+  void ShowCryptohomeRecoveryScreen(std::unique_ptr<UserContext> user_context);
 
   // Set pref value for first run.
   void PrepareFirstRunPrefs();
@@ -318,6 +319,7 @@ class WizardController : public OobeUI::Observer {
   void ShowGuestTosScreen();
   void ShowThemeSelectionScreen();
   void ShowChoobeScreen();
+  void ShowTouchpadScrollScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -403,8 +405,9 @@ class WizardController : public OobeUI::Observer {
   void OnSmartPrivacyProtectionScreenExit(
       SmartPrivacyProtectionScreen::Result result);
   void OnThemeSelectionScreenExit(ThemeSelectionScreen::Result result);
-  void OnCryptohomeRecoveryScreenExit();
+  void OnCryptohomeRecoveryScreenExit(CryptohomeRecoveryScreen::Result result);
   void OnChoobeScreenExit(ChoobeScreen::Result result);
+  void OnTouchpadScreenExit(TouchpadScrollScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

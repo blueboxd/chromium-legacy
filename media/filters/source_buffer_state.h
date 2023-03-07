@@ -5,7 +5,7 @@
 #ifndef MEDIA_FILTERS_SOURCE_BUFFER_STATE_H_
 #define MEDIA_FILTERS_SOURCE_BUFFER_STATE_H_
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
@@ -66,9 +66,6 @@ class MEDIA_EXPORT SourceBufferState {
   // append failure using a `QuotaExceededErr` exception per the MSE
   // specification. App could use a back-off and retry strategy or otherwise
   // alter their behavior to attempt to buffer media for further playback.
-  // TODO(crbug.com/1286810): Update resource allocation paths in the
-  // StreamParser implementations called by this method to recognize and report
-  // allocation failure.
   [[nodiscard]] bool AppendToParseBuffer(const uint8_t* data, size_t length);
 
   // Tells the stream parser to parse more of the data previously sent to it
@@ -143,6 +140,10 @@ class MEDIA_EXPORT SourceBufferState {
   // end of stream range logic needs to be executed.
   Ranges<base::TimeDelta> GetBufferedRanges(base::TimeDelta duration,
                                             bool ended) const;
+
+  // Returns the lowest PTS of currently buffered frames in this source, or
+  // base::TimeDelta() if none of the streams contain buffered data.
+  base::TimeDelta GetLowestPresentationTimestamp() const;
 
   // Returns the highest PTS of currently buffered frames in this source, or
   // base::TimeDelta() if none of the streams contain buffered data.

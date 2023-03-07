@@ -26,19 +26,22 @@ static void TestMediaQuery(const char* input,
   wtf_size_t j = 0;
   while (j < query_set.QueryVector().size()) {
     const MediaQuery& query = *query_set.QueryVector()[j];
-    if (!unknown_substitute.IsNull() && query.HasUnknown())
+    if (!unknown_substitute.IsNull() && query.HasUnknown()) {
       actual.Append(unknown_substitute);
-    else
+    } else {
       actual.Append(query.CssText());
+    }
     ++j;
-    if (j >= query_set.QueryVector().size())
+    if (j >= query_set.QueryVector().size()) {
       break;
+    }
     actual.Append(", ");
   }
-  if (output)
+  if (output) {
     ASSERT_EQ(output, actual.ToString());
-  else
+  } else {
     ASSERT_EQ(input, actual.ToString());
+  }
 }
 
 TEST(MediaQuerySetTest, Basic) {
@@ -62,7 +65,7 @@ TEST(MediaQuerySetTest, Basic) {
       {"example", nullptr},
       {"screen and (max-weight: 3kg) and (color), (monochrome)",
        "not all, (monochrome)"},
-      {"(min-width: -100px)", "not all"},
+      {"(min-width: -100px)", "(min-width: -100px)"},
       {"(width:100gil)", "not all"},
       {"(example, all,), speech", "not all, speech"},
       {"&test, screen", "not all, screen"},
@@ -95,7 +98,7 @@ TEST(MediaQuerySetTest, Basic) {
       {"screen and (max-width: 24.4EM)", "screen and (max-width: 24.4em)"},
       {"screen and (max-width: blabla)", "not all"},
       {"screen and (max-width: 1)", "not all"},
-      {"screen and (max-width: 0)", nullptr},
+      {"screen and (max-width: 0)", "screen and (max-width: 0)"},
       {"screen and (max-width: 1deg)", "not all"},
       {"handheld and (min-width: 20em), \nscreen and (min-width: 20em)",
        "handheld and (min-width: 20em), screen and (min-width: 20em)"},

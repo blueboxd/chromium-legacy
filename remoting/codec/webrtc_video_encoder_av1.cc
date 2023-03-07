@@ -4,7 +4,8 @@
 
 #include "remoting/codec/webrtc_video_encoder_av1.h"
 
-#include "base/callback.h"
+#include "base/cxx17_backports.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
@@ -35,11 +36,16 @@ void DestroyAomCodecContext(aom_codec_ctx_t* codec_ctx) {
 // TODO(joedow): Perform some additional testing to see if this needs tweaking.
 constexpr int kAv1MinimumTargetBitrateKbpsPerMegapixel = 2500;
 
+// A value of 9 provides higher-quality and decent performance based on
+// experimentation.
+constexpr int kAv1DefaultEncoderSpeed = 9;
+
 }  // namespace
 
 WebrtcVideoEncoderAV1::WebrtcVideoEncoderAV1()
     : codec_(nullptr, DestroyAomCodecContext),
       image_(nullptr, aom_img_free),
+      av1_encoder_speed_(kAv1DefaultEncoderSpeed),
       bitrate_filter_(kAv1MinimumTargetBitrateKbpsPerMegapixel) {
   ConfigureCodecParams();
 }
@@ -50,6 +56,14 @@ void WebrtcVideoEncoderAV1::SetLosslessColor(bool want_lossless) {
     lossless_color_ = want_lossless;
     codec_.reset();
   }
+}
+
+void WebrtcVideoEncoderAV1::SetEncoderSpeed(int encoder_speed) {
+  // Clamp values are based on the lowest and highest values available when
+  // realtime encoding with AV1.  This allows for client-driven experimentation,
+  // however in practice, a value of 9 or 10 should be chosen as that will give
+  // the best performance.
+  av1_encoder_speed_ = base::clamp<int>(encoder_speed, 7, 10);
 }
 
 bool WebrtcVideoEncoderAV1::InitializeCodec(const webrtc::DesktopSize& size) {
@@ -83,7 +97,7 @@ bool WebrtcVideoEncoderAV1::InitializeCodec(const webrtc::DesktopSize& size) {
     active_map_.Initialize(size);
   }
 
-  error = aom_codec_control(codec.get(), AOME_SET_CPUUSED, 10);
+  error = aom_codec_control(codec.get(), AOME_SET_CPUUSED, av1_encoder_speed_);
   DCHECK_EQ(error, AOM_CODEC_OK) << "Failed to set AOME_SET_CPUUSED";
 
   error = aom_codec_control(codec.get(), AV1E_SET_AQ_MODE, 3);
@@ -92,6 +106,26 @@ bool WebrtcVideoEncoderAV1::InitializeCodec(const webrtc::DesktopSize& size) {
   if (config_.g_threads > 1) {
     error = aom_codec_control(codec.get(), AV1E_SET_ROW_MT, 1);
     DCHECK_EQ(error, AOM_CODEC_OK) << "Failed to set AV1E_SET_ROW_MT";
+
+    // Use a smaller superblock size for 5k, 4k, and 2k displays.
+    if (config_.g_threads > 4) {
+      // The default value for AV1E_SET_SUPERBLOCK_SIZE is
+      // AOM_SUPERBLOCK_SIZE_DYNAMIC which uses 64x64 blocks for resolutions of
+      // 720px or lower and 128x128 for resolutions above that. When testing
+      // with display resolutions higher than 3840x2160 (4K), we found that
+      // increasing the number of threads from 16 to 32 increased performance
+      // for VP9 but performance decreased with AV1. The codec team investigated
+      // and suggested adjusting the superblock size down to 64x64 to increase
+      // the amount of parallelism.  This solution increased performance for 5K
+      // displays and put it around the level of what we see for a 4K display.
+      // Additional testing with 4K and 2K displays showed that a smaller
+      // superblock size increased performance there as well.
+      // See https://crbug.com/aomedia/3363 for more info.
+      error = aom_codec_control(codec.get(), AV1E_SET_SUPERBLOCK_SIZE,
+                                AOM_SUPERBLOCK_SIZE_64X64);
+      DCHECK_EQ(error, AOM_CODEC_OK)
+          << "Failed to set AV1E_SET_SUPERBLOCK_SIZE";
+    }
   }
 
   // The param used to set the tile columns and tile rows is in log2 so 0 is ok.
@@ -283,12 +317,15 @@ void WebrtcVideoEncoderAV1::ConfigureCodecParams() {
   config_.g_lag_in_frames = 0;
   config_.g_error_resilient = 0;
   config_.g_timebase.num = 1;
-  config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
+  config_.g_timebase.den = base::Time::kMillisecondsPerSecond;
 
   config_.kf_mode = AOM_KF_DISABLED;
 
-  config_.rc_max_quantizer = 0;
-  config_.rc_min_quantizer = 0;
+  // Initial max/min qp values were suggested by the codecs team. The intent is
+  // to set a reasonable default for the first key frame before WebRTC begins
+  // sending us updated max/min qp values based on the network conditions.
+  config_.rc_max_quantizer = 52;
+  config_.rc_min_quantizer = 10;
   config_.rc_dropframe_thresh = 0;
   config_.rc_undershoot_pct = 50;
   config_.rc_overshoot_pct = 50;
@@ -325,8 +362,9 @@ void WebrtcVideoEncoderAV1::UpdateConfig(const FrameParams& params) {
     changed = true;
   }
 
-  if (!changed)
+  if (!changed) {
     return;
+  }
 
   // Update encoder context.
   if (aom_codec_enc_config_set(codec_.get(), &config_)) {
@@ -373,11 +411,13 @@ void WebrtcVideoEncoderAV1::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
   aom_active_map_t act_map;
   if (use_active_map_) {
-    if (params.clear_active_map)
+    if (params.clear_active_map) {
       active_map_.Clear();
+    }
 
-    if (params.key_frame)
+    if (params.key_frame) {
       updated_region.SetRect(webrtc::DesktopRect::MakeSize(frame_size));
+    }
 
     active_map_.Update(updated_region);
 
@@ -390,12 +430,12 @@ void WebrtcVideoEncoderAV1::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
     }
   }
 
-  auto duration_us = params.duration.InMicroseconds();
-  DCHECK_GT(duration_us, 0);
+  auto duration_ms = params.duration.InMilliseconds();
+  DCHECK_GT(duration_ms, 0);
   aom_codec_err_t ret = aom_codec_encode(
-      codec_.get(), image_.get(), artificial_timestamp_us_, duration_us,
+      codec_.get(), image_.get(), artificial_timestamp_ms_, duration_ms,
       (params.key_frame) ? AOM_EFLAG_FORCE_KF : 0);
-  artificial_timestamp_us_ += duration_us;
+  artificial_timestamp_ms_ += duration_ms;
   if (ret != AOM_CODEC_OK) {
     const char* error_detail = aom_codec_error_detail(codec_.get());
     LOG(ERROR) << "Encoding error: " << aom_codec_err_to_string(ret) << "\n  "
@@ -434,8 +474,9 @@ void WebrtcVideoEncoderAV1::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   while (!got_data) {
     const aom_codec_cx_pkt_t* aom_packet =
         aom_codec_get_cx_data(codec_.get(), &iter);
-    if (!aom_packet)
+    if (!aom_packet) {
       continue;
+    }
 
     switch (aom_packet->kind) {
       case AOM_CODEC_CX_FRAME_PKT: {

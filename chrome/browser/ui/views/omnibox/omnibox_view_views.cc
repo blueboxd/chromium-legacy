@@ -9,16 +9,17 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -39,7 +40,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/grit/generated_resources.h"
@@ -47,8 +48,8 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_client.h"
-#include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_edit_model_delegate.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
@@ -88,7 +89,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -165,12 +165,13 @@ bool IsClipboardDataMarkedAsConfidential() {
 
 // OmniboxViewViews -----------------------------------------------------------
 
-OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
-                                   std::unique_ptr<OmniboxClient> client,
-                                   bool popup_window_mode,
-                                   LocationBarView* location_bar,
-                                   const gfx::FontList& font_list)
-    : OmniboxView(controller, std::move(client)),
+OmniboxViewViews::OmniboxViewViews(
+    OmniboxEditModelDelegate* edit_model_delegate,
+    std::unique_ptr<OmniboxClient> client,
+    bool popup_window_mode,
+    LocationBarView* location_bar,
+    const gfx::FontList& font_list)
+    : OmniboxView(edit_model_delegate, std::move(client)),
       popup_window_mode_(popup_window_mode),
       location_bar_view_(location_bar),
       latency_histogram_state_(NOT_ACTIVE),
@@ -222,8 +223,8 @@ void OmniboxViewViews::Init() {
 
   if (location_bar_view_) {
     // Initialize the popup view using the same font.
-    popup_view_ = std::make_unique<OmniboxPopupContentsView>(
-        this, model(), location_bar_view_);
+    popup_view_ = std::make_unique<OmniboxPopupViewViews>(this, model(),
+                                                          location_bar_view_);
 
     // Set whether the text should be used to improve typing suggestions.
     SetShouldDoLearning(!location_bar_view_->profile()->IsOffTheRecord());
@@ -528,9 +529,6 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case Textfield::kPaste:
       ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
       return;
-    case Textfield::kSelectAll:
-      ExecuteTextEditCommand(ui::TextEditCommand::SELECT_ALL);
-      return;
     default:
       if (Textfield::IsCommandIdEnabled(command_id)) {
         // The Textfield code will invoke OnBefore/AfterPossibleChange() itself
@@ -589,15 +587,16 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
   // in about:blank URLs. Or in blob: or filesystem: URLs, which have an inner
   // origin, the URL is likely too syntax-y to be able to meaningfully draw
   // attention to any part of it.
-  auto* const location_bar_model = controller()->GetLocationBarModel();
+  auto* const location_bar_model = edit_model_delegate()->GetLocationBarModel();
   if (!location_bar_model->GetURL().SchemeIsHTTPOrHTTPS())
     return;
 
   if (net::IsCertStatusError(location_bar_model->GetCertStatus())) {
     if (location_bar_view_) {
-      ApplyColor(location_bar_view_->GetSecurityChipColor(
-                     controller()->GetLocationBarModel()->GetSecurityLevel()),
-                 range);
+      ApplyColor(
+          location_bar_view_->GetSecurityChipColor(
+              edit_model_delegate()->GetLocationBarModel()->GetSecurityLevel()),
+          range);
     }
     ApplyStyle(gfx::TEXT_STYLE_STRIKE, true, range);
   }
@@ -1118,7 +1117,7 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
         SelectWordAt(event.location());
         std::u16string shown_url = GetText();
         std::u16string full_url =
-            controller()->GetLocationBarModel()->GetFormattedFullURL();
+            edit_model_delegate()->GetLocationBarModel()->GetFormattedFullURL();
         size_t offset = full_url.find(shown_url);
         if (offset != std::u16string::npos) {
           next_double_click_selection_len_ = GetSelectedText().length();
@@ -1350,7 +1349,8 @@ void OmniboxViewViews::OnFocus() {
 
   // TODO(oshima): Get control key state.
   model()->OnSetFocus(false);
-  // Don't call controller()->OnSetFocus, this view has already acquired focus.
+  // Don't call edit_model_delegate()->OnSetFocus, this view has already
+  // acquired focus.
 
   // Restore the selection we saved in OnBlur() if it's still valid.
   if (!saved_selection_for_focus_change_.empty()) {
@@ -1449,11 +1449,6 @@ void OmniboxViewViews::OnBlur() {
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
-#if BUILDFLAG(IS_CHROMEOS)
-  if (command_id == Textfield::kSelectAll) {
-    return features::IsTouchTextEditingRedesignEnabled();
-  }
-#endif
   if (command_id == Textfield::kPaste)
     return !GetReadOnly() &&
            !GetClipboardText(/*notify_if_restricted=*/false).empty();
@@ -1468,7 +1463,8 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return true;
 
   return Textfield::IsCommandIdEnabled(command_id) ||
-         location_bar_view_->command_updater()->IsCommandEnabled(command_id);
+         (location_bar_view_ &&
+          location_bar_view_->command_updater()->IsCommandEnabled(command_id));
 }
 
 std::u16string OmniboxViewViews::GetSelectionClipboardText() const {

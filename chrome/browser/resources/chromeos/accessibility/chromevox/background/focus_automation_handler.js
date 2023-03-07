@@ -12,7 +12,7 @@ import {ChromeVoxEvent} from '../common/custom_automation_event.js';
 import {QueueMode, TtsSpeechProperties} from '../common/tts_types.js';
 
 import {BaseAutomationHandler} from './base_automation_handler.js';
-import {ChromeVoxState} from './chromevox_state.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {Output} from './output/output.js';
 import {OutputCustomEvent} from './output/output_types.js';
 
@@ -32,7 +32,8 @@ export class FocusAutomationHandler extends BaseAutomationHandler {
     this.previousActiveDescendant_;
 
     chrome.automation.getDesktop(desktop => {
-      desktop.addEventListener(EventType.FOCUS, this.onFocus.bind(this), false);
+      desktop.addEventListener(
+          EventType.FOCUS, evt => this.onFocus(evt), false);
     });
   }
 
@@ -92,7 +93,7 @@ export class FocusAutomationHandler extends BaseAutomationHandler {
 
     const prev = this.previousActiveDescendant_ ?
         CursorRange.fromNode(this.previousActiveDescendant_) :
-        ChromeVoxState.instance.currentRange;
+        ChromeVoxRange.current;
     new Output()
         .withoutHints()
         .withRichSpeechAndBraille(
@@ -107,7 +108,7 @@ export class FocusAutomationHandler extends BaseAutomationHandler {
    * @param {!ChromeVoxEvent} evt
    */
   onDetailsChanged(evt) {
-    const range = ChromeVoxState.instance.currentRange;
+    const range = ChromeVoxRange.current;
     let node = range.start ? range.start.node : null;
     while (node && (!node.details || !node.details.length)) {
       node = node.parent;

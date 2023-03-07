@@ -13,8 +13,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroidImpl_jni.h"
@@ -180,12 +180,6 @@ void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     scoped_refptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          WebContents::FromRenderFrameHost(render_frame_host),
-          vr::UiSuppressedElement::kFileChooser)) {
-    listener->FileSelectionCanceled();
-    return;
-  }
   FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
                                    params);
 }
@@ -272,11 +266,7 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
-  // For VR, we use app modal since the dialog view will cover the location bar.
-  if (!vr::VrTabHelper::IsInVr(source)) {
-    return javascript_dialogs::TabModalDialogManager::FromWebContents(source);
-  }
-  return javascript_dialogs::AppModalDialogManager::GetInstance();
+  return javascript_dialogs::TabModalDialogManager::FromWebContents(source);
 }
 
 void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
@@ -450,12 +440,12 @@ bool TabWebContentsDelegateAndroid::IsBackForwardCacheSupported() {
   return true;
 }
 
-bool TabWebContentsDelegateAndroid::IsPrerender2Supported(
+content::PreloadingEligibility
+TabWebContentsDelegateAndroid::IsPrerender2Supported(
     content::WebContents& web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents.GetBrowserContext());
-  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs()) ==
-         content::PreloadingEligibility::kEligible;
+  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs(), &web_contents);
 }
 
 std::unique_ptr<content::WebContents>
@@ -577,15 +567,6 @@ bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {
   if (obj.is_null())
     return false;
   return Java_TabWebContentsDelegateAndroidImpl_canShowAppBanners(env, obj);
-}
-
-bool TabWebContentsDelegateAndroid::IsTabLargeEnoughForDesktopSite() const {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return false;
-  return Java_TabWebContentsDelegateAndroidImpl_isTabLargeEnoughForDesktopSite(
-      env, obj);
 }
 
 const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {

@@ -96,6 +96,11 @@
 // This macro unconditionally calls visitor.Visit().
 #define VISIT_REP(field) visitor.Visit(proto, #field, proto.field());
 
+// Values that are secrets do not have their contents reported in debugging
+// output, only their lengths, but are still counted for things like memory
+// estimation.
+#define VISIT_SECRET(field) VISIT_(Secret, field)
+
 #define VISIT_PROTO_FIELDS(proto) \
   template <class V>              \
   void VisitProtoFields(V& visitor, proto)
@@ -301,6 +306,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics& proto) {
   VISIT(date_modified_windows_epoch_micros);
   VISIT(language_code);
   VISIT(profile_label);
+  VISIT(initial_creator_id);
+  VISIT(last_modifier_id);
   VISIT(name_honorific);
   VISIT(name_first);
   VISIT(name_middle);
@@ -446,7 +453,6 @@ VISIT_PROTO_FIELDS(const sync_pb::DataTypeProgressMarker& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::GarbageCollectionDirective& proto) {
   VISIT(version_watermark);
-  VISIT(age_watermark_in_days);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DebugEventInfo& proto) {
@@ -772,9 +778,8 @@ VISIT_PROTO_FIELDS(const sync_pb::WebauthnCredentialSpecifics& proto) {
   VISIT(user_name);
   VISIT(user_display_name);
   VISIT(third_party_payments_support);
-  // |private_key| is deliberately omitted to avoid including sensitive
-  // information in debugging output, which might be included in bug reports
-  // etc.
+  VISIT_SECRET(private_key);
+  VISIT_SECRET(encrypted);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics::PageTransition& proto) {
@@ -803,6 +808,7 @@ VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
   VISIT(page_transition);
   VISIT(originator_referring_visit_id);
   VISIT(originator_opener_visit_id);
+  VISIT(originator_cluster_id);
   VISIT(visit_duration_micros);
   VISIT_ENUM(browser_type);
   VISIT(window_id);
@@ -1274,7 +1280,6 @@ VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics& proto) {
   VISIT(arc_play_terms_of_service_consent);
   VISIT(assistant_activity_control_consent);
   VISIT(account_passwords_consent);
-  VISIT(autofill_assistant_consent);
 }
 
 VISIT_PROTO_FIELDS(
@@ -1318,13 +1323,6 @@ VISIT_PROTO_FIELDS(const sync_pb::UserConsentTypes::UnifiedConsent& proto) {
 
 VISIT_PROTO_FIELDS(
     const sync_pb::UserConsentTypes::AccountPasswordsConsent& proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT(confirmation_grd_id);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentTypes::AutofillAssistantConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT(confirmation_grd_id);
   VISIT_ENUM(status);

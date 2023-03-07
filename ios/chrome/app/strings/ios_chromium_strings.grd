@@ -297,9 +297,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_SHORT" desc="Subtitle of the screen suggesting to the user to sign in. [iOS only]">
           Sign in to get the most out of Chromium.
       </message>
-      <message name="IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_MANAGED" desc="Subtitle of the screen suggesting to the user to sign in when their Sign In is managed by their administrator.">
-          Sign in to Chromium
-      </message>
       <message name="IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_SIGNIN_FORCED" desc="Subtitle of a dialog to sign in to Chrome when sign-in is required because of an enterprise policy. [iOS only]">
         Your organization requires you to sign in to use Chromium.
       </message>
@@ -308,12 +305,6 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_FIRST_RUN_SIGNIN_TITLE" desc="Title of the screen suggesting to the user to sign in. [iOS only]">
         Make Chromium Your Own
-      </message>
-      <message name="IDS_IOS_FIRST_RUN_SIGNIN_TITLE_TANGIBLE_SYNC_D" desc="This string appears as a heading on a full-page screen that tells users the benefits of signing in to Chrome. It appears when the user launches Chrome for the first time. The tone should be inviting and alluring. [CHAR_LIMIT=35][iOS only]">
-        Do More with Chromium
-      </message>
-      <message name="IDS_IOS_FIRST_RUN_SIGNIN_TITLE_TANGIBLE_SYNC_E" desc="This string appears as a heading on a full-page screen that welcomes users to Chrome. It appears when the user launches Chrome for the first time. The tone should be inviting and motivating. [CHAR_LIMIT=35][iOS only]">
-        Welcome to Chromium
       </message>
       <message name="IDS_IOS_FIRST_RUN_UMA_DIALOG_CHECKBOX" desc="Checkbox to accept the metrics reporting consent. Related to IDS_IOS_FIRST_RUN_UMA_DIALOG_EXPLANATION and IDS_IOS_FIRST_RUN_UMA_DIALOG_TITLE. [iOS only]">
         Help Improve Chromium's Features and Performance
@@ -569,9 +560,6 @@ Things to consider:
       <message name="IDS_IOS_PASSWORD_CHECK_ERROR_OTHER" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="Password check failed due to specific reason (out of memory).">
         Chromium couldn't check all passwords. Try again later.
       </message>
-      <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION" desc="Text inside Password Details screen shown when password was compromised. [iOS only]" meaning="Text which explains the user that current password is compromised and it should be changed.">
-        Your password was exposed in a data breach. Chromium recommends changing the password now.
-      </message>
       <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED" desc="Text inside Password Details screen shown when password was compromised. [iOS only]" meaning="Text which explains the user that current password is compromised and it should be changed.">
         Your password was exposed in a data breach. Password Manager recommends changing it now.
       </message>
@@ -586,12 +574,6 @@ Things to consider:
       </message>
       <message name="IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER_BRANDED" desc="Disclaimer telling users what will happen to their passwords">
         Your password will be saved to Password Manager for <ph name="EMAIL">$1<ex>example@gmail.com</ex></ph>.
-      </message>
-      <message name="IDS_IOS_PASSWORD_SUGGESTIONS_TIP" desc="The text of the tip explaining to the user they can tap on Autofill password suggestions">
-        Use the password you saved in Chromium to sign in faster
-      </message>
-      <message name="IDS_IOS_PASSWORD_SUGGESTIONS_TIP_VOICEOVER" desc="The VoiceOver announcement when the tip explaining to the user they can select Autofill password suggestions." meaning="The VoiceOver announcement when the tip explaining to the user they can select Autofill password suggestions.">
-        Chromium tip. Sign in faster by selecting your saved password at the top of the keyboard.
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_TIP" desc="The text of the tip explaining to the user that the Overflow Menu has new items">
         Get to know the new Chromium menu

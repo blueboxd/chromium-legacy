@@ -7,10 +7,11 @@ import {EventGenerator} from '../common/event_generator.js';
 
 import {ActionManager} from './action_manager.js';
 import {FocusRingManager} from './focus_ring_manager.js';
-import {PointNavigatorInterface} from './navigator_interface.js';
+import {PointNavigatorInterface} from './navigator_interfaces.js';
 import {SwitchAccess} from './switch_access.js';
-import {SAConstants, SwitchAccessMenuAction} from './switch_access_constants.js';
+import {MenuType, Mode} from './switch_access_constants.js';
 
+const MenuAction = chrome.accessibilityPrivate.SwitchAccessMenuAction;
 const PointScanState = chrome.accessibilityPrivate.PointScanState;
 
 export class PointScanManager extends PointNavigatorInterface {
@@ -33,7 +34,7 @@ export class PointScanManager extends PointNavigatorInterface {
   /** @override */
   start() {
     FocusRingManager.clearAll();
-    SwitchAccess.mode = SAConstants.Mode.POINT_SCAN;
+    SwitchAccess.mode = Mode.POINT_SCAN;
     chrome.accessibilityPrivate.onPointScanSet.addListener(this.pointListener_);
     chrome.accessibilityPrivate.setPointScanState(PointScanState.START);
   }
@@ -45,16 +46,15 @@ export class PointScanManager extends PointNavigatorInterface {
 
   /** @override */
   performMouseAction(action) {
-    if (SwitchAccess.mode !== SAConstants.Mode.POINT_SCAN) {
+    if (SwitchAccess.mode !== Mode.POINT_SCAN) {
       return;
     }
-    if (action !== SwitchAccessMenuAction.LEFT_CLICK &&
-        action !== SwitchAccessMenuAction.RIGHT_CLICK) {
+    if (action !== MenuAction.LEFT_CLICK && action !== MenuAction.RIGHT_CLICK) {
       return;
     }
 
     const params = {};
-    if (action === SwitchAccessMenuAction.RIGHT_CLICK) {
+    if (action === MenuAction.RIGHT_CLICK) {
       params.mouseButton =
           chrome.accessibilityPrivate.SyntheticMouseEventButton.RIGHT;
     }
@@ -73,7 +73,7 @@ export class PointScanManager extends PointNavigatorInterface {
    */
   handleOnPointScanSet_(point) {
     this.point_ = point;
-    ActionManager.openMenu(SAConstants.MenuType.POINT_SCAN_MENU);
+    ActionManager.openMenu(MenuType.POINT_SCAN_MENU);
     chrome.accessibilityPrivate.onPointScanSet.removeListener(
         this.pointListener_);
   }

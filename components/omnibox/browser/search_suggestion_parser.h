@@ -18,6 +18,7 @@
 #include "components/omnibox/browser/suggestion_group_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/chrome_searchbox_stats.pb.h"
+#include "third_party/omnibox_proto/entity_info.pb.h"
 #include "third_party/omnibox_proto/types.pb.h"
 #include "url/gurl.h"
 
@@ -143,11 +144,8 @@ class SearchSuggestionParser {
                   const std::u16string& match_contents,
                   const std::u16string& match_contents_prefix,
                   const std::u16string& annotation,
-                  const std::string& additional_query_params,
-                  const std::string& entity_id,
+                  omnibox::EntityInfo entity_info,
                   const std::string& deletion_url,
-                  const std::string& image_dominant_color,
-                  const std::string& image_url,
                   bool from_keyword,
                   int relevance,
                   bool relevance_from_server,
@@ -164,10 +162,6 @@ class SearchSuggestionParser {
       return match_contents_prefix_;
     }
     const std::u16string& annotation() const { return annotation_; }
-    const std::string& additional_query_params() const {
-      return additional_query_params_;
-    }
-    const std::string& entity_id() const { return entity_id_; }
 
     void set_suggestion_group_id(
         absl::optional<omnibox::GroupId> suggestion_group_id) {
@@ -180,10 +174,7 @@ class SearchSuggestionParser {
     void SetAnswer(const SuggestionAnswer& answer);
     const absl::optional<SuggestionAnswer>& answer() const { return answer_; }
 
-    const std::string& image_dominant_color() const {
-      return image_dominant_color_;
-    }
-    const GURL& image_url() const { return image_url_; }
+    const omnibox::EntityInfo& entity_info() const { return entity_info_; }
 
     bool should_prefetch() const { return should_prefetch_; }
     bool should_prerender() const { return should_prerender_; }
@@ -214,13 +205,6 @@ class SearchSuggestionParser {
     // separately to facilitate different formatting.
     std::u16string annotation_;
 
-    // Optional additional parameters to be added to the search URL.
-    std::string additional_query_params_;
-
-    // Optional entity id for entity suggestions. Empty string means no entity
-    // ID.
-    std::string entity_id_;
-
     // The optional suggestion group ID used to look up the suggestion group
     // config for the group this suggestion belongs to from the server response.
     absl::optional<omnibox::GroupId> suggestion_group_id_;
@@ -228,11 +212,8 @@ class SearchSuggestionParser {
     // Optional short answer to the input that produced this suggestion.
     absl::optional<SuggestionAnswer> answer_;
 
-    // Optional image information. Used for entity suggestions. The dominant
-    // color can be used to paint the image placeholder while fetching the
-    // image.
-    std::string image_dominant_color_;
-    GURL image_url_;
+    // Proto containing various pieces of data related to entity suggestions.
+    omnibox::EntityInfo entity_info_;
 
     // Should this result be prefetched?
     bool should_prefetch_;

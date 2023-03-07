@@ -9,11 +9,11 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -649,14 +649,7 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
   }
 
   // No interceptors wanted to handle this request.
-  uint32_t options = network::mojom::kURLLoadOptionNone;
-  scoped_refptr<network::SharedURLLoaderFactory> factory =
-      PrepareForNonInterceptedRequest(&options);
-  url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
-      std::move(factory), CreateURLLoaderThrottles(),
-      global_request_id_.request_id, options, resource_request_.get(),
-      /*client=*/this, kNavigationUrlLoaderTrafficAnnotation,
-      GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse}));
+  FallbackToNonInterceptedRequest(false);
 }
 
 void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
@@ -664,9 +657,10 @@ void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
   if (reset_subresource_loader_params)
     subresource_loader_params_.reset();
 
-  uint32_t options = network::mojom::kURLLoadOptionNone;
   scoped_refptr<network::SharedURLLoaderFactory> factory =
-      PrepareForNonInterceptedRequest(&options);
+      PrepareForNonInterceptedRequest();
+  uint32_t options =
+      GetURLLoaderOptions(resource_request_->is_outermost_main_frame);
   if (url_loader_) {
     // `url_loader_` is using the factory for the interceptor that decided to
     // fallback, so restart it with the non-interceptor factory.
@@ -686,8 +680,7 @@ void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
-    uint32_t* out_options) {
+NavigationURLLoaderImpl::PrepareForNonInterceptedRequest() {
   // TODO(https://crbug.com/796425): We temporarily wrap raw
   // mojom::URLLoaderFactory pointers into SharedURLLoaderFactory. Need to
   // further refactor the factory getters to avoid this.
@@ -772,8 +765,6 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
   }
   url_chain_.push_back(resource_request_->url);
 
-  *out_options =
-      GetURLLoaderOptions(resource_request_->is_outermost_main_frame);
   return factory;
 }
 
@@ -1041,6 +1032,15 @@ void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   DCHECK(frame_tree_node);
+  // Log each hint requested via an ACCEPT_CH Frame whether or not this caused
+  // the connection to be restarted.
+  auto* ukm_recorder = ukm::UkmRecorder::Get();
+  for (const auto& hint : accept_ch_frame) {
+    ukm::builders::ClientHints_AcceptCHFrameUsage(ukm_source_id_)
+        .SetType(static_cast<int64_t>(hint))
+        .Record(ukm_recorder->Get());
+  }
+
   ClientHintsControllerDelegate* client_hint_delegate =
       browser_context_->GetClientHintsControllerDelegate();
 

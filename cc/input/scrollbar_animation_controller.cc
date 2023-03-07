@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -190,6 +190,10 @@ void ScrollbarAnimationController::RunAnimationFrame(float progress) {
 
 void ScrollbarAnimationController::DidScrollUpdate() {
   UpdateScrollbarState();
+  if (need_thinning_animation_) {
+    vertical_controller_->DidScrollUpdate();
+    horizontal_controller_->DidScrollUpdate();
+  }
 }
 
 void ScrollbarAnimationController::UpdateScrollbarState() {

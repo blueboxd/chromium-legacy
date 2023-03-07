@@ -17,6 +17,7 @@
 #include "chromeos/ash/components/network/managed_state.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "components/onc/onc_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -27,6 +28,7 @@ namespace ash {
 
 class DeviceState;
 class NetworkStateHandler;
+class NetworkStateTest;
 
 // Simple class to provide network state information about a network service.
 // This class should always be passed as a const* and should never be held
@@ -292,6 +294,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
  private:
   friend class MobileActivatorTest;
   friend class NetworkStateHandler;
+  friend class NetworkStateTest;
 
   // Updates |name_| from the 'WiFi.HexSSID' entry in |properties|, which must
   // be of type DICTIONARY, if the key exists, and validates |name_|. Returns
@@ -320,7 +323,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string device_path_;
   std::string guid_;
   std::string tether_guid_;  // Used to double link a Tether and Wi-Fi network.
-  std::string connection_state_;
+  std::string connection_state_ = shill::kStateIdle;
   std::string profile_path_;
   GURL probe_url_;
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
@@ -397,10 +400,5 @@ std::ostream& COMPONENT_EXPORT(CHROMEOS_NETWORK) operator<<(
     const NetworkState::PortalState& portal_state);
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::NetworkState;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_STATE_H_

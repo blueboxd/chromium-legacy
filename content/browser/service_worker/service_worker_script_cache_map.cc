@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -41,8 +41,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
       << owner_->status();
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  resource_map_[url] =
-      storage::mojom::ServiceWorkerResourceRecord::New(resource_id, url, -1);
+  resource_map_[url] = storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id, url, -1, /*sha256_checksum=*/"");
   context_->registry()->StoreUncommittedResourceId(
       resource_id, blink::StorageKey(url::Origin::Create(owner_->scope())));
 }
@@ -50,6 +50,7 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const GURL& url,
     int64_t size_bytes,
+    const std::string& sha256_checksum,
     net::Error net_error,
     const std::string& status_message) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerResourceId,
@@ -72,11 +73,13 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     // |size_bytes| should not be negative when caching finished successfully.
     CHECK_GE(size_bytes, 0);
     resource_map_[url]->size_bytes = size_bytes;
+    resource_map_[url]->sha256_checksum = sha256_checksum;
   }
 }
 
 void ServiceWorkerScriptCacheMap::GetResources(
-    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>* resources) {
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>* resources)
+    const {
   DCHECK(resources->empty());
   for (ResourceMap::const_iterator it = resource_map_.begin();
        it != resource_map_.end();

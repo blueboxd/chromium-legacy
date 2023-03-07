@@ -119,15 +119,39 @@ extern const char kDesktopVersionRequested[];
 // The default site view mode has been used.
 extern const char kDefaultSiteViewUsed[];
 
-// Autofill displayed password suggestions.
-extern const char kPasswordSuggestionsShown[];
-
-// The user has selected an Autofill password suggestion.
-extern const char kPasswordSuggestionSelected[];
-
 // The user has exited the overflow menu without scrolling horizontally and
 // without taking an action.
 extern const char kOverflowMenuNoHorizontalScrollOrAction[];
+
+// The user has opened Price Tracking.
+extern const char kPriceNotificationsUsed[];
+
+// The user has been shown a default browser promo.
+extern const char kDefaultBrowserPromoShown[];
+
+// The user has taken an action that is a criterion towards becoming eligible to
+// be shown the blue dot default browser promo.
+extern const char kBlueDotPromoCriterionMet[];
+
+// The user has met all criteria and has become eligible to be shown the blue
+// dot default browser promo.
+extern const char kBlueDotPromoEligibilityMet[];
+
+// The user has been shown the blue dot default browser promo on the overflow
+// carousel.
+extern const char kBlueDotPromoOverflowMenuShown[];
+
+// The user has been shown the blue dot default browser promo on the settings
+// row.
+extern const char kBlueDotPromoSettingsShown[];
+
+// The user has dismissed the blue dot default browser promo on the overflow
+// carousel.
+extern const char kBlueDotPromoOverflowMenuDismissed[];
+
+// The user has dismissed the blue dot default browser promo on the settings
+// row.
+extern const char kBlueDotPromoSettingsDismissed[];
 
 #endif  // BUILDFLAG(IS_IOS)
 

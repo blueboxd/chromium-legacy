@@ -116,6 +116,11 @@ void MaybeNotifyWriteFailed(
 
 }  // namespace
 
+// Enables merging duplicate calls of FindRegistrationForClientUrl.
+BASE_FEATURE(kServiceWorkerMergeFindRegistrationForClientUrl,
+             "ServiceWorkerMergeFindRegistrationForClientUrl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 template <typename... ReplyArgs>
 class InflightCallWithInvoker final
     : public ServiceWorkerRegistry::InflightCall {
@@ -248,18 +253,53 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
   // trace event id.
   int64_t trace_event_id =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+  TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerRegistry::FindRegistrationForClientUrl",
-      TRACE_ID_WITH_SCOPE("ServiceWorkerRegistry::FindRegistrationForClientUrl",
-                          trace_event_id),
-      "URL", client_url.spec());
-  CreateInvokerAndStartRemoteCall(
-      &storage::mojom::ServiceWorkerStorageControl::
-          FindRegistrationForClientUrl,
-      base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForClientUrl,
-                     weak_factory_.GetWeakPtr(), client_url, key,
-                     trace_event_id, std::move(callback)),
-      client_url, key);
+      TRACE_ID_WITH_SCOPE("ServiceWorkerRegistry", trace_event_id),
+      TRACE_EVENT_FLAG_FLOW_OUT, "URL", client_url.spec());
+  if (base::FeatureList::IsEnabled(
+          kServiceWorkerMergeFindRegistrationForClientUrl)) {
+    std::vector<FindRegistrationCallback>& callbacks =
+        find_registration_callbacks_[std::make_pair(client_url, key)];
+    callbacks.push_back(std::move(callback));
+    if (callbacks.size() >= 2) {
+      // Merges duplicate requests into the preceding in-flight request.
+      return;
+    }
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+        "ServiceWorker", "ServiceWorkerRegistry::FindRegistrationForClientUrl",
+        TRACE_ID_WITH_SCOPE(
+            "ServiceWorkerRegistry::FindRegistrationForClientUrl",
+            trace_event_id),
+        "URL", client_url.spec());
+    CreateInvokerAndStartRemoteCall(
+        &storage::mojom::ServiceWorkerStorageControl::
+            FindRegistrationForClientUrl,
+        base::BindOnce(
+            &ServiceWorkerRegistry::DidFindRegistrationForClientUrl,
+            weak_factory_.GetWeakPtr(), client_url, key, trace_event_id,
+            base::BindOnce(
+                [](blink::ServiceWorkerStatusCode status,
+                   scoped_refptr<ServiceWorkerRegistration> registration) {
+                  NOTREACHED()
+                      << "This is a dummy function that should not be called.";
+                })),
+        client_url, key);
+  } else {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+        "ServiceWorker", "ServiceWorkerRegistry::FindRegistrationForClientUrl",
+        TRACE_ID_WITH_SCOPE(
+            "ServiceWorkerRegistry::FindRegistrationForClientUrl",
+            trace_event_id),
+        "URL", client_url.spec());
+    CreateInvokerAndStartRemoteCall(
+        &storage::mojom::ServiceWorkerStorageControl::
+            FindRegistrationForClientUrl,
+        base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForClientUrl,
+                       weak_factory_.GetWeakPtr(), client_url, key,
+                       trace_event_id, std::move(callback)),
+        client_url, key);
+  }
 }
 
 void ServiceWorkerRegistry::FindRegistrationForScope(
@@ -410,19 +450,14 @@ void ServiceWorkerRegistry::StoreRegistration(
     data->used_features.push_back(feature);
   data->ancestor_frame_type = registration->ancestor_frame_type();
 
-  // The ServiceWorkerVersion's COEP might be null if it is stored before
-  // loading the main script. This happens in many unittests.
-  if (version->cross_origin_embedder_policy()) {
-    data->cross_origin_embedder_policy =
-        *version->cross_origin_embedder_policy();
-  }
+  // The ServiceWorkerVersion's policy container host might be null if it is
+  // stored before loading the main script. This happens in many unittests.
   data->policy_container_policies =
-      blink::mojom::PolicyContainerPolicies::New();
-  if (version->policy_container_host()) {
-    data->policy_container_policies = version->policy_container_host()
-                                          ->policies()
-                                          .ToMojoPolicyContainerPolicies();
-  }
+      version->policy_container_host()
+          ? version->policy_container_host()
+                ->policies()
+                .ToMojoPolicyContainerPolicies()
+          : blink::mojom::PolicyContainerPolicies::New();
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -452,7 +487,6 @@ void ServiceWorkerRegistry::StoreRegistration(
 
 void ServiceWorkerRegistry::DeleteRegistration(
     scoped_refptr<ServiceWorkerRegistration> registration,
-    const blink::StorageKey& key,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_storage_disabled_) {
@@ -468,9 +502,9 @@ void ServiceWorkerRegistry::DeleteRegistration(
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::DeleteRegistration,
       base::BindOnce(&ServiceWorkerRegistry::DidDeleteRegistration,
-                     weak_factory_.GetWeakPtr(), registration->id(), key,
-                     std::move(callback)),
-      registration->id(), key);
+                     weak_factory_.GetWeakPtr(), registration->id(),
+                     registration->key(), std::move(callback)),
+      registration->id(), registration->key());
 
   DCHECK(!base::Contains(uninstalling_registrations_, registration->id()));
   uninstalling_registrations_[registration->id()] = registration;
@@ -908,17 +942,18 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
         registration.get(), data.script, data.script_type, data.version_id,
         std::move(version_reference), context_->AsWeakPtr());
     version->set_fetch_handler_type(data.fetch_handler_type);
+    // Set resources before changing the status to ACTIVATED/INSTALLED.
+    // |sha256_script_checksum_| in ServiceWorkerVersion should be set before
+    // changing the status.
+    version->SetResources(resources);
     version->SetStatus(data.is_active ? ServiceWorkerVersion::ACTIVATED
                                       : ServiceWorkerVersion::INSTALLED);
-    version->script_cache_map()->SetResources(resources);
     if (data.origin_trial_tokens)
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
 
     std::set<blink::mojom::WebFeature> used_features(data.used_features.begin(),
                                                      data.used_features.end());
     version->set_used_features(std::move(used_features));
-    version->set_cross_origin_embedder_policy(
-        data.cross_origin_embedder_policy);
     // policy_container_host could be null for registration restored from old DB
     if (data.policy_container_policies) {
       version->set_policy_container_host(
@@ -979,6 +1014,10 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     FindRegistrationCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     storage::mojom::ServiceWorkerFindRegistrationResultPtr result) {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerRegistry::DidFindRegistrationForClientUrl",
+      TRACE_ID_WITH_SCOPE("ServiceWorkerRegistry", trace_event_id),
+      TRACE_EVENT_FLAG_FLOW_IN);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
@@ -1008,8 +1047,15 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
           (installing_status == blink::ServiceWorkerStatusCode::kOk)
               ? "Installing registration is found"
               : "Any registrations are not found");
-      CompleteFindNow(std::move(installing_registration), installing_status,
-                      std::move(callback));
+      if (base::FeatureList::IsEnabled(
+              kServiceWorkerMergeFindRegistrationForClientUrl)) {
+        RunFindRegistrationCallbacks(client_url, key,
+                                     std::move(installing_registration),
+                                     installing_status);
+      } else {
+        CompleteFindNow(std::move(installing_registration), installing_status,
+                        std::move(callback));
+      }
       return;
     }
   }
@@ -1036,7 +1082,29 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
       TRACE_ID_WITH_SCOPE("ServiceWorkerRegistry::FindRegistrationForClientUrl",
                           trace_event_id),
       "Status", blink::ServiceWorkerStatusToString(status));
-  CompleteFindNow(std::move(registration), status, std::move(callback));
+  if (base::FeatureList::IsEnabled(
+          kServiceWorkerMergeFindRegistrationForClientUrl)) {
+    RunFindRegistrationCallbacks(client_url, key, std::move(registration),
+                                 status);
+  } else {
+    CompleteFindNow(std::move(registration), status, std::move(callback));
+  }
+}
+
+void ServiceWorkerRegistry::RunFindRegistrationCallbacks(
+    const GURL& client_url,
+    const blink::StorageKey& key,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto iter =
+      find_registration_callbacks_.find(std::make_pair(client_url, key));
+  DCHECK(iter != find_registration_callbacks_.end());
+  std::vector<FindRegistrationCallback> callbacks = std::move(iter->second);
+  find_registration_callbacks_.erase(iter);
+  for (FindRegistrationCallback& callback : callbacks) {
+    CompleteFindNow(registration, status, std::move(callback));
+  }
 }
 
 void ServiceWorkerRegistry::DidFindRegistrationForScope(

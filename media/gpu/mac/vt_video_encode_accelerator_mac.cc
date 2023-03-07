@@ -18,7 +18,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/bitrate.h"
@@ -146,6 +145,56 @@ base::ScopedCFTypeRef<CFArrayRef> CreateRateLimitArray(const Bitrate& bitrate) {
   return result;
 }
 
+VideoEncoderInfo GetVideoEncoderInfo(VTSessionRef compression_session,
+                                     VideoCodecProfile profile) {
+  VideoEncoderInfo info;
+  info.implementation_name = "VideoToolbox";
+  info.is_hardware_accelerated = false;
+
+  base::ScopedCFTypeRef<CFBooleanRef> cf_using_hardware;
+  if (VTSessionCopyProperty(
+          compression_session,
+          kVTCompressionPropertyKey_UsingHardwareAcceleratedVideoEncoder,
+          kCFAllocatorDefault, cf_using_hardware.InitializeInto()) == 0) {
+    info.is_hardware_accelerated = CFBooleanGetValue(cf_using_hardware);
+  }
+
+  absl::optional<int> max_frame_delay_property;
+  base::ScopedCFTypeRef<CFNumberRef> max_frame_delay_count;
+  if (VTSessionCopyProperty(
+          compression_session, kVTCompressionPropertyKey_MaxFrameDelayCount,
+          kCFAllocatorDefault, max_frame_delay_count.InitializeInto()) == 0) {
+    int32_t frame_delay;
+    if (CFNumberGetValue(max_frame_delay_count, kCFNumberSInt32Type,
+                         &frame_delay) &&
+        frame_delay != kVTUnlimitedFrameDelayCount) {
+      max_frame_delay_property = frame_delay;
+    }
+  }
+  // Not all VideoToolbox encoders are created equal. The numbers below match
+  // the characteristics of an Apple Silicon M1 laptop. It has been noted that,
+  // for example, the HW encoder in a 2014 (Intel) machine has a smaller
+  // capacity. And while overestimating the capacity is not a problem,
+  // underestimating the frame delay is, so these numbers might need tweaking
+  // in the face of new evidence.
+  if (info.is_hardware_accelerated) {
+    info.frame_delay = 0;
+    info.input_capacity = 10;
+  } else {
+    info.frame_delay =
+        profile == H264PROFILE_BASELINE || profile == HEVCPROFILE_MAIN ? 0 : 13;
+    info.input_capacity = info.frame_delay.value() + 4;
+  }
+  if (max_frame_delay_property.has_value()) {
+    info.frame_delay =
+        std::min(info.frame_delay.value(), max_frame_delay_property.value());
+    info.input_capacity =
+        std::min(info.input_capacity.value(), max_frame_delay_property.value());
+  }
+
+  return info;
+}
+
 }  // namespace
 
 struct VTVideoEncodeAccelerator::InProgressFrameEncode {
@@ -228,6 +277,7 @@ VTVideoEncodeAccelerator::GetSupportedH264Profiles() {
   profile.max_framerate_denominator = kMaxFrameRateDenominator;
   profile.rate_control_modes = VideoEncodeAccelerator::kConstantMode |
                                VideoEncodeAccelerator::kVariableMode;
+  profile.scalability_modes.push_back(SVCScalabilityMode::kL1T1);
   if (__builtin_available(macOS LOW_LATENCY_FLAG_AVAILABLE_VER, *))
     profile.scalability_modes.push_back(SVCScalabilityMode::kL1T2);
 
@@ -240,7 +290,15 @@ VTVideoEncodeAccelerator::GetSupportedH264Profiles() {
 #endif
       {
         profile.min_resolution = min_resolution;
+        profile.is_software_codec = false;
         profile.profile = supported_profile;
+        profiles.push_back(profile);
+
+        // macOS doesn't provide a way to enumerate codec details, so just
+        // assume software codec support is the same as hardware, but with
+        // the lowest possible minimum resolution.
+        profile.min_resolution = gfx::Size(2, 2);
+        profile.is_software_codec = true;
         profiles.push_back(profile);
       }
     }
@@ -272,7 +330,15 @@ VTVideoEncodeAccelerator::GetSupportedHEVCProfiles() {
     for (const auto& supported_profile : kSupportedProfiles) {
       if (VideoCodecProfileToVideoCodec(supported_profile) ==
           VideoCodec::kHEVC) {
+        profile.is_software_codec = false;
         profile.profile = supported_profile;
+        profiles.push_back(profile);
+
+        // macOS doesn't provide a way to enumerate codec details, so just
+        // assume software codec support is the same as hardware, but with
+        // the lowest possible minimum resolution.
+        profile.min_resolution = gfx::Size(2, 2);
+        profile.is_software_codec = true;
         profiles.push_back(profile);
       }
     }
@@ -351,19 +417,17 @@ bool VTVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  // Report whether hardware decode is being used.
-  bool using_hardware = false;
-  base::ScopedCFTypeRef<CFBooleanRef> cf_using_hardware;
-  if (VTSessionCopyProperty(
-          compression_session_,
-          kVTCompressionPropertyKey_UsingHardwareAcceleratedVideoEncoder,
-          kCFAllocatorDefault, cf_using_hardware.InitializeInto()) == 0) {
-    using_hardware = CFBooleanGetValue(cf_using_hardware);
-  }
-  if (!using_hardware) {
+  auto encoder_info = GetVideoEncoderInfo(compression_session_, profile_);
+
+  // Report whether hardware encode is being used.
+  if (!encoder_info.is_hardware_accelerated) {
     MEDIA_LOG(INFO, media_log.get())
         << "VideoToolbox selected a software encoder.";
   }
+
+  client_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Client::NotifyEncoderInfoChange, client_, encoder_info));
 
   client_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, client_,

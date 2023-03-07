@@ -8,8 +8,8 @@
 
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -137,8 +137,9 @@ void It2MeConfirmationDialogChromeOS::ShowConfirmationNotification(
 
 void It2MeConfirmationDialogChromeOS::OnConfirmationNotificationResult(
     absl::optional<int> button_index) {
-  if (!button_index.has_value())
+  if (!button_index.has_value()) {
     return;  // This happens when the user clicks the notification itself.
+  }
 
   // Note: |by_user| must be false, otherwise the notification will not actually
   // be removed but instead it will be moved into the message center bubble

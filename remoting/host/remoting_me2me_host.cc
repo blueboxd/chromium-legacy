@@ -12,13 +12,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/field_trial.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -126,9 +127,9 @@
 #endif  // BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#if defined(REMOTING_USE_X11) || defined(REMOTING_USE_WAYLAND)
+#if defined(REMOTING_USE_X11)
 #include <gtk/gtk.h>
-#endif  // defined(REMOTING_USE_X11) || defined(REMOTING_USE_WAYLAND)
+#endif  // defined(REMOTING_USE_X11)
 
 #if defined(REMOTING_USE_X11)
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -155,12 +156,13 @@
 #include "remoting/host/win/session_desktop_environment.h"
 #endif  // BUILDFLAG(IS_WIN)
 
-#if defined(REMOTING_USE_WAYLAND)
+#if BUILDFLAG(IS_LINUX)
 #include "remoting/host/linux/wayland_manager.h"
-#endif  // defined(REMOTING_USE_WAYLAND)
+#include "remoting/host/linux/wayland_utils.h"
+#endif  // BUILDFLAG(IS_LINUX)
 
-using remoting::protocol::PairingRegistry;
 using remoting::protocol::NetworkSettings;
+using remoting::protocol::PairingRegistry;
 
 #if BUILDFLAG(IS_APPLE)
 
@@ -168,7 +170,7 @@ using remoting::protocol::NetworkSettings;
 // inject input in the login screen. Just the name of the section is important,
 // not its contents.
 __attribute__((used))
-__attribute__((section ("__CGPreLoginApp,__cgpreloginapp")))
+__attribute__((section("__CGPreLoginApp,__cgpreloginapp")))
 static const char magic_section[] = "";
 
 #endif  // BUILDFLAG(IS_APPLE)
@@ -435,6 +437,9 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool security_key_extension_supported_ = true;
   absl::optional<int> max_session_duration_minutes_;
 
+  // Allows us to override field trials which are causing issues for chromoting.
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
 
@@ -490,8 +495,8 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   mojo::AssociatedReceiver<mojom::RemotingHostControl> remoting_host_control_{
       this};
-  mojo::AssociatedReceiver<mojom::WorkerProcessControl>
-      worker_process_control_{this};
+  mojo::AssociatedReceiver<mojom::WorkerProcessControl> worker_process_control_{
+      this};
 
 #if BUILDFLAG(IS_APPLE)
   // When using the command line option to check the Accessibility or Screen
@@ -582,7 +587,8 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   auto endpoint =
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(*cmd_line);
   if (!endpoint.is_valid()) {
-    LOG(ERROR) << "IPC channel endpoint provided via command line param was missing or invalid";
+    LOG(ERROR) << "IPC channel endpoint provided via command line param was "
+                  "missing or invalid";
     return false;
   }
   auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
@@ -595,7 +601,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
       IPC::Channel::MODE_CLIENT, this, context_->network_task_runner(),
       base::SingleThreadTaskRunner::GetCurrentDefault());
 
-#else  // !defined(REMOTING_MULTI_PROCESS)
+#else   // !defined(REMOTING_MULTI_PROCESS)
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
     host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
 
@@ -658,8 +664,9 @@ void HostProcess::OnConfigParsed(base::Value::Dict config) {
   }
 
   // Filter out duplicates.
-  if (config_ == config)
+  if (config_ == config) {
     return;
+  }
 
   HOST_LOG << "Applying new host configuration.";
 
@@ -784,8 +791,9 @@ void HostProcess::SigTermHandler(int signal_number) {
 void HostProcess::CreateAuthenticatorFactory() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (state_ != HOST_STARTED)
+  if (state_ != HOST_STARTED) {
     return;
+  }
 
   std::string local_certificate = key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
@@ -806,9 +814,10 @@ void HostProcess::CreateAuthenticatorFactory() {
         std::unique_ptr<PairingRegistry::Delegate> delegate =
             CreatePairingRegistryDelegate();
 
-        if (delegate)
+        if (delegate) {
           pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
                                                   std::move(delegate));
+        }
       }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -945,15 +954,18 @@ void HostProcess::StartOnUiThread() {
       base::BindRepeating(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
       base::BindRepeating(&HostProcess::OnPolicyError, base::Unretained(this)));
 
-#if defined(REMOTING_USE_WAYLAND)
-  WaylandManager::Get()->Init(context_->ui_task_runner());
-#endif  // defined(REMOTING_USE_WAYLAND
+#if BUILDFLAG(IS_LINUX)
+  if (IsRunningWayland()) {
+    WaylandManager::Get()->Init(context_->ui_task_runner());
+  }
+#endif  // BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
-  base::FilePath audio_pipe_name = base::CommandLine::ForCurrentProcess()->
-      GetSwitchValuePath(kAudioPipeSwitchName);
+  base::FilePath audio_pipe_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          kAudioPipeSwitchName);
   if (!audio_pipe_name.empty()) {
     remoting::AudioCapturerLinux::InitializePipeReader(
         context_->audio_task_runner(), audio_pipe_name);
@@ -989,7 +1001,7 @@ void HostProcess::StartOnUiThread() {
           context_->audio_task_runner(), context_->network_task_runner(),
           context_->network_task_runner(), std::move(remote));
   desktop_session_connector_ = desktop_environment_factory;
-#else  // !defined(REMOTING_MULTI_PROCESS)
+#else   // !defined(REMOTING_MULTI_PROCESS)
   BasicDesktopEnvironmentFactory* desktop_environment_factory;
   desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
       context_->network_task_runner(), context_->video_capture_task_runner(),
@@ -1091,8 +1103,8 @@ void HostProcess::InitializePairingRegistry(
   delegate->SetRootKeys(static_cast<HKEY>(privileged_handle.ReleaseHandle()),
                         static_cast<HKEY>(unprivileged_handle.ReleaseHandle()));
 
-  pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
-                                          std::move(delegate));
+  pairing_registry_ =
+      new PairingRegistry(context_->file_task_runner(), std::move(delegate));
 
   // (Re)Create the authenticator factory now that |pairing_registry_| has been
   // initialized.
@@ -1207,8 +1219,9 @@ void HostProcess::OnPolicyUpdate(base::Value::Dict policies) {
   if (state_ == HOST_STARTING) {
     StartHostIfReady();
   } else if (state_ == HOST_STARTED) {
-    if (restart_required)
+    if (restart_required) {
       RestartHost(kHostOfflineReasonPolicyChangeRequiresRestart);
+    }
   }
 }
 
@@ -1240,8 +1253,9 @@ void HostProcess::ReportPolicyErrorAndRestartHost() {
 }
 
 void HostProcess::ApplyHostDomainListPolicy() {
-  if (state_ != HOST_STARTED)
+  if (state_ != HOST_STARTED) {
     return;
+  }
 
   HOST_LOG << "Policy sets host domains: "
            << base::JoinString(host_domain_list_, ", ");
@@ -1262,8 +1276,9 @@ void HostProcess::ApplyHostDomainListPolicy() {
 }
 
 void HostProcess::ApplyAllowRemoteAccessConnections() {
-  if (state_ != HOST_STARTED)
+  if (state_ != HOST_STARTED) {
     return;
+  }
 
   HOST_LOG << "Policy allows remote access connections: "
            << allow_remote_access_connections_;
@@ -1312,17 +1327,17 @@ bool HostProcess::OnClientDomainListPolicyUpdate(
 }
 
 void HostProcess::ApplyUsernamePolicy() {
-  if (state_ != HOST_STARTED)
+  if (state_ != HOST_STARTED) {
     return;
+  }
 
   if (host_username_match_required_) {
     HOST_LOG << "Policy requires host username match.";
 
     std::string username = GetUsername();
-    bool shutdown =
-        username.empty() ||
-        !base::StartsWith(host_owner_, username + std::string("@"),
-                          base::CompareCase::INSENSITIVE_ASCII);
+    bool shutdown = username.empty() ||
+                    !base::StartsWith(host_owner_, username + std::string("@"),
+                                      base::CompareCase::INSENSITIVE_ASCII);
 
 #if BUILDFLAG(IS_APPLE)
     // On Mac, we run as root at the login screen, so the username won't match.
@@ -1337,8 +1352,9 @@ void HostProcess::ApplyUsernamePolicy() {
     // for each connection, removing the need for an explicit user-name matching
     // check.
 #if BUILDFLAG(IS_WIN) && defined(REMOTING_RDP_SESSION)
-    if (desktop_environment_options_.enable_curtaining())
+    if (desktop_environment_options_.enable_curtaining()) {
       return;
+    }
 #endif  // BUILDFLAG(IS_WIN) && defined(REMOTING_RDP_SESSION)
 
     // Shutdown the host if the username does not match.
@@ -1358,8 +1374,9 @@ bool HostProcess::OnUsernamePolicyUpdate(const base::Value::Dict& policies) {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   absl::optional<bool> host_username_match_required =
       policies.FindBool(policy::key::kRemoteAccessHostMatchUsername);
-  if (!host_username_match_required.has_value())
+  if (!host_username_match_required.has_value()) {
     return false;
+  }
 
   host_username_match_required_ = host_username_match_required.value();
   ApplyUsernamePolicy();
@@ -1373,8 +1390,9 @@ bool HostProcess::OnNatPolicyUpdate(const base::Value::Dict& policies) {
 
   absl::optional<bool> allow_nat_traversal =
       policies.FindBool(policy::key::kRemoteAccessHostFirewallTraversal);
-  if (!allow_nat_traversal.has_value())
+  if (!allow_nat_traversal.has_value()) {
     return false;
+  }
 
   allow_nat_traversal_ = allow_nat_traversal.value();
   if (allow_nat_traversal_) {
@@ -1391,8 +1409,9 @@ bool HostProcess::OnRelayPolicyUpdate(const base::Value::Dict& policies) {
 
   absl::optional<bool> allow_relay =
       policies.FindBool(policy::key::kRemoteAccessHostAllowRelayedConnection);
-  if (!allow_relay.has_value())
+  if (!allow_relay.has_value()) {
     return false;
+  }
 
   allow_relay_ = allow_relay.value();
   if (allow_relay_) {
@@ -1427,8 +1446,9 @@ bool HostProcess::OnCurtainPolicyUpdate(const base::Value::Dict& policies) {
 
   absl::optional<bool> curtain_required =
       policies.FindBool(policy::key::kRemoteAccessHostRequireCurtain);
-  if (!curtain_required.has_value())
+  if (!curtain_required.has_value()) {
     return false;
+  }
 
   desktop_environment_options_.set_enable_curtaining(curtain_required.value());
 
@@ -1485,8 +1505,9 @@ bool HostProcess::OnPairingPolicyUpdate(const base::Value::Dict& policies) {
 
   absl::optional<bool> allow_pairing =
       policies.Find(policy::key::kRemoteAccessHostAllowClientPairing);
-  if (!allow_pairing.has_value())
+  if (!allow_pairing.has_value()) {
     return false;
+  }
 
   allow_pairing_ = allow_pairing.value();
   if (allow_pairing_) {
@@ -1502,8 +1523,9 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(const base::Value::Dict& policies) {
 
   absl::optional<bool> security_key_auth_policy_enabled =
       policies.Find(policy::key::kRemoteAccessHostAllowGnubbyAuth);
-  if (!security_key_auth_policy_enabled.has_value())
+  if (!security_key_auth_policy_enabled.has_value()) {
     return false;
+  }
 
   security_key_auth_policy_enabled_ = security_key_auth_policy_enabled.value();
   if (security_key_auth_policy_enabled_) {
@@ -1521,8 +1543,9 @@ bool HostProcess::OnFileTransferPolicyUpdate(
 
   absl::optional<bool> file_transfer_enabled =
       policies.Find(policy::key::kRemoteAccessHostAllowFileTransfer);
-  if (!file_transfer_enabled.has_value())
+  if (!file_transfer_enabled.has_value()) {
     return false;
+  }
 
   desktop_environment_options_.set_enable_file_transfer(
       file_transfer_enabled.value());
@@ -1543,8 +1566,9 @@ bool HostProcess::OnEnableUserInterfacePolicyUpdate(
 
   absl::optional<bool> enable_user_interface =
       policies.Find(policy::key::kRemoteAccessHostEnableUserInterface);
-  if (!enable_user_interface)
+  if (!enable_user_interface) {
     return false;
+  }
 
   // Save the value until we have parsed the host config since we only want the
   // policy to be applied to machines owned by a Googler.
@@ -1565,8 +1589,9 @@ bool HostProcess::OnMaxSessionDurationPolicyUpdate(
 
   absl::optional<int> value = policies.FindInt(
       policy::key::kRemoteAccessHostMaximumSessionDurationMinutes);
-  if (!value)
+  if (!value) {
     return false;
+  }
 
   max_session_duration_minutes_ = *value;
 
@@ -1587,8 +1612,9 @@ bool HostProcess::OnMaxClipboardSizePolicyUpdate(
 
   absl::optional<int> max_clipboard_size =
       policies.FindInt(policy::key::kRemoteAccessHostClipboardSizeBytes);
-  if (!max_clipboard_size)
+  if (!max_clipboard_size) {
     return false;
+  }
 
   if (*max_clipboard_size >= 0) {
     max_clipboard_size_ = *max_clipboard_size;
@@ -1610,8 +1636,9 @@ bool HostProcess::OnAllowRemoteAccessConnections(
 
   absl::optional<bool> allow_remote_access_connections = policies.FindBool(
       policy::key::kRemoteAccessHostAllowRemoteAccessConnections);
-  if (!allow_remote_access_connections.has_value())
+  if (!allow_remote_access_connections.has_value()) {
     return false;
+  }
 
   // Update the value if the policy was set and retrieval was successful.
   allow_remote_access_connections_ = allow_remote_access_connections.value();
@@ -1634,8 +1661,7 @@ void HostProcess::InitializeSignaling() {
   // Unretained is sound because we own the OAuthTokenGetterImpl, and the
   // callback will never be invoked once it is destroyed.
   oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(
-      std::move(oauth_credentials),
-      context_->url_loader_factory(), false);
+      std::move(oauth_credentials), context_->url_loader_factory(), false);
 
   log_to_server_ = std::make_unique<RemotingLogToServer>(
       ServerLogEntry::ME2ME,
@@ -1688,6 +1714,15 @@ void HostProcess::StartHost() {
   // This thread is used as a network thread in WebRTC.
   webrtc::ThreadWrapper::EnsureForCurrentMessageLoop();
 
+  // Initialize global field trials.
+  field_trial_list_ = std::make_unique<base::FieldTrialList>();
+
+  // Override LossBasedBweV2 trial.
+  // TODO(b/266103942): Remove this override once we figure out why the BWE is
+  // crashing for some users and have a fix available.
+  base::FieldTrialList::CreateTrialsFromString(
+      "WebRTC-Bwe-LossBasedBweV2/Enabled:false/");
+
   SetState(HOST_STARTED);
 
   InitializeSignaling();
@@ -1696,8 +1731,9 @@ void HostProcess::StartHost() {
   if (allow_nat_traversal_) {
     network_flags = NetworkSettings::NAT_TRAVERSAL_STUN |
                     NetworkSettings::NAT_TRAVERSAL_OUTGOING;
-    if (allow_relay_)
+    if (allow_relay_) {
       network_flags |= NetworkSettings::NAT_TRAVERSAL_RELAY;
+    }
   }
 
   NetworkSettings network_settings(network_flags);
@@ -1723,8 +1759,9 @@ void HostProcess::StartHost() {
 
   std::unique_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
-  if (!desktop_environment_factory_->SupportsAudioCapture())
+  if (!desktop_environment_factory_->SupportsAudioCapture()) {
     protocol_config->DisableAudioChannel();
+  }
   protocol_config->set_webrtc_supported(true);
   session_manager->set_protocol_config(std::move(protocol_config));
 
@@ -1738,8 +1775,10 @@ void HostProcess::StartHost() {
         enable_user_interface_);
   }
 
-  // The feature is enabled for all Googlers using a supported platform.
-  desktop_environment_options_.set_enable_remote_open_url(is_googler_);
+  // Always enable remote open URL when the platform supports it. There is an
+  // additional IsRemoteOpenUrlSupported() check that makes sure the capability
+  // won't be advertised if it's missing a registry key or something.
+  desktop_environment_options_.set_enable_remote_open_url(true);
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   desktop_environment_options_.set_enable_remote_webauthn(is_googler_);
@@ -1776,9 +1815,10 @@ void HostProcess::StartHost() {
 
 #if BUILDFLAG(IS_LINUX)
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(kEnableUtempter))
+  if (cmd_line->HasSwitch(kEnableUtempter)) {
     host_utmp_logger_ =
         std::make_unique<HostUTMPLogger>(host_->status_monitor());
+  }
 #endif
 
   power_save_blocker_ = std::make_unique<HostPowerSaveBlocker>(
@@ -1884,8 +1924,9 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
     OnHostOfflineReasonAck(true);
     return;
   } else if (!config_.empty()) {
-    if (!signal_strategy_)
+    if (!signal_strategy_) {
       InitializeSignaling();
+    }
 
     HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
     heartbeat_sender_->SetHostOfflineReason(
@@ -1950,7 +1991,7 @@ int HostProcessMain() {
   x11::InitXlib();
 #endif  // defined(REMOTING_USE_X11)
 
-#if defined(REMOTING_USE_X11) || defined(REMOTING_USE_WAYLAND)
+#if defined(REMOTING_USE_X11)
   if (!cmd_line->HasSwitch(kReportOfflineReasonSwitchName)) {
     // Required for any calls into GTK functions, such as the Disconnect and
     // Continue windows, though these should not be used for the Me2Me case
@@ -1961,7 +2002,7 @@ int HostProcessMain() {
     gtk_init(nullptr, nullptr);
 #endif
   }
-#endif  // defined(REMOTING_USE_X11) || defined(REMOTING_USE_WAYLAND)
+#endif  // defined(REMOTING_USE_X11)
 
   // Need to prime the host OS version value for linux to prevent IO on the
   // network thread. base::GetLinuxDistro() caches the result.
@@ -1984,8 +2025,9 @@ int HostProcessMain() {
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(base::MakeRefCounted<AutoThreadTaskRunner>(
           main_task_executor.task_runner(), run_loop.QuitClosure()));
-  if (!context)
+  if (!context) {
     return kInitializationFailed;
+  }
 
   // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(

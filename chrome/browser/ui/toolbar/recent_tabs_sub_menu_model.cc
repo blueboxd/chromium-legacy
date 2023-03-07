@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -66,7 +66,7 @@ const int kMaxLocalEntries = 8;
 // descending modified_time (i.e., most recent first).
 bool SortSessionsByRecency(const sync_sessions::SyncedSession* s1,
                            const sync_sessions::SyncedSession* s2) {
-  return s1->modified_time > s2->modified_time;
+  return s1->GetModifiedTime() > s2->GetModifiedTime();
 }
 
 ui::ImageModel CreateFavicon(const gfx::VectorIcon& icon) {
@@ -442,7 +442,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   for (size_t i = 0;
        i < sessions.size() && num_sessions_added < kMaxSessionsToShow; ++i) {
     const sync_sessions::SyncedSession* session = sessions[i];
-    const std::string& session_tag = session->session_tag;
+    const std::string& session_tag = session->GetSessionTag();
 
     // Collect tabs from all windows of the session, ordered by recency.
     std::vector<const sessions::SessionTab*> tabs_in_session;
@@ -451,10 +451,10 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
       continue;
 
     // Add the header for the device session.
-    DCHECK(!session->session_name.empty());
+    DCHECK(!session->GetSessionName().empty());
     AddSeparator(ui::NORMAL_SEPARATOR);
     const int command_id = GetAndIncrementNextMenuID();
-    AddItem(command_id, base::UTF8ToUTF16(session->session_name));
+    AddItem(command_id, base::UTF8ToUTF16(session->GetSessionName()));
     device_name_items_.insert(command_id);
     AddDeviceFavicon(GetItemCount() - 1, session->GetDeviceFormFactor());
 

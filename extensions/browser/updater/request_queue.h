@@ -10,8 +10,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -51,7 +51,7 @@ class RequestQueue {
 
   class iterator;
 
-  RequestQueue(const net::BackoffEntry::Policy* backoff_policy,
+  RequestQueue(net::BackoffEntry::Policy backoff_policy,
                const base::RepeatingClosure& start_request_callback);
   ~RequestQueue();
 
@@ -100,7 +100,7 @@ class RequestQueue {
       const base::RepeatingCallback<bool(const T&)> condition);
 
   // Change the backoff policy used by the queue.
-  void set_backoff_policy(const net::BackoffEntry::Policy* backoff_policy);
+  void set_backoff_policy(net::BackoffEntry::Policy backoff_policy);
 
  private:
   // Compares the release time of two pending requests.
@@ -110,7 +110,7 @@ class RequestQueue {
   void PushImpl(Request request);
 
   // The backoff policy used to determine backoff delays.
-  raw_ptr<const net::BackoffEntry::Policy> backoff_policy_;
+  net::BackoffEntry::Policy backoff_policy_;
 
   // Callback to call when a new request has become the active request.
   base::RepeatingClosure start_request_callback_;

@@ -211,6 +211,18 @@
       unit_type: "kRems",
     },
     {
+      name: "rex",
+      unit_type: "kRexs",
+    },
+    {
+      name: "rch",
+      unit_type: "kRchs",
+    },
+    {
+      name: "ric",
+      unit_type: "kRics",
+    },
+    {
       name: "fr",
       unit_type: "kFraction",
     },
@@ -229,6 +241,10 @@
     {
       name: "lh",
       unit_type: "kLhs",
+    },
+    {
+      name: "rlh",
+      unit_type: "kRlhs",
     },
     {
       name: "__qem",

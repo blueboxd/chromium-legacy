@@ -62,11 +62,6 @@ BASE_FEATURE(kWebViewEmptyComponentLoaderPolicy,
              "WebViewEmptyComponentLoaderPolicy",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable dns-prefetch and preconnect in link tags and HTTP header.
-BASE_FEATURE(kWebViewEnableDnsPrefetchAndPreconnect,
-             "WebViewEnableDnsPrefetchAndPreconnect",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, passive mixed content (Audio/Video/Image subresources loaded
 // over HTTP on HTTPS sites) will be autoupgraded to HTTPS, and the load will be
 // blocked if the resource fails to load over HTTPS. This only affects apps that
@@ -106,6 +101,12 @@ BASE_FEATURE(kWebViewOriginTrials,
 // histogram Android.WebView.AppDataDirectorySize.
 BASE_FEATURE(kWebViewRecordAppDataDirectorySize,
              "WebViewRecordAppDataDirectorySize",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Flag to restrict main frame Web Content to verified web content. Verification
+// happens via Digital Asset Links.
+BASE_FEATURE(kWebViewRestrictSensitiveContent,
+             "WebViewRestrictSensitiveContent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Disallows window.{alert, prompt, confirm} if triggered inside a subframe that
@@ -149,14 +150,15 @@ BASE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList,
              "WebViewXRequestedWithHeaderManifestAllowList",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// This persists client hints between top-level navigations.
-BASE_FEATURE(kWebViewClientHintsControllerDelegate,
-             "WebViewClientHintsControllerDelegate",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // This enables image drage out for Webview.
 BASE_FEATURE(kWebViewImageDrag,
              "WebViewImageDrag",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This enables uploading UMA data with a higher frequency.
+// This Feature is checked and used in downstream internal code.
+BASE_FEATURE(kWebViewUmaUploadQualityOfServiceSetToDefault,
+             "WebViewUmaUploadQualityOfServiceSetToDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

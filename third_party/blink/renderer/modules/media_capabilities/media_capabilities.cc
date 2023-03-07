@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/single_thread_task_runner.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/mime_util.h"
@@ -1099,9 +1100,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
   DCHECK_EQ(config->type(), "record");
   DCHECK(RuntimeEnabledFeatures::MediaCapabilitiesEncodingInfoEnabled());
 
-  if (auto* handler = MakeGarbageCollected<MediaRecorderHandler>(
-          ExecutionContext::From(script_state)
-              ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
+  if (auto* handler = MakeGarbageCollected<MediaRecorderHandler>()) {
     handler->EncodingInfo(ToWebMediaConfiguration(config),
                           WTF::BindOnce(&OnMediaCapabilitiesEncodingInfo,
                                         WrapPersistent(resolver)));
@@ -1453,9 +1452,6 @@ void MediaCapabilities::GetGpuFactoriesSupport(
   ExecutionContext* execution_context =
       pending_cb->resolver->GetExecutionContext();
 
-  DCHECK(UseGpuFactoriesForPowerEfficient(execution_context,
-                                          pending_cb->key_system_access));
-
   // Frame may become detached in the time it takes us to get callback for
   // NotifyDecoderSupportKnown. In this case, report false as a means of clean
   // shutdown.
@@ -1463,6 +1459,9 @@ void MediaCapabilities::GetGpuFactoriesSupport(
     OnGpuFactoriesSupport(callback_id, false, video_codec);
     return;
   }
+
+  DCHECK(UseGpuFactoriesForPowerEfficient(execution_context,
+                                          pending_cb->key_system_access));
 
   media::GpuVideoAcceleratorFactories* gpu_factories =
       Platform::Current()->GetGpuFactories();

@@ -26,6 +26,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GpuTypes.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_switches.h"
 
@@ -107,7 +108,8 @@ class TestGpuHostImplDelegate
 
 // Include the shared tests.
 #define CONTEXT_TEST_F IN_PROC_BROWSER_TEST_F
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/client/gpu_context_tests.h"
@@ -230,8 +232,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   sk_sp<GrDirectContext> gr_context = sk_ref_sp(provider->GrContext());
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-  sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
-      gr_context.get(), SkBudgeted::kNo, info);
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRenderTarget(gr_context.get(), skgpu::Budgeted::kNo, info);
   EXPECT_TRUE(surface);
 
   // Destroy the GL context after we made a surface.
@@ -239,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 
   // New surfaces will fail to create now.
   sk_sp<SkSurface> surface2 =
-      SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info);
+      SkSurface::MakeRenderTarget(gr_context.get(), skgpu::Budgeted::kNo, info);
   EXPECT_FALSE(surface2);
 
   // Drop our reference to the gr_context also.

@@ -119,12 +119,6 @@ absl_source_set("log_message") {
     "//third_party/abseil-cpp/absl/time",
     "//third_party/abseil-cpp/absl/types:span",
   ]
-
-  # TODO(crbug.com/1382143): Needed for log_message.cc using ATOMIC_FLAG_INIT which is marked as deprecated.
-  # Remove when absl moves away from ATOMIC_FLAG_INIT (when the bug below is unblocked)
-  if (is_clang) {
-    cflags_cc = [ "-Wno-deprecated" ]
-  }
 }
 
 absl_source_set("append_truncated") {
@@ -161,8 +155,12 @@ absl_source_set("log_sink_set") {
 }
 
 absl_source_set("nullguard") {
+  sources = [ "nullguard.cc" ]
   public = [ "nullguard.h" ]
-  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
+  deps = [
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+  ]
 }
 
 absl_source_set("nullstream") {
@@ -253,12 +251,6 @@ absl_source_set("proto") {
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:span",
   ]
-  if (is_clang) {
-    cflags_cc = [
-      "-Wno-shorten-64-to-32",
-      "-Wno-sign-conversion",
-    ]
-  }
 }
 
 absl_test("stderr_log_sink_test") {

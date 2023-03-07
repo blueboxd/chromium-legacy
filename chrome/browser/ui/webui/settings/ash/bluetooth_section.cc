@@ -6,7 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/ash/bluetooth_shared_load_time_data_provider.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -329,6 +330,10 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("enableFastPairFlag", features::IsFastPairEnabled());
   html_source->AddBoolean("enableSavedDevicesFlag",
                           features::IsFastPairSavedDevicesEnabled());
+  html_source->AddBoolean(
+      "bluetoothRevampHatsSurveyFlag",
+      base::FeatureList::IsEnabled(
+          ::features::kHappinessTrackingSystemBluetoothRevamp));
   bluetooth::AddLoadTimeData(html_source);
 }
 

@@ -85,13 +85,6 @@ AX_BASE_EXPORT bool IsSelectiveUIAEnablementEnabled();
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Enables ability to resize Docked Magnifier.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kDockedMagnifierResizing);
-
-// Returns true if the feature which adds ability for user to grab and resize
-// bottom of Docked Magnifier is enabled.
-AX_BASE_EXPORT bool IsDockedMagnifierResizingEnabled();
-
 AX_BASE_EXPORT bool IsDictationOfflineAvailable();
 
 // Enables accessibility Dictation with the pumpkin semantic parser.
@@ -166,6 +159,13 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 
 // Returns true if AccessibilitySelectToSpeakHoverTextImprovements is enabled.
 AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakHoverTextImprovementsEnabled();
+
+// Enables accessibility accelerator notifications to timeout.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kAccessibilityAcceleratorNotificationsTimeout);
+
+// Returns true if kAccessibilityAcceleratorNotificationsTimeout is enabled.
+AX_BASE_EXPORT bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled();
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

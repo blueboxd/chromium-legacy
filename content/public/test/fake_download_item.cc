@@ -4,8 +4,8 @@
 
 #include "content/public/test/fake_download_item.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/notreached.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "net/http/http_response_headers.h"
@@ -464,15 +464,6 @@ void FakeDownloadItem::DeleteFile(base::OnceCallback<void(bool)> callback) {
 
 download::DownloadFile* FakeDownloadItem::GetDownloadFile() {
   return nullptr;
-}
-
-download::DownloadItemRenameHandler* FakeDownloadItem::GetRenameHandler() {
-  return nullptr;
-}
-
-const download::DownloadItemRerouteInfo& FakeDownloadItem::GetRerouteInfo()
-    const {
-  return reroute_info_;
 }
 
 bool FakeDownloadItem::IsDangerous() const {

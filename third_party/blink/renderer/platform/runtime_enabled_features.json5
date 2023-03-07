@@ -202,6 +202,11 @@
 
   data: [
     {
+      name: "AbortSignalAny",
+      status: "experimental",
+      base_feature: "AbortSignalAny",
+    },
+    {
       name: "AbortSignalThrowIfAborted",
       status: "stable",
     },
@@ -250,6 +255,13 @@
     },
     {
       name: "AccessibilityUseAXPositionForDocumentMarkers",
+      public: true,
+    },
+    {
+      name: "AddIdentityInCanMakePaymentEvent",
+      base_feature: "AddIdentityInCanMakePaymentEvent",
+      origin_trial_allows_third_party: true,
+      origin_trial_feature_name: "AddIdentityInCanMakePaymentEvent",
       public: true,
     },
     {
@@ -363,7 +375,6 @@
       base_feature: "BackForwardCacheSendNotRestoredReasons",
       base_feature_status: "enabled",
       copied_from_base_feature_if: "overridden",
-      public: true,
     },
     {
       name: "BackgroundFetch",
@@ -433,6 +444,12 @@
       status: "experimental",
     },
     {
+      // If set, the parser will canonicalize whitespace strings.
+      name: "CanonicalizeWhitespaceStrings",
+      status: "stable",
+      base_feature: "CanonicalizeWhitespaceStrings",
+    },
+    {
       name: "Canvas2dImageChromium",
       public: true,
     },
@@ -471,14 +488,6 @@
     {
       name: "checkVisibility",
       status: "stable",
-    },
-    {
-      name: "ClearIdentityInCanMakePaymentEvent",
-      base_feature: "ClearIdentityInCanMakePaymentEvent",
-      origin_trial_allows_third_party: true,
-      origin_trial_feature_name: "IdentityInCanMakePaymentEventFeature",
-      origin_trial_type: "deprecation",
-      public: true,
     },
     {
       name: "ClickToCapturedPointer",
@@ -594,7 +603,7 @@
     },
     {
       name: "CrossFramePerformanceTimeline",
-      status: "test",
+      status: "experimental",
       base_feature: "CrossFramePerformanceTimeline",
     },
     {
@@ -603,6 +612,10 @@
       name: "CSSAnchorPositioning",
       implied_by: ["HTMLSelectMenuElement"],
       status: "experimental",
+    },
+    {
+      name: "CSSAnimationComposition",
+      status: "experimental"
     },
     {
       // Whether <image> values are allowed as counter style <symbol>
@@ -621,7 +634,8 @@
     },
     {
       name: "CSSBaselineSource",
-      status: "experimental",
+      status: "stable",
+      base_feature: "CSSBaselineSource",
     },
     {
       // Support CSS Values Level 4 calc simplification and serialization
@@ -648,7 +662,11 @@
     },
     {
       name: "CSSColorTypedOM",
-      status:  "experimental",
+      status: "experimental",
+    },
+    {
+      name: "CSSDisplayAnimation",
+      status: "test"
     },
     {
       // Include custom properties in CSSComputedStyleDeclaration::item/length.
@@ -685,7 +703,6 @@
     },
     {
       name: "CSSGridTemplatePropertyInterpolation",
-      depends_on: ["LayoutNGGridFragmentation"],
       status: "stable",
     },
     {
@@ -720,7 +737,6 @@
     {
         // http://crbug.com/1276900
         name: "CSSInitialLetter",
-        depends_on: ["LayoutNG"],
         status: "stable",
         base_feature: "CSSInitialLetter",
     },
@@ -781,6 +797,10 @@
       status: "experimental"
     },
     {
+      name: "CSSNewRootFontUnits",
+      status: "stable",
+    },
+    {
       name: "CSSObjectViewBox",
       status: "stable",
     },
@@ -827,10 +847,6 @@
       status: "experimental",
     },
     {
-      name: "CSSPseudoHas",
-      status: "stable",
-    },
-    {
       name: "CSSPseudoHasNonForgivingParsing",
       status: "experimental",
       base_feature: "CSSPseudoHasNonForgivingParsing",
@@ -866,6 +882,13 @@
       base_feature: "CssSelectorFragmentAnchor",
     },
     {
+      // Support for :nth-child(An + B of S).
+      //
+      // https://drafts.csswg.org/selectors-4/#the-nth-child-pseudo
+      name: "CSSSelectorNthChildComplexSelector",
+      status: "stable"
+    },
+    {
       // Support for CSS ::spelling-error, ::grammar-error, and the
       // spelling-error and grammar-error values in text-decoration-line.
       //
@@ -878,8 +901,9 @@
     },
     {
       // https://drafts.csswg.org/css-contain-3/#style-container
+      // This flag is for querying custom properties only.
       name: "CSSStyleQueries",
-      status: "experimental"
+      status: "stable"
     },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
@@ -887,9 +911,16 @@
       status: "experimental",
     },
     {
+      // Support for tree-scoped [1] timeline names (e.g. produced by
+      // scroll-timeline).
+      //
+      // [1] https://drafts.csswg.org/css-scoping-1/#shadow-names
+      name: "CSSTreeScopedTimelines",
+    },
+    {
       // Explainer: https://github.com/DevSDK/css-trigonometric-functions
       name: "CSSTrigonometricFunctions",
-      status: "test",
+      status: "stable",
     },
     // Support for registered custom properties with <image> syntax.
     {
@@ -938,7 +969,6 @@
     {
       // crbug.com/1259085
       name: "DeferredShaping",
-      depends_on: ["LayoutNG"],
       status: "test",
       base_feature: "DeferredShaping",
     },
@@ -1033,10 +1063,26 @@
       status: "stable",
       base_feature: "DisableTextDecorationColorOverride",
     },
+    // This feature should only be enabled if
+    // DisableThirdPartyStoragePartitioning is enabled, but as
+    // DisableThirdPartyStoragePartitioning will be linked to a deprecation
+    // trial it isn't possible to set a `depends_on`.
+    {
+      name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
+      origin_trial_feature_name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
+      status: "experimental",
+    },
+    // This feature will represent the deprecation trial that allows first
+    // parties to temporarily use unpartitioned storage in embeds loaded
+    // on their site.
+    {
+      name: "DisableThirdPartyStoragePartitioning",
+      status: "experimental",
+      browser_process_read_write_access: true,
+    },
     {
       name: "DisplayCutoutAPI",
       public: true,
-      settable_from_internals: true,
     },
     {
       // When a Web application calls getDisplayMedia() and asks for video,
@@ -1061,13 +1107,11 @@
     },
     {
       name: "DocumentPictureInPictureAPI",
-      public: true,
       status: {
         "Android": "",
         "ChromeOS_Lacros": "",
         "default": "experimental",
       },
-      settable_from_internals: true,
       base_feature: "DocumentPictureInPictureAPI",
     },
     {
@@ -1121,6 +1165,10 @@
       name: "EventPath",
       public: true,
       base_feature: "EventPath",
+    },
+    {
+      name: "EventTimingInteractionCount",
+      status: "experimental",
     },
     {
       name: "ExperimentalContentSecurityPolicyFeatures",
@@ -1191,10 +1239,14 @@
       status: "stable",
     },
     {
+      name: "FedCmAutoSignin",
+      depends_on: ["FedCm"],
+      public: true,
+    },
+    {
       // This only exists so we can use RuntimeEnabled in the IDL file
       // when either implied_by flag is enabled.
       name: "FedCmIdentityProviderInterface",
-      public: true,
       implied_by: ["FedCmIdpSigninStatus", "FedCmUserInfo"],
     },
     {
@@ -1216,7 +1268,23 @@
       status: "stable",
     },
     {
+      name: "FedCmLoginHint",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
+    },
+    {
       name: "FedCmMultipleIdentityProviders",
+      depends_on: ["FedCm"],
+      public: true,
+    },
+    {
+      name: "FedCmRpContext",
+      depends_on: ["FedCm"],
+      public: true,
+    },
+    {
+      name: "FedCmSelectiveDisclosure",
       depends_on: ["FedCm"],
       public: true,
     },
@@ -1224,6 +1292,7 @@
       name: "FedCmUserInfo",
       depends_on: ["FedCm"],
       public: true,
+      status: "test",
     },
     {
       name: "FencedFrames",
@@ -1245,7 +1314,6 @@
       base_feature: "FencedFramesAPIChanges",
       base_feature_status: "disabled",
       copied_from_base_feature_if: "overridden",
-      public: true,
     },
     {
       name: "FetchUploadStreaming",
@@ -1296,12 +1364,6 @@
       status: "stable",
     },
     {
-      // Whether to re-enable async interface for FileSystemSyncAccessHandle
-      // This is used by enterprise policy during migration.
-      name: "FileSystemSyncAccessHandleAsyncInterfaceOverride",
-      public: true,
-    },
-    {
       name: "FirstPartySets",
       status: "experimental",
     },
@@ -1344,7 +1406,7 @@
     },
     {
       name: "FontVariantAlternates",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FontVariantPosition",
@@ -1377,7 +1439,6 @@
     },
     {
       name: "FormattedText",
-      depends_on: ["LayoutNG"],
       status: "experimental",
     },
     {
@@ -1435,6 +1496,7 @@
       status: {
         "ChromeOS_Ash": "test",
         "ChromeOS_Lacros": "test",
+        "Linux": "test",
         "default": "",
       }
     },
@@ -1458,6 +1520,7 @@
     },
     {
       name: "HighlightInheritance",
+      status: "experimental",
     },
     {
       name: "HighlightOverlayPainting",
@@ -1478,12 +1541,6 @@
       name: "HTMLMapToImgMatchingByNameAndId",
       status: "stable",
       base_feature: "HTMLMapToImgMatchingByNameAndId",
-    },
-    {
-      // TODO(crbug.com/1315717): This flag is being used to deprecate support for <param> urls within <object> elements. This feature is controlled by blink::features::kHTMLParamElementUrlSupport.
-      name: "HTMLParamElementUrlSupport",
-      status: "stable",
-      base_feature: "HTMLParamElementUrlSupport",
     },
     {
       // TODO(crbug.com/1307772): Enables the Popover API.
@@ -1508,6 +1565,14 @@
       status: "stable",
     },
     {
+      // TODO(crbug.com/1406358): Remove after the origin trial ends in M113.
+      name: "IgnoreCSPInWebPaymentAPI",
+      base_feature: "IgnoreCSPInWebPaymentAPI",
+      origin_trial_feature_name: "IgnoreCSPInWebPaymentAPI",
+      origin_trial_allows_third_party: true,
+      public: true,
+    },
+    {
       name: "ImeVerticalFlag",
       status: "stable",
       base_feature: "ImeVerticalFlag",
@@ -1530,6 +1595,12 @@
       // If a painting bug no longer reproduces with this feature enabled, then
       // the bug is caused by incorrect cull rects.
       name: "InfiniteCullRect",
+    },
+    {
+      // If enabled, setting innerHTML will use a special fast-path parser.
+      name: "InnerHTMLParserFastpath",
+      base_feature: "InnerHTMLParserFastpath",
+      status: "experimental",
     },
     {
       name: "InputMultipleFieldsUI",
@@ -1562,28 +1633,8 @@
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
-      status: "test",
+      status: "stable",
       base_feature: "LayoutMediaNGContainer",
-    },
-    {
-      // LayoutNG has been enabled in M76, but we still keep this flag for
-      // testing. See web_tests/FlagExpectations/disable-layout-ng for more
-      // details about running web tests with LayoutNG disabled. This flag also
-      // provides a convenient way for testing legacy layout code path in blink
-      // unit tests.
-      name: "LayoutNG",
-      implied_by: ["BidiCaretAffinity"],
-      status: "stable",
-      base_feature: "LayoutNG",
-    },
-    {
-      name: "LayoutNGBlockFragmentation",
-      status: "stable",
-    },
-    {
-      name: "LayoutNGBlockInInline",
-      depends_on: ["LayoutNG"],
-      status: "stable",
     },
     {
       // A kill-switch for a fix of crbug.com/1366268.
@@ -1592,28 +1643,14 @@
       status: "stable",
     },
     {
-      // Block fragmentation support in the flex layout algorithm.
-      // https://drafts.csswg.org/css-flexbox-1/#pagination
-      name: "LayoutNGFlexFragmentation",
-      depends_on: ["LayoutNG", "LayoutNGBlockFragmentation"],
+      // crbug.com/1353190
+      name: "LayoutNGNoCopyBack",
+      depends_on: ["LayoutMediaNGContainer", "LayoutNGReplacedNoBoxSetters"],
       status: "stable",
-    },
-    {
-      // crbug.com/1346221
-      name: "LayoutNGFrameSet",
-      depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
-      // Block fragmentation support in the grid layout algorithm.
-      // https://drafts.csswg.org/css-grid-1/#pagination
-      name: "LayoutNGGridFragmentation",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
-      status: "stable",
+      base_feature: "LayoutNGNoCopyBack",
     },
     {
       name: "LayoutNGPrinting",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
       status: "stable",
       base_feature: "LayoutNGPrinting",
     },
@@ -1628,15 +1665,7 @@
     },
     {
       name: "LayoutNGSubgrid",
-      depends_on: ["LayoutNG"],
       status: "test"
-    },
-    {
-      // Block fragmentation support in the table layout algorithm.
-      // https://drafts.csswg.org/css-tables-3/#fragmentation
-      name: "LayoutNGTableFragmentation",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
-      status: "stable",
     },
     {
       // Merge UpdateAfterLayout() calls for LayoutReplaced into one in
@@ -1651,10 +1680,6 @@
       name: "LazyFrameLoading",
       public: true,
       status: "stable",
-    },
-    {
-      name: "LazyFrameVisibleLoadTimeMetrics",
-      public: true,
     },
     {
       name: "LazyImageLoading",
@@ -1707,7 +1732,6 @@
     {
       name: "MathMLCore",
       status: "stable",
-      depends_on: ["LayoutNG"],
       base_feature: "MathMLCore",
     },
     {
@@ -1771,7 +1795,7 @@
     },
     {
       name: "MediaSessionSlides",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaSourceExperimental",
@@ -1858,10 +1882,6 @@
         "ChromeOS_Lacros": "stable",
         "default": "experimental",
       },
-    },
-    {
-      name: "NeverSlowMode",
-      public: true,
     },
     {
       name: "NewFlexboxSizing",
@@ -2014,7 +2034,6 @@
     },
     {
       name: "OverscrollCustomization",
-      settable_from_internals: true,
       status: "experimental",
     },
     // The following are developer opt-outs and opt-ins for page freezing. If
@@ -2064,7 +2083,6 @@
     {
       name: "PaymentInstruments",
       depends_on: ["PaymentApp"],
-      public: true,
       status: "stable",
     },
     {
@@ -2166,18 +2184,8 @@
       settable_from_internals: true,
     },
     {
-      name: "PrefersColorSchemeClientHintHeader",
-      status: "stable",
-      base_feature: "PrefersColorSchemeClientHintHeader",
-    },
-    {
       name: "PrefersReducedData",
       status: "experimental",
-    },
-    {
-      name: "PrefersReducedMotionClientHintHeader",
-      status: "stable",
-      base_feature: "PrefersReducedMotionClientHintHeader",
     },
     // TODO(crbug/695586): This flag is being used to deprecate support for
     // legacy quota API window.webkitStorageInfo.
@@ -2319,6 +2327,10 @@
       status: {"Android": "stable", "default": ""},
     },
     {
+      name: "RemoveDataUrlInSvgUse",
+      status: "experimental"
+    },
+    {
       name: "RemoveMobileViewportDoubleTap",
       public: true,
       status: "stable"
@@ -2337,8 +2349,16 @@
       status: "experimental",
     },
     {
+      name: "ResourceTimingInterimResponseTimes",
+      status: "test"
+    },
+    {
       name: "ResourceTimingResponseStatus",
       status: "stable",
+    },
+    {
+      name: "ResourceTimingUseCORSForBodySizes",
+      status: "test"
     },
     {
       name: "RestrictGamepadAccess",
@@ -2349,6 +2369,11 @@
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
+    },
+    {
+      name: "RTCEncodedVideoFrameAdditionalMetadata",
+      status: "experimental",
+      base_feature: "RTCEncodedVideoFrameAdditionalMetadata",
     },
     {
       name: "RTCEncodedVideoFrameClone",
@@ -2390,7 +2415,8 @@
     // Spec: https://w3c.github.io/webrtc-svc/
     {
       name: "RTCSvcScalabilityMode",
-      status: "experimental",
+      status: "stable",
+      base_feature: "RTCSvcScalabilityMode",
     },
     {
       name: "SanitizerAPI",
@@ -2434,7 +2460,6 @@
     },
     {
       name: "ScrollEndEvents",
-      settable_from_internals: true,
       status: "experimental",
     },
     {
@@ -2558,7 +2583,6 @@
     {
       name: "SkipAd",
       depends_on: ["MediaSession"],
-      origin_trial_feature_name: "SkipAd",
       status: "experimental",
     },
     {
@@ -2569,7 +2593,6 @@
       // renderer cc touch event filter, ensuring that events will be passed
       // onto the renderer main thread.
       name: "SkipTouchEventFilter",
-      settable_from_internals: true,
       base_feature: "SkipTouchEventFilter",
       status: "stable",
     },
@@ -2608,6 +2631,12 @@
       origin_trial_allows_third_party: true,
     },
     {
+      name: "SpeculationRulesDocumentRulesSelectorMatches",
+    },
+    {
+      name: "SpeculationRulesEagerness",
+    },
+    {
       name: "SpeculationRulesFetchFromHeader",
       origin_trial_feature_name: "SpeculationRulesPrefetchFuture",
       origin_trial_allows_third_party: true,
@@ -2644,8 +2673,10 @@
       "name": "SpeculationRulesPrefetchWithSubresources",
     },
     // Adds a "referrer_policy" key to speculation rules. See https://crbug.com/1355146
+    // TODO(mcnee): This feature shipped in M111. Clean up this flag in M113.
     {
       name: "SpeculationRulesReferrerPolicyKey",
+      status: "stable",
       base_feature: "SpeculationRulesReferrerPolicyKey",
       origin_trial_feature_name: "SpeculationRulesReferrerPolicyKey",
       implied_by: ["SpeculationRulesPrefetchFuture"],
@@ -2683,9 +2714,10 @@
       base_feature: "StorageBuckets",
     },
     {
-      name: "StorageFoundationAPI",
-      origin_trial_feature_name: "StorageFoundationAPI",
+      // Gates the `locks()` method on a storage bucket.
+      name: "StorageBucketsLocks",
       status: "experimental",
+      base_feature: "StorageBucketsLocks",
     },
     {
       name: "StreamingDeclarativeShadowDOM",
@@ -2725,11 +2757,6 @@
       name: "SvgContainersRejectSvgInDisplayContents",
       status: "stable",
       base_feature: "SvgContainersRejectSvgInDisplayContents",
-    },
-    {
-      name: "SVGTextNG",
-      depends_on: ["LayoutNG"],
-      status: "stable"
     },
     {
       name: "SynthesizedKeyboardEventsForAccessibilityActions",
@@ -2787,6 +2814,8 @@
       name: "TextFragmentTapOpensContextMenu",
       status: {"Android": "stable"},
     },
+    // To enable the deprecation trial, use the
+    // `DisableThirdPartyStoragePartitioning` feature instead.
     {
       name: "ThirdPartyStoragePartitioning",
       status: "experimental",
@@ -2803,6 +2832,12 @@
     },
     {
       name: "TopicsAPI",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+      public: true,
+    },
+    {
+      name: "TopicsXHR",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
       public: true,
@@ -2858,6 +2893,14 @@
     {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
+    },
+    {
+      // Allow unbalanced columns (no implicit breaks), even if the block-size
+      // of the multicol container isn't constrained, rather than forcing column
+      // balancing in such cases. See crbug.com/1156312
+      name: "UnconstrainedColumnFillAuto",
+      status: "stable",
+      base_feature: "UnconstrainedColumnFillAuto",
     },
     {
       name: "UnexposedTaskIds",
@@ -3057,6 +3100,11 @@
       origin_trial_os: ["win", "mac", "linux", "chromeos"],
       status: "stable",
     },
+    {
+      name: "WebAssemblyGC",
+      origin_trial_feature_name: "WebAssemblyGC",
+      status: "experimental",
+    },
     // WebAuth is disabled on Android versions prior to N (7.0) due to lack of
     // supporting APIs, see runtime_features.cc.
     {
@@ -3084,6 +3132,11 @@
     },
     {
       name: "WebAuthenticationLargeBlobExtension",
+      status: "experimental",
+    },
+    // https://w3c.github.io/webauthn/#prf-extension
+    {
+      name: "WebAuthenticationPRF",
       status: "experimental",
     },
     {
@@ -3206,12 +3259,6 @@
       public: true,
       status: "stable",
     },
-    {
-      name: "WebPaymentAPICSP",
-      origin_trial_feature_name: "WebPaymentAPICSP",
-      origin_trial_allows_third_party: true,
-      public: true,
-    },
     // WebShare is enabled by default on Android.
     {
       name: "WebShare",
@@ -3261,50 +3308,32 @@
       status: "stable",
     },
     {
-      name: "WebXRAnchors",
-      depends_on: ["WebXRARModule", "WebXRHitTest"],
-      status: "stable"
+      name: "WebXREnabledFeatures",
+      depends_on: ["WebXR"],
+      status: "stable",
+      base_feature: "WebXREnabledFeatures",
     },
     {
-      name: "WebXRARModule",
+      name: "WebXRFrontFacing",
       depends_on: ["WebXR"],
       public: true,
-      status: "stable",
-    },
-    {
-      name: "WebXRCameraAccess",
-      depends_on: ["WebXRARModule"],
-      public: true,
-      status: "stable",
-    },
-    {
-      name: "WebXRDepth",
-      origin_trial_feature_name: "WebXRDepth",
-      depends_on: ["WebXRARModule"],
-      public: true,
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "WebXRHandInput",
-      depends_on: ["WebXRARModule"],
+      depends_on: ["WebXR"],
       public: true,
       status: "experimental"
     },
     {
-      name: "WebXRHitTest",
-      depends_on: ["WebXRARModule"],
-      public: true,
-      status: "stable",
-    },
-    {
       name: "WebXRHitTestEntityTypes",
-      depends_on: ["WebXRHitTest"],
+      depends_on: ["WebXR"],
       status: "experimental"
     },
     {
       name: "WebXRImageTracking",
+      depends_on: ["WebXR"],
       origin_trial_feature_name: "WebXRImageTracking",
-      depends_on: ["WebXRARModule"],
       public: true,
       status: "experimental",
     },
@@ -3315,23 +3344,11 @@
       status: "experimental"
     },
     {
-      name: "WebXRLightEstimation",
-      depends_on: ["WebXRARModule"],
-      public: true,
-      status: "stable",
-    },
-    {
       name: "WebXRPlaneDetection",
+      depends_on: ["WebXR"],
       origin_trial_feature_name: "WebXRPlaneDetection",
-      depends_on: ["WebXRARModule"],
       public: true,
       status: "experimental",
-    },
-    {
-      name: "WebXRViewportScale",
-      depends_on: ["WebXRARModule"],
-      public: true,
-      status: "stable",
     },
     {
       name: "WGIGamepadTriggerRumble",
@@ -3344,6 +3361,13 @@
     {
       name: "WindowDefaultStatus",
       base_feature: "WindowDefaultStatus",
+    },
+    // Allows use of `window-management` as an alias for `window-placement`
+    // permission. See crbug.com/1328581
+    {
+      name: "WindowManagementPermissionAlias",
+      status: "stable",
+      base_feature: "WindowManagementPermissionAlias",
     },
     // Allows sites to request fullscreen when the set of screens change.
     {

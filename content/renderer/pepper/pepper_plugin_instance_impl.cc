@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/char_iterator.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -2027,7 +2027,7 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
              ? blink::AudioDeviceFactory::GetInstance()
                    ->GetOutputDeviceInfo(
                        render_frame()->GetWebFrame()->GetLocalFrameToken(),
-                       media::AudioSinkParameters())
+                       std::string())
                    .output_params()
                    .sample_rate()
              : 0;
@@ -2039,7 +2039,7 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
              ? blink::AudioDeviceFactory::GetInstance()
                    ->GetOutputDeviceInfo(
                        render_frame()->GetWebFrame()->GetLocalFrameToken(),
-                       media::AudioSinkParameters())
+                       std::string())
                    .output_params()
                    .frames_per_buffer()
              : 0;

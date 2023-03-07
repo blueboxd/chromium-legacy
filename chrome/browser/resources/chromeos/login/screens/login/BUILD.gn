@@ -5,14 +5,13 @@
 import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
-import("//tools/polymer/polymer.gni")
-import("../../oobe_auto_imports.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = default_closure_args
   deps = [
     ":active_directory_password_change",
+    ":arc_vm_data_migration",
     ":checking_downloading_update",
     ":cryptohome_recovery",
     ":encryption_migration",
@@ -31,8 +30,8 @@ js_type_check("closure_compile") {
 js_library("active_directory_password_change") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/active_directory_password_change.js" ]
   deps = [
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
@@ -43,11 +42,23 @@ js_library("active_directory_password_change") {
   extra_deps = [ ":web_components" ]
 }
 
+js_library("arc_vm_data_migration") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/arc_vm_data_migration.js" ]
+  deps = [
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
+    "../../components/behaviors:oobe_dialog_host_behavior",
+    "../../components/behaviors:oobe_i18n_behavior",
+    "../../components/dialogs:oobe_adaptive_dialog",
+  ]
+  extra_deps = [ ":web_components" ]
+}
+
 js_library("cryptohome_recovery") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/cryptohome_recovery.js" ]
   deps = [
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/dialogs:oobe_adaptive_dialog",
     "../../components/dialogs:oobe_loading_dialog",
@@ -58,8 +69,8 @@ js_library("cryptohome_recovery") {
 js_library("encryption_migration") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/encryption_migration.js" ]
   deps = [
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
@@ -72,8 +83,8 @@ js_library("encryption_migration") {
 js_library("gaia_password_changed") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/gaia_password_changed.js" ]
   deps = [
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
@@ -89,7 +100,7 @@ js_library("lacros_data_migration") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/lacros_data_migration.js" ]
   deps = [
     "../../components:oobe_slide",
-    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
     "../../components/behaviors:oobe_dialog_host_behavior",
     "../../components/dialogs:oobe_loading_dialog",
   ]
@@ -100,7 +111,7 @@ js_library("lacros_data_backward_migration") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/lacros_data_backward_migration.js" ]
   deps = [
     "../../components:oobe_slide",
-    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
     "../../components/behaviors:oobe_dialog_host_behavior",
     "../../components/dialogs:oobe_loading_dialog",
   ]
@@ -110,8 +121,8 @@ js_library("lacros_data_backward_migration") {
 js_library("management_transition") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/management_transition.js" ]
   deps = [
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
@@ -123,8 +134,8 @@ js_library("management_transition") {
 js_library("offline_login") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/offline_login.js" ]
   deps = [
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
@@ -139,8 +150,8 @@ js_library("update_required_card") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/update_required_card.js" ]
   deps = [
     ":checking_downloading_update",
-    "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:login_screen_behavior",
+    "../../components/behaviors:multi_step_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
@@ -168,6 +179,7 @@ js_library("checking_downloading_update") {
 html_to_js("web_components") {
   js_files = [
     "active_directory_password_change.js",
+    "arc_vm_data_migration.js",
     "checking_downloading_update.js",
     "cryptohome_recovery.js",
     "encryption_migration.js",

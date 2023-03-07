@@ -7,11 +7,11 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -894,7 +894,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
-          native_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_LINK,
+          native_url, Referrer(), /* initiator_origin= */ absl::nullopt,
+          /* initiator_base_url= */ absl::nullopt, ui::PAGE_TRANSITION_LINK,
           false, std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entries.push_back(std::move(new_entry));
@@ -935,7 +936,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
-          regular_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_LINK,
+          regular_url, Referrer(), /* initiator_origin= */ absl::nullopt,
+          /* initiator_base_url= */ absl::nullopt, ui::PAGE_TRANSITION_LINK,
           false, std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entries.push_back(std::move(new_entry));
@@ -1888,6 +1890,22 @@ TEST_F(WebContentsImplTest,
   // The view should be re-hidden if the WebContents leaves PiP.
   contents()->SetHasPictureInPictureDocument(false);
   EXPECT_FALSE(view->is_showing());
+}
+
+TEST_F(WebContentsImplTest, PictureInPictureSetsCapture) {
+  // Setting pip on a content should create a capture lock and ending it should
+  // clear the associated lock.
+  ASSERT_FALSE(contents()->IsBeingCaptured());
+
+  contents()->SetHasPictureInPictureVideo(true);
+  ASSERT_TRUE(contents()->IsBeingCaptured());
+  contents()->SetHasPictureInPictureVideo(false);
+  ASSERT_FALSE(contents()->IsBeingCaptured());
+
+  contents()->SetHasPictureInPictureDocument(true);
+  ASSERT_TRUE(contents()->IsBeingCaptured());
+  contents()->SetHasPictureInPictureDocument(false);
+  ASSERT_FALSE(contents()->IsBeingCaptured());
 }
 
 namespace {

@@ -11,18 +11,19 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/exo/data_exchange_delegate.h"
 #include "components/exo/display.h"
 #include "components/exo/input_method_surface_manager.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/toast_surface_manager.h"
 #include "components/exo/wayland/server.h"
-#include "components/exo/wm_helper_chromeos.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_core_switches.h"
@@ -85,7 +86,7 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   ash_test_helper_ = std::make_unique<ash::AshTestHelper>();
   ash_test_helper_->SetUp();
 
-  wm_helper_ = std::make_unique<WMHelperChromeOS>();
+  wm_helper_ = std::make_unique<WMHelper>();
   display_ = std::make_unique<Display>(nullptr, nullptr, nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   DCHECK(wayland_server_);

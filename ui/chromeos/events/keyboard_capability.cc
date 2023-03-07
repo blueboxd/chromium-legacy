@@ -7,12 +7,44 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/events/devices/device_data_manager.h"
 
 namespace ui {
+
+KeyboardCapability::KeyboardCapability(std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)) {}
+
+KeyboardCapability::~KeyboardCapability() = default;
+
+void KeyboardCapability::AddObserver(Observer* observer) {
+  delegate_->AddObserver(observer);
+}
+
+void KeyboardCapability::RemoveObserver(Observer* observer) {
+  delegate_->RemoveObserver(observer);
+}
+
+bool KeyboardCapability::TopRowKeysAreFKeys() const {
+  return delegate_->TopRowKeysAreFKeys();
+}
+
+void KeyboardCapability::SetTopRowKeysAsFKeysEnabledForTesting(
+    bool enabled) const {
+  delegate_->SetTopRowKeysAsFKeysEnabledForTesting(enabled);  // IN-TEST
+}
 
 // static
 bool KeyboardCapability::IsSixPackKey(const KeyboardCode& key_code) {
   return base::Contains(kSixPackKeyToSystemKeyMap, key_code);
+}
+
+// static
+bool KeyboardCapability::IsReversedSixPackKey(const KeyboardCode& key_code) {
+  // [Back] maps back to both [Delete] and [Insert].
+  return base::Contains(kReversedSixPackKeyToSystemKeyMap, key_code) ||
+         key_code == ui::KeyboardCode::VKEY_BACK;
 }
 
 bool KeyboardCapability::IsTopRowKey(const KeyboardCode& key_code) const {
@@ -33,6 +65,24 @@ bool KeyboardCapability::IsTopRowKey(const KeyboardCode& key_code) const {
           VKEY_VOLUME_UP,
       });
   return base::Contains(*top_row_action_keys, key_code);
+}
+
+bool KeyboardCapability::HasLauncherButton(
+    const absl::optional<InputDevice>& keyboard) {
+  // Use current implementation. If keyboard is provided, launcher button
+  // depends on if this keyboard is layout2 type. If keyboard is not provided,
+  // launcher button depends on if any keyboard in DeviceDataManager is layout2
+  // type.
+  // TODO(zhangwenyu): Handle edge cases.
+  if (!keyboard.has_value()) {
+    // DeviceUsesKeyboardLayout2() relies on DeviceDataManager.
+    DCHECK(DeviceDataManager::HasInstance());
+    DCHECK(DeviceDataManager::GetInstance()->AreDeviceListsComplete());
+    return DeviceUsesKeyboardLayout2();
+  }
+
+  return EventRewriterChromeOS::GetKeyboardTopRowLayout(keyboard.value()) ==
+         KeyboardTopRowLayout::kKbdTopRowLayout2;
 }
 
 }  // namespace ui

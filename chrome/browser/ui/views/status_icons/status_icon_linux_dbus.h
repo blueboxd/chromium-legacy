@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -65,10 +65,7 @@ class StatusIconLinuxDbus : public ui::StatusIconLinux,
   // registered.
   void OnHostRegisteredResponse(dbus::Response* response);
 
-  // Step 3: register a StatusNotifierItem service.
-  void OnOwnership(const std::string& service_name, bool success);
-
-  // Step 4: export methods for the StatusNotifierItem and the properties
+  // Step 3: export methods for the StatusNotifierItem and the properties
   // interface.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,

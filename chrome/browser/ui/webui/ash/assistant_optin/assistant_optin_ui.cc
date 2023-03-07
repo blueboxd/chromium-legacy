@@ -10,7 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/buildflag.h"
@@ -71,8 +71,8 @@ GURL CreateAssistantOptInURL(FlowType type) {
 AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
   // Set up the chrome://assistant-optin source.
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIAssistantOptInHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUIAssistantOptInHost);
 
   auto assistant_handler = std::make_unique<AssistantOptInFlowScreenHandler>();
   assistant_handler_ptr_ = assistant_handler.get();
@@ -93,7 +93,6 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
       network::mojom::CSPDirectiveName::WorkerSrc,
       "worker-src blob: chrome://resources 'self';");
   source->DisableTrustedTypesCSP();
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // Do not zoom for Assistant opt-in web contents.
   content::HostZoomMap* zoom_map =
@@ -187,6 +186,7 @@ std::string AssistantOptInDialog::GetDialogArgs() const {
 }
 
 void AssistantOptInDialog::OnDialogShown(content::WebUI* webui) {
+  SystemWebDialogDelegate::OnDialogShown(webui);
   assistant_ui_ = static_cast<AssistantOptInUI*>(webui->GetController());
 }
 

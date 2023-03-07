@@ -88,7 +88,7 @@ public class Snackbar {
     public static final int UMA_TAB_GROUP_MANUAL_CREATION_UNDO = 32;
     public static final int UMA_TWA_PRIVACY_DISCLOSURE_V2 = 33;
     public static final int UMA_HOMEPAGE_PROMO_CHANGED_UNDO = 34;
-    public static final int UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO = 35;
+    // Obsolete; don't use: UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO = 35;
     public static final int UMA_PAINT_PREVIEW_UPGRADE_NOTIFICATION = 36;
     public static final int UMA_READING_LIST_BOOKMARK_ADDED = 37;
     public static final int UMA_PRIVACY_SANDBOX_PAGE_OPEN = 38;
@@ -107,6 +107,12 @@ public class Snackbar {
     public static final int UMA_BAD_FLAGS = 51;
     public static final int UMA_DOWNLOAD_INTERSTITIAL_DOWNLOAD_DELETED = 52;
     public static final int UMA_INCOGNITO_REAUTH_ENABLED_FROM_PROMO = 53;
+    public static final int UMA_PRIVACY_SANDBOX_ADD_SITE = 54;
+    public static final int UMA_PRIVACY_SANDBOX_REMOVE_SITE = 55;
+    public static final int UMA_CREATOR_FOLLOW_SUCCESS = 56;
+    public static final int UMA_CREATOR_FOLLOW_FAILURE = 57;
+    public static final int UMA_CREATOR_UNFOLLOW_SUCCESS = 58;
+    public static final int UMA_CREATOR_UNFOLLOW_FAILURE = 59;
 
     private @Nullable SnackbarController mController;
     private CharSequence mText;

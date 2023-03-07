@@ -14,7 +14,6 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/json/values_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -45,6 +44,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/app_display_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
@@ -1371,8 +1371,8 @@ void ExtensionPrefs::OnExtensionInstalled(
                              ruleset_install_prefs, extension_dict.get());
 
   FinishExtensionInfoPrefs(extension->id(), install_time,
-                           extension->RequiresSortOrdinal(), page_ordinal,
-                           extension_dict.get());
+                           AppDisplayInfo::RequiresSortOrdinal(*extension),
+                           page_ordinal, extension_dict.get());
 }
 
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
@@ -1552,7 +1552,7 @@ void ExtensionPrefs::SetDelayedInstallInfo(
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
   // a corresponding Remove() call in FinishDelayedInstallInfo().
-  if (extension->RequiresSortOrdinal()) {
+  if (AppDisplayInfo::RequiresSortOrdinal(*extension)) {
     extension_dict->SetString(kPrefSuggestedPageOrdinal,
                               page_ordinal.IsValid()
                                   ? page_ordinal.ToInternalValue()
@@ -1885,12 +1885,8 @@ void ExtensionPrefs::InitPrefStore() {
 
   // When this is called, the PrefService is initialized and provides access
   // to the user preferences stored in a JSON file.
-  std::unique_ptr<ExtensionsInfo> extensions_info;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefGetExtensionsTime");
-    extensions_info =
-        GetInstalledExtensionsInfo(/*include_component_extensions = */ true);
-  }
+  std::unique_ptr<ExtensionsInfo> extensions_info =
+      GetInstalledExtensionsInfo(/*include_component_extensions = */ true);
 
   if (extensions_disabled_) {
     // Normally, if extensions are disabled, we don't want to load the
@@ -2179,8 +2175,6 @@ ExtensionPrefs::ExtensionPrefs(
   MigrateToNewWithholdingPref();
 
   MigrateToNewExternalUninstallPref();
-
-  MigrateYoutubeOffBookmarkApps();
 
   MigrateDeprecatedDisableReasons();
 }
@@ -2516,23 +2510,6 @@ void ExtensionPrefs::MigrateDeprecatedDisableReasons() {
     }
     ReplaceDisableReasons(extension_id, disable_reasons);
   }
-}
-
-void ExtensionPrefs::MigrateYoutubeOffBookmarkApps() {
-  const base::Value::Dict& extensions_dictionary =
-      prefs_->GetDict(pref_names::kExtensions);
-  const base::Value::Dict* youtube_dictionary =
-      extensions_dictionary.FindDict(extension_misc::kYoutubeAppId);
-  if (!youtube_dictionary) {
-    return;
-  }
-  int creation_flags =
-      youtube_dictionary->FindInt(kPrefCreationFlags).value_or(0);
-  if ((creation_flags & Extension::FROM_BOOKMARK) == 0)
-    return;
-  ScopedExtensionPrefUpdate update(prefs_, extension_misc::kYoutubeAppId);
-  creation_flags &= ~Extension::FROM_BOOKMARK;
-  update->SetInteger(kPrefCreationFlags, creation_flags);
 }
 
 void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {

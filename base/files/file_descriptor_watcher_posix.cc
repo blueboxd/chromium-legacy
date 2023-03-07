@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ref.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -211,7 +211,7 @@ FileDescriptorWatcher::Controller::~Controller() {
           // is deleted before it gets to run.
           delete watcher;
         },
-        Unretained(watcher_));
+        UnsafeDanglingUntriaged(watcher_));
     io_thread_task_runner_->PostTask(FROM_HERE, std::move(delete_task));
     ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow;
     on_watcher_destroyed_.Wait();

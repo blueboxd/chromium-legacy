@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -36,7 +36,13 @@ namespace {
 // to be excluded in IsRotateAlternate().
 constexpr char kEpsonNoFlipModels[] =
     "\\b("
-    "DS-790WN"
+    "AM-C4000"
+    "|AM-C5000"
+    "|AM-C6000"
+    "|DS-790WN"
+    "|LM-C4000"
+    "|LM-C5000"
+    "|LM-C6000"
     "|LP-M8180A"
     "|LP-M8180F"
     "|LX-10020M"

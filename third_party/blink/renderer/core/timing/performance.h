@@ -32,7 +32,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
-#include <list>
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
@@ -75,7 +74,6 @@ class PerformanceMeasure;
 class PerformanceNavigation;
 class PerformanceObserver;
 class PerformanceTiming;
-class ResourceResponse;
 class ResourceTimingInfo;
 class ScriptPromise;
 class ScriptState;
@@ -90,10 +88,14 @@ class V8UnionPerformanceMeasureOptionsOrString;
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 using PerformanceEntryDeque = HeapDeque<Member<PerformanceEntry>>;
 
-// Merge two sorted PerformanceEntryVectors in linear time.
+// Merge two sorted PerformanceEntryVectors in linear time. If a non-null name
+// is provided, then items in second_entry_vector will be included in the result
+// only if their names match the given name. It is expected (and DCHECKed) that
+// first_entry_vector has already been filtered by name.
 CORE_EXPORT PerformanceEntryVector
 MergePerformanceEntryVectors(const PerformanceEntryVector& first_entry_vector,
-                             const PerformanceEntryVector& second_entry_vector);
+                             const PerformanceEntryVector& second_entry_vector,
+                             const AtomicString& maybe_name);
 
 class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -111,6 +113,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ScriptState*,
       ExceptionState& exception_state) const;
   virtual EventCounts* eventCounts();
+  virtual std::uint64_t interactionCount() const = 0;
 
   // Reduce the resolution to prevent timing attacks. See:
   // http://www.w3.org/TR/hr-time-2/#privacy-security
@@ -310,17 +313,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void SuspendObserver(PerformanceObserver&);
 
   bool HasObserverFor(PerformanceEntry::EntryType) const;
-
-  static bool IsResponseSameOriginWithInitiator(
-      const ResourceResponse& response,
-      const SecurityOrigin& initiator_security_origin);
-
-  static bool PassesCORSConditions(
-      const ResourceResponse& final_response,
-      const SecurityOrigin& initiator_security_origin,
-      const network::mojom::RequestMode request_mode,
-      const Vector<ResourceResponse>& redirect_chain);
-
   // Determine whether a given Node can be exposed via a Web Perf API.
   static bool CanExposeNode(Node*);
 
@@ -363,22 +355,27 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void CopySecondaryBuffer();
 
   PerformanceEntryVector getEntriesByTypeInternal(
-      PerformanceEntry::EntryType type);
+      PerformanceEntry::EntryType type,
+      const AtomicString& maybe_name = g_null_atom);
 
   void MeasureMemoryExperimentTimerFired(TimerBase*);
 
-  // Get performance entries of the current frame.
-  PerformanceEntryVector GetEntriesForCurrentFrame();
+  // Get performance entries of the current frame, with an optional name filter.
+  PerformanceEntryVector GetEntriesForCurrentFrame(
+      const AtomicString& maybe_name = g_null_atom);
 
-  // Get performance entries of the current frame by type.
+  // Get performance entries of the current frame by type, with an optional name
+  // filter.
   PerformanceEntryVector GetEntriesByTypeForCurrentFrame(
-      const AtomicString& entry_type);
+      const AtomicString& entry_type,
+      const AtomicString& maybe_name = g_null_atom);
 
   // Get performance entries of nested same-origin iframes, with an optional
-  // type.
+  // type and optional name filter.
   PerformanceEntryVector GetEntriesWithChildFrames(
       ScriptState* script_state,
-      const AtomicString& entry_type = g_null_atom);
+      const AtomicString& maybe_type = g_null_atom,
+      const AtomicString& maybe_name = g_null_atom);
 
  protected:
   Performance(base::TimeTicks time_origin,

@@ -6,18 +6,18 @@
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/system/phonehub/onboarding_view.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
 #include "ash/system/phonehub/phone_hub_ui_controller.h"
 #include "ash/system/phonehub/phone_status_view.h"
-#include "ash/system/screen_layout_observer.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/scoped_observation.h"
 #include "chromeos/ash/components/phonehub/app_stream_manager.h"
 #include "chromeos/ash/components/phonehub/icon_decoder.h"
@@ -49,7 +49,7 @@ class ASH_EXPORT PhoneHubTray : public TrayBackgroundView,
                                 public PhoneStatusView::Delegate,
                                 public PhoneHubUiController::Observer,
                                 public SessionObserver,
-                                public ScreenLayoutObserver,
+                                public WindowTreeHostManager::Observer,
                                 public phonehub::AppStreamManager::Observer {
  public:
   explicit PhoneHubTray(Shelf* shelf);
@@ -80,7 +80,7 @@ class ASH_EXPORT PhoneHubTray : public TrayBackgroundView,
   // OnboardingView::Delegate:
   void HideStatusHeaderView() override;
 
-  // ScreenLayoutObserver:
+  // WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
 
   // AppStreamManager::Observer:

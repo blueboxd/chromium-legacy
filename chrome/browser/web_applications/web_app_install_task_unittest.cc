@@ -8,9 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -18,9 +18,9 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
 #include "chrome/browser/web_applications/test/fake_install_finalizer.h"
@@ -33,7 +33,6 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -55,11 +54,11 @@
 #include "components/webapps/browser/features.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_data.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -135,7 +134,7 @@ class WebAppInstallTaskTest : public WebAppTest {
                              const std::string& description,
                              const GURL& scope,
                              absl::optional<SkColor> theme_color,
-                             UserDisplayMode user_display_mode) {
+                             mojom::UserDisplayMode user_display_mode) {
     auto web_app_info = std::make_unique<WebAppInstallInfo>();
 
     web_app_info->start_url = url;
@@ -151,8 +150,9 @@ class WebAppInstallTaskTest : public WebAppTest {
   void CreateRendererAppInfo(const GURL& url,
                              const std::string& name,
                              const std::string& description) {
-    CreateRendererAppInfo(url, name, description, GURL(), absl::nullopt,
-                          /*user_display_mode=*/UserDisplayMode::kStandalone);
+    CreateRendererAppInfo(
+        url, name, description, GURL(), absl::nullopt,
+        /*user_display_mode=*/mojom::UserDisplayMode::kStandalone);
   }
 
   void InitializeInstallTaskAndRetriever(
@@ -183,7 +183,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void CreateDataToRetrieve(const GURL& url,
-                            UserDisplayMode user_display_mode) {
+                            mojom::UserDisplayMode user_display_mode) {
     DCHECK(data_retriever_);
 
     auto renderer_web_app_info = std::make_unique<WebAppInstallInfo>();
@@ -194,7 +194,8 @@ class WebAppInstallTaskTest : public WebAppTest {
     auto manifest = blink::mojom::Manifest::New();
     manifest->start_url = url;
     manifest->short_name = u"Manifest Name";
-    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+    data_retriever_->SetManifest(
+        std::move(manifest), webapps::InstallableStatusCode::NO_ERROR_DETECTED);
 
     data_retriever_->SetIcons(IconsMap{});
   }
@@ -346,7 +347,7 @@ class WebAppInstallTaskWithRunOnOsLoginTest : public WebAppInstallTaskTest {
                              const std::string& description,
                              const GURL& scope,
                              absl::optional<SkColor> theme_color,
-                             UserDisplayMode user_display_mode) {
+                             mojom::UserDisplayMode user_display_mode) {
     auto web_app_info = std::make_unique<WebAppInstallInfo>();
 
     web_app_info->start_url = url;
@@ -376,16 +377,17 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   InitializeInstallTaskAndRetriever(
       webapps::WebappInstallSource::MENU_BROWSER_TAB);
-  CreateRendererAppInfo(url, "Renderer Name", description, /*scope*/ GURL{},
-                        theme_color,
-                        /*user_display_mode=*/UserDisplayMode::kStandalone);
+  CreateRendererAppInfo(
+      url, "Renderer Name", description, /*scope*/ GURL{}, theme_color,
+      /*user_display_mode=*/mojom::UserDisplayMode::kStandalone);
   {
     auto manifest = blink::mojom::Manifest::New();
     manifest->start_url = url;
     manifest->scope = scope;
     manifest->short_name = base::ASCIIToUTF16(manifest_name);
 
-    data_retriever().SetManifest(std::move(manifest), /*is_installable=*/true);
+    data_retriever().SetManifest(
+        std::move(manifest), webapps::InstallableStatusCode::NO_ERROR_DETECTED);
   }
 
   base::RunLoop run_loop;
@@ -441,7 +443,8 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
     manifest->scope = url;
     manifest->short_name = u"Manifest Name2";
 
-    data_retriever().SetManifest(std::move(manifest), /*is_installable=*/true);
+    data_retriever().SetManifest(
+        std::move(manifest), webapps::InstallableStatusCode::NO_ERROR_DETECTED);
   }
 
   base::RunLoop run_loop;
@@ -552,10 +555,10 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
   InitializeInstallTaskAndRetriever(
       webapps::WebappInstallSource::MENU_BROWSER_TAB);
-  CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
-                        renderer_description,
-                        GURL("https://renderer.com/scope"), 0x00,
-                        /*user_display_mode=*/UserDisplayMode::kStandalone);
+  CreateRendererAppInfo(
+      GURL("https://renderer.com/path"), "RendererName", renderer_description,
+      GURL("https://renderer.com/scope"), 0x00,
+      /*user_display_mode=*/mojom::UserDisplayMode::kStandalone);
 
   const GURL manifest_start_url = GURL("https://example.com/start");
   const AppId app_id =
@@ -576,7 +579,8 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
     manifest->theme_color = manifest_theme_color;
     manifest->display = display_mode;
 
-    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+    data_retriever_->SetManifest(
+        std::move(manifest), webapps::InstallableStatusCode::NO_ERROR_DETECTED);
   }
 
   base::RunLoop run_loop;
@@ -619,7 +623,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = url;
-  web_app_info->user_display_mode = UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
   web_app_info->title = u"App Name";
 
   base::RunLoop run_loop;
@@ -635,7 +639,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
             std::unique_ptr<WebAppInstallInfo> final_web_app_info =
                 fake_install_finalizer().web_app_info();
             EXPECT_EQ(final_web_app_info->user_display_mode,
-                      UserDisplayMode::kStandalone);
+                      mojom::UserDisplayMode::kStandalone);
 
             run_loop.Quit();
           }));
@@ -649,7 +653,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = GURL("https://example.com/path");
-  web_app_info->user_display_mode = UserDisplayMode::kBrowser;
+  web_app_info->user_display_mode = mojom::UserDisplayMode::kBrowser;
   web_app_info->title = u"App Name";
 
   // Add square yellow icon.
@@ -678,7 +682,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
         }
 
         EXPECT_EQ(final_web_app_info->user_display_mode,
-                  UserDisplayMode::kBrowser);
+                  mojom::UserDisplayMode::kBrowser);
 
         run_loop.Quit();
       }));
@@ -737,9 +741,9 @@ TEST_F(WebAppInstallTaskWithShortcutFeatureTest,
   const GURL manifest_scope{"https://example.com/"};
   const absl::optional<SkColor> theme_color = 0xAABBCCDD;
 
-  CreateRendererAppInfo(manifest_start_url, title, description, manifest_scope,
-                        theme_color,
-                        /*user_display_mode=*/UserDisplayMode::kStandalone);
+  CreateRendererAppInfo(
+      manifest_start_url, title, description, manifest_scope, theme_color,
+      /*user_display_mode=*/mojom::UserDisplayMode::kStandalone);
 
   base::RunLoop run_loop;
 
@@ -882,7 +886,8 @@ TEST_F(WebAppInstallTaskTest, StorageIsolationFlagSaved) {
 
   InitializeInstallTaskAndRetriever(
       webapps::WebappInstallSource::MENU_BROWSER_TAB);
-  data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+  data_retriever_->SetManifest(
+      std::move(manifest), webapps::InstallableStatusCode::NO_ERROR_DETECTED);
   data_retriever_->SetRendererWebAppInstallInfo(std::move(web_app_info));
 
   base::RunLoop run_loop;
@@ -922,8 +927,9 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   InitializeInstallTaskAndRetriever(
       webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url, scope);
-  CreateRendererAppInfo(url, name, description, /*scope=*/GURL{}, theme_color,
-                        /*user_display_mode=*/UserDisplayMode::kStandalone);
+  CreateRendererAppInfo(
+      url, name, description, /*scope=*/GURL{}, theme_color,
+      /*user_display_mode=*/mojom::UserDisplayMode::kStandalone);
 
   const char kWebAppSettingWithDefaultConfiguration[] = R"([
     {
@@ -1009,8 +1015,9 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
       shortcut_item.icons.push_back(std::move(icon));
       manifest->shortcuts.push_back(std::move(shortcut_item));
 
-      data_retriever_->SetManifest(std::move(manifest),
-                                   /*is_installable=*/true);
+      data_retriever_->SetManifest(
+          std::move(manifest),
+          webapps::InstallableStatusCode::NO_ERROR_DETECTED);
     }
 
     base::RunLoop run_loop;
@@ -1075,7 +1082,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
 
     auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = url;
-    web_app_info->user_display_mode = UserDisplayMode::kStandalone;
+    web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
     web_app_info->theme_color = theme_color;
     web_app_info->title = u"App Name";
 
@@ -1243,11 +1250,6 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
 
 class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
  public:
-  WebAppInstallTaskTestWithFileHandlers() {
-    scoped_feature_list_.InitWithFeatures({blink::features::kFileHandlingAPI},
-                                          {});
-  }
-
   blink::mojom::ManifestPtr CreateManifest(const GURL& url) {
     auto manifest = blink::mojom::Manifest::New();
     manifest->start_url = url;
@@ -1276,7 +1278,8 @@ class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
       blink::mojom::ManifestPtr manifest,
       webapps::WebappInstallSource surface) {
     InitializeInstallTaskAndRetriever(surface);
-    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+    data_retriever_->SetManifest(
+        std::move(manifest), webapps::InstallableStatusCode::NO_ERROR_DETECTED);
 
     base::RunLoop run_loop;
     bool callback_called = false;
@@ -1323,9 +1326,6 @@ class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
     EXPECT_TRUE(callback_called);
     return result;
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(WebAppInstallTaskTestWithFileHandlers,

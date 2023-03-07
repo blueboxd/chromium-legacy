@@ -6,12 +6,17 @@
 
 #include "ash/accelerators/debug_commands.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_cue.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -36,6 +41,16 @@ void TabletModeMultitaskMenuEventHandler::MaybeCreateMultitaskMenu(
   if (!multitask_menu_) {
     multitask_menu_ =
         std::make_unique<TabletModeMultitaskMenu>(this, active_window);
+
+    // TODO(hewer): Remove this and add the cue as a class variable.
+    auto* multitask_cue = Shell::Get()
+                              ->tablet_mode_controller()
+                              ->tablet_mode_window_manager()
+                              ->tablet_mode_multitask_cue();
+
+    if (multitask_cue) {
+      multitask_cue->DismissCue();
+    }
   }
 }
 
@@ -115,36 +130,59 @@ void TabletModeMultitaskMenuEventHandler::OnGestureEvent(
 
   const ui::GestureEventDetails details = event->details();
   switch (event->type()) {
-    case ui::ET_GESTURE_SWIPE:
-      if (!details.swipe_up() && !details.swipe_down())
-        return;
-      MaybeCreateMultitaskMenu(active_window);
-      multitask_menu_->Animate(/*show=*/details.swipe_down());
-      event->SetHandled();
-      break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (std::fabs(details.scroll_y_hint()) <=
+      if (std::fabs(details.scroll_y_hint()) <
           std::fabs(details.scroll_x_hint())) {
         return;
       }
-      MaybeCreateMultitaskMenu(active_window);
-      multitask_menu_->BeginDrag(window_location.y());
-      event->SetHandled();
+      if (!multitask_menu_ && details.scroll_y_hint() > 0) {
+        MaybeCreateMultitaskMenu(active_window);
+        multitask_menu_->BeginDrag(window_location.y(), /*down=*/true);
+        event->SetHandled();
+      } else if (multitask_menu_ && details.scroll_y_hint() < 0) {
+        multitask_menu_->BeginDrag(window_location.y(), /*down=*/false);
+        event->SetHandled();
+      }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      if (multitask_menu_) {
-        multitask_menu_->UpdateDrag(window_location.y());
+      // While the menu is open and we are scrolling down, we mark
+      // `SetHandled()` even if the event goes out of menu bounds to keep the
+      // menu open. If we are scrolling up, we only handle events inside the
+      // menu to avoid consuming them before `OnWidgetActivationChanged()`.
+      if (multitask_menu_ && details.scroll_y() > 0) {
+        multitask_menu_->UpdateDrag(window_location.y(), /*down=*/true);
+        event->SetHandled();
+      } else if (multitask_menu_ && details.scroll_y() < 0 &&
+                 gfx::RectF(
+                     multitask_menu_->widget()->GetWindowBoundsInScreen())
+                     .Contains(screen_location)) {
+        multitask_menu_->UpdateDrag(window_location.y(), /*down=*/false);
         event->SetHandled();
       }
       break;
-    case ui::ET_SCROLL_FLING_CANCEL:
-    case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_GESTURE_END:
       if (multitask_menu_) {
         multitask_menu_->EndDrag();
+        if (multitask_menu_) {
+          // If `multitask_menu_` wasn't destroyed, it was dragged to show.
+          RecordMultitaskMenuEntryType(
+              chromeos::MultitaskMenuEntryType::kGestureScroll);
+        }
         event->SetHandled();
       }
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      // Normally ET_GESTURE_SCROLL_BEGIN will fire first and have already
+      // created the multitask menu, however occasionally ET_SCROLL_FLING_START
+      // may fire first (https://crbug.com/821237).
+      MaybeCreateMultitaskMenu(active_window);
+      multitask_menu_->Animate(details.velocity_y() > 0);
+      if (multitask_menu_) {
+        // If `multitask_menu_` wasn't destroyed, it was animated to show.
+        RecordMultitaskMenuEntryType(
+            chromeos::MultitaskMenuEntryType::kGestureFling);
+      }
+      event->SetHandled();
       break;
     default:
       break;

@@ -47,9 +47,10 @@ proto::OutputConfig GetTestOutputConfigForMultiClassClassifier(
   proto::SegmentationModelMetadata model_metadata;
   MetadataWriter writer(&model_metadata);
 
-  writer.AddOutputConfigForMultiClassClassifier(
-      /*class_labels=*/{kShareUser, kNewTabUser, kVoiceUser, kShoppingUser},
-      top_k_outputs, threshold);
+  std::array<const char*, 4> labels{kShareUser, kNewTabUser, kVoiceUser,
+                                    kShoppingUser};
+  writer.AddOutputConfigForMultiClassClassifier(labels.begin(), labels.size(),
+                                                top_k_outputs, threshold);
   return model_metadata.output_config();
 }
 
@@ -195,6 +196,34 @@ TEST(PostProcessorTest, BinnedClassifierScoreLessThanLowUserThreshold) {
           /*model_scores=*/{0.1}, GetTestOutputConfigForBinnedClassifier(),
           /*timestamp=*/base::Time::Now()));
   EXPECT_THAT(winning_label, testing::ElementsAre(kUnderflowLabel));
+}
+
+TEST(PostProcessorTest,
+     GetPostProcessedClassificationResultWithEmptyPredResult) {
+  PostProcessor post_processor;
+  proto::PredictionResult pred_result;
+  ClassificationResult classification_result =
+      post_processor.GetPostProcessedClassificationResult(
+          pred_result, PredictionStatus::kFailed);
+  EXPECT_THAT(classification_result.status, PredictionStatus::kFailed);
+  EXPECT_TRUE(classification_result.ordered_labels.empty());
+}
+
+TEST(PostProcessorTest,
+     GetPostProcessedClassificationResultWithNonEmptyPredResult) {
+  PostProcessor post_processor;
+  proto::PredictionResult pred_result = metadata_utils::CreatePredictionResult(
+      /*model_scores=*/{0.5, 0.2, 0.4, 0.7},
+      GetTestOutputConfigForMultiClassClassifier(
+          /*top_k-outputs=*/2,
+          /*threshold=*/absl::nullopt),
+      /*timestamp=*/base::Time::Now());
+  ClassificationResult classification_result =
+      post_processor.GetPostProcessedClassificationResult(
+          pred_result, PredictionStatus::kSucceeded);
+  EXPECT_THAT(classification_result.status, PredictionStatus::kSucceeded);
+  EXPECT_THAT(classification_result.ordered_labels,
+              testing::ElementsAre(kShoppingUser, kShareUser));
 }
 
 }  // namespace segmentation_platform

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -54,7 +55,7 @@ class InternetDisconnectedWebURLLoader final : public WebURLLoader {
       absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
-      int64_t& encoded_body_length,
+      uint64_t& encoded_body_length,
       WebBlobInfo& downloaded_blob,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper) override;

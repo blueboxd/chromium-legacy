@@ -5,9 +5,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -77,9 +78,7 @@ class TestScreenCapturer : public DesktopCapturer {
   ~TestScreenCapturer() override = default;
 
   // webrtc::DesktopCapturer interface.
-  void Start(Callback* callback) override {
-    callback_ = callback;
-  }
+  void Start(Callback* callback) override { callback_ = callback; }
 
   void CaptureFrame() override {
     if (capture_request_index_to_fail_ >= 0) {
@@ -104,18 +103,16 @@ class TestScreenCapturer : public DesktopCapturer {
                                std::move(frame));
   }
 
-  bool GetSourceList(SourceList* sources) override {
-    return true;
-  }
+  bool GetSourceList(SourceList* sources) override { return true; }
 
-  bool SelectSource(SourceId id) override {
-    return true;
-  }
+  bool SelectSource(SourceId id) override { return true; }
 
   void FailNthFrame(int n) { capture_request_index_to_fail_ = n; }
 
  private:
-  Callback* callback_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #constexpr-ctor-field-initializer
+  RAW_PTR_EXCLUSION Callback* callback_ = nullptr;
   int frame_index_ = 0;
 
   int capture_request_index_to_fail_ = -1;
@@ -198,11 +195,13 @@ class FakeAudioPlayer : public AudioStub {
 
     data_.insert(data_.end(), packet->data(0).begin(), packet->data(0).end());
 
-    if (run_loop_ && data_.size() >= samples_expected_ * 4)
+    if (run_loop_ && data_.size() >= samples_expected_ * 4) {
       run_loop_->Quit();
+    }
 
-    if (!done.is_null())
+    if (!done.is_null()) {
       std::move(done).Run();
+    }
   }
 
   void WaitForSamples(size_t samples_expected) {
@@ -342,8 +341,8 @@ class ConnectionTest : public testing::Test,
                   OnConnectionState(ConnectionToHost::AUTHENTICATED, OK));
       EXPECT_CALL(client_event_handler_,
                   OnConnectionState(ConnectionToHost::CONNECTED, OK))
-          .WillOnce(InvokeWithoutArgs(
-              this, &ConnectionTest::OnClientConnected));
+          .WillOnce(
+              InvokeWithoutArgs(this, &ConnectionTest::OnClientConnected));
     }
     EXPECT_CALL(client_event_handler_, OnRouteChanged(_, _))
         .Times(testing::AnyNumber());
@@ -369,14 +368,16 @@ class ConnectionTest : public testing::Test,
 
   void OnHostConnected() {
     host_connected_ = true;
-    if (client_connected_ && run_loop_)
+    if (client_connected_ && run_loop_) {
       run_loop_->Quit();
+    }
   }
 
   void OnClientConnected() {
     client_connected_ = true;
-    if (host_connected_ && run_loop_)
+    if (host_connected_ && run_loop_) {
       run_loop_->Quit();
+    }
   }
 
   void WaitNextVideoFrame() {
@@ -617,8 +618,9 @@ TEST_P(ConnectionTest, DISABLED_VideoStats) {
   // Currently this test only works for WebRTC because ICE connections stats are
   // reported by SoftwareVideoRenderer which is not used in this test.
   // TODO(sergeyu): Fix this.
-  if (!is_using_webrtc())
+  if (!is_using_webrtc()) {
     return;
+  }
 
   Connect();
 

@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,7 +16,6 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
@@ -319,8 +318,8 @@ TEST_P(SoftwareVideoEncoderTest, StopCallbackWrapping) {
 
   VideoEncoder::EncoderStatusCB flush_cb = base::BindLambdaForTesting(
       [&](EncoderStatus error) { flush_called = true; });
-  encoder_->Initialize(profile_, options, VideoEncoder::OutputCB(),
-                       std::move(init_cb));
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       /*output_cb=*/base::DoNothing(), std::move(init_cb));
   encoder_->Flush(std::move(flush_cb));
   EXPECT_TRUE(init_called);
   EXPECT_TRUE(flush_called);
@@ -335,8 +334,8 @@ TEST_P(SoftwareVideoEncoderTest, InitializeAndFlush) {
         output_called = true;
       });
 
-  encoder_->Initialize(profile_, options, std::move(output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(output_cb), ValidatingStatusCB());
   RunUntilIdle();
   encoder_->Flush(ValidatingStatusCB());
   RunUntilIdle();
@@ -357,8 +356,8 @@ TEST_P(SoftwareVideoEncoderTest, ForceAllKeyFrames) {
         outputs_count++;
       });
 
-  encoder_->Initialize(profile_, options, std::move(output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   for (int i = 0; i < frames; i++) {
@@ -384,8 +383,8 @@ TEST_P(SoftwareVideoEncoderTest, ResizeFrames) {
         outputs_count++;
       });
 
-  encoder_->Initialize(profile_, options, std::move(output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   auto frame1 = CreateFrame(gfx::Size(320, 200), pixel_format_, 0 * sec);
@@ -420,8 +419,8 @@ TEST_P(SoftwareVideoEncoderTest, OutputCountEqualsFrameCount) {
         outputs_count++;
       });
 
-  encoder_->Initialize(profile_, options, std::move(output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(output_cb), ValidatingStatusCB());
 
   RunUntilIdle();
   uint32_t color = 0x964050;
@@ -472,8 +471,8 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecode) {
 
   PrepareDecoder(options.frame_size, std::move(decoder_output_cb));
 
-  encoder_->Initialize(profile_, options, std::move(encoder_output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(encoder_output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   uint32_t color = 0x964050;
@@ -526,8 +525,8 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvc) {
         chunks.push_back(std::move(output));
       });
 
-  encoder_->Initialize(profile_, options, std::move(encoder_output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(encoder_output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   uint32_t color = 0x964050;
@@ -548,6 +547,9 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvc) {
   int num_temporal_layers = 1;
   if (options.scalability_mode) {
     switch (options.scalability_mode.value()) {
+      case SVCScalabilityMode::kL1T1:
+        // Nothing to do
+        break;
       case SVCScalabilityMode::kL1T2:
         num_temporal_layers = 2;
         break;
@@ -618,8 +620,8 @@ TEST_P(H264VideoEncoderTest, ReconfigureWithResize) {
         chunks.push_back({std::move(output), options.frame_size});
       });
 
-  encoder_->Initialize(profile_, options, std::move(encoder_output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(encoder_output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   uint32_t color = 0x0080FF;
@@ -725,8 +727,8 @@ TEST_P(H264VideoEncoderTest, AvcExtraData) {
         outputs_count++;
       });
 
-  encoder_->Initialize(profile_, options, std::move(output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   auto frame1 = CreateFrame(options.frame_size, pixel_format_, 0 * sec);
@@ -764,8 +766,8 @@ TEST_P(H264VideoEncoderTest, AnnexB) {
         outputs_count++;
       });
 
-  encoder_->Initialize(profile_, options, std::move(output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   auto frame1 = CreateFrame(options.frame_size, pixel_format_, 0 * sec);
@@ -806,8 +808,8 @@ TEST_P(H264VideoEncoderTest, EncodeAndDecodeWithConfig) {
         chunks.push_back({std::move(output), std::move(desc)});
       });
 
-  encoder_->Initialize(profile_, options, std::move(encoder_output_cb),
-                       ValidatingStatusCB());
+  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
+                       std::move(encoder_output_cb), ValidatingStatusCB());
   RunUntilIdle();
 
   uint32_t color = 0x964050;
@@ -883,6 +885,8 @@ INSTANTIATE_TEST_SUITE_P(H264Generic,
 SwVideoTestParams kH264SVCParams[] = {
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420, absl::nullopt},
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T1},
+    {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T2},
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T3}};
@@ -909,10 +913,14 @@ INSTANTIATE_TEST_SUITE_P(VpxGeneric,
 SwVideoTestParams kVpxSVCParams[] = {
     {VideoCodec::kVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420, absl::nullopt},
     {VideoCodec::kVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T1},
+    {VideoCodec::kVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T2},
     {VideoCodec::kVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T3},
     {VideoCodec::kVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420, absl::nullopt},
+    {VideoCodec::kVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T1},
     {VideoCodec::kVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T2},
     {VideoCodec::kVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
@@ -942,6 +950,8 @@ INSTANTIATE_TEST_SUITE_P(Av1Generic,
 SwVideoTestParams kAv1SVCParams[] = {
     {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,
      absl::nullopt},
+    {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T1},
     {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T2},
     {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,

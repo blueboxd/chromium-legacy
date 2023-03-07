@@ -10,13 +10,13 @@
 #include <utility>
 
 #include "base/base64url.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -6168,10 +6168,10 @@ TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
   auto cert_verifier = std::make_unique<MockCertVerifier>();
   cert_verifier->AddResultForCert(cert.get(), verify_result, OK);
 
+  MockCertificateReportSender mock_report_sender;  // Must outlive `context`.
   auto context_builder = CreateTestURLRequestContextBuilder();
   context_builder->SetCertVerifier(std::move(cert_verifier));
   auto context = context_builder->Build();
-  MockCertificateReportSender mock_report_sender;
   context->transport_security_state()->EnableStaticPinsForTesting();
   context->transport_security_state()->SetPinningListAlwaysTimelyForTesting(
       true);
@@ -6235,10 +6235,10 @@ TEST_F(URLRequestTestHTTP, ProcessPKPWithNoViolation) {
   auto mock_cert_verifier = std::make_unique<MockCertVerifier>();
   mock_cert_verifier->AddResultForCert(cert.get(), verify_result, OK);
 
+  MockCertificateReportSender mock_report_sender;  // Must outlive `context`.
   auto context_builder = CreateTestURLRequestContextBuilder();
   context_builder->SetCertVerifier(std::move(mock_cert_verifier));
   auto context = context_builder->Build();
-  MockCertificateReportSender mock_report_sender;
   context->transport_security_state()->EnableStaticPinsForTesting();
   context->transport_security_state()->SetPinningListAlwaysTimelyForTesting(
       true);
@@ -6296,10 +6296,10 @@ TEST_F(URLRequestTestHTTP, PKPBypassRecorded) {
 
   SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
 
+  MockCertificateReportSender mock_report_sender;  // Must outlive `context`.
   auto context_builder = CreateTestURLRequestContextBuilder();
   context_builder->SetCertVerifier(std::move(cert_verifier));
   auto context = context_builder->Build();
-  MockCertificateReportSender mock_report_sender;
   context->transport_security_state()->EnableStaticPinsForTesting();
   context->transport_security_state()->SetPinningListAlwaysTimelyForTesting(
       true);

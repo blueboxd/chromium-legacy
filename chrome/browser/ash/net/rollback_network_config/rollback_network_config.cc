@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -298,13 +298,13 @@ void RollbackNetworkConfig::Exporter::SendNetworkConfigs(
 }
 
 std::string RollbackNetworkConfig::Exporter::SerializeNetworkConfigs() const {
-  base::Value network_config_list(base::Value::Type::LIST);
+  base::Value::List network_config_list;
   for (const auto& network_config : network_configs_) {
     network_config_list.Append(network_config.Clone());
   }
 
-  base::Value complete_network_configuration(base::Value::Type::DICTIONARY);
-  complete_network_configuration.SetKey(
+  base::Value::Dict complete_network_configuration;
+  complete_network_configuration.Set(
       onc::toplevel_config::kNetworkConfigurations,
       std::move(network_config_list));
   std::string serialized_config;

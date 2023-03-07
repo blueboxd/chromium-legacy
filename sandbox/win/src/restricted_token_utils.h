@@ -5,6 +5,9 @@
 #ifndef SANDBOX_WIN_SRC_RESTRICTED_TOKEN_UTILS_H_
 #define SANDBOX_WIN_SRC_RESTRICTED_TOKEN_UTILS_H_
 
+#include <vector>
+
+#include "base/win/access_token.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/sid.h"
 #include "base/win/windows_types.h"
@@ -67,37 +70,24 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level);
 // policy to block read and execute so that a lower privileged process cannot
 // open the token for impersonate or duplicate permissions. This should limit
 // potential security holes.
-// |token| must be a token handle with READ_CONTROL and WRITE_OWNER access.
+// |token| must be a token with READ_CONTROL and WRITE_OWNER access.
 // If the function succeeds, the return value is ERROR_SUCCESS. If the
 // function fails, the return value is the win32 error code corresponding to
 // the error.
-DWORD HardenTokenIntegrityLevelPolicy(HANDLE token);
+DWORD HardenTokenIntegrityLevelPolicy(const base::win::AccessToken& token);
 
-// Hardens the integrity level policy on the current process. Specifically it
-// sets the policy to block read and execute so that a lower privileged process
-// cannot open the token for impersonate or duplicate permissions. This should
-// limit potential security holes.
-// If the function succeeds, the return value is ERROR_SUCCESS. If the
-// function fails, the return value is the win32 error code corresponding to
-// the error.
-DWORD HardenProcessIntegrityLevelPolicy();
-
-// Create a lowbox token. This is not valid prior to Windows 8.
-// |base_token| a base token to derive the lowbox token from. Can be nullptr.
-// |security_capabilities| list of LowBox capabilities to use when creating the
-// token.
-// |token| is the output value containing the handle of the newly created
-// restricted token.
-// |lockdown_default_dacl| indicates the token's default DACL should be locked
-// down to restrict what other process can open kernel resources created while
-// running under the token.
-// If the function succeeds, the return value is ERROR_SUCCESS. If the
-// function fails, the return value is the win32 error code corresponding to
-// the error.
-DWORD CreateLowBoxToken(HANDLE base_token,
-                        TokenType token_type,
-                        SECURITY_CAPABILITIES* security_capabilities,
-                        base::win::ScopedHandle* token);
+// Create a lowbox token.
+// `base_token` a base token to derive the lowbox token from. Can be nullptr.
+// `token_type` specify to create either a primary or impersonation token.
+// `package_sid` is the AppContainer package SID.
+// `capabilities` is the list of AppContainer capabilities.
+// `token` is the output value containing the handle of the newly created
+// If the function succeeds, the return value is true.
+bool CreateLowBoxToken(HANDLE base_token,
+                       TokenType token_type,
+                       const base::win::Sid& package_sid,
+                       const std::vector<base::win::Sid>& capabilities,
+                       base::win::ScopedHandle* token);
 
 // Returns true if a low IL token can access the current desktop, false
 // otherwise.

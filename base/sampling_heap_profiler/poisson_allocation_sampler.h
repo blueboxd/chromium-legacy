@@ -5,8 +5,10 @@
 #ifndef BASE_SAMPLING_HEAP_PROFILER_POISSON_ALLOCATION_SAMPLER_H_
 #define BASE_SAMPLING_HEAP_PROFILER_POISSON_ALLOCATION_SAMPLER_H_
 
+#include <atomic>
 #include <vector>
 
+#include "base/allocator/dispatcher/subsystem.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -25,7 +27,6 @@ class SamplingHeapProfilerTest;
 
 // This singleton class implements Poisson sampling of the incoming allocations
 // stream. It hooks onto base::allocator and base::PartitionAlloc.
-// An extra custom allocator can be hooked via SetHooksInstallCallback method.
 // The only control parameter is sampling interval that controls average value
 // of the sampling intervals. The actual intervals between samples are
 // randomized using Poisson distribution to mitigate patterns in the allocation
@@ -37,19 +38,15 @@ class SamplingHeapProfilerTest;
 //
 class BASE_EXPORT PoissonAllocationSampler {
  public:
-  // The type of hooked allocator that is the source of a sample.
-  // kManualForTesting is for unit tests calling RecordAlloc directly without
-  // going through a hooked allocator.
-  enum AllocatorType : uint32_t { kMalloc, kPartitionAlloc, kManualForTesting };
-
   class SamplesObserver {
    public:
     virtual ~SamplesObserver() = default;
-    virtual void SampleAdded(void* address,
-                             size_t size,
-                             size_t total,
-                             AllocatorType type,
-                             const char* context) = 0;
+    virtual void SampleAdded(
+        void* address,
+        size_t size,
+        size_t total,
+        base::allocator::dispatcher::AllocationSubsystem type,
+        const char* context) = 0;
     virtual void SampleRemoved(void* address) = 0;
   };
 
@@ -88,16 +85,6 @@ class BASE_EXPORT PoissonAllocationSampler {
   // reserves a TLS slot.
   static void Init();
 
-  // This is an entry point for plugging in an external allocator.
-  // Profiler will invoke the provided callback upon initialization.
-  // The callback should install hooks onto the corresponding memory allocator
-  // and make them invoke PoissonAllocationSampler::RecordAlloc and
-  // PoissonAllocationSampler::RecordFree upon corresponding allocation events.
-  //
-  // If the method is called after profiler is initialized, the callback
-  // is invoked right away.
-  static void SetHooksInstallCallback(void (*hooks_install_callback)());
-
   void AddSamplesObserver(SamplesObserver*);
 
   // Note: After an observer is removed it is still possible to receive
@@ -115,11 +102,18 @@ class BASE_EXPORT PoissonAllocationSampler {
   // Returns the current mean sampling interval, in bytes.
   size_t SamplingInterval() const;
 
-  static void RecordAlloc(void* address,
-                          size_t,
-                          AllocatorType,
-                          const char* context);
+  ALWAYS_INLINE static void RecordAlloc(
+      void* address,
+      size_t,
+      base::allocator::dispatcher::AllocationSubsystem,
+      const char* context);
   ALWAYS_INLINE static void RecordFree(void* address);
+
+  void OnAllocation(void* address,
+                    size_t,
+                    base::allocator::dispatcher::AllocationSubsystem,
+                    const char* context);
+  void OnFree(void* address);
 
   static PoissonAllocationSampler* Get();
 
@@ -129,9 +123,27 @@ class BASE_EXPORT PoissonAllocationSampler {
   // Returns true if a ScopedMuteHookedSamplesForTesting exists. Only friends
   // can create a ScopedMuteHookedSamplesForTesting but anyone can check the
   // status of this. This can be read from any thread.
-  static bool AreHookedSamplesMuted();
+  static bool AreHookedSamplesMuted() {
+    return profiling_state_.load(std::memory_order_relaxed) &
+           ProfilingStateFlag::kHookedSamplesMutedForTesting;
+  }
 
  private:
+  // Flags recording the state of the profiler. This does not use enum class so
+  // flags can be used in a bitmask.
+  enum ProfilingStateFlag {
+    // Set if profiling has ever been started in this session of Chrome. Once
+    // this is set, it is never reset. This is used to optimize the common case
+    // where profiling is never used.
+    kWasStarted = 1 << 0,
+    // Set if profiling is currently running. This flag is toggled on and off
+    // as sample observers are added and removed.
+    kIsRunning = 1 << 1,
+    // Set if a ScopedMuteHookedSamplesForTesting object exists.
+    kHookedSamplesMutedForTesting = 1 << 2,
+  };
+  using ProfilingStateFlagMask = int;
+
   // An instance of this class makes the sampler only report samples with
   // AllocatorType kManualForTesting, not those from hooked allocators. This
   // allows unit tests to set test expectations based on only explicit calls to
@@ -161,27 +173,36 @@ class BASE_EXPORT PoissonAllocationSampler {
   PoissonAllocationSampler();
   ~PoissonAllocationSampler() = delete;
 
-  // Installs allocator hooks if they weren't already installed. This is not
-  // static to ensure that allocator hooks can't be installed unless the
-  // PoissonAllocationSampler singleton exists.
-  void InstallAllocatorHooksOnce();
-
   static size_t GetNextSampleInterval(size_t base_interval);
 
   // Return the set of sampled addresses. This is only valid to call after
   // Init().
   static LockFreeAddressHashSet& sampled_addresses_set();
 
-  void DoRecordAlloc(intptr_t accumulated_bytes,
-                     size_t size,
-                     void* address,
-                     AllocatorType type,
-                     const char* context);
+  // Atomically adds `flag` to `profiling_state_`. DCHECK's if it was already
+  // set. If `flag` is kIsRunning, also sets kWasStarted. Uses
+  // std::memory_order_relaxed semantics and therefore doesn't synchronize the
+  // state of any other memory with future readers. (See the comment in
+  // RecordFree() for why this is safe.)
+  static void SetProfilingStateFlag(ProfilingStateFlag flag);
+
+  // Atomically removes `flag` from `profiling_state_`. DCHECK's if it was not
+  // already set. Uses std::memory_order_relaxed semantics and therefore doesn't
+  // synchronize the state of any other memory with future readers. (See the
+  // comment in RecordFree() for why this is safe.)
+  static void ResetProfilingStateFlag(ProfilingStateFlag flag);
+
+  void DoRecordAllocation(const ProfilingStateFlagMask state,
+                          void* address,
+                          size_t size,
+                          base::allocator::dispatcher::AllocationSubsystem type,
+                          const char* context);
   void DoRecordFree(void* address);
 
   void BalanceAddressesHashSet();
 
   Lock mutex_;
+
   // The |observers_| list is guarded by |mutex_|, however a copy of it
   // is made before invoking the observers (to avoid performing expensive
   // operations under the lock) as such the SamplesObservers themselves need
@@ -191,19 +212,122 @@ class BASE_EXPORT PoissonAllocationSampler {
 
   static PoissonAllocationSampler* instance_;
 
+  // Fast, thread-safe access to the current profiling state.
+  static std::atomic<ProfilingStateFlagMask> profiling_state_;
+
   friend class heap_profiling::HeapProfilerControllerTest;
   friend class NoDestructor<PoissonAllocationSampler>;
+  friend class PoissonAllocationSamplerStateTest;
   friend class SamplingHeapProfilerTest;
   FRIEND_TEST_ALL_PREFIXES(PoissonAllocationSamplerTest, MuteHooksWithoutInit);
   FRIEND_TEST_ALL_PREFIXES(SamplingHeapProfilerTest, HookedAllocatorMuted);
 };
 
 // static
+ALWAYS_INLINE void PoissonAllocationSampler::RecordAlloc(
+    void* address,
+    size_t size,
+    base::allocator::dispatcher::AllocationSubsystem type,
+    const char* context) {
+  instance_->OnAllocation(address, size, type, context);
+}
+
+// static
 ALWAYS_INLINE void PoissonAllocationSampler::RecordFree(void* address) {
-  if (UNLIKELY(address == nullptr))
+  instance_->OnFree(address);
+}
+
+inline void PoissonAllocationSampler::OnAllocation(
+    void* address,
+    size_t size,
+    base::allocator::dispatcher::AllocationSubsystem type,
+    const char* context) {
+  // The allocation hooks may be installed before the sampler is started. Check
+  // if its ever been started first to avoid extra work on the fast path,
+  // because it's the most common case.
+  const ProfilingStateFlagMask state =
+      profiling_state_.load(std::memory_order_relaxed);
+  if (LIKELY(!(state & ProfilingStateFlag::kWasStarted))) {
     return;
-  if (UNLIKELY(sampled_addresses_set().Contains(address)))
-    instance_->DoRecordFree(address);
+  }
+
+  // When sampling is muted for testing, only handle manual calls to
+  // RecordAlloc. (This doesn't need to be checked in RecordFree because muted
+  // allocations won't be added to sampled_addresses_set(), so RecordFree
+  // already skips them.)
+  if (UNLIKELY((state & ProfilingStateFlag::kHookedSamplesMutedForTesting) &&
+               type != base::allocator::dispatcher::AllocationSubsystem::
+                           kManualForTesting)) {
+    return;
+  }
+
+  DoRecordAllocation(state, address, size, type, context);
+}
+
+inline void PoissonAllocationSampler::OnFree(void* address) {
+  // The allocation hooks may be installed before the sampler is started. Check
+  // if its ever been started first to avoid extra work on the fast path,
+  // because it's the most common case. Note that DoRecordFree still needs to be
+  // called if the sampler was started but is now stopped, to track allocations
+  // that were recorded while the sampler was still running.
+  //
+  // Relaxed ordering is safe here because there's only one case where
+  // RecordAlloc and RecordFree MUST see the same value of `profiling_state_`.
+  // Assume thread A updates `profiling_state_` from 0 to kWasStarted |
+  // kIsRunning, thread B calls RecordAlloc, and thread C calls RecordFree.
+  // (Something else could update `profiling_state_` to remove kIsRunning before
+  // RecordAlloc or RecordFree.)
+  //
+  // 1. If RecordAlloc(p) sees !kWasStarted or !kIsRunning it will return
+  //    immediately, so p won't be in sampled_address_set(). So no matter what
+  //    RecordFree(p) sees it will also return immediately.
+  //
+  // 2. If RecordFree() is called with a pointer that was never passed to
+  //    RecordAlloc(), again it will return immediately no matter what it sees.
+  //
+  // 3. If RecordAlloc(p) sees kIsRunning it will put p in
+  //    sampled_address_set(). In this case RecordFree(p) MUST see !kWasStarted
+  //    or it will return without removing p:
+  //
+  //    3a. If the program got p as the return value from malloc() and passed it
+  //        to free(), then RecordFree() happens-after RecordAlloc() and
+  //        therefore will see the same value of `profiling_state_` as
+  //        RecordAlloc() for all memory orders. (Proof: using the definitions
+  //        of sequenced-after, happens-after and inter-thread happens-after
+  //        from https://en.cppreference.com/w/cpp/atomic/memory_order, malloc()
+  //        calls RecordAlloc() so its return is sequenced-after RecordAlloc();
+  //        free() inter-thread happens-after malloc's return because it
+  //        consumes the result; RecordFree() is sequenced-after its caller,
+  //        free(); therefore RecordFree() interthread happens-after
+  //        RecordAlloc().)
+  //    3b. If the program is freeing a random pointer which coincidentally was
+  //        also returned from malloc(), such that free(p) does not happen-after
+  //        malloc(), then there is already an unavoidable race condition. If
+  //        the profiler sees malloc() before free(p), then it will add p to
+  //        sampled_addresses_set() and then remove it; otherwise it will do
+  //        nothing in RecordFree() and add p to sampled_addresses_set() in
+  //        RecordAlloc(), recording a potential leak. Reading
+  //        `profiling_state_` with relaxed ordering adds another possibility:
+  //        if the profiler sees malloc() with kWasStarted and then free without
+  //        kWasStarted, it will add p to sampled_addresses_set() in
+  //        RecordAlloc() and then do nothing in RecordFree(). This has the same
+  //        outcome as the existing race.
+  const ProfilingStateFlagMask state =
+      profiling_state_.load(std::memory_order_relaxed);
+  if (LIKELY(!(state & ProfilingStateFlag::kWasStarted))) {
+    return;
+  }
+  if (UNLIKELY(address == nullptr)) {
+    return;
+  }
+  if (LIKELY(!sampled_addresses_set().Contains(address))) {
+    return;
+  }
+  if (UNLIKELY(ScopedMuteThreadSamples::IsMuted())) {
+    return;
+  }
+
+  DoRecordFree(address);
 }
 
 }  // namespace base

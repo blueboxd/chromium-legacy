@@ -15,6 +15,7 @@ group("mac") {
   deps = [
     ":browser_install_script",
     ":launcher",
+    ":launcher_test",
     ":privileged_helper",
     ":updater_bundle",
     ":updater_bundle_test",
@@ -61,7 +62,7 @@ mac_app_bundle("updater_bundle_test") {
   deps = [
     ":keystone_agent_bundle_resource_executable",
     ":keystone_agent_bundle_resource_plist",
-    ":updater_bundle_helpers",
+    ":updater_bundle_helpers_test",
     ":updater_bundle_keystone_executable",
     ":updater_bundle_keystone_helpers",
     ":updater_bundle_keystone_plist",
@@ -213,15 +214,36 @@ action("browser_install_script") {
   ]
 }
 
+process_version("launcher_version") {
+  sources = [ "//chrome/VERSION" ]
+  template_file = "launcher_version.h.in"
+  output = "$target_gen_dir/launcher_version.h"
+}
+
+source_set("launcher_sources") {
+  sources = [
+    "launcher_constants.h",
+    "launcher_main.c",
+  ]
+
+  public_deps = [
+    "//chrome/updater:branding_header",
+    "//chrome/updater/mac:launcher_version",
+  ]
+}
+
 executable("launcher") {
   output_name = "launcher"
-  sources = [ "launcher_main.cc" ]
+  sources = [ "launcher_constants_prod.c" ]
+
+  frameworks = [
+    "CoreFoundation.framework",
+    "Security.framework",
+  ]
 
   deps = [
+    ":launcher_sources",
     ":updater_plist",
-    "//base",
-    "//chrome/updater:base",
-    "//chrome/updater:constants_prod",
   ]
 
   inputs = [ "$target_gen_dir/updater_plist_tweaked.plist" ]
@@ -234,8 +256,53 @@ executable("launcher") {
   ]
 
   if (is_asan) {
-    # ASAN injects a dylib that we package in ../MacOS.
-    ldflags += [ "-Wl,-rpath,@executable_path/../MacOS" ]
+    # ASAN toolchain injects libclang_rt.asan_osx_dynamic.dylib into
+    # ./VERSION/GoogleUpdater.app/Contents/MacOS/. Adjust the rpaths so that
+    # this executable can find it.
+    ldflags += [
+      # When run from ./VERSION/GoogleUpdater.app/Contents/Helpers/launcher.
+      "-Wl,-rpath,@executable_path/../MacOS",
+
+      # When run from ./launcher.
+      "-Wl,-rpath,@executable_path/${chrome_version_full}/${updater_product_full_name}.app/Contents/MacOS",
+    ]
+  }
+}
+
+executable("launcher_test") {
+  output_name = "launcher_test"
+  sources = [ "launcher_constants_test.c" ]
+
+  deps = [
+    ":launcher_sources",
+    ":updater_plist",
+  ]
+
+  frameworks = [
+    "CoreFoundation.framework",
+    "Security.framework",
+  ]
+
+  inputs = [ "$target_gen_dir/updater_plist_tweaked.plist" ]
+
+  ldflags = [
+    "-sectcreate",
+    "__TEXT",
+    "__info_plist",
+    rebase_path(inputs[0], root_out_dir),
+  ]
+
+  if (is_asan) {
+    # ASAN toolchain injects libclang_rt.asan_osx_dynamic.dylib into
+    # ./VERSION/GoogleUpdater_test.app/Contents/MacOS/. Adjust the rpaths so
+    # that this executable can find it.
+    ldflags += [
+      # From ./VERSION/GoogleUpdater_test.app/Contents/Helpers/launcher.
+      "-Wl,-rpath,@executable_path/../MacOS",
+
+      # When run from ./launcher.
+      "-Wl,-rpath,@executable_path/${chrome_version_full}/${updater_product_full_name}_test.app/Contents/MacOS",
+    ]
   }
 }
 
@@ -249,6 +316,7 @@ source_set("ksadmin_lib") {
     "//base",
     "//chrome/updater:base_app",
     "//chrome/updater:ks_ticket",
+    "//chrome/updater:public_sources",
     "//chrome/updater:version_header",
   ]
 
@@ -389,6 +457,13 @@ bundle_data("updater_bundle_helpers") {
   outputs = [ "{{bundle_contents_dir}}/Helpers/{{source_file_part}}" ]
 
   public_deps = [ ":launcher" ]
+}
+
+bundle_data("updater_bundle_helpers_test") {
+  sources = [ "$root_out_dir/launcher_test" ]
+  outputs = [ "{{bundle_contents_dir}}/Helpers/launcher" ]
+
+  public_deps = [ ":launcher_test" ]
 }
 
 if (!is_component_build && enable_dsyms) {

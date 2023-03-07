@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CAST_STREAMING_BROWSER_DEMUXER_STREAM_DATA_PROVIDER_H_
 #define COMPONENTS_CAST_STREAMING_BROWSER_DEMUXER_STREAM_DATA_PROVIDER_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/cast_streaming/browser/demuxer_stream_client.h"
@@ -86,15 +86,24 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
   void WaitForNewStreamInfo() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     is_new_stream_info_pending_ = true;
+    if (current_callback_) {
+      std::move(current_callback_).Run(nullptr);
+    }
   }
 
   // Sets the buffer to be passed to the renderer process as part of the
   // response to the ongoing GetBuffer() request.
   void ProvideBuffer(media::mojom::DecoderBufferPtr buffer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(buffer);
+
+    if (preload_buffeer_cb_) {
+      std::move(preload_buffeer_cb_).Run(std::move(buffer));
+      return;
+    }
+
     DCHECK(current_callback_);
     DCHECK(!next_stream_info_);
-
     std::move(current_callback_)
         .Run(GetBufferResponseType::element_type::NewBuffer(std::move(buffer)));
   }
@@ -109,10 +118,22 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
     client_ = std::move(client);
   }
 
+  // Pre-loads a buffer before receiving any calls from the DemuxerStream, then
+  // returns it via |callback|.
+  using PreloadBufferCB =
+      base::OnceCallback<void(media::mojom::DecoderBufferPtr)>;
+  void PreloadBuffer(PreloadBufferCB callback) {
+    DCHECK(!preload_buffeer_cb_);
+    DCHECK(!current_callback_);
+    preload_buffeer_cb_ = std::move(callback);
+    request_buffer_.Run(
+        base::BindOnce(&DemuxerStreamClient::OnNoBuffersAvailable, client_));
+  }
+
  private:
-  using GetBufferCallback = typename TMojoReceiverType::GetBufferCallback;
   using EnableBitstreamConverterCallback =
       typename TMojoReceiverType::EnableBitstreamConverterCallback;
+  using GetBufferCallback = typename TMojoReceiverType::GetBufferCallback;
 
   void OnFatalError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -136,6 +157,7 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
 
     current_callback_ = std::move(callback);
     if (is_new_stream_info_pending_) {
+      std::move(current_callback_).Run(nullptr);
       return;
     }
 
@@ -146,8 +168,15 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
       return;
     }
 
-    request_buffer_.Run(
-        base::BindOnce(&DemuxerStreamClient::OnNoBuffersAvailable, client_));
+    // If preloading is already ongoing, then a new buffer request isn't needed.
+    // Instead just replace the preloading callback with a real GetBuffer()
+    // callback.
+    if (!preload_buffeer_cb_) {
+      request_buffer_.Run(
+          base::BindOnce(&DemuxerStreamClient::OnNoBuffersAvailable, client_));
+    }
+
+    preload_buffeer_cb_.Reset();
   }
 
   void EnableBitstreamConverter(
@@ -164,6 +193,8 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
   // Set by WaitForNewStreamInfo() to signify that a new StreamInfo is expected
   // and all GetBuffer() calls prior to this change should be blocked.
   bool is_new_stream_info_pending_ = false;
+
+  PreloadBufferCB preload_buffeer_cb_;
 
   // The most recently set config.
   ConfigType config_;

@@ -5,7 +5,7 @@
 #include "components/segmentation_platform/internal/execution/model_executor_impl.h"
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ref.h"
 #include "base/time/clock.h"
@@ -129,7 +129,8 @@ void ModelExecutorImpl::ExecuteModel(
       SegmentationUkmHelper::GetInstance()->CanUploadTensors(segment_info);
   feature_list_query_processor_->ProcessFeatureList(
       segment_info.model_metadata(), request->input_context, segment_id,
-      clock_->Now(), FeatureListQueryProcessor::ProcessOption::kInputsOnly,
+      clock_->Now(), base::Time(),
+      FeatureListQueryProcessor::ProcessOption::kInputsOnly,
       base::BindOnce(&ModelExecutorImpl::OnProcessingFeatureListComplete,
                      weak_ptr_factory_.GetWeakPtr(), std::move(state)));
 }
@@ -185,7 +186,7 @@ void ModelExecutorImpl::OnModelExecutionComplete(
       clock_->Now() - state->model_execution_start_time);
   // TODO(ritikagup): Change the use of this according to MultiOutputModel.
   if (result.has_value()) {
-    VLOG(0) << "Segmentation model result: " << result.value().at(0)
+    VLOG(1) << "Segmentation model result: " << result.value().at(0)
             << " for segment "
             << proto::SegmentId_Name(state->segment_info.segment_id());
     const proto::SegmentationModelMetadata& model_metadata =

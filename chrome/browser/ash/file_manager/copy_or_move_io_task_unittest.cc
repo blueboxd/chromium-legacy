@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
@@ -487,9 +487,7 @@ class CopyOrMoveIOTaskWithScansTest
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {enterprise_connectors::kEnterpriseConnectorsEnabled,
-         features::kFileTransferEnterpriseConnector},
-        {});
+        {features::kFileTransferEnterpriseConnector}, {});
 
     // Set a device management token. It is required to enable scanning.
     // Without it, FileTransferAnalysisDelegate::IsEnabled() always

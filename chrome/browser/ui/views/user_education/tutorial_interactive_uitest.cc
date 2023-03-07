@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -106,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(TutorialInteractiveUitest, SampleTutorial) {
       GetElement(kTabStripElementId), kCustomEventType1);
 
   InteractionTestUtilBrowser test_util;
-  test_util.PressButton(GetElement(kAppMenuButtonElementId));
+  EXPECT_EQ(ui::test::ActionResult::kSucceeded,
+            test_util.PressButton(GetElement(kAppMenuButtonElementId)));
 
   // Simulate click on close button.
   EXPECT_CALL_IN_SCOPE(

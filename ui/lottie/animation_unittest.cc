@@ -15,6 +15,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_op_buffer_iterator.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "cc/paint/skottie_frame_data.h"
@@ -22,6 +23,8 @@
 #include "cc/paint/skottie_resource_metadata.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "cc/test/lottie_test_data.h"
+#include "cc/test/paint_image_matchers.h"
+#include "cc/test/paint_op_matchers.h"
 #include "cc/test/skia_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +39,8 @@
 namespace lottie {
 namespace {
 
+using ::cc::PaintOpIs;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::FieldsAre;
@@ -44,8 +49,8 @@ using ::testing::FloatNear;
 using ::testing::IsEmpty;
 using ::testing::NotNull;
 using ::testing::Pair;
+using ::testing::ResultOf;
 using ::testing::SizeIs;
-using ::testing::UnorderedElementsAre;
 
 // A skottie animation with solid green color for the first 2.5 seconds and then
 // a solid blue color for the next 2.5 seconds.
@@ -1333,24 +1338,29 @@ TEST_F(AnimationWithImageAssetsTest, PaintsAnimationImagesToCanvas) {
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
-  sk_sp<cc::PaintRecord> paint_record = record_canvas_.ReleaseAsRecord();
-  ASSERT_THAT(paint_record->size(), Eq(1u));
-  const cc::DrawSkottieOp* op =
-      paint_record->GetOpAtForTesting<cc::DrawSkottieOp>(0);
-  ASSERT_THAT(op, NotNull());
-  EXPECT_THAT(op->images, UnorderedElementsAre(Pair(
-                              cc::HashSkottieResourceId("image_0"), frame_0)));
+  cc::PaintRecord paint_record = record_canvas_.ReleaseAsRecord();
+  EXPECT_THAT(paint_record,
+              ElementsAre(AllOf(
+                  PaintOpIs<cc::DrawSkottieOp>(),
+                  ResultOf(
+                      [](const cc::PaintOp& op) {
+                        return static_cast<const cc::DrawSkottieOp&>(op).images;
+                      },
+                      ElementsAre(cc::SkottieImageIs("image_0", frame_0))))));
 
   AdvanceClock(animation_->GetAnimationDuration() * .75);
 
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
   paint_record = record_canvas_.ReleaseAsRecord();
-  ASSERT_THAT(paint_record->size(), Eq(1u));
-  op = paint_record->GetOpAtForTesting<cc::DrawSkottieOp>(0);
-  ASSERT_THAT(op, NotNull());
-  EXPECT_THAT(op->images, UnorderedElementsAre(Pair(
-                              cc::HashSkottieResourceId("image_1"), frame_1)));
+  EXPECT_THAT(paint_record,
+              ElementsAre(AllOf(
+                  PaintOpIs<cc::DrawSkottieOp>(),
+                  ResultOf(
+                      [](const cc::PaintOp& op) {
+                        return static_cast<const cc::DrawSkottieOp&>(op).images;
+                      },
+                      ElementsAre(cc::SkottieImageIs("image_1", frame_1))))));
 }
 
 TEST_F(AnimationWithImageAssetsTest, GracefullyHandlesNullImages) {
@@ -1360,14 +1370,16 @@ TEST_F(AnimationWithImageAssetsTest, GracefullyHandlesNullImages) {
       Animation::Style::kLoop, *animation_));
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
 
-  sk_sp<cc::PaintRecord> paint_record = record_canvas_.ReleaseAsRecord();
-  ASSERT_THAT(paint_record->size(), Eq(1u));
-  const cc::DrawSkottieOp* op =
-      paint_record->GetOpAtForTesting<cc::DrawSkottieOp>(0);
-  ASSERT_THAT(op, NotNull());
-  EXPECT_THAT(op->images,
-              UnorderedElementsAre(Pair(cc::HashSkottieResourceId("image_0"),
-                                        cc::SkottieFrameData())));
+  cc::PaintRecord paint_record = record_canvas_.ReleaseAsRecord();
+  EXPECT_THAT(paint_record,
+              ElementsAre(AllOf(
+                  PaintOpIs<cc::DrawSkottieOp>(),
+                  ResultOf(
+                      [](const cc::PaintOp& op) {
+                        return static_cast<const cc::DrawSkottieOp&>(op).images;
+                      },
+                      ElementsAre(cc::SkottieImageIs(
+                          "image_0", cc::SkottieFrameData()))))));
 }
 
 TEST_F(AnimationWithImageAssetsTest, LoadsCorrectFrameTimestamp) {

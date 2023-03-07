@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
@@ -198,7 +198,7 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
   // DeviceDMToken callback is empty here because for device policies this
   // DMToken is already provided in the policy fetch requests.
   auto client = policy::CreateDeviceCloudPolicyClientAsh(
-      chromeos::system::StatisticsProvider::GetInstance(),
+      system::StatisticsProvider::GetInstance(),
       connector->device_management_service(),
       g_browser_process->shared_url_loader_factory(),
       policy::CloudPolicyClient::DeviceDMTokenCallback());
@@ -215,6 +215,13 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
                      weak_ptr_factory_.GetWeakPtr()));
 
   enrollment_handler_->StartEnrollment();
+}
+
+bool EnterpriseEnrollmentHelperImpl::InProgress() const {
+  // `enrollment_handler_` lives from `DoEnroll` till `OnEnrollmentFinished`
+  // which covers the whole enrollment process whether it ends with success or
+  // failure.
+  return enrollment_handler_ != nullptr;
 }
 
 void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {

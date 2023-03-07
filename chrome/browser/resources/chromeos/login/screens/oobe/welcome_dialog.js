@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {LongTouchDetector} from './components/long_touch_detector.m.js';
-
 import '//resources/polymer/v3_0/paper-styles/color.js';
 import '//resources/js/action_link.js';
 import '//resources/cr_elements/cr_shared_style.css.js';
-import '../../components/oobe_icons.m.js';
-import '../../components/common_styles/oobe_dialog_host_styles.m.js';
-import '../../components/oobe_vars/oobe_shared_vars_css.m.js';
+import '../../components/oobe_icons.html.js';
+import '../../components/common_styles/oobe_dialog_host_styles.css.js';
+import '../../components/oobe_vars/oobe_shared_vars.css.js';
 
 import {assert} from '//resources/ash/common/assert.js';
 import {loadTimeData} from '//resources/ash/common/load_time_data.m.js';
@@ -18,7 +16,7 @@ import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/pol
 import {OobeDialogHostBehavior} from '../../components/behaviors/oobe_dialog_host_behavior.js';
 import {OobeI18nBehavior} from '../../components/behaviors/oobe_i18n_behavior.js';
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
-import {LongTouchDetector} from '../../components/long_touch_detector.m.js';
+import {LongTouchDetector} from '../../components/long_touch_detector.js';
 import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 
 /**

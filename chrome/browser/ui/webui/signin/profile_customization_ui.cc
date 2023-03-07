@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,13 +29,14 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true),
       customize_themes_factory_receiver_(this) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUIProfileCustomizationHost);
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIProfileCustomizationHost);
 
   static constexpr webui::ResourcePath kResources[] = {
       {"profile_customization_app.js",
@@ -91,7 +92,6 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
   source->AddLocalizedStrings(kLocalizedStrings);
 
   // loadTimeData.
-  Profile* profile = Profile::FromWebUI(web_ui);
   ProfileAttributesEntry* entry =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
@@ -111,8 +111,6 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
     // so we force it here.
     Initialize(base::DoNothing());
   }
-
-  content::WebUIDataSource::Add(profile, source);
 }
 
 ProfileCustomizationUI::~ProfileCustomizationUI() = default;

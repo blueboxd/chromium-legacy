@@ -24,6 +24,11 @@ export interface PaymentsManagerProxy {
    */
   getCreditCardList(): Promise<chrome.autofillPrivate.CreditCardEntry[]>;
 
+  /**
+   * Request the list of IBANs.
+   */
+  getIbanList(): Promise<chrome.autofillPrivate.IbanEntry[]>;
+
   /** @param guid The GUID of the credit card to remove. */
   removeCreditCard(guid: string): void;
 
@@ -36,6 +41,14 @@ export interface PaymentsManagerProxy {
    * Saves the given credit card.
    */
   saveCreditCard(creditCard: chrome.autofillPrivate.CreditCardEntry): void;
+
+  /** @param guid The GUID of the IBAN to remove. */
+  removeIban(guid: string): void;
+
+  /**
+   * Saves the given IBAN.
+   */
+  saveIban(iban: chrome.autofillPrivate.IbanEntry): void;
 
   /**
    * Migrate the local credit cards.
@@ -89,6 +102,10 @@ export class PaymentsManagerImpl implements PaymentsManagerProxy {
     return chrome.autofillPrivate.getCreditCardList();
   }
 
+  getIbanList() {
+    return chrome.autofillPrivate.getIbanList();
+  }
+
   removeCreditCard(guid: string) {
     chrome.autofillPrivate.removeEntry(guid);
   }
@@ -99,6 +116,14 @@ export class PaymentsManagerImpl implements PaymentsManagerProxy {
 
   saveCreditCard(creditCard: chrome.autofillPrivate.CreditCardEntry) {
     chrome.autofillPrivate.saveCreditCard(creditCard);
+  }
+
+  saveIban(iban: chrome.autofillPrivate.IbanEntry) {
+    chrome.autofillPrivate.saveIban(iban);
+  }
+
+  removeIban(guid: string) {
+    chrome.autofillPrivate.removeEntry(guid);
   }
 
   migrateCreditCards() {

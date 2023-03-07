@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -3280,7 +3280,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
       referrer_chain.Get(2));
 
   navigation_manager.ResumeNavigation();
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   ASSERT_EQ(0U, nav_list->PendingNavigationEventsSize());
 }
 
@@ -3334,7 +3334,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            referrer_chain.Get(0));
 
   navigation_manager.ResumeNavigation();
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   ASSERT_EQ(0U, nav_list->PendingNavigationEventsSize());
 }
 

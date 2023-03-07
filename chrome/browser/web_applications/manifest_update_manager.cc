@@ -50,6 +50,12 @@ GetUpdatePendingCallbackMutableForTesting() {
   return g_update_pending_callback.get();
 }
 
+ManifestUpdateManager::ResultCallback* GetResultCallbackMutableForTesting() {
+  static base::NoDestructor<ManifestUpdateManager::ResultCallback>
+      g_result_callback;
+  return g_result_callback.get();
+}
+
 }  // namespace
 
 class ManifestUpdateManager::PreUpdateWebContentsObserver
@@ -99,6 +105,13 @@ constexpr const char kDisableManifestUpdateThrottle[] =
 void ManifestUpdateManager::SetUpdatePendingCallbackForTesting(
     UpdatePendingCallback callback) {
   *GetUpdatePendingCallbackMutableForTesting() =  // IN-TEST
+      std::move(callback);
+}
+
+// static
+void ManifestUpdateManager::SetResultCallbackForTesting(
+    ResultCallback callback) {
+  *GetResultCallbackMutableForTesting() =  // IN-TEST
       std::move(callback);
 }
 
@@ -238,7 +251,7 @@ void ManifestUpdateManager::OnManifestDataFetchAwaitAppWindowClose(
     base::WeakPtr<content::WebContents> contents,
     const GURL& url,
     const AppId& app_id,
-    absl::optional<ManifestUpdateResult> result,
+    absl::optional<ManifestUpdateResult> early_exit_result,
     absl::optional<WebAppInstallInfo> install_info,
     bool app_identity_update_allowed) {
   auto update_stage_it = update_stages_.find(app_id);
@@ -252,11 +265,8 @@ void ManifestUpdateManager::OnManifestDataFetchAwaitAppWindowClose(
   DCHECK_EQ(update_stage.stage, UpdateStage::Stage::kFetchingManifestData);
   update_stage.stage = UpdateStage::Stage::kPendingAppWindowClose;
 
-  if (result.has_value()) {
-    // Stop the manifest update process if there already is a result, which
-    // means that there were issues during the manifest fetching and can
-    // early exit.
-    OnUpdateStopped(url, app_id, result.value());
+  if (early_exit_result.has_value()) {
+    OnUpdateStopped(url, app_id, early_exit_result.value());
     return;
   }
 
@@ -272,7 +282,9 @@ void ManifestUpdateManager::OnManifestDataFetchAwaitAppWindowClose(
         profile, ProfileKeepAliveOrigin::kWebAppUpdate);
   }
 
-  if (BypassWindowCloseWaitingForTesting()) {
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppManifestImmediateUpdating) ||
+      BypassWindowCloseWaitingForTesting()) {
     StartManifestWriteAfterWindowsClosed(
         url, app_id, std::move(keep_alive), std::move(profile_keep_alive),
         std::move(install_info.value()), app_identity_update_allowed);
@@ -386,12 +398,6 @@ void ManifestUpdateManager::OnUpdateStopped(const GURL& url,
   NotifyResult(url, app_id, result);
 }
 
-void ManifestUpdateManager::SetResultCallbackForTesting(
-    ResultCallback callback) {
-  DCHECK(result_callback_for_testing_.is_null());
-  result_callback_for_testing_ = std::move(callback);
-}
-
 void ManifestUpdateManager::NotifyResult(const GURL& url,
                                          const absl::optional<AppId>& app_id,
                                          ManifestUpdateResult result) {
@@ -400,8 +406,9 @@ void ManifestUpdateManager::NotifyResult(const GURL& url,
   if (result != ManifestUpdateResult::kNoAppInScope) {
     base::UmaHistogramEnumeration("Webapp.Update.ManifestUpdateResult", result);
   }
-  if (result_callback_for_testing_)
-    std::move(result_callback_for_testing_).Run(url, result);
+  if (*GetResultCallbackMutableForTesting()) {
+    std::move(*GetResultCallbackMutableForTesting()).Run(url, result);
+  }
 }
 
 void ManifestUpdateManager::ResetManifestThrottleForTesting(

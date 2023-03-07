@@ -27,12 +27,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 /**
  * Tests of {@link ChromeImageViewPreference}.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
 public class ChromeImageViewPreferenceTest {
     private static final String TITLE = "Preference Title";
     private static final String SUMMARY = "This is a summary.";
@@ -80,7 +82,7 @@ public class ChromeImageViewPreferenceTest {
         ChromeImageViewPreference preference = new ChromeImageViewPreference(mActivity);
         preference.setTitle(TITLE);
         preference.setImageView(DRAWABLE_RES, CONTENT_DESCRIPTION_RES, null);
-        preference.setManagedPreferenceDelegate(ManagedPreferencesUtilsTest.POLICY_DELEGATE);
+        preference.setManagedPreferenceDelegate(ManagedPreferenceTestDelegates.POLICY_DELEGATE);
         mPreferenceScreen.addPreference(preference);
 
         Assert.assertFalse(preference.isEnabled());

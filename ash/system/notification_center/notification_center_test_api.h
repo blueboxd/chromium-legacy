@@ -8,8 +8,17 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string_util.h"
+#include "ui/base/models/image_model.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
+
+class GURL;
+
 namespace message_center {
+class MessagePopupView;
+class MessageView;
 class Notification;
+struct NotifierId;
 }  // namespace message_center
 
 namespace ui {
@@ -40,13 +49,26 @@ class NotificationCenterTestApi {
   // `NotificationCenterTray` on the primary display.
   void ToggleBubble();
 
+  // Toggles the `NotificationCenterBubble` by simulating a click on the
+  // `NotificationCenterTray` on the specified display.
+  void ToggleBubbleOnDisplay(int64_t dispay_id);
+
+  // Adds a notification with custom parameters and returns the associated id.
+  std::string AddCustomNotification(
+      const std::u16string& title,
+      const std::u16string& message,
+      const ui::ImageModel& icon = ui::ImageModel(),
+      const std::u16string& display_source = base::EmptyString16(),
+      const GURL& url = GURL(),
+      const message_center::NotifierId& notifier_id =
+          message_center::NotifierId());
+
   // Adds a notification and returns the associated id.
   std::string AddNotification();
 
-  // Adds a notification with custom parameters and returns the associated id.
-  std::string AddCustomNotification(const std::string& title,
-                                    const std::string& message,
-                                    const ui::ImageModel& icon);
+  // Adds a notification with the source url and notifier id corresponding to
+  // the provided url as a string. Useful for testing notification grouping.
+  std::string AddNotificationWithSourceUrl(const std::string& url);
 
   // Removes the notification associated with the provided id.
   void RemoveNotification(const std::string& id);
@@ -71,11 +93,17 @@ class NotificationCenterTestApi {
 
   // Returns the notification view associated with the provided notification id.
   // Should be only used when the notifications bubble is open.
-  views::View* GetNotificationViewForId(const std::string& id);
+  message_center::MessageView* GetNotificationViewForId(const std::string& id);
+
+  // Returns the notification view for the provided `notification_id` on the
+  // display associated with the provided `display_id`.
+  message_center::MessageView* GetNotificationViewForIdOnDisplay(
+      const std::string& notification_id,
+      const int64_t display_id);
 
   // Returns the popup view associated with the provided notification id,
   // nullptr otherwise.
-  views::View* GetPopupViewForId(const std::string& id);
+  message_center::MessagePopupView* GetPopupViewForId(const std::string& id);
 
   // Returns the `NotificationCenterTray` in the shelf.
   NotificationCenterTray* GetTray();
@@ -95,19 +123,31 @@ class NotificationCenterTestApi {
   // center UI.
   views::View* GetClearAllButton();
 
+  // Converts a provided notification id to the corresponding parent
+  // notification id by adding the same suffix added by
+  // `NotificationGroupingController` to create a parent notification.
+  std::string NotificationIdToParentNotificationId(const std::string& id);
+
  private:
   std::string GenerateNotificationId();
 
   NotificationListView* GetNotificationListView();
 
+  NotificationListView* GetNotificationListViewOnDisplay(int64_t display_id);
+
   std::unique_ptr<message_center::Notification> CreateNotification(
       const std::string& id,
-      const std::string& title,
-      const std::string& message,
-      const ui::ImageModel& icon);
+      const std::u16string& title,
+      const std::u16string& message,
+      const ui::ImageModel& icon,
+      const std::u16string& display_source,
+      const GURL& url,
+      const message_center::NotifierId& notifier_id);
 
   int notification_id_ = 0;
   NotificationCenterTray* const notification_center_tray_;
+
+  const int64_t primary_display_id_;
 };
 
 }  // namespace ash

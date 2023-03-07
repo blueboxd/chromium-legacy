@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addWebUIListener} from 'chrome://resources/ash/common/cr.m.js';
+import {addWebUiListener} from 'chrome://resources/js/cr.js';
 
 /**
  * Enumeration for device state about remaining space.
@@ -208,6 +208,8 @@ export interface DevicePageBrowserProxy {
   updateStorageInfo(): void;
 
   openMyFiles(): void;
+
+  openBrowsingDataSettings(): void;
 }
 
 let instance: DevicePageBrowserProxy|null = null;
@@ -272,7 +274,7 @@ export class DevicePageBrowserProxyImpl implements DevicePageBrowserProxy {
   setNoteTakingAppsUpdatedCallback(
       callback: (apps: NoteAppInfo[], waitingForAndroid: boolean) => void):
       void {
-    addWebUIListener('onNoteTakingAppsUpdated', callback);
+    addWebUiListener('onNoteTakingAppsUpdated', callback);
   }
 
   showPlayStore(url: string): void {
@@ -297,7 +299,7 @@ export class DevicePageBrowserProxyImpl implements DevicePageBrowserProxy {
 
   setExternalStoragesUpdatedCallback(
       callback: (storages: ExternalStorage[]) => void): void {
-    addWebUIListener('onExternalStoragesUpdated', callback);
+    addWebUiListener('onExternalStoragesUpdated', callback);
   }
 
   highlightDisplay(id: string): void {
@@ -314,5 +316,9 @@ export class DevicePageBrowserProxyImpl implements DevicePageBrowserProxy {
 
   openMyFiles(): void {
     chrome.send('openMyFiles');
+  }
+
+  openBrowsingDataSettings(): void {
+    chrome.send('openBrowsingDataSettings');
   }
 }

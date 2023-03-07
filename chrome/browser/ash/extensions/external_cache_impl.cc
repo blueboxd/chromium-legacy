@@ -7,14 +7,15 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/ash/extensions/external_cache_delegate.h"
@@ -68,7 +69,7 @@ ExternalCacheImpl::ExternalCacheImpl(
       this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());
   kiosk_crx_updates_from_policy_subscription_ =
-      CrosSettings::Get()->AddSettingsObserver(
+      ash::CrosSettings::Get()->AddSettingsObserver(
           ash::kKioskCRXManifestUpdateURLIgnored,
           base::BindRepeating(&ExternalCacheImpl::MaybeScheduleNextCacheCheck,
                               weak_ptr_factory_.GetWeakPtr()));
@@ -169,6 +170,16 @@ void ExternalCacheImpl::PutExternalExtension(
                      weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }
 
+void ExternalCacheImpl::SetBackoffPolicy(
+    absl::optional<net::BackoffEntry::Policy> backoff_policy) {
+  backoff_policy_ = backoff_policy;
+  if (downloader_) {
+    // If `backoff_policy` is `absl::nullopt`, it will reset to default backoff
+    // policy.
+    downloader_->SetBackoffPolicy(backoff_policy);
+  }
+}
+
 void ExternalCacheImpl::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
@@ -260,6 +271,9 @@ void ExternalCacheImpl::CheckCache() {
   if (url_loader_factory_) {
     downloader_ = ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
         url_loader_factory_, this, extensions::GetExternalVerifierFormat());
+    if (backoff_policy_) {
+      downloader_->SetBackoffPolicy(backoff_policy_);
+    }
   }
 
   cached_extensions_.clear();

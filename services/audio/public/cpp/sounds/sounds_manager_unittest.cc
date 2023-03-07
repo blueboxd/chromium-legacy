@@ -8,12 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

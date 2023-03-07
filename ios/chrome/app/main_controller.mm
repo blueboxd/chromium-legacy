@@ -7,8 +7,8 @@
 
 #import <memory>
 
-#import "base/callback.h"
 #import "base/feature_list.h"
+#import "base/functional/callback.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
@@ -816,6 +816,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)stopChromeMain {
+  OmahaService::Stop();
+
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
@@ -1109,14 +1111,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // field trial infrastructure isn't in extensions. Save the necessary values to
 // NSUserDefaults here.
 - (void)saveFieldTrialValuesForExtensions {
-  using password_manager::features::kIOSEnablePasswordManagerBrandingUpdate;
-
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
-
-  NSNumber* passwordManagerBrandingUpdateValue =
-      @(base::FeatureList::IsEnabled(kIOSEnablePasswordManagerBrandingUpdate));
-  NSNumber* passwordManagerBrandingUpdateVersion =
-      [NSNumber numberWithInt:kPasswordManagerBrandingUpdateFeatureVersion];
 
   // Add other field trial values here if they are needed by extensions.
   // The general format is
@@ -1126,12 +1121,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   //     version: NSNumber int,
   //   }
   // }
-  NSDictionary* fieldTrialValues = @{
-    base::SysUTF8ToNSString(kIOSEnablePasswordManagerBrandingUpdate.name) : @{
-      kFieldTrialValueKey : passwordManagerBrandingUpdateValue,
-      kFieldTrialVersionKey : passwordManagerBrandingUpdateVersion,
-    },
-  };
+  NSDictionary* fieldTrialValues = @{};
   [sharedDefaults setObject:fieldTrialValues
                      forKey:app_group::kChromeExtensionFieldTrialPreference];
 }

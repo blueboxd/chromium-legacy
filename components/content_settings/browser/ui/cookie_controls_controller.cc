@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
@@ -117,7 +117,7 @@ bool CookieControlsController::FirstPartyCookiesBlocked() {
   const GURL& url = GetWebContents()->GetLastCommittedURL();
   return !cookie_settings_->IsFullCookieAccessAllowed(
       url, net::SiteForCookies::FromUrl(url), url::Origin::Create(url),
-      CookieSettings::QueryReason::kCookies);
+      net::CookieSettingOverrides(), CookieSettings::QueryReason::kCookies);
 }
 
 int CookieControlsController::GetAllowedCookieCount() {

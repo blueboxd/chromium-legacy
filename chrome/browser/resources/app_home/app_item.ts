@@ -18,11 +18,11 @@ export class AppItemElement extends PolymerElement {
 
   static get properties() {
     return {
-      data: Object,
+      appInfo: Object,
     };
   }
 
-  data: AppInfo;
+  appInfo: AppInfo;
 
   override ready() {
     super.ready();
@@ -31,7 +31,7 @@ export class AppItemElement extends PolymerElement {
 
   private handleContextMenu_(e: MouseEvent) {
     this.fire_('open-menu', {
-      data: this.data,
+      appInfo: this.appInfo,
       event: e,
     });
 

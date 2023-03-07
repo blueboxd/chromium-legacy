@@ -5,13 +5,11 @@
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 
-// We don't test legacy layout because it's deprecated, and we don't want to
-// complicate the test with the legacy LayoutListMarker here.
-class ListMarkerTest : public NGLayoutTest {
+class ListMarkerTest : public RenderingTest {
  protected:
   LayoutObject* GetMarker(const char* list_item_id) {
     LayoutNGListItem* list_item =
@@ -316,7 +314,10 @@ TEST_F(ListMarkerTest, WidthOfSymbolForFontSizeZero) {
   const auto& target_layout_object = *target.GetLayoutObject();
 
   EXPECT_EQ(LayoutUnit(),
-            ListMarker::WidthOfSymbol(target_layout_object.StyleRef()));
+            ListMarker::WidthOfSymbol(target_layout_object.StyleRef(),
+                                      target_layout_object.StyleRef()
+                                          .ListStyleType()
+                                          ->GetCounterStyleName()));
 }
 
 // crbug.com/1310599
@@ -336,44 +337,6 @@ TEST_F(ListMarkerTest, InlineMarginsForOutside) {
       LayoutUnit::Max());
   EXPECT_EQ(LayoutUnit::Min(), start);
   EXPECT_EQ(LayoutUnit(), end);
-}
-
-class ListMarkerLegacyTest : public RenderingTest {
- private:
-  ScopedLayoutNGForTest layout_ng{false};
-};
-
-// crbug.com/1336864
-TEST_F(ListMarkerLegacyTest, NegativeLetterSpacingByStatic) {
-  SetBodyContent(
-      R"HTML(<ul><li id="target" style="
-  font-size: 100px;
-  letter-spacing: -4400000000px;
-  list-style-type: 'foo';
-  list-style-position: outside;
-  ">foo</li></ul>)HTML");
-
-  auto* item_object = GetLayoutObjectByElementId("target");
-  auto* marker_object = ListMarker::MarkerFromListItem(item_object);
-  // Negative letter-spacing should not make the marker width negative.
-  EXPECT_GE(To<LayoutBox>(marker_object)->LogicalWidth(), LayoutUnit());
-}
-
-// crbug.com/1336864
-TEST_F(ListMarkerLegacyTest, NegativeLetterSpacingBySuffix) {
-  // The following marker is a decimal counter, and it has a suffix like ".".
-  SetBodyContent(
-      R"HTML(<ol><li id="target">foo</li></ol>
-      <style>
-      #target::marker {
-        font-size: 100px;
-        letter-spacing: -4400000000px;
-      }</style>)HTML");
-
-  auto* item_object = GetLayoutObjectByElementId("target");
-  auto* marker_object = ListMarker::MarkerFromListItem(item_object);
-  // Negative letter-spacing should not make the marker width negative.
-  EXPECT_GE(To<LayoutBox>(marker_object)->LogicalWidth(), LayoutUnit());
 }
 
 }  // namespace blink

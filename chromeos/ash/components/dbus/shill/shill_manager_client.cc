@@ -7,8 +7,8 @@
 #include <ios>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_property_changed_observer.h"
@@ -203,14 +203,14 @@ class ShillManagerClientImpl : public ShillManagerClient {
   }
 
   void SetTetheringEnabled(bool enabled,
-                           base::OnceClosure callback,
+                           StringCallback callback,
                            ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kSetTetheringEnabledFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(enabled);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
-                                             std::move(error_callback));
+    helper_->CallStringMethodWithErrorCallback(
+        &method_call, std::move(callback), std::move(error_callback));
   }
 
   void CheckTetheringReadiness(StringCallback callback,
@@ -219,6 +219,17 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  shill::kCheckTetheringReadinessFunction);
     helper_->CallStringMethodWithErrorCallback(
         &method_call, std::move(callback), std::move(error_callback));
+  }
+
+  void SetLOHSEnabled(bool enabled,
+                      base::OnceClosure callback,
+                      ErrorCallback error_callback) override {
+    dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
+                                 shill::kSetLOHSEnabledFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(enabled);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
   TestInterface* GetTestInterface() override { return nullptr; }

@@ -125,6 +125,13 @@ interface DriveFs {
   // Returns the total and free space available in the user's Drive and their
   // organization's, if they belong to one.
   GetPooledQuotaUsage() => (FileError error, PooledQuotaUsage quota);
+
+  // Pin or unpin an item by the supplied `stable_id`.
+  SetPinnedByStableId(int64 stable_id, bool pinned) => (FileError error);
+
+  // Get the metadata for the supplied `stable_id`.
+  GetMetadataByStableId(int64 stable_id) => (
+      FileError error, FileMetadata? metadata);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -202,7 +209,17 @@ interface DriveFsDelegate {
   OnMirrorSyncingStatusUpdate(SyncingStatus status);
 };
 
-// Next MinVersion: 7
+[Extensible]
+enum CSESupport {
+  // Do not show CSE files in the mounted file system.
+  [Default] kNone,
+
+  // Show CSE files in the mounted file system, but don't allow to read/write
+  // them: any attempt to open such a file will result in an error.
+  kListing,
+};
+
+// Next MinVersion: 8
 struct DriveFsConfiguration {
   string user_email;
 
@@ -227,6 +244,13 @@ struct DriveFsConfiguration {
   // the |drive-fs-chrome-networking| flag.
   [MinVersion=6]
   bool enable_cros_network = false;
+
+  // The level of CSE files support Chrome expects from DriveFS and can handle.
+  // CSE stands for Client-Side Encryption and is an enterprise technology to
+  // encrypt data with a key not accessible by Google.
+  // See more: https://support.google.com/a/answer/10741897
+  [MinVersion=7]
+  CSESupport cse_support = kNone;
 };
 
 enum AccessTokenStatus {
@@ -295,12 +319,13 @@ enum FileError {
 };
 
 // Errors received from DriveFS to be forwarded to the file manager UI.
-// Next MinVersion: 2
+// Next MinVersion: 3
 struct DriveError {
   [Extensible] enum Type {
     kCantUploadStorageFull,
     kPinningFailedDiskFull,
     kCantUploadStorageFullOrganization,
+    kCantUploadSharedDriveStorageFull,
   };
 
   Type type;
@@ -311,6 +336,10 @@ struct DriveError {
   // The stable id of the file where an error was encountered, if there was one.
   // Note: 0 is an invalid stable id.
   [MinVersion=1] int64 stable_id = 0;
+
+  // If the error is `kCantUploadSharedDriveStorageFull` this will be populated
+  // with the shared drive name.
+  [MinVersion=2] string? shared_drive;
 };
 
 struct DialogReason {

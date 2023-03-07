@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include <string>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -52,26 +52,26 @@ void AddMetricsTestData(TestPasswordStore* store) {
   password_form.username_value = u"test1@gmail.com";
   password_form.password_value = u"test";
   password_form.signon_realm = "http://example.com/";
-  password_form.times_used = 0;
+  password_form.times_used_in_html_form = 0;
   store->AddLogin(password_form);
 
   password_form.username_value = u"test2@gmail.com";
-  password_form.times_used = 1;
+  password_form.times_used_in_html_form = 1;
   store->AddLogin(password_form);
 
   password_form.url = GURL("http://second.example.com");
   password_form.signon_realm = "http://second.example.com";
-  password_form.times_used = 3;
+  password_form.times_used_in_html_form = 3;
   store->AddLogin(password_form);
 
   password_form.username_value = u"test3@gmail.com";
   password_form.type = PasswordForm::Type::kGenerated;
-  password_form.times_used = 2;
+  password_form.times_used_in_html_form = 2;
   store->AddLogin(password_form);
 
   password_form.url = GURL("ftp://third.example.com/");
   password_form.signon_realm = "ftp://third.example.com/";
-  password_form.times_used = 4;
+  password_form.times_used_in_html_form = 4;
   password_form.scheme = PasswordForm::Scheme::kOther;
   store->AddLogin(password_form);
 
@@ -79,7 +79,7 @@ void AddMetricsTestData(TestPasswordStore* store) {
   password_form.signon_realm = "http://fourth.example.com/";
   password_form.type = PasswordForm::Type::kFormSubmission;
   password_form.username_value = u"";
-  password_form.times_used = 10;
+  password_form.times_used_in_html_form = 10;
   password_form.scheme = PasswordForm::Scheme::kHtml;
   store->AddLogin(password_form);
 

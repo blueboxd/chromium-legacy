@@ -15,7 +15,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
@@ -55,7 +54,7 @@ import java.util.concurrent.TimeoutException;
 public class MessageAnimationCoordinatorUnitTest {
     private MessageQueueDelegate mQueueDelegate = Mockito.spy(new MessageQueueDelegate() {
         @Override
-        public void onRequestShowing(Runnable callback) {
+        public void onStartShowing(Runnable callback) {
             callback.run();
         }
 
@@ -67,16 +66,6 @@ public class MessageAnimationCoordinatorUnitTest {
 
         @Override
         public void onAnimationEnd() {}
-
-        @Override
-        public boolean isReadyForShowing() {
-            return true;
-        }
-
-        @Override
-        public boolean isPendingShow() {
-            return false;
-        }
     });
 
     @Rule
@@ -94,7 +83,6 @@ public class MessageAnimationCoordinatorUnitTest {
     public void setUp() {
         mAnimationCoordinator = new MessageAnimationCoordinator(mContainer, Animator::start);
         mAnimationCoordinator.setMessageQueueDelegate(mQueueDelegate);
-        when(mContainer.isIsInitializingLayout()).thenReturn(false);
     }
 
     @Test
@@ -159,6 +147,34 @@ public class MessageAnimationCoordinatorUnitTest {
 
         var currentMessage = mAnimationCoordinator.getCurrentDisplayedMessage();
         Assert.assertEquals(m2, currentMessage);
+    }
+
+    /**
+     * The child animator is finished but the parent animator has not triggered the callback yet.
+     */
+    @Test
+    @SmallTest
+    public void testSuspendBeforeHideCallbackIsTriggered_withoutStacking() {
+        MessageState m1 = buildMessageState();
+        setMessageIdentifier(m1, 1);
+        mAnimationCoordinator.updateWithoutStacking(m1, false, () -> {});
+
+        verify(m1.handler).show(Position.INVISIBLE, Position.FRONT);
+        verify(m1.handler, never()).hide(anyInt(), anyInt(), anyBoolean());
+        var currentMessage = mAnimationCoordinator.getCurrentDisplayedMessage();
+        Assert.assertEquals(m1, currentMessage);
+
+        var animator = ValueAnimator.ofInt(0, 1);
+        animator.setDuration(100000);
+        doReturn(animator).when(m1.handler).hide(anyInt(), anyInt(), anyBoolean());
+        mAnimationCoordinator.updateWithoutStacking(null, false, () -> {});
+
+        var hidingAnimatorSet = mAnimationCoordinator.getAnimatorSetForTesting();
+        Assert.assertTrue(hidingAnimatorSet.isStarted());
+        mAnimationCoordinator.updateWithoutStacking(null, true, () -> {});
+        // The animation should be ended and the callback should be triggered.
+        Assert.assertFalse(hidingAnimatorSet.isRunning());
+        Assert.assertNull(mAnimationCoordinator.getCurrentDisplayedMessage());
     }
 
     // Test incoming candidates are same with current displayed ones.
@@ -411,7 +427,7 @@ public class MessageAnimationCoordinatorUnitTest {
     public void testHideBeforeFullyShow() {
         mAnimationCoordinator.setMessageQueueDelegate(new MessageQueueDelegate() {
             @Override
-            public void onRequestShowing(Runnable callback) {}
+            public void onStartShowing(Runnable callback) {}
 
             @Override
             public void onFinishHiding() {}
@@ -421,16 +437,6 @@ public class MessageAnimationCoordinatorUnitTest {
 
             @Override
             public void onAnimationEnd() {}
-
-            @Override
-            public boolean isReadyForShowing() {
-                return true;
-            }
-
-            @Override
-            public boolean isPendingShow() {
-                return false;
-            }
         });
         var currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
         Assert.assertArrayEquals(new MessageState[] {null, null}, currentMessages.toArray());
@@ -509,18 +515,16 @@ public class MessageAnimationCoordinatorUnitTest {
         verify(mAnimatorStartCallback, times(1)).onResult(any());
     }
 
-    // Test when onStartShowing takes some time to be ready.
+    // Test showing animation is triggered after hiding animation is started.
     @Test
     @SmallTest
-    public void testWaitForOnStartShowing() {
+    public void testObsoleteShowingAnimationByOnStartedShowing() {
         mAnimationCoordinator = new MessageAnimationCoordinator(mContainer, mAnimatorStartCallback);
         MessageQueueDelegate queueDelegate = Mockito.mock(MessageQueueDelegate.class);
-        when(queueDelegate.isReadyForShowing()).thenReturn(false);
         mAnimationCoordinator.setMessageQueueDelegate(queueDelegate);
         var currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
         Assert.assertArrayEquals(new MessageState[] {null, null}, currentMessages.toArray());
         HistogramDelta d1 = new HistogramDelta(MessagesMetrics.STACKING_HISTOGRAM_NAME,
-
                 MessagesMetrics.StackingAnimationType.SHOW_ALL);
         HistogramDelta d2 = new HistogramDelta(MessagesMetrics.STACKING_ACTION_HISTOGRAM_PREFIX
                         + MessagesMetrics.stackingAnimationActionToHistogramSuffix(
@@ -535,14 +539,8 @@ public class MessageAnimationCoordinatorUnitTest {
         MessageState m2 = buildMessageState();
         setMessageIdentifier(m2, 2);
         ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
-        mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, m2), false, () -> {
-            when(queueDelegate.isReadyForShowing()).thenReturn(true);
-            Assert.assertArrayEquals(new MessageState[] {null, null},
-                    mAnimationCoordinator.getCurrentDisplayedMessages().toArray());
-            mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, m2), false, () -> {});
-        });
-        verify(queueDelegate).onRequestShowing(captor.capture());
-        captor.getValue().run();
+        mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, m2), false, () -> {});
+        verify(queueDelegate).onStartShowing(captor.capture());
         Assert.assertEquals(1, d1.getDelta());
         Assert.assertEquals(1, d2.getDelta());
         Assert.assertEquals(1, d3.getDelta());
@@ -558,67 +556,12 @@ public class MessageAnimationCoordinatorUnitTest {
         verify(queueDelegate, times(1)).onAnimationStart();
         verify(mAnimatorStartCallback, times(1)).onResult(any());
 
+        // Trigger showing animation after hiding animation is started.
+        captor.getValue().run();
         verify(mContainer).runAfterInitialMessageLayout(captor.capture());
         captor.getValue().run();
         verify(queueDelegate, times(1)).onAnimationStart();
         verify(mAnimatorStartCallback, times(1)).onResult(any());
-    }
-
-    // Test a new message is enqueued when the previous message is still waiting for onStartShowing.
-    @Test
-    @SmallTest
-    public void testEnqueuingWhileWaitingForOnStartShowing() {
-        doAnswer(invocation -> {
-            Runnable runnable = invocation.getArgument(0);
-            runnable.run();
-            return null;
-        })
-                .when(mContainer)
-                .runAfterInitialMessageLayout(any(Runnable.class));
-        mAnimationCoordinator = new MessageAnimationCoordinator(mContainer, mAnimatorStartCallback);
-        MessageQueueDelegate queueDelegate = Mockito.mock(MessageQueueDelegate.class);
-        when(queueDelegate.isReadyForShowing()).thenReturn(false);
-        mAnimationCoordinator.setMessageQueueDelegate(queueDelegate);
-        var currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
-        Assert.assertArrayEquals(new MessageState[] {null, null}, currentMessages.toArray());
-        MessageState m1 = buildMessageState();
-        setMessageIdentifier(m1, 1);
-        MessageState m2 = buildMessageState();
-        setMessageIdentifier(m2, 2);
-        ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
-        mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, null), false, () -> {
-            when(queueDelegate.isReadyForShowing()).thenReturn(true);
-            Assert.assertArrayEquals(new MessageState[] {null, null},
-                    mAnimationCoordinator.getCurrentDisplayedMessages().toArray());
-            mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, m2), false, () -> {});
-        });
-        // M1 is waiting to be shown.
-        currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
-        Assert.assertArrayEquals(new MessageState[] {null, null}, currentMessages.toArray());
-
-        verify(queueDelegate).onRequestShowing(captor.capture());
-
-        // Before onStartShowing is finished, m2 is enqueued.
-        mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, m2), false, () -> {});
-
-        // Nothing happens, as message queue is not ready yet.
-        currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
-        Assert.assertArrayEquals(new MessageState[] {null, null}, currentMessages.toArray());
-
-        // onStartShowing is finished. Showing two messages at the same time.
-        captor.getValue().run();
-
-        verify(m1.handler).show(Position.INVISIBLE, Position.FRONT);
-        verify(m2.handler).show(Position.FRONT, Position.BACK);
-        currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
-        Assert.assertArrayEquals(new MessageState[] {m1, m2}, currentMessages.toArray());
-        verify(mAnimatorStartCallback).onResult(any());
-
-        mAnimationCoordinator.updateWithStacking(Arrays.asList(null, null), false, () -> {});
-        verify(m1.handler).hide(anyInt(), anyInt(), anyBoolean());
-        verify(m2.handler).hide(anyInt(), anyInt(), anyBoolean());
-        verify(queueDelegate, times(2)).onAnimationStart();
-        verify(mAnimatorStartCallback, times(2)).onResult(any());
     }
 
     // Test when suspension cancels a hiding animation.
@@ -664,32 +607,6 @@ public class MessageAnimationCoordinatorUnitTest {
         Assert.assertFalse(mAnimationCoordinator.getAnimatorSetForTesting().isStarted());
         currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
         Assert.assertArrayEquals(new MessageState[] {null, null}, currentMessages.toArray());
-    }
-
-    // Test that second message should not trigger new animation if the first message is still
-    // waiting for container to finish layout.
-    @Test
-    @SmallTest
-    public void testContainerIsInitializingLayout() {
-        MessageState m1 = buildMessageState();
-        setMessageIdentifier(m1, 1);
-        MessageState m2 = buildMessageState();
-        setMessageIdentifier(m2, 2);
-        mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, null), false, () -> {});
-
-        InOrder inOrder = Mockito.inOrder(m1.handler, m2.handler);
-        inOrder.verify(m1.handler).show(Position.INVISIBLE, Position.FRONT);
-        inOrder.verify(m2.handler, never()).show(Position.FRONT, Position.BACK);
-        verify(mContainer).runAfterInitialMessageLayout(any());
-
-        when(mContainer.isIsInitializingLayout()).thenReturn(true);
-        mAnimationCoordinator.updateWithStacking(Arrays.asList(m1, m2), false, () -> {});
-        // Second message should not trigger a new animation if the first message is still
-        // waiting for container to finish layout.
-        verify(m2.handler, never()).show(anyInt(), anyInt());
-
-        var currentMessages = mAnimationCoordinator.getCurrentDisplayedMessages();
-        Assert.assertArrayEquals(new MessageState[] {m1, null}, currentMessages.toArray());
     }
 
     private void setMessageIdentifier(MessageState message, int messageIdentifier) {

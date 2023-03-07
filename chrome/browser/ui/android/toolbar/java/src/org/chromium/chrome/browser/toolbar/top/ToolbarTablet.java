@@ -17,20 +17,21 @@ import android.graphics.drawable.LevelListDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
+import androidx.core.widget.ImageViewCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
@@ -84,6 +85,8 @@ public class ToolbarTablet
         void downloadPage(Context context, Tab tab);
     }
 
+    private static final int HOME_BUTTON_POSITION_FOR_TAB_STRIP_REDESIGN = 3;
+
     private HomeButton mHomeButton;
     private ImageButton mBackButton;
     private ImageButton mForwardButton;
@@ -136,6 +139,16 @@ public class ToolbarTablet
         mBackButton = findViewById(R.id.back_button);
         mForwardButton = findViewById(R.id.forward_button);
         mReloadButton = findViewById(R.id.refresh_button);
+
+        // Reposition home button to align with desktop ordering when TSR enabled.
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            // Remove home button view added in XML and adding back with different ordering
+            // programmatically.
+            ((ViewGroup) mHomeButton.getParent()).removeView(mHomeButton);
+            LinearLayout linearlayout = (LinearLayout) findViewById(R.id.toolbar_tablet_layout);
+            linearlayout.addView(mHomeButton, HOME_BUTTON_POSITION_FOR_TAB_STRIP_REDESIGN);
+        }
+
         // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
         // See https://crbug.com/891593 for details.
         // Also, using Drawable tinting doesn't work correctly with LevelListDrawable on Android L
@@ -188,18 +201,26 @@ public class ToolbarTablet
         mHomeButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                if (mBackButton.isFocusable()) {
-                    return findViewById(R.id.back_button);
-                } else if (mForwardButton.isFocusable()) {
-                    return findViewById(R.id.forward_button);
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                    return findViewById(R.id.url_bar);
                 } else {
-                    return findViewById(R.id.refresh_button);
+                    if (mBackButton.isFocusable()) {
+                        return findViewById(R.id.back_button);
+                    } else if (mForwardButton.isFocusable()) {
+                        return findViewById(R.id.forward_button);
+                    } else {
+                        return findViewById(R.id.refresh_button);
+                    }
                 }
             }
 
             @Override
             public View getNextFocusBackward() {
-                return findViewById(R.id.menu_button);
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                    return findViewById(R.id.refresh_button);
+                } else {
+                    return findViewById(R.id.menu_button);
+                }
             }
         });
 
@@ -217,10 +238,14 @@ public class ToolbarTablet
 
             @Override
             public View getNextFocusBackward() {
-                if (mHomeButton.getVisibility() == VISIBLE) {
-                    return findViewById(R.id.home_button);
-                } else {
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
                     return findViewById(R.id.menu_button);
+                } else {
+                    if (mHomeButton.getVisibility() == VISIBLE) {
+                        return findViewById(R.id.home_button);
+                    } else {
+                        return findViewById(R.id.menu_button);
+                    }
                 }
             }
         });
@@ -237,7 +262,8 @@ public class ToolbarTablet
             public View getNextFocusBackward() {
                 if (mBackButton.isFocusable()) {
                     return mBackButton;
-                } else if (mHomeButton.getVisibility() == VISIBLE) {
+                } else if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
+                        && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
                     return findViewById(R.id.menu_button);
@@ -250,7 +276,12 @@ public class ToolbarTablet
         mReloadButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                return findViewById(R.id.url_bar);
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()
+                        && mHomeButton.getVisibility() == VISIBLE) {
+                    return findViewById(R.id.home_button);
+                } else {
+                    return findViewById(R.id.url_bar);
+                }
             }
 
             @Override
@@ -259,7 +290,8 @@ public class ToolbarTablet
                     return mForwardButton;
                 } else if (mBackButton.isFocusable()) {
                     return mBackButton;
-                } else if (mHomeButton.getVisibility() == VISIBLE) {
+                } else if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
+                        && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
                     return findViewById(R.id.menu_button);
@@ -413,15 +445,15 @@ public class ToolbarTablet
 
     @Override
     public void onTintChanged(ColorStateList tint, @BrandedColorScheme int brandedColorScheme) {
-        ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
-        ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
-        ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
-        ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
-        ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
+        ImageViewCompat.setImageTintList(mHomeButton, tint);
+        ImageViewCompat.setImageTintList(mBackButton, tint);
+        ImageViewCompat.setImageTintList(mForwardButton, tint);
+        ImageViewCompat.setImageTintList(mSaveOfflineButton, tint);
+        ImageViewCompat.setImageTintList(mReloadButton, tint);
         mAccessibilitySwitcherButton.setBrandedColorScheme(brandedColorScheme);
 
         if (mOptionalButton != null && mOptionalButtonUsesTint) {
-            ApiCompatibilityUtils.setImageTintList(mOptionalButton, tint);
+            ImageViewCompat.setImageTintList(mOptionalButton, tint);
         }
     }
 
@@ -496,12 +528,12 @@ public class ToolbarTablet
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             final @ColorRes int tint = isIncognito() ? R.color.default_icon_color_blue_light
                                                      : R.color.default_icon_color_accent1_tint_list;
-            ApiCompatibilityUtils.setImageTintList(
+            ImageViewCompat.setImageTintList(
                     mBookmarkButton, AppCompatResources.getColorStateList(getContext(), tint));
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
-            ApiCompatibilityUtils.setImageTintList(mBookmarkButton, getTint());
+            ImageViewCompat.setImageTintList(mBookmarkButton, getTint());
             mBookmarkButton.setContentDescription(
                     getContext().getString(R.string.accessibility_menu_bookmark));
         }
@@ -513,6 +545,7 @@ public class ToolbarTablet
             MenuButtonCoordinator menuButtonCoordinator) {
         boolean isInTabSwitcherMode = mShowTabStack && inTabSwitcherMode;
         mIsInTabSwitcherMode = isInTabSwitcherMode;
+        mAccessibilitySwitcherButton.setClickable(!isInTabSwitcherMode);
 
         if (isTabletGridTabSwitcherPolishEnabled()) {
             int importantForAccessibility = inTabSwitcherMode
@@ -579,12 +612,10 @@ public class ToolbarTablet
     @Override
     public void initialize(ToolbarDataProvider toolbarDataProvider,
             ToolbarTabController tabController, MenuButtonCoordinator menuButtonCoordinator,
-            ObservableSupplier<Boolean> isProgressBarVisibleSupplier,
             HistoryDelegate historyDelegate, BooleanSupplier partnerHomepageEnabledSupplier,
             OfflineDownloader offlineDownloader) {
-        super.initialize(toolbarDataProvider, tabController, menuButtonCoordinator,
-                isProgressBarVisibleSupplier, historyDelegate, partnerHomepageEnabledSupplier,
-                offlineDownloader);
+        super.initialize(toolbarDataProvider, tabController, menuButtonCoordinator, historyDelegate,
+                partnerHomepageEnabledSupplier, offlineDownloader);
         mHistoryDelegate = historyDelegate;
         mOfflineDownloader = offlineDownloader;
         menuButtonCoordinator.setVisibility(true);
@@ -669,9 +700,9 @@ public class ToolbarTablet
         ButtonSpec buttonSpec = buttonData.getButtonSpec();
         mOptionalButtonUsesTint = buttonSpec.getSupportsTinting();
         if (mOptionalButtonUsesTint) {
-            ApiCompatibilityUtils.setImageTintList(mOptionalButton, getTint());
+            ImageViewCompat.setImageTintList(mOptionalButton, getTint());
         } else {
-            ApiCompatibilityUtils.setImageTintList(mOptionalButton, null);
+            ImageViewCompat.setImageTintList(mOptionalButton, null);
         }
 
         if (buttonSpec.getIPHCommandBuilder() != null) {

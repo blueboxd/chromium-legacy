@@ -8,8 +8,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -376,7 +376,7 @@ void Thread::ThreadMain() {
 
   // Lazily initialize the |message_loop| so that it can run on this thread.
   DCHECK(delegate_);
-  // This binds CurrentThread and ThreadTaskRunnerHandle.
+  // This binds CurrentThread and SingleThreadTaskRunner::CurrentDefaultHandle.
   delegate_->BindToCurrentThread(timer_slack_);
   DCHECK(CurrentThread::Get());
   DCHECK(SingleThreadTaskRunner::HasCurrentDefault());

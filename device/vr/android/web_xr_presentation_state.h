@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/resources/resource_id.h"
@@ -105,7 +105,7 @@ struct WebXrSharedBuffer {
   // This object keeps the image alive while processing a frame. That's
   // required because it owns underlying resources, and must still be
   // alive when the mailbox texture backed by this image is used.
-  ui::ScopedEGLImage local_eglimage;
+  gl::ScopedEGLImage local_eglimage;
 
   // The ResourceId that was used to pass this buffer to the Viz Compositor.
   // Id should be set to kInvalidResourceId when it is not in use by the viz

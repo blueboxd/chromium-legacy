@@ -33,7 +33,7 @@ component("views") {
     "//chrome/app:generated_resources",
     "//components/keep_alive_registry",
     "//components/lens",
-    "//components/services/app_service/public/mojom",
+    "//components/lens:buildflags",
     "//components/services/screen_ai/buildflags",
     "//components/vector_icons",
     "//content/public/browser",

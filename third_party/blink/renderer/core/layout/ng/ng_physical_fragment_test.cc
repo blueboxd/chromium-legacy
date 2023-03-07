@@ -5,14 +5,14 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class NGPhysicalFragmentTest : public NGLayoutTest {
+class NGPhysicalFragmentTest : public RenderingTest {
  public:
   String DumpAll(const NGPhysicalFragment* target = nullptr) const {
     return NGPhysicalFragment::DumpFragmentTree(
@@ -22,9 +22,6 @@ class NGPhysicalFragmentTest : public NGLayoutTest {
   static bool IsNGViewEnabled() {
     return RuntimeEnabledFeatures::LayoutNGPrintingEnabled();
   }
-
- private:
-  ScopedLayoutNGBlockFragmentationForTest enable_block_fragmentation_{true};
 };
 
 TEST_F(NGPhysicalFragmentTest, DumpFragmentTreeBasic) {

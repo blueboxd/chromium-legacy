@@ -5,8 +5,8 @@
 #include "media/gpu/android/media_codec_video_decoder.h"
 
 #include "base/android/jni_android.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
@@ -221,7 +221,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     Initialize(config);
     mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
     OverlayInfo info;
-    info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+    info.routing_token = base::UnguessableToken::CreateForTesting(1, 2);
     provide_overlay_info_cb_.Run(info);
     auto overlay_ptr = std::make_unique<MockAndroidOverlay>();
     auto* overlay = overlay_ptr.get();
@@ -451,10 +451,10 @@ TEST_P(MediaCodecVideoDecoderTest, SurfaceChooserIsUpdatedOnOverlayChanges) {
 
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(2);
   OverlayInfo info;
-  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+  info.routing_token = base::UnguessableToken::CreateForTesting(1, 2);
   provide_overlay_info_cb_.Run(info);
   ASSERT_TRUE(surface_chooser_->factory_);
-  info.routing_token = base::UnguessableToken::Deserialize(3, 4);
+  info.routing_token = base::UnguessableToken::CreateForTesting(3, 4);
   provide_overlay_info_cb_.Run(info);
   ASSERT_TRUE(surface_chooser_->factory_);
 }
@@ -466,7 +466,7 @@ TEST_P(MediaCodecVideoDecoderTest, OverlayInfoUpdatesAreIgnoredInStateError) {
 
   EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   OverlayInfo info;
-  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+  info.routing_token = base::UnguessableToken::CreateForTesting(1, 2);
   provide_overlay_info_cb_.Run(info);
 }
 
@@ -476,7 +476,7 @@ TEST_P(MediaCodecVideoDecoderTest, DuplicateOverlayInfoUpdatesAreIgnored) {
   // The second overlay info update should be ignored.
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(1);
   OverlayInfo info;
-  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+  info.routing_token = base::UnguessableToken::CreateForTesting(1, 2);
   provide_overlay_info_cb_.Run(info);
   provide_overlay_info_cb_.Run(info);
 }

@@ -10,10 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
+#include "base/cxx20_to_address.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -526,15 +527,11 @@ bool IsWebcamAvailableOnSystem(WebContents* web_contents);
 // declare additional ConvertToRenderFrameHost functions for convenience.
 class ToRenderFrameHost {
  public:
-  template <typename T>
+  template <typename Ptr>
   // NOLINTNEXTLINE(google-explicit-constructor)
-  ToRenderFrameHost(T* frame_convertible_value)
-      : render_frame_host_(ConvertToRenderFrameHost(frame_convertible_value)) {}
-
-  template <typename T, typename RawPtrType>
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  ToRenderFrameHost(const raw_ptr<T, RawPtrType>& frame_convertible_value)
-      : ToRenderFrameHost(frame_convertible_value.get()) {}
+  ToRenderFrameHost(Ptr frame_convertible_value)
+      : render_frame_host_(ConvertToRenderFrameHost(
+            base::to_address(frame_convertible_value))) {}
 
   // Extract the underlying frame.
   RenderFrameHost* render_frame_host() const { return render_frame_host_; }
@@ -1699,8 +1696,9 @@ class TestNavigationManager : public WebContentsObserver {
   // where throttles run and none defer, this will break at the same time as
   // WaitForRequestStart. Note: since we won't know which throttle deferred,
   // don't use ResumeNavigation() after this call since it assumes we paused
-  // from the TestNavigationManagerThrottle.
-  void WaitForFirstYieldAfterDidStartNavigation();
+  // from the TestNavigationManagerThrottle. Returns false if the waiting was
+  // terminated before reaching DidStartNavigation (e.g. timeout).
+  bool WaitForFirstYieldAfterDidStartNavigation();
 
   // Waits until the navigation request is ready to be sent to the network
   // stack. This will wait until all NavigationThrottles have proceeded through
@@ -1714,8 +1712,9 @@ class TestNavigationManager : public WebContentsObserver {
   [[nodiscard]] bool WaitForResponse();
 
   // Waits until the navigation has been finished. Will automatically resume
-  // navigations paused before this point.
-  void WaitForNavigationFinished();
+  // navigations paused before this point. Returns false if the waiting was
+  // terminated before reaching DidStartNavigation (e.g. timeout).
+  [[nodiscard]] bool WaitForNavigationFinished();
 
   // Resume the navigation.
   // * Called after |WaitForRequestStart|, it causes the request to be sent.
@@ -1767,7 +1766,7 @@ class TestNavigationManager : public WebContentsObserver {
 
   // Waits for the desired state. Returns false if the desired state cannot be
   // reached (eg the navigation finishes before reaching this state).
-  bool WaitForDesiredState();
+  [[nodiscard]] bool WaitForDesiredState();
 
   // Called when the state of the navigation has changed. This will either stop
   // the message loop if the state specified by the user has been reached, or

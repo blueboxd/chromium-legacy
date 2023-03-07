@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
@@ -605,7 +605,7 @@ TEST_F(EventRouterDispatchTest, TestDispatch) {
                              .Set("name", "Test app")
                              .Set("version", "1.0")
                              .Set("manifest_version", 2)
-                             .BuildDict())
+                             .Build())
             .Build();
     ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
   };

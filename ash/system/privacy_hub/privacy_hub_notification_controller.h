@@ -5,15 +5,15 @@
 #ifndef ASH_SYSTEM_PRIVACY_HUB_PRIVACY_HUB_NOTIFICATION_CONTROLLER_H_
 #define ASH_SYSTEM_PRIVACY_HUB_PRIVACY_HUB_NOTIFICATION_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
+#include "ash/system/privacy_hub/privacy_hub_notification.h"
 #include "base/containers/enum_set.h"
-#include "base/memory/raw_ptr.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
-
-class MicrophoneMuteNotificationController;
 
 // A class managing when to show notifications for microphone, camera and
 // geolocation to the user or combining them if necessary.
@@ -29,15 +29,11 @@ class ASH_EXPORT PrivacyHubNotificationController {
 
   using SensorEnumSet = base::EnumSet<Sensor, Sensor::kMin, Sensor::kMax>;
 
-  explicit PrivacyHubNotificationController(
-      MicrophoneMuteNotificationController*
-          microphone_mute_notification_controller);
-
+  PrivacyHubNotificationController();
   PrivacyHubNotificationController(const PrivacyHubNotificationController&) =
       delete;
   PrivacyHubNotificationController& operator=(
       const PrivacyHubNotificationController&) = delete;
-
   ~PrivacyHubNotificationController();
 
   // Called by any sensor system when a notification for `sensor`
@@ -48,6 +44,10 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // should be removed from the notification center and popups.
   void RemoveSensorDisabledNotification(Sensor sensor);
 
+  // Called by any sensor system when a notification for `sensor` should be
+  // updated, for example, when an application stops accessing `sensor`.
+  void UpdateSensorDisabledNotification(Sensor sensor);
+
   static constexpr const char kCombinedNotificationId[] =
       "ash.system.privacy_hub.enable_microphone_and_camera";
 
@@ -55,26 +55,11 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // a notification.
   static void OpenPrivacyHubSettingsPage();
 
+  // Open the support page for Privacy Hub and logs the interaction together
+  // with what `sensor` was in use by the user.
+  static void OpenSupportUrl(Sensor sensor);
+
  private:
-  // Display the camera disabled by software switch notification.
-  void ShowCameraDisabledNotification() const;
-
-  // TODO(b/242684137) Location is a WIP and doesn't have notifications yet but
-  // will get them in future CLs.
-  void ShowLocationDisabledNotification() const;
-
-  // Display the microphone is disabled notification.
-  void ShowMicrophoneDisabledNotification() const;
-
-  // Constructs the notification message for the combined notification,
-  // containing the app names that use mic and camera sensors. The notification
-  // has different format, depending on the number of the apps.
-  std::u16string GenerateMicrophoneAndCameraDisabledNotificationMessage();
-
-  // Display a combined notification when camera software switch and
-  // microphone are disabled.
-  void ShowMicrophoneAndCameraDisabledNotification();
-
   // Show all notifications that are currently active and combine them if
   // necessary. From the `changed_sensor` in combination with `sensors_`,
   // `combinable_sensors_` and `ignore_new_combinable_notifications_` the
@@ -82,16 +67,17 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // removed if necessary.
   void ShowAllActiveNotifications(Sensor changed_sensor);
 
-  void HandleNotificationClicked(absl::optional<int> button_index);
+  void HandleNotificationMessageClicked();
 
   const SensorEnumSet combinable_sensors_{Sensor::kMicrophone, Sensor::kCamera};
   // Flag to keep track if the user opened the settings page and don't show
   // them new notifications of sensors that can be combined or the combined
   // notification until the number of active uses falls to 0.
   bool ignore_new_combinable_notifications_{false};
-  const base::raw_ptr<MicrophoneMuteNotificationController>
-      microphone_mute_notification_controller_;
   SensorEnumSet sensors_;
+  std::unique_ptr<PrivacyHubNotification> combined_notification_;
+  base::flat_map<Sensor, std::unique_ptr<PrivacyHubNotification>>
+      sw_notifications_;
   base::WeakPtrFactory<PrivacyHubNotificationController> weak_ptr_factory_{
       this};
 };

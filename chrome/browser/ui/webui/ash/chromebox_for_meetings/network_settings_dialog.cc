@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/ash/chromebox_for_meetings/network_settings_dialog.h"
 
 #include "ash/public/cpp/network_config_service.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "chrome/browser/ash/app_mode/certificate_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -110,8 +110,8 @@ void NetworkSettingsDialog::OnDialogClosed(const std::string& json_retval) {
 
 NetworkSettingsDialogUi::NetworkSettingsDialogUi(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kCfmNetworkSettingsHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kCfmNetworkSettingsHost);
 
   source->AddLocalizedString("headTitle", IDS_CFM_NETWORK_SETTINGS_TITLE);
   source->AddLocalizedString("availableNetworks",
@@ -133,8 +133,6 @@ NetworkSettingsDialogUi::NetworkSettingsDialogUi(content::WebUI* web_ui)
       IDR_CFM_NETWORK_SETTINGS_CFM_NETWORK_SETTINGS_CONTAINER_HTML);
 
   web_ui->AddMessageHandler(std::make_unique<NetworkSettingsMessageHandler>());
-
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 void NetworkSettingsDialogUi::BindInterface(

@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -166,26 +166,6 @@ TEST(MediaRouterMetricsTest, RecordMediaRouterInitialUserAction) {
               ElementsAre(Bucket(static_cast<int>(action1), 1),
                           Bucket(static_cast<int>(action2), 1),
                           Bucket(static_cast<int>(action3), 2)));
-}
-
-TEST(MediaRouterMetricsTest, RecordRouteCreationOutcome) {
-  base::HistogramTester tester;
-  const MediaRouterRouteCreationOutcome outcome1 =
-      MediaRouterRouteCreationOutcome::SUCCESS;
-  const MediaRouterRouteCreationOutcome outcome2 =
-      MediaRouterRouteCreationOutcome::FAILURE_NO_ROUTE;
-
-  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramRouteCreationOutcome,
-                          0);
-  MediaRouterMetrics::RecordRouteCreationOutcome(outcome2);
-  MediaRouterMetrics::RecordRouteCreationOutcome(outcome1);
-  MediaRouterMetrics::RecordRouteCreationOutcome(outcome2);
-  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramRouteCreationOutcome,
-                          3);
-  EXPECT_THAT(
-      tester.GetAllSamples(MediaRouterMetrics::kHistogramRouteCreationOutcome),
-      ElementsAre(Bucket(static_cast<int>(outcome1), 1),
-                  Bucket(static_cast<int>(outcome2), 2)));
 }
 
 TEST(MediaRouterMetricsTest, RecordPresentationUrlType) {

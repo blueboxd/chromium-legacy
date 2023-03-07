@@ -161,6 +161,7 @@ source_set("headers") {
     "frame/fenced_frame_sandbox_flags.h",
     "frame/frame_ad_evidence.h",
     "frame/frame_owner_element_type.h",
+    "frame/frame_owner_element_type_mojom_traits.h",
     "frame/frame_policy.h",
     "frame/frame_visual_properties.h",
     "frame/from_ad_state.h",
@@ -240,7 +241,6 @@ source_set("headers") {
     "metrics/form_element_pii_type.h",
     "metrics/post_message_counter.h",
     "mime_util/mime_util.h",
-    "native_io/native_io_utils.h",
     "navigation/impression.h",
     "navigation/navigation_params.h",
     "navigation/navigation_params_mojom_traits.h",
@@ -370,10 +370,6 @@ source_set("headers") {
 
   if (is_mac) {
     sources += [ "sandbox_support/sandbox_support_mac.h" ]
-  }
-
-  if (is_win) {
-    sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.h" ]
   }
 }
 

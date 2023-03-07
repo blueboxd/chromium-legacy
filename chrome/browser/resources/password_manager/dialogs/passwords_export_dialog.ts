@@ -21,7 +21,6 @@ import {getTemplate} from './passwords_export_dialog.html.js';
  * The states of the export passwords dialog.
  */
 enum States {
-  START = 'START',
   IN_PROGRESS = 'IN_PROGRESS',
   ERROR = 'ERROR',
 }
@@ -54,13 +53,22 @@ export class PasswordsExportDialogElement extends
 
   static get properties() {
     return {
-      showStartDialog_: Boolean,
+      /**
+       * Do not change these variables directly to show dialogs, call
+       * switchToDialog_ which guarantees two dialogs are not shown at the same
+       * time.
+       */
       showProgressDialog_: Boolean,
+      showErrorDialog_: Boolean,
+
+      /** The error that occurred while exporting. */
+      exportErrorMessage: String,
     };
   }
 
-  private showStartDialog_: boolean;
+  exportErrorMessage: string;
   private showProgressDialog_: boolean;
+  private showErrorDialog_: boolean;
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
   private onPasswordsFileExportProgressListener_:
@@ -81,8 +89,6 @@ export class PasswordsExportDialogElement extends
   override connectedCallback() {
     super.connectedCallback();
 
-    this.switchToDialog_(States.START);
-
     this.onPasswordsFileExportProgressListener_ =
         (progress: chrome.passwordsPrivate.PasswordExportProgress) =>
             this.onPasswordsFileExportProgress_(progress);
@@ -97,6 +103,8 @@ export class PasswordsExportDialogElement extends
 
     this.passwordManager_.addPasswordsFileExportProgressListener(
         this.onPasswordsFileExportProgressListener_);
+
+    this.startExport_();
   }
 
   /**
@@ -151,8 +159,8 @@ export class PasswordsExportDialogElement extends
     this.progressBarBlockToken_ = null;
     this.passwordManager_.removePasswordsFileExportProgressListener(
         this.onPasswordsFileExportProgressListener_!);
-    this.showStartDialog_ = false;
     this.showProgressDialog_ = false;
+    this.showErrorDialog_ = false;
     assert(this.onPasswordsFileExportProgressListener_);
     this.passwordManager_.removePasswordsFileExportProgressListener(
         this.onPasswordsFileExportProgressListener_);
@@ -166,14 +174,13 @@ export class PasswordsExportDialogElement extends
   /**
    * Tells the PasswordsPrivate API to export saved passwords in a .csv.
    */
-  private onExportTap_() {
+  private startExport_() {
     this.passwordManager_.exportPasswords().catch((error) => {
       if (error === 'in-progress') {
         // Exporting was started by a different call to exportPasswords() and is
         // is still in progress. This UI needs to be updated to the current
         // status.
-        // TODO(crbug/1394416): Switch to the progress dialog once it's
-        // implemented.
+        this.switchToDialog_(States.IN_PROGRESS);
       }
     });
   }
@@ -194,7 +201,9 @@ export class PasswordsExportDialogElement extends
       return;
     }
     if (progress.status === ProgressStatus.FAILED_WRITE_FAILED) {
-      // TODO(crbug/1394416): Show error message once implemneted.
+      this.exportErrorMessage =
+          this.i18n('exportPasswordsFailTitle', progress.folderName!);
+      this.switchToDialog_(States.ERROR);
       return;
     }
   }
@@ -204,8 +213,8 @@ export class PasswordsExportDialogElement extends
    * @param state the dialog to open.
    */
   private switchToDialog_(state: States) {
-    this.showStartDialog_ = state === States.START;
     this.showProgressDialog_ = state === States.IN_PROGRESS;
+    this.showErrorDialog_ = state === States.ERROR;
   }
 
   /**

@@ -12,22 +12,16 @@
 
 #include "base/hash/hash.h"
 #include "base/synchronization/lock.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/native_pixmap.h"
-
-namespace gl {
-class GLImage;
-}
 
 namespace gpu {
 
 class VulkanDeviceQueue;
 
 class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryNativePixmap
-    : public GpuMemoryBufferFactory,
-      public ImageFactory {
+    : public GpuMemoryBufferFactory {
  public:
   GpuMemoryBufferFactoryNativePixmap();
   explicit GpuMemoryBufferFactoryNativePixmap(
@@ -62,16 +56,6 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryNativePixmap
   bool FillSharedMemoryRegionWithBufferContents(
       gfx::GpuMemoryBufferHandle buffer_handle,
       base::UnsafeSharedMemoryRegion shared_memory) override;
-  ImageFactory* AsImageFactory() override;
-
-  // Overridden from ImageFactory:
-  bool SupportsCreateAnonymousImage() const override;
-  scoped_refptr<gl::GLImage> CreateAnonymousImage(const gfx::Size& size,
-                                                  gfx::BufferFormat format,
-                                                  gfx::BufferUsage usage,
-                                                  SurfaceHandle surface_handle,
-                                                  bool* is_cleared) override;
-  unsigned RequiredTextureType() override;
 
  private:
   using NativePixmapMapKey = std::pair<int, int>;

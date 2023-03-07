@@ -73,6 +73,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 #include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
 #include "chromeos/ui/wm/window_util.h"
 #include "components/prefs/pref_service.h"
@@ -89,6 +90,8 @@
 #include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/frame_caption_button.h"
+#include "ui/wm/core/window_util.h"
 
 // Keep the functions in this file in alphabetical order.
 namespace ash {
@@ -102,6 +105,8 @@ const char kAccessibilityScreenMagnifierShortcut[] =
 const char kAccessibilityDockedMagnifierShortcut[] =
     "Accessibility.Shortcuts.CrosDockedMagnifier";
 const char kAccelWindowSnap[] = "Ash.Accelerators.WindowSnap";
+const char kAccelRotation[] = "Ash.Accelerators.Rotation.Usage";
+const char kAccelActivateDeskByIndex[] = "Ash.Accelerators.ActivateDeskByIndex";
 
 namespace accelerators {
 
@@ -129,11 +134,30 @@ enum class RotationAcceleratorAction {
   kMaxValue = kAlreadyAcceptedDialog,
 };
 
+// Record which desk is activated.
+enum class ActivateDeskAcceleratorAction {
+  kDesk1 = 0,
+  kDesk2 = 1,
+  kDesk3 = 2,
+  kDesk4 = 3,
+  kDesk5 = 4,
+  kDesk6 = 5,
+  kDesk7 = 6,
+  kDesk8 = 7,
+  kMaxValue = kDesk8,
+};
+
 void RecordRotationAcceleratorAction(const RotationAcceleratorAction& action) {
-  UMA_HISTOGRAM_ENUMERATION("Ash.Accelerators.Rotation.Usage", action);
+  UMA_HISTOGRAM_ENUMERATION(kAccelRotation, action);
 }
 
-void RecordWindowSnapAcceleratorAction(WindowSnapAcceleratorAction action) {
+void RecordActivateDeskByIndexAcceleratorAction(
+    const ActivateDeskAcceleratorAction& action) {
+  UMA_HISTOGRAM_ENUMERATION(kAccelActivateDeskByIndex, action);
+}
+
+void RecordWindowSnapAcceleratorAction(
+    const WindowSnapAcceleratorAction& action) {
   UMA_HISTOGRAM_ENUMERATION(kAccelWindowSnap, action);
 }
 
@@ -364,6 +388,19 @@ void EnterImageCaptureMode(CaptureModeSource source,
   capture_mode_controller->Start(entry_type);
 }
 
+// Get the window's frame size button, or nullptr if there isn't one.
+chromeos::FrameSizeButton* GetFrameSizeButton(aura::Window* window) {
+  if (!window) {
+    return nullptr;
+  }
+  auto* frame_view = NonClientFrameViewAsh::Get(window);
+  if (!frame_view) {
+    return nullptr;
+  }
+  return static_cast<chromeos::FrameSizeButton*>(
+      frame_view->GetHeaderView()->caption_button_container()->size_button());
+}
+
 }  // namespace
 
 bool CanActivateTouchHud() {
@@ -462,6 +499,35 @@ bool CanToggleDictation() {
   return Shell::Get()->accessibility_controller()->dictation().enabled();
 }
 
+bool CanToggleFloatingWindow() {
+  if (!chromeos::wm::features::IsFloatWindowEnabled()) {
+    return false;
+  }
+  aura::Window* window = window_util::GetActiveWindow();
+  return window && chromeos::wm::CanFloatWindow(window);
+}
+
+bool CanToggleMultitaskMenu() {
+  if (!chromeos::wm::features::IsFloatWindowEnabled() ||
+      Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return false;
+  }
+  aura::Window* window = window_util::GetActiveWindow();
+  if (!window) {
+    return false;
+  }
+  // If the active window has a visible size button, the menu can be opened.
+  if (auto* size_button = GetFrameSizeButton(window);
+      size_button && size_button->GetVisible()) {
+    return true;
+  }
+  // Else if the transient parent is showing the multitask menu, the menu can be
+  // closed.
+  auto* transient_parent = wm::GetTransientParent(window);
+  auto* size_button = GetFrameSizeButton(transient_parent);
+  return size_button && size_button->IsMultitaskMenuShown();
+}
+
 bool CanToggleOverview() {
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
@@ -489,7 +555,7 @@ bool CanToggleResizeLockMenu() {
   aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window)
     return false;
-  auto* frame_view = ash::NonClientFrameViewAsh::Get(active_window);
+  auto* frame_view = NonClientFrameViewAsh::Get(active_window);
   return frame_view && frame_view->GetToggleResizeLockMenuCallback();
 }
 
@@ -535,6 +601,9 @@ void ActivateDeskAtIndex(AcceleratorAction action) {
 
   const auto& desks = desks_controller->desks();
   if (target_index < desks.size()) {
+    // Record which desk users switch to.
+    RecordActivateDeskByIndexAcceleratorAction(
+        static_cast<ActivateDeskAcceleratorAction>(target_index));
     desks_controller->ActivateDesk(
         desks[target_index].get(),
         DesksSwitchSource::kIndexedDeskSwitchShortcut);
@@ -1341,7 +1410,7 @@ bool ToggleMinimized() {
 
 void ToggleResizeLockMenu() {
   aura::Window* active_window = window_util::GetActiveWindow();
-  auto* frame_view = ash::NonClientFrameViewAsh::Get(active_window);
+  auto* frame_view = NonClientFrameViewAsh::Get(active_window);
   frame_view->GetToggleResizeLockMenuCallback().Run();
 }
 
@@ -1375,6 +1444,24 @@ void ToggleMirrorMode() {
   bool mirror = !Shell::Get()->display_manager()->IsInMirrorMode();
   Shell::Get()->display_configuration_controller()->SetMirrorMode(
       mirror, true /* throttle */);
+}
+
+void ToggleMultitaskMenu() {
+  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  aura::Window* window = window_util::GetActiveWindow();
+  DCHECK(window);
+  auto* frame_view = NonClientFrameViewAsh::Get(window);
+  if (!frame_view) {
+    // If `window` doesn't have a frame, it must be the multitask menu and have
+    // a transient parent for `CanToggleMultitaskMenu()` to arrive here.
+    auto* transient_parent = wm::GetTransientParent(window);
+    DCHECK(transient_parent);
+    frame_view = NonClientFrameViewAsh::Get(transient_parent);
+  }
+  DCHECK(frame_view);
+  auto* size_button =
+      frame_view->GetHeaderView()->caption_button_container()->size_button();
+  static_cast<chromeos::FrameSizeButton*>(size_button)->ToggleMultitaskMenu();
 }
 
 void ToggleOverview() {
@@ -1505,9 +1592,9 @@ void WindowSnap(AcceleratorAction action) {
     }
   }
 
-  const WindowSnapWMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
-                                    ? WM_EVENT_CYCLE_SNAP_PRIMARY
-                                    : WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
+                          ? WM_EVENT_CYCLE_SNAP_PRIMARY
+                          : WM_EVENT_CYCLE_SNAP_SECONDARY);
   aura::Window* active_window = window_util::GetActiveWindow();
   DCHECK(active_window);
 

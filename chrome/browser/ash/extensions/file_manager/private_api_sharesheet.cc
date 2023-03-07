@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ash/extensions/file_manager/private_api_sharesheet.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -114,7 +114,7 @@ void FileManagerPrivateInternalSharesheetHasTargetsFunction::
     if (connection_status == drive::util::DRIVE_CONNECTED_METERED ||
         connection_status == drive::util::DRIVE_CONNECTED) {
       file_manager::util::SingleEntryPropertiesGetterForDriveFs::Start(
-          file_system_urls_[0], profile_,
+          file_system_urls_[0], profile_, /*requested_properties=*/{},
           base::BindOnce(
               &FileManagerPrivateInternalSharesheetHasTargetsFunction::
                   OnDrivePropertyCollected,
@@ -240,7 +240,7 @@ void FileManagerPrivateInternalInvokeSharesheetFunction::OnMimeTypesCollected(
     if (connection_status == drive::util::DRIVE_CONNECTED_METERED ||
         connection_status == drive::util::DRIVE_CONNECTED) {
       file_manager::util::SingleEntryPropertiesGetterForDriveFs::Start(
-          file_system_urls_[0], profile_,
+          file_system_urls_[0], profile_, /*requested_properties=*/{},
           base::BindOnce(&FileManagerPrivateInternalInvokeSharesheetFunction::
                              OnDrivePropertyCollected,
                          this, launch_source, std::move(mime_types)));

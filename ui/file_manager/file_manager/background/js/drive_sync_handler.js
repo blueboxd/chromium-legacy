@@ -50,12 +50,20 @@ export class DriveSyncHandlerImpl extends EventTarget {
     this.driveErrorIdOutOfQuota_ = 1;
 
     /**
+     * Predefined error ID for shared drive out of storage messages.
+     * @type {number}
+     * @const
+     * @private
+     */
+    this.driveErrorIdSharedDriveNoStorage_ = 2;
+
+    /**
      * Maximum reserved ID for predefined errors.
      * @type {number}
      * @const
      * @private
      */
-    this.driveErrorIdMax_ = this.driveErrorIdOutOfQuota_;
+    this.driveErrorIdMax_ = this.driveErrorIdSharedDriveNoStorage_;
 
     /**
      * Counter for error ID.
@@ -286,13 +294,17 @@ export class DriveSyncHandlerImpl extends EventTarget {
       return;
     }
 
+    const metadataKeys = ['syncStatus', 'progress'];
+
     // Get the cached syncStatus metadata for received statuses.
     const entries = statuses.map(({entry}) => entry);
-    const cached = this.metadataModel_.getCache(entries, ['syncStatus']);
+    const cached = this.metadataModel_.getCache(entries, metadataKeys);
 
-    // Filter out statuses that match what we already have in the cache.
+    // Filter out statuses that match what we already have in the cache, but
+    // keep all "in_progress" statuses to retrieve their updated progress.
     const entriesToInvalidate = entries.filter(
-        (_, i) => cached[i].syncStatus !== statuses[i].transferState);
+        (_, i) => statuses[i].transferState === 'in_progress' ||
+            cached[i].syncStatus !== statuses[i].transferState);
 
     // Get unique parents of entries to be invalidated.
     const directoriesToInvalidate = await getUniqueParents(entriesToInvalidate);
@@ -300,7 +312,7 @@ export class DriveSyncHandlerImpl extends EventTarget {
 
     // Invalidate entries and their parent directories.
     this.metadataModel_.notifyEntriesChanged(entriesToInvalidate);
-    this.metadataModel_.get(entriesToInvalidate, ['syncStatus']);
+    this.metadataModel_.get(entriesToInvalidate, metadataKeys);
   }
 
   /**
@@ -426,6 +438,21 @@ export class DriveSyncHandlerImpl extends EventTarget {
           break;
         case 'no_local_space':
           item.message = strf('DRIVE_OUT_OF_SPACE_HEADER', name);
+          break;
+        case 'no_shared_drive_space':
+          item.message =
+              strf('SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE', event.sharedDrive);
+          item.setExtraButton(
+              ProgressItemState.ERROR, str('LEARN_MORE_LABEL'),
+              () => util.visitURL(
+                  str('GOOGLE_DRIVE_ENTERPRISE_MANAGE_STORAGE_URL')));
+
+          // Shared drives will keep trying to sync the file until it is either
+          // removed or available storage is increased. This ensures each
+          // subsequent error message only ever shows once for each individual
+          // shared drive.
+          item.id = `${DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX}${
+              this.driveErrorIdSharedDriveNoStorage_}${event.sharedDrive}`;
           break;
         case 'misc':
           item.message = strf('SYNC_MISC_ERROR', name);

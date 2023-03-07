@@ -6,7 +6,8 @@
 
 #import <utility>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
+#import "base/task/single_thread_task_runner.h"
 #import "base/task/task_traits.h"
 #import "components/enterprise/browser/reporting/report_generator.h"
 #import "components/enterprise/browser/reporting/report_scheduler.h"

@@ -26,10 +26,6 @@
 
 class AccountId;
 
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
-
 namespace {
 class WallpaperControllerClientImplTest;
 }
@@ -82,12 +78,6 @@ class WallpaperControllerClientImpl
   void FetchGooglePhotosAccessToken(
       const AccountId& account_id,
       FetchGooglePhotosAccessTokenCallback callback) override;
-  void SaveWallpaperToDriveFs(
-      const AccountId& account_id,
-      const base::FilePath& origin,
-      base::OnceCallback<void(bool)> wallpaper_saved_callback) override;
-  base::FilePath GetWallpaperPathFromDriveFs(
-      const AccountId& account_id) override;
   void GetFilesId(const AccountId& account_id,
                   base::OnceCallback<void(const std::string&)>
                       files_id_callback) const override;
@@ -113,9 +103,6 @@ class WallpaperControllerClientImpl
   void SetGooglePhotosWallpaper(
       const ash::GooglePhotosWallpaperParams& params,
       ash::WallpaperController::SetWallpaperCallback callback);
-  void SetOnlineWallpaperIfExists(
-      const ash::OnlineWallpaperParams& params,
-      ash::WallpaperController::SetWallpaperCallback callback);
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path);
@@ -135,8 +122,6 @@ class WallpaperControllerClientImpl
   void RemoveAlwaysOnTopWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);
   void RemovePolicyWallpaper(const AccountId& account_id);
-  void GetOfflineWallpaperList(
-      ash::WallpaperController::GetOfflineWallpaperListCallback callback);
   void SetAnimationDuration(const base::TimeDelta& animation_duration);
   void OpenWallpaperPickerIfAllowed();
   void MinimizeInactiveWindows(const std::string& user_id_hash);
@@ -230,11 +215,7 @@ class WallpaperControllerClientImpl
                           session_manager::SessionManagerObserver>
       session_observation_{this};
 
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-
   base::WeakPtrFactory<WallpaperControllerClientImpl> weak_factory_{this};
-  base::WeakPtrFactory<WallpaperControllerClientImpl> storage_weak_factory_{
-      this};
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_WALLPAPER_CONTROLLER_CLIENT_IMPL_H_

@@ -86,8 +86,8 @@ scoped_refptr<const Extension> GetExtensionWithHostPermission(
                        .Set("description", "an extension")
                        .Set("manifest_version", 2)
                        .Set("version", "1.0.0")
-                       .Set("permissions", permissions.BuildList())
-                       .BuildDict())
+                       .Set("permissions", permissions.Build())
+                       .Build())
       .SetLocation(location)
       .SetID(id)
       .Build();
@@ -1661,6 +1661,17 @@ TEST_F(CaptureVisiblePageTest, SelfExtensionURLs) {
     EXPECT_TRUE(CanCapture(page_capture(), url,
                            extensions::CaptureRequirement::kPageCapture));
   }
+}
+
+TEST_F(CaptureVisiblePageTest, NoPermissions) {
+  const scoped_refptr<const Extension> no_permissions =
+      ExtensionBuilder("no_page capture").Build();
+  const GURL url("https://example.com");
+
+  EXPECT_FALSE(CanCapture(*no_permissions, url,
+                          extensions::CaptureRequirement::kPageCapture));
+  EXPECT_FALSE(CanCapture(*no_permissions, url,
+                          extensions::CaptureRequirement::kActiveTabOrAllUrls));
 }
 
 TEST_F(CaptureVisiblePageTest, PolicyBlockedURLs) {

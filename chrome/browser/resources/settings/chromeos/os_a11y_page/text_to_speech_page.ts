@@ -12,33 +12,24 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {PrefsMixin} from '../../prefs/prefs_mixin.js';
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from '../device_page/device_page_browser_proxy.js';
 import {routes} from '../os_route.js';
-import {RouteOriginMixin, RouteOriginMixinInterface} from '../route_origin_mixin.js';
+import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
 import {getTemplate} from './text_to_speech_page.html.js';
 import {TextToSpeechPageBrowserProxy, TextToSpeechPageBrowserProxyImpl} from './text_to_speech_page_browser_proxy.js';
 
-const SettingsTextToSpeechPageElementBase =
-    mixinBehaviors(
-        [
-          DeepLinkingBehavior,
-        ],
-        RouteOriginMixin(
-            PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement))))) as {
-      new (): PolymerElement & I18nMixinInterface &
-          WebUiListenerMixinInterface & PrefsMixinInterface &
-          RouteOriginMixinInterface & DeepLinkingBehaviorInterface,
-    };
+const SettingsTextToSpeechPageElementBase = DeepLinkingMixin(RouteOriginMixin(
+    PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
 class SettingsTextToSpeechPageElement extends
     SettingsTextToSpeechPageElementBase {
@@ -52,6 +43,16 @@ class SettingsTextToSpeechPageElement extends
 
   static get properties() {
     return {
+      /**
+       * Whether to show the toggle button for PDF OCR.
+       */
+      showPdfOcrSetting_: {
+        type: Boolean,
+        value: function() {
+          return loadTimeData.getBoolean('pdfOcrEnabled');
+        },
+      },
+
       /**
        * |hasKeyboard_| starts undefined so observer doesn't trigger until it
        * has been populated.
@@ -67,11 +68,11 @@ class SettingsTextToSpeechPageElement extends
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kChromeVox,
           Setting.kSelectToSpeak,
         ]),
@@ -83,6 +84,7 @@ class SettingsTextToSpeechPageElement extends
   private hasKeyboard_: boolean;
   private route_: Route;
   private textToSpeechBrowserProxy_: TextToSpeechPageBrowserProxy;
+  private showPdfOcrSetting_: boolean;
 
   constructor() {
     super();

@@ -64,7 +64,8 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
 #endif
 {
   profile_ = Profile::FromWebUI(web_ui);
-  source_ = content::WebUIDataSource::Create(chrome::kChromeUIInternalsHost);
+  source_ = content::WebUIDataSource::CreateAndAdd(
+      profile_, chrome::kChromeUIInternalsHost);
   source_->AddResourcePaths(
       base::make_span(kInternalsResources, kInternalsResourcesSize));
   webui::EnableTrustedTypesCSP(source_);
@@ -91,20 +92,12 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
 #else
   source_->AddResourcePath("user-education",
                            IDR_USER_EDUCATION_INTERNALS_INDEX_HTML);
-
-  // chrome://internals/web-app
-  // This page has moved to chrome://web-app-internals, see
-  // WebAppInternalsSource.
-  // TODO(crbug.com/1226263): Clean up this redirect after M94 goes stable.
-  source_->AddResourcePath("web-app", IDR_WEB_APP_INTERNALS_HTML);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // chrome://internals/session-service
   source_->SetRequestFilter(
       base::BindRepeating(&ShouldHandleWebUIRequestCallback),
       base::BindRepeating(&HandleWebUIRequestCallback, profile_));
-
-  content::WebUIDataSource::Add(profile_, source_);
 }
 
 InternalsUI::~InternalsUI() = default;
@@ -151,8 +144,7 @@ void InternalsUI::CreateHelpBubbleHandler(
     mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler>
         pending_handler) {
   help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
-      std::move(pending_handler), std::move(pending_client),
-      web_ui()->GetWebContents(),
+      std::move(pending_handler), std::move(pending_client), this,
       std::vector<ui::ElementIdentifier>{kWebUIIPHDemoElementIdentifier});
 }
 

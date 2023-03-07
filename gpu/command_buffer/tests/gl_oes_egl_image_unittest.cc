@@ -26,10 +26,13 @@
     }                                            \
   } while (false)
 
+namespace gpu {
 namespace {
 
 static const int kImageWidth = 64;
 static const int kImageHeight = 64;
+
+}  // namespace
 
 class GpuOESEGLImageTest : public testing::Test,
                            public gpu::GpuCommandBufferTestEGL {
@@ -128,10 +131,9 @@ TEST_F(GpuOESEGLImageTest, EGLImageToTexture) {
 
   // Bind the image.
   EXPECT_TRUE(image->BindTexImage(GL_TEXTURE_2D));
-  gl_.decoder()->SetLevelInfo(
-      texture_id, 0 /* level */, image->GetInternalFormat(), size.width(),
-      size.height(), 1 /* depth */, image->GetDataFormat(),
-      image->GetDataType(), gfx::Rect(size));
+  gl_.decoder()->SetLevelInfo(texture_id, 0 /* level */, GL_RGB, size.width(),
+                              size.height(), 1 /* depth */, GL_RGB,
+                              GL_UNSIGNED_BYTE, gfx::Rect(size));
 
   // TODO(crbug.com/1323341): This call is likely unnecessary, but it's not
   // currently possible to actually run the test to completion to verify. See
@@ -167,13 +169,11 @@ TEST_F(GpuOESEGLImageTest, EGLImageToTexture) {
                                  nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
-  // Release the image.
   // TODO(crbug.com/1323341): This call is likely unnecessary, but it's not
   // currently possible to actually run the test to completion to verify. See
   // https://chromium-review.googlesource.com/c/chromium/src/+/4055269/comment/e8eed809_ffcdfc9c/.
   gl_.decoder()->AttachImageToTextureWithClientBinding(
       texture_id, GL_TEXTURE_2D, image.get());
-  image->ReleaseTexImage(GL_TEXTURE_2D);
 
   // Clean up.
   glDeleteProgram(program);
@@ -185,4 +185,4 @@ TEST_F(GpuOESEGLImageTest, EGLImageToTexture) {
 #endif  // !defined(ADDRESS_SANITIZER)
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-}  // namespace
+}  // namespace gpu

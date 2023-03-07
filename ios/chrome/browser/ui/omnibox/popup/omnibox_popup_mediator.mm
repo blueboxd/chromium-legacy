@@ -24,10 +24,13 @@
 #import "components/variations/variations_ids_provider.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion_group_impl.h"
 #import "ios/chrome/browser/ui/omnibox/popup/carousel_item.h"
@@ -39,6 +42,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_suggestion_wrapper.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_debug_info_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
+#import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -170,8 +174,6 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 
   [self.consumer updateMatches:groups
       preselectedMatchGroupIndex:self.preselectedGroupIndex];
-
-  [self loadModelImages];
 }
 
 #pragma mark - AutocompleteResultConsumerDelegate
@@ -266,32 +268,6 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 }
 
 #pragma mark AutocompleteResultConsumerDelegate Private
-
-- (void)loadModelImages {
-  for (PopupMatchSection* section in self.model.sections) {
-    for (PopupMatch* match in section.matches) {
-      PopupImage* popupImage = match.image;
-      switch (popupImage.icon.iconType) {
-        case OmniboxIconTypeSuggestionIcon:
-          break;
-        case OmniboxIconTypeImage: {
-          [self fetchImage:popupImage.icon.imageURL.gurl
-                completion:^(UIImage* image) {
-                  popupImage.iconUIImageFromURL = image;
-                }];
-          break;
-        }
-        case OmniboxIconTypeFavicon: {
-          [self fetchFavicon:popupImage.icon.imageURL.gurl
-                  completion:^(UIImage* image) {
-                    popupImage.iconUIImageFromURL = image;
-                  }];
-          break;
-        }
-      }
-    }
-  }
-}
 
 /// Logs selected tile index and type.
 - (void)logSelectedAutocompleteTile:(const AutocompleteMatch&)match {
@@ -564,7 +540,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
             [actionFactory actionToOpenInNewIncognitoTabWithURL:copyURL
                                                      completion:nil];
 
-        if (self.allowIncognitoActions) {
+        if (!self.allowIncognitoActions) {
           // Disable the "Open in Incognito" option if the incognito mode is
           // disabled.
           incognitoAction.attributes = UIMenuElementAttributesDisabled;
@@ -603,6 +579,101 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
                                                actionProvider:actionProvider];
 }
 
+- (NSArray<UIAccessibilityCustomAction*>*)
+    accessibilityActionsForCarouselItem:(CarouselItem*)carouselItem
+                               fromView:(UIView*)view {
+  __weak __typeof(self) weakSelf = self;
+  __weak CarouselItem* weakItem = carouselItem;
+  __weak UIView* weakView = view;
+  GURL copyURL = carouselItem.URL.gurl;
+
+  NSMutableArray* actions = [[NSMutableArray alloc] init];
+
+  {  // Open in new tab
+    UIAccessibilityCustomActionHandler openInNewTabBlock =
+        ^BOOL(UIAccessibilityCustomAction*) {
+          [weakSelf openNewTabWithMostVisitedItem:weakItem incognito:NO];
+          return YES;
+        };
+    UIAccessibilityCustomAction* openInNewTab =
+        [[UIAccessibilityCustomAction alloc]
+             initWithName:l10n_util::GetNSString(
+                              IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
+            actionHandler:openInNewTabBlock];
+    [actions addObject:openInNewTab];
+  }
+  {  // Remove
+    UIAccessibilityCustomActionHandler removeBlock =
+        ^BOOL(UIAccessibilityCustomAction*) {
+          [weakSelf removeMostVisitedForURL:copyURL withCarouselItem:weakItem];
+          return YES;
+        };
+    UIAccessibilityCustomAction* removeMostVisited =
+        [[UIAccessibilityCustomAction alloc]
+             initWithName:l10n_util::GetNSString(
+                              IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)
+            actionHandler:removeBlock];
+    [actions addObject:removeMostVisited];
+  }
+  if (self.allowIncognitoActions) {  // Open in new incognito tab
+    UIAccessibilityCustomActionHandler openInNewIncognitoTabBlock =
+        ^BOOL(UIAccessibilityCustomAction*) {
+          [weakSelf openNewTabWithMostVisitedItem:weakItem incognito:YES];
+          return YES;
+        };
+    UIAccessibilityCustomAction* openInIncognitoNewTab =
+        [[UIAccessibilityCustomAction alloc]
+             initWithName:l10n_util::GetNSString(
+                              IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
+            actionHandler:openInNewIncognitoTabBlock];
+    [actions addObject:openInIncognitoNewTab];
+  }
+  if (base::ios::IsMultipleScenesSupported()) {  // Open in new window
+    UIAccessibilityCustomActionHandler openInNewWindowBlock = ^BOOL(
+        UIAccessibilityCustomAction*) {
+      NSUserActivity* activity =
+          ActivityToLoadURL(WindowActivityContentSuggestionsOrigin, copyURL);
+      [weakSelf.applicationCommandsHandler openNewWindowWithActivity:activity];
+      return YES;
+    };
+    UIAccessibilityCustomAction* newWindowAction =
+        [[UIAccessibilityCustomAction alloc]
+             initWithName:l10n_util::GetNSString(
+                              IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)
+            actionHandler:openInNewWindowBlock];
+    [actions addObject:newWindowAction];
+  }
+  {  // Copy
+    UIAccessibilityCustomActionHandler copyBlock =
+        ^BOOL(UIAccessibilityCustomAction*) {
+          StoreURLInPasteboard(copyURL);
+          return YES;
+        };
+    UIAccessibilityCustomAction* copyAction =
+        [[UIAccessibilityCustomAction alloc]
+             initWithName:l10n_util::GetNSString(IDS_IOS_COPY_LINK_ACTION_TITLE)
+            actionHandler:copyBlock];
+    [actions addObject:copyAction];
+  }
+  {  // Share
+    UIAccessibilityCustomActionHandler shareBlock =
+        ^BOOL(UIAccessibilityCustomAction*) {
+          [weakSelf.sharingDelegate popupMediator:weakSelf
+                                         shareURL:copyURL
+                                            title:weakItem.title
+                                       originView:weakView];
+          return YES;
+        };
+    UIAccessibilityCustomAction* shareAction =
+        [[UIAccessibilityCustomAction alloc]
+             initWithName:l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL)
+            actionHandler:shareBlock];
+    [actions addObject:shareAction];
+  }
+
+  return actions;
+}
+
 #pragma mark CarouselItemMenuProvider Private
 
 /// Blocks `URL` so it won't appear in most visited URLs.
@@ -624,6 +695,17 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
       base::UserMetricsAction("MostVisited_UrlBlocklisted_Omnibox"));
   [self blockMostVisitedURL:URL];
   [self.carouselItemConsumer deleteCarouselItem:carouselItem];
+}
+
+/// Opens `carouselItem` in a new tab.
+/// `incognito`: open in incognito tab.
+- (void)openNewTabWithMostVisitedItem:(CarouselItem*)carouselItem
+                            incognito:(BOOL)incognito {
+  DCHECK(self.applicationCommandsHandler);
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:carouselItem.URL.gurl
+                                      inIncognito:incognito];
+  [self.applicationCommandsHandler openURLInNewTab:command];
 }
 
 @end

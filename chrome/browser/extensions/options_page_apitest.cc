@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
           .Set("manifest_version", 2)
           .Set("name", "Extension for options param test")
           .Set("options_ui",
-               DictionaryBuilder().Set("page", "options.html").BuildDict())
+               DictionaryBuilder().Set("page", "options.html").Build())
           .Set("version", "1")
           .ToJSON());
 

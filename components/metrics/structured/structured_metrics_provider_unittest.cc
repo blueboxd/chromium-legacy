@@ -224,11 +224,12 @@ class StructuredMetricsProviderTest : public testing::Test {
     // Create a system profile, normally done by ChromeMetricsServiceClient.
     system_profile_provider_ = std::make_unique<TestSystemProfileProvider>();
     // Create the provider, normally done by the ChromeMetricsServiceClient.
-    provider_ = std::make_unique<StructuredMetricsProvider>(
-        system_profile_provider_.get());
-    // Set the device key data to be within the temp dir, rather than to
-    // /var/lib/metrics/structured as is default.
-    provider_->SetDeviceKeyDataPathForTest(DeviceKeyFilePath());
+    provider_ = std::unique_ptr<StructuredMetricsProvider>(
+        new StructuredMetricsProvider(
+            DeviceKeyFilePath(),
+            /*write_delay=*/base::Seconds(0),
+            /*min_independent_metrics_interval=*/base::Seconds(0),
+            system_profile_provider_.get()));
     // Enable recording, normally done after the metrics service has checked
     // consent allows recording.
     provider_->OnRecordingEnabled();
@@ -236,6 +237,22 @@ class StructuredMetricsProviderTest : public testing::Test {
     // user logs in.
     provider_->OnProfileAdded(TempDirPath());
     Wait();
+  }
+
+  // Enables recording without adding a profile.
+  void InitWithoutLogin() {
+    // Create a system profile, normally done by ChromeMetricsServiceClient.
+    system_profile_provider_ = std::make_unique<TestSystemProfileProvider>();
+    // Create the provider, normally done by the ChromeMetricsServiceClient.
+    provider_ = std::unique_ptr<StructuredMetricsProvider>(
+        new StructuredMetricsProvider(
+            DeviceKeyFilePath(),
+            /*write_delay=*/base::Seconds(0),
+            /*min_independent_metrics_interval=*/base::Seconds(0),
+            system_profile_provider_.get()));
+    // Enable recording, normally done after the metrics service has checked
+    // consent allows recording.
+    provider_->OnRecordingEnabled();
   }
 
   bool is_initialized() {
@@ -270,11 +287,6 @@ class StructuredMetricsProviderTest : public testing::Test {
   }
 
   StructuredDataProto GetIndependentMetrics() {
-    // Independent metrics are only reported at intervals. So advance time to
-    // ensure HasIndependentMetrics will return true if there are recorded
-    // metrics.
-    task_environment_.AdvanceClock(base::Hours(1));
-
     ChromeUserMetricsExtension uma_proto;
     if (provider_->HasIndependentMetrics()) {
       provider_->ProvideIndependentMetrics(
@@ -289,11 +301,6 @@ class StructuredMetricsProviderTest : public testing::Test {
   }
 
   ChromeUserMetricsExtension GetUmaProto() {
-    // Independent metrics are only reported at intervals. So advance time to
-    // ensure HasIndependentMetrics will return true if there are recorded
-    // metrics.
-    task_environment_.AdvanceClock(base::Hours(1));
-
     ChromeUserMetricsExtension uma_proto;
     if (provider_->HasIndependentMetrics()) {
       provider_->ProvideIndependentMetrics(
@@ -347,11 +354,6 @@ class StructuredMetricsProviderHwidTest : public StructuredMetricsProviderTest {
   bool events_retrieved() { return events_retrieved_; }
 
   std::unique_ptr<ChromeUserMetricsExtension> GetUmaProto() {
-    // Independent metrics are only reported at intervals. So advance time to
-    // ensure HasIndependentMetrics will return true if there are recorded
-    // metrics.
-    task_environment_.AdvanceClock(base::Hours(1));
-
     auto uma_proto = std::make_unique<ChromeUserMetricsExtension>();
 
     // Copy events from disk to proto.
@@ -414,6 +416,7 @@ TEST_F(StructuredMetricsProviderTest, ReportingStateChangesHandledCorrectly) {
   // Record an event and read the keys, there should be one.
   events::v2::test_project_one::TestEventOne().Record();
   EXPECT_EQ(GetIndependentMetrics().events_size(), 1);
+
   const KeyDataProto enabled_proto = ReadKeys(ProfileKeyFilePath());
   EXPECT_EQ(enabled_proto.keys_size(), 1);
 
@@ -956,10 +959,7 @@ TEST_F(StructuredMetricsProviderTest, EventsNotRecordedBeforeRecordingEnabled) {
 // Test that events reported after recording is enabled but before the keys are
 // loaded are hashed and stored after keys are loaded.
 TEST_F(StructuredMetricsProviderTest, EventsRecordedBeforeKeysInitialized) {
-  system_profile_provider_ = std::make_unique<TestSystemProfileProvider>();
-  provider_ = std::make_unique<StructuredMetricsProvider>(
-      system_profile_provider_.get());
-  OnRecordingEnabled();
+  InitWithoutLogin();
   // Emulate metric before login.
   events::v2::test_project_one::TestEventOne().SetTestMetricTwo(1).Record();
 
@@ -1112,6 +1112,30 @@ TEST_F(StructuredMetricsProviderTest, EventSequenceLogging) {
   EXPECT_EQ(metric.value_double(), 1.0);
 
   ExpectNoErrors();
+}
+
+TEST_F(StructuredMetricsProviderTest, EventsClone) {
+  Init();
+
+  events::v2::cr_os_events::Test1 event;
+
+  const int test_time = 50;
+  const double test_metric = 1.0;
+
+  event.SetEventSequenceMetadata(Event::EventSequenceMetadata(1));
+  event.SetRecordedTimeSinceBoot(base::Milliseconds(test_time));
+  event.SetMetric1(test_metric);
+
+  auto cloned_event = event.Clone();
+
+  EXPECT_EQ(event.event_sequence_metadata().reset_counter,
+            cloned_event.event_sequence_metadata().reset_counter);
+  EXPECT_EQ(event.project_name(), cloned_event.project_name());
+  EXPECT_EQ(event.event_name(), cloned_event.event_name());
+  EXPECT_EQ(event.is_event_sequence(), cloned_event.is_event_sequence());
+  EXPECT_EQ(event.recorded_time_since_boot(),
+            cloned_event.recorded_time_since_boot());
+  EXPECT_EQ(event.metric_values(), cloned_event.metric_values());
 }
 
 }  // namespace metrics::structured

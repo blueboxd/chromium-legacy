@@ -21,9 +21,9 @@ import '../site_settings/settings_category_default_radio_group.js';
 import './privacy_guide/privacy_guide_dialog.js';
 
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -34,10 +34,10 @@ import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_prox
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../metrics_browser_proxy.js';
 import {SyncStatus} from '../people_page/sync_browser_proxy.js';
-import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
+import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
-import {RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
-import {ChooserType, ContentSettingsTypes, NotificationSetting} from '../site_settings/constants.js';
+import {RouteObserverMixin, Router} from '../router.js';
+import {ChooserType, ContentSettingsTypes, CookieControlsMode, NotificationSetting} from '../site_settings/constants.js';
 import {NotificationPermission, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 import {getTemplate} from './privacy_page.html.js';
@@ -57,13 +57,8 @@ export interface SettingsPrivacyPageElement {
   };
 }
 
-const SettingsPrivacyPageElementBase =
-    RouteObserverMixin(WebUiListenerMixin(
-        I18nMixin(PrefsMixin(BaseMixin(PolymerElement))))) as {
-      new (): PolymerElement & I18nMixinInterface &
-          WebUiListenerMixinInterface & PrefsMixinInterface &
-          RouteObserverMixinInterface,
-    };
+const SettingsPrivacyPageElementBase = RouteObserverMixin(
+    WebUiListenerMixin(I18nMixin(PrefsMixin(BaseMixin(PolymerElement)))));
 
 export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   static get is() {
@@ -163,11 +158,6 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
       showPrivacyGuideEntryPoint_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('showPrivacyGuide'),
-      },
-
-      enablePrivacyGuidePage_: {
-        type: Boolean,
-        computed: 'computeEnablePrivacyGuidePage_(showPrivacyGuideEntryPoint_)',
       },
 
       showNotificationPermissionsReview_: {
@@ -288,7 +278,6 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   private enableQuietNotificationPromptsSetting_: boolean;
   private enableWebBluetoothNewPermissionsBackend_: boolean;
   private showPrivacyGuideEntryPoint_: boolean;
-  private enablePrivacyGuidePage_: boolean;
   private showNotificationPermissionsReview_: boolean;
   private isPrivacySandboxRestricted_: boolean;
   private isPrivacySandboxSettings4_: boolean;
@@ -346,8 +335,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         Router.getInstance().getCurrentRoute() === routes.CLEAR_BROWSER_DATA;
     this.showPrivacyGuideDialog_ =
         Router.getInstance().getCurrentRoute() === routes.PRIVACY_GUIDE &&
-        this.showPrivacyGuideEntryPoint_ &&
-        loadTimeData.getBoolean('privacyGuide2Enabled');
+        this.showPrivacyGuideEntryPoint_;
   }
 
   /**
@@ -470,11 +458,6 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         permissions.length > 0;
   }
 
-  private computeEnablePrivacyGuidePage_() {
-    return this.showPrivacyGuideEntryPoint_ &&
-        !loadTimeData.getBoolean('privacyGuide2Enabled');
-  }
-
   private interactedWithPage_() {
     HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
         TrustSafetyInteraction.USED_PRIVACY_CARD);
@@ -490,6 +473,21 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
     return this.safetyCheckNotificationPermissionsEnabled_ ?
         this.i18n('siteSettingsNotificationsDefaultBehaviorDescription') :
         this.i18n('siteSettingsDefaultBehaviorDescription');
+  }
+
+  private computeThirdPartyCookiesSublabel_(): string {
+    const currentCookieSetting =
+        this.getPref('profile.cookie_controls_mode').value;
+    switch (currentCookieSetting) {
+      case CookieControlsMode.OFF:
+        return this.i18n('thirdPartyCookiesLinkRowSublabelEnabled');
+      case CookieControlsMode.INCOGNITO_ONLY:
+        return this.i18n('thirdPartyCookiesLinkRowSublabelDisabledIncognito');
+      case CookieControlsMode.BLOCK_THIRD_PARTY:
+        return this.i18n('thirdPartyCookiesLinkRowSublabelDisabled');
+      default:
+        assertNotReached();
+    }
   }
 
   private isPrivacySandboxSettings3Enabled_(): boolean {

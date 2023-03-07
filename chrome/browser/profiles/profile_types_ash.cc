@@ -4,45 +4,25 @@
 
 #include "chrome/browser/profiles/profile_types_ash.h"
 
-#include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
-
-namespace {
-
-bool IsSigninProfilePath(const base::FilePath& profile_path) {
-  return profile_path.value() == chrome::kInitialProfile;
-}
-
-bool IsLockScreenAppProfilePath(const base::FilePath& profile_path) {
-  return profile_path.value() == chrome::kLockScreenAppProfile;
-}
-
-bool IsLockScreenProfilePath(const base::FilePath& profile_path) {
-  return profile_path.value() == chrome::kLockScreenProfile;
-}
-
-}  // namespace
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 
 bool IsUserProfile(const Profile* profile) {
-  return !IsSigninProfile(profile) && !IsLockScreenAppProfile(profile) &&
-         !IsLockScreenProfile(profile);
+  return ash::IsUserBrowserContext(const_cast<Profile*>(profile));
 }
 
 bool IsUserProfilePath(const base::FilePath& profile_path) {
-  return !IsSigninProfilePath(profile_path) &&
-         !IsLockScreenAppProfilePath(profile_path) &&
-         !IsLockScreenProfilePath(profile_path);
+  return ash::IsUserBrowserContextBaseName(profile_path);
 }
 
 bool IsLockScreenProfile(const Profile* profile) {
-  return profile && IsLockScreenProfilePath(profile->GetBaseName());
+  return ash::IsLockScreenBrowserContext(const_cast<Profile*>(profile));
 }
 
 bool IsLockScreenAppProfile(const Profile* profile) {
-  return profile && IsLockScreenAppProfilePath(profile->GetBaseName());
+  return ash::IsLockScreenAppBrowserContext(const_cast<Profile*>(profile));
 }
 
 bool IsSigninProfile(const Profile* profile) {
-  return profile && IsSigninProfilePath(profile->GetBaseName());
+  return ash::IsSigninBrowserContext(const_cast<Profile*>(profile));
 }

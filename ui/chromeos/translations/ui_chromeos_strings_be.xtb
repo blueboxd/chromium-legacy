@@ -128,7 +128,6 @@
 <translation id="2084108471225856927">Налады прылады</translation>
 <translation id="2084809735218147718">Спеўная падзяка</translation>
 <translation id="2088690981887365033">Сетка VPN</translation>
-<translation id="2114191879048183086">Некалькі (<ph name="NUMBER_OF_ITEMS" />) элементаў будуць выдалены, і вы не зможаце іх аднавіць.</translation>
 <translation id="2122305276694332719">Аўтаматычнае падключэнне да схаванай сеткі дазваляе іншым бачыць вашу прыладу і некаторыя налады сеткі, а таму не рэкамендуецца.</translation>
 <translation id="2125607626296734455">Кхмерская</translation>
 <translation id="2139545522194199494">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падключыцца</translation>
@@ -145,6 +144,7 @@
 <translation id="2208919847696382164">Усталюйце пакет Linux</translation>
 <translation id="2225536596944493418">Сапраўды выдаліць гэтыя элементы (<ph name="NUMBER_OF_ITEMS" />)?</translation>
 <translation id="2230062665678605299">Не ўдалося стварыць папку "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
+<translation id="2236732657580416950">Кэш Google Дыска ачышчаны.</translation>
 <translation id="2239068707900391003">Чалавек з кубкам кавы</translation>
 <translation id="2251368349685848079">Аднавіць са сметніцы</translation>
 <translation id="2282155092769082568">URL-адрас аўтаматычнай канфігурацыі:</translation>
@@ -396,7 +396,6 @@
 <translation id="4398096759193130964">Аднавіце элементы або перацягніце іх са сметніцы ў новую папку</translation>
 <translation id="4401287888955153199">Выняць усё</translation>
 <translation id="4410695710508688828">Збой вымання. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="4414834425328380570">Файл "<ph name="FILE_NAME" />" будзе выдалены, і вы не зможаце яго аднавіць.</translation>
 <translation id="4418686080762064601">Стварайце ярлыкі для файлаў</translation>
 <translation id="4425149324548788773">Мой Дыск</translation>
 <translation id="4439427728133035643">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падключыцца</translation>
@@ -928,7 +927,6 @@
 <translation id="8560515948038859357">Кантонскі дыялект</translation>
 <translation id="8561206103590473338">Слон</translation>
 <translation id="8566466896628108558">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, заблакіравана адміністратарам, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падрабязныя звесткі</translation>
-<translation id="8568374623837201676">Выдаліць гэты файл назаўсёды?</translation>
 <translation id="8569764466147087991">Выберыце файл, які трэба адкрыць</translation>
 <translation id="8577897833047451336">Харвацкая</translation>
 <translation id="8578308463707544055">Інданезійская</translation>

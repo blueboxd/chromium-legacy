@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CategoryEnum} from './types';
+import {CategoryEnum, Emoji, VisualContent} from './types';
 
-export type CategoryButtonClickEvent = CustomEvent<{categoryName: string}>;
+export type CategoryButtonClickEvent =
+    CustomEvent<{categoryName: CategoryEnum}>;
 
 export const CATEGORY_BUTTON_CLICK = 'category-button-click';
 
@@ -12,17 +13,25 @@ export type GroupButtonClickEvent = CustomEvent<{group: string}>;
 
 export const GROUP_BUTTON_CLICK = 'group-button-click';
 
-export type EmojiButtonClickEvent = CustomEvent<{
+export type EmojiTextButtonClickEvent = CustomEvent<{
   emoji: string,
   isVariant: boolean,
   baseEmoji: string,
-  allVariants: string[],
+  allVariants: Emoji[],
   name: string,
   text: string,
   category: CategoryEnum,
 }>;
 
-export const EMOJI_BUTTON_CLICK = 'emoji-button-click';
+export const EMOJI_TEXT_BUTTON_CLICK = 'emoji-text-button-click';
+
+export type EmojiImgButtonClickEvent = CustomEvent<{
+  name: string,
+  visualContent: VisualContent,
+  category: CategoryEnum,
+}>;
+
+export const EMOJI_IMG_BUTTON_CLICK = 'emoji-img-button-click';
 
 /**
  * TODO(b/233130994): Update the type after removing emoji-button.
@@ -45,7 +54,7 @@ export type CategoryDataLoadEvent = CustomEvent<{category: string}>;
  */
 export const CATEGORY_DATA_LOADED = 'category-data-loaded';
 
-export type EmojiPickerReadyEvent = CustomEvent<{v2Enabled: boolean}>;
+export type EmojiPickerReadyEvent = CustomEvent;
 
 /**
  * The event that all the data are loaded and rendered and all the

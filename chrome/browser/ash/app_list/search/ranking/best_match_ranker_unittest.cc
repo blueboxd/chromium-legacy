@@ -16,11 +16,14 @@ namespace {
 
 using testing::ElementsAreArray;
 
-std::unique_ptr<TestResult> MakeResult(const std::string& id,
-                                       double normalized_relevance) {
+std::unique_ptr<TestResult> MakeResult(
+    const std::string& id,
+    double normalized_relevance,
+    ChromeSearchResult::MetricsType metrics_type =
+        ChromeSearchResult::MetricsType::OMNIBOX_URL_WHAT_YOU_TYPED) {
   // |relevance| must be set but is unused.
   return std::make_unique<TestResult>(id, /*relevance=*/0.0,
-                                      normalized_relevance);
+                                      normalized_relevance, metrics_type);
 }
 
 Results MakeAnswers(
@@ -43,7 +46,7 @@ class BestMatchRankerTest : public testing::Test {
     std::transform(ranker_.best_matches_.begin(), ranker_.best_matches_.end(),
                    std::back_inserter(actual_ids_ranks),
                    [](auto res) -> const std::pair<std::string, int> {
-                     return {res->id(), res->scoring().best_match_rank};
+                     return {res->id(), res->scoring().best_match_rank()};
                    });
     EXPECT_THAT(actual_ids_ranks, ElementsAreArray(expected_ids_ranks));
   }
@@ -78,7 +81,7 @@ TEST_F(BestMatchRankerTest, ResultThresholdingAndSorting) {
 
   for (const auto& res : results) {
     result_map_ids.push_back(res->id());
-    result_map_ranks.push_back(res->scoring().best_match_rank);
+    result_map_ranks.push_back(res->scoring().best_match_rank());
     shared_metadata_best_match_status.push_back(res->best_match());
   }
 
@@ -158,7 +161,7 @@ TEST_F(BestMatchRankerTest, IgnoreProviders) {
 // During the post-burn-in phase, the highest-ranked best match should remain
 // stabilized in this position, and any remaining best matches should be sorted
 // by (normalized) relevance score.
-TEST_F(BestMatchRankerTest, PostBurnIn_HighestBestMatchIsStabilized) {
+TEST_F(BestMatchRankerTest, PostBurnInHighestBestMatchIsStabilized) {
   ResultsMap results_map;
 
   // Simulate one provider returning pre-burn-in.
@@ -180,7 +183,7 @@ TEST_F(BestMatchRankerTest, PostBurnIn_HighestBestMatchIsStabilized) {
 //
 // This test also checks that a result which is demoted out of best match has
 // this correctly reflected.
-TEST_F(BestMatchRankerTest, ProviderReturnsMoreThanOnce_ResultDemoted) {
+TEST_F(BestMatchRankerTest, ProviderReturnsMoreThanOnceResultDemoted) {
   ResultsMap results_map;
 
   // Simulate a provider returning.
@@ -215,7 +218,7 @@ TEST_F(BestMatchRankerTest, ProviderReturnsMoreThanOnce_ResultDemoted) {
 
   for (const auto& res : results) {
     result_map_ids.push_back(res->id());
-    result_map_ranks.push_back(res->scoring().best_match_rank);
+    result_map_ranks.push_back(res->scoring().best_match_rank());
     shared_metadata_best_match_status.push_back(res->best_match());
   }
 
@@ -253,6 +256,22 @@ TEST_F(BestMatchRankerTest, RankerResetBetweenQueries) {
       MakeAnswers({{"files_1", 0.7}, {"files_2", 0.97}});
   ranker_.UpdateResultRanks(results_2, ProviderType::kFileSearch);
   ExpectBestMatchOrderAndRanks({{"files_2", 0}});
+}
+
+TEST_F(BestMatchRankerTest, IgnoreSearchSuggest) {
+  ResultsMap results_map;
+
+  Results results;
+  results.push_back(MakeResult(
+      "omni_1", 0.99, ChromeSearchResult::MetricsType::OMNIBOX_SEARCH_SUGGEST));
+  results.push_back(MakeResult(
+      "omni_2", 0.92,
+      ChromeSearchResult::MetricsType::OMNIBOX_RECENTLY_VISITED_WEBSITE));
+
+  // Simulate one provider returning.
+  results_map[ResultType::kOmnibox] = std::move(results);
+  ranker_.UpdateResultRanks(results_map, ProviderType::kOmnibox);
+  ExpectBestMatchOrderAndRanks({{"omni_2", 0.99}});
 }
 
 }  // namespace app_list::test

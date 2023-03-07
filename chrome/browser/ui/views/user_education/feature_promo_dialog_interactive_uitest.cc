@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -25,9 +25,9 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -252,39 +252,6 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ReopenTab) {
   ShowAndVerifyUi();
 }
 
-// Need a separate fixture to override the feature flag.
-class FeaturePromoDialogSideSearchTest : public FeaturePromoDialogTest {
- public:
-  FeaturePromoDialogSideSearchTest() {
-    // Currently the IPH is only supported for the Google ChromeOS
-    // configuration.
-    feature_list_.InitWithFeatures(
-        {features::kSideSearch},
-        {features::kSideSearchDSESupport, features::kUnifiedSidePanel});
-  }
-
-  void SetUpOnMainThread() override {
-    FeaturePromoDialogTest::SetUpOnMainThread();
-  }
-
-  ~FeaturePromoDialogSideSearchTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(FeaturePromoDialogSideSearchTest,
-                       InvokeUi_IPH_SideSearch) {
-  BrowserView::GetBrowserViewForBrowser(browser())
-      ->toolbar()
-      ->left_side_panel_button()
-      ->SetVisible(true);
-  RunScheduledLayouts();
-
-  set_baseline("3187662");
-  ShowAndVerifyUi();
-}
-
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_TabSearch) {
   set_baseline("2991858");
   ShowAndVerifyUi();
@@ -336,7 +303,8 @@ class FeaturePromoDialogIntentChipTest : public FeaturePromoDialogTest {
     web_app_info->title = base::UTF8ToUTF16(app_name);
     web_app_info->start_url = url;
     web_app_info->scope = url;
-    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    web_app_info->user_display_mode =
+        web_app::mojom::UserDisplayMode::kStandalone;
     auto app_id = web_app::test::InstallWebApp(browser()->profile(),
                                                std::move(web_app_info));
     web_app::AppReadinessWaiter(browser()->profile(), app_id).Await();

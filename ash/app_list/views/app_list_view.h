@@ -14,7 +14,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -121,10 +121,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // its state.
   static constexpr int kScrollIgnoreTimeMs = 500;
 
-  // The animation duration for app list movement.
-  static constexpr int kAppListAnimationDurationMs = 200;
-  static constexpr int kAppListAnimationDurationFromFullscreenMs = 250;
-
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
 
@@ -145,9 +141,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Initializes this view's widget.
   void InitWidget(gfx::NativeView parent);
-
-  // Initializes the SearchBox's widget.
-  void InitChildWidget();
 
   // Sets the state of all child views to be re-shown, then shows the view.
   // |preferred_state| - The initial app list view state.
@@ -187,9 +180,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Called when the wallpaper colors change.
-  void OnWallpaperColorsChanged();
 
   // Handles scroll events from various sources.
   bool HandleScroll(const gfx::Point& location,
@@ -236,10 +226,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Gets the content bounds of the app info dialog of the app list in the
   // screen coordinates.
   gfx::Rect GetAppInfoDialogBounds() const;
-
-  // Returns the expected app list view height (measured from the screen bottom)
-  // in the provided state.
-  int GetHeightForState(AppListViewState state) const;
 
   // Returns the height of app list in fullscreen state.
   int GetFullscreenStateHeight() const;
@@ -315,14 +301,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Set child views for |target_state|.
   void SetChildViewsForStateTransition(AppListViewState target_state);
 
-  // Gets the animation duration that transition to |taget_state| should have.
-  base::TimeDelta GetStateTransitionAnimationDuration(
-      AppListViewState target_state);
-
-  // Kicks off the proper animation for the state change. If an animation is
-  // in progress it will be interrupted.
-  void StartAnimationForState(AppListViewState new_state);
-
   // Applies a bounds animation on this views layer.
   void ApplyBoundsAnimation(AppListViewState target_state,
                             base::TimeDelta duration_ms);
@@ -367,14 +345,9 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
-  // Returns preferred y of fullscreen widget bounds in parent window for the
-  // specified state.
-  int GetPreferredWidgetYForState(AppListViewState state) const;
-
-  // Returns preferred fullscreen widget bounds in parent window for the
-  // specified state. Note that this function should only be called after the
-  // widget is initialized.
-  gfx::Rect GetPreferredWidgetBoundsForState(AppListViewState state);
+  // Returns preferred fullscreen widget bounds in parent window. Note that this
+  // function should only be called after the widget is initialized.
+  gfx::Rect GetPreferredWidgetBounds();
 
   // Reset the subpixel position offset of the |layer| so that it's DP origin
   // is snapped.

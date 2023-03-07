@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/adapters.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -850,7 +850,7 @@ Status ExecuteNewWindow(Session* session,
     return status;
 
   base::Value::Dict dict;
-  dict.Set("handle", WebViewIdToWindowHandle(handle));
+  dict.Set("handle", handle);
   dict.Set("type",
            (window_type == Chrome::WindowType::kWindow) ? "window" : "tab");
   auto results = std::make_unique<base::Value>(std::move(dict));

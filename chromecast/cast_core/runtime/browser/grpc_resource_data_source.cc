@@ -4,15 +4,14 @@
 
 #include "chromecast/cast_core/runtime/browser/grpc_resource_data_source.h"
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/cast_constants.h"
 #include "net/base/mime_util.h"
 

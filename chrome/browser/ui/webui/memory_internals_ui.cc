@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/allocator/buildflags.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -116,12 +116,11 @@ std::string GetChildDescription(const content::ChildProcessData& data) {
   return content::GetProcessTypeNameInEnglish(data.process_type);
 }
 
-content::WebUIDataSource* CreateMemoryInternalsUIHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIMemoryInternalsHost);
+void CreateAndAddMemoryInternalsUIHTMLSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIMemoryInternalsHost);
   source->SetDefaultResource(IDR_MEMORY_INTERNALS_HTML);
   source->AddResourcePath("memory_internals.js", IDR_MEMORY_INTERNALS_JS);
-  return source;
 }
 
 class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
@@ -332,13 +331,13 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
 
   // Append whether each process is being profiled.
   for (base::Value& value : process_list) {
-    DCHECK_EQ(value.GetList().size(), 2u);
+    base::Value::List& list = value.GetList();
+    DCHECK_EQ(list.size(), 2u);
 
-    base::ProcessId pid =
-        static_cast<base::ProcessId>(value.GetList()[0].GetInt());
+    base::ProcessId pid = static_cast<base::ProcessId>(list[0].GetInt());
     bool is_profiled =
         std::binary_search(profiled_pids.begin(), profiled_pids.end(), pid);
-    value.Append(is_profiled);
+    list.Append(is_profiled);
   }
 
   // Pass the results in a dictionary.
@@ -379,8 +378,7 @@ MemoryInternalsUI::MemoryInternalsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(
       std::make_unique<MemoryInternalsDOMHandler>(web_ui));
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateMemoryInternalsUIHTMLSource());
+  CreateAndAddMemoryInternalsUIHTMLSource(Profile::FromWebUI(web_ui));
 }
 
 MemoryInternalsUI::~MemoryInternalsUI() {}

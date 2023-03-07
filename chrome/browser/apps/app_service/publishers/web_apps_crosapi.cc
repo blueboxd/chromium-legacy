@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -25,24 +25,12 @@
 #include "components/services/app_service/public/cpp/crosapi_utils.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
 namespace apps {
 
 WebAppsCrosapi::WebAppsCrosapi(AppServiceProxy* proxy)
-    : apps::AppPublisher(proxy), proxy_(proxy) {
-  // This object may be created when the flag is on or off, but only register
-  // the publisher if the flag is on.
-  if (web_app::IsWebAppsCrosapiEnabled()) {
-    mojo::Remote<apps::mojom::AppService>& app_service = proxy->AppService();
-    if (!base::FeatureList::IsEnabled(kStopMojomAppService) &&
-        !app_service.is_bound()) {
-      return;
-    }
-    PublisherBase::Initialize(app_service, apps::mojom::AppType::kWeb);
-  }
-}
+    : apps::AppPublisher(proxy), proxy_(proxy) {}
 
 WebAppsCrosapi::~WebAppsCrosapi() = default;
 
@@ -86,6 +74,19 @@ void WebAppsCrosapi::LoadIcon(const std::string& app_id,
                      icon_type, size_hint_in_dip,
                      static_cast<apps::IconEffects>(icon_effects),
                      std::move(callback)));
+}
+
+void WebAppsCrosapi::GetCompressedIconData(const std::string& app_id,
+                                           int32_t size_in_dip,
+                                           ui::ResourceScaleFactor scale_factor,
+                                           LoadIconCallback callback) {
+  if (!LogIfNotConnected(FROM_HERE)) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+    return;
+  }
+
+  controller_->GetCompressedIcon(app_id, size_in_dip, scale_factor,
+                                 std::move(callback));
 }
 
 void WebAppsCrosapi::Launch(const std::string& app_id,
@@ -243,14 +244,6 @@ void WebAppsCrosapi::SetWindowMode(const std::string& app_id,
   }
 
   controller_->SetWindowMode(app_id, window_mode);
-}
-
-void WebAppsCrosapi::Connect(
-    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
-    apps::mojom::ConnectOptionsPtr opts) {
-  mojo::Remote<apps::mojom::Subscriber> subscriber(
-      std::move(subscriber_remote));
-  subscribers_.Add(std::move(subscriber));
 }
 
 void WebAppsCrosapi::OnGetMenuModelFromCrosapi(
@@ -420,6 +413,11 @@ void WebAppsCrosapi::OnLoadIcon(IconType icon_type,
     std::move(callback).Run(IconValuePtr());
     return;
   }
+  if (icon_value->is_maskable_icon) {
+    icon_effects &= ~apps::IconEffects::kCrOsStandardIcon;
+    icon_effects |= apps::IconEffects::kCrOsStandardBackground;
+    icon_effects |= apps::IconEffects::kCrOsStandardMask;
+  }
   // We apply the masking effect here, as masking is not implemented in Lacros.
   // (There is no resource file in the Lacros side to apply the icon effects.)
   ApplyIconEffects(icon_effects, size_hint_in_dip, std::move(icon_value),
@@ -441,17 +439,8 @@ void WebAppsCrosapi::OnApplyIconEffects(IconType icon_type,
 }
 
 void WebAppsCrosapi::PublishImpl(std::vector<AppPtr> deltas) {
-  std::vector<apps::mojom::AppPtr> mojom_apps;
-  for (const auto& delta : deltas) {
-    mojom_apps.push_back(ConvertAppToMojomApp(delta));
-  }
   apps::AppPublisher::Publish(std::move(deltas), AppType::kWeb,
                               should_notify_initialized_);
-
-  for (auto& subscriber : subscribers_) {
-    subscriber->OnApps(apps_util::CloneStructPtrVector(mojom_apps),
-                       apps::mojom::AppType::kWeb, should_notify_initialized_);
-  }
   should_notify_initialized_ = false;
 }
 

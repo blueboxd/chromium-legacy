@@ -11,8 +11,6 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
@@ -20,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
@@ -32,8 +31,11 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+// TODO(crbug.com/1402145): Remove or at least isolate circular dependencies on
+// app service by moving this code to //c/b/web_applications/adjustments, or
+// flip entire dependency so web_applications depends on app_service.
+#include "chrome/browser/apps/app_service/app_service_proxy.h"  // nogncheck
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"  // nogncheck
 #include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
@@ -908,13 +910,8 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
   base::UmaHistogramCounts100(kHistogramAppToReplaceStillInstalledInShelfCount,
                               app_to_replace_still_installed_in_shelf_count);
 
-  SetMigrationRun(profile_, kMigrateDefaultChromeAppToWebAppsGSuite.name,
-                  IsPreinstalledAppInstallFeatureEnabled(
-                      kMigrateDefaultChromeAppToWebAppsGSuite.name, *profile_));
-  SetMigrationRun(
-      profile_, kMigrateDefaultChromeAppToWebAppsNonGSuite.name,
-      IsPreinstalledAppInstallFeatureEnabled(
-          kMigrateDefaultChromeAppToWebAppsNonGSuite.name, *profile_));
+  SetMigrationRun(profile_, "MigrateDefaultChromeAppToWebAppsGSuite", true);
+  SetMigrationRun(profile_, "MigrateDefaultChromeAppToWebAppsNonGSuite", true);
   if (uninstall_and_replace_count > 0) {
     for (auto& observer : observers_) {
       observer.OnMigrationRun();

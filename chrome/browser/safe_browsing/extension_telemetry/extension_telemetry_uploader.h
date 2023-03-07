@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/profiles/profile.h"
 
 namespace network {
 class SharedURLLoaderFactory;

@@ -13,7 +13,6 @@
 #include <type_traits>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/wallpaper/google_photos_wallpaper_params.h"
@@ -27,19 +26,16 @@
 #include "ash/webui/personalization_app/mojom/personalization_app_mojom_traits.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/unguessable_token.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_enumerator.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
@@ -61,7 +57,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -266,12 +261,9 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosAlbums(
     const absl::optional<std::string>& resume_token,
     FetchGooglePhotosAlbumsCallback callback) {
   if (!is_google_photos_enterprise_enabled_) {
-    mojo::ReportBadMessage(
+    wallpaper_receiver_.ReportBadMessage(
         "Cannot call `FetchGooglePhotosAlbums()` without confirming that the "
         "Google Photos enterprise setting is enabled.");
-    std::move(callback).Run(
-        ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse::New(
-            absl::nullopt, absl::nullopt));
     return;
   }
 
@@ -284,10 +276,29 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosAlbums(
       resume_token, std::move(callback));
 }
 
+void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosSharedAlbums(
+    const absl::optional<std::string>& resume_token,
+    FetchGooglePhotosAlbumsCallback callback) {
+  if (!is_google_photos_enterprise_enabled_) {
+    wallpaper_receiver_.ReportBadMessage(
+        "Cannot call `FetchGooglePhotosAlbums()` without confirming that the "
+        "Google Photos enterprise setting is enabled.");
+    return;
+  }
+
+  if (!google_photos_shared_albums_fetcher_) {
+    google_photos_shared_albums_fetcher_ =
+        std::make_unique<wallpaper_handlers::GooglePhotosSharedAlbumsFetcher>(
+            profile_);
+  }
+  google_photos_shared_albums_fetcher_->AddRequestAndStartIfNecessary(
+      resume_token, std::move(callback));
+}
+
 void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosEnabled(
     FetchGooglePhotosEnabledCallback callback) {
   if (!IsEligibleForGooglePhotos()) {
-    mojo::ReportBadMessage(
+    wallpaper_receiver_.ReportBadMessage(
         "Cannot call `FetchGooglePhotosEnabled()` without Google Photos "
         "Wallpaper integration enabled.");
     std::move(callback).Run(
@@ -313,7 +324,7 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
     const absl::optional<std::string>& resume_token,
     FetchGooglePhotosPhotosCallback callback) {
   if (!is_google_photos_enterprise_enabled_) {
-    mojo::ReportBadMessage(
+    wallpaper_receiver_.ReportBadMessage(
         "Cannot call `FetchGooglePhotosPhotos()` without confirming that the "
         "Google Photos enterprise setting is enabled.");
     std::move(callback).Run(
@@ -365,7 +376,7 @@ void PersonalizationAppWallpaperProviderImpl::GetLocalImageThumbnail(
     const base::FilePath& path,
     GetLocalImageThumbnailCallback callback) {
   if (local_images_.count(path) == 0) {
-    mojo::ReportBadMessage("Invalid local image path received");
+    wallpaper_receiver_.ReportBadMessage("Invalid local image path received");
     return;
   }
   if (!thumbnail_loader_)
@@ -501,7 +512,7 @@ void PersonalizationAppWallpaperProviderImpl::SelectWallpaper(
   const auto& it = image_asset_id_map_.find(image_asset_id);
 
   if (it == image_asset_id_map_.end()) {
-    mojo::ReportBadMessage("Invalid image asset_id selected");
+    wallpaper_receiver_.ReportBadMessage("Invalid image asset_id selected");
     return;
   }
 
@@ -553,7 +564,7 @@ void PersonalizationAppWallpaperProviderImpl::SelectLocalImage(
     bool preview_mode,
     SelectLocalImageCallback callback) {
   if (local_images_.count(path) == 0) {
-    mojo::ReportBadMessage("Invalid local image path selected");
+    wallpaper_receiver_.ReportBadMessage("Invalid local image path selected");
     return;
   }
   if (pending_select_local_image_callback_)
@@ -578,7 +589,7 @@ void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
     bool preview_mode,
     SelectGooglePhotosPhotoCallback callback) {
   if (!is_google_photos_enterprise_enabled_) {
-    mojo::ReportBadMessage(
+    wallpaper_receiver_.ReportBadMessage(
         "Cannot call `SelectGooglePhotosPhoto()` without confirming that the "
         "Google Photos enterprise setting is enabled.");
     std::move(callback).Run(false);
@@ -773,6 +784,15 @@ PersonalizationAppWallpaperProviderImpl::SetGooglePhotosAlbumsFetcherForTest(
     std::unique_ptr<wallpaper_handlers::GooglePhotosAlbumsFetcher> fetcher) {
   google_photos_albums_fetcher_ = std::move(fetcher);
   return google_photos_albums_fetcher_.get();
+}
+
+wallpaper_handlers::GooglePhotosSharedAlbumsFetcher*
+PersonalizationAppWallpaperProviderImpl::
+    SetGooglePhotosSharedAlbumsFetcherForTest(
+        std::unique_ptr<wallpaper_handlers::GooglePhotosSharedAlbumsFetcher>
+            fetcher) {
+  google_photos_shared_albums_fetcher_ = std::move(fetcher);
+  return google_photos_shared_albums_fetcher_.get();
 }
 
 wallpaper_handlers::GooglePhotosEnabledFetcher*

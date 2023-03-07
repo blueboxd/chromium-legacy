@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
@@ -159,16 +160,18 @@ class ChromotingHostTest : public testing::Test {
 
     if (authenticate) {
       client_ptr->OnConnectionAuthenticated();
-      if (!reject)
+      if (!reject) {
         client_ptr->OnConnectionChannelsConnected();
+      }
     } else {
       client_ptr->OnConnectionClosed(protocol::AUTHENTICATION_FAILED);
     }
   }
 
   void TearDown() override {
-    if (host_)
+    if (host_) {
       ShutdownHost();
+    }
     task_runner_ = nullptr;
 
     base::RunLoop().RunUntilIdle();
@@ -283,8 +286,14 @@ class ChromotingHostTest : public testing::Test {
   std::string session_unowned_jid1_;
   std::unique_ptr<MockSession> session_unowned2_;  // Not owned by a connection.
   std::string session_unowned_jid2_;
-  protocol::Session::EventHandler* session_unowned1_event_handler_;
-  protocol::Session::EventHandler* session_unowned2_event_handler_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION protocol::Session::EventHandler*
+      session_unowned1_event_handler_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION protocol::Session::EventHandler*
+      session_unowned2_event_handler_;
   named_mojo_ipc_server::FakeIpcServer::TestState ipc_server_test_state_;
 
   // Returns the cached client pointers client1_ or client2_.

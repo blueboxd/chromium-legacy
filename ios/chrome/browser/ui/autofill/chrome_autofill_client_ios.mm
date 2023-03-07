@@ -6,9 +6,9 @@
 
 #import <utility>
 
-#import "base/bind.h"
-#import "base/callback.h"
 #import "base/check.h"
+#import "base/functional/bind.h"
+#import "base/functional/callback.h"
 #import "base/memory/ptr_util.h"
 #import "base/notreached.h"
 #import "base/strings/string_util.h"
@@ -97,10 +97,10 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           browser_state->GetOriginalChromeBrowserState())),
       payments_client_(std::make_unique<payments::PaymentsClient>(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              web_state_->GetBrowserState()->GetURLLoaderFactory()),
+              browser_state_->GetURLLoaderFactory()),
           identity_manager_,
           personal_data_manager_,
-          web_state_->GetBrowserState()->IsOffTheRecord())),
+          browser_state_->IsOffTheRecord())),
       form_data_importer_(std::make_unique<FormDataImporter>(
           this,
           payments_client_.get(),
@@ -127,6 +127,16 @@ void ChromeAutofillClientIOS::SetBaseViewController(
 
 version_info::Channel ChromeAutofillClientIOS::GetChannel() const {
   return ::GetChannel();
+}
+
+bool ChromeAutofillClientIOS::IsOffTheRecord() {
+  return web_state_->GetBrowserState()->IsOffTheRecord();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeAutofillClientIOS::GetURLLoaderFactory() {
+  return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+      web_state_->GetBrowserState()->GetURLLoaderFactory());
 }
 
 PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {
@@ -384,20 +394,16 @@ bool ChromeAutofillClientIOS::IsFastCheckoutSupported() {
   return false;
 }
 
-bool ChromeAutofillClientIOS::IsFastCheckoutTriggerForm(
-    const FormData& form,
-    const FormFieldData& field) {
+bool ChromeAutofillClientIOS::TryToShowFastCheckout(const FormData& form,
+                                                    const FormFieldData& field,
+                                                    AutofillDriver* driver) {
   return false;
 }
 
-bool ChromeAutofillClientIOS::ShowFastCheckout(
-    base::WeakPtr<FastCheckoutDelegate> delegate) {
-  NOTREACHED();
-  return false;
-}
+void ChromeAutofillClientIOS::HideFastCheckout(bool allow_further_runs) {}
 
-void ChromeAutofillClientIOS::HideFastCheckout() {
-  NOTREACHED();
+bool ChromeAutofillClientIOS::IsShowingFastCheckoutUI() {
+  return false;
 }
 
 bool ChromeAutofillClientIOS::IsTouchToFillCreditCardSupported() {
@@ -487,10 +493,6 @@ bool ChromeAutofillClientIOS::IsContextSecure() const {
 
 bool ChromeAutofillClientIOS::ShouldShowSigninPromo() {
   return false;
-}
-
-bool ChromeAutofillClientIOS::AreServerCardsSupported() const {
-  return true;
 }
 
 void ChromeAutofillClientIOS::ExecuteCommand(int id) {

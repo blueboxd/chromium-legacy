@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_NATIVEPAINT_BACKGROUND_COLOR_PAINT_DEFINITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_NATIVEPAINT_BACKGROUND_COLOR_PAINT_DEFINITION_H_
 
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/modules/csspaint/nativepaint/native_css_paint_definition.h"
@@ -32,7 +33,7 @@ class MODULES_EXPORT BackgroundColorPaintDefinition final
       const BackgroundColorPaintDefinition&) = delete;
 
   // PaintDefinition override
-  sk_sp<PaintRecord> Paint(
+  PaintRecord Paint(
       const CompositorPaintWorkletInput*,
       const CompositorPaintWorkletJob::AnimatedPropertyValues&) override;
 
@@ -64,18 +65,17 @@ class MODULES_EXPORT BackgroundColorPaintDefinition final
 
   // Constructor for testing purpose only.
   BackgroundColorPaintDefinition() = default;
-  sk_sp<PaintRecord> PaintForTest(
+  PaintRecord PaintForTest(
       const Vector<Color>& animated_colors,
       const Vector<double>& offsets,
       const CompositorPaintWorkletJob::AnimatedPropertyValues&
           animated_property_values,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  sk_sp<PaintRecord> Paint(
-      const CompositorPaintWorkletInput* compositor_input,
-      const CompositorPaintWorkletJob::AnimatedPropertyValues&
-          animated_property_values,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  PaintRecord Paint(const CompositorPaintWorkletInput* compositor_input,
+                    const CompositorPaintWorkletJob::AnimatedPropertyValues&
+                        animated_property_values,
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // The instance of BackgroundColorPaintDefinition is created on the main
   // thread, which means |context_| is initialized on the main thread's heap.

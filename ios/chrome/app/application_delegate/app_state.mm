@@ -6,9 +6,9 @@
 
 #import <utility>
 
-#import "base/bind.h"
-#import "base/callback.h"
 #import "base/critical_closure.h"
+#import "base/functional/bind.h"
+#import "base/functional/callback.h"
 #import "base/ios/crb_protocol_observers.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -52,8 +53,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #import "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
@@ -406,8 +405,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     didDiscardSceneSessions:(NSSet<UISceneSession*>*)sceneSessions {
   DCHECK_GE(self.initStage, InitStageBrowserObjectsForBackgroundHandlers);
 
-  ios::GetChromeBrowserProvider()
-      .GetChromeIdentityService()
+  GetApplicationContext()
+      ->GetSystemIdentityManager()
       ->ApplicationDidDiscardSceneSessions(sceneSessions);
 
   // Usually Chrome uses -[SceneState sceneSessionID] as identifier to properly

@@ -58,9 +58,14 @@ class PageInfo : private content_settings::CookieControlsView {
                                                           // target.
     SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,   // Non-secure active
                                                           // content.
-    SITE_CONNECTION_STATUS_UNENCRYPTED,      // Connection is not encrypted.
-    SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,  // Connection error occurred.
-    SITE_CONNECTION_STATUS_INTERNAL_PAGE,    // Internal site.
+    SITE_CONNECTION_STATUS_UNENCRYPTED,       // Connection is not encrypted.
+    SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,   // Connection error occurred.
+    SITE_CONNECTION_STATUS_INTERNAL_PAGE,     // Internal site.
+    SITE_CONNECTION_STATUS_ISOLATED_WEB_APP,  // Isolated Web Apps are either
+                                              // from a Signed Web Bundle on
+                                              // local filesystem or from a
+                                              // trusted developer
+                                              // server(dev-proxy mode).
   };
 
   // Validation status of a website's identity.
@@ -84,6 +89,10 @@ class PageInfo : private content_settings::CookieControlsView {
     // The website provided a valid certificate, but the certificate or chain
     // is using a deprecated signature algorithm.
     SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
+    // Isolated Web Apps are loaded from local resource (Signed Web Bundle),
+    // except when installed in dev-mode-proxy. The identities of Isolated Web
+    // Apps are associated with the bundle signature.
+    SITE_IDENTITY_STATUS_ISOLATED_WEB_APP,
   };
 
   // Safe Browsing status of a website.
@@ -300,15 +309,14 @@ class PageInfo : private content_settings::CookieControlsView {
     return safe_browsing_status_;
   }
 
-  // Returns site origin in a concise and human-friendly way, without the
-  // HTTP/HTTPS scheme, the username and password, the path and trivial
-  // subdomains.
-  std::u16string GetSimpleSiteName() const;
-
-  // For Isolated Web Apps the origin's host name is a non-human-readable string
-  // of characters, so instead of displaying the origin, the short name of the
-  // app will be displayed.
-  std::u16string GetSiteOriginOrAppNameToDisplay() const;
+  // For most sites, this returns a human-friendly string based on site origin,
+  // without scheme, the username and password, the path or trivial subdomains.
+  // See |GetSimpleSiteInfo()|.
+  //
+  // For Isolated Web Apps, the origin's host name is a non-human-readable
+  // string of characters, so instead of displaying the origin, the short name
+  // of the app will be displayed.
+  std::u16string GetSiteNameOrAppNameToDisplay() const;
 
   // Retrieves all the permissions that are shown in Page Info.
   // Exposed for testing.
@@ -364,6 +372,11 @@ class PageInfo : private content_settings::CookieControlsView {
   // function WILL record an event. Callers should check conditions beforehand.
   void RecordPasswordReuseEvent();
 #endif
+
+  // Returns site origin in a concise and human-friendly way, without the
+  // HTTP/HTTPS scheme, the username and password, the path and trivial
+  // subdomains.
+  std::u16string GetSimpleSiteName() const;
 
   // Helper function to get the |HostContentSettingsMap| associated with
   // |PageInfo|.

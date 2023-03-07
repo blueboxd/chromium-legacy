@@ -13,14 +13,13 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/current_thread.h"
 #include "base/task/task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"

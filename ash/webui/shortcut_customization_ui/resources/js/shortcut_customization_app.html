@@ -1,8 +1,14 @@
-<style include="shortcut-customization-fonts shortcut-customization-shared">
+<style include="shortcut-customization-shared">
   :host {
-    font-family: var(--shortcuts-default-font-family);
-    font-size: var(--shortcuts-default-font-size);
+    font-family: var(--shortcuts-font-family-default);
+    font-size: var(--shortcuts-font-size-default);
     font-weight: var(--shortcuts-font-weight-regular);
+  }
+
+  #navigationPanel::part(toolbar-container) {
+    align-items: flex-end;
+    display: flex;
+    height: 100%;
   }
 
   #navigationPanel::part(title) {
@@ -23,14 +29,14 @@
 
   #keyboardSettingsLinkContainer a {
     align-items: center;
-    color: var(--cros-text-color-secondary);
+    color: var(--cros-link-color);
     display: flex;
     font-weight: var(--shortcuts-font-weight-medium);
     text-decoration: none;
   }
 
   #keyboardSettingsLinkContainer a iron-icon {
-    fill: var(--cros-text-color-secondary);
+    fill: var(--cros-link-color);
     margin-inline-start: 4px;
   }
 
@@ -38,14 +44,12 @@
     margin-inline-start: 12px;
   }
 </style>
-<!-- TODO(jimmyxgong): Localize this title -->
 <navigation-view-panel id="navigationPanel" title="[[i18n('appTitle')]]"
     show-tool-bar>
   <div slot="bottom-nav-content-panel" id="bottomNavContentPanel">
-    <cr-button id="restoreAllButton" on-click="onRestoreAllDefaultClicked_" 
-      hidden="[[shouldHideRestoreAllButton_()]]">
-      <!-- TODO(jimmyxgong): i18n this string-->
-      Reset all shortcuts
+    <cr-button id="restoreAllButton" on-click="onRestoreAllDefaultClicked"
+      hidden="[[shouldHideRestoreAllButton()]]">
+      [[i18n('resetAllShortcuts')]]
     </cr-button>
     <div id="keyboardSettingsLinkContainer">
       <a href="chrome://os-settings/keyboard-overlay">
@@ -56,31 +60,28 @@
   </div>
 </navigation-view-panel>
 
-<template is="dom-if" if="[[showEditDialog_]]" restamp>
+<template is="dom-if" if="[[showEditDialog]]" restamp>
   <accelerator-edit-dialog id="editDialog"
-      description="[[dialogShortcutTitle_]]"
-      accelerator-infos="[[dialogAccelerators_]]"
-      action="[[dialogAction_]]"
-      source="[[dialogSource_]]">
+      description="[[dialogShortcutTitle]]"
+      accelerator-infos="[[dialogAccelerators]]"
+      action="[[dialogAction]]"
+      source="[[dialogSource]]">
   </accelerator-edit-dialog>
 </template>
 
-<template is="dom-if" if="[[showRestoreAllDialog_]]" restamp>
+<template is="dom-if" if="[[showRestoreAllDialog]]" restamp>
   <cr-dialog id="restoreDialog" show-on-attach
-      on-close="closeRestoreAllDialog_">
+      on-close="closeRestoreAllDialog">
     <div slot="body">
-      <!-- TODO(jimmyxgong): i18n string -->
-      Reset all shortcuts to defaults?
+      [[i18n('confirmResetAllShortcutsTitle')]]
     </div>
     <div slot="button-container">
-      <cr-button id="cancelButton" on-click="onCancelRestoreButtonClicked_">
-        <!-- TODO(jimmyxgong): i18n string -->
-        Cancel
+      <cr-button id="cancelButton" on-click="onCancelRestoreButtonClicked">
+        [[i18n('cancel')]]
       </cr-button>
       <cr-button class="action-button"
-          on-click="onConfirmRestoreButtonClicked_">
-        <!-- TODO(jimmyxgong): i18n string -->
-        Reset
+          on-click="onConfirmRestoreButtonClicked">
+        [[i18n('confirmResetAllShortcutsButton')]]
       </cr-button>
     </div>
   </cr-dialog>

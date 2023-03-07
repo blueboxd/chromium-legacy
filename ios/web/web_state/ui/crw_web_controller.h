@@ -92,6 +92,10 @@ class WebStateImpl;
 @property(nonatomic, assign, getter=shouldKeepRenderProcessAlive)
     BOOL keepsRenderProcessAlive;
 
+// Whether or not the web page is in fullscreen mode.
+@property(nonatomic, readonly, getter=isWebPageInFullscreenMode)
+    BOOL webPageInFullscreenMode;
+
 // Designated initializer. Initializes web controller with `webState`. The
 // calling code must retain the ownership of `webState`.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
@@ -243,6 +247,20 @@ class WebStateImpl;
                               delegate:(id<CRWWebViewDownloadDelegate>)delegate
                                handler:(void (^)(id<CRWWebViewDownload>))handler
     API_AVAILABLE(ios(14.5));
+
+// Returns whether the Find interaction is supported and can be enabled.
+- (BOOL)findInteractionSupported;
+
+// Returns whether the Find interaction is enabled on the contained web view, if
+// any.
+- (BOOL)findInteractionEnabled;
+
+// Sets the value of `findInteractionEnabled` to `enabled` on the contained web
+// view, if any.
+- (void)setFindInteractionEnabled:(BOOL)enabled;
+
+// Returns the Find interaction of the contained web view, if any.
+- (UIFindInteraction*)findInteraction API_AVAILABLE(ios(16));
 
 #pragma mark Navigation Message Handlers
 

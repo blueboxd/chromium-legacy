@@ -19,8 +19,10 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service_test_base.h"
@@ -199,11 +201,6 @@ class AppPlatformMetricsServiceTest
     AddApp(cache, /*app_id=*/"a", AppType::kArc, "com.google.A",
            Readiness::kReady, InstallReason::kUser, InstallSource::kPlayStore,
            true /* should_notify_initialized */);
-
-    // BuiltIn apps are initialized by the BuiltIn app publisher.
-    AddApp(cache, /*app_id=*/"bu", AppType::kBuiltIn, "", Readiness::kReady,
-           InstallReason::kSystem, InstallSource::kSystem,
-           false /* should_notify_initialized */);
 
     AddApp(cache, /*app_id=*/borealis::kClientAppId, AppType::kBorealis, "",
            Readiness::kReady, InstallReason::kUser, InstallSource::kUnknown,
@@ -1788,7 +1785,7 @@ TEST_P(AppPlatformMetricsServiceTest, InstalledAppsUkm) {
                          apps::InstallSource::kPlayStore, InstallTime::kInit);
   VerifyInstalledAppsUkm("app://bu", AppTypeName::kBuiltIn,
                          apps::InstallReason::kSystem,
-                         apps::InstallSource::kSystem, InstallTime::kRunning);
+                         apps::InstallSource::kSystem, InstallTime::kInit);
   VerifyInstalledAppsUkm("app://s", AppTypeName::kSystemWeb,
                          apps::InstallReason::kSystem,
                          apps::InstallSource::kSystem, InstallTime::kInit);

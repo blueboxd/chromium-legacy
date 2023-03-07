@@ -12,10 +12,12 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
@@ -229,7 +231,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   void PostIOTask(const base::Location& from_here, base::OnceClosure task);
 
   // Writes the entire table to disk. It will leave the table file open and
-  // the handle to it will be stored in file_.
+  // the handle to it will be stored in |scoped_file_holder_|.
   void WriteFullTable();
 
   // Tries to load asynchronously the table from the database file.
@@ -271,7 +273,10 @@ class VisitedLinkWriter : public VisitedLinkCommon {
 
   // Wrapper around Window's WriteFile using asynchronous I/O. This will proxy
   // the write to a background thread.
-  void WriteToFile(FILE** hfile, off_t offset, void* data, int32_t data_size);
+  void WriteToFile(base::ScopedFILE* file,
+                   off_t offset,
+                   void* data,
+                   int32_t data_size);
 
   // Helper function to schedule and asynchronous write of the used count to
   // disk (this is a common operation).
@@ -403,7 +408,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   raw_ptr<content::BrowserContext> browser_context_ = nullptr;
 
   // Client owns the delegate and is responsible for it being valid through
-  // the life time this VisitedLinkWriter.
+  // the lifetime this VisitedLinkWriter.
   raw_ptr<VisitedLinkDelegate> delegate_;
 
   // VisitedLinkEventListener to handle incoming events.
@@ -430,20 +435,18 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   std::set<GURL> added_since_load_;
   std::set<GURL> deleted_since_load_;
 
-  // The currently open file with the table in it. This may be NULL if we're
+  // The currently open file with the table in it. This may be nullptr if we're
   // rebuilding and haven't written a new version yet or if |persist_to_disk_|
-  // is false. Writing to the file may be safely ignored in this case. Also
-  // |file_| may be non-NULL but point to a NULL pointer. That would mean that
-  // opening of the file is already scheduled in a background thread and any
-  // writing to the file can also be scheduled to the background thread as it's
-  // guaranteed to be executed after the opening.
-  // The class owns both the |file_| pointer and the pointer pointed
-  // by |*file_|.
-  raw_ptr<FILE*, DanglingUntriaged> file_ = nullptr;
+  // is false. Writing to the file may be safely ignored in this case. Also the
+  // ScopedFILE may point to null. That would mean that opening of the file is
+  // already scheduled in a background thread and any writing to the file can
+  // also be scheduled to the background thread as it's guaranteed to be
+  // executed after the opening.
+  std::unique_ptr<base::ScopedFILE> scoped_file_holder_;
 
   // If true, will try to persist the hash table to disk. Will rebuild from
   // VisitedLinkDelegate::RebuildTable if there are disk corruptions.
-  bool persist_to_disk_;
+  const bool persist_to_disk_;
 
   // Shared memory consists of a SharedHeader followed by the table.
   base::MappedReadOnlyRegion mapped_table_memory_;
@@ -467,10 +470,10 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   // in release builds that give "regular" behavior.
 
   // Overridden database file name for testing
-  base::FilePath database_name_override_;
+  const base::FilePath database_name_override_;
 
   // When nonzero, overrides the table size for new databases for testing
-  int32_t table_size_override_ = 0;
+  const int32_t table_size_override_ = 0;
 
   // When set, indicates the task that should be run after the next rebuild from
   // history is complete.
@@ -479,7 +482,7 @@ class VisitedLinkWriter : public VisitedLinkCommon {
   // Set to prevent us from attempting to rebuild the database from global
   // history if we have an error opening the file. This is used for testing,
   // will be false in production.
-  bool suppress_rebuild_ = false;
+  const bool suppress_rebuild_ = false;
 
   base::WeakPtrFactory<VisitedLinkWriter> weak_ptr_factory_{this};
 };

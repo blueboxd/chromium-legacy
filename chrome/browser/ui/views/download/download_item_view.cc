@@ -13,10 +13,10 @@
 #include <numeric>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -655,7 +655,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     cc::PaintFlags flags;
     // Use an alpha to make the image look disabled.
     if (!GetEnabled())
-      flags.setAlpha(120);
+      flags.setAlphaf(120.0f / 255.0f);
     canvas->DrawImageInt(*file_icon, progress_x + offset, progress_y + offset,
                          flags);
   }
@@ -1081,17 +1081,8 @@ std::pair<std::u16string, int> DownloadItemView::GetStatusTextAndStyle() const {
   if (type == DangerType::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS)
     return {l10n_util::GetStringUTF16(kDangerous), STYLE_RED};
 
-  const GURL url = model_->GetOriginalURL().DeprecatedGetOriginAsURL();
   const std::u16string text =
-      (!model_->ShouldPromoteOrigin() || url.is_empty())
-          ? model_->GetStatusText()
-#if BUILDFLAG(IS_ANDROID)
-          // url_formatter::ElideUrl() doesn't exist on Android.
-          : std::u16string();
-#else
-          : url_formatter::ElideUrl(url, status_label_->font_list(),
-                                    kTextWidth);
-#endif
+      model_->GetStatusTextForLabel(status_label_->font_list(), kTextWidth);
   return {text, views::style::STYLE_PRIMARY};
 }
 

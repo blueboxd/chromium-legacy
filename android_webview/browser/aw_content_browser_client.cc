@@ -18,6 +18,7 @@
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
+#include "android_webview/browser/aw_origin_verification_scheduler_bridge.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
@@ -40,12 +41,12 @@
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -587,6 +588,15 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
 
+  if (request.is_outermost_main_frame &&
+      base::FeatureList::IsEnabled(
+          features::kWebViewRestrictSensitiveContent)) {
+    auto* origin_verification_bridge =
+        AwOriginVerificationSchedulerBridge::GetInstance();
+    result.push_back(digital_asset_links::BrowserURLLoaderThrottle::Create(
+        origin_verification_bridge));
+  }
+
   result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
       base::BindOnce(
           [](AwContentBrowserClient* client) {
@@ -1041,11 +1051,6 @@ bool AwContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
     content::BrowserContext* browser_context) {
   return base::FeatureList::IsEnabled(
       features::kWebViewSuppressDifferentOriginSubframeJSDialogs);
-}
-
-bool AwContentBrowserClient::ShouldPreconnectNavigation(
-    content::BrowserContext* browser_context) {
-  return true;
 }
 
 void AwContentBrowserClient::OnDisplayInsecureContent(

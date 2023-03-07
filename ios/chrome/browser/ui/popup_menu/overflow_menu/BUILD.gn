@@ -5,11 +5,13 @@
 import("//build/config/ios/swift_source_set.gni")
 
 source_set("overflow_menu_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "overflow_menu_constants.cc",
     "overflow_menu_constants.h",
+    "overflow_menu_constants.mm",
   ]
   deps = [ "//base" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("overflow_menu") {
@@ -65,9 +67,11 @@ source_set("overflow_menu") {
     "//components/profile_metrics",
     "//components/translate/core/browser",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/commerce/push_notification",
     "//ios/chrome/browser/find_in_page",
+    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/follow:browser_agent",
     "//ios/chrome/browser/follow:enums",
     "//ios/chrome/browser/follow:tab_helper",
@@ -79,7 +83,6 @@ source_set("overflow_menu") {
     "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/translate",
-    "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/bookmarks:core",
     "//ios/chrome/browser/ui/browser_container:ui",
     "//ios/chrome/browser/ui/commands",
@@ -91,7 +94,8 @@ source_set("overflow_menu") {
     "//ios/chrome/browser/ui/popup_menu:metrics_protocols",
     "//ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history",
     "//ios/chrome/browser/ui/reading_list",
-    "//ios/chrome/browser/ui/tab_switcher/pinned_tabs:features",
+    "//ios/chrome/browser/ui/sharing/activity_services",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs:features",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/whats_new:util",
     "//ios/chrome/browser/url:constants",

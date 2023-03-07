@@ -24,7 +24,6 @@
 
 namespace {
 const CGFloat kVerticalOffset = 6;
-const CGFloat kPopoutOmniboxSideInsets = -8;
 const CGFloat kPopupBottomPaddingTablet = 80;
 }  // namespace
 
@@ -72,9 +71,7 @@ const CGFloat kPopupBottomPaddingTablet = 80;
     _popupContainerView.overrideUserInterfaceStyle = userInterfaceStyle;
     viewController.overrideUserInterfaceStyle = userInterfaceStyle;
 
-    if (!IsSwiftUIPopupEnabled()) {
-      _popupContainerView.backgroundColor = [configuration backgroundColor];
-    }
+    _popupContainerView.backgroundColor = [configuration backgroundColor];
 
     _popupContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -83,51 +80,36 @@ const CGFloat kPopupBottomPaddingTablet = 80;
       _popupContainerView.clipsToBounds = YES;
       _popupContainerView.layer.cornerRadius = 11.0f;
 
-      if (IsOmniboxActionsVisualTreatment1()) {
-        UIColor* borderColor =
-            incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.12]
-                      : [UIColor.blackColor colorWithAlphaComponent:0.12];
+      UIColor* borderColor =
+          incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.12]
+                    : [UIColor.blackColor colorWithAlphaComponent:0.12];
 
-        _popupContainerView.layer.borderColor = borderColor.CGColor;
-        _popupContainerView.layer.borderWidth = 2.0f;
-        AddSameConstraints(viewController.view, _popupContainerView);
-
-      } else {
-        // Treatment 2.
-        // Popup's outer edges align with the omnibox, top edge overlaps the
-        // toolbar by 1pt.
-        AddSameConstraintsWithInsets(
-            viewController.view, _popupContainerView,
-            NSDirectionalEdgeInsetsMake(0, kPopoutOmniboxSideInsets, 0,
-                                        kPopoutOmniboxSideInsets));
-        _popupContainerView.backgroundColor = UIColor.redColor;
-      }
+      _popupContainerView.layer.borderColor = borderColor.CGColor;
+      _popupContainerView.layer.borderWidth = 2.0f;
+      AddSameConstraints(viewController.view, _popupContainerView);
     } else {
       AddSameConstraints(viewController.view, _popupContainerView);
     }
 
-    if (!IsSwiftUIPopupEnabled()) {
-      // Add bottom separator. This will only be visible on iPad where
-      // the omnibox doesn't fill the whole screen.
-      _bottomSeparator = [[UIView alloc] initWithFrame:CGRectZero];
-      _bottomSeparator.translatesAutoresizingMaskIntoConstraints = NO;
-      _bottomSeparator.backgroundColor =
-          [UIColor colorNamed:kToolbarShadowColor];
+    // Add bottom separator. This will only be visible on iPad where
+    // the omnibox doesn't fill the whole screen.
+    _bottomSeparator = [[UIView alloc] initWithFrame:CGRectZero];
+    _bottomSeparator.translatesAutoresizingMaskIntoConstraints = NO;
+    _bottomSeparator.backgroundColor = [UIColor colorNamed:kToolbarShadowColor];
 
-      [_popupContainerView addSubview:self.bottomSeparator];
-      CGFloat separatorHeight =
-          ui::AlignValueToUpperPixel(kToolbarSeparatorHeight);
-      [NSLayoutConstraint activateConstraints:@[
-        [self.bottomSeparator.heightAnchor
-            constraintEqualToConstant:separatorHeight],
-        [self.bottomSeparator.leadingAnchor
-            constraintEqualToAnchor:_popupContainerView.leadingAnchor],
-        [self.bottomSeparator.trailingAnchor
-            constraintEqualToAnchor:_popupContainerView.trailingAnchor],
-        [self.bottomSeparator.topAnchor
-            constraintEqualToAnchor:_popupContainerView.bottomAnchor],
-      ]];
-    }
+    [_popupContainerView addSubview:self.bottomSeparator];
+    CGFloat separatorHeight =
+        ui::AlignValueToUpperPixel(kToolbarSeparatorHeight);
+    [NSLayoutConstraint activateConstraints:@[
+      [self.bottomSeparator.heightAnchor
+          constraintEqualToConstant:separatorHeight],
+      [self.bottomSeparator.leadingAnchor
+          constraintEqualToAnchor:_popupContainerView.leadingAnchor],
+      [self.bottomSeparator.trailingAnchor
+          constraintEqualToAnchor:_popupContainerView.trailingAnchor],
+      [self.bottomSeparator.topAnchor
+          constraintEqualToAnchor:_popupContainerView.bottomAnchor],
+    ]];
   }
   return self;
 }

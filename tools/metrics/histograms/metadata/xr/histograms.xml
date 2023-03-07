@@ -39,26 +39,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="VRSessionVideoCount" units="units" expires_after="2023-01-15">
-  <owner>alcooper@chromium.org</owner>
-  <owner>xr-dev@chromium.org</owner>
-  <summary>
-    Number of videos watched in a VR session. Logged when a new disjoint session
-    has begun, or when the session has ended in a non-continuable way.
-  </summary>
-</histogram>
-
-<histogram name="VRSessionVideoTime" units="ms" expires_after="2023-01-15">
-  <owner>alcooper@chromium.org</owner>
-  <owner>xr-dev@chromium.org</owner>
-  <summary>
-    The duration of a single session spent watching video in VR. Logged when a
-    new disjoint session has begun, or when the session has ended in a
-    non-continuable way.
-  </summary>
-</histogram>
-
-<histogram name="VRViewerType" enum="VRViewerType" expires_after="2023-04-16">
+<histogram name="VRViewerType" enum="VRViewerType" expires_after="2023-06-18">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>The type of headset being used for VR.</summary>
@@ -81,16 +62,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Indicates which XR runtime was used for a session. Recorded when the session
     was successfully created.
-  </summary>
-</histogram>
-
-<histogram name="XR.WebXR.ReferenceSpace.Succeeded" enum="XRReferenceSpaceType"
-    expires_after="2023-02-12">
-  <owner>alcooper@chromium.org</owner>
-  <owner>xr-dev@chromium.org</owner>
-  <summary>
-    Records which reference spaces are successfully created when the promise
-    returned by XRSession.requestReferenceSpace() is resolved.
   </summary>
 </histogram>
 

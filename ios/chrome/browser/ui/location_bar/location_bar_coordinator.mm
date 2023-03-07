@@ -51,13 +51,13 @@
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_controller_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_coordinator.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_focus_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
-#import "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/omnibox/web_omnibox_edit_model_delegate_impl.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -83,13 +83,13 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 }  // namespace
 
 @interface LocationBarCoordinator () <LoadQueryCommands,
-                                      LocationBarDelegate,
                                       LocationBarViewControllerDelegate,
                                       LocationBarConsumer,
                                       LocationBarSteadyViewConsumer,
+                                      OmniboxControllerDelegate,
                                       URLDragDataSource> {
   // API endpoint for omnibox.
-  std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
+  std::unique_ptr<WebOmniboxEditModelDelegateImpl> _editModelDelegate;
   // Observer that updates `viewController` for fullscreen events.
   std::unique_ptr<FullscreenUIUpdater> _omniboxFullscreenUIUpdater;
   // Observer that updates BadgeViewController for fullscreen events.
@@ -170,13 +170,14 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
   self.viewController.layoutGuideCenter =
       LayoutGuideCenterForBrowser(self.browser);
 
-  _editController = std::make_unique<WebOmniboxEditControllerImpl>(self);
-  _editController->SetURLLoader(self);
+  _editModelDelegate =
+      std::make_unique<WebOmniboxEditModelDelegateImpl>(self, self.delegate);
+  _editModelDelegate->SetURLLoader(self);
 
   self.omniboxCoordinator =
       [[OmniboxCoordinator alloc] initWithBaseViewController:nil
                                                      browser:self.browser];
-  self.omniboxCoordinator.editController = _editController.get();
+  self.omniboxCoordinator.editModelDelegate = _editModelDelegate.get();
   self.omniboxCoordinator.presenterDelegate = self.popupPresenterDelegate;
   [self.omniboxCoordinator start];
 
@@ -248,7 +249,7 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
   [self.omniboxCoordinator stop];
   [self.badgeMediator disconnect];
   self.badgeMediator = nil;
-  _editController.reset();
+  _editModelDelegate.reset();
 
   self.viewController = nil;
   [self.mediator disconnect];
@@ -370,15 +371,7 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
   self.isCancellingOmniboxEdit = NO;
 }
 
-#pragma mark - LocationBarDelegate
-
-- (void)locationBarHasBecomeFirstResponder {
-  [self.delegate locationBarDidBecomeFirstResponder];
-}
-
-- (void)locationBarHasResignedFirstResponder {
-  [self.delegate locationBarDidResignFirstResponder];
-}
+#pragma mark - OmniboxControllerDelegate
 
 - (web::WebState*)webState {
   return self.webStateList->GetActiveWebState();
@@ -386,10 +379,6 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 
 - (LocationBarModel*)locationBarModel {
   return _locationBarModel.get();
-}
-
-- (void)locationBarRequestScribbleTargetFocus {
-  [self.omniboxCoordinator focusOmniboxForScribble];
 }
 
 #pragma mark - LocationBarViewControllerDelegate
@@ -400,6 +389,10 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 
 - (void)locationBarCopyTapped {
   StoreURLInPasteboard(self.webState->GetVisibleURL());
+}
+
+- (void)locationBarRequestScribbleTargetFocus {
+  [self.omniboxCoordinator focusOmniboxForScribble];
 }
 
 - (void)recordShareButtonPressed {

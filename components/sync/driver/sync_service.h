@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/enum_set.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -239,10 +239,8 @@ class SyncService : public KeyedService {
   // be necessary.
   bool HasCompletedSyncCycle() const;
 
-  // The last authentication error that was encountered by the SyncService. This
-  // error can be either from Chrome's identity system (e.g. while trying to get
-  // an access token), or from the Sync server. It gets cleared when the error
-  // is resolved.
+  // The last persistent authentication error that was encountered by the
+  // SyncService. It gets cleared when the error is resolved.
   virtual GoogleServiceAuthError GetAuthError() const = 0;
   virtual base::Time GetAuthErrorTime() const = 0;
 

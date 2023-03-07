@@ -15,8 +15,6 @@ module blink.mojom;
 //
 // A WebFeature conceptually represents some particular web-exposed API
 // or code path which can be used/triggered by a web page.
-// TODO(rbyers): Add CSS and animated CSS feature types by making this a
-// more sophisticated class.
 enum WebFeature {
   kOBSOLETE_PageDestruction = 0,
   kWorkerStart = 4,
@@ -791,7 +789,7 @@ enum WebFeature {
   kNotificationAPISecureOriginIframe = 1148,
   kWebSocket = 1149,
   kMediaStreamConstraintsNameValue = 1150,
-  kMediaStreamConstraintsFromDictionary = 1151,
+  kOBSOLETE_MediaStreamConstraintsFromDictionary = 1151,
   kMediaStreamConstraintsConformant = 1152,
   kCSSSelectorIndirectAdjacent = 1153,
   kCreateImageBitmap = 1156,
@@ -3126,13 +3124,13 @@ enum WebFeature {
   kSanitizerAPIFromString = 3819,
   kSanitizerAPIFromDocument = 3820,
   kSanitizerAPIFromFragment = 3821,
-  kStorageFoundationOpen = 3822,
-  kStorageFoundationRead = 3823,
-  kStorageFoundationReadSync = 3824,
-  kStorageFoundationWrite = 3825,
-  kStorageFoundationWriteSync = 3826,
-  kStorageFoundationFlush = 3827,
-  kStorageFoundationFlushSync = 3828,
+  kOBSOLETE_StorageFoundationOpen = 3822,
+  kOBSOLETE_StorageFoundationRead = 3823,
+  kOBSOLETE_StorageFoundationReadSync = 3824,
+  kOBSOLETE_StorageFoundationWrite = 3825,
+  kOBSOLETE_StorageFoundationWriteSync = 3826,
+  kOBSOLETE_StorageFoundationFlush = 3827,
+  kOBSOLETE_StorageFoundationFlushSync = 3828,
   kUnrestrictedSharedArrayBuffer = 3829,
   // The items above roughly this point are available in the M90 branch.
 
@@ -3248,7 +3246,7 @@ enum WebFeature {
   kXRFrameGetJointPose = 3938,
   kXRFrameFillJointRadii = 3939,
   kXRFrameFillPoses = 3940,
-  kWindowOpenNewPopupBehaviorMismatch = 3941,
+  kOBSOLETE_kWindowOpenNewPopupBehaviorMismatch = 3941,
   kExplicitPointerCaptureClickTargetDiff = 3942,
   // The items above roughly this point are available in the M92 branch.
 
@@ -3322,7 +3320,7 @@ enum WebFeature {
   kCSSCascadeLayers = 4007,
   kCanvasRenderingContext2DConicGradient = 4008,
   kCanvasRenderingContext2DCanvasFilter = 4009,
-  kHTMLParamElementURLParameter = 4010,
+  kOBSOLETE_HTMLParamElementURLParameter = 4010,
   kV8HTMLScriptElement_Supports_Method = 4011,
   kHandwritingRecognitionQueryRecognizer = 4012,
   kV8FileSystemFileHandle_CreateSyncAccessHandle_Method = 4013,
@@ -3428,8 +3426,8 @@ enum WebFeature {
   kWebNfcNdefMakeReadOnly = 4107,
   kV8Navigator_DeprecatedURNToURL_Method = 4108,
   kOBSOLETE_WebAppManifestHandleLinks = 4109,
-  kHTMLParamElementURLParameterInUsePdf = 4110,
-  kHTMLParamElementURLParameterInUseNonPdf = 4111,
+  kOBSOLETE_HTMLParamElementURLParameterInUsePdf = 4110,
+  kOBSOLETE_HTMLParamElementURLParameterInUseNonPdf = 4111,
   kWebTransportServerCertificateHashes = 4112,
   kHiddenAttribute = 4113,
   kHiddenUntilFoundAttribute = 4114,
@@ -3708,6 +3706,8 @@ enum WebFeature {
   kSerivceWorkerFallbackMainResource = 4369,
   kGetDisplayMediaWithoutUserActivation = 4370,
   kBackForwardCacheNotRestoredReasons = 4371,
+  // The items above roughly this point are available in the M108 branch.
+
   kCSSNesting = 4372,
   kSandboxIneffectiveAllowOriginAllowScript = 4373,
   kDocumentOpenDifferentWindow = 4374,
@@ -3720,11 +3720,11 @@ enum WebFeature {
   kViewportDependentLazyLoadedImageWithoutSizesAttribute = 4381,
   kV8MediaStreamTrack_ApplyConstraints_Method = 4382,
   kViewTransition = 4383,
-  // The items above roughly this point are available in the M108 branch.
-
   kElementTogglePopover = 4384,
   kLayoutMediaInlineChildren = 4385,
   kReduceAcceptLanguage = 4386,
+  // The items above roughly this point are available in the M109 branch.
+
   kUuidInPackageUrlNavigation = 4387,
   kCSSValueAppearanceMediaSliderRendered = 4388,
   kCSSValueAppearanceMediaSliderThumbRendered = 4389,
@@ -3765,8 +3765,30 @@ enum WebFeature {
   kDialogCloseWatcherCloseSignalClosedMultiple = 4424,
   kNoVarySearch = 4425,
   kFedCmUserInfo = 4426,
+  kIDNA2008DeviationCharacterInHostnameOfSubresource = 4427,
+  kIDNA2008DeviationCharacterInHostnameOfIFrame = 4428,
+  kWindowOpenPopupOnMobile = 4429,
+  kWindowOpenedAsPopupOnMobile = 4430,
+  kPrivateNetworkAccessIgnoredCrossOriginPreflightError = 4431,
+  kPrivateNetworkAccessIgnoredCrossSitePreflightError = 4432,
+  kLinkRelPrerenderSameOrigin = 4433,
+  kLinkRelPrerenderSameSiteCrossOrigin = 4434,
+  kLinkRelPrerenderCrossSite = 4435,
+  kCSSBackgroundClipBorder = 4436,
+  kCSSBackgroundClipContent = 4437,
+  kCSSBackgroundClipPadding = 4438,
+  kDisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning = 4439,
   kCSSPseudoHasContainsMixOfValidAndInvalid = 4440,
   kCSSPseudoIsWhereContainsMixOfValidAndInvalid = 4441,
+  kPrivateNetworkAccessFetchedSubFrame = 4442,
+  kPrivateNetworkAccessFetchedTopFrame = 4443,
+  kDisableThirdPartyStoragePartitioning = 4444,
+  kServiceWorkerFetchHandlerUpdateAfterInitialization = 4445,
+  kObsoleteCreateImageBitmapImageOrientationNone = 4446,
+  kWindowManagementPermissionDescriptorUsed = 4447,
+  kWindowPlacementPermissionDescriptorUsed = 4448,
+  kWindowManagementPermissionPolicyParsed = 4449,
+  kWindowPlacementPermissionPolicyParsed = 4450,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

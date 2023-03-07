@@ -122,7 +122,9 @@ import java.util.concurrent.ExecutionException;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.DisableFeatures({ChromeFeatureList.READ_LATER})
+// TODO(1406059): Disabling the shopping CPA should not be a requirement for these tests.
+@Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING,
+        ChromeFeatureList.READ_LATER})
 @DoNotBatch(reason = "BookmarkTest has behaviours and thus can't be batched.")
 public class BookmarkTest {
     // clang-format on
@@ -250,6 +252,19 @@ public class BookmarkTest {
                 () -> mManager.getDragStateDelegate().setA11yStateForTesting(false));
     }
 
+    void openRootFolder() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getRootFolderId()));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+    }
+
+    void openMobileBookmarks() {
+        openRootFolder();
+
+        onView(withText("Mobile bookmarks")).perform(click());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
     private boolean isItemPresentInBookmarkList(final String expectedTitle) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
@@ -362,10 +377,11 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testOpenBookmark() throws InterruptedException, ExecutionException {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         openBookmarkManager();
+        openMobileBookmarks();
+
         Assert.assertTrue("Grid view does not contain added bookmark: ",
                 isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
         final View title = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
@@ -398,9 +414,10 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testopenBookmarkManager() throws InterruptedException {
         openBookmarkManager();
+        openMobileBookmarks();
+
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         BookmarkDelegate delegate = getBookmarkManager();
 
@@ -512,6 +529,87 @@ public class BookmarkTest {
         Assert.assertEquals("Wrong number of items after closing search UI.", 3,
                 mItemsContainer.getAdapter().getItemCount());
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+    }
+
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    public void testSearchBookmarks_pressBack() throws Exception {
+        BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
+        BookmarkId folder = addFolder(TEST_FOLDER_TITLE);
+        addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage, folder);
+        addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
+        openBookmarkManager();
+
+        RecyclerView.Adapter adapter = getAdapter();
+        final BookmarkDelegate delegate = getBookmarkManager();
+
+        // Open the new folder where these bookmarks were created.
+        openFolder(folder);
+
+        Assert.assertEquals(
+                Boolean.TRUE, getBookmarkManager().getHandleBackPressChangedSupplier().get());
+
+        TestThreadUtils.runOnUiThreadBlocking(delegate::openSearchUI);
+
+        Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
+        Assert.assertEquals(
+                "Wrong number of items after showing search UI. The promo should be hidden.", 2,
+                adapter.getItemCount());
+
+        Assert.assertEquals(
+                Boolean.TRUE, getBookmarkManager().getHandleBackPressChangedSupplier().get());
+
+        // Exit search UI.
+        TestThreadUtils.runOnUiThreadBlocking(
+                mBookmarkActivity.getOnBackPressedDispatcher()::onBackPressed);
+        Assert.assertNotEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
+
+        // Enter search UI again.
+        TestThreadUtils.runOnUiThreadBlocking(delegate::openSearchUI);
+
+        searchBookmarks("Google");
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        Assert.assertEquals("Wrong number of items after searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
+
+        BookmarkRow itemView =
+                (BookmarkRow) mItemsContainer.findViewHolderForLayoutPosition(0).itemView;
+
+        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
+
+        // Make sure the Item "test" is selected.
+        CriteriaHelper.pollUiThread(
+                itemView::isChecked, "Expected item \"test\" to become selected");
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                mBookmarkActivity.getOnBackPressedDispatcher()::onBackPressed);
+
+        // Clear selection but still in search UI.
+        CriteriaHelper.pollUiThread(
+                () -> !itemView.isChecked(), "Expected item \"test\" to become not selected");
+        Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
+        Assert.assertEquals(
+                Boolean.TRUE, getBookmarkManager().getHandleBackPressChangedSupplier().get());
+
+        // Exit search UI.
+        TestThreadUtils.runOnUiThreadBlocking(
+                mBookmarkActivity.getOnBackPressedDispatcher()::onBackPressed);
+        Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+
+        // Exit folder.
+        Assert.assertEquals(
+                Boolean.TRUE, getBookmarkManager().getHandleBackPressChangedSupplier().get());
+        TestThreadUtils.runOnUiThreadBlocking(
+                mBookmarkActivity.getOnBackPressedDispatcher()::onBackPressed);
+        Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+
+        // Exit bookmark activity.
+        Assert.assertEquals(
+                Boolean.FALSE, getBookmarkManager().getHandleBackPressChangedSupplier().get());
+        TestThreadUtils.runOnUiThreadBlocking(
+                mBookmarkActivity.getOnBackPressedDispatcher()::onBackPressed);
+        ApplicationTestUtils.waitForActivityState(mBookmarkActivity, Stage.DESTROYED);
     }
 
     @Test
@@ -689,13 +787,13 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testEndIconVisibilityInSearchMode() throws Exception {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addFolder(TEST_TITLE_A);
 
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
 
@@ -742,7 +840,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testSmallDrag_Up_BookmarksOnly() throws Exception {
         List<BookmarkId> initial = new ArrayList<>();
         List<BookmarkId> expected = new ArrayList<>();
@@ -767,6 +864,7 @@ public class BookmarkTest {
 
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         // Callback occurs upon changes inside of the bookmark model.
         CallbackHelper modelReorderHelper = new CallbackHelper();
@@ -806,7 +904,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testSmallDrag_Down_FoldersOnly() throws Exception {
         List<BookmarkId> initial = new ArrayList<>();
         List<BookmarkId> expected = new ArrayList<>();
@@ -832,6 +929,7 @@ public class BookmarkTest {
 
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         // Callback occurs upon changes inside of the bookmark model.
         CallbackHelper modelReorderHelper = new CallbackHelper();
@@ -872,7 +970,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testSmallDrag_Down_MixedFoldersAndBookmarks() throws Exception {
         List<BookmarkId> initial = new ArrayList<>();
         List<BookmarkId> expected = new ArrayList<>();
@@ -895,6 +992,7 @@ public class BookmarkTest {
 
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         // Callback occurs upon changes inside of the bookmark model.
         CallbackHelper modelReorderHelper = new CallbackHelper();
@@ -934,12 +1032,12 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testPromoDraggability() throws Exception {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
 
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         ViewHolder promo = mItemsContainer.findViewHolderForAdapterPosition(0);
 
@@ -955,11 +1053,11 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testPartnerFolderDraggability() throws Exception {
         BookmarkId testId = addFolderWithPartner(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         ViewHolder partner = mItemsContainer.findViewHolderForAdapterPosition(2);
 
@@ -975,13 +1073,13 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testUnselectedItemDraggability() throws Exception {
         BookmarkId aId = addBookmark("a", mTestUrlA);
         addFolder(TEST_FOLDER_TITLE);
 
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         ViewHolder test = mItemsContainer.findViewHolderForAdapterPosition(1);
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
@@ -1030,12 +1128,13 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testMoveUpMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         addFolder(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
+
         openBookmarkManager();
+        openMobileBookmarks();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE,
@@ -1057,12 +1156,12 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testMoveDownMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         addFolder(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
@@ -1084,12 +1183,12 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testMoveDownGoneForBottomElement() throws Exception {
         addBookmarkWithPartner(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         addFolderWithPartner(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE,
@@ -1101,12 +1200,12 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testMoveUpGoneForTopElement() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         addFolder(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
@@ -1142,11 +1241,11 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testMoveButtonsGoneWithOneBookmark() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
@@ -1241,11 +1340,11 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/1369091")
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testShowInFolder_NoScroll() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
+        openMobileBookmarks();
 
         // Enter search mode.
         enterSearch();
@@ -1513,7 +1612,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + ":use_root_bookmark_as_default/false"})
     public void testBookmarksDoesNotRecordLaunchMetrics() throws Throwable {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -1521,6 +1619,7 @@ public class BookmarkTest {
 
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         openBookmarkManager();
+
         pressBack();
         BookmarkTestUtil.waitForTabbedActivity();
         Assert.assertEquals(1,

@@ -7,15 +7,13 @@
 #include <utility>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/win/conflicts/module_info.h"
 #include "chrome/browser/win/conflicts/proto/module_list.pb.h"
 #include "chrome/common/chrome_features.h"
@@ -130,11 +128,8 @@ TEST_F(ThirdPartyConflictsManagerTest, InitializeUpdaters) {
 
   ASSERT_TRUE(final_state().has_value());
 
-  const auto kExpectedFinalState =
-      base::win::GetVersion() >= base::win::Version::WIN10
-          ? ThirdPartyConflictsManager::State::kWarningAndBlockingInitialized
-          : ThirdPartyConflictsManager::State::kBlockingInitialized;
-  EXPECT_EQ(final_state().value(), kExpectedFinalState);
+  EXPECT_EQ(final_state().value(),
+            ThirdPartyConflictsManager::State::kWarningAndBlockingInitialized);
 }
 
 TEST_F(ThirdPartyConflictsManagerTest, InvalidModuleList) {

@@ -4,8 +4,8 @@
 
 #include "chrome/services/sharing/nearby/platform/wifi_lan_medium.h"
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -19,7 +19,6 @@
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace location {
 namespace nearby {
 namespace chrome {
 
@@ -544,4 +543,3 @@ void WifiLanMedium::Shutdown(base::WaitableEvent* shutdown_waitable_event) {
 
 }  // namespace chrome
 }  // namespace nearby
-}  // namespace location

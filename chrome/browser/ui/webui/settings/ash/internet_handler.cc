@@ -11,7 +11,7 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/constants/ash_pref_names.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -27,6 +27,7 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -39,7 +40,7 @@ namespace {
 const char kAddThirdPartyVpnMessage[] = "addThirdPartyVpn";
 const char kConfigureThirdPartyVpnMessage[] = "configureThirdPartyVpn";
 const char kShowCarrierAccountDetail[] = "showCarrierAccountDetail";
-const char kShowCellularSetupUI[] = "showCellularSetupUI";
+const char kShowCellularSetupUI[] = "showCellularSetupUi";
 const char kShowPortalSignin[] = "showPortalSignin";
 const char kRequestGmsCoreNotificationsDisabledDeviceNames[] =
     "requestGmsCoreNotificationsDisabledDeviceNames";
@@ -142,7 +143,7 @@ void InternetHandler::AddThirdPartyVpn(const base::Value::List& args) {
 
   // Request that the third-party VPN provider identified by |provider_id|
   // show its "add network" dialog.
-  VpnServiceFactory::GetForBrowserContext(GetProfileForPrimaryUser())
+  chromeos::VpnServiceFactory::GetForBrowserContext(GetProfileForPrimaryUser())
       ->SendShowAddDialogToExtension(app_id);
 }
 
@@ -177,7 +178,7 @@ void InternetHandler::ConfigureThirdPartyVpn(const base::Value::List& args) {
   if (network->GetVpnProviderType() == shill::kProviderThirdPartyVpn) {
     // Request that the third-party VPN provider used by the |network| show a
     // configuration dialog for it.
-    VpnServiceFactory::GetForBrowserContext(profile_)
+    chromeos::VpnServiceFactory::GetForBrowserContext(profile_)
         ->SendShowConfigureDialogToExtension(network->vpn_provider()->id,
                                              network->name());
     return;
@@ -221,7 +222,8 @@ void InternetHandler::ShowPortalSignin(const base::Value::List& args) {
     return;
   }
   const std::string& guid = args[0].GetString();
-  chromeos::NetworkConnect::Get()->ShowPortalSignin(guid);
+  NetworkConnect::Get()->ShowPortalSignin(guid,
+                                          NetworkConnect::Source::kSettings);
 }
 
 void InternetHandler::ShowCellularSetupUI(const base::Value::List& args) {

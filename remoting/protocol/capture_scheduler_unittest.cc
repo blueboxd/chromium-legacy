@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -20,7 +20,7 @@
 
 namespace remoting::protocol {
 
-static const int kTestInputs[] = { 100, 50, 30, 20, 10, 30, 60, 80 };
+static const int kTestInputs[] = {100, 50, 30, 20, 10, 30, 60, 80};
 static const int kMinumumFrameIntervalMs = 50;
 
 class CaptureSchedulerTest : public testing::Test {
@@ -38,9 +38,7 @@ class CaptureSchedulerTest : public testing::Test {
     scheduler_->Start();
   }
 
-  void DoCapture() {
-    capture_called_ = true;
-  }
+  void DoCapture() { capture_called_ = true; }
 
   void CheckCaptureCalled() {
     EXPECT_TRUE(capture_called_);

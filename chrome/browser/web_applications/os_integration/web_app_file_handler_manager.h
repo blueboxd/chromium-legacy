@@ -12,7 +12,6 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 
 class Profile;
 
@@ -72,13 +71,8 @@ class WebAppFileHandlerManager {
   // the app they belong to.
   const apps::FileHandlers* GetEnabledFileHandlers(const AppId& app_id) const;
 
-  // Determines whether file handling is allowed for |app_id|.
-  bool IsFileHandlingAPIAvailable(const AppId& app_id) const;
-
   // Returns true when the system supports file type association icons.
   static bool IconsEnabled();
-
-  void SyncOsIntegrationStateForTesting();
 
  protected:
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
@@ -99,11 +93,6 @@ class WebAppFileHandlerManager {
   // `SetOsIntegrationState()`, there may be a mismatch with the actual OS
   // registry.
   bool ShouldOsIntegrationBeEnabled(const AppId& app_id) const;
-
-  // Refreshes the OS integration state for all apps. This is useful to handle
-  // the case where the File Handling feature became enabled or disabled since
-  // the last time Chromium ran.
-  void SyncOsIntegrationState();
 
   const WebAppRegistrar* GetRegistrar() const;
 

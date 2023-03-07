@@ -6,6 +6,8 @@
 #include "base/ranges/algorithm.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "base/test/task_environment.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/browser_test_util.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/optimization_guide/core/model_store_metadata_entry.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -41,6 +44,7 @@ constexpr int kSuccessfulModelVersion = 123;
 
 // Test locales.
 constexpr char kTestLocaleFoo[] = "en-CA";
+constexpr char kTestLocaleBar[] = "fr-FR";
 
 // Timeout to allow the model file to be downloaded, unzipped and sent to the
 // model file observers.
@@ -52,7 +56,7 @@ Profile* CreateProfile() {
       profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
 }
 
-proto::ModelCacheKey GetModelCacheKey(const std::string& locale) {
+proto::ModelCacheKey CreateModelCacheKey(const std::string& locale) {
   proto::ModelCacheKey model_cache_key;
   model_cache_key.set_locale(locale);
   return model_cache_key;
@@ -60,25 +64,25 @@ proto::ModelCacheKey GetModelCacheKey(const std::string& locale) {
 
 }  // namespace
 
-class PredictionModelStoreBrowserTest : public InProcessBrowserTest {
+class PredictionModelStoreBrowserTestBase : public InProcessBrowserTest {
  public:
-  PredictionModelStoreBrowserTest() = default;
-  ~PredictionModelStoreBrowserTest() override = default;
+  PredictionModelStoreBrowserTestBase() = default;
+  ~PredictionModelStoreBrowserTestBase() override = default;
 
-  PredictionModelStoreBrowserTest(const PredictionModelStoreBrowserTest&) =
-      delete;
-  PredictionModelStoreBrowserTest& operator=(
-      const PredictionModelStoreBrowserTest&) = delete;
+  PredictionModelStoreBrowserTestBase(
+      const PredictionModelStoreBrowserTestBase&) = delete;
+  PredictionModelStoreBrowserTestBase& operator=(
+      const PredictionModelStoreBrowserTestBase&) = delete;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {{features::kOptimizationGuideInstallWideModelStore}}, {});
+    InitializeFeatureList();
+
     models_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     models_server_->ServeFilesFromSourceDirectory(
         "chrome/test/data/optimization_guide");
     models_server_->RegisterRequestHandler(base::BindRepeating(
-        &PredictionModelStoreBrowserTest::HandleGetModelsRequest,
+        &PredictionModelStoreBrowserTestBase::HandleGetModelsRequest,
         base::Unretained(this)));
 
     ASSERT_TRUE(models_server_->Start());
@@ -111,6 +115,7 @@ class PredictionModelStoreBrowserTest : public InProcessBrowserTest {
             .spec());
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
     cmd->AppendSwitchASCII("force-variation-ids", "4");
+    cmd->AppendSwitch(switches::kDebugLoggingEnabled);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     cmd->AppendSwitch(ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
@@ -151,6 +156,11 @@ class PredictionModelStoreBrowserTest : public InProcessBrowserTest {
         ->SetModelCacheKeyForTesting(model_cache_key);
   }
 
+  void set_server_model_cache_key(
+      absl::optional<proto::ModelCacheKey> server_model_cache_key) {
+    server_model_cache_key_ = server_model_cache_key;
+  }
+
  protected:
   std::unique_ptr<net::test_server::HttpResponse> HandleGetModelsRequest(
       const net::test_server::HttpRequest& request) {
@@ -178,17 +188,47 @@ class PredictionModelStoreBrowserTest : public InProcessBrowserTest {
     auto get_models_response = BuildGetModelsResponse();
     get_models_response->mutable_models(0)->mutable_model()->set_download_url(
         model_file_url_.spec());
+    get_models_response->mutable_models(0)->mutable_model_info()->set_version(
+        kSuccessfulModelVersion);
+    if (server_model_cache_key_) {
+      *get_models_response->mutable_models(0)
+           ->mutable_model_info()
+           ->mutable_model_cache_key() = *server_model_cache_key_;
+    }
     std::string serialized_response;
     get_models_response->SerializeToString(&serialized_response);
     response->set_content(serialized_response);
     return std::move(response);
   }
 
+  // Virtualize for testing different feature configurations.
+  virtual void InitializeFeatureList() = 0;
+
   base::test::ScopedFeatureList scoped_feature_list_;
   GURL model_file_url_;
   std::unique_ptr<net::EmbeddedTestServer> download_server_;
   std::unique_ptr<net::EmbeddedTestServer> models_server_;
   base::HistogramTester histogram_tester_;
+
+  // Server returned ModelCacheKey in the GetModels response.
+  absl::optional<proto::ModelCacheKey> server_model_cache_key_;
+};
+
+class PredictionModelStoreBrowserTest
+    : public PredictionModelStoreBrowserTestBase {
+ public:
+  PredictionModelStoreBrowserTest() = default;
+  ~PredictionModelStoreBrowserTest() override = default;
+
+  PredictionModelStoreBrowserTest(const PredictionModelStoreBrowserTest&) =
+      delete;
+  PredictionModelStoreBrowserTest& operator=(
+      const PredictionModelStoreBrowserTest&) = delete;
+
+  void InitializeFeatureList() override {
+    scoped_feature_list_.InitWithFeatures(
+        {{features::kOptimizationGuideInstallWideModelStore}}, {});
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest, TestRegularProfile) {
@@ -266,18 +306,10 @@ IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
             model_file_observer_foo.model_info()->GetModelFilePath());
 }
 
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_TestDissimilarProfilesNotShareModel \
-  DISABLED_TestDissimilarProfilesNotShareModel
-#else
-#define MAYBE_TestDissimilarProfilesNotShareModel \
-  TestDissimilarProfilesNotShareModel
-#endif
-
 // Tests that two dissimilar profiles do not share the model, and the model will
 // be redownloaded.
 IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
-                       MAYBE_TestDissimilarProfilesNotShareModel) {
+                       TestDissimilarProfilesNotShareModel) {
   ModelFileObserver model_file_observer;
   RegisterAndWaitForModelUpdate(&model_file_observer);
 
@@ -293,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
     base::HistogramTester histogram_tester_foo;
     ModelFileObserver model_file_observer_foo;
     Profile* profile_foo = CreateProfile();
-    SetModelCacheKey(profile_foo, GetModelCacheKey(kTestLocaleFoo));
+    SetModelCacheKey(profile_foo, CreateModelCacheKey(kTestLocaleFoo));
 
     RegisterAndWaitForModelUpdate(&model_file_observer_foo, profile_foo);
     // Same model will be redownloaded.
@@ -308,6 +340,242 @@ IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
         model_file_observer.model_info()->GetModelFilePath(),
         model_file_observer_foo.model_info()->GetModelFilePath()));
   }
+}
+
+// Tests that two similar profiles share the model, and the model is not
+// redownloaded, based on server returned model cache key.
+IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
+                       TestSimilarProfilesShareModelWithServerModelCacheKey) {
+  ModelFileObserver model_file_observer_foo, model_file_observer_bar;
+  set_server_model_cache_key(CreateModelCacheKey(kTestLocaleFoo));
+  {
+    base::HistogramTester histogram_tester_foo;
+    Profile* profile_foo = CreateProfile();
+    SetModelCacheKey(profile_foo, CreateModelCacheKey(kTestLocaleFoo));
+    RegisterAndWaitForModelUpdate(&model_file_observer_foo, profile_foo);
+
+    histogram_tester_foo.ExpectUniqueSample(
+        "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+        PredictionModelDownloadStatus::kSuccess, 1);
+    EXPECT_EQ(model_file_observer_foo.optimization_target(),
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(
+        model_file_observer_foo.model_info()->GetModelFilePath().IsAbsolute());
+  }
+  {
+    base::HistogramTester histogram_tester_bar;
+    Profile* profile_bar = CreateProfile();
+    SetModelCacheKey(profile_bar, CreateModelCacheKey(kTestLocaleBar));
+    RegisterAndWaitForModelUpdate(&model_file_observer_bar, profile_bar);
+
+    // No more downloads should happen.
+    histogram_tester_bar.ExpectTotalCount(
+        "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus", 0);
+    EXPECT_EQ(model_file_observer_bar.optimization_target(),
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_EQ(model_file_observer_foo.model_info()->GetModelFilePath(),
+              model_file_observer_bar.model_info()->GetModelFilePath());
+  }
+}
+
+// Tests that two dissimilar profiles do not share the model, and the model will
+// be redownloaded, based on server returned model cache key.
+IN_PROC_BROWSER_TEST_F(
+    PredictionModelStoreBrowserTest,
+    TestDissimilarProfilesNotShareModelWithServerModelCacheKey) {
+  ModelFileObserver model_file_observer_foo, model_file_observer_bar;
+  {
+    set_server_model_cache_key(CreateModelCacheKey(kTestLocaleFoo));
+    base::HistogramTester histogram_tester_foo;
+    Profile* profile_foo = CreateProfile();
+    SetModelCacheKey(profile_foo, CreateModelCacheKey(kTestLocaleFoo));
+    RegisterAndWaitForModelUpdate(&model_file_observer_foo, profile_foo);
+
+    histogram_tester_foo.ExpectUniqueSample(
+        "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+        PredictionModelDownloadStatus::kSuccess, 1);
+    EXPECT_EQ(model_file_observer_foo.optimization_target(),
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(
+        model_file_observer_foo.model_info()->GetModelFilePath().IsAbsolute());
+  }
+  {
+    set_server_model_cache_key(CreateModelCacheKey(kTestLocaleBar));
+    base::HistogramTester histogram_tester_bar;
+    Profile* profile_bar = CreateProfile();
+    SetModelCacheKey(profile_bar, CreateModelCacheKey(kTestLocaleBar));
+    RegisterAndWaitForModelUpdate(&model_file_observer_bar, profile_bar);
+
+    // Model will be downloaded since the server returned different model cache
+    // key.
+    histogram_tester_bar.ExpectUniqueSample(
+        "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+        PredictionModelDownloadStatus::kSuccess, 1);
+    EXPECT_EQ(model_file_observer_bar.optimization_target(),
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_NE(model_file_observer_foo.model_info()->GetModelFilePath(),
+              model_file_observer_bar.model_info()->GetModelFilePath());
+    EXPECT_TRUE(base::ContentsEqual(
+        model_file_observer_foo.model_info()->GetModelFilePath(),
+        model_file_observer_bar.model_info()->GetModelFilePath()));
+  }
+}
+
+// Tests that when a second similar profile is loaded, model is downloaded when
+// the model version has been updated. The old model should not be used.
+IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
+                       TestSimilarProfilesOnModelVersionUpdate) {
+  ModelFileObserver model_file_observer_foo, model_file_observer_bar;
+  set_server_model_cache_key(CreateModelCacheKey(kTestLocaleFoo));
+  {
+    base::HistogramTester histogram_tester_foo;
+    Profile* profile_foo = CreateProfile();
+    SetModelCacheKey(profile_foo, CreateModelCacheKey(kTestLocaleFoo));
+    RegisterAndWaitForModelUpdate(&model_file_observer_foo, profile_foo);
+
+    histogram_tester_foo.ExpectUniqueSample(
+        "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+        PredictionModelDownloadStatus::kSuccess, 1);
+    EXPECT_EQ(model_file_observer_foo.optimization_target(),
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_TRUE(
+        model_file_observer_foo.model_info()->GetModelFilePath().IsAbsolute());
+  }
+  {
+    // Mark the downloaded model as old version, to simulate model version
+    // update.
+    ModelStoreMetadataEntryUpdater updater(
+        g_browser_process->local_state(),
+        proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+        CreateModelCacheKey(kTestLocaleFoo));
+    updater.SetVersion(kSuccessfulModelVersion - 1);
+  }
+  {
+    base::HistogramTester histogram_tester_bar;
+    Profile* profile_bar = CreateProfile();
+    SetModelCacheKey(profile_bar, CreateModelCacheKey(kTestLocaleBar));
+    RegisterAndWaitForModelUpdate(&model_file_observer_bar, profile_bar);
+
+    // Model will be downloaded since the model version got updated.
+    histogram_tester_bar.ExpectUniqueSample(
+        "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+        PredictionModelDownloadStatus::kSuccess, 1);
+    EXPECT_EQ(model_file_observer_bar.optimization_target(),
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_NE(model_file_observer_foo.model_info()->GetModelFilePath(),
+              model_file_observer_bar.model_info()->GetModelFilePath());
+    EXPECT_TRUE(base::ContentsEqual(
+        model_file_observer_foo.model_info()->GetModelFilePath(),
+        model_file_observer_bar.model_info()->GetModelFilePath()));
+    histogram_tester_bar.ExpectUniqueSample(
+        "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad",
+        kSuccessfulModelVersion, 1);
+  }
+}
+
+// Tests the case when local state is inconsistent with the model directory,
+// i.e., when model file does not exist but the local state entry is populated,
+// it will lead to redownloading of the model.
+IN_PROC_BROWSER_TEST_F(PredictionModelStoreBrowserTest,
+                       TestInconsistentLocalState) {
+  ModelFileObserver model_file_observer;
+  RegisterAndWaitForModelUpdate(&model_file_observer);
+
+  histogram_tester_.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+      PredictionModelDownloadStatus::kSuccess, 1);
+  EXPECT_EQ(model_file_observer.optimization_target(),
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  EXPECT_TRUE(
+      model_file_observer.model_info()->GetModelFilePath().IsAbsolute());
+
+  // Remove the model file so that model directory is inconsistent with local
+  // state.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::DeleteFile(model_file_observer.model_info()->GetModelFilePath());
+  }
+
+  base::HistogramTester histogram_tester_foo;
+  ModelFileObserver model_file_observer_foo;
+  Profile* profile_foo = CreateProfile();
+  RegisterAndWaitForModelUpdate(&model_file_observer_foo, profile_foo);
+
+  // The model will be redownloaded.
+  histogram_tester_foo.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+      PredictionModelDownloadStatus::kSuccess, 1);
+  EXPECT_EQ(model_file_observer_foo.optimization_target(),
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  EXPECT_TRUE(
+      model_file_observer_foo.model_info()->GetModelFilePath().IsAbsolute());
+}
+
+class PredictionModelStoreMigrationBrowserTest
+    : public PredictionModelStoreBrowserTestBase {
+ public:
+  PredictionModelStoreMigrationBrowserTest() = default;
+  ~PredictionModelStoreMigrationBrowserTest() override = default;
+
+  PredictionModelStoreMigrationBrowserTest(
+      const PredictionModelStoreMigrationBrowserTest&) = delete;
+  PredictionModelStoreMigrationBrowserTest& operator=(
+      const PredictionModelStoreMigrationBrowserTest&) = delete;
+
+  void InitializeFeatureList() override {
+    base::StringPiece test_name =
+        ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+    if (base::StartsWith(test_name, "PRE_PRE_")) {
+      // First stage of migration. Old model store is active.
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kOptimizationGuideInstallWideModelStore);
+    } else if (base::StartsWith(test_name, "PRE_")) {
+      // Second stage of migration. New model store is active.
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kOptimizationGuideInstallWideModelStore);
+    } else {
+      // Last stage of migration. Old model store is active.
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kOptimizationGuideInstallWideModelStore);
+    }
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PredictionModelStoreMigrationBrowserTest,
+                       PRE_PRE_MigrationOldToNewToOldStore) {
+  EXPECT_FALSE(features::IsInstallWideModelStoreEnabled());
+  ModelFileObserver model_file_observer;
+  RegisterAndWaitForModelUpdate(&model_file_observer);
+
+  // The model will be downloaded by the old model store.
+  histogram_tester_.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+      PredictionModelDownloadStatus::kSuccess, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PredictionModelStoreMigrationBrowserTest,
+                       PRE_MigrationOldToNewToOldStore) {
+  EXPECT_TRUE(features::IsInstallWideModelStoreEnabled());
+  ModelFileObserver model_file_observer;
+  RegisterAndWaitForModelUpdate(&model_file_observer);
+
+  // The model will be downloaded by the new model store.
+  histogram_tester_.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
+      PredictionModelDownloadStatus::kSuccess, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PredictionModelStoreMigrationBrowserTest,
+                       MigrationOldToNewToOldStore) {
+  EXPECT_FALSE(features::IsInstallWideModelStoreEnabled());
+  ModelFileObserver model_file_observer;
+  RegisterAndWaitForModelUpdate(&model_file_observer);
+
+  // The model saved in the old model store will be used, and no download will
+  // happen.
+  histogram_tester_.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus", 0);
 }
 
 }  // namespace optimization_guide

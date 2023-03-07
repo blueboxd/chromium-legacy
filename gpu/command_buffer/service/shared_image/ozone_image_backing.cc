@@ -112,8 +112,6 @@ class OzoneImageBacking::OverlayOzoneImageRepresentation
   }
 };
 
-OzoneImageBacking::~OzoneImageBacking() = default;
-
 SharedImageBackingType OzoneImageBacking::GetType() const {
   return SharedImageBackingType::kOzone;
 }
@@ -290,6 +288,14 @@ OzoneImageBacking::OzoneImageBacking(
   }
 }
 
+OzoneImageBacking::~OzoneImageBacking() {
+  if (context_state_->context_lost()) {
+    for (auto& texture_holder : cached_texture_holders_) {
+      texture_holder->MarkContextLost();
+    }
+  }
+}
+
 std::unique_ptr<VaapiImageRepresentation> OzoneImageBacking::ProduceVASurface(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
@@ -313,7 +319,10 @@ bool OzoneImageBacking::VaSync() {
   return !has_pending_va_writes_;
 }
 
-bool OzoneImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
+bool OzoneImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
+  DCHECK_EQ(pixmaps.size(), 1u);
+  auto& pixmap = pixmaps[0];
+
   DCHECK(!pixmap.info().isEmpty());
 
   if (context_state_->context_lost())

@@ -92,7 +92,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, TypesForFirstLine) {
 }
 
 TEST_F(NGInlineLayoutAlgorithmTest, TypesForBlockInInline) {
-  ScopedLayoutNGBlockInInlineForTest block_in_inline_scope(true);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <div id="block-in-inline">
@@ -588,7 +587,6 @@ TEST_F(NGInlineLayoutAlgorithmTest,
 
 // Block-in-inline is not reusable. See |EndOfReusableItems|.
 TEST_F(NGInlineLayoutAlgorithmTest, BlockInInlineAppend) {
-  ScopedLayoutNGBlockInInlineForTest scoped_for_test(true);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -673,7 +671,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
 
 // See also NGInlineLayoutAlgorithmTest.TextCombineFake
 TEST_F(NGInlineLayoutAlgorithmTest, TextCombineBasic) {
-  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "body { margin: 0px; font: 100px/110px Ahem; }"
@@ -701,7 +698,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextCombineBasic) {
 
 // See also NGInlineLayoutAlgorithmTest.TextCombineBasic
 TEST_F(NGInlineLayoutAlgorithmTest, TextCombineFake) {
-  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "body { margin: 0px; font: 100px/110px Ahem; }"

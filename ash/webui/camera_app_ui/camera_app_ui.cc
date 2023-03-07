@@ -9,9 +9,9 @@
 #include "ash/webui/camera_app_ui/resources.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "ash/webui/grit/ash_camera_app_resources_map.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
@@ -75,10 +75,10 @@ void HandleLocalOverrideRequest(
               url, std::move(callback)));
 }
 
-content::WebUIDataSource* CreateCameraAppUIHTMLSource(
-    CameraAppUIDelegate* delegate) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(kChromeUICameraAppHost);
+void CreateAndAddCameraAppUIHTMLSource(content::BrowserContext* browser_context,
+                                       CameraAppUIDelegate* delegate) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      browser_context, kChromeUICameraAppHost);
 
   source->DisableTrustedTypesCSP();
 
@@ -112,8 +112,6 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ObjectSrc,
       std::string("object-src 'self';"));
-
-  return source;
 }
 
 // Translates the renderer-side source ID to video device id.
@@ -246,8 +244,7 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
   window()->SetProperty(kMinimizeOnBackKey, false);
 
   // Set up the data source.
-  content::WebUIDataSource::Add(browser_context,
-                                CreateCameraAppUIHTMLSource(delegate_.get()));
+  CreateAndAddCameraAppUIHTMLSource(browser_context, delegate_.get());
 
   // Add ability to request chrome-untrusted: URLs
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);

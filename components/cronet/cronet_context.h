@@ -10,11 +10,12 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
@@ -182,7 +183,7 @@ class CronetContext {
   }
   base::TimeDelta heartbeat_interval() const { return heartbeat_interval_; }
 
-  bool skip_logging() const { return skip_logging_; }
+  bool enable_telemetry() const { return enable_telemetry_; }
 
   // NetworkTasks performs tasks on the network thread and owns objects that
   // live on the network thread.
@@ -373,8 +374,8 @@ class CronetContext {
   // period of the heartbeat signal.
   base::TimeDelta heartbeat_interval_;
 
-  // Whether Cronet's logging should be skipped or not.
-  bool skip_logging_;
+  // Whether Cronet Telemetry should be enabled or not.
+  bool enable_telemetry_;
 
   const int default_load_flags_;
 

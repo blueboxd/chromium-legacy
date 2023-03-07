@@ -8,12 +8,12 @@
 #include <sstream>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -483,13 +483,6 @@ AccountTrackerService::ComputeNewMigrationState() const {
     // migration done as there are no accounts to migrate..
     return MIGRATION_DONE;
   }
-
-  // Migration on ChromeOS is not started by default due to the following risks:
-  // * a lot more data than on desktop is keyed by the account id
-  // * bugs in the migration flow can lead to user not being able to sign in
-  //   to their device which makes the device unusable.
-  if (!base::FeatureList::IsEnabled(switches::kAccountIdMigration))
-    return MIGRATION_NOT_STARTED;
 
   bool migration_required = false;
   for (const auto& pair : accounts_) {

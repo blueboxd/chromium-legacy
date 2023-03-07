@@ -8,17 +8,18 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -414,20 +415,10 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   device_->GetImmediateContext(&device_context_);
 
-  HRESULT hr;
-
   // TODO(liberato): Handle cleanup better.  Also consider being less chatty in
   // the logs, since this will fall back.
 
-  ComD3D11Multithread multi_threaded;
-  hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
-
-  if (FAILED(hr))
-    return NotifyError({D3D11Status::Codes::kQueryID3D11MultithreadFailed, hr});
-
-  multi_threaded->SetMultithreadProtected(TRUE);
-
-  hr = device_.As(&video_device_);
+  auto hr = device_.As(&video_device_);
   if (FAILED(hr))
     return NotifyError({D3D11Status::Codes::kFailedToGetVideoDevice, hr});
 
@@ -916,8 +907,8 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // the finch flag is enabled.  We may not choose to set ALLOW_OVERLAY if the
   // flag is off, however.
   //
-  // Also note that, since we end up binding textures with GLImageDXGI, it's
-  // probably okay just to allow overlay always, and let the swap chain
+  // Also note that, since we end up binding textures with GLImageEGLStream,
+  // it's probably okay just to allow overlay always, and let the swap chain
   // presenter decide if it wants to.
   frame->metadata().allow_overlay = true;
 

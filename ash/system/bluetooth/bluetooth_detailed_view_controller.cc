@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/bluetooth_config_service.h"
+#include "ash/public/cpp/hats_bluetooth_revamp_trigger.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -112,12 +113,20 @@ void BluetoothDetailedViewController::OnPropertiesUpdated(
 
 void BluetoothDetailedViewController::OnToggleClicked(bool new_state) {
   remote_cros_bluetooth_config_->SetBluetoothEnabledState(new_state);
+
+  if (auto* hats_bluetooth_revamp_trigger = HatsBluetoothRevampTrigger::Get()) {
+    hats_bluetooth_revamp_trigger->TryToShowSurvey();
+  }
 }
 
 void BluetoothDetailedViewController::OnPairNewDeviceRequested() {
   tray_controller_->CloseBubble();  // Deletes |this|.
   Shell::Get()->system_tray_model()->client()->ShowBluetoothPairingDialog(
       /*device_address=*/absl::nullopt);
+
+  if (auto* hats_bluetooth_revamp_trigger = HatsBluetoothRevampTrigger::Get()) {
+    hats_bluetooth_revamp_trigger->TryToShowSurvey();
+  }
 }
 
 void BluetoothDetailedViewController::OnDeviceListItemSelected(

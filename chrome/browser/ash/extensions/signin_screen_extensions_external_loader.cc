@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "ash/constants/ash_paths.h"
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -53,7 +53,7 @@ SigninScreenExtensionsExternalLoader::SigninScreenExtensionsExternalLoader(
     Profile* profile)
     : profile_(profile),
       external_cache_(
-          base::PathService::CheckedGet(DIR_SIGNIN_PROFILE_EXTENSIONS),
+          base::PathService::CheckedGet(ash::DIR_SIGNIN_PROFILE_EXTENSIONS),
           g_browser_process->shared_url_loader_factory(),
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -62,7 +62,7 @@ SigninScreenExtensionsExternalLoader::SigninScreenExtensionsExternalLoader(
           /*always_check_updates=*/true,
           /*wait_for_cache_initialization=*/false,
           /*allow_scheduled_updates=*/false) {
-  DCHECK(ProfileHelper::IsSigninProfile(profile));
+  DCHECK(ash::ProfileHelper::IsSigninProfile(profile));
 }
 
 void SigninScreenExtensionsExternalLoader::StartLoading() {

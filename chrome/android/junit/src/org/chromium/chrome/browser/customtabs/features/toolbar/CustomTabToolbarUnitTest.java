@@ -46,7 +46,6 @@ import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.task.test.ShadowPostTask.TestImpl;
@@ -81,7 +80,6 @@ import java.util.function.BooleanSupplier;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowLooper.class, ShadowPostTask.class})
 @LooperMode(Mode.PAUSED)
-@EnableFeatures(ChromeFeatureList.CCT_SHOW_ABOUT_BLANK_URL)
 @DisableFeatures(ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES)
 public class CustomTabToolbarUnitTest {
     @Rule
@@ -111,9 +109,6 @@ public class CustomTabToolbarUnitTest {
     OfflineDownloader mOfflineDownloader;
     @Mock
     Tab mTab;
-
-    private final ObservableSupplierImpl<Boolean> mIsProgressBarVisibleSupplier =
-            new ObservableSupplierImpl<>();
 
     private Activity mActivity;
     private CustomTabToolbar mToolbar;
@@ -146,8 +141,7 @@ public class CustomTabToolbarUnitTest {
         mLocationBar.setAnimDelegateForTesting(mAnimationDelegate);
 
         mToolbar.initialize(mToolbarDataProvider, mTabController, mMenuButtonCoordinator,
-                mIsProgressBarVisibleSupplier, mHistoryDelegate, mPartnerHomepageEnabledSupplier,
-                mOfflineDownloader);
+                mHistoryDelegate, mPartnerHomepageEnabledSupplier, mOfflineDownloader);
     }
 
     @After

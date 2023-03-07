@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AsyncUtil} from '../common/async_util.js';
 import {EventHandler} from '../common/event_handler.js';
 
 import {SACommands} from './commands.js';
 import {Navigator} from './navigator.js';
 import {KeyboardRootNode} from './nodes/keyboard_node.js';
 import {PreferenceManager} from './preference_manager.js';
-import {SAConstants} from './switch_access_constants.js';
+import {ErrorType, Mode} from './switch_access_constants.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
+const EventType = chrome.automation.EventType;
+const FindParams = chrome.automation.FindParams;
+const RoleType = chrome.automation.RoleType;
 
 /**
  * The top-level class for the Switch Access accessibility feature. Handles
@@ -18,40 +22,49 @@ const AutomationNode = chrome.automation.AutomationNode;
  * codebase.
  */
 export class SwitchAccess {
-  static initialize() {
+  static async initialize() {
     SwitchAccess.instance = new SwitchAccess();
 
-    chrome.automation.getDesktop(desktop => {
-      chrome.automation.getFocus(focus => {
-        // Focus is available. Finish init without waiting for further events.
-        // Disallow web view nodes, which indicate a root web area is still
-        // loading and pending focus.
-        if (focus && focus.role !== chrome.automation.RoleType.WEB_VIEW) {
-          SwitchAccess.finishInit_(desktop);
+    const desktop = await AsyncUtil.getDesktop();
+    const currentFocus = await AsyncUtil.getFocus();
+
+    await SwitchAccess.waitForFocus_(desktop, currentFocus);
+  }
+
+  /**
+   * @param {!AutomationNode} desktop
+   * @param {AutomationNode} currentFocus
+   * @private
+   */
+  static async waitForFocus_(desktop, currentFocus) {
+    return new Promise(resolve => {
+      // Focus is available. Finish init without waiting for further events.
+      // Disallow web view nodes, which indicate a root web area is still
+      // loading and pending focus.
+      if (currentFocus && currentFocus.role !== RoleType.WEB_VIEW) {
+        SwitchAccess.finishInit_(desktop);
+        resolve();
+        return;
+      }
+
+      // Wait for the focus to be sent. If |currentFocus| was undefined, this is
+      // guaranteed. Otherwise, also set a timed callback to ensure we do
+      // eventually init.
+      let callbackId = 0;
+      const listener = maybeEvent => {
+        if (maybeEvent && maybeEvent.target.role === RoleType.WEB_VIEW) {
           return;
         }
 
-        // Wait for the focus to be sent. If |focus| was undefined, this is
-        // guaranteed. Otherwise, also set a timed callback to ensure we do
-        // eventually init.
-        let callbackId = 0;
-        const listener = maybeEvent => {
-          if (maybeEvent &&
-              maybeEvent.target.role === chrome.automation.RoleType.WEB_VIEW) {
-            return;
-          }
+        desktop.removeEventListener(EventType.FOCUS, listener, false);
+        clearTimeout(callbackId);
 
-          desktop.removeEventListener(
-              chrome.automation.EventType.FOCUS, listener, false);
-          clearTimeout(callbackId);
+        SwitchAccess.finishInit_(desktop);
+        resolve();
+      };
 
-          SwitchAccess.finishInit_(desktop);
-        };
-
-        desktop.addEventListener(
-            chrome.automation.EventType.FOCUS, listener, false);
-        callbackId = setTimeout(listener, 5000);
-      });
+      desktop.addEventListener(EventType.FOCUS, listener, false);
+      callbackId = setTimeout(listener, 5000);
     });
   }
 
@@ -68,8 +81,8 @@ export class SwitchAccess {
           this.enableImprovedTextInput_ = result;
         });
 
-    /* @private {!SAConstants.Mode} */
-    this.mode_ = SAConstants.Mode.ITEM_SCAN;
+    /* @private {!Mode} */
+    this.mode_ = Mode.ITEM_SCAN;
   }
 
   /**
@@ -81,12 +94,12 @@ export class SwitchAccess {
     return SwitchAccess.instance.enableImprovedTextInput_;
   }
 
-  /** @return {!SAConstants.Mode} */
+  /** @return {!Mode} */
   get mode() {
     return this.mode_;
   }
 
-  /** @param {!SAConstants.Mode} newMode */
+  /** @param {!Mode} newMode */
   set mode(newMode) {
     this.mode_ = newMode;
   }
@@ -95,7 +108,7 @@ export class SwitchAccess {
    * Helper function to robustly find a node fitting a given FindParams, even if
    * that node has not yet been created.
    * Used to find the menu and back button.
-   * @param {!chrome.automation.FindParams} findParams
+   * @param {!FindParams} findParams
    * @param {!function(!AutomationNode): void} foundCallback
    */
   static findNodeMatching(findParams, foundCallback) {
@@ -109,8 +122,7 @@ export class SwitchAccess {
     // If it's not currently in the tree, listen for changes to the desktop
     // tree.
     const eventHandler = new EventHandler(
-        desktop, chrome.automation.EventType.CHILDREN_CHANGED,
-        null /** callback */);
+        desktop, EventType.CHILDREN_CHANGED, null /** callback */);
 
     const onEvent = event => {
       if (event.target.matches(findParams)) {
@@ -133,7 +145,7 @@ export class SwitchAccess {
 
   /**
    * Creates and records the specified error.
-   * @param {SAConstants.ErrorType} errorType
+   * @param {ErrorType} errorType
    * @param {string} errorString
    * @param {boolean} shouldRecover
    * @return {!Error}
@@ -142,7 +154,7 @@ export class SwitchAccess {
     if (shouldRecover) {
       setTimeout(Navigator.byItem.moveToValidNode.bind(Navigator.byItem), 0);
     }
-    const errorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;
+    const errorTypeCountForUMA = Object.keys(ErrorType).length;
     chrome.metricsPrivate.recordEnumerationValue(
         'Accessibility.CrosSwitchAccess.Error',
         /** @type {number} */ (errorType), errorTypeCountForUMA);
@@ -150,12 +162,12 @@ export class SwitchAccess {
   }
 
   /**
-   * @param {!chrome.automation.AutomationNode} desktop
+   * @param {!AutomationNode} desktop
    * @private
    */
   static finishInit_(desktop) {
     // Navigator must be initialized first.
-    Navigator.initializeSingletonInstance(desktop);
+    Navigator.initializeSingletonInstances(desktop);
 
     SwitchAccess.commands = new SACommands();
     KeyboardRootNode.startWatchingVisibility();

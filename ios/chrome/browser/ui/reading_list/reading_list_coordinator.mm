@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #import "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -37,11 +36,11 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_animator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
@@ -63,8 +62,7 @@
 @interface ReadingListCoordinator () <ReadingListMenuProvider,
                                       ReadingListListItemFactoryDelegate,
                                       ReadingListListViewControllerAudience,
-                                      ReadingListListViewControllerDelegate,
-                                      UIViewControllerTransitioningDelegate>
+                                      ReadingListListViewControllerDelegate>
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -134,18 +132,10 @@
   // everything correctly.
   [self readingListHasItems:self.mediator.hasElements];
 
-  BOOL useCustomPresentation = YES;
-      [self.navigationController
-          setModalPresentationStyle:UIModalPresentationFormSheet];
-      self.navigationController.presentationController.delegate =
-          self.tableViewController;
-      useCustomPresentation = NO;
-
-  if (useCustomPresentation) {
-    self.navigationController.transitioningDelegate = self;
-    self.navigationController.modalPresentationStyle =
-        UIModalPresentationCustom;
-  }
+  [self.navigationController
+      setModalPresentationStyle:UIModalPresentationFormSheet];
+  self.navigationController.presentationController.delegate =
+      self.tableViewController;
 
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
@@ -232,47 +222,6 @@
               openItemOfflineInNewTab:(id<ReadingListListItem>)item {
   DCHECK_EQ(self.tableViewController, viewController);
   [self openItemOfflineInNewTab:item];
-}
-
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (UIPresentationController*)
-presentationControllerForPresentedViewController:(UIViewController*)presented
-                        presentingViewController:(UIViewController*)presenting
-                            sourceViewController:(UIViewController*)source {
-  return [[TableViewPresentationController alloc]
-      initWithPresentedViewController:presented
-             presentingViewController:presenting];
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForPresentedController:(UIViewController*)presented
-                     presentingController:(UIViewController*)presenting
-                         sourceController:(UIViewController*)source {
-  UITraitCollection* traitCollection = presenting.traitCollection;
-  if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
-      traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact) {
-    // Use the default animator for fullscreen presentations.
-    return nil;
-  }
-
-  TableViewAnimator* animator = [[TableViewAnimator alloc] init];
-  animator.presenting = YES;
-  return animator;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForDismissedController:(UIViewController*)dismissed {
-  UITraitCollection* traitCollection = dismissed.traitCollection;
-  if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
-      traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact) {
-    // Use the default animator for fullscreen presentations.
-    return nil;
-  }
-
-  TableViewAnimator* animator = [[TableViewAnimator alloc] init];
-  animator.presenting = NO;
-  return animator;
 }
 
 #pragma mark - URL Loading Helpers

@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/config_source.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
@@ -35,18 +35,18 @@ constexpr char kFutureConfigDictKey[] = "future_config";
 constexpr char kCurrentConfigDictKey[] = "current_config";
 constexpr char kOldConfigsDictKey[] = "old_configs";
 
-base::DictionaryValue PolicyFromConfigs(
+base::Value PolicyFromConfigs(
     const AccessCodeConfig& future_config,
     const AccessCodeConfig& current_config,
     const std::vector<AccessCodeConfig>& old_configs) {
-  base::DictionaryValue dict;
-  dict.SetKey(kFutureConfigDictKey, future_config.ToDictionary());
-  dict.SetKey(kCurrentConfigDictKey, current_config.ToDictionary());
-  base::Value old_configs_value(base::Value::Type::LIST);
+  base::Value::Dict dict;
+  dict.Set(kFutureConfigDictKey, future_config.ToDictionary());
+  dict.Set(kCurrentConfigDictKey, current_config.ToDictionary());
+  base::Value::List old_configs_value;
   for (const auto& config : old_configs)
     old_configs_value.Append(config.ToDictionary());
-  dict.SetKey(kOldConfigsDictKey, std::move(old_configs_value));
-  return dict;
+  dict.Set(kOldConfigsDictKey, std::move(old_configs_value));
+  return base::Value(std::move(dict));
 }
 
 }  // namespace
@@ -113,7 +113,7 @@ class ParentAccessServiceTest : public MixinBasedInProcessBrowserTest {
 
  protected:
   // Updates the policy containing the Parent Access Code config.
-  void UpdatePolicy(const base::DictionaryValue& dict) {
+  void UpdatePolicy(const base::Value& dict) {
     std::string config_string;
     base::JSONWriter::Write(dict, &config_string);
 

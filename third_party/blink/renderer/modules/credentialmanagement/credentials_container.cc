@@ -24,6 +24,9 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_large_blob_inputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_large_blob_outputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_payment_inputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_prf_inputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_prf_outputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_prf_values.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_properties_output.h"
@@ -70,6 +73,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
@@ -699,6 +703,11 @@ void OnMakePublicKeyCredentialComplete(
         std::move(credential->device_public_key->signature)));
     extension_outputs->setDevicePubKey(device_public_key_outputs);
   }
+  if (credential->echo_prf) {
+    auto* prf_outputs = AuthenticationExtensionsPRFOutputs::Create();
+    prf_outputs->setEnabled(credential->prf);
+    extension_outputs->setPrf(prf_outputs);
+  }
   resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
       credential->info->id, raw_id, authenticator_response,
       credential->authenticator_attachment, extension_outputs));
@@ -841,6 +850,20 @@ void OnGetAssertionComplete(
       device_public_key_outputs->setSignature(VectorToDOMArrayBuffer(
           std::move(credential->device_public_key->signature)));
       extension_outputs->setDevicePubKey(device_public_key_outputs);
+    }
+    if (credential->echo_prf) {
+      auto* prf_outputs = AuthenticationExtensionsPRFOutputs::Create();
+      if (credential->prf_results) {
+        auto* values = AuthenticationExtensionsPRFValues::Create();
+        values->setFirst(
+            VectorToDOMArrayBuffer(std::move(credential->prf_results->first)));
+        if (credential->prf_results->second) {
+          values->setSecond(VectorToDOMArrayBuffer(
+              std::move(credential->prf_results->second.value())));
+        }
+        prf_outputs->setResults(values);
+      }
+      extension_outputs->setPrf(prf_outputs);
     }
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id,
@@ -998,6 +1021,25 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
   }
 
   return true;
+}
+
+const char* validateGetPublicKeyCredentialPRFExtension(
+    const AuthenticationExtensionsPRFInputs& prf) {
+  if (prf.hasEvalByCredential()) {
+    for (const auto& pair : prf.evalByCredential()) {
+      Vector<char> cred_id;
+      if (!pair.first.Is8Bit() ||
+          !WTF::Base64UnpaddedURLDecode(pair.first, cred_id)) {
+        return "'prf' extension contains invalid base64url data in "
+               "'evalByCredential'";
+      }
+      if (cred_id.empty()) {
+        return "'prf' extension contains an empty credential ID in "
+               "'evalByCredential'";
+      }
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -1173,6 +1215,24 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
           return promise;
         }
       }
+      if (options->publicKey()->extensions()->hasPrf()) {
+        const char* error = validateGetPublicKeyCredentialPRFExtension(
+            *options->publicKey()->extensions()->prf());
+        if (error == nullptr &&
+            options->publicKey()->extensions()->prf()->hasEvalByCredential() &&
+            options->publicKey()->allowCredentials().empty()) {
+          error =
+              "'prf' extension has 'evalByCredential' with an empty allow list";
+        }
+        // Prohibiting uv=preferred is omitted. See
+        // https://github.com/w3c/webauthn/pull/1836.
+
+        if (error != nullptr) {
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kNotSupportedError, error));
+          return promise;
+        }
+      }
       if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context) &&
           options->publicKey()->extensions()->hasPayment()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -1344,12 +1404,25 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
 
     bool prefer_auto_sign_in = options->identity()->preferAutoSignIn();
 
+    mojom::blink::RpContext rp_context = mojom::blink::RpContext::kSignIn;
+    if (RuntimeEnabledFeatures::FedCmRpContextEnabled() &&
+        options->identity()->hasContext()) {
+      rp_context = mojo::ConvertTo<mojom::blink::RpContext>(
+          options->identity()->context());
+    }
+
+    if (!web_identity_requester_) {
+      web_identity_requester_ =
+          MakeGarbageCollected<WebIdentityRequester>(WrapPersistent(context));
+    }
+
     if (!RuntimeEnabledFeatures::FedCmMultipleIdentityProvidersEnabled(
             context)) {
       Vector<mojom::blink::IdentityProviderGetParametersPtr> idp_get_params;
       mojom::blink::IdentityProviderGetParametersPtr get_params =
           mojom::blink::IdentityProviderGetParameters::New(
-              std::move(identity_provider_ptrs), prefer_auto_sign_in);
+              std::move(identity_provider_ptrs), prefer_auto_sign_in,
+              rp_context);
       idp_get_params.push_back(std::move(get_params));
 
       auto* auth_request =
@@ -1359,17 +1432,24 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
           WTF::BindOnce(&OnRequestToken, WrapPersistent(resolver),
                         std::move(scoped_abort_state),
                         WrapPersistent(options)));
+
+      // Start recording the duration from when RequestToken is called directly
+      // to when RequestToken would be called if invoked through a window onload
+      // event listener.
+      web_identity_requester_->StartWindowOnloadDelayTimer(
+          WrapPersistent(resolver));
+
       return promise;
     }
 
-    if (!web_identity_requester_) {
-      web_identity_requester_ = MakeGarbageCollected<WebIdentityRequester>(
-          WrapPersistent(context), std::move(scoped_abort_state));
+    if (scoped_abort_state) {
+      web_identity_requester_->InsertScopedAbortState(
+          std::move(scoped_abort_state));
     }
 
     web_identity_requester_->AppendGetCall(WrapPersistent(resolver),
                                            options->identity()->providers(),
-                                           prefer_auto_sign_in);
+                                           prefer_auto_sign_in, rp_context);
 
     return promise;
   }
@@ -1601,6 +1681,16 @@ ScriptPromise CredentialsContainer::create(
     if (options->publicKey()->extensions()->hasPayment() &&
         !IsPaymentExtensionValid(options, resolver)) {
       return promise;
+    }
+    if (options->publicKey()->extensions()->hasPrf()) {
+      const auto& prf = *options->publicKey()->extensions()->prf();
+      if (prf.hasEvalByCredential()) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kNotSupportedError,
+            "The 'evalByCredential' field cannot be set when creating a "
+            "credential."));
+        return promise;
+      }
     }
   }
 

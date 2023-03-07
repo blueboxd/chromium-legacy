@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
@@ -468,8 +468,13 @@ void DisplayMediaAccessHandler::OnDisplaySurfaceSelected(
 
 #if BUILDFLAG(IS_MAC)
   // Check screen capture permissions on Mac if necessary.
+  // Do not check screen capture permissions when window_id is populated. The
+  // presence of the window_id indicates the window to be captured is a Chrome
+  // window which will be captured internally, the macOS screen capture APIs
+  // will not be used.
   if ((media_id.type == content::DesktopMediaID::TYPE_SCREEN ||
-       media_id.type == content::DesktopMediaID::TYPE_WINDOW) &&
+       (media_id.type == content::DesktopMediaID::TYPE_WINDOW &&
+        !media_id.window_id)) &&
       system_media_permissions::CheckSystemScreenCapturePermission() !=
           system_media_permissions::SystemPermission::kAllowed) {
     RejectRequest(

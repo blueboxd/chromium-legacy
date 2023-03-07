@@ -160,6 +160,9 @@ class LoginEventRecorder;
 class StartupCustomizationDocument;
 class StartupUtils;
 bool CameraAppUIShouldEnableLocalOverride(const std::string&);
+namespace system {
+class StatisticsProviderImpl;
+}  // namespace system
 }  // namespace ash
 namespace audio {
 class OutputDevice;
@@ -169,7 +172,6 @@ class CategorizedWorkerPoolImpl;
 class CategorizedWorkerPoolJob;
 class CategorizedWorkerPool;
 class DiskDataAllocator;
-class H264Encoder;
 class IdentifiabilityActiveSampler;
 class RTCVideoDecoderAdapter;
 class RTCVideoEncoder;
@@ -177,7 +179,7 @@ class SourceStream;
 class VideoFrameResourceProvider;
 class WebRtcVideoFrameAdapter;
 class LegacyWebRtcVideoFrameAdapter;
-class VpxEncoder;
+class VideoTrackRecorderImplContextProvider;
 class WorkerThread;
 namespace scheduler {
 class NonMainThreadImpl;
@@ -197,7 +199,6 @@ class CrashUtil;
 namespace chromeos {
 class BlockingMethodCaller;
 namespace system {
-class StatisticsProviderImpl;
 bool IsCoreSchedulingAvailable();
 int NumberOfPhysicalCores();
 }  // namespace system
@@ -256,6 +257,9 @@ class FakeDriveService;
 namespace device {
 class UsbContext;
 }
+namespace discardable_memory {
+class ClientDiscardableSharedMemoryManager;
+}
 namespace disk_cache {
 class BackendImpl;
 class InFlightIO;
@@ -289,10 +293,10 @@ class WebViewBrowserState;
 namespace leveldb::port {
 class ScopedAllowWait;
 }  // namespace leveldb::port
-namespace location::nearby::chrome {
+namespace nearby::chrome {
 class ScheduledExecutor;
 class SubmittableExecutor;
-}  // namespace location::nearby::chrome
+}  // namespace nearby::chrome
 namespace media {
 class AudioInputDevice;
 class AudioOutputDevice;
@@ -333,7 +337,6 @@ class LocalPrinterHandlerDefault;
 class PrintBackendServiceImpl;
 #endif
 class PrintBackendServiceManager;
-class PrintJobWorker;
 class PrinterQuery;
 }  // namespace printing
 namespace rlz_lib {
@@ -406,6 +409,10 @@ class FuchsiaPerfettoProducerConnector;
 
 namespace ui {
 class WindowResizeHelperMac;
+}
+
+namespace updater {
+class SystemctlLauncherScopedAllowBaseSyncPrimitives;
 }
 
 namespace viz {
@@ -606,7 +613,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class printing::PrintBackendServiceImpl;
 #endif
   friend class printing::PrintBackendServiceManager;
-  friend class printing::PrintJobWorker;
+  friend class printing::PrinterQuery;
   friend class remote_cocoa::
       DroppedScreenShotCopierMac;  // https://crbug.com/1148078
   friend class ::WebEngineBrowserMainParts;
@@ -710,10 +717,9 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class base::SimpleThread;
   friend class blink::CategorizedWorkerPoolImpl;
   friend class blink::CategorizedWorkerPoolJob;
-  friend class blink::H264Encoder;
   friend class blink::IdentifiabilityActiveSampler;
   friend class blink::SourceStream;
-  friend class blink::VpxEncoder;
+  friend class blink::VideoTrackRecorderImplContextProvider;
   friend class blink::WorkerThread;
   friend class blink::scheduler::NonMainThreadImpl;
   friend class chrome_cleaner::ResetShortcutsComponent;
@@ -729,8 +735,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class history_report::HistoryReportJniBridge;
   friend class internal::TaskTracker;
   friend class leveldb::port::ScopedAllowWait;
-  friend class location::nearby::chrome::ScheduledExecutor;
-  friend class location::nearby::chrome::SubmittableExecutor;
+  friend class nearby::chrome::ScheduledExecutor;
+  friend class nearby::chrome::SubmittableExecutor;
   friend class media::AudioOutputDevice;
   friend class media::BlockingUrlProtocol;
   friend class media::MojoVideoEncodeAccelerator;
@@ -742,13 +748,14 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class storage::ObfuscatedFileUtil;
   friend class syncer::HttpBridge;
   friend class syncer::GetLocalChangesRequest;
+  friend class updater::SystemctlLauncherScopedAllowBaseSyncPrimitives;
   friend class viz::ClientGpuMemoryBufferManager;
   friend class webrtc::DesktopConfigurationMonitor;
   friend class ::tracing::FuchsiaPerfettoProducerConnector;
 
   // Usage that should be fixed:
   friend class ::NativeBackendKWallet;  // http://crbug.com/125331
-  friend class ::chromeos::system::
+  friend class ::ash::system::
       StatisticsProviderImpl;                      // http://crbug.com/125385
   friend class blink::VideoFrameResourceProvider;  // http://crbug.com/878070
   friend class value_store::LeveldbValueStore;     // http://crbug.com/1330845
@@ -828,6 +835,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class content::
       BrowserGpuChannelHostFactory;                 // http://crbug.com/125248
   friend class dbus::Bus;                           // http://crbug.com/125222
+  friend class discardable_memory::
+      ClientDiscardableSharedMemoryManager;         // http://crbug.com/1396355
   friend class disk_cache::BackendImpl;             // http://crbug.com/74623
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
   friend class midi::TaskService;                   // https://crbug.com/796830
@@ -835,7 +844,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class net::
       MultiThreadedProxyResolverScopedAllowJoinOnIO;  // http://crbug.com/69710
   friend class net::NetworkChangeNotifierMac;         // http://crbug.com/125097
-  friend class printing::PrinterQuery;                // http://crbug.com/66082
   friend class proxy_resolver::
       ScopedAllowThreadJoinForProxyResolverV8Tracing;  // http://crbug.com/69710
   friend class remoting::AutoThread;  // https://crbug.com/944316

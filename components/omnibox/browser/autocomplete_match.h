@@ -284,25 +284,6 @@ struct AutocompleteMatch {
       const std::vector<AutocompleteMatch>::const_iterator it1,
       const std::vector<AutocompleteMatch>::const_iterator it2);
 
-  // Helper functions for classes creating matches:
-  // Fills in the classifications for |text|, using |style| as the base style
-  // and marking the first instance of |find_text| as a match.  (This match
-  // will also not be dimmed, if |style| has DIM set.)
-  static void ClassifyMatchInString(const std::u16string& find_text,
-                                    const std::u16string& text,
-                                    int style,
-                                    ACMatchClassifications* classifications);
-
-  // Similar to ClassifyMatchInString(), but for cases where the range to mark
-  // as matching is already known (avoids calling find()).  This can be helpful
-  // when find() would be misleading (e.g. you want to mark the second match in
-  // a string instead of the first).
-  static void ClassifyLocationInString(size_t match_location,
-                                       size_t match_length,
-                                       size_t overall_length,
-                                       int style,
-                                       ACMatchClassifications* classifications);
-
   // Returns a new vector of classifications containing the merged contents of
   // |classifications1| and |classifications2|.
   static ACMatchClassifications MergeClassifications(
@@ -323,9 +304,6 @@ struct AutocompleteMatch {
       ACMatchClassifications* classifications,
       size_t offset,
       int style);
-
-  // Returns true if at least one style in |classifications| is of type MATCH.
-  static bool HasMatchStyle(const ACMatchClassifications& classifications);
 
   // Removes invalid characters from |text|. Should be called on strings coming
   // from external sources (such as extensions) before assigning to |contents|
@@ -353,6 +331,10 @@ struct AutocompleteMatch {
   // need to skip for search vs url partitions - url, text or image in the
   // clipboard or query tile.
   static bool ShouldBeSkippedForGroupBySearchVsUrl(Type type);
+
+  // Return a group ID based on type. Should only be used as a fill in for
+  // matches that don't already have a group ID set by providers.
+  static omnibox::GroupId GetDefaultGroupId(Type type);
 
   // A static version GetTemplateURL() that takes the match's keyword and
   // match's hostname as parameters.  In short, returns the TemplateURL
@@ -397,11 +379,15 @@ struct AutocompleteMatch {
   // - If the match's keyword is known, it can be provided in `keyword`.
   //   Otherwise, it can be left empty and the template URL (if any) is
   //   determined from the destination's hostname.
+  // - If `normalize_search_terms` is true, the search terms in the final URL
+  //   will be converted to lowercase with extra whitespace characters
+  //   collapsed.
   static GURL GURLToStrippedGURL(const GURL& url,
                                  const AutocompleteInput& input,
                                  const TemplateURLService* template_url_service,
                                  const std::u16string& keyword,
-                                 const bool keep_search_intent_params);
+                                 const bool keep_search_intent_params,
+                                 const bool normalize_search_terms);
 
   // Sets the |match_in_scheme| and |match_in_subdomain| flags based on the
   // provided |url| and list of substring |match_positions|. |match_positions|

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate.h"
@@ -187,7 +187,7 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   std::vector<const api::events::Rule*> rules({&rule});
 
   const Extension* extension =
-      env()->MakeExtension(base::test::ParseJson("{\"page_action\": {}}"));
+      env()->MakeExtension(base::test::ParseJsonDict("{\"page_action\": {}}"));
   registry->AddRulesImpl(extension->id(), rules);
 
   registry->DidFinishNavigation(tab.get(), &navigation_handle);

@@ -34,13 +34,13 @@ class WaylandPopup : public WaylandWindow {
   // Configure related:
   void HandleSurfaceConfigure(uint32_t serial) override;
   void HandlePopupConfigure(const gfx::Rect& bounds) override;
+  void OnSequencePoint(int64_t seq) override;
   bool IsSurfaceConfigured() override;
   void AckConfigure(uint32_t serial) override;
-  void UpdateVisualSize(const gfx::Size& size_px) override;
-  void ApplyPendingBounds() override;
 
   void OnCloseRequest() override;
-  bool OnInitialize(PlatformWindowInitProperties properties) override;
+  bool OnInitialize(PlatformWindowInitProperties properties,
+                    State* state) override;
   WaylandPopup* AsWaylandPopup() override;
   void SetWindowGeometry(gfx::Size size_dip) override;
   void UpdateWindowMask() override;
@@ -51,6 +51,7 @@ class WaylandPopup : public WaylandWindow {
                    const base::TimeDelta show_delay,
                    const base::TimeDelta hide_delay) override;
   void HideTooltip() override;
+  bool IsScreenCoordinatesEnabled() const override;
 
   // PlatformWindow
   void Show(bool inactive) override;
@@ -88,10 +89,6 @@ class WaylandPopup : public WaylandWindow {
   bool decorated_via_aura_popup_ = false;
 
   PlatformWindowShadowType shadow_type_ = PlatformWindowShadowType::kNone;
-
-  // Helps to avoid reposition itself if HandlePopupConfigure was called, which
-  // resulted in calling SetBounds.
-  bool wayland_sets_bounds_ = false;
 
   // If WaylandPopup has been moved, schedule redraw as the client of the
   // Ozone/Wayland may not do so. Otherwise, a new state (if bounds has been

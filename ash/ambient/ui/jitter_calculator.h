@@ -6,7 +6,7 @@
 #define ASH_AMBIENT_UI_JITTER_CALCULATOR_H_
 
 #include "ash/ash_export.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace ash {
@@ -53,11 +53,12 @@ class ASH_EXPORT JitterCalculator {
   // Returns the new total translation to apply from the UI's original unshifted
   // position (0, 0).
   gfx::Vector2d Calculate();
+  void SetConfigForTesting(Config config);
 
  private:
   void AssetCurrentTranslationWithinBounds() const;
 
-  const Config config_;
+  Config config_;
   const RandomBinaryGenerator random_binary_generator_;
   // Current total translation from the original unshifted position.
   gfx::Vector2d current_translation_;

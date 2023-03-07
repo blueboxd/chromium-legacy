@@ -4,8 +4,8 @@
 
 #include "chromeos/ash/components/network/profile_policies.h"
 
-#include "base/callback.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
@@ -28,11 +28,11 @@ using ::testing::UnorderedElementsAre;
 // list.
 base::Value NetworkConfigsList(
     std::initializer_list<const base::Value*> network_configs) {
-  base::Value result(base::Value::Type::LIST);
+  base::Value::List result;
   for (const auto* network_config : network_configs) {
     result.Append(network_config->Clone());
   }
-  return result;
+  return base::Value(std::move(result));
 }
 
 // Creates a very basic for-testing NetworkConfig, essentially

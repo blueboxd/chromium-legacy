@@ -13,6 +13,7 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -20,6 +21,12 @@
 #include "url/origin.h"
 
 namespace blink {
+
+bool operator==(
+    const AuctionConfig::NonSharedParams::AuctionReportBuyersConfig& a,
+    const AuctionConfig::NonSharedParams::AuctionReportBuyersConfig& b) {
+  return std::tie(a.bucket, a.scale) == std::tie(b.bucket, b.scale);
+}
 
 bool operator==(const DirectFromSellerSignals& a,
                 const DirectFromSellerSignals& b) {
@@ -29,20 +36,43 @@ bool operator==(const DirectFromSellerSignals& a,
                                                  b.auction_signals);
 }
 
+bool operator==(const AuctionConfig::MaybePromiseJson& a,
+                const AuctionConfig::MaybePromiseJson& b) {
+  return a.tag() == b.tag() && a.json_payload() == b.json_payload();
+}
+
+bool operator==(const AuctionConfig::MaybePromisePerBuyerSignals& a,
+                const AuctionConfig::MaybePromisePerBuyerSignals& b) {
+  return a.tag() == b.tag() && a.value() == b.value();
+}
+
+bool operator==(const AuctionConfig::BuyerTimeouts& a,
+                const AuctionConfig::BuyerTimeouts& b) {
+  return std::tie(a.all_buyers_timeout, a.per_buyer_timeouts) ==
+         std::tie(b.all_buyers_timeout, b.per_buyer_timeouts);
+}
+
+bool operator==(const AuctionConfig::MaybePromiseBuyerTimeouts& a,
+                const AuctionConfig::MaybePromiseBuyerTimeouts& b) {
+  return a.tag() == b.tag() && a.value() == b.value();
+}
+
 bool operator==(const AuctionConfig& a, const AuctionConfig& b);
 
 bool operator==(const AuctionConfig::NonSharedParams& a,
                 const AuctionConfig::NonSharedParams& b) {
   return std::tie(a.interest_group_buyers, a.auction_signals, a.seller_signals,
-                  a.seller_timeout, a.per_buyer_signals, a.per_buyer_timeouts,
-                  a.all_buyers_timeout, a.per_buyer_group_limits,
-                  a.all_buyers_group_limit, a.per_buyer_priority_signals,
-                  a.all_buyers_priority_signals, a.component_auctions) ==
+                  a.seller_timeout, a.per_buyer_signals, a.buyer_timeouts,
+                  a.per_buyer_group_limits, a.all_buyers_group_limit,
+                  a.per_buyer_priority_signals, a.all_buyers_priority_signals,
+                  a.auction_report_buyer_keys, a.auction_report_buyers,
+                  a.component_auctions) ==
          std::tie(b.interest_group_buyers, b.auction_signals, b.seller_signals,
-                  b.seller_timeout, b.per_buyer_signals, b.per_buyer_timeouts,
-                  b.all_buyers_timeout, b.per_buyer_group_limits,
-                  b.all_buyers_group_limit, b.per_buyer_priority_signals,
-                  b.all_buyers_priority_signals, b.component_auctions);
+                  b.seller_timeout, b.per_buyer_signals, b.buyer_timeouts,
+                  b.per_buyer_group_limits, b.all_buyers_group_limit,
+                  b.per_buyer_priority_signals, b.all_buyers_priority_signals,
+                  b.auction_report_buyer_keys, b.auction_report_buyers,
+                  b.component_auctions);
 }
 
 bool operator==(const AuctionConfig& a, const AuctionConfig& b) {
@@ -101,11 +131,22 @@ AuctionConfig CreateFullConfig() {
   non_shared_params.seller_signals =
       AuctionConfig::MaybePromiseJson::FromJson("[5]");
   non_shared_params.seller_timeout = base::Seconds(6);
-  non_shared_params.per_buyer_signals.emplace();
-  (*non_shared_params.per_buyer_signals)[buyer] = "[7]";
-  non_shared_params.per_buyer_timeouts.emplace();
-  (*non_shared_params.per_buyer_timeouts)[buyer] = base::Seconds(8);
-  non_shared_params.all_buyers_timeout = base::Seconds(9);
+
+  absl::optional<base::flat_map<url::Origin, std::string>> per_buyer_signals;
+  per_buyer_signals.emplace();
+  (*per_buyer_signals)[buyer] = "[7]";
+  non_shared_params.per_buyer_signals =
+      blink::AuctionConfig::MaybePromisePerBuyerSignals::FromValue(
+          std::move(per_buyer_signals));
+
+  AuctionConfig::BuyerTimeouts buyer_timeouts;
+  buyer_timeouts.per_buyer_timeouts.emplace();
+  (*buyer_timeouts.per_buyer_timeouts)[buyer] = base::Seconds(8);
+  buyer_timeouts.all_buyers_timeout = base::Seconds(9);
+  non_shared_params.buyer_timeouts =
+      AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(
+          std::move(buyer_timeouts));
+
   non_shared_params.per_buyer_group_limits[buyer] = 10;
   non_shared_params.all_buyers_group_limit = 11;
   non_shared_params.per_buyer_priority_signals.emplace();
@@ -113,6 +154,14 @@ AuctionConfig CreateFullConfig() {
       {"hats", 1.5}, {"for", 0}, {"sale", -2}};
   non_shared_params.all_buyers_priority_signals = {
       {"goats", -1.5}, {"for", 5}, {"sale", 0}};
+  non_shared_params.auction_report_buyer_keys = {absl::MakeUint128(1, 1),
+                                                 absl::MakeUint128(1, 2)};
+  non_shared_params.auction_report_buyers = {
+      {AuctionConfig::NonSharedParams::BuyerReportType::kInterestGroupCount,
+       {absl::MakeUint128(0, 0), 1.0}},
+      {AuctionConfig::NonSharedParams::BuyerReportType::
+           kTotalSignalsFetchLatency,
+       {absl::MakeUint128(0, 1), 2.0}}};
 
   DirectFromSellerSignalsSubresource
       direct_from_seller_signals_per_buyer_signals_buyer;
@@ -168,6 +217,38 @@ bool SerializeAndDeserialize(const AuctionConfig::MaybePromiseJson& in) {
   AuctionConfig::MaybePromiseJson out;
   bool success = mojo::test::SerializeAndDeserialize<
       blink::mojom::AuctionAdConfigMaybePromiseJson>(in, out);
+  if (success) {
+    EXPECT_EQ(in, out);
+  }
+  return success;
+}
+
+bool SerializeAndDeserialize(
+    const AuctionConfig::MaybePromisePerBuyerSignals& in) {
+  AuctionConfig::MaybePromisePerBuyerSignals out;
+  bool success = mojo::test::SerializeAndDeserialize<
+      blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignals>(in, out);
+  if (success) {
+    EXPECT_EQ(in, out);
+  }
+  return success;
+}
+
+bool SerializeAndDeserialize(const AuctionConfig::BuyerTimeouts& in) {
+  AuctionConfig::BuyerTimeouts out;
+  bool success = mojo::test::SerializeAndDeserialize<
+      blink::mojom::AuctionAdConfigBuyerTimeouts>(in, out);
+  if (success) {
+    EXPECT_EQ(in, out);
+  }
+  return success;
+}
+
+bool SerializeAndDeserialize(
+    const AuctionConfig::MaybePromiseBuyerTimeouts& in) {
+  AuctionConfig::MaybePromiseBuyerTimeouts out;
+  bool success = mojo::test::SerializeAndDeserialize<
+      blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeouts>(in, out);
   if (success) {
     EXPECT_EQ(in, out);
   }
@@ -358,6 +439,62 @@ TEST(AuctionConfigMojomTraitsTest, MaybePromiseJson) {
     AuctionConfig::MaybePromiseJson promise =
         AuctionConfig::MaybePromiseJson::FromPromise();
     EXPECT_TRUE(SerializeAndDeserialize(promise));
+  }
+}
+
+TEST(AuctionConfigMojomTraitsTest, MaybePromisePerBuyerSignals) {
+  {
+    absl::optional<base::flat_map<url::Origin, std::string>> value;
+    value.emplace();
+    value->emplace(url::Origin::Create(GURL("https://example.com")), "42");
+    AuctionConfig::MaybePromisePerBuyerSignals signals =
+        AuctionConfig::MaybePromisePerBuyerSignals::FromValue(std::move(value));
+    EXPECT_TRUE(SerializeAndDeserialize(signals));
+  }
+
+  {
+    AuctionConfig::MaybePromisePerBuyerSignals signals =
+        AuctionConfig::MaybePromisePerBuyerSignals::FromPromise();
+    EXPECT_TRUE(SerializeAndDeserialize(signals));
+  }
+}
+
+TEST(AuctionConfigMojomTraitsTest, BuyerTimeouts) {
+  {
+    AuctionConfig::BuyerTimeouts value;
+    value.all_buyers_timeout.emplace(base::Milliseconds(10));
+    value.per_buyer_timeouts.emplace();
+    value.per_buyer_timeouts->emplace(
+        url::Origin::Create(GURL("https://example.com")),
+        base::Milliseconds(50));
+    value.per_buyer_timeouts->emplace(
+        url::Origin::Create(GURL("https://example.org")),
+        base::Milliseconds(20));
+    EXPECT_TRUE(SerializeAndDeserialize(value));
+  }
+  {
+    AuctionConfig::BuyerTimeouts value;
+    EXPECT_TRUE(SerializeAndDeserialize(value));
+  }
+}
+
+TEST(AuctionConfigMojomTraitsTest, MaybePromiseBuyerTimeouts) {
+  {
+    AuctionConfig::BuyerTimeouts value;
+    value.all_buyers_timeout.emplace(base::Milliseconds(10));
+    value.per_buyer_timeouts.emplace();
+    value.per_buyer_timeouts->emplace(
+        url::Origin::Create(GURL("https://example.com")),
+        base::Milliseconds(50));
+    AuctionConfig::MaybePromiseBuyerTimeouts timeouts =
+        AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(std::move(value));
+    EXPECT_TRUE(SerializeAndDeserialize(timeouts));
+  }
+
+  {
+    AuctionConfig::MaybePromiseBuyerTimeouts timeouts =
+        AuctionConfig::MaybePromiseBuyerTimeouts::FromPromise();
+    EXPECT_TRUE(SerializeAndDeserialize(timeouts));
   }
 }
 

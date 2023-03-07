@@ -22,15 +22,43 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image_egl_angle_vulkan.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/scoped_egl_image.h"
+
+#define EGL_TEXTURE_INTERNAL_FORMAT_ANGLE 0x345D
+#define EGL_VULKAN_IMAGE_ANGLE 0x34D3
+#define EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE 0x34D4
+#define EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE 0x34D5
 
 namespace gpu {
 
 namespace {
 
 using ScopedRestoreTexture = GLTextureImageBackingHelper::ScopedRestoreTexture;
+
+gl::ScopedEGLImage CreateEGLImage(VkImage image,
+                                  const VkImageCreateInfo* create_info,
+                                  unsigned int internal_format) {
+  DCHECK(image != VK_NULL_HANDLE);
+  DCHECK(create_info);
+
+  uint64_t info = reinterpret_cast<uint64_t>(create_info);
+  EGLint attribs[] = {
+      EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE,
+      static_cast<EGLint>((info >> 32) & 0xffffffff),
+      EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE,
+      static_cast<EGLint>(info & 0xffffffff),
+      EGL_TEXTURE_INTERNAL_FORMAT_ANGLE,
+      static_cast<EGLint>(internal_format),
+      EGL_NONE,
+  };
+
+  return gl::MakeScopedEGLImage(EGL_NO_CONTEXT, EGL_VULKAN_IMAGE_ANGLE,
+                                reinterpret_cast<EGLClientBuffer>(&image),
+                                attribs);
+}
 
 }  // namespace
 
@@ -142,16 +170,15 @@ AngleVulkanImageBacking::AngleVulkanImageBacking(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage)
-    : ClearTrackingSharedImageBacking(
-          mailbox,
-          format,
-          size,
-          color_space,
-          surface_origin,
-          alpha_type,
-          usage,
-          viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format),
-          false /* is_thread_safe */),
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      surface_origin,
+                                      alpha_type,
+                                      usage,
+                                      format.EstimatedSizeInBytes(size),
+                                      false /* is_thread_safe */),
       context_state_(context_state) {}
 
 AngleVulkanImageBacking::~AngleVulkanImageBacking() {
@@ -174,11 +201,6 @@ AngleVulkanImageBacking::~AngleVulkanImageBacking() {
 
     passthrough_texture_.reset();
     egl_image_.reset();
-
-    if (need_gl_finish_before_destroy_ && have_context()) {
-      gl::GLApi* api = gl::g_current_gl_context;
-      api->glFinishFn();
-    }
   }
 
   if (vulkan_image_) {
@@ -242,7 +264,7 @@ bool AngleVulkanImageBacking::InitializeWihGMB(
   DCHECK(vulkan_implementation->CanImportGpuMemoryBuffer(device_queue,
                                                          handle.type));
 
-  VkFormat vk_format = ToVkFormat(format().resource_format());
+  VkFormat vk_format = ToVkFormat(format());
   auto vulkan_image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
       device_queue, std::move(handle), size(), vk_format, color_space());
 
@@ -265,11 +287,15 @@ SharedImageBackingType AngleVulkanImageBacking::GetType() const {
   return SharedImageBackingType::kAngleVulkan;
 }
 
-bool AngleVulkanImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
+bool AngleVulkanImageBacking::UploadFromMemory(
+    const std::vector<SkPixmap>& pixmaps) {
+  DCHECK_EQ(pixmaps.size(), 1u);
+
   PrepareBackendTexture();
   DCHECK(backend_texture_.isValid());
 
-  bool result = gr_context()->updateBackendTexture(backend_texture_, pixmap);
+  bool result =
+      gr_context()->updateBackendTexture(backend_texture_, pixmaps[0]);
   DCHECK(result);
   SyncImageLayoutFromBackendTexture();
   return result;
@@ -283,11 +309,14 @@ std::unique_ptr<GLTexturePassthroughImageRepresentation>
 AngleVulkanImageBacking::ProduceGLTexturePassthrough(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
-  if (!passthrough_texture_ && !InitializePassthroughTexture())
+  if (!passthrough_texture_ && !InitializePassthroughTexture()) {
     return nullptr;
+  }
 
+  std::vector<scoped_refptr<gles2::TexturePassthrough>> gl_textures = {
+      passthrough_texture_};
   return std::make_unique<GLTexturePassthroughGLCommonRepresentation>(
-      manager, this, this, tracker, passthrough_texture_);
+      manager, this, this, tracker, std::move(gl_textures));
 }
 
 std::unique_ptr<SkiaImageRepresentation> AngleVulkanImageBacking::ProduceSkia(
@@ -370,9 +399,8 @@ void AngleVulkanImageBacking::GLTextureImageRepresentationEndAccess(
     --gl_reads_in_process_;
 
     // For the last GL read access, release texture from ANGLE.
-    if (gl_reads_in_process_ == 0) {
+    if (gl_reads_in_process_ == 0)
       ReleaseTextureANGLE();
-    }
 
     return;
   }
@@ -387,9 +415,6 @@ void AngleVulkanImageBacking::GLTextureImageRepresentationEndAccess(
   ReleaseTextureANGLE();
 }
 
-void AngleVulkanImageBacking::GLTextureImageRepresentationRelease(
-    bool have_context) {}
-
 void AngleVulkanImageBacking::AcquireTextureANGLE() {
   gl::GLApi* api = gl::g_current_gl_context;
   GLuint texture = passthrough_texture_->service_id();
@@ -402,9 +427,6 @@ void AngleVulkanImageBacking::ReleaseTextureANGLE() {
   GLuint texture = passthrough_texture_->service_id();
   // Release the texture from ANGLE, so it can be used elsewhere.
   api->glReleaseTexturesANGLEFn(1, &texture, &layout_);
-  // Releasing the texture will submit all related works to queue, so to be
-  // safe, glFinish() should be called before releasing the VkImage.
-  need_gl_finish_before_destroy_ = true;
 }
 
 void AngleVulkanImageBacking::PrepareBackendTexture() {
@@ -484,11 +506,6 @@ void AngleVulkanImageBacking::EndAccessSkia() {
       return;
   }
 
-  // The backing is used by skia, so skia should submit related work to the
-  // queue, and we can use vulkan fence helper to release the VkImage.
-  // glFinish() is not necessary anymore.
-  need_gl_finish_before_destroy_ = false;
-
   SyncImageLayoutFromBackendTexture();
 
   if (gl_reads_in_process_ > 0) {
@@ -501,13 +518,14 @@ void AngleVulkanImageBacking::EndAccessSkia() {
 
 bool AngleVulkanImageBacking::InitializePassthroughTexture() {
   DCHECK(vulkan_image_);
-  DCHECK(!egl_image_);
+  DCHECK(!egl_image_.is_valid());
   DCHECK(!passthrough_texture_);
 
-  auto egl_image = base::MakeRefCounted<gl::GLImageEGLAngleVulkan>(size());
-  if (!egl_image->Initialize(vulkan_image_->image(),
-                             &vulkan_image_->create_info(),
-                             GLInternalFormat(format()))) {
+  auto egl_image =
+      CreateEGLImage(vulkan_image_->image(), &vulkan_image_->create_info(),
+                     GLInternalFormat(format()));
+  if (!egl_image.is_valid()) {
+    LOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
     return false;
   }
 
@@ -523,8 +541,7 @@ bool AngleVulkanImageBacking::InitializePassthroughTexture() {
   ScopedRestoreTexture scoped_restore(api, GL_TEXTURE_2D);
   api->glBindTextureFn(GL_TEXTURE_2D, texture);
 
-  if (!egl_image->BindTexImage(GL_TEXTURE_2D))
-    return false;
+  glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image.get());
 
   if (gl::g_current_gl_driver->ext.b_GL_KHR_debug) {
     const std::string label =
@@ -542,7 +559,7 @@ void AngleVulkanImageBacking::WritePixels(
     const base::span<const uint8_t>& pixel_data,
     size_t stride) {
   SkPixmap pixmap(AsSkImageInfo(), pixel_data.data(), stride);
-  UploadFromMemory(pixmap);
+  UploadFromMemory({pixmap});
 }
 
 }  // namespace gpu

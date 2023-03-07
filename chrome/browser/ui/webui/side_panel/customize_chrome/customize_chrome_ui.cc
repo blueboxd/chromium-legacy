@@ -7,14 +7,20 @@
 #include <string>
 #include <utility>
 
+#include "chrome/browser/cart/cart_handler.h"
+#include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/side_panel_customize_chrome_resources.h"
 #include "chrome/grit/side_panel_customize_chrome_resources_map.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -24,27 +30,59 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
     : ui::MojoBubbleWebUIController(web_ui),
       profile_(Profile::FromWebUI(web_ui)),
       web_contents_(web_ui->GetWebContents()),
+      module_id_names_(ntp::MakeModuleIdNames(
+          NewTabPageUI::IsDriveModuleEnabledForProfile(profile_))),
       page_factory_receiver_(this) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUICustomizeChromeSidePanelHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile_, chrome::kChromeUICustomizeChromeSidePanelHost);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      // Side panel strings.
+      {"backButton", IDS_ACCNAME_BACK},
+      {"title", IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE},
+      // Header strings.
+      {"appearanceHeader", IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL},
+      {"cardsHeader", IDS_NTP_CUSTOMIZE_MENU_MODULES_LABEL},
+      {"categoriesHeader", IDS_NTP_CUSTOMIZE_THEMES_HEADER},
+      {"shortcutsHeader", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
+      // Appearance strings.
+      {"changeTheme", IDS_NTP_CUSTOMIZE_CHROME_CHANGE_THEME_LABEL},
+      {"chromeColors", IDS_NTP_CUSTOMIZE_CHROME_COLORS_LABEL},
+      {"chromeWebStore", IDS_EXTENSION_WEB_STORE_TITLE},
       {"classicChrome", IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL},
       {"colorsContainerLabel", IDS_NTP_THEMES_CONTAINER_LABEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
-      {"customizeThisPage", IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL},
-      {"appearanceHeader", IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL},
+      {"currentTheme", IDS_NTP_CUSTOMIZE_CHROME_CURRENT_THEME_LABEL},
       {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
+      {"mainColorName", IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL},
+      {"managedColorsTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
+      {"managedColorsBody", IDS_NTP_THEME_MANAGED_DIALOG_BODY},
+      {"uploadImage", IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE},
+      {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
+      {"resetToClassicChrome",
+       IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_CLASSIC_CHROME_LABEL},
+      {"refreshDaily", IDS_NTP_CUSTOM_BG_DAILY_REFRESH},
+      // Shortcut strings.
       {"mostVisited", IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL},
       {"myShortcuts", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL},
       {"shortcutsCurated", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC},
-      {"shortcutsHeader", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
       {"shortcutsSuggested", IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC},
       {"showShortcutsToggle", IDS_NTP_CUSTOMIZE_SHOW_SHORTCUTS_LABEL},
-      {"title", IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE},
-      {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
+      // Card strings.
+      {"showCardsToggleTitle", IDS_NTP_CUSTOMIZE_SHOW_CARDS_LABEL},
+      {"modulesCartDiscountConsentAccept",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_ACCEPT},
+      // Required by <managed-dialog>.
+      {"controlledSettingPolicy", IDS_CONTROLLED_SETTING_POLICY},
+      {"close", IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP},
+      {"ok", IDS_OK},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
+
+  source->AddBoolean(
+      "modulesEnabled",
+      ntp::HasModulesEnabled(module_id_names_,
+                             IdentityManagerFactory::GetForProfile(profile_)));
 
   webui::SetupWebUIDataSource(
       source,
@@ -52,7 +90,8 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
                       kSidePanelCustomizeChromeResourcesSize),
       IDR_SIDE_PANEL_CUSTOMIZE_CHROME_CUSTOMIZE_CHROME_HTML);
 
-  content::WebUIDataSource::Add(profile_, source);
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<SanitizedImageSource>(profile_));
 }
 
 CustomizeChromeUI::~CustomizeChromeUI() = default;
@@ -68,6 +107,13 @@ void CustomizeChromeUI::BindInterface(
   page_factory_receiver_.Bind(std::move(receiver));
 }
 
+void CustomizeChromeUI::BindInterface(
+    mojo::PendingReceiver<chrome_cart::mojom::CartHandler>
+        pending_page_handler) {
+  cart_handler_ = std::make_unique<CartHandler>(std::move(pending_page_handler),
+                                                profile_, web_contents_);
+}
+
 void CustomizeChromeUI::CreatePageHandler(
     mojo::PendingRemote<side_panel::mojom::CustomizeChromePage> pending_page,
     mojo::PendingReceiver<side_panel::mojom::CustomizeChromePageHandler>
@@ -75,6 +121,6 @@ void CustomizeChromeUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
   customize_chrome_page_handler_ = std::make_unique<CustomizeChromePageHandler>(
       std::move(pending_page_handler), std::move(pending_page),
-      NtpCustomBackgroundServiceFactory::GetForProfile(profile_),
-      web_contents_);
+      NtpCustomBackgroundServiceFactory::GetForProfile(profile_), web_contents_,
+      module_id_names_);
 }

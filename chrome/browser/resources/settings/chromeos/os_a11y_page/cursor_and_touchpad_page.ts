@@ -18,18 +18,18 @@ import '../../settings_shared.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {PrefsMixin} from '../../prefs/prefs_mixin.js';
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from '../device_page/device_page_browser_proxy.js';
 import {routes} from '../os_route.js';
-import {RouteOriginMixin, RouteOriginMixinInterface} from '../route_origin_mixin.js';
+import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
 import {getTemplate} from './cursor_and_touchpad_page.html.js';
@@ -49,16 +49,8 @@ interface SettingsCursorAndTouchpadPageElement {
 }
 
 const SettingsCursorAndTouchpadPageElementBase =
-    mixinBehaviors(
-        [
-          DeepLinkingBehavior,
-        ],
-        RouteOriginMixin(
-            PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement))))) as {
-      new (): PolymerElement & I18nMixinInterface &
-          WebUiListenerMixinInterface & PrefsMixinInterface &
-          RouteOriginMixinInterface & DeepLinkingBehaviorInterface,
-    };
+    DeepLinkingMixin(RouteOriginMixin(
+        PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
 class SettingsCursorAndTouchpadPageElement extends
     SettingsCursorAndTouchpadPageElementBase {
@@ -227,11 +219,11 @@ class SettingsCursorAndTouchpadPageElement extends
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kAutoClickWhenCursorStops,
           Setting.kLargeCursor,
           Setting.kHighlightCursorWhileMoving,
@@ -330,8 +322,7 @@ class SettingsCursorAndTouchpadPageElement extends
      * Gets the bool pref value for the provided pref key.
      */
     const getBoolPrefValue = (key: string): boolean => {
-      const pref = this.get(key, this.prefs) as
-          chrome.settingsPrivate.PrefObject<boolean>;
+      const pref = this.getPref(key);
       return pref && !!pref.value;
     };
 
@@ -355,9 +346,8 @@ class SettingsCursorAndTouchpadPageElement extends
       };
     }
 
-    return this.get(
-               'settings.a11y.tablet_mode_shelf_nav_buttons_enabled',
-               this.prefs) as chrome.settingsPrivate.PrefObject<boolean>;
+    return this.getPref<boolean>(
+        'settings.a11y.tablet_mode_shelf_nav_buttons_enabled');
   }
 
   private onShelfNavigationButtonsLearnMoreClicked_(): void {
@@ -378,9 +368,8 @@ class SettingsCursorAndTouchpadPageElement extends
     const enabled = this.shadowRoot!
                         .querySelector<SettingsToggleButtonElement>(
                             '#shelfNavigationButtonsEnabledControl')!.checked;
-    this.set(
-        'prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value',
-        enabled);
+    this.setPrefValue(
+        'settings.a11y.tablet_mode_shelf_nav_buttons_enabled', enabled);
     this.cursorAndTouchpadBrowserProxy_
         .recordSelectedShowShelfNavigationButtonValue(enabled);
   }
@@ -388,7 +377,7 @@ class SettingsCursorAndTouchpadPageElement extends
   private onA11yCursorColorChange_(): void {
     // Custom cursor color is enabled when the color is not set to black.
     const a11yCursorColorOn =
-        this.get('prefs.settings.a11y.cursor_color.value') !==
+        this.getPref<number>('settings.a11y.cursor_color').value !==
         DEFAULT_BLACK_CURSOR_COLOR;
     this.set(
         'prefs.settings.a11y.cursor_color_enabled.value', a11yCursorColorOn);

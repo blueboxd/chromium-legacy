@@ -10,8 +10,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -113,13 +113,13 @@ void DidGetFileSyncStatusForDump(
     const base::Value::List& files,
     size_t* num_results,
     SyncFileSystemService::DumpFilesCallback& callback,
-    base::DictionaryValue* file,
+    base::Value::Dict* file,
     SyncStatusCode sync_status_code,
     SyncFileStatus sync_file_status) {
   DCHECK(num_results);
 
   if (file)
-    file->SetString("status", SyncFileStatusToString(sync_file_status));
+    file->Set("status", SyncFileStatusToString(sync_file_status));
 
   // Once all results have been received, run the callback to signal end.
   DCHECK_LE(*num_results, files.size());
@@ -563,7 +563,7 @@ void SyncFileSystemService::DidDumpFiles(const GURL& origin,
   base::Value::List& files = dump_files;
 
   using AccumulateFileSyncStatusCallback = base::RepeatingCallback<void(
-      base::DictionaryValue*, SyncStatusCode, SyncFileStatus)>;
+      base::Value::Dict*, SyncStatusCode, SyncFileStatus)>;
 
   // |accumulate_callback| should only call |callback| once.
   AccumulateFileSyncStatusCallback accumulate_callback =
@@ -583,9 +583,8 @@ void SyncFileSystemService::DidDumpFiles(const GURL& origin,
     }
     base::FilePath file_path = base::FilePath::FromUTF8Unsafe(*path_string);
     FileSystemURL url = CreateSyncableFileSystemURL(origin, file_path);
-    base::DictionaryValue* file_value =
-        static_cast<base::DictionaryValue*>(&file);
-    GetFileSyncStatus(url, base::BindOnce(accumulate_callback, file_value));
+    GetFileSyncStatus(url,
+                      base::BindOnce(accumulate_callback, &file.GetDict()));
   }
 }
 

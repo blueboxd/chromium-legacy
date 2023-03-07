@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_CHROME_ACCOUNT_MANAGER_SERVICE_H_
 #define IOS_CHROME_BROWSER_SIGNIN_CHROME_ACCOUNT_MANAGER_SERVICE_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_piece.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -14,34 +15,26 @@
 #include "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/pattern_account_restriction.h"
 #import "ios/chrome/browser/signin/system_identity.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
+#import "ios/chrome/browser/signin/system_identity_manager_observer.h"
 
 class PrefService;
+@protocol RefreshAccessTokenError;
 @class ResizedAvatarCache;
 
 // Service that provides Chrome identities.
 class ChromeAccountManagerService : public KeyedService,
-                                    ios::ChromeIdentityService::Observer,
-                                    ios::ChromeBrowserProvider::Observer
+                                    public SystemIdentityManagerObserver
 
 {
  public:
   // Observer handling events related to the ChromeAccountManagerService.
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     Observer() {}
     Observer(const Observer&) = delete;
     Observer& operator=(const Observer&) = delete;
-    virtual ~Observer() {}
-
-    // Handles access token refresh failed events.
-    // `identity` is the the identity for which the access token refresh failed.
-    // `user_info` is the user info dictionary in the original notification. It
-    // should not be accessed directly but via helper methods (like
-    // ChromeIdentityService::IsInvalidGrantError).
-    virtual void OnAccessTokenRefreshFailed(id<SystemIdentity> identity,
-                                            NSDictionary* user_info) {}
+    ~Observer() override {}
 
     // Handles identity list changed events.
     // If `need_user_approval` is true, the user need to approve the new account
@@ -50,12 +43,14 @@ class ChromeAccountManagerService : public KeyedService,
     virtual void OnIdentityListChanged(bool need_user_approval) {}
 
     // Called when the identity is updated.
-    virtual void OnIdentityChanged(id<SystemIdentity> identity) {}
+    virtual void OnIdentityUpdated(id<SystemIdentity> identity) {}
 
-    // Called when ChromeIdentityService is replaced. The value of
-    // `IsServiceSupported()` might have been updated.
-    // This can only happen for EGTests.
-    virtual void OnServiceSupportedChanged() {}
+    // Handles access token refresh failed events.
+    // `identity` is the the identity for which the access token refresh failed.
+    // `error` is an opaque type containing information about the error.
+    virtual void OnAccessTokenRefreshFailed(id<SystemIdentity> identity,
+                                            id<RefreshAccessTokenError> error) {
+    }
   };
 
   // Initializes the service.
@@ -94,7 +89,7 @@ class ChromeAccountManagerService : public KeyedService,
 
   // Returns the identity avatar. If the avatar is not available, it is fetched
   // in background (a notification will be received when it will be available),
-  // and the default avatar is returned (see `Observer::OnIdentityChanged()`).
+  // and the default avatar is returned (see `Observer::OnIdentityUpdated()`).
   UIImage* GetIdentityAvatarWithIdentity(id<SystemIdentity> identity,
                                          IdentityAvatarSize size);
 
@@ -108,17 +103,12 @@ class ChromeAccountManagerService : public KeyedService,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // ChromeIdentityServiceObserver implementation.
-  void OnAccessTokenRefreshFailed(id<SystemIdentity> identity,
-                                  NSDictionary* user_info) override;
+  // SystemIdentityManagerObserver implementation.
   void OnIdentityListChanged(bool need_user_approval) override;
-  void OnProfileUpdate(id<SystemIdentity> identity) override;
-  void OnChromeIdentityServiceWillBeDestroyed() override;
-
-  // ChromeBrowserProvider implementation.
-  void OnChromeIdentityServiceDidChange(
-      ios::ChromeIdentityService* new_service) override;
-  void OnChromeBrowserProviderWillBeDestroyed() override;
+  void OnIdentityUpdated(id<SystemIdentity> identity) override;
+  void OnIdentityAccessTokenRefreshFailed(
+      id<SystemIdentity> identity,
+      id<RefreshAccessTokenError> error) override;
 
  private:
   // Updates PatternAccountRestriction with the current pref_service_. If
@@ -136,13 +126,9 @@ class ChromeAccountManagerService : public KeyedService,
   // Used to listen pref change.
   PrefChangeRegistrar registrar_;
 
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
-  base::ScopedObservation<ios::ChromeIdentityService,
-                          ios::ChromeIdentityService::Observer>
-      identity_service_observation_{this};
-  base::ScopedObservation<ios::ChromeBrowserProvider,
-                          ios::ChromeBrowserProvider::Observer>
-      browser_provider_observation_{this};
+  base::ObserverList<Observer, true> observer_list_;
+  base::ScopedObservation<SystemIdentityManager, SystemIdentityManagerObserver>
+      system_identity_manager_observation_{this};
 
   // ResizedAvatarCache for IdentityAvatarSize::TableViewIcon.
   ResizedAvatarCache* default_table_view_avatar_cache_;

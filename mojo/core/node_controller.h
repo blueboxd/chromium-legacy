@@ -13,10 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
-#include "base/memory/ref_counted.h"
+#include "base/functional/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/task/single_thread_task_runner.h"

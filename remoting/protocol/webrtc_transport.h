@@ -10,7 +10,7 @@
 #include <tuple>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -171,10 +171,8 @@ class WebrtcTransport : public Transport,
   // PeerConnection event handlers, called by PeerConnectionWrapper.
   void OnSignalingChange(
       webrtc::PeerConnectionInterface::SignalingState new_state);
-  void OnAddStream(
-      rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
-  void OnRemoveStream(
-      rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
+  void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
+  void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
   void OnDataChannel(
       rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel);
   void OnRenegotiationNeeded();

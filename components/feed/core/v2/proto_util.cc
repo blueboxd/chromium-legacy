@@ -13,7 +13,6 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/proto/v2/web_feed_identifier_token.pb.h"
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/chrome_client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_entry_point_data.pb.h"
@@ -21,6 +20,8 @@
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
+#include "components/feed/core/proto/v2/wire/web_feed_id.pb.h"
+#include "components/feed/core/proto/v2/wire/web_feed_identifier_token.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_stream.h"
@@ -280,6 +281,16 @@ void SetTimesFollowedFromWebPageMenu(feedwire::Request* request,
           request_metadata.followed_from_web_page_menu_count);
 }
 
+// Set the sign in status for the feed query to Discover from the request
+// metadata.sign_in_status
+void SetChromeSignInStatus(feedwire::Request* request,
+                           const RequestMetadata& request_metadata) {
+  request->mutable_feed_request()
+      ->mutable_feed_query()
+      ->mutable_chrome_fulfillment_info()
+      ->mutable_sign_in_status()
+      ->set_sign_in_status(request_metadata.sign_in_status);
+}
 }  // namespace
 
 std::string ContentIdString(const feedwire::ContentId& content_id) {
@@ -375,9 +386,10 @@ feedwire::Request CreateFeedQueryRefreshRequest(
         ->set_web_feed_token(kChromeFollowToken);
   } else if (stream_type.IsSingleWebFeed()) {
     // A special token that requests content for the Single Web Feed.
-    webfeedidentifier::WebFeedIdentifierToken web_feed_id;
-    web_feed_id.mutable_outer_id()->mutable_inner_id()->set_web_feed_name(
-        stream_type.GetWebFeedId().c_str());
+    feedwire::WebFeedIdentifierToken web_feed_id;
+    web_feed_id.mutable_web_feed_id()
+        ->mutable_domain_web_feed_id()
+        ->set_web_feed_name(stream_type.GetWebFeedId().c_str());
 
     request.mutable_feed_request()
         ->mutable_feed_query()
@@ -388,6 +400,7 @@ feedwire::Request CreateFeedQueryRefreshRequest(
   SetNoticeCardAcknowledged(&request, request_metadata);
   SetInfoCardTrackingStates(&request, request_metadata);
   SetTimesFollowedFromWebPageMenu(&request, request_metadata);
+  SetChromeSignInStatus(&request, request_metadata);
   return request;
 }
 

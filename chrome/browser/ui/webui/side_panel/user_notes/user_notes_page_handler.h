@@ -6,22 +6,33 @@
 #define CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_USER_NOTES_USER_NOTES_PAGE_HANDLER_H_
 
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes.mojom.h"
+#include "components/power_bookmarks/common/power_bookmark_observer.h"
+#include "components/power_bookmarks/core/power_bookmark_service.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace power_bookmarks {
 class PowerBookmarkService;
 }
 
+class Browser;
 class UserNotesSidePanelUI;
 class Profile;
 
-class UserNotesPageHandler : public side_panel::mojom::UserNotesPageHandler {
+class UserNotesPageHandler : public side_panel::mojom::UserNotesPageHandler,
+                             public power_bookmarks::PowerBookmarkObserver,
+                             public TabStripModelObserver,
+                             public content::WebContentsObserver {
  public:
   explicit UserNotesPageHandler(
       mojo::PendingReceiver<side_panel::mojom::UserNotesPageHandler> receiver,
+      mojo::PendingRemote<side_panel::mojom::UserNotesPage> page,
       Profile* profile,
+      Browser* browser,
       UserNotesSidePanelUI* user_notes_ui);
   UserNotesPageHandler(const UserNotesPageHandler&) = delete;
   UserNotesPageHandler& operator=(const UserNotesPageHandler&) = delete;
@@ -44,10 +55,28 @@ class UserNotesPageHandler : public side_panel::mojom::UserNotesPageHandler {
 
   void SetCurrentTabUrlForTesting(GURL url) { current_tab_url_ = url; }
 
+  GURL GetCurrentTabUrlForTesting() { return current_tab_url_; }
+
  private:
+  // power_bookmarks::PowerBookmarkObserver:
+  void OnPowersChanged() override;
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
+  // WebContentsObserver:
+  void PrimaryPageChanged(content::Page& page) override;
+
+  void UpdateCurrentTabUrl();
+
   mojo::Receiver<side_panel::mojom::UserNotesPageHandler> receiver_;
+  mojo::Remote<side_panel::mojom::UserNotesPage> page_;
   const raw_ptr<Profile> profile_;
   const raw_ptr<power_bookmarks::PowerBookmarkService> service_;
+  const raw_ptr<Browser> browser_;
   raw_ptr<UserNotesSidePanelUI> user_notes_ui_ = nullptr;
   GURL current_tab_url_;
 };

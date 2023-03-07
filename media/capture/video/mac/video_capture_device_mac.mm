@@ -13,7 +13,7 @@
 #include <limits>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -22,6 +22,7 @@
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -726,6 +727,16 @@ void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
     (*control_interface)->USBInterfaceClose(control_interface);
   }
 
+  if ([capture_device_ isPortraitEffectSupported]) {
+    bool isPortraitEffectActive = [capture_device_ isPortraitEffectActive];
+    photo_state->supported_background_blur_modes = {
+        isPortraitEffectActive ? mojom::BackgroundBlurMode::BLUR
+                               : mojom::BackgroundBlurMode::OFF};
+    photo_state->background_blur_mode = isPortraitEffectActive
+                                            ? mojom::BackgroundBlurMode::BLUR
+                                            : mojom::BackgroundBlurMode::OFF;
+  }
+
   std::move(callback).Run(std::move(photo_state));
 }
 
@@ -739,6 +750,16 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
       (settings->has_height &&
        settings->height != capture_format_.frame_size.height()) ||
       settings->has_fill_light_mode || settings->has_red_eye_reduction) {
+    return;
+  }
+
+  // Abort if background blur does not have already the desired value.
+  if (settings->has_background_blur_mode &&
+      (![capture_device_ isPortraitEffectSupported] ||
+       settings->background_blur_mode !=
+           ([capture_device_ isPortraitEffectActive]
+                ? mojom::BackgroundBlurMode::BLUR
+                : mojom::BackgroundBlurMode::OFF))) {
     return;
   }
 
@@ -864,6 +885,31 @@ void VideoCaptureDeviceMac::LogMessage(const std::string& message) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (client_)
     client_->OnLog(message);
+}
+
+void VideoCaptureDeviceMac::ReceiveCaptureConfigurationChanged() {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureDeviceMac::OnCaptureConfigurationChanged,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void VideoCaptureDeviceMac::OnCaptureConfigurationChanged() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (client_) {
+    client_->OnCaptureConfigurationChanged();
+  }
+}
+
+void VideoCaptureDeviceMac::SetIsPortraitEffectSupportedForTesting(
+    bool isPortraitEffectSupported) {
+  [capture_device_
+      setIsPortraitEffectSupportedForTesting:isPortraitEffectSupported];
+}
+
+void VideoCaptureDeviceMac::SetIsPortraitEffectActiveForTesting(
+    bool isPortraitEffectActive) {
+  [capture_device_ setIsPortraitEffectActiveForTesting:isPortraitEffectActive];
 }
 
 // static

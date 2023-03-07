@@ -60,13 +60,15 @@ class CardUnmaskAuthenticationSelectionDialogControllerImpl
   std::u16string GetOkButtonLabel() const override;
   std::u16string GetProgressLabel() const override;
   void SetSelectedChallengeOptionId(
-      const std::string& selected_challenge_option_id) override;
+      const CardUnmaskChallengeOption::ChallengeOptionId&
+          selected_challenge_option_id) override;
 
   CardUnmaskAuthenticationSelectionDialog* GetDialogViewForTesting() {
     return dialog_view_;
   }
 
-  const std::string& GetSelectedChallengeOptionIdForTesting() const {
+  const CardUnmaskChallengeOption::ChallengeOptionId&
+  GetSelectedChallengeOptionIdForTesting() const {
     return selected_challenge_option_id_;
   }
 
@@ -101,18 +103,25 @@ class CardUnmaskAuthenticationSelectionDialogControllerImpl
   base::OnceClosure cancel_unmasking_closure_;
 
   // Tracks whether a challenge option was selected in the current
-  // |dialog_view_|.
+  // `dialog_view_`.
+  // TODO(crbug.com/1392939): Rename this to `challenge_option_accepted_`, as it
+  // only gets set when the user clicks the accept button after selecting a
+  // challenge option.
   bool challenge_option_selected_ = false;
 
-  // Contains the currently selected challenge option ID from the Card Unmask
-  // Authentication Selection Dialog View. Defaults to the first challenge
-  // option, but can change depending on user selection.
-  std::string selected_challenge_option_id_;
+  // The currently unique identifier of the challenge option selected in the
+  // Card Authentication Selection Dialog View.
+  // TODO(crbug.com/1392939): Remove this and just add a
+  // `selected_challenge_option_` object once we refactor
+  // `SetSelectedChallengeOptionId()` to `SetSelectedChallengeOptionForId()`.
+  CardUnmaskChallengeOption::ChallengeOptionId selected_challenge_option_id_ =
+      CardUnmaskChallengeOption::ChallengeOptionId();
 
   // Contains the challenge option type selected by the user. Currently only
   // kCvc and kSmsOtp are supported.
-  // TODO(crbug.com/1381804) Update to use a StrongAlias in
-  // card_unmask_authentication_selection_dialog_controller_impl.h
+  // TODO(crbug.com/1392939): Remove this and just add a
+  // `selected_challenge_option_` object once we refactor
+  // `SetSelectedChallengeOptionId()` to `SetSelectedChallengeOptionForId()`.
   CardUnmaskChallengeOptionType selected_challenge_option_type_ =
       CardUnmaskChallengeOptionType::kUnknownType;
 

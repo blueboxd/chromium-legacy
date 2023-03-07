@@ -14,12 +14,12 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -122,29 +122,29 @@ absl::optional<base::FilePath> GetProductVersionPath(UpdaterScope scope) {
                       : product_path;
 }
 
-bool RegKeyExists(HKEY root, const std::wstring& path) {
+[[nodiscard]] bool RegKeyExists(HKEY root, const std::wstring& path) {
   return base::win::RegKey(root, path.c_str(), Wow6432(KEY_QUERY_VALUE))
       .Valid();
 }
 
-bool RegKeyExistsCOM(HKEY root, const std::wstring& path) {
+[[nodiscard]] bool RegKeyExistsCOM(HKEY root, const std::wstring& path) {
   return base::win::RegKey(root, path.c_str(), KEY_QUERY_VALUE).Valid();
 }
 
-bool DeleteRegKey(HKEY root, const std::wstring& path) {
+[[nodiscard]] bool DeleteRegKey(HKEY root, const std::wstring& path) {
   LONG result =
       base::win::RegKey(root, L"", Wow6432(KEY_READ)).DeleteKey(path.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
-bool DeleteRegKeyCOM(HKEY root, const std::wstring& path) {
+[[nodiscard]] bool DeleteRegKeyCOM(HKEY root, const std::wstring& path) {
   LONG result = base::win::RegKey(root, L"", KEY_READ).DeleteKey(path.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
-bool DeleteRegValue(HKEY root,
-                    const std::wstring& path,
-                    const std::wstring& value) {
+[[nodiscard]] bool DeleteRegValue(HKEY root,
+                                  const std::wstring& path,
+                                  const std::wstring& value) {
   if (!base::win::RegKey(root, path.c_str(), Wow6432(KEY_QUERY_VALUE))
            .Valid()) {
     return true;
@@ -155,7 +155,7 @@ bool DeleteRegValue(HKEY root,
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
-bool DeleteService(const std::wstring& service_name) {
+[[nodiscard]] bool DeleteService(const std::wstring& service_name) {
   SC_HANDLE scm = ::OpenSCManager(
       nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
   if (!scm)
@@ -171,15 +171,16 @@ bool DeleteService(const std::wstring& service_name) {
 
     ::CloseServiceHandle(service);
   }
-
-  DeleteRegValue(HKEY_LOCAL_MACHINE, UPDATER_KEY, service_name);
-
   ::CloseServiceHandle(scm);
+
+  if (!DeleteRegValue(HKEY_LOCAL_MACHINE, UPDATER_KEY, service_name)) {
+    return false;
+  }
 
   return is_service_deleted;
 }
 
-bool IsServiceGone(const std::wstring& service_name) {
+[[nodiscard]] bool IsServiceGone(const std::wstring& service_name) {
   SC_HANDLE scm = ::OpenSCManager(
       nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
   if (!scm)
@@ -221,13 +222,15 @@ void CheckInstallation(UpdaterScope scope,
   const HKEY root = UpdaterScopeToHKeyRoot(scope);
 
   if (is_active_and_sxs) {
-    for (const wchar_t* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
+    for (const wchar_t* key : {CLIENTS_KEY, UPDATER_KEY}) {
       EXPECT_EQ(is_installed, RegKeyExists(root, key));
     }
 
     EXPECT_EQ(is_installed, base::PathExists(*GetGoogleUpdateExePath(scope)));
 
     if (is_installed) {
+      EXPECT_TRUE(RegKeyExists(root, CLIENT_STATE_KEY));
+
       std::wstring pv;
       EXPECT_EQ(ERROR_SUCCESS,
                 base::win::RegKey(
@@ -244,7 +247,7 @@ void CheckInstallation(UpdaterScope scope,
                     .ReadValue(kRegValueUninstallCmdLine,
                                &uninstall_cmd_line_string));
       EXPECT_TRUE(base::CommandLine::FromString(uninstall_cmd_line_string)
-                      .HasSwitch(kUninstallIfUnusedSwitch));
+                      .HasSwitch(kWakeSwitch));
 
       if (!IsSystemInstall(scope)) {
         std::wstring run_updater_wake_command;
@@ -306,7 +309,7 @@ void CheckInstallation(UpdaterScope scope,
 
   if (is_installed) {
     std::unique_ptr<TaskScheduler> task_scheduler =
-        TaskScheduler::CreateInstance();
+        TaskScheduler::CreateInstance(scope);
     const std::wstring task_name =
         task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
     EXPECT_TRUE(!task_name.empty());
@@ -381,9 +384,10 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
       return base::ASCIIToWide(base::StrCat({"/", switch_name}));
     };
     std::vector<std::wstring> install_cmd_args = {
-        base::StrCat({L"\"", exe_path.value(), L"\""}),
+        base::CommandLine::QuoteForCommandLineToArgvW(exe_path.value()),
 
         build_legacy_switch(updater::kEnableLoggingSwitch),
+
         // This switch and its value must be connected by '=' because logging
         // switch does not support legacy format.
         base::StrCat({build_legacy_switch(updater::kLoggingModuleSwitch), L"=",
@@ -400,7 +404,7 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
         L"{E85204C6-6F2F-40BF-9E6C-4952208BB977}",
 
         build_legacy_switch(updater::kOfflineDirSwitch),
-        base::StrCat({L"\"", offline_dir.value(), L"\""}),
+        base::CommandLine::QuoteForCommandLineToArgvW(offline_dir.value()),
 
         is_silent_install ? build_legacy_switch(updater::kSilentSwitch) : L"",
     };
@@ -612,7 +616,7 @@ void Clean(UpdaterScope scope) {
   }
 
   std::unique_ptr<TaskScheduler> task_scheduler =
-      TaskScheduler::CreateInstance();
+      TaskScheduler::CreateInstance(scope);
   const std::wstring task_name =
       task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
   if (!task_name.empty())
@@ -628,6 +632,9 @@ void Clean(UpdaterScope scope) {
   absl::optional<base::FilePath> path = GetProductPath(scope);
   ASSERT_TRUE(path);
   ASSERT_TRUE(base::DeletePathRecursively(*path)) << *path;
+
+  // TODO(crbug.com/1401759) - this can be removed after the crbug is closed.
+  VLOG(0) << __func__ << " end.";
 }
 
 void EnterTestMode(const GURL& url) {
@@ -656,11 +663,6 @@ void ExpectCandidateUninstalled(UpdaterScope scope) {
                     CheckInstallationVersions::kCheckSxSOnly);
 }
 
-void ExpectActiveUpdater(UpdaterScope scope) {
-  CheckInstallation(scope, CheckInstallationStatus::kCheckIsInstalled,
-                    CheckInstallationVersions::kCheckActiveAndSxS);
-}
-
 void Uninstall(UpdaterScope scope) {
   // Note: "updater.exe --uninstall" is run from the build dir, not the install
   // dir, because it is useful for tests to be able to run it to clean the
@@ -672,13 +674,13 @@ void Uninstall(UpdaterScope scope) {
   base::CommandLine command_line(path);
   command_line.AppendSwitch("uninstall");
   int exit_code = -1;
-  ASSERT_TRUE(Run(scope, command_line, &exit_code));
-  EXPECT_EQ(0, exit_code);
+  Run(scope, command_line, &exit_code);
 
   // Uninstallation involves a race with the uninstall.cmd script and the
   // process exit. Sleep to allow the script to complete its work.
   // TODO(crbug.com/1217765): Figure out a way to replace this.
   SleepFor(base::Seconds(5));
+  ASSERT_EQ(0, exit_code);
 }
 
 void SetActive(UpdaterScope /*scope*/, const std::string& id) {
@@ -803,17 +805,23 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
                                                      : __uuidof(IUpdaterUser),
                               IID_PPV_ARGS_Helper(&updater)));
 
-    Microsoft::WRL::ComPtr<IUnknown> updater_legacy_server;
-    ASSERT_HRESULT_SUCCEEDED(CreateLocalServer(
-        IsSystemInstall(scope) ? __uuidof(GoogleUpdate3WebSystemClass)
-                               : __uuidof(GoogleUpdate3WebUserClass),
-        updater_legacy_server));
-    Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
-    ASSERT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
-    Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
-    Microsoft::WRL::ComPtr<IDispatch> dispatch;
-    ASSERT_HRESULT_SUCCEEDED(google_update->createAppBundleWeb(&dispatch));
-    EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
+    for (const CLSID& clsid : [&scope]() -> std::vector<CLSID> {
+           if (IsSystemInstall(scope)) {
+             return {__uuidof(GoogleUpdate3WebSystemClass),
+                     __uuidof(GoogleUpdate3WebServiceClass)};
+           } else {
+             return {__uuidof(GoogleUpdate3WebUserClass)};
+           }
+         }()) {
+      Microsoft::WRL::ComPtr<IUnknown> updater_legacy_server;
+      ASSERT_HRESULT_SUCCEEDED(CreateLocalServer(clsid, updater_legacy_server));
+      Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
+      ASSERT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
+      Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
+      Microsoft::WRL::ComPtr<IDispatch> dispatch;
+      ASSERT_HRESULT_SUCCEEDED(google_update->createAppBundleWeb(&dispatch));
+      EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
+    }
   }
 
   {
@@ -1386,7 +1394,7 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
       old_updater_path.Append(FILE_PATH_LITERAL("UpdaterSetup_test.exe")));
   command_line.AppendSwitch(kInstallSwitch);
   int exit_code = -1;
-  ASSERT_TRUE(Run(scope, command_line, &exit_code));
+  Run(scope, command_line, &exit_code);
   ASSERT_EQ(exit_code, 0);
 }
 
@@ -1408,6 +1416,28 @@ void RunUninstallCmdLine(UpdaterScope scope) {
   EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
                                              &exit_code));
   EXPECT_EQ(0, exit_code);
+}
+
+void RunHandoff(UpdaterScope scope, const std::string& app_id) {
+  const absl::optional<base::FilePath> installed_executable_path =
+      GetInstalledExecutablePath(scope);
+  ASSERT_TRUE(installed_executable_path);
+  ASSERT_TRUE(base::PathExists(*installed_executable_path));
+
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_process;
+  const std::wstring command_line(base::StrCat(
+      {base::CommandLine::QuoteForCommandLineToArgvW(
+           installed_executable_path->value()),
+       L" /handoff \"appguid=", base::ASCIIToWide(app_id), L"&needsadmin=",
+       IsSystemInstall(scope) ? L"Prefers" : L"False", L"\" /silent"}));
+  VLOG(0) << " RunHandoff: " << command_line;
+  const base::Process process = base::LaunchProcess(command_line, {});
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = 0;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
+  ASSERT_EQ(exit_code, 0);
 }
 
 void SetupFakeLegacyUpdaterData(UpdaterScope scope) {
@@ -1447,8 +1477,8 @@ void SetupFakeLegacyUpdaterData(UpdaterScope scope) {
 
 void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope) {
   scoped_refptr<GlobalPrefs> global_prefs = CreateGlobalPrefs(scope);
-  auto persisted_data =
-      base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
+  auto persisted_data = base::MakeRefCounted<PersistedData>(
+      scope, global_prefs->GetPrefService());
 
   // Legacy updater itself should not be migrated.
   const std::string kLegacyUpdaterAppId =
@@ -1521,17 +1551,6 @@ void RunOfflineInstall(UpdaterScope scope,
 
   EXPECT_TRUE(DeleteRegKey(root, app_client_state_key));
 
-  // Create a unique name for a shared event to be waited for in this process
-  // and signaled in the offline installer process to confirm the installer
-  // was run.
-  const std::wstring event_name = base::StrCat(
-      {L"OfflineInstallTest-", base::NumberToWString(::GetCurrentProcessId())});
-  NamedObjectAttributes attr =
-      GetNamedObjectAttributes(event_name.c_str(), scope);
-  base::WaitableEvent event(base::win::ScopedHandle(
-      ::CreateEvent(&attr.sa, FALSE, FALSE, attr.name.c_str())));
-  ASSERT_NE(event.handle(), nullptr);
-
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath& offline_dir = temp_dir.GetPath();
@@ -1539,13 +1558,20 @@ void RunOfflineInstall(UpdaterScope scope,
   // Create a batch file as the installer script, which creates some registry
   // values as the installation artifacts.
   base::FilePath installer_path = offline_dir.AppendASCII("test_installer.bat");
+
+  // Create a unique name for a shared event to be waited for in this process
+  // and signaled in the offline installer process to confirm the installer
+  // was run.
+  test::EventHolder event_holder(test::CreateWaitableEventForTest());
+
   EXPECT_TRUE(base::WriteFile(
       installer_path,
       [](UpdaterScope scope, const std::string& app_client_state_key,
          const std::wstring& event_name) -> std::string {
         const std::string reg_hive = IsSystemInstall(scope) ? "HKLM" : "HKCU";
 
-        base::CommandLine post_install_cmd(GetTestProcessCommandLine(scope));
+        base::CommandLine post_install_cmd(
+            GetTestProcessCommandLine(scope, GetTestName()));
         post_install_cmd.AppendSwitchNative(kTestEventToSignal, event_name);
         std::vector<std::string> commands;
         const struct {
@@ -1567,7 +1593,7 @@ void RunOfflineInstall(UpdaterScope scope,
               reg_item.value_name, reg_item.type, reg_item.value.c_str()));
         }
         return base::JoinString(commands, "\n");
-      }(scope, base::WideToASCII(app_client_state_key), attr.name)));
+      }(scope, base::WideToASCII(app_client_state_key), event_holder.name)));
 
   // The updater only allows `.exe` or `.msi` to run from the offline directory.
   // Setup `cmd.exe` as the wrapper installer.
@@ -1650,7 +1676,8 @@ void RunOfflineInstall(UpdaterScope scope,
     // Silent install does not run post-install command. For other cases the
     // event should have been signaled by the post-install command via the
     // installer result API.
-    EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
+    EXPECT_TRUE(
+        event_holder.event.TimedWait(TestTimeouts::action_max_timeout()));
   }
 
   EXPECT_TRUE(DeleteRegKey(root, app_client_state_key));

@@ -353,11 +353,17 @@ enum ServerFieldType {
   // types that a prone to false-positive votes.
   NUMERIC_QUANTITY = 128,
 
+  // One-time code used for verifying user identity.
+  ONE_TIME_CODE = 129,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  // Please update enum `AutofillServerFieldType` in
-  // `tools/metrics/histogram/enums.xml` for metrics tracking.
-  MAX_VALID_FIELD_TYPE = 129,
+  // Please update the following enums in `tools/metrics/histogram/enums.xml`
+  // for metrics tracking.
+  // - `AutofillServerFieldType`
+  // - `AutofilledFieldUserEditingStatusByFieldType` (16 * type + x)
+  // - `AutofillPredictionsComparisonResult` (6 * type + x)
+  MAX_VALID_FIELD_TYPE = 130,
 };
 
 enum class FieldTypeGroup {

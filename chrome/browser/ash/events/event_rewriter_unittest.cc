@@ -15,6 +15,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
@@ -35,6 +36,7 @@
 #include "ui/base/ime/ash/fake_ime_keyboard.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -80,9 +82,9 @@ constexpr char kKbdInvalidCustomTopRowLayout[] = "X X X";
 // Values for enum output parameters to IdentifyKeyboard() that do not
 // match any enum types.
 const auto kImpossibleDeviceType =
-    static_cast<ui::EventRewriterChromeOS::DeviceType>(-1);
+    static_cast<ui::KeyboardCapability::DeviceType>(-1);
 const auto kImpossibleKeyboardTopRowLayout =
-    static_cast<ui::EventRewriterChromeOS::KeyboardTopRowLayout>(-1);
+    static_cast<ui::KeyboardCapability::KeyboardTopRowLayout>(-1);
 
 class TestEventRewriterContinuation
     : public ui::test::TestEventRewriterContinuation {
@@ -385,6 +387,26 @@ class EventRewriterTest : public ChromeAshTestBase {
   DeprecationNotificationController* deprecation_controller_;  // Not owned.
   message_center::FakeMessageCenter message_center_;
 };
+
+// TestKeyRewriteLatency checks that the event rewriter
+// publishes a latency metric every time a key is pressed.
+TEST_F(EventRewriterTest, TestKeyRewriteLatency) {
+  base::HistogramTester histogram_tester;
+  CheckKeyTestCase(rewriter(),
+                   {ui::ET_KEY_PRESSED,
+                    {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                     ui::DomKey::Constant<'b'>::Character},
+                    {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                     ui::DomKey::Constant<'b'>::Character}});
+  CheckKeyTestCase(rewriter(),
+                   {ui::ET_KEY_PRESSED,
+                    {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                     ui::DomKey::Constant<'b'>::Character},
+                    {ui::VKEY_B, ui::DomCode::US_B, ui::EF_CONTROL_DOWN,
+                     ui::DomKey::Constant<'b'>::Character}});
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Inputs.EventRewriter.KeyRewriteLatency", 2);
+}
 
 TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   // First, test non Apple keyboards, they should all behave the same.
@@ -4213,8 +4235,11 @@ TEST_F(EventRewriterTest, IdentifyKeyboardUnspecified) {
   bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
       input_device, &out_type, &out_layout, &scan_code_map);
   EXPECT_TRUE(result);
-  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceInternalKeyboard);
-  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault);
+  EXPECT_EQ(out_type,
+            ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard);
+  EXPECT_EQ(
+      out_layout,
+      ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutDefault);
   EXPECT_TRUE(scan_code_map.empty());
 }
 
@@ -4231,8 +4256,10 @@ TEST_F(EventRewriterTest, IdentifyKeyboardInvalidLayoutTag) {
   bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
       input_device, &out_type, &out_layout, &scan_code_map);
   EXPECT_FALSE(result);
-  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceUnknown);
-  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault);
+  EXPECT_EQ(out_type, ui::KeyboardCapability::DeviceType::kDeviceUnknown);
+  EXPECT_EQ(
+      out_layout,
+      ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutDefault);
   EXPECT_TRUE(scan_code_map.empty());
 }
 
@@ -4251,8 +4278,11 @@ TEST_F(EventRewriterTest, IdentifyKeyboardInvalidCustomLayout) {
   // Unparsable custom top row layout attributes are ignored and the
   // keyboard treated as default layout.
   EXPECT_TRUE(result);
-  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceInternalKeyboard);
-  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault);
+  EXPECT_EQ(out_type,
+            ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard);
+  EXPECT_EQ(
+      out_layout,
+      ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutDefault);
   EXPECT_TRUE(scan_code_map.empty());
 }
 
@@ -4269,9 +4299,11 @@ TEST_F(EventRewriterTest, IdentifyKeyboardExternalChrome) {
   bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
       input_device, &out_type, &out_layout, &scan_code_map);
   EXPECT_TRUE(result);
-  EXPECT_EQ(out_type,
-            ui::EventRewriterChromeOS::kDeviceExternalChromeOsKeyboard);
-  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayout2);
+  EXPECT_EQ(
+      out_type,
+      ui::KeyboardCapability::DeviceType::kDeviceExternalChromeOsKeyboard);
+  EXPECT_EQ(out_layout,
+            ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayout2);
   EXPECT_TRUE(scan_code_map.empty());
 }
 
@@ -4289,8 +4321,11 @@ TEST_F(EventRewriterTest, IdentifyKeyboardCustomLayout) {
       input_device, &out_type, &out_layout, &scan_code_map);
 
   EXPECT_TRUE(result);
-  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceInternalKeyboard);
-  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutCustom);
+  EXPECT_EQ(out_type,
+            ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard);
+  EXPECT_EQ(
+      out_layout,
+      ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutCustom);
 
   // Basic inspection to match kKbdDefaultCustomTopRowLayout
   EXPECT_EQ(15u, scan_code_map.size());

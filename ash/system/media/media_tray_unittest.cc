@@ -31,9 +31,9 @@ class MockMediaNotificationProvider : public MediaNotificationProvider {
       : old_provider_(MediaNotificationProvider::Get()) {
     MediaNotificationProvider::Set(this);
 
-    ON_CALL(*this, GetMediaNotificationListView(_)).WillByDefault([](auto) {
-      return std::make_unique<views::View>();
-    });
+    ON_CALL(*this, GetMediaNotificationListView(_, _))
+        .WillByDefault(
+            [](auto, auto) { return std::make_unique<views::View>(); });
   }
 
   ~MockMediaNotificationProvider() override {
@@ -41,9 +41,16 @@ class MockMediaNotificationProvider : public MediaNotificationProvider {
   }
 
   // Medianotificationprovider implementations.
-  MOCK_METHOD1(GetMediaNotificationListView, std::unique_ptr<views::View>(int));
-  MOCK_METHOD0(GetActiveMediaNotificationView, std::unique_ptr<views::View>());
-  MOCK_METHOD0(OnBubbleClosing, void());
+  MOCK_METHOD((std::unique_ptr<views::View>),
+              GetMediaNotificationListView,
+              (int, bool));
+  MOCK_METHOD((std::unique_ptr<views::View>),
+              GetActiveMediaNotificationView,
+              ());
+  MOCK_METHOD(void, OnBubbleClosing, ());
+  MOCK_METHOD(global_media_controls::MediaItemManager*,
+              GetMediaItemManager,
+              ());
   void AddObserver(MediaNotificationProviderObserver* observer) override {}
   void RemoveObserver(MediaNotificationProviderObserver* observer) override {}
   bool HasActiveNotifications() override { return has_active_notifications_; }
@@ -214,7 +221,8 @@ TEST_F(MediaTrayTest, ShowAndHideBubbleTest) {
   // Tap the media tray should show the bubble, and media tray should
   // be active. GetMediaNotificationlistview also should be called for
   // getting active notifications.
-  EXPECT_CALL(*provider(), GetMediaNotificationListView(_));
+  EXPECT_CALL(*provider(),
+              GetMediaNotificationListView(_, /*should_clip_height=*/true));
   SimulateTapOnMediaTray();
   EXPECT_NE(GetBubbleWrapper(), nullptr);
   EXPECT_TRUE(media_tray()->is_active());
@@ -225,6 +233,21 @@ TEST_F(MediaTrayTest, ShowAndHideBubbleTest) {
   SimulateTapOnMediaTray();
   EXPECT_EQ(GetBubbleWrapper(), nullptr);
   EXPECT_FALSE(media_tray()->is_active());
+}
+
+// Tests that the shelf is forced to show when the bubble is visible (this is so
+// that the shelf doesn't hide when shelf auto-hide is enabled).
+TEST_F(MediaTrayTest, OpenBubbleForcesShelfToShow) {
+  provider()->SetHasActiveNotifications(true);
+  SimulateNotificationListChanged();
+  ASSERT_TRUE(media_tray()->GetVisible());
+
+  // The shelf should not be forced to show initially.
+  EXPECT_FALSE(status_area_widget()->ShouldShowShelf());
+
+  // Open the media tray bubble and verify that the shelf is forced to show.
+  SimulateTapOnMediaTray();
+  EXPECT_TRUE(status_area_widget()->ShouldShowShelf());
 }
 
 TEST_F(MediaTrayTest, ShowEmptyStateWhenNoActiveNotification) {

@@ -27,6 +27,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/system/holding_space/holding_space_animation_registry.h"
 #include "ash/system/holding_space/holding_space_ash_test_base.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
@@ -53,6 +54,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/color_utils.h"
@@ -600,11 +602,9 @@ class HoldingSpaceTrayTest : public HoldingSpaceTrayTestBase {
     auto* prefs = GetSessionControllerClient()->GetUserPrefService(account_id);
     ASSERT_TRUE(prefs);
 
-    const auto expected_chevron_skia = gfx::CreateVectorIcon(
+    const auto expected_chevron_model = ui::ImageModel::FromVectorIcon(
         expanded ? kChevronUpSmallIcon : kChevronDownSmallIcon,
-        kHoldingSpaceSectionChevronIconSize,
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorSecondary));
+        kColorAshIconColorSecondary, kHoldingSpaceSectionChevronIconSize);
 
     // Changes to the section's expanded state should be stored persistently.
     EXPECT_EQ(holding_space_prefs::IsSuggestionsExpanded(prefs), expanded);
@@ -623,9 +623,13 @@ class HoldingSpaceTrayTest : public HoldingSpaceTrayTestBase {
 
     // The section header's chevron icon should indicate whether the section is
     // expanded or collapsed.
+    auto* suggestions_section_chevron_icon =
+        test_api()->GetSuggestionsSectionChevronIcon();
     EXPECT_TRUE(gfx::BitmapsAreEqual(
-        *test_api()->GetSuggestionsSectionChevronIcon()->GetImage().bitmap(),
-        *expected_chevron_skia.bitmap()));
+        *suggestions_section_chevron_icon->GetImage().bitmap(),
+        *expected_chevron_model
+             .Rasterize(suggestions_section_chevron_icon->GetColorProvider())
+             .bitmap()));
 
     // The section content should be visible as long as suggestions are
     // available and the section is expanded.
@@ -2000,9 +2004,12 @@ TEST_F(HoldingSpaceTrayTest, CloseTrayBubbleAfterDoubleClick) {
   EXPECT_FALSE(test_api()->IsShowing());
 }
 
-// TODO(crbug.com/1208501): Fix flakes and re-enable.
 // Verifies that the holding space tray animates in and out as expected.
-TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
+TEST_F(HoldingSpaceTrayTest, EnterAndExitAnimations) {
+  // Ensure animations are run.
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
+
   // Prior to session start, the tray should not be showing.
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 
@@ -2068,7 +2075,7 @@ TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
   // Lock the screen. The tray should animate out.
   auto* session_controller =
       ash_test_helper()->test_session_controller_client();
-  session_controller->LockScreen();
+  session_controller->SetSessionState(session_manager::SessionState::LOCKED);
   ViewVisibilityChangedWaiter().Wait(tray);
   EXPECT_FALSE(test_api()->IsShowingInShelf());
 
@@ -3755,8 +3762,7 @@ TEST_P(HoldingSpaceTrayRefreshTest, HasExpectedBubbleTreatment) {
     auto* background = bubble->GetBackground();
     ASSERT_TRUE(background);
     EXPECT_EQ(background->get_color(),
-              AshColorProvider::Get()->GetBaseLayerColor(
-                  AshColorProvider::BaseLayerType::kTransparent80));
+              bubble->GetColorProvider()->GetColor(kColorAshShieldAndBase80));
     EXPECT_EQ(bubble->layer()->background_blur(),
               ColorProvider::kBackgroundBlurSigma);
 
@@ -3812,8 +3818,8 @@ TEST_P(HoldingSpaceTrayRefreshTest, TrayButtonWithRefreshIcon) {
            IsHoldingSpaceRefreshEnabled() ? kHoldingSpaceRefreshIcon
                                           : kHoldingSpaceIcon,
            kHoldingSpaceTrayIconSize,
-           AshColorProvider::Get()->GetContentLayerColor(
-               AshColorProvider::ContentLayerType::kIconColorPrimary))
+           test_api()->GetDefaultTrayIcon()->GetColorProvider()->GetColor(
+               kColorAshIconColorPrimary))
            .bitmap()));
 }
 
@@ -3874,8 +3880,7 @@ TEST_P(HoldingSpaceTrayRefreshTest, PaintsSeparatorBetweenBubbles) {
       bitmap.getColor(separator_midpoint_x, separator_midpoint_y);
   SkColor expected_color = color_utils::GetResultingPaintColor(
       /*foreground=*/IsHoldingSpaceRefreshEnabled()
-          ? AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kSeparatorColor)
+          ? bubble->GetColorProvider()->GetColor(kColorAshSeparatorColor)
           : SK_ColorTRANSPARENT,
       /*background=*/bubble->GetBackground()
           ? bubble->GetBackground()->get_color()

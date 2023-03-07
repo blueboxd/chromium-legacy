@@ -17,11 +17,16 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_device_public_key_inputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_large_blob_inputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_payment_inputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_prf_inputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_prf_values.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_registration_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_logout_r_ps_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_user_info.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_login_hint.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -36,6 +41,8 @@
 #include "third_party/blink/renderer/modules/credentialmanagement/public_key_credential.h"
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace mojo {
 
@@ -55,9 +62,14 @@ using blink::mojom::blink::DevicePublicKeyRequest;
 using blink::mojom::blink::DevicePublicKeyRequestPtr;
 using blink::mojom::blink::IdentityProviderConfig;
 using blink::mojom::blink::IdentityProviderConfigPtr;
+using blink::mojom::blink::IdentityProviderLoginHint;
+using blink::mojom::blink::IdentityUserInfo;
+using blink::mojom::blink::IdentityUserInfoPtr;
 using blink::mojom::blink::LargeBlobSupport;
 using blink::mojom::blink::LogoutRpsRequest;
 using blink::mojom::blink::LogoutRpsRequestPtr;
+using blink::mojom::blink::PRFValues;
+using blink::mojom::blink::PRFValuesPtr;
 using blink::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
 using blink::mojom::blink::PublicKeyCredentialDescriptor;
 using blink::mojom::blink::PublicKeyCredentialDescriptorPtr;
@@ -72,6 +84,7 @@ using blink::mojom::blink::PublicKeyCredentialUserEntityPtr;
 using blink::mojom::blink::RemoteDesktopClientOverride;
 using blink::mojom::blink::RemoteDesktopClientOverridePtr;
 using blink::mojom::blink::ResidentKeyRequirement;
+using blink::mojom::blink::RpContext;
 using blink::mojom::blink::UserVerificationRequirement;
 
 namespace {
@@ -84,6 +97,40 @@ PublicKeyCredentialParametersPtr CreatePublicKeyCredentialParameter(int alg) {
   mojo_parameter->type = PublicKeyCredentialType::PUBLIC_KEY;
   mojo_parameter->algorithm_identifier = alg;
   return mojo_parameter;
+}
+
+// HashPRFValue hashes a PRF evaluation point with a fixed prefix in order to
+// separate the set of points that a website can evaluate. See
+// https://w3c.github.io/webauthn/#prf-extension.
+Vector<uint8_t> HashPRFValue(const blink::DOMArrayBuffer* value) {
+  constexpr char kPrefix[] = "WebAuthn PRF";
+
+  SHA256_CTX ctx;
+  SHA256_Init(&ctx);
+  // This deliberately includes the terminating NUL.
+  SHA256_Update(&ctx, kPrefix, sizeof(kPrefix));
+  SHA256_Update(&ctx, value->Data(), value->ByteLength());
+
+  uint8_t digest[SHA256_DIGEST_LENGTH];
+  SHA256_Final(digest, &ctx);
+
+  return Vector<uint8_t>(base::span(digest));
+}
+
+// SortPRFValuesByCredentialId is a "less than" function that puts the single,
+// optional element without a credential ID at the beginning and otherwise
+// lexicographically sorts by credential ID. The browser requires that PRF
+// values be presented in this order so that it can easily establish that there
+// are no duplicates.
+bool SortPRFValuesByCredentialId(const PRFValuesPtr& a, const PRFValuesPtr& b) {
+  if (!a->id.has_value()) {
+    return true;
+  } else if (!b->id.has_value()) {
+    return false;
+  } else {
+    return std::lexicographical_compare(a->id->begin(), a->id->end(),
+                                        b->id->begin(), b->id->end());
+  }
 }
 
 }  // namespace
@@ -539,6 +586,9 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
       mojo_options->device_public_key =
           DevicePublicKeyRequest::From(*extensions->devicePubKey());
     }
+    if (extensions->hasPrf()) {
+      mojo_options->prf_enable = true;
+    }
   }
 
   return mojo_options;
@@ -674,6 +724,11 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
       mojo_options->device_public_key =
           DevicePublicKeyRequest::From(*extensions->devicePubKey());
     }
+    if (extensions->hasPrf()) {
+      mojo_options->prf = true;
+      mojo_options->prf_inputs =
+          ConvertTo<Vector<PRFValuesPtr>>(*extensions->prf());
+    }
   }
 
   return mojo_options;
@@ -698,7 +753,48 @@ TypeConverter<IdentityProviderConfigPtr, blink::IdentityProviderConfig>::
   mojo_provider->config_url = blink::KURL(provider.configURL());
   mojo_provider->client_id = provider.clientId();
   mojo_provider->nonce = provider.getNonceOr("");
+  auto login_hint = IdentityProviderLoginHint::New();
+  if (blink::RuntimeEnabledFeatures::FedCmLoginHintEnabled() &&
+      provider.hasLoginHint()) {
+    login_hint->email = provider.loginHint()->getEmailOr("");
+    login_hint->id = provider.loginHint()->getIdOr("");
+    login_hint->is_required = provider.loginHint()->getIsRequiredOr(false);
+  } else {
+    login_hint->email = "";
+    login_hint->id = "";
+    login_hint->is_required = false;
+  }
+  mojo_provider->login_hint = std::move(login_hint);
   return mojo_provider;
+}
+
+// static
+RpContext
+TypeConverter<RpContext, blink::V8IdentityCredentialRequestOptionsContext>::
+    Convert(const blink::V8IdentityCredentialRequestOptionsContext& context) {
+  switch (context.AsEnum()) {
+    case blink::V8IdentityCredentialRequestOptionsContext::Enum::kSignin:
+      return RpContext::kSignIn;
+    case blink::V8IdentityCredentialRequestOptionsContext::Enum::kSignup:
+      return RpContext::kSignUp;
+    case blink::V8IdentityCredentialRequestOptionsContext::Enum::kUse:
+      return RpContext::kUse;
+    case blink::V8IdentityCredentialRequestOptionsContext::Enum::kContinue:
+      return RpContext::kContinue;
+  }
+}
+
+IdentityUserInfoPtr
+TypeConverter<IdentityUserInfoPtr, blink::IdentityUserInfo>::Convert(
+    const blink::IdentityUserInfo& user_info) {
+  DCHECK(blink::RuntimeEnabledFeatures::FedCmUserInfoEnabled());
+  auto mojo_user_info = IdentityUserInfo::New();
+
+  mojo_user_info->email = user_info.email();
+  mojo_user_info->given_name = user_info.givenName();
+  mojo_user_info->name = user_info.name();
+  mojo_user_info->picture = user_info.picture();
+  return mojo_user_info;
 }
 
 // static
@@ -712,6 +808,42 @@ TypeConverter<DevicePublicKeyRequestPtr,
                          device_public_key.attestation())
                          .value_or(AttestationConveyancePreference::NONE);
   ret->attestation_formats = device_public_key.attestationFormats();
+  return ret;
+}
+
+// static
+PRFValuesPtr
+TypeConverter<PRFValuesPtr, blink::AuthenticationExtensionsPRFValues>::Convert(
+    const blink::AuthenticationExtensionsPRFValues& values) {
+  PRFValuesPtr ret = PRFValues::New();
+  ret->first = HashPRFValue(values.first());
+  if (values.hasSecond()) {
+    ret->second = HashPRFValue(values.second());
+  }
+  return ret;
+}
+
+// static
+Vector<PRFValuesPtr>
+TypeConverter<Vector<PRFValuesPtr>, blink::AuthenticationExtensionsPRFInputs>::
+    Convert(const blink::AuthenticationExtensionsPRFInputs& prf) {
+  Vector<PRFValuesPtr> ret;
+  if (prf.hasEval()) {
+    ret.push_back(ConvertTo<PRFValuesPtr>(*prf.eval()));
+  }
+  if (prf.hasEvalByCredential()) {
+    for (const auto& pair : prf.evalByCredential()) {
+      Vector<char> cred_id;
+      // The fact that this decodes successfully has already been tested.
+      CHECK(WTF::Base64UnpaddedURLDecode(pair.first, cred_id));
+
+      PRFValuesPtr values = ConvertTo<PRFValuesPtr>(*pair.second);
+      values->id = Vector<uint8_t>(base::as_bytes(base::make_span(cred_id)));
+      ret.emplace_back(std::move(values));
+    }
+  }
+
+  std::sort(ret.begin(), ret.end(), SortPRFValuesByCredentialId);
   return ret;
 }
 

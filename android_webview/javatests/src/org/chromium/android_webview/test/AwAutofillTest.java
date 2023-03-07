@@ -1118,6 +1118,7 @@ public class AwAutofillTest {
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add({"enable-features=AutofillAcrossIframes"})
+    @DisabledTest(message = "https://crbug.com/1401726")
     public void testCrossFrameAutofill() throws Throwable {
         final String data = "<html><body><form>"
                 + "<input autocomplete=cc-name>"
@@ -2097,7 +2098,6 @@ public class AwAutofillTest {
     }
 
     @Test
-    @DisabledTest(message = "https://crbug.com/1161326")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUMANoServerPrediction() throws Throwable {
@@ -2108,7 +2108,6 @@ public class AwAutofillTest {
     }
 
     @Test
-    @DisabledTest(message = "https://crbug.com/1161326")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUMAServerPredictionArriveBeforeSessionStart() throws Throwable {

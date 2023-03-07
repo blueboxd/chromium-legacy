@@ -7,10 +7,11 @@
 #include <chrono>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"

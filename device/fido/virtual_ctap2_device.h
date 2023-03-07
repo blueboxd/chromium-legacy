@@ -22,6 +22,7 @@
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_types.h"
+#include "device/fido/large_blob.h"
 #include "device/fido/virtual_fido_device.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -81,7 +82,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // The space available to store a large blob. In real authenticators this
     // may change depending on the number of resident credentials. We treat this
     // as a fixed size area for the large blob.
-    size_t available_large_blob_storage = 1024;
+    size_t available_large_blob_storage = kMinLargeBlobSize;
     bool cred_blob_support = false;
     // none_attestation causes a "none" attestation statement to be returned
     // from makeCredential calls.
@@ -190,6 +191,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // reject_all_extensions causes the authenticator to return a CTAP error if
     // a makeCredential or getAssertion request carries any extension.
     bool reject_all_extensions = false;
+
+    // Some authenticators will return CTAP2_ERR_NO_CREDENTIALS when enumerating
+    // RPs if there are no credentials present. Setting this to `true` emulates
+    // that behaviour.
+    bool return_err_no_credentials_on_empty_rp_enumeration = false;
 
     // advertised_algorithms is the contents of the algorithms field in the
     // getInfo. If empty then no such field is reported. The virtual

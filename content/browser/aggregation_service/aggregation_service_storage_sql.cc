@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequence_checker.h"
@@ -711,15 +711,8 @@ AggregationServiceStorageSql::AdjustOfflineReportTimes(
 void AggregationServiceStorageSql::ClearDataBetween(
     base::Time delete_begin,
     base::Time delete_end,
-    StoragePartition::StorageKeyMatcherFunction filter,
-    base::ElapsedTimer elapsed_timer) {
+    StoragePartition::StorageKeyMatcherFunction filter) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Temporary histogram for investigating bug.
-  // TODO(crbug.com/1373392): Remove when resolved.
-  base::UmaHistogramLongTimes100(
-      "PrivacySandbox.AggregationService.Storage.Sql.ClearDataTaskDelay",
-      elapsed_timer.Elapsed());
 
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return;

@@ -17,8 +17,8 @@
 #include "ash/public/cpp/webauthn_dialog_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -89,17 +89,8 @@ class AuthDialogContentsView::FingerprintView : public views::View {
     // views::View
     void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
       node_data->role = ax::mojom::Role::kStaticText;
-      node_data->SetNameChecked(accessible_name_);
+      node_data->SetNameChecked(GetAccessibleName());
     }
-
-    void SetAccessibleName(const std::u16string& name) {
-      accessible_name_ = name;
-      NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                               true /*send_native_event*/);
-    }
-
-   private:
-    std::u16string accessible_name_;
   };
 
   FingerprintView() {
@@ -308,18 +299,11 @@ class AuthDialogContentsView::TitleLabel : public views::Label {
   // views::View
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kStaticText;
-    node_data->SetNameChecked(accessible_name_);
+    node_data->SetNameChecked(GetAccessibleName());
   }
 
  private:
-  void SetAccessibleName(const std::u16string& name) {
-    accessible_name_ = name;
-    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                             true /*send_native_event*/);
-  }
-
   bool is_showing_error_ = false;
-  std::u16string accessible_name_;
 };
 
 AuthDialogContentsView::AuthDialogContentsView(

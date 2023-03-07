@@ -28,6 +28,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
@@ -57,7 +58,8 @@ bool IsAllowlistedSourceId(SourceId source_id) {
     case ukm::SourceIdObj::Type::NO_URL_ID:
     case ukm::SourceIdObj::Type::REDIRECT_ID:
     case ukm::SourceIdObj::Type::WEB_IDENTITY_ID:
-    case ukm::SourceIdObj::Type::CHROMEOS_WEBSITE_ID: {
+    case ukm::SourceIdObj::Type::CHROMEOS_WEBSITE_ID:
+    case ukm::SourceIdObj::Type::EXTENSION_ID: {
       return true;
     }
     case ukm::SourceIdObj::Type::DEFAULT:
@@ -80,6 +82,9 @@ bool HasSupportedScheme(const GURL& url) {
          url.SchemeIs(kAppScheme);
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Update tools/metrics/histograms/enums.xml when new entries are added.
 enum class DroppedDataReason {
   NOT_DROPPED = 0,
   RECORDING_DISABLED = 1,
@@ -95,6 +100,7 @@ enum class DroppedDataReason {
   SAMPLING_UNCONFIGURED = 11,
   MSBB_CONSENT_DISABLED = 12,
   APPS_CONSENT_DISABLED = 13,
+  EXTENSION_URL_INVALID = 14,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -122,15 +128,19 @@ void RecordDroppedEntry(uint64_t event_hash, DroppedDataReason reason) {
 
   // Because the "UKM.Entries.Dropped.ByEntryHash" histogram will be emitted to
   // every single time an entry is dropped, it will be dominated by the
-  // RECORDING_DISABLED reason (which is not very insightful). More interesting
-  // dropped reasons are MAX_HIT and SAMPLED_OUT, so we also emit histograms
-  // split by those reasons.
+  // RECORDING_DISABLED reason (which is not very insightful). We also emit
+  // histograms split by selected reasons that are deemed interesting or helpful
+  // for data quality investigations.
   switch (reason) {
     case DroppedDataReason::MAX_HIT:
       UMA_HISTOGRAM_SPARSE("UKM.Entries.Dropped.MaxHit.ByEntryHash", value);
       break;
     case DroppedDataReason::SAMPLED_OUT:
       UMA_HISTOGRAM_SPARSE("UKM.Entries.Dropped.SampledOut.ByEntryHash", value);
+      break;
+    case DroppedDataReason::REJECTED_BY_FILTER:
+      UMA_HISTOGRAM_SPARSE("UKM.Entries.Dropped.RejectedByFilter.ByEntryHash",
+                           value);
       break;
     default:
       break;
@@ -876,6 +886,7 @@ UkmConsentType UkmRecorderImpl::GetConsentType(SourceIdType type) {
     case SourceIdType::REDIRECT_ID:
     case SourceIdType::WEB_IDENTITY_ID:
     case SourceIdType::CHROMEOS_WEBSITE_ID:
+    case SourceIdType::EXTENSION_ID:
       return UkmConsentType::MSBB;
   }
   return UkmConsentType::MSBB;
@@ -926,7 +937,8 @@ void UkmRecorderImpl::MaybeMarkForDeletion(SourceId source_id) {
     case ukm::SourceIdObj::Type::PAYMENT_APP_ID:
     case ukm::SourceIdObj::Type::NO_URL_ID:
     case ukm::SourceIdObj::Type::WEB_IDENTITY_ID:
-    case ukm::SourceIdObj::Type::CHROMEOS_WEBSITE_ID: {
+    case ukm::SourceIdObj::Type::CHROMEOS_WEBSITE_ID:
+    case ukm::SourceIdObj::Type::EXTENSION_ID: {
       // Don't keep sources of these types after current report because their
       // entries are logged only at source creation time.
       MarkSourceForDeletion(source_id);
@@ -940,6 +952,40 @@ void UkmRecorderImpl::MaybeMarkForDeletion(SourceId source_id) {
     case ukm::SourceIdObj::Type::REDIRECT_ID:
       break;
   }
+}
+
+// Extension URLs need to be specifically enabled and the extension synced.
+bool UkmRecorderImpl::ShouldDropExtensionUrl(
+    const GURL& sanitized_extension_url,
+    bool has_recorded_reason) const {
+  DCHECK_EQ(sanitized_extension_url.GetWithEmptyPath(),
+            sanitized_extension_url);
+
+  // If the URL scheme is not extension scheme, drop the record with
+  // `EXTENSION_URL_INVALID`.
+  if (!sanitized_extension_url.SchemeIs(kExtensionScheme)) {
+    RecordDroppedSource(has_recorded_reason,
+                        DroppedDataReason::EXTENSION_URL_INVALID);
+    return true;
+  }
+  // If the recording is not enabled for extensions, drop the record with
+  // `EXTENSION_URLS_DISABLED`.
+  if (!recording_enabled(ukm::EXTENSIONS)) {
+    RecordDroppedSource(has_recorded_reason,
+                        DroppedDataReason::EXTENSION_URLS_DISABLED);
+    return true;
+  }
+  // If the extension is not a webstore extension, drop the record with
+  // `EXTENSION_NOT_SYNCED`.
+  if (!is_webstore_extension_callback_ ||
+      !is_webstore_extension_callback_.Run(
+          sanitized_extension_url.host_piece())) {
+    RecordDroppedSource(has_recorded_reason,
+                        DroppedDataReason::EXTENSION_NOT_SYNCED);
+    return true;
+  }
+
+  return false;
 }
 
 UkmRecorderImpl::ShouldRecordUrlResult UkmRecorderImpl::ShouldRecordUrl(
@@ -988,18 +1034,19 @@ UkmRecorderImpl::ShouldRecordUrlResult UkmRecorderImpl::ShouldRecordUrl(
     return ShouldRecordUrlResult::kDropped;
   }
 
-  // Extension URLs need to be specifically enabled and the extension synced.
-  if (sanitized_url.SchemeIs(kExtensionScheme)) {
-    DCHECK_EQ(sanitized_url.GetWithEmptyPath(), sanitized_url);
-    if (!recording_enabled(ukm::EXTENSIONS)) {
-      RecordDroppedSource(has_recorded_reason,
-                          DroppedDataReason::EXTENSION_URLS_DISABLED);
+  if (GetSourceIdType(source_id) == SourceIdType::EXTENSION_ID) {
+    if (ShouldDropExtensionUrl(sanitized_url, has_recorded_reason)) {
       return ShouldRecordUrlResult::kDropped;
     }
-    if (!is_webstore_extension_callback_ ||
-        !is_webstore_extension_callback_.Run(sanitized_url.host_piece())) {
-      RecordDroppedSource(has_recorded_reason,
-                          DroppedDataReason::EXTENSION_NOT_SYNCED);
+  }
+
+  // Ideally, this check should be covered by the above block for
+  // `EXTENSION_ID` type. For backward compatibility we still keep it here so
+  // the UKMs recorded without `EXTENSION_ID` type are also properly checked.
+  // TODO(https://crbug.com/1393445): clean up all the UKM metrics with
+  // extension URL to use the dedicated source ID type, and remove this check.
+  if (sanitized_url.SchemeIs(kExtensionScheme)) {
+    if (ShouldDropExtensionUrl(sanitized_url, has_recorded_reason)) {
       return ShouldRecordUrlResult::kDropped;
     }
   }

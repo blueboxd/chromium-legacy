@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,6 +33,17 @@ std::string SerializeAndEncodeGroupsInfo(
   std::string encoded_groups_info;
   base::Base64Encode(serialized_groups_info, &encoded_groups_info);
   return encoded_groups_info;
+}
+
+// (Rudimentary) mechanism comparing two protobuf MessageLite objects.
+// This mechanism should be sufficient as long as compared objects don't host
+// any maps.
+// TODO(ender): Improve the mechanism to be smarter about checking individual
+// fields and their values.
+bool ProtosAreEqual(const google::protobuf::MessageLite& actual,
+                    const google::protobuf::MessageLite& expected) {
+  return (actual.GetTypeName() == expected.GetTypeName()) &&
+         (actual.SerializeAsString() == expected.SerializeAsString());
 }
 
 }  // namespace
@@ -173,18 +185,18 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
     const auto& suggestion_result = results.suggest_results[0];
     ASSERT_EQ(u"christmas", suggestion_result.suggestion());
     ASSERT_EQ(u"", suggestion_result.annotation());
-    ASSERT_EQ("", suggestion_result.entity_id());
-    // This entry has no image.
-    ASSERT_EQ("", suggestion_result.image_dominant_color());
-    ASSERT_EQ(GURL(), suggestion_result.image_url());
+    // This entry has no entity data
+    ASSERT_TRUE(ProtosAreEqual(suggestion_result.entity_info(),
+                               omnibox::EntityInfo::default_instance()));
   }
   {
     const auto& suggestion_result = results.suggest_results[1];
     ASSERT_EQ(u"christopher doe", suggestion_result.suggestion());
     ASSERT_EQ(u"American author", suggestion_result.annotation());
-    ASSERT_EQ("/m/065xxm", suggestion_result.entity_id());
-    ASSERT_EQ("#424242", suggestion_result.image_dominant_color());
-    ASSERT_EQ(GURL("http://example.com/a.png"), suggestion_result.image_url());
+    ASSERT_EQ("/m/065xxm", suggestion_result.entity_info().entity_id());
+    ASSERT_EQ("#424242", suggestion_result.entity_info().dominant_color());
+    ASSERT_EQ("http://example.com/a.png",
+              suggestion_result.entity_info().image_url());
   }
   ASSERT_EQ(3U, results.experiment_stats_v2s.size());
   {
@@ -807,38 +819,41 @@ TEST(SearchSuggestionParserTest, ParseSuggestionEntityInfo) {
 
   // For each suggestion, verify that the JSON fields were correctly parsed.
   ASSERT_EQ(u"the menu", results.suggest_results[0].suggestion());
+  ASSERT_TRUE(ProtosAreEqual(results.suggest_results[0].entity_info(),
+                             omnibox::EntityInfo::default_instance()));
   ASSERT_EQ(u"", results.suggest_results[0].annotation());
-  ASSERT_EQ("", results.suggest_results[0].image_dominant_color());
-  ASSERT_EQ("", results.suggest_results[0].image_url().spec());
-  ASSERT_EQ("", results.suggest_results[0].additional_query_params());
   // Empty "t" value from server results in suggestion being used instead.
   ASSERT_EQ(u"the menu", results.suggest_results[0].match_contents());
-  ASSERT_EQ("", results.suggest_results[0].entity_id());
 
   ASSERT_EQ(u"the menu", results.suggest_results[1].suggestion());
   ASSERT_EQ(u"2022 film", results.suggest_results[1].annotation());
-  ASSERT_EQ("#424242", results.suggest_results[1].image_dominant_color());
+  ASSERT_EQ("#424242",
+            results.suggest_results[1].entity_info().dominant_color());
   ASSERT_EQ(
       "https://encrypted-tbn0.gstatic.com/"
       "images?q=the+menu",
-      results.suggest_results[1].image_url().spec());
-  ASSERT_EQ("gs_ssp=eJzj4tVP1zc0LCwoKssryyg3YPTiKMlIVchNzSsFAGrSCGQ",
-            results.suggest_results[1].additional_query_params());
+      results.suggest_results[1].entity_info().image_url());
+  ASSERT_EQ(
+      "gs_ssp=eJzj4tVP1zc0LCwoKssryyg3YPTiKMlIVchNzSsFAGrSCGQ",
+      results.suggest_results[1].entity_info().suggest_search_parameters());
   ASSERT_EQ(u"The Menu", results.suggest_results[1].match_contents());
-  ASSERT_EQ("/g/11qprvnvhw", results.suggest_results[1].entity_id());
+  ASSERT_EQ("/g/11qprvnvhw",
+            results.suggest_results[1].entity_info().entity_id());
 
   ASSERT_EQ(u"the midnight club", results.suggest_results[2].suggestion());
   ASSERT_EQ(u"Thriller series", results.suggest_results[2].annotation());
-  ASSERT_EQ("#283e75", results.suggest_results[2].image_dominant_color());
+  ASSERT_EQ("#283e75",
+            results.suggest_results[2].entity_info().dominant_color());
   ASSERT_EQ(
       "https://encrypted-tbn0.gstatic.com/"
       "images?q=the+midnight+club",
-      results.suggest_results[2].image_url().spec());
+      results.suggest_results[2].entity_info().image_url());
   ASSERT_EQ(
       "gs_ssp=eJzj4tVP1zc0zMqrNCvJNkwyYPQSLMlIVcjNTMnLTM8oUUjOKU0CALmyCz8",
-      results.suggest_results[2].additional_query_params());
+      results.suggest_results[2].entity_info().suggest_search_parameters());
   ASSERT_EQ(u"The Midnight Club", results.suggest_results[2].match_contents());
-  ASSERT_EQ("/g/11jny6tk1b", results.suggest_results[2].entity_id());
+  ASSERT_EQ("/g/11jny6tk1b",
+            results.suggest_results[2].entity_info().entity_id());
 }
 
 TEST(SearchSuggestionParserTest, ParseSuggestionGroupInfo_FromProto) {
@@ -1295,40 +1310,19 @@ TEST(SearchSuggestionParserTest, ParseSuggestionEntityInfo_FromProto) {
     // For each suggestion, verify that the JSON fields were correctly parsed.
     ASSERT_EQ(u"the menu", results.suggest_results[0].suggestion());
     ASSERT_EQ(u"", results.suggest_results[0].annotation());
-    ASSERT_EQ("", results.suggest_results[0].image_dominant_color());
-    ASSERT_EQ("", results.suggest_results[0].image_url().spec());
-    ASSERT_EQ("", results.suggest_results[0].additional_query_params());
+    ASSERT_TRUE(ProtosAreEqual(results.suggest_results[0].entity_info(),
+                               omnibox::EntityInfo::default_instance()));
+    ASSERT_TRUE(results.suggest_results[0].entity_info().image_url().empty());
     // Empty "t" value from server results in suggestion being used instead.
     ASSERT_EQ(u"the menu", results.suggest_results[0].match_contents());
-    ASSERT_EQ("", results.suggest_results[0].entity_id());
 
     ASSERT_EQ(u"the menu", results.suggest_results[1].suggestion());
-    ASSERT_EQ(base::UTF8ToUTF16(first_entity_info.annotation()),
-              results.suggest_results[1].annotation());
-    ASSERT_EQ(first_entity_info.dominant_color(),
-              results.suggest_results[1].image_dominant_color());
-    ASSERT_EQ(first_entity_info.image_url(),
-              results.suggest_results[1].image_url().spec());
-    ASSERT_EQ(first_entity_info.suggest_search_parameters(),
-              results.suggest_results[1].additional_query_params());
-    ASSERT_EQ(base::UTF8ToUTF16(first_entity_info.name()),
-              results.suggest_results[1].match_contents());
-    ASSERT_EQ(first_entity_info.entity_id(),
-              results.suggest_results[1].entity_id());
+    ASSERT_TRUE(ProtosAreEqual(results.suggest_results[1].entity_info(),
+                               first_entity_info));
 
     ASSERT_EQ(u"the midnight club", results.suggest_results[2].suggestion());
-    ASSERT_EQ(base::UTF8ToUTF16(second_entity_info.annotation()),
-              results.suggest_results[2].annotation());
-    ASSERT_EQ(second_entity_info.dominant_color(),
-              results.suggest_results[2].image_dominant_color());
-    ASSERT_EQ(second_entity_info.image_url(),
-              results.suggest_results[2].image_url().spec());
-    ASSERT_EQ(second_entity_info.suggest_search_parameters(),
-              results.suggest_results[2].additional_query_params());
-    ASSERT_EQ(base::UTF8ToUTF16(second_entity_info.name()),
-              results.suggest_results[2].match_contents());
-    ASSERT_EQ(second_entity_info.entity_id(),
-              results.suggest_results[2].entity_id());
+    ASSERT_TRUE(ProtosAreEqual(results.suggest_results[2].entity_info(),
+                               second_entity_info));
   }
 
   // If possible, fall back to individual JSON fields when attempting to parse
@@ -1387,39 +1381,42 @@ TEST(SearchSuggestionParserTest, ParseSuggestionEntityInfo_FromProto) {
 
     // For each suggestion, verify that the JSON fields were correctly parsed.
     ASSERT_EQ(u"the menu", results.suggest_results[0].suggestion());
+    ASSERT_TRUE(ProtosAreEqual(results.suggest_results[0].entity_info(),
+                               omnibox::EntityInfo::default_instance()));
     ASSERT_EQ(u"", results.suggest_results[0].annotation());
-    ASSERT_EQ("", results.suggest_results[0].image_dominant_color());
-    ASSERT_EQ("", results.suggest_results[0].image_url().spec());
-    ASSERT_EQ("", results.suggest_results[0].additional_query_params());
     // Empty "t" value from server results in suggestion being used instead.
     ASSERT_EQ(u"the menu", results.suggest_results[0].match_contents());
-    ASSERT_EQ("", results.suggest_results[0].entity_id());
 
     ASSERT_EQ(u"the menu", results.suggest_results[1].suggestion());
     ASSERT_EQ(u"2022 film", results.suggest_results[1].annotation());
-    ASSERT_EQ("#424242", results.suggest_results[1].image_dominant_color());
+    ASSERT_EQ("#424242",
+              results.suggest_results[1].entity_info().dominant_color());
     ASSERT_EQ(
         "https://encrypted-tbn0.gstatic.com/"
         "images?q=the+menu",
-        results.suggest_results[1].image_url().spec());
-    ASSERT_EQ("gs_ssp=eJzj4tVP1zc0LCwoKssryyg3YPTiKMlIVchNzSsFAGrSCGQ",
-              results.suggest_results[1].additional_query_params());
+        results.suggest_results[1].entity_info().image_url());
+    ASSERT_EQ(
+        "gs_ssp=eJzj4tVP1zc0LCwoKssryyg3YPTiKMlIVchNzSsFAGrSCGQ",
+        results.suggest_results[1].entity_info().suggest_search_parameters());
     ASSERT_EQ(u"The Menu", results.suggest_results[1].match_contents());
-    ASSERT_EQ("/g/11qprvnvhw", results.suggest_results[1].entity_id());
+    ASSERT_EQ("/g/11qprvnvhw",
+              results.suggest_results[1].entity_info().entity_id());
 
     ASSERT_EQ(u"the midnight club", results.suggest_results[2].suggestion());
     ASSERT_EQ(u"Thriller series", results.suggest_results[2].annotation());
-    ASSERT_EQ("#283e75", results.suggest_results[2].image_dominant_color());
+    ASSERT_EQ("#283e75",
+              results.suggest_results[2].entity_info().dominant_color());
     ASSERT_EQ(
         "https://encrypted-tbn0.gstatic.com/"
         "images?q=the+midnight+club",
-        results.suggest_results[2].image_url().spec());
+        results.suggest_results[2].entity_info().image_url());
     ASSERT_EQ(
         "gs_ssp=eJzj4tVP1zc0zMqrNCvJNkwyYPQSLMlIVcjNTMnLTM8oUUjOKU0CALmyCz8",
-        results.suggest_results[2].additional_query_params());
+        results.suggest_results[2].entity_info().suggest_search_parameters());
     ASSERT_EQ(u"The Midnight Club",
               results.suggest_results[2].match_contents());
-    ASSERT_EQ("/g/11jny6tk1b", results.suggest_results[2].entity_id());
+    ASSERT_EQ("/g/11jny6tk1b",
+              results.suggest_results[2].entity_info().entity_id());
   }
 }
 
@@ -1660,4 +1657,98 @@ TEST(SearchSuggestionParserTest, BadAnswersFailGracefully) {
         *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
         /*is_keyword_result=*/false, &results));
   }
+}
+
+TEST(SearchSuggestionParserTest, ParseCalculatorSuggestion) {
+  TestSchemeClassifier scheme_classifier;
+  AutocompleteInput input(u"1 + 1", metrics::OmniboxEventProto::NTP_REALBOX,
+                          scheme_classifier);
+
+  const std::string json_data = R"([
+    "1 + 1",
+    [
+      "1 + 1",
+      "= 2",
+      "1 + 1"
+    ],
+    ["", "Calculator", ""],
+    [],
+    {
+      "google:clientdata": {
+        "bpc": false,
+        "tlw": false
+      },
+      "google:suggestdetail": [
+        {},
+        {},
+        {
+          "a": "Song",
+          "dc": "#424242",
+          "i": "https://encrypted-tbn0.gstatic.com/images?q=song",
+          "q": "gs_ssp=eJzj4tFP1zcsNjAzMykwKDZg9GI1VNBWMAQAOlEEsA",
+          "t": "1+1",
+          "zae": "/g/1s0664p0s"
+        }
+      ],
+      "google:suggestrelevance": [1300, 1252, 1250],
+      "google:suggestsubtypes": [
+        [512, 355],
+        [],
+        [512]
+      ],
+      "google:suggesttype": [
+        "QUERY",
+        "CALCULATOR",
+        "ENTITY"
+      ],
+      "google:verbatimrelevance": 1300
+    }
+  ])";
+
+  absl::optional<base::Value> root_val = base::JSONReader::Read(json_data);
+  ASSERT_TRUE(root_val);
+
+  SearchSuggestionParser::Results results;
+  ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
+      *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
+      /*is_keyword_result=*/false, &results));
+
+  ASSERT_EQ(3U, results.suggest_results.size());
+
+  // Most fields for a verbatim suggestion should be empty.
+  ASSERT_EQ(u"1 + 1", results.suggest_results[0].suggestion());
+  ASSERT_TRUE(ProtosAreEqual(results.suggest_results[0].entity_info(),
+                             omnibox::EntityInfo::default_instance()));
+  ASSERT_EQ(u"", results.suggest_results[0].annotation());
+  ASSERT_EQ(u"1 + 1", results.suggest_results[0].match_contents());
+
+  // Calculator suggestions should have specific values for the |suggestion|,
+  // |match_contents|, and |annotation| fields.
+#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+  ASSERT_EQ(u"2", results.suggest_results[1].suggestion());
+  ASSERT_EQ(u"2", results.suggest_results[1].annotation());
+  ASSERT_TRUE(ProtosAreEqual(results.suggest_results[1].entity_info(),
+                             omnibox::EntityInfo::default_instance()));
+  ASSERT_EQ(u"1 + 1", results.suggest_results[1].match_contents());
+#else
+  ASSERT_EQ(u"2", results.suggest_results[1].suggestion());
+  ASSERT_EQ(u"", results.suggest_results[1].annotation());
+  ASSERT_TRUE(ProtosAreEqual(results.suggest_results[1].entity_info(),
+                             omnibox::EntityInfo::default_instance()));
+  ASSERT_EQ(u"= 2", results.suggest_results[1].match_contents());
+#endif
+
+  // Entity data should be correctly sourced as usual.
+  ASSERT_EQ(u"1 + 1", results.suggest_results[2].suggestion());
+  ASSERT_EQ(u"Song", results.suggest_results[2].annotation());
+  ASSERT_EQ("#424242",
+            results.suggest_results[2].entity_info().dominant_color());
+  ASSERT_EQ("https://encrypted-tbn0.gstatic.com/images?q=song",
+            results.suggest_results[2].entity_info().image_url());
+  ASSERT_EQ(
+      "gs_ssp=eJzj4tFP1zcsNjAzMykwKDZg9GI1VNBWMAQAOlEEsA",
+      results.suggest_results[2].entity_info().suggest_search_parameters());
+  ASSERT_EQ(u"1+1", results.suggest_results[2].match_contents());
+  ASSERT_EQ("/g/1s0664p0s",
+            results.suggest_results[2].entity_info().entity_id());
 }

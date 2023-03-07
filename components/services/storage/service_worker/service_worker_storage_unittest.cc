@@ -10,10 +10,10 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
@@ -41,7 +41,8 @@ ResourceRecord CreateResourceRecord(int64_t resource_id,
                                     const GURL& url,
                                     int64_t size_bytes) {
   EXPECT_TRUE(url.is_valid());
-  return mojom::ServiceWorkerResourceRecord::New(resource_id, url, size_bytes);
+  return mojom::ServiceWorkerResourceRecord::New(resource_id, url, size_bytes,
+                                                 /*sha256_checksum=*/"");
 }
 
 mojom::ServiceWorkerRegistrationDataPtr CreateRegistrationData(

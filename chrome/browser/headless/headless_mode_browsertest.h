@@ -14,7 +14,7 @@ class HeadlessModeBrowserTest : public InProcessBrowserTest {
  public:
   static constexpr char kHeadlessSwitchValue[] = "new";
 
-  HeadlessModeBrowserTest() = default;
+  HeadlessModeBrowserTest();
 
   HeadlessModeBrowserTest(const HeadlessModeBrowserTest&) = delete;
   HeadlessModeBrowserTest& operator=(const HeadlessModeBrowserTest&) = delete;
@@ -23,6 +23,9 @@ class HeadlessModeBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
+
+ protected:
+  bool headful_mode_ = false;
 };
 
 enum StartWindowMode {

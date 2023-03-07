@@ -6,13 +6,15 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/guest_os/dbus_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
@@ -24,6 +26,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace {
+const char kLaunchHistogram[] = "Bruschetta.LaunchResult";
+}
 
 namespace bruschetta {
 
@@ -41,7 +47,7 @@ class BruschettaLauncherTest : public testing::Test,
 
     // We set up all our mocks to succeed, then failing tests explicitly break
     // the one thing they want to check the failure mode of.
-    ASSERT_TRUE(CreateTestBios());
+    ASSERT_TRUE(CreateTestFiles());
     vm_tools::concierge::StartVmResponse response;
     response.set_success(true);
     response.set_status(vm_tools::concierge::VmStatus::VM_STATUS_RUNNING);
@@ -63,16 +69,17 @@ class BruschettaLauncherTest : public testing::Test,
         });
   }
 
-  bool CreateTestBios() {
-    auto downloads_folder = profile_.GetPath().Append("Downloads");
-    bios_path_ = downloads_folder.Append("bios");
+  bool CreateTestFiles() {
+    bios_path_ = profile_.GetPath().Append(kBiosPath);
+    pflash_path_ = profile_.GetPath().Append(kPflashPath);
     base::File::Error error;
-    bool result = base::CreateDirectoryAndGetError(downloads_folder, &error);
+    bool result =
+        base::CreateDirectoryAndGetError(bios_path_.DirName(), &error);
     if (!result) {
       LOG(ERROR) << "Error creating downloads folder: " << error;
       return false;
     }
-    return base::WriteFile(bios_path_, "");
+    return base::WriteFile(bios_path_, "") && base::WriteFile(pflash_path_, "");
   }
 
   content::BrowserTaskEnvironment task_environment_{
@@ -80,7 +87,9 @@ class BruschettaLauncherTest : public testing::Test,
   base::RunLoop run_loop_;
   TestingProfile profile_;
   base::FilePath bios_path_;
+  base::FilePath pflash_path_;
   std::unique_ptr<BruschettaLauncher> launcher_;
+  base::HistogramTester histogram_tester_{};
 };
 
 // Try to launch, but DLC service returns an error.
@@ -92,6 +101,8 @@ TEST_F(BruschettaLauncherTest, LaunchDlcFailure) {
   run_loop_.Run();
 
   ASSERT_EQ(result, BruschettaResult::kDlcInstallError);
+  histogram_tester_.ExpectUniqueSample(kLaunchHistogram,
+                                       BruschettaResult::kDlcInstallError, 1);
 }
 
 // Try to launch, but BIOS file doesn't exist.
@@ -103,6 +114,8 @@ TEST_F(BruschettaLauncherTest, LaunchBiosNotAccessible) {
   run_loop_.Run();
 
   ASSERT_EQ(result, BruschettaResult::kBiosNotAccessible);
+  histogram_tester_.ExpectUniqueSample(kLaunchHistogram,
+                                       BruschettaResult::kBiosNotAccessible, 1);
 }
 
 // Try to launch, but StartVm fails.
@@ -118,6 +131,8 @@ TEST_F(BruschettaLauncherTest, LaunchStartVmFails) {
   run_loop_.Run();
 
   ASSERT_EQ(result, BruschettaResult::kStartVmFailed);
+  histogram_tester_.ExpectUniqueSample(kLaunchHistogram,
+                                       BruschettaResult::kStartVmFailed, 1);
 }
 
 // Try to launch, VM already running.
@@ -132,6 +147,8 @@ TEST_F(BruschettaLauncherTest, LaunchStartVmSuccess) {
   run_loop_.Run();
 
   ASSERT_EQ(result, BruschettaResult::kSuccess);
+  histogram_tester_.ExpectUniqueSample(kLaunchHistogram,
+                                       BruschettaResult::kSuccess, 1);
 }
 
 // Multiple concurrent launch requests are batched into one request.
@@ -187,6 +204,8 @@ TEST_F(BruschettaLauncherTest, LaunchTimeout) {
   ASSERT_EQ(last_result, BruschettaResult::kUnknown);  // No result yet.
   this->task_environment_.FastForwardBy(base::Minutes(2));
   ASSERT_EQ(last_result, BruschettaResult::kTimeout);  // Timed out.
+  histogram_tester_.ExpectUniqueSample(kLaunchHistogram,
+                                       BruschettaResult::kTimeout, 1);
 }
 
 }  // namespace bruschetta

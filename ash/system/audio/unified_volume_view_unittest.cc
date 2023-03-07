@@ -11,9 +11,13 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/slider.h"
 
@@ -27,25 +31,23 @@ class UnifiedVolumeViewTest : public AshTestBase {
   ~UnifiedVolumeViewTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kQsRevamp, features::kQsRevampWip}, {});
+    feature_list_.InitAndEnableFeature(features::kQsRevamp);
     AshTestBase::SetUp();
     GetPrimaryUnifiedSystemTray()->ShowBubble();
-    volume_slider_controller_ = controller()->volume_slider_controller_.get();
-    unified_volume_view_ =
-        static_cast<UnifiedVolumeView*>(controller()->unified_volume_view_);
   }
 
   UnifiedVolumeSliderController* volume_slider_controller() {
-    return volume_slider_controller_;
+    return controller()->volume_slider_controller_.get();
   }
 
-  UnifiedVolumeView* unified_volume_view() { return unified_volume_view_; }
+  UnifiedVolumeView* unified_volume_view() {
+    return static_cast<UnifiedVolumeView*>(controller()->unified_volume_view_);
+  }
 
-  views::Slider* slider() { return unified_volume_view_->slider(); }
+  views::Slider* slider() { return unified_volume_view()->slider(); }
 
   views::ImageView* slider_icon() {
-    return unified_volume_view_->slider_icon();
+    return unified_volume_view()->slider_icon();
   }
 
   UnifiedSystemTrayController* controller() {
@@ -54,9 +56,9 @@ class UnifiedVolumeViewTest : public AshTestBase {
         ->unified_system_tray_controller();
   }
 
+  views::Button* more_button() { return unified_volume_view()->more_button(); }
+
  private:
-  UnifiedVolumeView* unified_volume_view_ = nullptr;
-  UnifiedVolumeSliderController* volume_slider_controller_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -73,8 +75,12 @@ TEST_F(UnifiedVolumeViewTest, SliderButtonComponents) {
       static_cast<IconButton*>(unified_volume_view()->children()[1]);
   EXPECT_STREQ(live_caption_button->GetClassName(), "IconButton");
   EXPECT_EQ(live_caption_button->GetAccessibleName(),
-            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LIVE_CAPTION));
-  EXPECT_EQ(live_caption_button->GetTooltipText(), u"Live Caption");
+            l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_LIVE_CAPTION_TOGGLE_TOOLTIP,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_STATUS_TRAY_LIVE_CAPTION_DISABLED_STATE_TOOLTIP)));
+  EXPECT_EQ(live_caption_button->GetTooltipText(),
+            u"Toggle Live Caption. Live Caption is off.");
 
   auto* audio_subpage_drill_in_button =
       static_cast<IconButton*>(unified_volume_view()->children()[2]);
@@ -110,6 +116,38 @@ TEST_F(UnifiedVolumeViewTest, SliderIcon) {
       EXPECT_STREQ(icon->name, UnifiedVolumeView::kQsVolumeLevelIcons[2]->name);
     }
   }
+}
+
+// Tests that showing the `UnifiedVolumeView` more button is disabled if and
+// only if there is a trusted pinned window.
+TEST_F(UnifiedVolumeViewTest, MoreButton) {
+  // At the start of the test, the system tray containing the volume view is
+  // already shown. Since there is no pinned window, the `more_button_` should
+  // not be disabled.
+  EXPECT_TRUE(more_button()->GetEnabled());
+
+  // Close the bubble so the volume view can be recreated.
+  GetPrimaryUnifiedSystemTray()->CloseBubble();
+
+  // Create and trusted pin a window.
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  wm::ActivateWindow(window.get());
+  window_util::PinWindow(window.get(), /*trusted=*/true);
+
+  // Open the bubble and check that the new volume view more button is in the
+  // correct state.
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
+  EXPECT_FALSE(more_button()->GetEnabled());
+
+  // Close the bubble so the volume view can be recreated.
+  GetPrimaryUnifiedSystemTray()->CloseBubble();
+
+  // Unpin the window
+  WindowState::Get(window.get())->Restore();
+
+  // Make sure the more button is not disabled.
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
+  EXPECT_TRUE(more_button()->GetEnabled());
 }
 
 }  // namespace ash

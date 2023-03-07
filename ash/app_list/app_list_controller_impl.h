@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_color_provider_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/home_launcher_animation_info.h"
@@ -32,7 +31,7 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/splitview/split_view_observer.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -162,9 +161,6 @@ class ASH_EXPORT AppListControllerImpl
                                 SearchResultActionType action) override;
   using GetContextMenuModelCallback =
       AppListViewDelegate::GetContextMenuModelCallback;
-  void GetSearchResultContextMenuModel(
-      const std::string& result_id,
-      GetContextMenuModelCallback callback) override;
   void ViewShown(int64_t display_id) override;
   bool AppListTargetVisibility() const override;
   void ViewClosing() override;
@@ -204,7 +200,6 @@ class ASH_EXPORT AppListControllerImpl
   void OnViewStateChanged(AppListViewState state) override;
   int GetShelfSize() override;
   bool IsInTabletMode() override;
-  AppListColorProviderImpl* GetColorProvider();
 
   // Notifies observers of AppList visibility changes.
   void OnVisibilityChanged(bool visible, int64_t display_id);
@@ -234,7 +229,6 @@ class ASH_EXPORT AppListControllerImpl
   void OnKeyboardVisibilityChanged(bool is_visible) override;
 
   // WallpaperControllerObserver:
-  void OnWallpaperColorsChanged() override;
   void OnWallpaperPreviewStarted() override;
   void OnWallpaperPreviewEnded() override;
 
@@ -423,10 +417,6 @@ class ASH_EXPORT AppListControllerImpl
   // accessed outside AppListModelControllerImpl using
   // `AppListModelController::Get()`.
   std::unique_ptr<AppListModelProvider> model_provider_;
-
-  // Used to fetch colors from AshColorProvider. Should be destructed after
-  // |presenter_| and UI.
-  AppListColorProviderImpl color_provider_;
 
   // Manages the tablet mode home launcher.
   // |fullscreen_presenter_| should be put below |client_| and |model_| to

@@ -11,10 +11,11 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/browser/renderer_host/pepper/quota_reservation.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"

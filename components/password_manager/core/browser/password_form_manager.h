@@ -84,10 +84,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // for success detection.
   bool IsEqualToSubmittedForm(const autofill::FormData& form) const;
 
-  // Clears potentially submitted or pending form. Used to forget the state when
-  // Autofill Assistant has handled a submission.
-  void ResetState();
-
   // If |submitted_form| is managed by *this (i.e. DoesManage returns true for
   // |submitted_form| and |driver|) then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
@@ -95,6 +91,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // If as a result of the parsing the username is not found, the
   // |possible_username->value| is chosen as username if it looks like an
   // username and came from the same domain as |submitted_form|.
+  // If |possible_username->value| matches username field value, try sending
+  // single username vote to the form |possible_username| belongs to.
   bool ProvisionallySave(const autofill::FormData& submitted_form,
                          const PasswordManagerDriver* driver,
                          const PossibleUsernameData* possible_username);
@@ -145,6 +143,10 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Sets |was_unblocklisted_while_on_page| to true.
   void MarkWasUnblocklisted();
 
+  // Check if the |possible_username| field is present in the |observed_form()|.
+  bool FormHasPossibleUsername(
+      const PossibleUsernameData* possible_username) const;
+
   // PasswordFormManagerForUI:
   const GURL& GetURL() const override;
   const std::vector<const PasswordForm*>& GetBestMatches() const override;
@@ -183,22 +185,12 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void SetGenerationElement(autofill::FieldRendererId generation_element);
   bool HasLikelyChangePasswordFormSubmitted() const;
   bool IsPasswordUpdate() const;
-  bool IsSamePassword() const;
   base::WeakPtr<PasswordManagerDriver> GetDriver() const;
   const PasswordForm* GetSubmittedForm() const;
 
   int driver_id() { return driver_id_; }
 
 #if BUILDFLAG(IS_IOS)
-  // Presaves the form with |generated_password|. This function is called once
-  // when the user accepts the generated password. The password was generated in
-  // the field with identifier |generation_element|. |driver| corresponds to the
-  // |form| parent frame.
-  void PresaveGeneratedPassword(PasswordManagerDriver* driver,
-                                const autofill::FormData& form,
-                                const std::u16string& generated_password,
-                                autofill::FieldRendererId generation_element);
-
   // Sets a value of the field with |field_identifier| of |observed_form()|
   // to |field_value|. In case if there is a presaved credential this function
   // updates the presaved credential.
@@ -332,6 +324,14 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // flow.
   bool IsPossibleSingleUsernameAvailable(
       const PossibleUsernameData* possible_username) const;
+
+  // Returns true if the form is a candidate to send single username vote.
+  // Given that function returns true, |password_form_had_username| is an
+  // output parameter indicating whether password form had same username value
+  // as single username form.
+  bool IsPasswordFormAfterSingleUsernameForm(
+      const PossibleUsernameData* possible_username,
+      bool& password_form_had_username);
 
   // Updates the predictions stored in |parser_| with predictions relevant for
   // |observed_form_or_digest_|.

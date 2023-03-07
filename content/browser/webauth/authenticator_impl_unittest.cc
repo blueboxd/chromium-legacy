@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/base64url.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
@@ -485,8 +486,17 @@ std::vector<uint8_t> UncompressLargeBlob(device::LargeBlob blob) {
   gzipper.Inflate(blob.compressed_data, blob.original_size,
                   base::BindLambdaForTesting(
                       [&](absl::optional<mojo_base::BigBuffer> result) {
-                        uncompressed =
-                            device::fido_parsing_utils::Materialize(*result);
+                        if (result) {
+                          uncompressed =
+                              device::fido_parsing_utils::Materialize(*result);
+                        } else {
+                          // Magic value to indicate failure.
+                          const char kErrorMsg[] = "decompress error";
+                          uncompressed.assign(
+                              reinterpret_cast<const uint8_t*>(kErrorMsg),
+                              reinterpret_cast<const uint8_t*>(
+                                  std::end(kErrorMsg)));
+                        }
                         run_loop.Quit();
                       }));
   run_loop.Run();
@@ -1528,7 +1538,9 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
   Observations& observations() { return observations_; }
 
-  bool IsActive() override { return config_.is_active; }
+  bool IsActive(const url::Origin& caller_origin) override {
+    return config_.is_active;
+  }
 
   RequestId SignalCreateRequest(
       const PublicKeyCredentialCreationOptionsPtr& options,
@@ -1685,8 +1697,11 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
 #endif
 
   WebAuthenticationRequestProxy* MaybeGetRequestProxy(
-      content::BrowserContext* browser_context) override {
-    return request_proxy.get();
+      content::BrowserContext* browser_context,
+      const url::Origin& caller_origin) override {
+    return request_proxy && request_proxy->IsActive(caller_origin)
+               ? request_proxy.get()
+               : nullptr;
   }
 
   bool OriginMayUseRemoteDesktopClientOverride(
@@ -3707,42 +3722,47 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
 
   for (const bool include_extension : {false, true}) {
     for (const bool authenticator_support : {false, true}) {
-      SCOPED_TRACE(include_extension);
-      SCOPED_TRACE(authenticator_support);
+      for (const bool pin_support : {false, true}) {
+        SCOPED_TRACE(include_extension);
+        SCOPED_TRACE(authenticator_support);
+        SCOPED_TRACE(pin_support);
 
-      device::VirtualCtap2Device::Config config;
-      config.hmac_secret_support = authenticator_support;
-      virtual_device_factory_->SetCtap2Config(config);
+        device::VirtualCtap2Device::Config config;
+        config.hmac_secret_support = authenticator_support;
+        config.pin_support = pin_support;
+        virtual_device_factory_->SetCtap2Config(config);
 
-      PublicKeyCredentialCreationOptionsPtr options =
-          GetTestPublicKeyCredentialCreationOptions();
-      options->hmac_create_secret = include_extension;
-      MakeCredentialResult result =
-          AuthenticatorMakeCredential(std::move(options));
-      EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+        PublicKeyCredentialCreationOptionsPtr options =
+            GetTestPublicKeyCredentialCreationOptions();
+        options->hmac_create_secret = include_extension;
+        MakeCredentialResult result =
+            AuthenticatorMakeCredential(std::move(options));
+        EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
 
-      device::AuthenticatorData parsed_auth_data =
-          AuthDataFromMakeCredentialResponse(result.response);
+        device::AuthenticatorData parsed_auth_data =
+            AuthDataFromMakeCredentialResponse(result.response);
 
-      // The virtual CTAP2 device always echos the hmac-secret extension on
-      // registrations. Therefore, if |hmac_secret| was set above it should be
-      // serialised in the CBOR and correctly passed all the way back around to
-      // the reply's authenticator data.
-      bool has_hmac_secret = false;
-      const auto& extensions = parsed_auth_data.extensions();
-      if (extensions) {
-        CHECK(extensions->is_map());
-        const cbor::Value::MapValue& extensions_map = extensions->GetMap();
-        const auto hmac_secret_it =
-            extensions_map.find(cbor::Value(device::kExtensionHmacSecret));
-        if (hmac_secret_it != extensions_map.end()) {
-          ASSERT_TRUE(hmac_secret_it->second.is_bool());
-          EXPECT_TRUE(hmac_secret_it->second.GetBool());
-          has_hmac_secret = true;
+        // The virtual CTAP2 device always echos the hmac-secret extension on
+        // registrations. Therefore, if |hmac_secret| was set above it should be
+        // serialised in the CBOR and correctly passed all the way back around
+        // to the reply's authenticator data.
+        bool has_hmac_secret = false;
+        const auto& extensions = parsed_auth_data.extensions();
+        if (extensions) {
+          CHECK(extensions->is_map());
+          const cbor::Value::MapValue& extensions_map = extensions->GetMap();
+          const auto hmac_secret_it =
+              extensions_map.find(cbor::Value(device::kExtensionHmacSecret));
+          if (hmac_secret_it != extensions_map.end()) {
+            ASSERT_TRUE(hmac_secret_it->second.is_bool());
+            EXPECT_TRUE(hmac_secret_it->second.GetBool());
+            has_hmac_secret = true;
+          }
         }
-      }
 
-      EXPECT_EQ(include_extension && authenticator_support, has_hmac_secret);
+        EXPECT_EQ(include_extension && authenticator_support && pin_support,
+                  has_hmac_secret);
+      }
     }
   }
 }
@@ -4617,6 +4637,27 @@ TEST_F(AuthenticatorImplTest, CancellingAuthenticatorDoesNotTerminateRequest) {
       EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
     }
   }
+}
+
+TEST_F(AuthenticatorImplTest, PRFWithoutSupport) {
+  // This tests that the PRF extension doesn't trigger any DCHECKs or crashes
+  // when used with an authenticator doesn't doesn't support hmac-secret.
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  auto prf_value = blink::mojom::PRFValues::New();
+  const std::vector<uint8_t> salt1(32, 1);
+  prf_value->first = salt1;
+  std::vector<blink::mojom::PRFValuesPtr> prf_inputs;
+  prf_inputs.emplace_back(std::move(prf_value));
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  options->prf = true;
+  options->prf_inputs = std::move(prf_inputs);
+
+  GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+
+  EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
 class AuthenticatorDevicePublicKeyTest : public AuthenticatorImplTest {
@@ -5796,6 +5837,54 @@ TEST_F(PINAuthenticatorImplTest, MakeCredUvNotRqdAndAlwaysUv) {
   }
 }
 
+TEST_F(PINAuthenticatorImplTest, MakeCredentialHMACSecret) {
+  // uv=preferred is more preferred when hmac-secret is in use so that the
+  // PRF is consistent. (Security keys have two PRFs per credential: one for
+  // UV and one for non-UV assertions.)
+  struct TestCase {
+    device::UserVerificationRequirement uv;
+    bool hmac_secret;
+    bool should_configure_uv;
+  };
+
+  constexpr TestCase kTests[] = {
+      {device::UserVerificationRequirement::kDiscouraged, false, false},
+      {device::UserVerificationRequirement::kPreferred, false, false},
+      {device::UserVerificationRequirement::kRequired, false, true},
+      {device::UserVerificationRequirement::kDiscouraged, true, false},
+      {device::UserVerificationRequirement::kPreferred, true, true},
+      {device::UserVerificationRequirement::kRequired, true, true},
+  };
+
+  NavigateAndCommit(GURL(kTestOrigin1));
+  unsigned index = 0;
+  for (const TestCase& test : kTests) {
+    SCOPED_TRACE(index++);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.hmac_secret_support = true;
+    config.pin_support = true;
+    config.pin_uv_auth_token_support = true;
+    config.allow_non_resident_credential_creation_without_uv = true;
+    config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+    virtual_device_factory_->SetCtap2Config(config);
+
+    if (test.should_configure_uv) {
+      test_client_.expected = {{PINReason::kSet, kTestPIN16,
+                                device::kMaxPinRetries, device::kMinPinLength}};
+    } else {
+      test_client_.expected.clear();
+    }
+
+    auto options = make_credential_options(test.uv);
+    options->hmac_create_secret = test.hmac_secret;
+    MakeCredentialResult result =
+        AuthenticatorMakeCredential(std::move(options));
+    EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  }
+}
+
 TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   typedef int Expectations[3][3];
   // kExpectedWithUISupport enumerates the expected behaviour when the embedder
@@ -6077,7 +6166,6 @@ TEST_F(PINAuthenticatorImplTest, PRFCreatedOnCTAP2) {
     virtual_device_factory_->mutable_state()->pin = kTestPIN;
     virtual_device_factory_->mutable_state()->pin_retries =
         device::kMaxPinRetries;
-    virtual_device_factory_->SetCtap2Config(config);
 
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
@@ -7935,6 +8023,43 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
+// Tests that chrome does not attempt setting the PRF extension during a
+// PinUvAuthToken GetAssertion request if it is not supported by the
+// authenticator.
+// Regression test for crbug.com/1408786.
+TEST_F(ResidentKeyAuthenticatorImplTest, PRFNotSupportedWithPinUvAuthToken) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.resident_key_support = true;
+  config.u2f_support = true;
+  config.pin_support = true;
+  config.pin_uv_auth_token_support = true;
+  config.hmac_secret_support = false;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  options->user_verification = device::UserVerificationRequirement::kRequired;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      options->allow_credentials[0].id, options->relying_party_id,
+      std::vector<uint8_t>{1, 2, 3, 4}, absl::nullopt, absl::nullopt));
+
+  auto prf_value = blink::mojom::PRFValues::New();
+  prf_value->first = std::vector<uint8_t>(32, 1);
+  std::vector<blink::mojom::PRFValuesPtr> inputs;
+  inputs.emplace_back(std::move(prf_value));
+  options->prf = true;
+  options->prf_inputs = std::move(inputs);
+  options->allow_credentials.clear();
+  EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
+            AuthenticatorStatus::SUCCESS);
+}
+
 TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
@@ -8673,38 +8798,7 @@ TEST_P(AuthenticatorCableV2Test, QRBasedWithNoPairing) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           zero_qr_secret_, peer_identity_x962_,
-          /*contact_id=*/absl::nullopt,
-          /*use_new_crypter_construction=*/false);
-
-  EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
-  EXPECT_EQ(pairings_.size(), 0u);
-}
-
-TEST_P(AuthenticatorCableV2Test, QRBasedNewCrypterConstruction) {
-  // The new Crypter construction should be transparently supported by the
-  // client code.
-  auto discovery = std::make_unique<device::cablev2::Discovery>(
-      device::CableRequestType::kGetAssertion, network_context_.get(),
-      qr_generator_key_, std::move(ble_advert_events_),
-      /*pairings=*/std::vector<std::unique_ptr<device::cablev2::Pairing>>(),
-      /*contact_device_stream=*/nullptr,
-      /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback());
-
-  AuthenticatorEnvironmentImpl::GetInstance()
-      ->ReplaceDefaultDiscoveryFactoryForTesting(
-          std::make_unique<DiscoveryFactory>(std::move(discovery)));
-
-  std::unique_ptr<device::cablev2::authenticator::Transaction> transaction =
-      device::cablev2::authenticator::TransactFromQRCode(
-          protocol_revision(),
-          device::cablev2::authenticator::NewMockPlatform(
-              std::move(ble_advert_callback_), &virtual_device_,
-              /*observer=*/nullptr),
-          network_context_.get(), root_secret_, "Test Authenticator",
-          zero_qr_secret_, peer_identity_x962_,
-          /*contact_id=*/absl::nullopt,
-          /*use_new_crypter_construction=*/true);
+          /*contact_id=*/absl::nullopt);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -8732,8 +8826,7 @@ TEST_P(AuthenticatorCableV2Test, PairingBased) {
               std::move(ble_advert_callback_), &virtual_device_,
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
-          zero_qr_secret_, peer_identity_x962_, contact_id,
-          /*use_new_crypter_construction=*/false);
+          zero_qr_secret_, peer_identity_x962_, contact_id);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 1u);
@@ -8919,8 +9012,7 @@ TEST_P(AuthenticatorCableV2Test, ServerLink) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           server_link.secret, server_link.peer_identity,
-          /*contact_id=*/absl::nullopt,
-          /*use_new_crypter_construction=*/false);
+          /*contact_id=*/absl::nullopt);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -8997,8 +9089,7 @@ class AuthenticatorCableV2AuthenticatorTest
             std::move(ble_advert_callback_), &virtual_device_, this),
         network_context_.get(), root_secret_, "Test Authenticator",
         zero_qr_secret_, peer_identity_x962_,
-        /*contact_id=*/absl::nullopt,
-        /*use_new_crypter_construction=*/false);
+        /*contact_id=*/absl::nullopt);
   }
 
  protected:
@@ -9183,9 +9274,10 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredentialOriginAndRpIds) {
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
-                    ->IsActive());
+    BrowserContext* context = main_rfh()->GetBrowserContext();
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
@@ -9224,9 +9316,10 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
                  std::string(test_case.claimed_authority));
 
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
-                    ->IsActive());
+    BrowserContext* context = main_rfh()->GetBrowserContext();
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     EXPECT_EQ(TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority),
@@ -9253,9 +9346,10 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
       continue;
     }
 
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
-                    ->IsActive());
+    BrowserContext* context = main_rfh()->GetBrowserContext();
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     AuthenticatorStatus test_status = TryAuthenticationWithAppId(
         test_case.origin, test_case.claimed_authority);
@@ -9355,9 +9449,10 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertionOriginAndRpIds) {
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
-    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
-                    ->IsActive());
+    BrowserContext* context = main_rfh()->GetBrowserContext();
+    ASSERT_TRUE(
+        test_client_.GetWebAuthenticationDelegate()->MaybeGetRequestProxy(
+            context, url::Origin::Create(GURL(test_case.origin))));
 
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();

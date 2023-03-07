@@ -29,8 +29,8 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/callback_forward.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/callback_forward.h"
 #include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
@@ -61,16 +61,12 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/gfx/geometry/rect.h"
 
-template <typename T>
-class sk_sp;
-
 namespace cc {
 class AnimationHost;
 class AnimationTimeline;
 class Layer;
-class PaintOpBuffer;
+class PaintRecord;
 enum class PaintHoldingCommitTrigger;
-using PaintRecord = PaintOpBuffer;
 struct PaintBenchmarkResult;
 }
 
@@ -104,7 +100,6 @@ class MobileFriendlinessChecker;
 class Page;
 class PaintArtifactCompositor;
 class PaintController;
-class PaintControllerCycleScope;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class PaintTimingDetector;
@@ -577,7 +572,7 @@ class CORE_EXPORT LocalFrameView final
 
   // Get the PaintRecord based on the cached paint artifact generated during
   // the last paint in lifecycle update.
-  sk_sp<cc::PaintRecord> GetPaintRecord() const;
+  cc::PaintRecord GetPaintRecord(const gfx::Rect* cull_rect = nullptr) const;
 
   void Show() override;
   void Hide() override;
@@ -914,7 +909,7 @@ class CORE_EXPORT LocalFrameView final
   void PerformLayout();
   void PerformPostLayoutTasks(bool view_size_changed);
 
-  bool PaintTree(PaintBenchmarkMode, PaintControllerCycleScope&);
+  bool PaintTree(PaintBenchmarkMode);
   void PushPaintArtifactToCompositor(bool repainted);
   void CreatePaintTimelineEvents();
 
@@ -1015,8 +1010,6 @@ class CORE_EXPORT LocalFrameView final
   // StyleEngine instead of the base background color.
   bool ShouldUseColorAdjustBackground() const;
 
-  // Verifies the shared elements for the view transition on this view.
-  void VerifySharedElementsForViewTransition();
   // Append view transition requests from this view into the given vector.
   void AppendViewTransitionRequests(
       WTF::Vector<std::unique_ptr<ViewTransitionRequest>>&);

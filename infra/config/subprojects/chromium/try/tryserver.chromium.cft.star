@@ -8,14 +8,16 @@ load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
-    executable = try_.DEFAULT_EXECUTABLE,
     builder_group = "tryserver.chromium.cft",
-    pool = try_.DEFAULT_POOL,
+    check_for_flakiness = True,
+    cores = 8,
+    executable = try_.DEFAULT_EXECUTABLE,
     builderless = True,
+    pool = try_.DEFAULT_POOL,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(
@@ -35,8 +37,8 @@ try_.builder(
     mirrors = [
         "ci/mac-rel-cft",
     ],
-    cores = None,
     os = os.MAC_DEFAULT,
+    cores = None,
 )
 
 try_.builder(
@@ -45,4 +47,5 @@ try_.builder(
         "ci/win-rel-cft",
     ],
     os = os.WINDOWS_DEFAULT,
+    execution_timeout = 6 * time.hour,
 )

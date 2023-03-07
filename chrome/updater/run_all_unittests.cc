@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <iostream>
-
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/process/process.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -17,18 +16,21 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/updater/test/integration_test_commands.h"
+#include "chrome/updater/test_scope.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/unittest_util.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <shlobj.h>
 
 #include <memory>
+#include <string>
 
 #include "base/base_paths.h"
-#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "chrome/updater/util/win_util.h"
 
@@ -90,8 +92,8 @@ class ScopedSymbolPath {
       if (!is_owned)
         return;
       BroadcastEnvironmentChange();
-      std::wcerr << "Symbol path for " << (is_system_ ? "system" : "user")
-                 << " set to: " << symbol_path << std::endl;
+      VLOG(0) << "Symbol path for " << (is_system_ ? "system" : "user")
+              << " set to: " << symbol_path;
     }
   }
 
@@ -164,11 +166,16 @@ int main(int argc, char** argv) {
   MaybeIncreaseTestTimeouts(argc, argv);
 
 #if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1406309) - this can be deleted once BuildBot removes the
+  // Windows 7 testers.
+  if (base::win::GetVersion() < base::win::Version::WIN10) {
+    LOG(ERROR) << "Tests didn't run because of an unsupported Windows version.";
+    return 0;
+  }
   updater::test::MaybeExcludePathsFromWindowsDefender();
 
-  std::cerr << "Process priority: " << base::Process::Current().GetPriority()
-            << std::endl;
-  std::cerr << updater::GetUACState() << std::endl;
+  VLOG(0) << "Process priority: " << base::Process::Current().GetPriority();
+  VLOG(0) << updater::GetUACState();
 
   // TODO(crbug.com/1245429): remove when the bug is fixed.
   // Typically, the test suite runner expects the swarming task to run with
@@ -186,8 +193,7 @@ int main(int argc, char** argv) {
 
   installer::ScopedTokenPrivilege token_se_debug(SE_DEBUG_NAME);
   if (::IsUserAnAdmin() && !token_se_debug.is_enabled()) {
-    std::cerr << "Running as administrator but can't enable SE_DEBUG_NAME."
-              << std::endl;
+    LOG(ERROR) << "Running as administrator but can't enable SE_DEBUG_NAME.";
   }
 
   // Set up the _NT_ALT_SYMBOL_PATH to get symbolized stack traces in logs.
@@ -197,7 +203,14 @@ int main(int argc, char** argv) {
 
   // Use the {ISOLATED_OUTDIR} as a log destination for the test suite.
   base::TestSuite test_suite(argc, argv);
-  updater::test::InitLoggingForUnitTest();
+  updater::test::InitLoggingForUnitTest(base::FilePath([]() {
+    switch (updater::GetTestScope()) {
+      case updater::UpdaterScope::kSystem:
+        return FILE_PATH_LITERAL("updater_test_system.log");
+      case updater::UpdaterScope::kUser:
+        return FILE_PATH_LITERAL("updater_test.log");
+    }
+  }()));
   chrome::RegisterPathProvider();
   return base::LaunchUnitTestsWithOptions(
       argc, argv, 1, 10, true, base::BindRepeating([]() {

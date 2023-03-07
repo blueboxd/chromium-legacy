@@ -36,9 +36,9 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/capture_controller.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -53,6 +53,23 @@ class UserMediaClient;
 
 enum class UserMediaRequestType { kUserMedia, kDisplayMedia, kDisplayMediaSet };
 
+enum class UserMediaRequestResult {
+  kOk = 0,
+  kTimedOut = 1,
+  kSecurityError = 2,
+  kInvalidConstraints = 3,
+  kOverConstrainedError = 4,
+  kContextDestroyed = 5,
+  kNotAllowedError = 6,
+  kNotFoundError = 7,
+  kAbortError = 8,
+  kNotReadableError = 9,
+  kNotSupportedError = 10,
+  kInsecureContext = 11,
+  kInvalidStateError = 12,
+  kMaxValue = kInvalidStateError
+};
+
 class MODULES_EXPORT UserMediaRequest final
     : public GarbageCollected<UserMediaRequest>,
       public ExecutionContextLifecycleObserver {
@@ -65,7 +82,8 @@ class MODULES_EXPORT UserMediaRequest final
                            CaptureController* capture_controller) = 0;
     virtual void OnError(ScriptWrappable* callback_this_value,
                          const V8MediaStreamError* error,
-                         CaptureController* capture_controller) = 0;
+                         CaptureController* capture_controller,
+                         UserMediaRequestResult result) = 0;
 
     virtual void Trace(Visitor*) const {}
 

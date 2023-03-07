@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "crypto/crypto_buildflags.h"
 #include "net/base/net_export.h"
 #include "net/net_buildflags.h"
 
@@ -216,6 +217,15 @@ NET_EXPORT extern const base::FeatureParam<int> kChromeRootStoreSysImpl;
 #endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED) */
 
+// When enabled, TrustStore implementations will use TRUSTED_LEAF,
+// TRUSTED_ANCHOR_OR_LEAF, and TRUSTED_ANCHOR as appropriate. When disabled,
+// TrustStore implementation will only use TRUSTED_ANCHOR.
+// TODO(https://crbug.com/1403034): remove this a few milestones after the
+// trusted leaf support has been launched on all relevant platforms.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_WIN)
+NET_EXPORT BASE_DECLARE_FEATURE(kTrustStoreTrustedLeafSupport);
+#endif
+
 // Turns off streaming media caching to disk when on battery power.
 NET_EXPORT BASE_DECLARE_FEATURE(kTurnOffStreamingMediaCachingOnBattery);
 
@@ -288,13 +298,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kCookieSameSiteConsidersRedirectChain);
 // reading cookies).)
 NET_EXPORT BASE_DECLARE_FEATURE(kSamePartyAttributeEnabled);
 
-// When enabled, cookies with the SameParty attribute are treated as
-// "first-party" when in same-party contexts, for the purposes of third-party
-// cookie blocking. (Note that as a consequence, some cookies may be blocked
-// while others are allowed on a cross-site, same-party request. Additionally,
-// privacy mode is disabled in same-party contexts.)
-NET_EXPORT BASE_DECLARE_FEATURE(kSamePartyCookiesConsideredFirstParty);
-
 // When enabled, sites can opt-in to having their cookies partitioned by
 // top-level site with the Partitioned attribute. Partitioned cookies will only
 // be sent when the browser is on the same top-level site that it was on when
@@ -325,26 +328,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kCookieDomainRejectNonASCII);
 NET_EXPORT BASE_DECLARE_FEATURE(kBlockSetCookieHeader);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kOptimisticBlockfileWrite);
-
-NET_EXPORT BASE_DECLARE_FEATURE(kOptimizeNetworkBuffers);
-
-NET_EXPORT
-extern const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersMinInputStreamAvailableValueToIgnore;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersMinInputStreamReadSize;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersFilterSourceStreamBufferSize;
-
-NET_EXPORT extern const base::FeatureParam<bool>
-    kOptimizeNetworkBuffersInputStreamCheckAvailable;
 
 // Enable the Storage Access API. https://crbug.com/989663.
 NET_EXPORT BASE_DECLARE_FEATURE(kStorageAccessAPI);
@@ -396,6 +379,14 @@ NET_EXPORT BASE_DECLARE_FEATURE(kBlockNewForbiddenHeaders);
 // the key requires SHA-1. See SSLPlatformKeyWin for details.
 NET_EXPORT BASE_DECLARE_FEATURE(kPlatformKeyProbeSHA256);
 #endif
+
+// Enable support for HTTP extensible priorities (RFC 9218)
+// https://crbug.com/1362031
+NET_EXPORT BASE_DECLARE_FEATURE(kPriorityIncremental);
+
+// Prefetch to follow normal semantics instead of 5-minute rule
+// https://crbug.com/1345207
+NET_EXPORT BASE_DECLARE_FEATURE(kPrefetchFollowsNormalCacheSemantics);
 
 }  // namespace net::features
 

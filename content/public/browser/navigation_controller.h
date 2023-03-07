@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/reload_type.h"
@@ -21,7 +22,6 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -127,6 +127,7 @@ class NavigationController {
       const GURL& url,
       Referrer referrer,
       absl::optional<url::Origin> initiator_origin,
+      absl::optional<GURL> initiator_base_url,
       ui::PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,
@@ -174,6 +175,12 @@ class NavigationController {
     // (if these navigations can be somehow triggered or influenced by web
     // content).
     absl::optional<url::Origin> initiator_origin;
+
+    // The base url of the initiator, to be passed to about:blank and srcdoc
+    // frames. As with `initiator_origin`, some browser-initiated navigations
+    // may not have an initiator, and in those cases this will be null. It will
+    // also be null for non-about:blank/about:srcdoc navigations.
+    absl::optional<GURL> initiator_base_url;
 
     // SiteInstance of the frame that initiated the navigation or null if we
     // don't know it.

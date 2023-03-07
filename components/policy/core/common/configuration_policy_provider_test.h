@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -92,8 +92,9 @@ class PolicyProviderTestHarness {
                                     int policy_value) = 0;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
                                     bool policy_value) = 0;
-  virtual void InstallStringListPolicy(const std::string& policy_name,
-                                       const base::ListValue* policy_value) = 0;
+  virtual void InstallStringListPolicy(
+      const std::string& policy_name,
+      const base::Value::List& policy_value) = 0;
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
       const base::Value::Dict& policy_value) = 0;

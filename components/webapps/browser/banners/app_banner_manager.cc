@@ -8,12 +8,12 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -254,21 +254,22 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
 
 AppBannerManager::~AppBannerManager() = default;
 
-bool AppBannerManager::ShouldIgnore(content::RenderFrameHost* render_frame_host,
-                                    const GURL& url) {
+AppBannerManager::UrlType AppBannerManager::GetUrlType(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url) {
   // Don't start the banner flow unless the primary main frame has finished
   // loading. |render_frame_host| can be null during retry attempts.
   if (render_frame_host && !render_frame_host->IsInPrimaryMainFrame())
-    return true;
+    return UrlType::kNotPrimaryFrame;
 
   // There is never a need to trigger a banner for a WebUI page, except
   // for PasswordManager WebUI.
   if (content::HasWebUIScheme(url) &&
       (url.host() != password_manager::kChromeUIPasswordManagerHost)) {
-    return true;
+    return UrlType::kInvalidPrimaryFrameUrl;
   }
 
-  return false;
+  return UrlType::kValidForBanner;
 }
 
 bool AppBannerManager::CheckIfShouldShowBanner() {
@@ -741,8 +742,10 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
 void AppBannerManager::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  if (ShouldIgnore(render_frame_host, validated_url))
+  UrlType url_type = GetUrlType(render_frame_host, validated_url);
+  if (url_type != UrlType::kValidForBanner) {
     return;
+  }
 
   load_finished_ = true;
   validated_url_ = validated_url;

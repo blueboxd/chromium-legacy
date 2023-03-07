@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
 #include "base/timer/timer.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/events/pointer_details.h"
 
 namespace views {
 class ImageView;
@@ -20,6 +22,13 @@ namespace ash {
 
 class CaptureModeDemoToolsController;
 class KeyComboView;
+class PointerHighlightLayer;
+
+using MouseHighlightLayers =
+    std::vector<std::unique_ptr<PointerHighlightLayer>>;
+
+using TouchHighlightLayersMap =
+    base::flat_map<ui::PointerId, std::unique_ptr<PointerHighlightLayer>>;
 
 class CaptureModeDemoToolsTestApi {
  public:
@@ -29,9 +38,9 @@ class CaptureModeDemoToolsTestApi {
   CaptureModeDemoToolsTestApi& operator=(CaptureModeDemoToolsTestApi) = delete;
   ~CaptureModeDemoToolsTestApi() = default;
 
-  views::Widget* GetDemoToolsWidget();
+  views::Widget* GetKeyComboWidget();
 
-  // Returns the contents view for the `demo_tools_widget_`.
+  // Returns the contents view for the `key_combo_widget_`.
   KeyComboView* GetKeyComboView();
 
   // Returns the state of modifier keys in the `CaptureModeDemoToolsController`.
@@ -48,9 +57,9 @@ class CaptureModeDemoToolsTestApi {
   // Returns the non-modifier key that is currently on display.
   ui::KeyboardCode GetShownNonModifierKeyCode();
 
-  // Returns the timer to hide the key combo view on key up of the
+  // Returns the timer to hide the key combo viewer on key up of the
   // non-modifier key after the expiration.
-  base::OneShotTimer* GetKeyComboHideTimer();
+  base::OneShotTimer* GetRefreshKeyComboTimer();
 
   // Returns the `icon_` of the non-modifier component of the key combo.
   views::ImageView* GetNonModifierKeyItemIcon();
@@ -58,6 +67,10 @@ class CaptureModeDemoToolsTestApi {
   // Sets a callback that will be triggered once the mouse highlight animation
   // ends.
   void SetOnMouseHighlightAnimationEndedCallback(base::OnceClosure callback);
+
+  const MouseHighlightLayers& GetMouseHighlightLayers() const;
+
+  const TouchHighlightLayersMap& GetTouchIdToHighlightLayerMap() const;
 
  private:
   CaptureModeDemoToolsController* const demo_tools_controller_;

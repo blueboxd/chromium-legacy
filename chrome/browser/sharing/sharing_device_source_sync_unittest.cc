@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -371,7 +371,6 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_NoChannel) {
 }
 
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_FCMChannel) {
-  scoped_feature_list_.InitAndDisableFeature(kSharingSendViaSync);
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
   auto device_info = CreateDeviceInfo(
       "client_name", sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2,

@@ -124,6 +124,21 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getMimeType(url, callback);
   });
 
+  apiFunctions.setHandleRequest('searchFiles', function(params, callback) {
+    const newParams = {
+      query: params.query,
+      types: params.types,
+      maxResults: params.maxResults,
+      timestamp: params.timestamp || 0,
+    };
+    if (params.rootDir) {
+      newParams.rootUrl = getEntryURL(params.rootDir);
+    }
+    fileManagerPrivateInternal.searchFiles(newParams, function(entryList) {
+      callback((entryList || []).map(e => GetExternalFileEntry(e)));
+    });
+  });
+
   apiFunctions.setHandleRequest('getContentMimeType',
       function(fileEntry, callback) {
     fileEntry.file(blob => {
@@ -204,12 +219,13 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
             descriptor, urls, mimeTypes, callback);
       });
 
-  apiFunctions.setHandleRequest('getFileTasks', function(entries, callback) {
-    var urls = entries.map(function(entry) {
-      return getEntryURL(entry);
-    });
-    fileManagerPrivateInternal.getFileTasks(urls, callback);
-  });
+  apiFunctions.setHandleRequest(
+      'getFileTasks', function(entries, dlpSourceUrls, callback) {
+        var urls = entries.map(function(entry) {
+          return getEntryURL(entry);
+        });
+        fileManagerPrivateInternal.getFileTasks(urls, dlpSourceUrls, callback);
+      });
 
   apiFunctions.setHandleRequest('getDownloadUrl', function(entry, callback) {
     var url = getEntryURL(entry);

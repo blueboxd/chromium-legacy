@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
@@ -97,6 +97,9 @@ void WebAppUninstallJob::Start(const url::Origin& app_origin,
   os_integration_manager.Synchronize(
       app_id_, base::BindOnce(synchronize_barrier, OsHooksErrors()));
 
+  // While sometimes `Synchronize` needs to read icon data, for the uninstall
+  // case it never needs to be read. Thus, it is safe to schedule this now and
+  // not after the `Synchronize` call completes.
   icon_manager.DeleteData(app_id_,
                           base::BindOnce(&WebAppUninstallJob::OnIconDataDeleted,
                                          weak_ptr_factory_.GetWeakPtr()));

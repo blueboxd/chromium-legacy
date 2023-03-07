@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -119,6 +119,8 @@ void CrasAudioHandler::AudioObserver::OnOutputStopped() {}
 
 void CrasAudioHandler::AudioObserver::OnSurveyTriggered(
     const AudioSurveyData& /*survey_specific_data */) {}
+
+void CrasAudioHandler::AudioObserver::OnSpeakOnMuteDetected() {}
 
 // static
 void CrasAudioHandler::Initialize(
@@ -1010,11 +1012,7 @@ void CrasAudioHandler::NodesChanged() {
 
 void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   const AudioDevice* device = this->GetDeviceFromId(node_id);
-
-  // If this is not an active output node, ignore this event. Because when this
-  // node set to active, it will be applied with the volume value stored in
-  // preference.
-  if (!device || !device->active || device->is_input) {
+  if (!device || device->is_input) {
     LOG(ERROR) << "Unexpexted OutputNodeVolumeChanged received on node: 0x"
                << std::hex << node_id;
     return;
@@ -1025,7 +1023,9 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   // set the volume, i.e., volume could be set from non-chrome source, like
   // Bluetooth headset, etc. Assume all active output devices share a single
   // volume.
-  output_volume_ = volume;
+  if (device->active) {
+    output_volume_ = volume;
+  }
   audio_pref_handler_->SetVolumeGainValue(*device, volume);
 
   if (initializing_audio_state_) {
@@ -1103,6 +1103,12 @@ void CrasAudioHandler::SurveyTriggered(
     const base::flat_map<std::string, std::string>& survey_specific_data) {
   for (auto& observer : observers_)
     observer.OnSurveyTriggered(survey_specific_data);
+}
+
+void CrasAudioHandler::SpeakOnMuteDetected() {
+  for (auto& observer : observers_) {
+    observer.OnSpeakOnMuteDetected();
+  }
 }
 
 void CrasAudioHandler::ResendBluetoothBattery() {
@@ -1284,6 +1290,10 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   input_muted_by_microphone_mute_switch_ = IsMicrophoneMuteSwitchOn();
   if (input_muted_by_microphone_mute_switch_)
     SetInputMute(true, InputMuteChangeMethod::kPhysicalShutter);
+
+  // Sets speak-on-mute detection enabled based on feature flag.
+  CrasAudioClient::Get()->SetSpeakOnMuteDetection(
+      features::IsSpeakOnMuteEnabled());
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {

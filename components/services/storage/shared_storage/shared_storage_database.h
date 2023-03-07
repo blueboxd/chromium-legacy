@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -337,10 +337,8 @@ class SharedStorageDatabase {
 
   // Fetches a vector of `mojom::StorageUsageInfoPtr`, with one
   // `mojom::StorageUsageInfoPtr` for each origin currently using shared
-  // storage in this profile. If `exclude_empty_origins` is true, then only
-  // those with positive `length` are included in the vector.
-  [[nodiscard]] std::vector<mojom::StorageUsageInfoPtr> FetchOrigins(
-      bool exclude_empty_origins = true);
+  // storage in this profile.
+  [[nodiscard]] std::vector<mojom::StorageUsageInfoPtr> FetchOrigins();
 
   // Makes a withdrawal of `bits_debit` stamped with the current time from the
   // privacy budget of `context_origin`.
@@ -365,6 +363,11 @@ class SharedStorageDatabase {
   // Returns an origin's entries in a vector bundled with an `OperationResult`.
   // To only be used by DevTools.
   [[nodiscard]] EntriesResult GetEntriesForDevTools(url::Origin context_origin);
+
+  // Removes all budget withdrawals for `context_origin`. Intended as a
+  // convenience for the DevTools UX.
+  [[nodiscard]] OperationResult ResetBudgetForDevTools(
+      url::Origin context_origin);
 
   // Returns whether the SQLite database is open.
   [[nodiscard]] bool IsOpenForTesting() const;
@@ -454,11 +457,9 @@ class SharedStorageDatabase {
 
   // Clears all entries for `context_origin`. Returns whether deletion is
   // successful. Not named `Clear()` to distinguish it from the public method
-  // called via `SequenceBound::AsyncCall()`. If
-  // `delete_origin_if_empty`, then we remove `context_origin` from
-  // `per_origin_mapping`
-  [[nodiscard]] bool Purge(const std::string& context_origin,
-                           bool delete_origin_if_empty = false)
+  // called via `SequenceBound::AsyncCall()`. We remove `context_origin` from
+  // `per_origin_mapping` if the origin becomes empty.
+  [[nodiscard]] bool Purge(const std::string& context_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Returns the total number of entries for `context_origin`, including any
@@ -468,12 +469,8 @@ class SharedStorageDatabase {
 
   // Returns the number of entries for `context_origin`, as determined by a
   // manual "COUNT(*)" query, rather than relying on the `length` recorded in
-  // `per_origin_mapping`. If `include_expired`, then the count is scoped to all
-  // entries; otherwise it is only scoped to entries within the lookback window
-  // determined by `staleness_threshold_`. Returns -1 if there is a database
-  // error.
-  [[nodiscard]] int64_t NumEntriesManualCount(const std::string& context_origin,
-                                              bool include_expired = false)
+  // `per_origin_mapping`. Returns -1 if there is a database error.
+  [[nodiscard]] int64_t NumEntriesManualCount(const std::string& context_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Returns whether an entry exists for `context_origin` and `key`.
@@ -492,27 +489,38 @@ class SharedStorageDatabase {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Updates `length` by `delta` for `context_origin`. If
-  // `delete_origin_if_empty` and `length + delta == 0L`, then we remove
-  // `context_origin` from `per_origin_mapping`.
+  // `length + delta == 0L`, then we remove `context_origin` from
+  // `per_origin_mapping`.
   [[nodiscard]] bool UpdateLength(const std::string& context_origin,
-                                  int64_t delta,
-                                  bool delete_origin_if_empty = false)
+                                  int64_t delta)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  // Inserts a tuple for `(context_origin,key,value,last_used_time)` into
-  // `values_mapping`. Also calls `UpdateLength()` with `delta=1`.
-  [[nodiscard]] bool InsertIntoValuesMappingWithTime(
+  // If `key_exists`, updates the row for `context_origin` in `values_mapping`
+  // to `(context_origin,key,value,last_used_time)`. Otherwise, inserts a tuple
+  // for `(context_origin,key,value,last_used_time)` into `values_mapping` and
+  // calls `UpdateLength()` with `delta=1`.
+  //
+  // Precondition: Must have called `Get()` synchronously beforehand to check
+  // whether row already exists.
+  [[nodiscard]] bool UpdateValuesMappingWithTime(
       const std::string& context_origin,
       const std::u16string& key,
       const std::u16string& value,
-      base::Time last_used_time) VALID_CONTEXT_REQUIRED(sequence_checker_);
+      base::Time last_used_time,
+      bool key_exists) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  // Inserts a tuple for `(context_origin,key,value,clock_->Now())` into
-  // `values_mapping` (i.e. uses the current time as `last_used_time`).
-  // Also calls `UpdateLength()` with `delta=1`.
-  [[nodiscard]] bool InsertIntoValuesMapping(const std::string& context_origin,
-                                             const std::u16string& key,
-                                             const std::u16string& value)
+  // If `key_exists`, updates the row for `context_origin` in `values_mapping`
+  // to `(context_origin,key,value,clock_->Now())`  (i.e. uses the current time
+  // as `last_used_time`). Otherwise, inserts a tuple for
+  // `(context_origin,key,value,clock_->Now())` into `values_mapping` and calls
+  // `UpdateLength()` with `delta=1`.
+  //
+  // Precondition: Must have called `Get()` synchronously beforehand to check
+  // whether row already exists.
+  [[nodiscard]] bool UpdateValuesMapping(const std::string& context_origin,
+                                         const std::u16string& key,
+                                         const std::u16string& value,
+                                         bool key_exists)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Deletes the row for `context_origin` from `per_origin_mapping`.
@@ -527,14 +535,21 @@ class SharedStorageDatabase {
       base::Time creation_time,
       uint64_t length) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  // Deletes the row for `context_origin` from `per_origin_mapping`, then if
-  // `length` is positive and/or `force_insertion` is true, inserts the triple
-  // for `(context_origin, creation_time, length)` into `per_origin_mapping`.
-  [[nodiscard]] bool DeleteThenMaybeInsertIntoPerOriginMapping(
-      const std::string& context_origin,
-      base::Time creation_time,
-      uint64_t length,
-      bool force_insertion) VALID_CONTEXT_REQUIRED(sequence_checker_);
+  // Updates the row for `context_origin` from `per_origin_mapping` with the
+  // triple `(context_origin, creation_time, length)`, unless `length` is 0
+  // and/or `context_origin` does not yet exist. In the case where `length` is 0
+  // and `context_origin` exists, we simply delete the existing row. If
+  // `context_origin` does not yet exist, and `length` is positive, we simply
+  // insert the row instead of updating. `origin_exists` specifies whether or
+  // not `context_origin` already exists in `per_origin_mapping`.
+  //
+  // Precondition: Must have called `GetOriginInfo()` synchronously beforehand
+  // to determine whether origin already exists.
+  [[nodiscard]] bool UpdatePerOriginMapping(const std::string& context_origin,
+                                            base::Time creation_time,
+                                            uint64_t length,
+                                            bool origin_exists)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Returns whether the `length` for `context_origin` is less than
   // `max_entries_per_origin_`.

@@ -6,14 +6,14 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -48,6 +48,7 @@
 #include "net/base/filename_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_features.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/file_system_util.h"
@@ -1529,7 +1530,11 @@ storage::FileSystemURL FileSystemAccessManagerImpl::CreateFileSystemURLFromPath(
     const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return context()->CreateCrackedFileSystemURL(
-      opaque_origin_for_non_sandboxed_filesystemurls_,
+      base::FeatureList::IsEnabled(
+          storage::features::
+              kFileSystemURLComparatorsTreatOpaqueOriginAsNoOrigin)
+          ? blink::StorageKey()
+          : opaque_origin_for_non_sandboxed_filesystemurls_,
       path_type == PathType::kLocal ? storage::kFileSystemTypeLocal
                                     : storage::kFileSystemTypeExternal,
       path);

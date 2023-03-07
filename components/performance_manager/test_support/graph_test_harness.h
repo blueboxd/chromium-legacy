@@ -92,13 +92,21 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
 };
 
 // A specialized factory function for ProcessNodes which will provide an empty
-// RenderProcessHostProxy when it's not needed.
+// proxy when it's not needed.
 template <>
 struct TestNodeWrapper<ProcessNodeImpl>::Factory {
+  static std::unique_ptr<ProcessNodeImpl> Create(BrowserProcessNodeTag tag) {
+    return std::make_unique<ProcessNodeImpl>(tag);
+  }
   static std::unique_ptr<ProcessNodeImpl> Create(
-      content::ProcessType process_type = content::PROCESS_TYPE_RENDERER,
       RenderProcessHostProxy proxy = RenderProcessHostProxy()) {
     // Provide an empty RenderProcessHostProxy by default.
+    return std::make_unique<ProcessNodeImpl>(std::move(proxy));
+  }
+  static std::unique_ptr<ProcessNodeImpl> Create(
+      content::ProcessType process_type,
+      BrowserChildProcessHostProxy proxy = BrowserChildProcessHostProxy()) {
+    // Provide an empty BrowserChildProcessHostProxy by default.
     return std::make_unique<ProcessNodeImpl>(process_type, std::move(proxy));
   }
 };

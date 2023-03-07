@@ -3302,8 +3302,15 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
                          FetchSubresourceScript(SecureLocalURL(kPnaPath))));
 }
 
+// TODO(crbug.com/1404795): Re-enable this test
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PreflightConnectionReusedHttp1 \
+  DISABLED_PreflightConnectionReusedHttp1
+#else
+#define MAYBE_PreflightConnectionReusedHttp1 PreflightConnectionReusedHttp1
+#endif
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
-                       PreflightConnectionReusedHttp1) {
+                       MAYBE_PreflightConnectionReusedHttp1) {
   EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
 
   EXPECT_EQ(true, EvalJs(root_frame_host(),
@@ -4028,7 +4035,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestBlockNavigations,
     document.body.appendChild(iframe);
   )"));
 
-  child_navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(child_navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe failed to fetch.
   EXPECT_FALSE(child_navigation_manager.was_successful());
@@ -4064,7 +4071,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
     document.body.appendChild(iframe);
   )"));
 
-  child_navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(child_navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe navigated successfully.
   EXPECT_TRUE(child_navigation_manager.was_successful());
@@ -4094,7 +4101,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestBlockNavigations,
     document.body.appendChild(iframe);
   )"));
 
-  child_navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(child_navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe failed to fetch.
   EXPECT_FALSE(child_navigation_manager.was_successful());
@@ -4140,7 +4147,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestBlockNavigations,
 
   EXPECT_TRUE(ExecJs(root_frame_host(), JsReplace(kIframeScript, url)));
 
-  child_navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(child_navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe navigated successfully.
   EXPECT_TRUE(child_navigation_manager.was_successful());
@@ -4175,7 +4182,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
     document.body.appendChild(iframe);
   )"));
 
-  child_navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(child_navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe was not blocked.
   EXPECT_TRUE(child_navigation_manager.was_successful());
@@ -4206,7 +4213,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(ExecJs(root_frame_host(), JsReplace(script_template, url)));
 
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe was not blocked.
   EXPECT_TRUE(navigation_manager.was_successful());
@@ -4238,7 +4245,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(ExecJs(root_frame_host(), JsReplace(script_template, url)));
 
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe was blocked.
   EXPECT_FALSE(navigation_manager.was_successful());
@@ -4284,7 +4291,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       ExecJs(root_frame_host(), JsReplace(script_template, target_url)));
 
-  navigation_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 
   // Check that the child iframe was blocked.
   EXPECT_FALSE(navigation_manager.was_successful());

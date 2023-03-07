@@ -10,6 +10,7 @@
 #include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -126,6 +127,18 @@ MakeFilter(std::vector<std::string> possible_last_messages) {
 std::string GetSharedStorageDisabledErrorMessage() {
   return base::StrCat({"a JavaScript error: \"Error: ",
                        content::GetSharedStorageDisabledMessage(), "\"\n"});
+}
+
+std::string GetSharedStorageSelectURLDisabledErrorMessage() {
+  return base::StrCat({"a JavaScript error: \"Error: ",
+                       content::GetSharedStorageSelectURLDisabledMessage(),
+                       "\"\n"});
+}
+
+std::string GetSharedStorageAddModuleDisabledErrorMessage() {
+  return base::StrCat({"a JavaScript error: \"Error: ",
+                       content::GetSharedStorageAddModuleDisabledMessage(),
+                       "\"\n"});
 }
 
 void DelayBy(base::TimeDelta delta) {
@@ -405,6 +418,9 @@ class SharedStoragePrefBrowserTest
   }
 
   // Sets prefs as parametrized.
+  //
+  // TODO(crbug.com/1396748): We may need to update how preferences are set once
+  // the Privacy Sandbox settings release 4 is launched (crbug.com/1378703).
   void InitPrefs() override {
     SetPrefs(GetParam().enable_privacy_sandbox,
              GetParam().allow_third_party_cookies);
@@ -535,8 +551,7 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, AddModule) {
 
   if (!SuccessExpected()) {
     // Shared Storage will be disabled.
-    EXPECT_EQ("a JavaScript error: \"Error: sharedStorage is disabled\"\n",
-              result.error);
+    EXPECT_EQ(GetSharedStorageAddModuleDisabledErrorMessage(), result.error);
     EXPECT_EQ(0u, console_observer.messages().size());
 
     WaitForHistograms({kErrorTypeHistogram});
@@ -644,7 +659,8 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunURLSelectionOperation) {
 
   if (!SuccessExpected()) {
     // Shared Storage will be disabled.
-    EXPECT_EQ(GetSharedStorageDisabledErrorMessage(), run_url_op_result.error);
+    EXPECT_EQ(GetSharedStorageSelectURLDisabledErrorMessage(),
+              run_url_op_result.error);
 
     // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
     EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
@@ -2118,7 +2134,9 @@ IN_PROC_BROWSER_TEST_F(SharedStorageChromeBrowserTest, WorkletTiming) {
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SharedStorageChromeBrowserTest, WorkletNumPerPage_Two) {
+// Flaky: https://crbug.com/1406845
+IN_PROC_BROWSER_TEST_F(SharedStorageChromeBrowserTest,
+                       DISABLED_WorkletNumPerPage_Two) {
   EXPECT_TRUE(content::NavigateToURL(
       GetActiveWebContents(),
       https_server()->GetURL(kSimpleTestHost, kSimplePagePath)));
@@ -2156,8 +2174,9 @@ IN_PROC_BROWSER_TEST_F(SharedStorageChromeBrowserTest, WorkletNumPerPage_Two) {
             histogram_tester_.GetAllSamples(kTimingWorkletSetHistogram).size());
 }
 
+// Flaky: https://crbug.com/1406845
 IN_PROC_BROWSER_TEST_F(SharedStorageChromeBrowserTest,
-                       WorkletNumPerPage_Three) {
+                       DISABLED_WorkletNumPerPage_Three) {
   EXPECT_TRUE(content::NavigateToURL(
       GetActiveWebContents(),
       https_server()->GetURL(kSimpleTestHost, kSimplePagePath)));

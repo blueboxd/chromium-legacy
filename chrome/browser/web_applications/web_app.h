@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #include "chrome/browser/web_applications/isolation_data.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -79,7 +79,7 @@ class WebApp {
 
   DisplayMode display_mode() const { return display_mode_; }
 
-  absl::optional<UserDisplayMode> user_display_mode() const {
+  absl::optional<mojom::UserDisplayMode> user_display_mode() const {
     return user_display_mode_;
   }
 
@@ -303,8 +303,7 @@ class WebApp {
     return always_show_toolbar_in_fullscreen_;
   }
 
-  const absl::optional<proto::WebAppOsIntegrationState>&
-  current_os_integration_states() const {
+  const proto::WebAppOsIntegrationState& current_os_integration_states() const {
     return current_os_integration_states_;
   }
 
@@ -345,7 +344,7 @@ class WebApp {
   void SetBackgroundColor(absl::optional<SkColor> background_color);
   void SetDarkModeBackgroundColor(absl::optional<SkColor> background_color);
   void SetDisplayMode(DisplayMode display_mode);
-  void SetUserDisplayMode(UserDisplayMode user_display_mode);
+  void SetUserDisplayMode(mojom::UserDisplayMode user_display_mode);
   void SetDisplayModeOverride(std::vector<DisplayMode> display_mode_override);
   void SetUserPageOrdinal(syncer::StringOrdinal page_ordinal);
   void SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal);
@@ -400,8 +399,7 @@ class WebApp {
       ExternalConfigMap management_to_external_config_map);
   void SetTabStrip(absl::optional<blink::Manifest::TabStrip> tab_strip);
   void SetCurrentOsIntegrationStates(
-      absl::optional<proto::WebAppOsIntegrationState>
-          current_os_integration_states);
+      proto::WebAppOsIntegrationState current_os_integration_states);
   void SetIsolationData(IsolationData isolation_data);
 
   void AddPlaceholderInfoToManagementExternalConfigMap(
@@ -449,12 +447,12 @@ class WebApp {
   absl::optional<SkColor> background_color_;
   absl::optional<SkColor> dark_mode_background_color_;
   DisplayMode display_mode_ = DisplayMode::kUndefined;
-  absl::optional<UserDisplayMode> user_display_mode_ = absl::nullopt;
+  absl::optional<mojom::UserDisplayMode> user_display_mode_ = absl::nullopt;
   std::vector<DisplayMode> display_mode_override_;
   syncer::StringOrdinal user_page_ordinal_;
   syncer::StringOrdinal user_launch_ordinal_;
   absl::optional<WebAppChromeOsData> chromeos_data_;
-  bool is_locally_installed_ = true;
+  bool is_locally_installed_ = false;
   bool is_from_sync_and_pending_installation_ = false;
   // Note: This field is not persisted in the database.
   // TODO(crbug.com/1162477): Add this field to the protocol buffer file and
@@ -474,6 +472,7 @@ class WebApp {
   std::vector<apps::ProtocolHandlerInfo> protocol_handlers_;
   base::flat_set<std::string> allowed_launch_protocols_;
   base::flat_set<std::string> disallowed_launch_protocols_;
+  // TODO(crbug.com/1072058): No longer aiming to ship, remove.
   apps::UrlHandlers url_handlers_;
   GURL lock_screen_start_url_;
   GURL note_taking_new_note_url_;
@@ -485,6 +484,8 @@ class WebApp {
   // Tracks if the app run on os login mode has been registered with the OS.
   // This might go out of sync with actual OS integration status, as Chrome does
   // not actively monitor OS registries.
+  // TODO(crbug.com/1401125): Remove after all OS Integration sub managers have
+  // been implemented and Synchronize() is running fine.
   absl::optional<RunOnOsLoginMode> run_on_os_login_os_integration_state_;
   SyncFallbackData sync_fallback_data_;
   blink::mojom::CaptureLinks capture_links_ =
@@ -523,8 +524,8 @@ class WebApp {
   // Only used on Mac.
   bool always_show_toolbar_in_fullscreen_ = true;
 
-  absl::optional<proto::WebAppOsIntegrationState>
-      current_os_integration_states_ = absl::nullopt;
+  proto::WebAppOsIntegrationState current_os_integration_states_ =
+      proto::WebAppOsIntegrationState();
 
   absl::optional<IsolationData> isolation_data_;
 

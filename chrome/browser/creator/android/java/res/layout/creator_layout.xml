@@ -14,11 +14,19 @@
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       style="@style/CreatorActivityNoActionBar" >
+    <TextView
+        android:id="@+id/creator_title_toolbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:visibility="gone"
+        android:textAppearance="@style/TextAppearance.Headline.Primary" />
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/creator_all_buttons_toolbar"
-        android:layout_gravity="end" >
+        android:layout_gravity="end"
+        android:visibility="gone" >
       <org.chromium.ui.widget.ButtonCompat
           android:id="@+id/creator_follow_button_toolbar"
           android:layout_width="wrap_content"
@@ -37,4 +45,11 @@
           android:visibility="gone" />
     </FrameLayout>
   </com.google.android.material.appbar.MaterialToolbar>
+  <View
+      android:id="@+id/creator_toolbar_bottom_border"
+      android:background="?attr/globalOutlinedButtonBorderColor"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/creator_toolbar_bottom_border_height"
+      android:layout_alignParentBottom="true"
+      android:visibility="gone" />
 </org.chromium.chrome.browser.creator.CreatorToolbarView>

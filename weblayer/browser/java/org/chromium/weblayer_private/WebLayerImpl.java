@@ -82,16 +82,14 @@ import org.chromium.ui.base.ResourceBundle;
 import org.chromium.ui.base.SelectFileDialog;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.APICallException;
-import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
-import org.chromium.weblayer_private.interfaces.IMediaRouteDialogFragment;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
-import org.chromium.weblayer_private.media.MediaRouteDialogFragmentImpl;
 import org.chromium.weblayer_private.media.MediaRouterClientImpl;
 import org.chromium.weblayer_private.media.MediaSessionManager;
 import org.chromium.weblayer_private.media.MediaStreamManager;
@@ -227,7 +225,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         // This issues JNI calls which require native code to be loaded.
         MetricsServiceClient.init();
 
-        WebLayerOriginVerificationScheduler.init(appContext.getPackageName(), appContext);
+        WebLayerOriginVerificationScheduler.init(appContext.getPackageName(),
+                mProfileManager.getProfile(/* name= */ "", true), appContext);
 
         assert mInited;
         WebLayerImplJni.get().setIsWebViewCompatMode(mIsWebViewCompatMode);
@@ -372,18 +371,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public IBrowserFragment createBrowserFragmentImpl(IObjectWrapper fragmentArgs) {
+    public IBrowser createBrowser(IObjectWrapper serviceContext, IObjectWrapper fragmentArgs) {
         StrictModeWorkaround.apply();
-        Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
-        BrowserFragmentImpl fragment = new BrowserFragmentImpl(mProfileManager, unwrappedArgs);
-        return fragment.asIBrowserFragment();
-    }
-
-    @Override
-    public IMediaRouteDialogFragment createMediaRouteDialogFragmentImpl() {
-        StrictModeWorkaround.apply();
-        MediaRouteDialogFragmentImpl fragment = new MediaRouteDialogFragmentImpl();
-        return fragment.asIMediaRouteDialogFragment();
+        Bundle unwrappedFragmentArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
+        Context unwrappedServiceContext = ObjectWrapper.unwrap(serviceContext, Context.class);
+        BrowserImpl browser =
+                new BrowserImpl(unwrappedServiceContext, mProfileManager, unwrappedFragmentArgs);
+        return browser;
     }
 
     @Override
@@ -535,6 +529,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     @Override
     public IObjectWrapper getApplicationContext() {
+        StrictModeWorkaround.apply();
         return ObjectWrapper.wrap(ContextUtils.getApplicationContext());
     }
 
@@ -744,28 +739,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
      */
     private static int getPackageId(Context appContext, String implPackageName) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                Constructor<WebViewDelegate> constructor =
-                        WebViewDelegate.class.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                WebViewDelegate delegate = constructor.newInstance();
-                return delegate.getPackageId(appContext.getResources(), implPackageName);
-            } else {
-                // In L WebViewDelegate did not yet exist, so we have to look inside AssetManager.
-                Method getAssignedPackageIdentifiers =
-                        AssetManager.class.getMethod("getAssignedPackageIdentifiers");
-                SparseArray<String> packageIdentifiers =
-                        (SparseArray) getAssignedPackageIdentifiers.invoke(
-                                appContext.getResources().getAssets());
-                for (int i = 0; i < packageIdentifiers.size(); i++) {
-                    final String name = packageIdentifiers.valueAt(i);
-
-                    if (implPackageName.equals(name)) {
-                        return packageIdentifiers.keyAt(i);
-                    }
-                }
-                throw new RuntimeException("Package not found: " + implPackageName);
-            }
+            Constructor<WebViewDelegate> constructor =
+                    WebViewDelegate.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            WebViewDelegate delegate = constructor.newInstance();
+            return delegate.getPackageId(appContext.getResources(), implPackageName);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -826,11 +804,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     private static boolean supportsBindingToWebViewService(Context context, String packageName) {
-        // BIND_EXTERNAL_SERVICE is not supported before N.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            return false;
-        }
-
         // Android N has issues with WebView with the non-system user.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             try {

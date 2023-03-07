@@ -9,10 +9,11 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
@@ -42,6 +43,7 @@
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/login/integrity/misconfigured_user_cleaner.h"
 #include "components/account_id/account_id.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/prefs/pref_service.h"
@@ -360,6 +362,22 @@ void ChromeSessionManager::Initialize(
 
   VLOG(1) << "Starting Chrome with a user session.";
   StartUserSession(profile, login_account_id.GetUserEmail());
+
+  misconfigured_user_cleaner_ = std::make_unique<MisconfiguredUserCleaner>(
+      g_browser_process->local_state());
+
+  // Check if we need to clean any users who did not successfully complete the
+  // user creation process during the previous boot. Unusable users will not be
+  // shown in the login ui, as we filter them as part of
+  // `UserManagerBase::EnsureUsersLoaded`
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &MisconfiguredUserCleaner::CleanMisconfiguredUser,
+          // `base::Unretained` is safe here because `ChromeSessionManager`
+          // owns `misconfigured_user_cleaner_` and it is destructed in
+          // `ChromeBrowserMainPartsAsh::PostMainMessageLoopRun`.
+          base::Unretained(misconfigured_user_cleaner_.get())));
 }
 
 void ChromeSessionManager::SessionStarted() {

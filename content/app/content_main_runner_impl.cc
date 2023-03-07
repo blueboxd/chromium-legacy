@@ -15,15 +15,16 @@
 #include <vector>
 
 #include "base/allocator/allocator_check.h"
+#include "base/allocator/partition_alloc_support.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -40,6 +41,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/environment_config.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
@@ -69,7 +71,6 @@
 #include "content/common/android/cpu_time_metrics.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/mojo_core_library_support.h"
-#include "content/common/partition_alloc_support.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -172,7 +173,7 @@
 
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
 #include "base/stack_canary_linux.h"
 #include "content/browser/sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
@@ -196,6 +197,10 @@
 
 #if BUILDFLAG(BUILD_TFLITE_WITH_XNNPACK)
 #include "third_party/cpuinfo/src/include/cpuinfo.h"
+#endif
+
+#if defined(ADDRESS_SANITIZER)
+#include "base/debug/asan_service.h"
 #endif
 
 namespace content {
@@ -286,7 +291,7 @@ void LoadV8SnapshotIfNeeded(const base::CommandLine& command_line,
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 }
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
 pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
                          base::ScopedFD* control_fd) {
   // Append any switches from the browser process that need to be forwarded on
@@ -355,7 +360,7 @@ void InitializeZygoteSandboxForBrowserProcess(
   if (!parsed_command_line.HasSwitch(switches::kNoUnsandboxedZygote)) {
     CreateUnsandboxedZygote(base::BindOnce(LaunchZygoteHelper));
   }
-  ZygoteHandle generic_zygote =
+  ZygoteCommunication* generic_zygote =
       CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
 
   // This operation is done through the ZygoteHostImpl as a proxy because of
@@ -363,7 +368,7 @@ void InitializeZygoteSandboxForBrowserProcess(
   ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
       generic_zygote->GetSandboxStatus());
 }
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
@@ -401,7 +406,7 @@ void PreloadLibraryCdms() {
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
 void PreSandboxInit() {
   // Pre-acquire resources needed by BoringSSL. See
   // https://boringssl.googlesource.com/boringssl/+/HEAD/SANDBOXING.md
@@ -467,7 +472,7 @@ void PreSandboxInit() {
   base::internal::CanUseBackgroundThreadTypeForWorkerThread();
   base::internal::CanUseUtilityThreadTypeForWorkerThread();
 }
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
@@ -594,7 +599,7 @@ struct MainFunction {
   int (*function)(MainFunctionParams);
 };
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
 // On platforms that use the zygote, we have a special subset of
 // subprocesses that are launched via the zygote.  This function
 // fills in some process-launching bits around ZygoteMain().
@@ -644,7 +649,7 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
 
-  internal::PartitionAllocSupport::Get()->ReconfigureAfterZygoteFork(
+  base::allocator::PartitionAllocSupport::Get()->ReconfigureAfterZygoteFork(
       process_type);
 
   CreateChildThreadPool(process_type);
@@ -665,8 +670,8 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
   delegate->PostEarlyInitialization(
       ContentMainDelegate::InvokedInChildProcess());
 
-  internal::PartitionAllocSupport::Get()->ReconfigureAfterFeatureListInit(
-      process_type);
+  base::allocator::PartitionAllocSupport::Get()
+      ->ReconfigureAfterFeatureListInit(process_type);
 
   for (size_t i = 0; i < std::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
@@ -678,7 +683,7 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
   DCHECK_GE(absl::get<int>(exit_code), 0);
   return absl::get<int>(exit_code);
 }
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
 static void RegisterMainThreadFactories() {
   UtilityProcessHost::RegisterUtilityMainThreadFactory(
@@ -712,6 +717,9 @@ int NO_STACK_PROTECTOR
 RunOtherNamedProcessTypeMain(const std::string& process_type,
                              MainFunctionParams main_function_params,
                              ContentMainDelegate* delegate) {
+#if BUILDFLAG(IS_MAC)
+  base::Process::SetCurrentTaskDefaultRole();
+#endif
 #if BUILDFLAG(IS_WIN)
   if (delegate->ShouldHandleConsoleControlEvents())
     InstallConsoleControlHandler(/*is_browser_process=*/false);
@@ -748,12 +756,12 @@ RunOtherNamedProcessTypeMain(const std::string& process_type,
     }
   }
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
   // Zygote startup is special -- see RunZygote comments above
   // for why we don't use ZygoteMain directly.
   if (process_type == switches::kZygoteProcess)
     return RunZygote(delegate);
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
   // If it's a process we don't know about, the embedder should know.
   auto exit_code =
@@ -855,7 +863,8 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-  internal::PartitionAllocSupport::Get()->ReconfigureEarlyish(process_type);
+  base::allocator::PartitionAllocSupport::Get()->ReconfigureEarlyish(
+      process_type);
 
 #if BUILDFLAG(IS_WIN)
   if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
@@ -883,13 +892,13 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   // Startup tracing flags are not (and should not be) passed to Zygote
   // processes. We will enable tracing when forked, if needed.
   bool enable_startup_tracing = process_type != switches::kZygoteProcess;
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
   // In the browser process, we have to enable startup tracing after
   // InitializeZygoteSandboxForBrowserProcess() is run below, because that
   // function forks and may call trace macros in the forked process.
   if (process_type.empty())
     enable_startup_tracing = false;
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
   if (enable_startup_tracing)
     tracing::EnableStartupTracingIfNeeded();
 
@@ -999,7 +1008,7 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
 
   delegate_->SandboxInitialized(process_type);
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
   if (process_type.empty()) {
     // The sandbox host needs to be initialized before forking a thread to
     // start IPC support, and after setting up the sandbox and invoking
@@ -1014,7 +1023,7 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
     // from two processes).
     tracing::EnableStartupTracingIfNeeded();
   }
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
   // Return -1 to indicate no early termination.
   return -1;
@@ -1039,6 +1048,10 @@ int NO_STACK_PROTECTOR ContentMainRunnerImpl::Run() {
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
 
+#if defined(ADDRESS_SANITIZER)
+  base::debug::AsanService::GetInstance()->Initialize();
+#endif
+
   // Run this logic on all child processes.
   if (!process_type.empty()) {
     if (process_type != switches::kZygoteProcess) {
@@ -1056,8 +1069,8 @@ int NO_STACK_PROTECTOR ContentMainRunnerImpl::Run() {
       delegate_->PostEarlyInitialization(
           ContentMainDelegate::InvokedInChildProcess());
 
-      internal::PartitionAllocSupport::Get()->ReconfigureAfterFeatureListInit(
-          process_type);
+      base::allocator::PartitionAllocSupport::Get()
+          ->ReconfigureAfterFeatureListInit(process_type);
     }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -1229,8 +1242,10 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
   }
 
   // No specified process type means this is the Browser process.
-  internal::PartitionAllocSupport::Get()->ReconfigureAfterFeatureListInit("");
-  internal::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit("");
+  base::allocator::PartitionAllocSupport::Get()
+      ->ReconfigureAfterFeatureListInit("");
+  base::allocator::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit(
+      "");
 
   if (start_minimal_browser) {
     DVLOG(0) << "Chrome is running in minimal browser mode.";

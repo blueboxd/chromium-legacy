@@ -18,8 +18,8 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/first_party_sets/same_party_context.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties.h"
@@ -515,10 +515,7 @@ bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 }
 
 NetworkDelegate::PrivacySetting TestNetworkDelegate::OnForcePrivacyMode(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    SamePartyContext::Type same_party_context_type) const {
+    const URLRequest& request) const {
   return NetworkDelegate::PrivacySetting::kStateAllowed;
 }
 
@@ -587,18 +584,14 @@ bool FilteringTestNetworkDelegate::OnCanSetCookie(
 
 NetworkDelegate::PrivacySetting
 FilteringTestNetworkDelegate::OnForcePrivacyMode(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    SamePartyContext::Type same_party_context_type) const {
+    const URLRequest& request) const {
   if (force_privacy_mode_) {
     return partitioned_state_allowed_
                ? NetworkDelegate::PrivacySetting::kPartitionedStateAllowedOnly
                : NetworkDelegate::PrivacySetting::kStateDisallowed;
   }
 
-  return TestNetworkDelegate::OnForcePrivacyMode(
-      url, site_for_cookies, top_frame_origin, same_party_context_type);
+  return TestNetworkDelegate::OnForcePrivacyMode(request);
 }
 
 bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
@@ -681,6 +674,7 @@ TestScopedURLInterceptor::TestScopedURLInterceptor(
 TestScopedURLInterceptor::~TestScopedURLInterceptor() {
   DCHECK(interceptor_->job_used());
   interceptor_->set_safe_to_delete();
+  interceptor_ = nullptr;
   URLRequestFilter::GetInstance()->RemoveUrlHandler(url_);
 }
 

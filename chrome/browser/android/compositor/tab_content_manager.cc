@@ -15,9 +15,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/field_trial_params.h"
 #include "cc/layers/layer.h"
 #include "chrome/android/chrome_jni_headers/TabContentManager_jni.h"
@@ -86,7 +86,7 @@ class TabContentManager::TabReadbackRequest {
   TabReadbackRequest(const TabReadbackRequest&) = delete;
   TabReadbackRequest& operator=(const TabReadbackRequest&) = delete;
 
-  virtual ~TabReadbackRequest() {}
+  virtual ~TabReadbackRequest() = default;
 
   void OnFinishGetTabThumbnailBitmap(const SkBitmap& bitmap) {
     if (bitmap.drawsNothing() || drop_after_readback_) {
@@ -112,8 +112,9 @@ class TabContentManager::TabReadbackRequest {
 // static
 TabContentManager* TabContentManager::FromJavaObject(
     const JavaRef<jobject>& jobj) {
-  if (jobj.is_null())
+  if (jobj.is_null()) {
     return nullptr;
+  }
   return reinterpret_cast<TabContentManager*>(
       Java_TabContentManager_getNativePtr(base::android::AttachCurrentThread(),
                                           jobj));
@@ -138,8 +139,7 @@ TabContentManager::TabContentManager(JNIEnv* env,
   thumbnail_cache_->AddThumbnailCacheObserver(this);
 }
 
-TabContentManager::~TabContentManager() {
-}
+TabContentManager::~TabContentManager() = default;
 
 void TabContentManager::Destroy(JNIEnv* env) {
   thumbnail_cache_->RemoveThumbnailCacheObserver(this);
@@ -147,7 +147,7 @@ void TabContentManager::Destroy(JNIEnv* env) {
 }
 
 void TabContentManager::SetUIResourceProvider(
-    ui::UIResourceProvider* ui_resource_provider) {
+    base::WeakPtr<ui::UIResourceProvider> ui_resource_provider) {
   thumbnail_cache_->SetUIResourceProvider(ui_resource_provider);
 }
 
@@ -188,12 +188,14 @@ void TabContentManager::AttachTab(JNIEnv* env,
                                   jint tab_id) {
   TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
   scoped_refptr<cc::Layer> layer = tab->GetContentLayer();
-  if (!layer.get())
+  if (!layer.get()) {
     return;
+  }
 
   scoped_refptr<cc::Layer> cached_layer = live_layer_list_[tab_id];
-  if (cached_layer != layer)
+  if (cached_layer != layer) {
     live_layer_list_[tab_id] = layer;
+  }
 }
 
 void TabContentManager::DetachTab(JNIEnv* env,
@@ -217,13 +219,6 @@ void TabContentManager::DetachTab(JNIEnv* env,
   }
 }
 
-jboolean TabContentManager::HasFullCachedThumbnail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint tab_id) {
-  return thumbnail_cache_->Get(tab_id, false, false) != nullptr;
-}
-
 content::RenderWidgetHostView* TabContentManager::GetRwhvForTab(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -239,13 +234,15 @@ content::RenderWidgetHostView* TabContentManager::GetRwhvForTab(
   DCHECK(web_contents);
 
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  if (!rvh)
+  if (!rvh) {
     return nullptr;
+  }
 
   content::RenderWidgetHost* rwh = rvh->GetWidget();
   content::RenderWidgetHostView* rwhv = rwh ? rwh->GetView() : nullptr;
-  if (!rwhv || !rwhv->IsSurfaceAvailableForCopy())
+  if (!rwhv || !rwhv->IsSurfaceAvailableForCopy()) {
     return nullptr;
+  }
 
   return rwhv;
 }
@@ -264,8 +261,9 @@ void TabContentManager::CaptureThumbnail(
 
   content::RenderWidgetHostView* rwhv = GetRwhvForTab(env, obj, tab);
   if (!rwhv) {
-    if (j_callback)
+    if (j_callback) {
       RunObjectCallbackAndroid(j_callback, nullptr);
+    }
     return;
   }
   if (write_to_cache && !thumbnail_cache_->CheckAndUpdateThumbnailMetaData(
@@ -296,9 +294,10 @@ void TabContentManager::CacheTabWithBitmap(JNIEnv* env,
   SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(java_bitmap_lock);
   skbitmap.setImmutable();
 
-  if (thumbnail_cache_->CheckAndUpdateThumbnailMetaData(tab_id, url))
+  if (thumbnail_cache_->CheckAndUpdateThumbnailMetaData(tab_id, url)) {
     OnTabReadback(tab_id, nullptr, true, aspect_ratio, thumbnail_scale,
                   skbitmap);
+  }
 }
 
 void TabContentManager::InvalidateIfChanged(JNIEnv* env,
@@ -317,8 +316,9 @@ void TabContentManager::UpdateVisibleIds(
   std::list<int> priority_ids;
   jsize length = env->GetArrayLength(priority);
   jint* ints = env->GetIntArrayElements(priority, nullptr);
-  for (jsize i = 0; i < length; ++i)
+  for (jsize i = 0; i < length; ++i) {
     priority_ids.push_back(static_cast<int>(ints[i]));
+  }
 
   env->ReleaseIntArrayElements(priority, ints, JNI_ABORT);
   thumbnail_cache_->UpdateVisibleIds(priority_ids, primary_tab_id);
@@ -327,8 +327,9 @@ void TabContentManager::UpdateVisibleIds(
 void TabContentManager::NativeRemoveTabThumbnail(int tab_id) {
   TabReadbackRequestMap::iterator readback_iter =
       pending_tab_readbacks_.find(tab_id);
-  if (readback_iter != pending_tab_readbacks_.end())
+  if (readback_iter != pending_tab_readbacks_.end()) {
     readback_iter->second->SetToDropAfterReadback();
+  }
   thumbnail_cache_->Remove(tab_id);
 }
 
@@ -372,15 +373,17 @@ void TabContentManager::OnTabReadback(
   TabReadbackRequestMap::iterator readback_iter =
       pending_tab_readbacks_.find(tab_id);
 
-  if (readback_iter != pending_tab_readbacks_.end())
+  if (readback_iter != pending_tab_readbacks_.end()) {
     pending_tab_readbacks_.erase(tab_id);
+  }
 
   if (j_callback) {
     SendThumbnailToJava(j_callback, write_to_cache, aspect_ratio, true, bitmap);
   }
 
-  if (write_to_cache && thumbnail_scale > 0 && !bitmap.empty())
+  if (write_to_cache && thumbnail_scale > 0 && !bitmap.empty()) {
     thumbnail_cache_->Put(tab_id, bitmap, thumbnail_scale, aspect_ratio);
+  }
 }
 
 void TabContentManager::SendThumbnailToJava(

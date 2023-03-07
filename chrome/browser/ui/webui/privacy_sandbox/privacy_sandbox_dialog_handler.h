@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_PRIVACY_SANDBOX_PRIVACY_SANDBOX_DIALOG_HANDLER_H_
 
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -44,6 +43,12 @@ class PrivacySandboxDialogHandler : public content::WebUIMessageHandler {
                            HandleOpenSettings);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxNoticeDialogHandlerTest,
                            HandleNoticeAcknowledge);
+  FRIEND_TEST_ALL_PREFIXES(
+      PrivacySandboxConsentDialogHandlerTest,
+      NotifyServiceAboutPromptAction_Invokes_PromptActionOccured);
+  FRIEND_TEST_ALL_PREFIXES(
+      PrivacySandboxNoticeDialogHandlerTest,
+      NotifyServiceAboutPromptAction_Invokes_PromptActionOccured);
 
   void HandlePromptActionOccurred(const base::Value::List& args);
   void HandleResizeDialog(const base::Value::List& args);

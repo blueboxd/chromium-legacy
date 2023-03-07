@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/signin/account_capabilities_fetcher_ios.h"
 
-#import "base/callback.h"
+#import "base/functional/callback.h"
 #import "base/run_loop.h"
 #import "base/test/task_environment.h"
 #import "components/signin/internal/identity_manager/account_capabilities_constants.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/signin/capabilities_dict.h"
+#import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
@@ -18,88 +21,79 @@
 #error "This file requires ARC support."
 #endif
 
-// A version of ChromeIdentityService which, when fetching, always return
-// `capabilities`.
-class ChromeIdentityServiceFake : public ios::ChromeIdentityService {
- public:
-  ChromeIdentityServiceFake(ios::CapabilitiesDict* capabilities)
-      : capabilities_(capabilities) {}
-
-  void FetchCapabilities(
-      id<SystemIdentity> identity,
-      NSArray<NSString*>* capabilities,
-      ios::ChromeIdentityCapabilitiesFetchCompletionBlock completion) override {
-    completion(capabilities_, nullptr);
-  }
-
- private:
-  ios::CapabilitiesDict* capabilities_;
-};
+namespace {
 
 void CheckHaveEmailAddressDisplayed(
     signin::Tribool capability_expected,
-    base::RunLoop* run_loop,
-    const CoreAccountId& core_accound_id,
-    const absl::optional<AccountCapabilities>& account_capabilities) {
-  ASSERT_TRUE(account_capabilities.has_value());
-  ASSERT_EQ(account_capabilities->can_have_email_address_displayed(),
+    const CoreAccountId& account_id,
+    const absl::optional<AccountCapabilities>& capabilities) {
+  ASSERT_TRUE(capabilities.has_value());
+  ASSERT_EQ(capabilities->can_have_email_address_displayed(),
             capability_expected);
-  run_loop->Quit();
 }
+
+}  // anonymous namespace
 
 class AccountCapabilitiesFetcherIOSTest : public PlatformTest {
  public:
-  AccountCapabilitiesFetcherIOSTest() {
-    identity_ = [FakeSystemIdentity identityWithEmail:@"foo@bar.com"
-                                               gaiaID:@"foo_bar_id"
-                                                 name:@"Foo"];
-  }
-
+  AccountCapabilitiesFetcherIOSTest() = default;
   ~AccountCapabilitiesFetcherIOSTest() override = default;
 
- protected:
   // Ensure that callback gets `capability_enabled` on
   // `kCanHaveEmailAddressDisplayedCapabilityName`.
-  void testCapabilityValueFetchedIsReceived(
-      ios::ChromeIdentityCapabilityResult capability_fetched,
+  void TestCapabilityValueFetchedIsReceived(
+      absl::optional<SystemIdentityCapabilityResult> capability_fetched,
       signin::Tribool capability_expected) {
-    base::test::SingleThreadTaskEnvironment task_environment;
-    base::RunLoop run_loop;
-    CoreAccountInfo account_info;
-    AccountCapabilitiesFetcher::OnCompleteCallback on_complete_callback =
-        base::BindOnce(&CheckHaveEmailAddressDisplayed, capability_expected,
-                       &run_loop);
-    ios::CapabilitiesDict* capabilities = @{
-      @(kCanHaveEmailAddressDisplayedCapabilityName) :
-          @(static_cast<int>(capability_fetched))
-    };
-    ChromeIdentityServiceFake chrome_identity_service =
-        ChromeIdentityServiceFake(capabilities);
+    FakeSystemIdentityManager* system_identity_manager =
+        FakeSystemIdentityManager::FromSystemIdentityManager(
+            GetApplicationContext()->GetSystemIdentityManager());
 
+    std::map<std::string, SystemIdentityCapabilityResult> capabilities;
+    if (capability_fetched.has_value()) {
+      capabilities.insert({kCanHaveEmailAddressDisplayedCapabilityName,
+                           capability_fetched.value()});
+    }
+
+    // Register a fake identity and set the expected capabilities.
+    id<SystemIdentity> identity = [FakeSystemIdentity fakeIdentity1];
+    system_identity_manager->AddIdentity(identity);
+    system_identity_manager->SetCapabilities(identity, capabilities);
+
+    // Check that the capabilities are correctly converted.
+    base::RunLoop run_loop;
     ios::AccountCapabilitiesFetcherIOS fetcher(
-        account_info, std::move(on_complete_callback), &chrome_identity_service,
-        identity_);
+        CoreAccountInfo{},
+        base::BindOnce(&CheckHaveEmailAddressDisplayed, capability_expected)
+            .Then(run_loop.QuitClosure()),
+        identity);
+
     fetcher.Start();
     run_loop.Run();
   }
 
-  FakeSystemIdentity* identity_ = nil;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Check that a capability set to True is received as True.
 TEST_F(AccountCapabilitiesFetcherIOSTest, CheckTrueCapability) {
-  testCapabilityValueFetchedIsReceived(
-      ios::ChromeIdentityCapabilityResult::kTrue, signin::Tribool::kTrue);
+  TestCapabilityValueFetchedIsReceived(SystemIdentityCapabilityResult::kTrue,
+                                       signin::Tribool::kTrue);
 }
 
 // Check that a capability set to False is received as False.
 TEST_F(AccountCapabilitiesFetcherIOSTest, CheckFalseCapability) {
-  testCapabilityValueFetchedIsReceived(
-      ios::ChromeIdentityCapabilityResult::kFalse, signin::Tribool::kFalse);
+  TestCapabilityValueFetchedIsReceived(SystemIdentityCapabilityResult::kFalse,
+                                       signin::Tribool::kFalse);
 }
 
 // Check that a capability set to Unknown is received as Unknown.
 TEST_F(AccountCapabilitiesFetcherIOSTest, CheckUnknownCapability) {
-  testCapabilityValueFetchedIsReceived(
-      ios::ChromeIdentityCapabilityResult::kUnknown, signin::Tribool::kUnknown);
+  TestCapabilityValueFetchedIsReceived(SystemIdentityCapabilityResult::kUnknown,
+                                       signin::Tribool::kUnknown);
+}
+
+// Check that an unset capability is received as Unknown.
+TEST_F(AccountCapabilitiesFetcherIOSTest, CheckUnsetCapability) {
+  TestCapabilityValueFetchedIsReceived(absl::nullopt,
+                                       signin::Tribool::kUnknown);
 }

@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
@@ -330,7 +330,7 @@ void CompoundTabContainer::SetActiveTab(
                                         new_unpinned_active_index);
 }
 
-std::unique_ptr<Tab> CompoundTabContainer::TransferTabOut(int model_index) {
+Tab* CompoundTabContainer::RemoveTabFromViewModel(int model_index) {
   // TODO(1395526): This only needs to be implemented in TabContainerImpl.
   NOTREACHED();
   return nullptr;
@@ -852,7 +852,7 @@ void CompoundTabContainer::TransferTabBetweenContainers(int from_model_index,
       gfx::RectF(
           from_container.GetTabAtModelIndex(from_container_index)->bounds()));
   Tab* const tab =
-      AddChildView(from_container.TransferTabOut(from_container_index));
+      AddChildView(from_container.RemoveTabFromViewModel(from_container_index));
   tab->SetBoundsRect(ToEnclosingRect(initial_tab_bounds));
 
   // Let `to_container` update its layout data structures.

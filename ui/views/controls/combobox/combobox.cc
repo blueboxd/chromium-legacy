@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -145,12 +145,7 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
 
-  if (features::IsChromeRefresh2023()) {
-    // TODO(crbug.com/1392549): Replace placeholder color id.
-    SetBackgroundColorId(ui::kColorSubtleAccent);
-  } else {
-    SetBackgroundColorId(ui::kColorTextfieldBackground);
-  }
+  SetBackgroundColorId(ui::kColorTextfieldBackground);
   UpdateBorder();
 
   arrow_button_ =
@@ -239,16 +234,9 @@ std::u16string Combobox::GetTooltipTextAndAccessibleName() const {
 void Combobox::SetTooltipTextAndAccessibleName(
     const std::u16string& tooltip_text) {
   arrow_button_->SetTooltipText(tooltip_text);
-  if (accessible_name_.empty())
-    accessible_name_ = tooltip_text;
-}
-
-void Combobox::SetAccessibleName(const std::u16string& name) {
-  accessible_name_ = name;
-}
-
-std::u16string Combobox::GetAccessibleName() const {
-  return accessible_name_;
+  if (GetAccessibleName().empty()) {
+    SetAccessibleName(tooltip_text);
+  }
 }
 
 void Combobox::SetInvalid(bool invalid) {
@@ -485,7 +473,7 @@ void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->AddState(ax::mojom::State::kCollapsed);
   }
 
-  node_data->SetName(accessible_name_);
+  node_data->SetName(GetAccessibleName());
   node_data->SetValue(model_->GetItemAt(selected_index_.value()));
   if (GetEnabled()) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
@@ -608,16 +596,10 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   // ChromeRefresh2023.
   if (should_show_arrow_) {
     gfx::Rect arrow_bounds(width() - GetComboboxArrowContainerWidthAndMargins(),
-                           0, kComboboxArrowContainerWidth, height());
+                           0, GetComboboxArrowContainerWidth(), height());
     arrow_bounds.ClampToCenteredSize(ComboboxArrowSize());
     AdjustBoundsForRTLUI(&arrow_bounds);
 
-    if (features::IsChromeRefresh2023()) {
-      PaintComboboxArrowBackground(
-          GetColorProvider()->GetColor(ui::kColorAlertHighSeverity), canvas,
-          gfx::PointF(width() - GetComboboxArrowContainerWidthAndMargins(),
-                      (height() - kComboboxArrowContainerWidth) / 2.0f));
-    }
     PaintComboboxArrow(text_color, arrow_bounds, canvas);
   }
 }
@@ -765,7 +747,6 @@ ADD_PROPERTY_METADATA(ui::ComboboxModel*, Model)
 ADD_PROPERTY_METADATA(absl::optional<size_t>, SelectedIndex)
 ADD_PROPERTY_METADATA(bool, Invalid)
 ADD_PROPERTY_METADATA(bool, SizeToLargestLabel)
-ADD_PROPERTY_METADATA(std::u16string, AccessibleName)
 ADD_PROPERTY_METADATA(std::u16string, TooltipTextAndAccessibleName)
 END_METADATA
 

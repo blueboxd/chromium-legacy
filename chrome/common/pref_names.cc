@@ -765,6 +765,16 @@ const char kKeyPermissionsOneTimeMigrationDone[] =
 const char kUnifiedDesktopEnabledByDefault[] =
     "settings.display.unified_desktop_enabled_by_default";
 
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the Bluetooth revamp experience survey.
+const char kHatsBluetoothRevampCycleEndTs[] =
+    "hats_bluetooth_revamp_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Bluetooth
+// revamp experience survey.
+const char kHatsBluetoothRevampIsSelected[] =
+    "hats_bluetooth_revamp_is_selected";
+
 // An int64 pref. This is a timestamp, microseconds after epoch, of the most
 // recent time the profile took or dismissed HaTS (happiness-tracking) survey.
 const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
@@ -916,6 +926,16 @@ const char kHatsGeneralCameraSurveyCycleEndTs[] =
 // A boolean pref. Indicated if the device is selected for the general camera
 // survey.
 const char kHatsGeneralCameraIsSelected[] = "hats_general_camera_is_selected";
+
+// A boolean pref. Indicated if the device is selected for the Privacy Hub
+// baseline survey.
+const char kHatsPrivacyHubBaselineIsSelected[] =
+    "hats_privacy_hub_baseline_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicated the end of the most recent Privacy Hub baseline cycle.
+const char kHatsPrivacyHubBaselineCycleEndTs[] =
+    "hats_privacy_hub_baseline_end_timestamp";
 
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
@@ -1147,10 +1167,16 @@ const char kKerberosActivePrincipalName[] = "kerberos.active_principal_name";
 // username field of "Add a ticket" UI window.
 // Tied to KerberosDomainAutocomplete policy.
 const char kKerberosDomainAutocomplete[] = "kerberos.domain_autocomplete";
+// Used by KerberosAccountsHandler to decide if the custom default configuration
+// should be prefilled.
+// Tied to KerberosUseCustomPrefilledConfig policy.
+const char kKerberosUseCustomPrefilledConfig[] =
+    "kerberos.use_custom_prefilled_config";
 // Used by KerberosAccountsHandler to prefill kerberos krb5 config for
 // manually creating new tickets.
-// Tied to KerberosDefaultConfiguration policy.
-const char kKerberosDefaultConfiguration[] = "kerberos.default_configuration";
+// Tied to KerberosCustomPrefilledConfig policy.
+const char kKerberosCustomPrefilledConfig[] =
+    "kerberos.custom_prefilled_config";
 
 // A boolean pref for enabling/disabling App reinstall recommendations in Zero
 // State Launcher by policy.
@@ -1353,6 +1379,11 @@ const char kAccessibilityImageLabelsOnlyOnWifi[] =
 const char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
 #endif
+
+// Whether the PDF OCR feature is set to be always active. The PDF OCR feature
+// is exposed to only screen reader users.
+const char kAccessibilityPdfOcrAlwaysActive[] =
+    "settings.a11y.pdf_ocr_always_active";
 
 // Pref indicating the page colors option the user wants. Page colors is an
 // accessibility feature that simulates forced colors mode at the browser level.
@@ -1619,10 +1650,6 @@ const char kPrintJobHistoryExpirationPeriod[] =
 // deleted.
 const char kDeletePrintJobHistoryAllowed[] =
     "printing.delete_print_job_history_allowed";
-
-// String representing a template for the 'client-name' IPP attribute
-// configured by the administrator
-const char kPrintingClientNameTemplate[] = "printing.client_name_template";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // An integer pref specifying the fallback behavior for sites outside of content
@@ -2478,10 +2505,14 @@ const char kDemoModeConfig[] = "demo_mode.config";
 // A string pref holding the value of the current country for demo sessions.
 const char kDemoModeCountry[] = "demo_mode.country";
 
-// A string pref holding the value of the retailer id input for demo sessions.
+// A string pref holding the value of the retailer name input for demo sessions.
+// This is now mostly called "retailer_name" in code other than in this pref and
+// in Omaha request attributes
 const char kDemoModeRetailerId[] = "demo_mode.retailer_id";
 
-// A string pref holding the value of the store id input for demo sessions.
+// A string pref holding the value of the store number input for demo sessions.
+// This is now mostly called "store_number" in code other than in this pref and
+// in Omaha request attributes
 const char kDemoModeStoreId[] = "demo_mode.store_id";
 
 // A string pref holding the value of the default locale for demo sessions.
@@ -2802,6 +2833,11 @@ const char kHardwareSecureDecryptionDisabledTimes[] =
 // For example, kiosk session start times, number of network drops.
 // This setting resides in local state.
 const char kKioskMetrics[] = "kiosk-metrics";
+
+// A boolean pref which determines whether kiosk troubleshooting tools are
+// enabled.
+const char kKioskTroubleshootingToolsEnabled[] =
+    "kiosk_troubleshooting_tools_enabled";
 
 // A boolean pref which determines whether a Web Kiosk can open more than one
 // browser window.
@@ -3138,9 +3174,6 @@ const char kLacrosAccessibilityVirtualKeyboardEnabled[] =
 const char kAllowDinosaurEasterEgg[] = "allow_dinosaur_easter_egg";
 
 #if BUILDFLAG(IS_ANDROID)
-// Whether the update menu item was clicked. Used to facilitate logging whether
-// Chrome was updated after the menu item is clicked.
-const char kClickedUpdateMenuItem[] = "omaha.clicked_update_menu_item";
 // The latest version of Chrome available when the user clicked on the update
 // menu item.
 const char kLatestVersionWhenClickedUpdateMenuItem[] =
@@ -3301,8 +3334,10 @@ const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
 // Discards/Reloads since last daily report.
 const char kTabStatsDiscardsExternal[] = "tab_stats.discards_external";
 const char kTabStatsDiscardsUrgent[] = "tab_stats.discards_urgent";
+const char kTabStatsDiscardsProactive[] = "tab_stats.discards_proactive";
 const char kTabStatsReloadsExternal[] = "tab_stats.reloads_external";
 const char kTabStatsReloadsUrgent[] = "tab_stats.reloads_urgent";
+const char kTabStatsReloadsProactive[] = "tab_stats.reloads_proactive";
 
 // A list of origins (URLs) to treat as "secure origins" for debugging purposes.
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
@@ -3639,9 +3674,15 @@ const char kSCTAuditingHashdanceReportCount[] =
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
 
 // A boolean pref that controls whether or not Hindi Inscript keyboard layout
-// is available. Set with the corresponding enterprise policy.
+// is available.
+// This is set by a user policy, but the user policy does not work to
+// control the availability of the Hindi Inscript layout.
+// TODO(jungshik): Deprecate it.
 const char kHindiInscriptLayoutEnabled[] =
     "settings.input.hindi_inscript_layout_enabled";
+// This is set by a device policy and does actually work.
+const char kDeviceHindiInscriptLayoutEnabled[] =
+    "settings.input.device_hindi_inscript_layout_enabled";
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -9,11 +9,11 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
@@ -35,9 +35,9 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -52,7 +52,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
-#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
@@ -65,20 +64,6 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-
-#if BUILDFLAG(IS_MAC)
-#include <ImageIO/ImageIO.h>
-
-#include "base/mac/foundation_util.h"
-#import "skia/ext/skia_utils_mac.h"
-#endif
-
-#if BUILDFLAG(IS_WIN)
-#include <windows.h>
-
-#include <shellapi.h>
-#include "ui/gfx/icon_util.h"
-#endif
 
 class GURL;
 
@@ -98,47 +83,13 @@ void AutoAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
-  web_app_info->user_display_mode = UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
   std::move(acceptance_callback)
       .Run(
           /*user_accepted=*/true, std::move(web_app_info));
 }
 
 }  // namespace
-
-SkColor GetIconTopLeftColor(const base::FilePath& shortcut_path) {
-#if BUILDFLAG(IS_MAC)
-  base::FilePath icon_path =
-      shortcut_path.AppendASCII("Contents/Resources/app.icns");
-  base::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
-      CFDictionaryCreate(nullptr, nullptr, nullptr, 0, nullptr, nullptr));
-  base::ScopedCFTypeRef<CFURLRef> url = base::mac::FilePathToCFURL(icon_path);
-  base::ScopedCFTypeRef<CGImageSourceRef> source(
-      CGImageSourceCreateWithURL(url, nullptr));
-  if (!source)
-    return 0;
-  // Get the first icon in the .icns file (index 0)
-  base::ScopedCFTypeRef<CGImageRef> cg_image(
-      CGImageSourceCreateImageAtIndex(source, 0, empty_dict));
-  if (!cg_image)
-    return 0;
-  SkBitmap bitmap = skia::CGImageToSkBitmap(cg_image);
-  if (bitmap.empty())
-    return 0;
-  return bitmap.getColor(0, 0);
-#else
-#if BUILDFLAG(IS_WIN)
-  SHFILEINFO file_info = {0};
-  if (SHGetFileInfo(shortcut_path.value().c_str(), FILE_ATTRIBUTE_NORMAL,
-                    &file_info, sizeof(file_info),
-                    SHGFI_ICON | 0 | SHGFI_USEFILEATTRIBUTES)) {
-    const SkBitmap bitmap = IconUtil::CreateSkBitmapFromHICON(file_info.hIcon);
-    return bitmap.getColor(0, 0);
-  }
-#endif
-  return 0;
-#endif
-}
 
 AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   NavigateToURLAndWait(browser, app_url);
@@ -285,8 +236,8 @@ Browser* LaunchWebAppToURL(Profile* profile,
 ExternalInstallOptions CreateInstallOptions(
     const GURL& url,
     const ExternalInstallSource& source) {
-  ExternalInstallOptions install_options(url, UserDisplayMode::kStandalone,
-                                         source);
+  ExternalInstallOptions install_options(
+      url, mojom::UserDisplayMode::kStandalone, source);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

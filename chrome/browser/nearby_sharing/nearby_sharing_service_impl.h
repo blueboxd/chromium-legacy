@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "ash/public/cpp/session/session_observer.h"
-#include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -42,10 +42,10 @@
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/wifi_network_configuration/wifi_network_configuration_handler.h"
-#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/services/sharing/public/proto/wire_format.pb.h"
 #include "chromeos/ash/services/nearby/public/cpp/nearby_process_manager.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_decoder_types.mojom.h"
+#include "chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "net/base/network_change_notifier.h"
@@ -268,13 +268,11 @@ class NearbySharingServiceImpl
   void OnUniquePathFetched(
       int64_t attachment_id,
       int64_t payload_id,
-      base::OnceCallback<void(location::nearby::connections::mojom::Status)>
-          callback,
+      base::OnceCallback<void(nearby::connections::mojom::Status)> callback,
       base::FilePath path);
-  void OnPayloadPathRegistered(
-      base::ScopedClosureRunner closure_runner,
-      bool* aggregated_success,
-      location::nearby::connections::mojom::Status status);
+  void OnPayloadPathRegistered(base::ScopedClosureRunner closure_runner,
+                               bool* aggregated_success,
+                               nearby::connections::mojom::Status status);
   void OnPayloadPathsRegistered(const ShareTarget& share_target,
                                 std::unique_ptr<bool> aggregated_success,
                                 StatusCodesCallback status_codes_callback);
@@ -293,8 +291,8 @@ class NearbySharingServiceImpl
   void OnOpenFiles(ShareTarget share_target,
                    base::OnceCallback<void(ShareTarget, bool)> callback,
                    std::vector<NearbyFileHandler::FileInfo> files);
-  std::vector<location::nearby::connections::mojom::PayloadPtr>
-  CreateTextPayloads(const std::vector<TextAttachment>& attachments);
+  std::vector<nearby::connections::mojom::PayloadPtr> CreateTextPayloads(
+      const std::vector<TextAttachment>& attachments);
 
   void WriteResponse(
       NearbyConnection& connection,

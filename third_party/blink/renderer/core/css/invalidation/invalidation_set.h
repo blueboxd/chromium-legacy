@@ -139,6 +139,9 @@ class CORE_EXPORT InvalidationSet
   void SetInvalidatesSelf() { invalidates_self_ = true; }
   bool InvalidatesSelf() const { return invalidates_self_; }
 
+  void SetInvalidatesNth() { invalidates_nth_ = true; }
+  bool InvalidatesNth() const { return invalidates_nth_; }
+
   void SetTreeBoundaryCrossing() {
     invalidation_flags_.SetTreeBoundaryCrossing(true);
   }
@@ -303,18 +306,21 @@ class CORE_EXPORT InvalidationSet
           : type_(Type::kHashSet), hash_set_iterator_(iterator) {}
 
       bool operator==(const Iterator& other) const {
-        if (type_ != other.type_)
+        if (type_ != other.type_) {
           return false;
-        if (type_ == Type::kString)
+        }
+        if (type_ == Type::kString) {
           return string_ == other.string_;
+        }
         return hash_set_iterator_ == other.hash_set_iterator_;
       }
       bool operator!=(const Iterator& other) const { return !(*this == other); }
       void operator++() {
-        if (type_ == Type::kString)
+        if (type_ == Type::kString) {
           string_ = g_null_atom;
-        else
+        } else {
           ++hash_set_iterator_;
+        }
       }
 
       const AtomicString& operator*() const {
@@ -419,6 +425,12 @@ class CORE_EXPORT InvalidationSet
 
   // If true, the element or sibling itself is invalid.
   unsigned invalidates_self_ : 1;
+
+  // If true, scheduling this invalidation set on a node
+  // will also schedule nth-child invalidation on its parent
+  // (unless we know for sure no child can be affected by a
+  // selector of the :nth-child type).
+  unsigned invalidates_nth_ : 1;
 
   // If true, the instance is alive and can be used.
   unsigned is_alive_ : 1;
@@ -529,8 +541,9 @@ void InvalidationSet::Backing<type>::Add(InvalidationSet::BackingFlags& flags,
   if (IsHashSet(flags)) {
     hash_set_->insert(string);
   } else if (string_impl_) {
-    if (Equal(string_impl_, string.Impl()))
+    if (Equal(string_impl_, string.Impl())) {
       return;
+    }
     AtomicString atomic_string(string_impl_);
     string_impl_->Release();
     hash_set_ = new HashSet<AtomicString>();
@@ -564,10 +577,12 @@ template <typename InvalidationSet::BackingType type>
 bool InvalidationSet::Backing<type>::Contains(
     const InvalidationSet::BackingFlags& flags,
     const AtomicString& string) const {
-  if (IsHashSet(flags))
+  if (IsHashSet(flags)) {
     return hash_set_->Contains(string);
-  if (string_impl_)
+  }
+  if (string_impl_) {
     return Equal(string.Impl(), string_impl_);
+  }
   return false;
 }
 
@@ -580,10 +595,12 @@ bool InvalidationSet::Backing<type>::IsEmpty(
 template <typename InvalidationSet::BackingType type>
 size_t InvalidationSet::Backing<type>::Size(
     const InvalidationSet::BackingFlags& flags) const {
-  if (const HashSet<AtomicString>* set = GetHashSet(flags))
+  if (const HashSet<AtomicString>* set = GetHashSet(flags)) {
     return set->size();
-  if (const StringImpl* impl = GetStringImpl(flags))
+  }
+  if (const StringImpl* impl = GetStringImpl(flags)) {
     return 1;
+  }
   return 0;
 }
 

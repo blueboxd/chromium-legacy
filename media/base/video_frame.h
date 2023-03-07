@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/check_op.h"
+#include "base/functional/callback.h"
 #include "base/hash/md5.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -782,7 +782,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
 #endif
 
-  std::vector<base::OnceClosure> done_callbacks_;
+  base::Lock done_callbacks_lock_;
+  std::vector<base::OnceClosure> done_callbacks_
+      GUARDED_BY(done_callbacks_lock_);
 
   base::TimeDelta timestamp_;
 

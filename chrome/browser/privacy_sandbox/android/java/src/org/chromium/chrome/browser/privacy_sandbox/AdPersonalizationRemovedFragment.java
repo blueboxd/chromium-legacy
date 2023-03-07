@@ -16,9 +16,9 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -38,13 +38,8 @@ public class AdPersonalizationRemovedFragment extends PrivacySandboxSettingsBase
     private Preference mEmptyTopicsPreference;
     private PreferenceCategory mFledgeCategory;
     private Preference mEmptyFledgePreference;
-    private SnackbarManager mSnackbarManager;
     private LargeIconBridge mLargeIconBridge;
     private SettingsLauncher mSettingsLauncher;
-
-    public void setSnackbarManager(SnackbarManager snackbarManager) {
-        mSnackbarManager = snackbarManager;
-    }
 
     @Override
     public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
@@ -56,6 +51,8 @@ public class AdPersonalizationRemovedFragment extends PrivacySandboxSettingsBase
      */
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
+        assert (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4));
+
         super.onCreatePreferences(bundle, s);
         getActivity().setTitle(R.string.privacy_sandbox_remove_interest_title);
 
@@ -128,16 +125,14 @@ public class AdPersonalizationRemovedFragment extends PrivacySandboxSettingsBase
         if (preference instanceof TopicPreference) {
             allowTopic(((TopicPreference) preference).getTopic());
             mTopicsCategory.removePreference(preference);
-            mSnackbarManager.showSnackbar(Snackbar.make(
-                    getResources().getString(R.string.privacy_sandbox_add_interest_snackbar), null,
-                    Snackbar.TYPE_ACTION, Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST));
+            showSnackbar(R.string.privacy_sandbox_add_interest_snackbar, null, Snackbar.TYPE_ACTION,
+                    Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST);
             RecordUserAction.record("Settings.PrivacySandbox.RemovedInterests.TopicAdded");
         } else if (preference instanceof FledgePreference) {
             allowFledge(((FledgePreference) preference).getSite());
             mFledgeCategory.removePreference(preference);
-            mSnackbarManager.showSnackbar(Snackbar.make(
-                    getResources().getString(R.string.privacy_sandbox_add_site_snackbar), null,
-                    Snackbar.TYPE_ACTION, Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST));
+            showSnackbar(R.string.privacy_sandbox_add_site_snackbar, null, Snackbar.TYPE_ACTION,
+                    Snackbar.UMA_PRIVACY_SANDBOX_ADD_SITE);
             RecordUserAction.record("Settings.PrivacySandbox.RemovedInterests.SiteAdded");
         } else {
             assert false; // NOTREACHED

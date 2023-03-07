@@ -8,16 +8,15 @@
 #include <set>
 
 #include "base/android/library_loader/anchor_functions.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
-#include "base/process/process_handle.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/strcat.h"
@@ -25,6 +24,7 @@
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_log.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/buildflags.h"
@@ -373,8 +373,9 @@ struct FrameDetails {
 #endif
 };
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) || \
-    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) ||            \
+    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 // Returns whether stack sampling is supported on the current platform.
 bool IsStackSamplingSupported() {
   return base::StackSamplingProfiler::IsSupportedForCurrentPlatform();
@@ -431,8 +432,8 @@ TracingSamplerProfiler::TracingProfileBuilder::TracingProfileBuilder(
 TracingSamplerProfiler::TracingProfileBuilder::~TracingProfileBuilder() {
 #if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   // Deleting a TraceWriter can end up triggering a Mojo call which calls
-  // TaskRunnerHandle::Get() and isn't safe on thread shutdown, which is when
-  // TracingProfileBuilder gets destructed, so we make sure this happens on
+  // task runner GetCurrentDefault() and isn't safe on thread shutdown, which is
+  // when TracingProfileBuilder gets destructed, so we make sure this happens on
   // a different sequence.
   if (base::ThreadPoolInstance::Get()) {
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
@@ -506,7 +507,8 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
       // metadata events to be emitted from the JSON exporter which conflict
       // with the metadata events emitted by the regular TrackEventDataSource.
       auto* thread_descriptor = trace_packet->set_thread_descriptor();
-      thread_descriptor->set_pid(base::GetCurrentProcId());
+      thread_descriptor->set_pid(
+          base::trace_event::TraceLog::GetInstance()->process_id());
       thread_descriptor->set_tid(sampled_thread_id_);
       last_timestamp_ = sample.timestamp;
       thread_descriptor->set_reference_timestamp_us(
@@ -800,8 +802,9 @@ void TracingSamplerProfiler::RegisterDataSource() {
 
 // static
 bool TracingSamplerProfiler::IsStackUnwindingSupportedForTesting() {
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) || \
-    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) && defined(_WIN64) ||            \
+    ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   return IsStackSamplingSupported();
 #else
   return false;

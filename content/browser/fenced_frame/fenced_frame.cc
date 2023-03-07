@@ -44,7 +44,8 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
 
 FencedFrame::FencedFrame(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
-    blink::mojom::FencedFrameMode mode)
+    blink::mojom::FencedFrameMode mode,
+    bool was_discarded)
     : web_contents_(static_cast<WebContentsImpl*>(
           WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
@@ -61,7 +62,10 @@ FencedFrame::FencedFrame(
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
                                       FrameTree::Type::kFencedFrame)),
-      mode_(mode) {}
+      mode_(mode) {
+  if (was_discarded)
+    frame_tree_->root()->set_was_discarded();
+}
 
 FencedFrame::~FencedFrame() {
   DCHECK(frame_tree_);
@@ -108,6 +112,9 @@ void FencedFrame::Navigate(const GURL& url,
   // cross-site. Since we assign an opaque initiator_origin we do not
   // need to provide a `source_site_instance`.
   url::Origin initiator_origin;
+  // Similarly, we don't want to leak information from the outer frame tree via
+  // base url.
+  GURL initiator_base_url;
 
   // TODO(yaoxia): implement this. This information will be propagated to the
   // `NavigationHandle`. Skip propagating here is fine for now, because we are
@@ -121,6 +128,7 @@ void FencedFrame::Navigate(const GURL& url,
       inner_root->current_frame_host(), validated_url,
       /*initiator_frame_token=*/nullptr,
       content::ChildProcessHost::kInvalidUniqueID, initiator_origin,
+      initiator_base_url,
       /*source_site_instance=*/nullptr, content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_SUBFRAME,
       /*should_replace_current_entry=*/true, download_policy, "GET",
@@ -165,7 +173,7 @@ FencedFrame::InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
   DCHECK(remote_frame_interfaces);
   DCHECK(outer_delegate_frame_tree_node_);
 
-  scoped_refptr<SiteInstance> site_instance =
+  scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForFencedFrame(
           owner_render_frame_host_->GetSiteInstance());
 

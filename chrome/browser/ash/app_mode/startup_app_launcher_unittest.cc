@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "ash/test/ash_test_helper.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/test_kiosk_extension_builder.h"
 #include "chrome/browser/ash/extensions/test_external_cache.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
@@ -81,7 +82,8 @@ enum class LaunchState {
   kLaunchFailed
 };
 
-class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
+class TestAppLaunchDelegate : public KioskAppLauncher::NetworkDelegate,
+                              public KioskAppLauncher::Observer {
  public:
   TestAppLaunchDelegate() = default;
   TestAppLaunchDelegate(const TestAppLaunchDelegate&) = delete;
@@ -109,11 +111,16 @@ class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
     return launch_state_changes_.IsEmpty();
   }
 
-  // StartupAppLauncher::Delegate:
+  // `KioskAppLauncher::NetworkDelegate`:
   void InitializeNetwork() override {
     SetLaunchState(LaunchState::kInitializingNetwork);
   }
   bool IsNetworkReady() const override { return network_ready_; }
+  bool IsShowingNetworkConfigScreen() const override {
+    return showing_network_config_screen_;
+  }
+
+  // `KioskAppLauncher::Observer`:
   void OnAppInstalling() override {
     SetLaunchState(LaunchState::kInstallingApp);
   }
@@ -124,9 +131,6 @@ class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
   void OnLaunchFailed(KioskAppLaunchError::Error error) override {
     launch_error_ = error;
     SetLaunchState(LaunchState::kLaunchFailed);
-  }
-  bool IsShowingNetworkConfigScreen() const override {
-    return showing_network_config_screen_;
   }
 
  private:
@@ -252,9 +256,10 @@ class TestKioskLoaderVisitor
     const extensions::Extension* existing =
         extension_registry_->GetExtensionById(
             info.extension_id, extensions::ExtensionRegistry::EVERYTHING);
-    // Alredy exists, and does not require update.
-    if (existing && existing->version().CompareTo(info.version) >= 0)
+    // Already exists, and does not require update.
+    if (existing && existing->version().CompareTo(info.version) >= 0) {
       return false;
+    }
 
     if (!extension_service_->pending_extension_manager()->AddFromExternalFile(
             info.extension_id, info.crx_location, info.version,
@@ -271,8 +276,9 @@ class TestKioskLoaderVisitor
       const ExternalInstallInfoUpdateUrl& info,
       bool force_update) override {
     if (extension_registry_->GetExtensionById(
-            info.extension_id, extensions::ExtensionRegistry::EVERYTHING))
+            info.extension_id, extensions::ExtensionRegistry::EVERYTHING)) {
       return false;
+    }
 
     if (!extension_service_->pending_extension_manager()
              ->AddFromExternalUpdateUrl(
@@ -294,11 +300,13 @@ class TestKioskLoaderVisitor
       const std::vector<ExternalInstallInfoUpdateUrl>& update_url_extensions,
       const std::vector<ExternalInstallInfoFile>& file_extensions,
       const std::set<std::string>& removed_extensions) override {
-    for (const auto& extension : update_url_extensions)
+    for (const auto& extension : update_url_extensions) {
       OnExternalExtensionUpdateUrlFound(extension, false);
+    }
 
-    for (const auto& extension : file_extensions)
+    for (const auto& extension : file_extensions) {
       OnExternalExtensionFileFound(extension);
+    }
 
     for (const auto& extension_id : removed_extensions) {
       extension_service_->UninstallExtension(
@@ -351,31 +359,38 @@ extensions::AppWindow* CreateAppWindow(Profile* profile,
 
 }  // namespace
 
-class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
-                               public KioskAppManager::Overrides {
+// Tests without creating `StartupAppLauncher` object.
+class StartupAppLauncherNoCreateTest
+    : public extensions::ExtensionServiceTestBase,
+      public KioskAppManager::Overrides {
  public:
-  StartupAppLauncherTest()
+  StartupAppLauncherNoCreateTest()
       : extensions::ExtensionServiceTestBase(
             std::make_unique<content::BrowserTaskEnvironment>(
                 content::BrowserTaskEnvironment::REAL_IO_THREAD)) {}
 
-  StartupAppLauncherTest(const StartupAppLauncherTest&) = delete;
-  StartupAppLauncherTest& operator=(const StartupAppLauncherTest&) = delete;
-  ~StartupAppLauncherTest() override = default;
+  StartupAppLauncherNoCreateTest(const StartupAppLauncherNoCreateTest&) =
+      delete;
+  StartupAppLauncherNoCreateTest& operator=(
+      const StartupAppLauncherNoCreateTest&) = delete;
+  ~StartupAppLauncherNoCreateTest() override = default;
 
   // testing::Test:
   void SetUp() override {
     ash_test_helper_.SetUp();
 
+    UserImageManagerImpl::SkipDefaultUserImageDownloadForTesting();
     command_line_.GetProcessCommandLine()->AppendSwitch(
         switches::kForceAppMode);
     command_line_.GetProcessCommandLine()->AppendSwitch(switches::kAppId);
 
     KioskAppManager::InitializeForTesting(this);
 
-    InitializePrimaryAppState();
-
     extensions::ExtensionServiceTestBase::SetUp();
+
+    // This should be called after KioskAppManager is created in
+    // ExtensionServiceTestBase::SetUp().
+    InitializePrimaryAppState();
 
     InitializeEmptyExtensionService();
     external_apps_loader_handler_ = std::make_unique<TestKioskLoaderVisitor>(
@@ -386,14 +401,9 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
         extensions::CreateAndUseTestEventRouter(browser_context());
     app_launch_tracker_ =
         std::make_unique<AppLaunchTracker>(kTestPrimaryAppId, event_router);
-
-    startup_app_launcher_ = std::make_unique<StartupAppLauncher>(
-        profile(), kTestPrimaryAppId, /*should_skip_install=*/false,
-        &startup_launch_delegate_);
   }
 
   void TearDown() override {
-    startup_app_launcher_.reset();
     external_cache_ = nullptr;
 
     primary_app_provider_->ServiceShutdown();
@@ -401,8 +411,6 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
     external_apps_loader_handler_.reset();
 
     app_launch_tracker_.reset();
-
-    KioskAppManager::Shutdown();
 
     accounts_settings_helper_.reset();
 
@@ -440,12 +448,6 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
         .value();
   }
 
-  void InitializeLauncherWithNetworkReady() {
-    startup_launch_delegate_.set_network_ready(true);
-    startup_app_launcher_->Initialize();
-    EXPECT_TRUE(startup_launch_delegate_.ExpectNoLaunchStateChanges());
-  }
-
   [[nodiscard]] AssertionResult DownloadPrimaryApp(
       const TestKioskExtensionBuilder& app_builder) {
     return DownloadPrimaryApp(app_builder.extension_id(),
@@ -454,11 +456,13 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
 
   [[nodiscard]] AssertionResult DownloadPrimaryApp(const std::string& app_id,
                                                    const std::string& version) {
-    if (!external_cache_)
+    if (!external_cache_) {
       return AssertionFailure() << "External cache not initialized";
+    }
 
-    if (!external_cache_->pending_downloads().count(app_id))
+    if (!external_cache_->pending_downloads().count(app_id)) {
       return AssertionFailure() << "Download not pending: " << app_id;
+    }
 
     if (!external_cache_->SimulateExtensionDownloadFinished(
             app_id, GetExtensionPath(app_id), version, /*is_update=*/false)) {
@@ -470,8 +474,9 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
 
   [[nodiscard]] AssertionResult PrecachePrimaryApp(const std::string& app_id,
                                                    const std::string& version) {
-    if (!external_cache_)
+    if (!external_cache_) {
       return AssertionFailure() << "External cache not initialized";
+    }
 
     base::test::TestFuture<const std::string&, bool> future;
     external_cache_->PutExternalExtension(
@@ -488,15 +493,18 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
   [[nodiscard]] AssertionResult FinishPrimaryAppInstall(
       const TestKioskExtensionBuilder& app_builder) {
     const std::string& id = app_builder.extension_id();
-    if (!external_apps_loader_handler_->pending_crx_files().count(id))
+    if (!external_apps_loader_handler_->pending_crx_files().count(id)) {
       return AssertionFailure() << "App install not peding: " << id;
+    }
 
     scoped_refptr<const extensions::Extension> app = app_builder.Build();
-    if (!app)
+    if (!app) {
       return AssertionFailure() << "App builder failed: " << id;
+    }
 
-    if (!external_apps_loader_handler_->FinishPendingInstall(app.get()))
+    if (!external_apps_loader_handler_->FinishPendingInstall(app.get())) {
       return AssertionFailure() << "Finish install attempt failed: " << id;
+    }
 
     return AssertionSuccess();
   }
@@ -504,12 +512,14 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
   [[nodiscard]] AssertionResult DownloadAndInstallPrimaryApp(
       const TestKioskExtensionBuilder& app_builder) {
     AssertionResult download_result = DownloadPrimaryApp(app_builder);
-    if (!download_result)
+    if (!download_result) {
       return download_result;
+    }
 
     AssertionResult install_result = FinishPrimaryAppInstall(app_builder);
-    if (!install_result)
+    if (!install_result) {
       return install_result;
+    }
 
     return AssertionSuccess();
   }
@@ -523,11 +533,13 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
     }
 
     scoped_refptr<const extensions::Extension> extension = builder.Build();
-    if (!extension)
+    if (!extension) {
       return AssertionFailure() << "Extension builder failed: " << id;
+    }
 
-    if (!external_apps_loader_handler_->FinishPendingInstall(extension.get()))
+    if (!external_apps_loader_handler_->FinishPendingInstall(extension.get())) {
       return AssertionFailure() << "Finish install attempt failed: " << id;
+    }
 
     return AssertionSuccess();
   }
@@ -594,7 +606,6 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
  protected:
   TestAppLaunchDelegate startup_launch_delegate_;
 
-  std::unique_ptr<KioskAppLauncher> startup_app_launcher_;
   std::unique_ptr<AppLaunchTracker> app_launch_tracker_;
   std::unique_ptr<TestKioskLoaderVisitor> external_apps_loader_handler_;
 
@@ -612,6 +623,51 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
   std::unique_ptr<extensions::ExternalProviderImpl> secondary_apps_provider_;
 
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+};
+
+// Tests that extension download backoff is reduced during Chrome app Kiosk
+// launch.
+TEST_F(StartupAppLauncherNoCreateTest, ExtensionDownloadBackoffReduced) {
+  ASSERT_TRUE(external_cache_);
+  EXPECT_FALSE(external_cache_->backoff_policy().has_value());
+
+  auto startup_app_launcher = std::make_unique<StartupAppLauncher>(
+      profile(), kTestPrimaryAppId, /*should_skip_install=*/false,
+      &startup_launch_delegate_);
+
+  ASSERT_TRUE(external_cache_->backoff_policy().has_value());
+  EXPECT_EQ(external_cache_->backoff_policy()->maximum_backoff_ms, 3000);
+
+  startup_app_launcher.reset();
+  EXPECT_FALSE(external_cache_->backoff_policy().has_value());
+}
+
+// Tests with `StartupAppLauncher` object created.
+class StartupAppLauncherTest : public StartupAppLauncherNoCreateTest {
+ public:
+  // testing::Test:
+  void SetUp() override {
+    StartupAppLauncherNoCreateTest::SetUp();
+
+    startup_app_launcher_ = std::make_unique<StartupAppLauncher>(
+        profile(), kTestPrimaryAppId, /*should_skip_install=*/false,
+        &startup_launch_delegate_);
+    startup_app_launcher_->AddObserver(&startup_launch_delegate_);
+  }
+
+  void TearDown() override {
+    startup_app_launcher_.reset();
+    StartupAppLauncherNoCreateTest::TearDown();
+  }
+
+ protected:
+  void InitializeLauncherWithNetworkReady() {
+    startup_launch_delegate_.set_network_ready(true);
+    startup_app_launcher_->Initialize();
+    EXPECT_TRUE(startup_launch_delegate_.ExpectNoLaunchStateChanges());
+  }
+
+  std::unique_ptr<KioskAppLauncher> startup_app_launcher_;
 };
 
 TEST_F(StartupAppLauncherTest, PrimaryAppLaunchFlow) {
@@ -1444,6 +1500,7 @@ TEST_F(StartupAppLauncherTest, SecondaryExtensionStateOnSessionRestore) {
   startup_app_launcher_ = std::make_unique<StartupAppLauncher>(
       profile(), kTestPrimaryAppId, /*should_skip_install=*/true,
       &startup_launch_delegate_);
+  startup_app_launcher_->AddObserver(&startup_launch_delegate_);
 
   startup_launch_delegate_.set_network_ready(true);
   startup_app_launcher_->Initialize();

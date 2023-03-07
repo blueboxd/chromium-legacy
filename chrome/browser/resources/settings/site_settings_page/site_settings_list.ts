@@ -8,17 +8,18 @@ import '../icons.html.js';
 import '../settings_shared.css.js';
 import '../i18n_setup.js';
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {DomRepeatEvent, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
 import {FocusConfig} from '../focus_config.js';
+import {loadTimeData} from '../i18n_setup.js';
 import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {Route, Router} from '../router.js';
-import {ContentSetting, ContentSettingsTypes, NotificationSetting} from '../site_settings/constants.js';
+import {ContentSetting, ContentSettingsTypes, CookieControlsMode, NotificationSetting} from '../site_settings/constants.js';
 import {SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 import {getTemplate} from './site_settings_list.html.js';
@@ -74,10 +75,9 @@ class SettingsSiteSettingsListElement extends
 
   static get observers() {
     return [
-      // The prefs object is only populated for the instance of this element
-      // which contains the notifications link row, avoiding non-actionable
-      // firing of the observer.
       'updateNotificationsLabel_(prefs.generated.notification.*)',
+      'updateSiteDataLabel_(prefs.generated.cookie_default_content_setting.*)',
+      'updateThirdPartyCookiesLabel_(prefs.profile.cookie_controls_mode.*)',
     ];
   }
 
@@ -133,10 +133,11 @@ class SettingsSiteSettingsListElement extends
       this.browserProxy_.observeProtocolHandlersEnabledState();
     }
 
+    // TODO(crbug.com/1378703): Remove this after the feature is launched.
     const hasCookies = this.categoryList.some(item => {
       return item.id === ContentSettingsTypes.COOKIES;
     });
-    if (hasCookies) {
+    if (hasCookies && !loadTimeData.getBoolean('isPrivacySandboxSettings4')) {
       // The cookies sub-label is provided by an update from C++.
       this.browserProxy_.getCookieSettingDescription().then(
           (label: string) => this.updateCookiesLabel_(label));
@@ -222,9 +223,11 @@ class SettingsSiteSettingsListElement extends
     const index = this.categoryList.map(e => e.id).indexOf(
         ContentSettingsTypes.NOTIFICATIONS);
 
-    // updateNotificationsLabel_ should only be called for the
-    // site-settings-list instance which contains notifications.
-    assert(index !== -1);
+    // The notification row might not be part of the current site-settings-list
+    // but the class always observes the preference.
+    if (index === -1) {
+      return;
+    }
 
     let label = 'siteSettingsNotificationsBlocked';
     if (state === NotificationSetting.ASK) {
@@ -232,6 +235,64 @@ class SettingsSiteSettingsListElement extends
     } else if (state === NotificationSetting.QUIETER_MESSAGING) {
       label = 'siteSettingsNotificationsPartial';
     }
+    this.set(`categoryList.${index}.subLabel`, this.i18n(label));
+  }
+
+  /**
+   * Update the site data link row label when the default cookies content
+   * setting changes.
+   */
+  private updateSiteDataLabel_() {
+    const state =
+        this.getPref('generated.cookie_default_content_setting').value;
+    const index = this.categoryList.map(e => e.id).indexOf(
+        ContentSettingsTypes.SITE_DATA);
+
+    // The site data row might not be part of the current site-settings-list
+    // but the class always observes the preference.
+    if (index === -1) {
+      return;
+    }
+
+    let label;
+    if (state === ContentSetting.ALLOW) {
+      label = 'siteSettingsSiteDataAllowedSubLabel';
+    } else if (state === ContentSetting.SESSION_ONLY) {
+      label = 'siteSettingsSiteDataClearOnExitSubLabel';
+    } else if (state === ContentSetting.BLOCK) {
+      label = 'siteSettingsSiteDataBlockedSubLabel';
+    }
+    assert(!!label);
+    this.set(`categoryList.${index}.subLabel`, this.i18n(label));
+  }
+
+  /**
+   * Update the third-party cookies link row label when the pref changes.
+   */
+  private updateThirdPartyCookiesLabel_() {
+    if (!loadTimeData.getBoolean('isPrivacySandboxSettings4')) {
+      return;
+    }
+
+    const state = this.getPref('profile.cookie_controls_mode').value;
+    const index =
+        this.categoryList.map(e => e.id).indexOf(ContentSettingsTypes.COOKIES);
+
+    // The third-party cookies might not be part of the current
+    // site-settings-list but the class always observes the preference.
+    if (index === -1) {
+      return;
+    }
+
+    let label;
+    if (state === CookieControlsMode.OFF) {
+      label = 'thirdPartyCookiesLinkRowSublabelEnabled';
+    } else if (state === CookieControlsMode.INCOGNITO_ONLY) {
+      label = 'thirdPartyCookiesLinkRowSublabelDisabledIncognito';
+    } else if (state === CookieControlsMode.BLOCK_THIRD_PARTY) {
+      label = 'thirdPartyCookiesLinkRowSublabelDisabled';
+    }
+    assert(!!label);
     this.set(`categoryList.${index}.subLabel`, this.i18n(label));
   }
 

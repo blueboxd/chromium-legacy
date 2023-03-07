@@ -5557,7 +5557,7 @@
   },
   "Dawn Win10 x64 Builder": {},
   "Dawn Win10 x64 DEPS Builder": {},
-  "Dawn Win10 x64 DEPS Release (Intel HD 630)": {
+  "Dawn Win10 x64 DEPS Release (Intel)": {
     "gtest_tests": [
       {
         "args": [
@@ -5611,7 +5611,7 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -6494,7 +6494,7 @@
       }
     ]
   },
-  "Dawn Win10 x64 Release (Intel HD 630)": {
+  "Dawn Win10 x64 Release (Intel)": {
     "gtest_tests": [
       {
         "args": [
@@ -6548,7 +6548,7 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -7397,7 +7397,7 @@
   },
   "Dawn Win10 x86 Builder": {},
   "Dawn Win10 x86 DEPS Builder": {},
-  "Dawn Win10 x86 DEPS Release (Intel HD 630)": {
+  "Dawn Win10 x86 DEPS Release (Intel)": {
     "gtest_tests": [
       {
         "args": [
@@ -7451,7 +7451,7 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -7551,6 +7551,33 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:9bc5-31.0.101.2111",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
+      },
       {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
@@ -8336,7 +8363,7 @@
       }
     ]
   },
-  "Dawn Win10 x86 Release (Intel HD 630)": {
+  "Dawn Win10 x86 Release (Intel)": {
     "gtest_tests": [
       {
         "args": [
@@ -8390,7 +8417,7 @@
       },
       {
         "args": [
-          "--enable-backend-validation=partial",
+          "--enable-backend-validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -8490,6 +8517,33 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:9bc5-31.0.101.2111",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
+      },
       {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {

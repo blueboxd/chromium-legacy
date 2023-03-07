@@ -18,9 +18,9 @@
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "net/base/mime_util.h"
@@ -477,7 +477,9 @@ void HoldingSpaceViewDelegate::WriteDragDataForView(views::View* sender,
   // Drag image.
   gfx::ImageSkia drag_image;
   gfx::Vector2d drag_offset;
-  holding_space_util::CreateDragImage(selection, &drag_image, &drag_offset);
+  holding_space_util::CreateDragImage(
+      selection, &drag_image, &drag_offset,
+      bubble_->GetBubbleView()->GetColorProvider());
   data->provider().SetDragImage(std::move(drag_image), drag_offset);
 
   // Payload.

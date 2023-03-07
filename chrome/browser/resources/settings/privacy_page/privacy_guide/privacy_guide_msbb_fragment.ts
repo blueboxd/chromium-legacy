@@ -14,7 +14,6 @@ import './privacy_guide_fragment_shared.css.js';
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideSettingsStates} from '../../metrics_browser_proxy.js';
 import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 
@@ -41,11 +40,6 @@ export class PrivacyGuideMsbbFragmentElement extends
         type: Object,
         notify: true,
       },
-
-      enablePrivacyGuide2_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('privacyGuide2Enabled'),
-      },
     };
   }
 
@@ -65,12 +59,14 @@ export class PrivacyGuideMsbbFragmentElement extends
 
   private onViewEnterStart_() {
     this.startStateMsbbOn_ =
-        this.getPref('url_keyed_anonymized_data_collection.enabled').value;
+        this.getPref<boolean>('url_keyed_anonymized_data_collection.enabled')
+            .value;
   }
 
   private onViewExitFinish_() {
     const endStateMsbbOn =
-        this.getPref('url_keyed_anonymized_data_collection.enabled').value;
+        this.getPref<boolean>('url_keyed_anonymized_data_collection.enabled')
+            .value;
 
     let state: PrivacyGuideSettingsStates|null = null;
     if (this.startStateMsbbOn_) {
@@ -91,6 +87,12 @@ export class PrivacyGuideMsbbFragmentElement extends
       this.metricsBrowserProxy_.recordAction(
           'Settings.PrivacyGuide.ChangeMSBBOff');
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'privacy-guide-msbb-fragment': PrivacyGuideMsbbFragmentElement;
   }
 }
 

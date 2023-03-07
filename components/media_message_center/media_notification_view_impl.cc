@@ -79,43 +79,6 @@ void RecordMetadataHistogram(MediaNotificationViewImpl::Metadata metadata) {
                             metadata);
 }
 
-const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
-  switch (action) {
-    case MediaSessionAction::kPreviousTrack:
-      return &kMediaPreviousTrackIcon;
-    case MediaSessionAction::kSeekBackward:
-      return &kMediaSeekBackwardIcon;
-    case MediaSessionAction::kPlay:
-      return &kPlayArrowIcon;
-    case MediaSessionAction::kPause:
-      return &kPauseIcon;
-    case MediaSessionAction::kSeekForward:
-      return &kMediaSeekForwardIcon;
-    case MediaSessionAction::kNextTrack:
-      return &kMediaNextTrackIcon;
-    case MediaSessionAction::kEnterPictureInPicture:
-      return &kMediaEnterPipIcon;
-    case MediaSessionAction::kExitPictureInPicture:
-      return &kMediaExitPipIcon;
-    case MediaSessionAction::kStop:
-    case MediaSessionAction::kSkipAd:
-    case MediaSessionAction::kSeekTo:
-    case MediaSessionAction::kScrubTo:
-    case MediaSessionAction::kSwitchAudioDevice:
-    case MediaSessionAction::kToggleMicrophone:
-    case MediaSessionAction::kToggleCamera:
-    case MediaSessionAction::kHangUp:
-    case MediaSessionAction::kRaise:
-    case MediaSessionAction::kSetMute:
-    case MediaSessionAction::kPreviousSlide:
-    case MediaSessionAction::kNextSlide:
-      NOTREACHED();
-      break;
-  }
-
-  return nullptr;
-}
-
 size_t GetMaxNumActions(bool expanded) {
   return expanded ? kMediaNotificationExpandedActionsCount
                   : kMediaNotificationActionsCount;
@@ -379,8 +342,9 @@ void MediaNotificationViewImpl::GetAccessibleNodeData(
       l10n_util::GetStringUTF8(
           IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
 
-  if (!accessible_name_.empty())
-    node_data->SetNameChecked(accessible_name_);
+  if (!GetAccessibleName().empty()) {
+    node_data->SetNameChecked(GetAccessibleName());
+  }
 }
 
 void MediaNotificationViewImpl::UpdateWithMediaSessionInfo(
@@ -428,7 +392,7 @@ void MediaNotificationViewImpl::UpdateWithMediaMetadata(
   title_label_->SetText(metadata.title);
   artist_label_->SetText(metadata.artist);
 
-  accessible_name_ = GetAccessibleNameFromMetadata(metadata);
+  SetAccessibleName(GetAccessibleNameFromMetadata(metadata));
 
   // The title label should only be a11y-focusable when there is text to be
   // read.

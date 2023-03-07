@@ -55,17 +55,12 @@ BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
              "OmniboxRemoveSuggestionsFromClipboard",
              enabled_by_default_android_only);
 
-// Auxiliary search for Android. See http://crbug/1310100 for more details.
-BASE_FEATURE(kAndroidAuxiliarySearch,
-             "AndroidAuxiliarySearch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables various tweaks to `AutocompleteController` autocompletion twiddling
 // that may improve autocompletion stability. Feature params control which
 // tweaks specifically are enabled. Enabling this feature without params is a
 // no-op.
 // TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
-//  2/7/22, when m110 reaches stable.
+//  2/7/23, when m110 reaches stable.
 BASE_FEATURE(kAutocompleteStability,
              "OmniboxAutocompleteStability",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -73,16 +68,15 @@ BASE_FEATURE(kAutocompleteStability,
 // Feature to enable memoizing and filtering non-doc hosts for
 // `DocumentProvider::GetURLForDeduping()`.
 // TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
-//  2/7/22, when m110 reaches stable.
+//  2/7/23, when m110 reaches stable.
 BASE_FEATURE(kDocumentProviderDedupingOptimization,
              "OmniboxDocumentProviderDedupingOptimization",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Feature to tweak how the default suggestion is preserved. Feature params
-// control which tweaks specifically are enabled. Enabling this feature without
-// params is a no-op.
-BASE_FEATURE(kPreserveDefault,
-             "OmniboxPreserveDefault",
+// When enabled, uses the grouping framework (i.e.
+// autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
+BASE_FEATURE(kGroupingFramework,
+             "OmniboxGroupingFramework",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Demotes the relevance scores when comparing suggestions based on the
@@ -99,17 +93,11 @@ BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
              "OmniboxRemoveExcessiveRecycledViewClearCalls",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature to enable memoizing URLs when replacing search terms in
-// `AutocompleteMatch::GURLToStrippedGURL()`.
-// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
-//  2/7/22, when m110 reaches stable.
-BASE_FEATURE(kStrippedGurlOptimization,
-             "OmniboxStrippedGurlOptimization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Feature to debounce `AutocompleteController::NotifyChanged()`.
-BASE_FEATURE(kUpdateResultDebounce,
-             "OmniboxUpdateResultDebounce",
+// Feature to tweak how the default suggestion is preserved. Feature params
+// control which tweaks specifically are enabled. Enabling this feature without
+// params is a no-op.
+BASE_FEATURE(kPreserveDefault,
+             "OmniboxPreserveDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When disabled, when providers update their matches, the new set of matches
@@ -117,6 +105,19 @@ BASE_FEATURE(kUpdateResultDebounce,
 // culled again. When enabled, the first sort and cull is skipped.
 BASE_FEATURE(kSingleSortAndCullPass,
              "OmniboxSingleSortAndCullPass",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Feature to enable memoizing URLs when replacing search terms in
+// `AutocompleteMatch::GURLToStrippedGURL()`.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/23, when m110 reaches stable.
+BASE_FEATURE(kStrippedGurlOptimization,
+             "OmniboxStrippedGurlOptimization",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Feature to debounce `AutocompleteController::NotifyChanged()`.
+BASE_FEATURE(kUpdateResultDebounce,
+             "OmniboxUpdateResultDebounce",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature used to cap max zero suggestions shown according to the param
@@ -201,25 +202,21 @@ BASE_FEATURE(kKeepSecondaryZeroSuggest,
              "KeepSecondaryZeroSuggest",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Revamps how local search history is extracted and processed for generating
-// zero-prefix and prefix suggestions.
-BASE_FEATURE(kLocalHistorySuggestRevamp,
-             "LocalHistorySuggestRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables local history zero-prefix suggestions in every context in which the
 // remote zero-prefix suggestions are enabled.
 BASE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP,
              "LocalHistoryZeroSuggestBeyondNTP",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Used to adjust the age threshold since the last visit in order to consider a
-// normalized keyword search term as a zero-prefix suggestion. If disabled, the
-// default value of 90 days for Desktop and 60 days for Android and iOS is used.
-// If enabled, the age threshold is determined by this feature's companion
-// parameter, OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
-BASE_FEATURE(kOmniboxLocalZeroSuggestAgeThreshold,
-             "OmniboxLocalZeroSuggestAgeThreshold",
+// If enabled, SearchProvider uses `normalized_term` instead of `term` from the
+// `keyword_search_terms` table. `normalized_term` is the original search term
+// in lower case with extra whitespace characters collapsed. To ensure
+// suggestions from SearchProvider continue to get deduped with those from
+// ShortcutsProvider, AutocompleteMatch::GURLToStrippedGURL uses the normalized
+// term to build the destination URLs so they are identical despite case
+// mismatches in the terms.
+BASE_FEATURE(kNormalizeSearchSuggestions,
+             "NormalizeSearchSuggestions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Mainly used to enable sending INTERACTION_CLOBBER focus type for zero-prefix
@@ -332,9 +329,10 @@ BASE_FEATURE(kStoreTitleInContentsAndUrlInDescription,
 // HQP scores suggestions higher when it finds fewer matches. When enabled,
 // HQP will consider the count of unique hosts, rather than the total count of
 // matches.
+// TODO(manukh): Clean up 3/7/23 when m111 reaches stable.
 BASE_FEATURE(kHistoryQuickProviderSpecificityScoreCountUniqueHosts,
              "OmniboxHistoryQuickProviderSpecificityScoreCountUniqueHosts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to fetch document suggestions.
 BASE_FEATURE(kDocumentProvider,
@@ -373,19 +371,13 @@ BASE_FEATURE(kClipboardSuggestionContentHidden,
 // given country/culture
 BASE_FEATURE(kSuggestionAnswersColorReverse,
              "SuggestionAnswersColorReverse",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, frequently visited sites are presented in form of a single row
 // with a carousel of tiles, instead of one URL per row.
 BASE_FEATURE(kMostVisitedTiles,
              "OmniboxMostVisitedTiles",
              enabled_by_default_android_only);
-
-// If enabled, permits the title on the MostVisitedTiles to wrap around to
-// second line.
-BASE_FEATURE(kMostVisitedTilesTitleWrapAround,
-             "OmniboxMostVisitedTilesTitleWrapAround",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, expands autocompletion to possibly (depending on params) include
 // suggestion titles and non-prefixes as opposed to be restricted to URL
@@ -418,6 +410,12 @@ BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
 // Feature used to add a recycled view pool on the most visited tile carousel.
 BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
              "OmniboxMostVisitedTilesAddRecycledViewPool",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, adds a grey square background to search icons, and makes answer
+// icon square instead of round.
+BASE_FEATURE(kSquareSuggestIcons,
+             "OmniboxSquareIcons",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, forces omnibox suggestion rows to be uniformly sized.
@@ -459,7 +457,8 @@ BASE_FEATURE(kUpdatedConnectionSecurityIndicators,
 // necessary.
 BASE_FEATURE(kDefaultTypedNavigationsToHttps,
              "OmniboxDefaultTypedNavigationsToHttps",
-             enabled_by_default_desktop_android);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Parameter name used to look up the delay before falling back to the HTTP URL
 // while trying an HTTPS URL. The parameter is treated as a TimeDelta, so the
 // unit must be included in the value as well (e.g. 3s for 3 seconds).
@@ -483,6 +482,19 @@ BASE_FEATURE(kReportSearchboxStats,
 // If enabled, logs Omnibox URL scoring signals to OmniboxEventProto in UMA.
 BASE_FEATURE(kLogUrlScoringSignals,
              "LogUrlScoringSignals",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, runs the ML scoring model to assign relevance scores to URL
+// suggestions. This enables the autocomplete system related changes to support
+// ML scoring and moves scoring out of the autocomplete providers into
+// autocomplete controller.
+BASE_FEATURE(kMlRelevanceScoring,
+             "MlRelevanceScoring",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, creates Omnibox autocompete URL scoring model.
+BASE_FEATURE(kUrlScoringModel,
+             "UrlScoringModel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace omnibox

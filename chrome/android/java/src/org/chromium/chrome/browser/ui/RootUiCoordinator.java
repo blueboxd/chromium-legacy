@@ -42,10 +42,8 @@ import org.chromium.chrome.browser.app.omnibox.OmniboxPedalDelegateImpl;
 import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
-import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -105,7 +103,6 @@ import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialog;
 import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
 import org.chromium.chrome.browser.tab.RequestDesktopUtils;
@@ -138,7 +135,6 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -168,7 +164,6 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.vr.VrModeObserver;
 import org.chromium.url.GURL;
 
 import java.io.Serializable;
@@ -232,8 +227,6 @@ public class RootUiCoordinator
     protected ToolbarManager mToolbarManager;
     protected Supplier<Boolean> mCanAnimateBrowserControls;
     private ModalDialogManagerObserver mModalDialogManagerObserver;
-
-    private VrModeObserver mVrModeObserver;
 
     private BottomSheetManager mBottomSheetManager;
     private ManagedBottomSheetController mBottomSheetController;
@@ -586,8 +579,6 @@ public class RootUiCoordinator
 
         if (mFindToolbarManager != null) mFindToolbarManager.removeObserver(mFindToolbarObserver);
 
-        if (mVrModeObserver != null) VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
-
         if (mModalDialogManagerObserver != null && mModalDialogManagerSupplier.hasValue()) {
             mModalDialogManagerSupplier.get().removeObserver(mModalDialogManagerObserver);
         }
@@ -702,16 +693,6 @@ public class RootUiCoordinator
                             generateUrlParamsForSearch(tab, query),
                             TabLaunchType.FROM_LONGPRESS_FOREGROUND, tab, tab.isIncognito());
                 }, mShareDelegateSupplier);
-        mVrModeObserver = new VrModeObserver() {
-            @Override
-            public void onEnterVr() {
-                mFindToolbarManager.hideToolbar();
-            }
-
-            @Override
-            public void onExitVr() {}
-        };
-        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
         mCaptureController = new MediaCaptureOverlayController(
                 mWindowAndroid, mActivity.findViewById(R.id.capture_overlay));
@@ -775,17 +756,6 @@ public class RootUiCoordinator
 
         initMerchantTrustSignals();
         initScrollCapture();
-
-        // TODO(1293885): Remove this validator once we have an API on the backend that sends
-        //                success/failure information back.
-        if (ShoppingFeatures.isShoppingListEnabled()) {
-            mBookmarkModelSupplier.addObserver((bridge) -> {
-                PowerBookmarkUtils.validateBookmarkedCommerceSubscriptions(bridge,
-                        new CommerceSubscriptionsServiceFactory()
-                                .getForLastUsedProfile()
-                                .getSubscriptionsManager());
-            });
-        }
 
         new OneShotCallback<>(mProfileSupplier, this::initHistoryClustersCoordinator);
 
@@ -1108,7 +1078,7 @@ public class RootUiCoordinator
                     new ReaderModeToolbarButtonController(mActivityTabProvider,
                             mModalDialogManagerSupplier.get(),
                             AppCompatResources.getDrawable(
-                                    mActivity, R.drawable.infobar_mobile_friendly));
+                                    mActivity, R.drawable.ic_mobile_friendly));
             ShareButtonController shareButtonController = new ShareButtonController(
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),

@@ -16,7 +16,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 
 import androidx.annotation.Nullable;
 
@@ -94,9 +93,21 @@ public class ContentSettingsResources {
     private static ResourceItem getResourceItem(int contentType, SiteSettingsDelegate delegate) {
         switch (contentType) {
             case ContentSettingsType.ADS:
-                return new ResourceItem(R.drawable.web_asset, R.string.ads_permission_title,
-                        ContentSettingValues.ALLOW, ContentSettingValues.BLOCK, 0,
-                        R.string.website_settings_category_ads_blocked);
+                if (delegate == null) {
+                    return new ResourceItem(
+                            0, 0, ContentSettingValues.ALLOW, ContentSettingValues.BLOCK, 0, 0);
+                }
+                return new ResourceItem(R.drawable.web_asset,
+                        delegate.isPrivacySandboxSettings4Enabled()
+                                ? R.string.site_settings_page_intrusive_ads_label
+                                : R.string.ads_permission_title,
+                        ContentSettingValues.ALLOW, ContentSettingValues.BLOCK,
+                        delegate.isPrivacySandboxSettings4Enabled()
+                                ? R.string.site_settings_page_intrusive_allowed_sub_label
+                                : 0,
+                        delegate.isPrivacySandboxSettings4Enabled()
+                                ? R.string.site_settings_page_intrusive_blocked_sub_label
+                                : R.string.website_settings_category_ads_blocked);
 
             case ContentSettingsType.AR:
                 return new ResourceItem(R.drawable.gm_filled_cardboard_24,
@@ -397,9 +408,22 @@ public class ContentSettingsResources {
 
     /**
      * Returns the resource id of the title (short version), shown on the Site Settings page
+     * and in the global toggle at the top of a Website Settings page for a category.
+     */
+    public static int getTitleForCategory(
+            @SiteSettingsCategory.Type int type, SiteSettingsDelegate delegate) {
+        if (type == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
+            return R.string.third_party_cookies_page_title;
+        }
+        return getTitle(SiteSettingsCategory.contentSettingsType(type), delegate);
+    }
+
+    /**
+     * Returns the resource id of the title (short version), shown on the Site Settings page
      * and in the global toggle at the top of a Website Settings page for a content type.
      */
-    public static int getTitle(int contentType, SiteSettingsDelegate delegate) {
+    public static int getTitle(
+            @ContentSettingsType int contentType, SiteSettingsDelegate delegate) {
         return getResourceItem(contentType, delegate).getTitle();
     }
 
@@ -574,21 +598,11 @@ public class ContentSettingsResources {
      */
     public static int[] getTriStateSettingDescriptionIDs(int contentType) {
         if (contentType == ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER) {
-            // The recommended setting is different on different android versions depending on
-            // whether per-origin provisioning is available. See https://crbug.com/904883.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                int[] descriptionIDs = {
-                        R.string.website_settings_category_protected_content_allowed_recommended,
-                        R.string.website_settings_category_protected_content_ask,
-                        R.string.website_settings_category_protected_content_blocked};
-                return descriptionIDs;
-            } else {
-                int[] descriptionIDs = {
-                        R.string.website_settings_category_protected_content_allowed,
-                        R.string.website_settings_category_protected_content_ask_recommended,
-                        R.string.website_settings_category_protected_content_blocked};
-                return descriptionIDs;
-            }
+            int[] descriptionIDs = {
+                    R.string.website_settings_category_protected_content_allowed_recommended,
+                    R.string.website_settings_category_protected_content_ask,
+                    R.string.website_settings_category_protected_content_blocked};
+            return descriptionIDs;
         }
 
         assert false;

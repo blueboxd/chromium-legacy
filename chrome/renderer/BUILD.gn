@@ -33,8 +33,6 @@ grit("resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//components/media_router/common/mojom:media_controller_js",
-    "//components/media_router/common/mojom:media_router_js",
     "//services/network/public/mojom:mojom_js",
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
@@ -68,6 +66,10 @@ static_library("renderer") {
     "chrome_render_thread_observer.cc",
     "chrome_render_thread_observer.h",
     "custom_menu_commands.h",
+    "google_accounts_private_api_extension.cc",
+    "google_accounts_private_api_extension.h",
+    "google_accounts_private_api_util.cc",
+    "google_accounts_private_api_util.h",
     "instant_restricted_id_cache.h",
     "loadtimes_extension_bindings.cc",
     "loadtimes_extension_bindings.h",
@@ -208,6 +210,7 @@ static_library("renderer") {
     "//third_party/blink/public:scaled_resources",
     "//third_party/blink/public/strings",
     "//third_party/icu",
+    "//third_party/libwebp",
     "//third_party/re2",
     "//third_party/widevine/cdm:buildflags",
     "//ui/surface",
@@ -389,6 +392,8 @@ static_library("renderer") {
 
   if (!is_android) {
     sources += [
+      "accessibility/ax_tree_distiller.cc",
+      "accessibility/ax_tree_distiller.h",
       "accessibility/read_anything_app_controller.cc",
       "accessibility/read_anything_app_controller.h",
       "media/chrome_speech_recognition_client.cc",
@@ -402,6 +407,8 @@ static_library("renderer") {
     deps += [
       "//chrome/common/accessibility:mojo_bindings",
       "//components/crx_file",
+      "//components/services/screen_ai/buildflags",
+      "//components/services/screen_ai/public/mojom",
     ]
   }
 

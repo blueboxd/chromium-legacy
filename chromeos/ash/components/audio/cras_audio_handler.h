@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -145,6 +145,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
     // Currently this only supports one general audio satisfaction survey and
     // should be modified and extended when other types of survey is added.
     virtual void OnSurveyTriggered(const AudioSurveyData& survey_specific_data);
+
+    // Called when a speak-on-mute is detected.
+    virtual void OnSpeakOnMuteDetected();
 
    protected:
     AudioObserver();
@@ -477,6 +480,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void NumberOfActiveStreamsChanged() override;
   void SurveyTriggered(const base::flat_map<std::string, std::string>&
                            survey_specific_data) override;
+  void SpeakOnMuteDetected() override;
 
   // AudioPrefObserver overrides.
   void OnAudioPolicyPrefChanged() override;
@@ -701,6 +705,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void HandleGetNoiseCancellationSupported(
       OnNoiseCancellationSupportedCallback callback,
       absl::optional<bool> system_noise_cancellation_supported);
+
+  // Handle dbus callback for GetSpeakOnMuteDetectionEnabled.
+  void HandleGetSpeakOnMuteDetectionEnabled(
+      absl::optional<bool> speak_on_mute_detection_enabled);
 
   // Handle dbus callback for GetSystemAecSupported.
   void HandleGetSystemAecSupported(absl::optional<bool> system_aec_supported);

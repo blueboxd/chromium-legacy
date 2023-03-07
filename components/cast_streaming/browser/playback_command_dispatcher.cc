@@ -4,8 +4,9 @@
 
 #include "components/cast_streaming/browser/playback_command_dispatcher.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/cast_streaming/browser/renderer_rpc_call_translator.h"
 #include "components/cast_streaming/public/rpc_call_message_handler.h"
 #include "media/mojo/mojom/renderer.mojom.h"
@@ -49,6 +50,15 @@ void PlaybackCommandDispatcher::RegisterCommandSource(
   muxer_->RegisterController(std::move(controls));
 }
 
+void PlaybackCommandDispatcher::Flush(
+    media::mojom::Renderer::FlushCallback callback) {
+  muxer_->Flush(std::move(callback));
+}
+
+void PlaybackCommandDispatcher::TryStartPlayback(base::TimeDelta timestamp) {
+  muxer_->TryStartPlayback(std::move(timestamp));
+}
+
 void PlaybackCommandDispatcher::OnRemotingSessionNegotiated(
     openscreen::cast::RpcMessenger* messenger) {
   DCHECK(messenger);
@@ -61,7 +71,7 @@ void PlaybackCommandDispatcher::OnRemotingSessionNegotiated(
 
   renderer_call_translator_->set_handle(AcquireHandle());
   demuxer_stream_handler_ = std::make_unique<remoting::RpcDemuxerStreamHandler>(
-      this,
+      task_runner_, this,
       base::BindRepeating(&PlaybackCommandDispatcher::AcquireHandle,
                           base::Unretained(this)),
       base::BindRepeating(
@@ -116,6 +126,14 @@ void PlaybackCommandDispatcher::SendRemotingRpcMessageToRemote(
     return;
   }
 
+  // Don't log RPC_RC_ONTIMEUPDATE or RPC_RC_ONSTATISTICSUPDATE calls, as they
+  // will generate too much spam to be useful.
+  DVLOG_IF(
+      1, message->proc() != openscreen::cast::RpcMessage::RPC_RC_ONTIMEUPDATE &&
+             message->proc() !=
+                 openscreen::cast::RpcMessage::RPC_RC_ONSTATISTICSUPDATE)
+      << "SendRemotingRpcMessageToRemote() type=" << message->proc();
+
   message->set_handle(handle);
   messenger_->SendMessageToRemote(*message);
 }
@@ -124,6 +142,8 @@ void PlaybackCommandDispatcher::ProcessRemotingRpcMessageFromRemote(
     std::unique_ptr<openscreen::cast::RpcMessage> message) {
   DCHECK(message);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  DVLOG(1) << "ProcessRemotingRpcMessageFromRemote() type=" << message->proc();
 
   const bool did_dispatch_as_initialization_call =
       remoting::DispatchInitializationRpcCall(message.get(), this);

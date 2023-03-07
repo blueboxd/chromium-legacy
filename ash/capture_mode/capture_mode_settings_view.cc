@@ -18,8 +18,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "capture_mode_menu_toggle_button.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -117,7 +117,7 @@ CaptureModeSettingsView::CaptureModeSettingsView(CaptureModeSession* session,
         AddChildView(std::make_unique<CaptureModeMenuToggleButton>(
             kCaptureModeDemoToolsSettingsMenuEntryPointIcon,
             l10n_util::GetStringUTF16(
-                IDS_ASH_SCREEN_CAPTURE_DEMO_TOOLS_SHOW_KEYS_AND_CLICKS),
+                IDS_ASH_SCREEN_CAPTURE_DEMO_TOOLS_SHOW_CLICKS_AND_KEYS),
             CaptureModeController::Get()->enable_demo_tools(),
             base::BindRepeating(
                 &CaptureModeSettingsView::OnDemoToolsButtonToggled,

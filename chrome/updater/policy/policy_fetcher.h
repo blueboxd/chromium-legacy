@@ -5,10 +5,9 @@
 #ifndef CHROME_UPDATER_POLICY_POLICY_FETCHER_H_
 #define CHROME_UPDATER_POLICY_POLICY_FETCHER_H_
 
-#include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -27,7 +26,7 @@ class PolicyFetcher : public base::RefCountedThreadSafe<PolicyFetcher> {
  public:
   explicit PolicyFetcher(scoped_refptr<PolicyService> policy_service);
   void FetchPolicies(
-      base::OnceCallback<void(int, std::unique_ptr<PolicyManagerInterface>)>
+      base::OnceCallback<void(int, scoped_refptr<PolicyManagerInterface>)>
           callback);
 
  private:
@@ -38,15 +37,14 @@ class PolicyFetcher : public base::RefCountedThreadSafe<PolicyFetcher> {
       scoped_refptr<base::SequencedTaskRunner> main_task_runner,
       base::OnceCallback<void(bool, DMClient::RequestResult)> callback);
   void OnRegisterDeviceRequestComplete(
-      base::OnceCallback<void(int, std::unique_ptr<PolicyManagerInterface>)>
+      base::OnceCallback<void(int, scoped_refptr<PolicyManagerInterface>)>
           callback,
       bool is_enrollment_mandatory,
       DMClient::RequestResult result);
 
   void FetchPolicy(
-      base::OnceCallback<void(std::unique_ptr<PolicyManagerInterface>)>
-          callback);
-  std::unique_ptr<PolicyManagerInterface> OnFetchPolicyRequestComplete(
+      base::OnceCallback<void(scoped_refptr<PolicyManagerInterface>)> callback);
+  scoped_refptr<PolicyManagerInterface> OnFetchPolicyRequestComplete(
       DMClient::RequestResult result,
       const std::vector<PolicyValidationResult>& validation_results);
 

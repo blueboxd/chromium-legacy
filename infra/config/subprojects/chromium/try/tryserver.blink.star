@@ -10,21 +10,23 @@ load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
-    executable = try_.DEFAULT_EXECUTABLE,
     builder_group = "tryserver.blink",
-    pool = try_.DEFAULT_POOL,
+    executable = try_.DEFAULT_EXECUTABLE,
     cores = 8,
-    execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
+    pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+    execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 consoles.list_view(
     name = "tryserver.blink",
-    branch_selector = branches.selector.DESKTOP_BRANCHES,
+    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 def blink_mac_builder(*, name, **kwargs):
-    kwargs.setdefault("branch_selector", branches.selector.MAC_BRANCHES)
+    kwargs.setdefault("branch_selector", branches.STANDARD_MILESTONE)
     kwargs.setdefault("builderless", True)
     kwargs.setdefault("cores", None)
     kwargs.setdefault("goma_backend", goma.backend.RBE_PROD)
@@ -37,7 +39,7 @@ def blink_mac_builder(*, name, **kwargs):
 
 try_.builder(
     name = "linux-blink-rel",
-    branch_selector = branches.selector.LINUX_BRANCHES,
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -55,9 +57,8 @@ try_.builder(
         retry_failed_shards = False,
     ),
     os = os.LINUX_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = try_.job(
         location_filters = [
             "cc/.+",
@@ -70,7 +71,7 @@ try_.builder(
 
 try_.builder(
     name = "win10.20h2-blink-rel",
-    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -91,13 +92,11 @@ try_.builder(
     builderless = True,
     os = os.WINDOWS_ANY,
     goma_backend = None,
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "win11-blink-rel",
-    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -116,8 +115,6 @@ try_.builder(
     ),
     builderless = True,
     os = os.WINDOWS_ANY,
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 blink_mac_builder(
@@ -178,6 +175,7 @@ blink_mac_builder(
     try_settings = builder_config.try_settings(
         retry_failed_shards = True,
     ),
+    goma_backend = None,
 )
 
 blink_mac_builder(
@@ -220,6 +218,7 @@ blink_mac_builder(
     try_settings = builder_config.try_settings(
         retry_failed_shards = True,
     ),
+    goma_backend = None,
 )
 
 blink_mac_builder(
@@ -240,6 +239,7 @@ blink_mac_builder(
     try_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
+    goma_backend = None,
 )
 
 blink_mac_builder(

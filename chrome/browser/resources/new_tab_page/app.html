@@ -1,5 +1,6 @@
 <style include="cr-shared-style">
   :host {
+    --cr-focus-outline-color: var(--color-new-tab-page-focus-ring);
     --ntp-theme-text-shadow: none;
     --ntp-one-google-bar-height: 56px;
     --ntp-search-box-width: 337px;
@@ -379,8 +380,7 @@
       <!-- cr-button has a transparent background. This leads to incorrect
            results when a custom background is set. Therefore, wrap customize
            button in container to enforce solid background color. -->
-      <div id="customizeButtonContainer"
-          hidden="[[customizeChromeSidePanelShowing_]]">
+      <div id="customizeButtonContainer">
         <cr-button id="customizeButton" on-click="onCustomizeClick_"
             title="$i18n{customizeThisPage}">
           <div id="customizeIcon"></div>

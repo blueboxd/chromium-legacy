@@ -65,9 +65,10 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
       folderCell.folderTitleTextField.text = self.title;
       folderCell.accessibilityIdentifier = self.title;
       folderCell.accessibilityTraits |= UIAccessibilityTraitButton;
-      if (self.isCurrentFolder)
+      if (self.isCurrentFolder) {
         folderCell.bookmarkAccessoryType =
             TableViewBookmarkFolderAccessoryTypeCheckmark;
+      }
       // In order to indent the cell's content we need to modify its
       // indentation constraint.
       folderCell.indentationConstraint.constant =
@@ -84,7 +85,7 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
 
 #pragma mark - TableViewBookmarkFolderCell
 
-@interface TableViewBookmarkFolderCell ()<UITextFieldDelegate>
+@interface TableViewBookmarkFolderCell () <UITextFieldDelegate>
 // Re-declare as readwrite.
 @property(nonatomic, strong, readwrite)
     NSLayoutConstraint* indentationConstraint;
@@ -170,8 +171,9 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
       self.accessoryView = [[UIImageView alloc]
           initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
       // TODO(crbug.com/870841): Use default accessory type.
-      if (base::i18n::IsRTL())
+      if (base::i18n::IsRTL()) {
         self.accessoryView.transform = CGAffineTransformMakeRotation(M_PI);
+      }
       break;
     }
     case TableViewBookmarkFolderAccessoryTypeNone:

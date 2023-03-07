@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "ui/gfx/frame_data.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gl/child_window_win.h"
 #include "ui/gl/gl_export.h"
@@ -56,7 +57,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
 
   DirectCompositionSurfaceWin(
       GLDisplayEGL* display,
-      HWND parent_window,
       VSyncCallback vsync_callback,
       const DirectCompositionSurfaceWin::Settings& settings);
 
@@ -75,13 +75,13 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback,
-                              FrameData data) override;
+                              gfx::FrameData data) override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
                                 int height,
                                 PresentationCallback callback,
-                                FrameData data) override;
+                                gfx::FrameData data) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
   bool SetEnableDCLayers(bool enable) override;
@@ -99,8 +99,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // to remain in the layer tree. This surface's backbuffer doesn't have to be
   // scheduled with ScheduleDCLayer, as it's automatically placed in the layer
   // tree at z-order 0.
-  bool ScheduleDCLayer(
-      std::unique_ptr<ui::DCRendererLayerParams> params) override;
+  bool ScheduleDCLayer(std::unique_ptr<DCLayerOverlayParams> params) override;
   void SetFrameRate(float frame_rate) override;
 
   // VSyncObserver implementation.
@@ -113,7 +112,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
           pending_receiver) override;
 
-  HWND window() const { return window_; }
+  HWND window() const { return child_window_.window(); }
 
   scoped_refptr<base::TaskRunner> GetWindowTaskRunnerForTesting();
 
@@ -161,7 +160,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
                                base::TimeDelta interval);
 
-  HWND window_ = nullptr;
   ChildWindowWin child_window_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;

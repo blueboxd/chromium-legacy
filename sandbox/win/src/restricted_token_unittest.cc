@@ -6,6 +6,7 @@
 
 #include "sandbox/win/src/restricted_token.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/win/access_token.h"
@@ -13,7 +14,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/sid.h"
 #include "sandbox/win/src/acl.h"
-#include "sandbox/win/src/security_capabilities.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -31,10 +31,10 @@ void TestDefaultDalc(bool restricted_required, bool additional_sid_required) {
   if (additional_sid_required) {
     token.AddDefaultDaclSid(
         *base::win::Sid::FromPSID(const_cast<SID*>(additional_sid.GetPSID())),
-        SecurityAccessMode::kGrant, READ_CONTROL);
+        base::win::SecurityAccessMode::kGrant, READ_CONTROL);
     token.AddDefaultDaclSid(
         *base::win::Sid::FromPSID(const_cast<SID*>(additional_sid2.GetPSID())),
-        SecurityAccessMode::kDeny, GENERIC_ALL);
+        base::win::SecurityAccessMode::kDeny, GENERIC_ALL);
   }
 
   ASSERT_EQ(static_cast<DWORD>(ERROR_SUCCESS),
@@ -85,7 +85,7 @@ void TestDefaultDalc(bool restricted_required, bool additional_sid_required) {
 }
 
 void CheckDaclForPackageSid(const base::win::ScopedHandle& token,
-                            PSECURITY_CAPABILITIES security_capabilities,
+                            const base::win::Sid& package_sid,
                             bool package_sid_required) {
   DWORD length_needed = 0;
   ::GetKernelObjectSecurity(token.Get(), DACL_SECURITY_INFORMATION, nullptr, 0,
@@ -104,8 +104,6 @@ void CheckDaclForPackageSid(const base::win::ScopedHandle& token,
   ATL::CDacl dacl;
   ASSERT_TRUE(token_sd.GetDacl(&dacl));
 
-  base::win::Sid package_sid =
-      *base::win::Sid::FromPSID(security_capabilities->AppContainerSid);
   base::win::Sid all_package_sid(
       base::win::WellKnownSid::kAllApplicationPackages);
 
@@ -127,26 +125,21 @@ void CheckDaclForPackageSid(const base::win::ScopedHandle& token,
 
 void CheckLowBoxToken(const base::win::ScopedHandle& lowbox_token,
                       bool impersonation,
-                      PSECURITY_CAPABILITIES security_capabilities) {
-  auto token = base::win::AccessToken::FromToken(lowbox_token.Get());
+                      const base::win::Sid& package_sid,
+                      const std::vector<base::win::Sid>& check_capabilities) {
+  auto token = base::win::AccessToken::FromToken(lowbox_token.get());
   ASSERT_TRUE(token);
   EXPECT_TRUE(token->IsAppContainer());
   EXPECT_EQ(impersonation, token->IsImpersonation());
   EXPECT_FALSE(token->IsIdentification());
-  auto package_sid = token->AppContainerSid();
-  ASSERT_TRUE(package_sid);
-  EXPECT_TRUE(package_sid->Equal(security_capabilities->AppContainerSid));
-
+  EXPECT_EQ(token->AppContainerSid(), package_sid);
   auto capabilities = token->Capabilities();
-  ASSERT_EQ(capabilities.size(), security_capabilities->CapabilityCount);
+  ASSERT_EQ(capabilities.size(), check_capabilities.size());
   for (size_t index = 0; index < capabilities.size(); ++index) {
-    EXPECT_EQ(capabilities[index].GetAttributes(),
-              security_capabilities->Capabilities[index].Attributes);
-    EXPECT_TRUE(capabilities[index].GetSid().Equal(
-        security_capabilities->Capabilities[index].Sid));
+    EXPECT_EQ(capabilities[index].GetAttributes(), DWORD{SE_GROUP_ENABLED});
+    EXPECT_EQ(capabilities[index].GetSid(), check_capabilities[index]);
   }
-
-  CheckDaclForPackageSid(lowbox_token, security_capabilities, true);
+  CheckDaclForPackageSid(lowbox_token, package_sid, true);
 }
 
 // Checks if a sid is in the restricting list of the restricted token.
@@ -182,6 +175,33 @@ void CheckRestrictingSid(HANDLE restricted_token,
   auto token = base::win::AccessToken::FromToken(restricted_token);
   ASSERT_TRUE(token);
   CheckRestrictingSid(*token, known_sid, count);
+}
+
+DWORD GetMandatoryPolicy(const base::win::AccessToken& token) {
+  absl::optional<base::win::SecurityDescriptor> sd =
+      base::win::SecurityDescriptor::FromHandle(
+          token.get(), base::win::SecurityObjectType::kKernel,
+          LABEL_SECURITY_INFORMATION);
+  CHECK(sd);
+  PACL sacl = sd->sacl()->get();
+  for (DWORD ace_index = 0; ace_index < sacl->AceCount; ++ace_index) {
+    PSYSTEM_MANDATORY_LABEL_ACE ace;
+
+    if (::GetAce(sacl, ace_index, reinterpret_cast<LPVOID*>(&ace)) &&
+        ace->Header.AceType == SYSTEM_MANDATORY_LABEL_ACE_TYPE) {
+      return ace->Mask;
+    }
+  }
+  return 0;
+}
+
+base::win::AccessToken GetPrimaryToken(ACCESS_MASK desired_access) {
+  absl::optional<base::win::AccessToken> token =
+      base::win::AccessToken::FromCurrentProcess(false, TOKEN_DUPLICATE);
+  CHECK(token);
+  token = token->DuplicatePrimary(desired_access);
+  CHECK(token);
+  return std::move(*token);
 }
 
 }  // namespace
@@ -578,37 +598,30 @@ TEST(RestrictedTokenTest, LockdownDefaultDaclNoLogonSid) {
 TEST(RestrictedTokenTest, LowBoxToken) {
   base::win::ScopedHandle token;
 
-  auto package_sid = base::win::Sid::FromSddlString(L"S-1-15-2-1-2-3-4-5-6-7");
-  ASSERT_TRUE(package_sid);
-  SecurityCapabilities caps_no_capabilities(*package_sid);
+  auto package_sid = *base::win::Sid::FromSddlString(L"S-1-15-2-1-2-3-4-5-6-7");
 
-  ASSERT_EQ(
-      DWORD{ERROR_INVALID_PARAMETER},
-      CreateLowBoxToken(nullptr, PRIMARY, &caps_no_capabilities, nullptr));
-  ASSERT_EQ(DWORD{ERROR_SUCCESS},
-            CreateLowBoxToken(nullptr, PRIMARY, &caps_no_capabilities, &token));
+  ASSERT_FALSE(CreateLowBoxToken(nullptr, PRIMARY, package_sid, {}, nullptr));
+  ASSERT_TRUE(CreateLowBoxToken(nullptr, PRIMARY, package_sid, {}, &token));
   ASSERT_TRUE(token.IsValid());
-  CheckLowBoxToken(token, false, &caps_no_capabilities);
+  CheckLowBoxToken(token, false, package_sid, {});
 
-  ASSERT_TRUE(ReplacePackageSidInDacl(token.Get(), SecurityObjectType::kKernel,
-                                      *package_sid, TOKEN_ALL_ACCESS));
-  CheckDaclForPackageSid(token, &caps_no_capabilities, false);
+  ASSERT_TRUE(ReplacePackageSidInDacl(token.get(),
+                                      base::win::SecurityObjectType::kKernel,
+                                      package_sid, TOKEN_ALL_ACCESS));
+  CheckDaclForPackageSid(token, package_sid, false);
 
-  ASSERT_EQ(
-      DWORD{ERROR_SUCCESS},
-      CreateLowBoxToken(nullptr, IMPERSONATION, &caps_no_capabilities, &token));
-  ASSERT_TRUE(token.IsValid());
-  CheckLowBoxToken(token, true, &caps_no_capabilities);
+  ASSERT_TRUE(
+      CreateLowBoxToken(nullptr, IMPERSONATION, package_sid, {}, &token));
+  ASSERT_TRUE(token.is_valid());
+  CheckLowBoxToken(token, true, package_sid, {});
 
   auto capabilities = base::win::Sid::FromKnownCapabilityVector(
       {base::win::WellKnownCapability::kInternetClient,
        base::win::WellKnownCapability::kPrivateNetworkClientServer});
-  SecurityCapabilities caps_with_capabilities(*package_sid, capabilities);
-  ASSERT_EQ(
-      DWORD{ERROR_SUCCESS},
-      CreateLowBoxToken(nullptr, PRIMARY, &caps_with_capabilities, &token));
-  ASSERT_TRUE(token.IsValid());
-  CheckLowBoxToken(token, false, &caps_with_capabilities);
+  ASSERT_TRUE(
+      CreateLowBoxToken(nullptr, PRIMARY, package_sid, capabilities, &token));
+  ASSERT_TRUE(token.is_valid());
+  CheckLowBoxToken(token, false, package_sid, capabilities);
 
   RestrictedToken restricted_token;
   base::win::ScopedHandle token_handle;
@@ -618,12 +631,11 @@ TEST(RestrictedTokenTest, LowBoxToken) {
   ASSERT_EQ(DWORD{ERROR_SUCCESS},
             restricted_token.GetRestrictedToken(&token_handle));
 
-  ASSERT_EQ(DWORD{ERROR_SUCCESS},
-            CreateLowBoxToken(token_handle.Get(), PRIMARY,
-                              &caps_with_capabilities, &token));
-  ASSERT_TRUE(token.IsValid());
-  CheckLowBoxToken(token, false, &caps_with_capabilities);
-  CheckRestrictingSid(token.Get(), base::win::WellKnownSid::kWorld, 1);
+  ASSERT_TRUE(CreateLowBoxToken(token_handle.Get(), PRIMARY, package_sid,
+                                capabilities, &token));
+  ASSERT_TRUE(token.is_valid());
+  CheckLowBoxToken(token, false, package_sid, capabilities);
+  CheckRestrictingSid(token.get(), base::win::WellKnownSid::kWorld, 1);
 }
 
 // Checks the functionality of CanLowIntegrityAccessDesktop
@@ -642,6 +654,17 @@ TEST(RestrictedTokenTest, MediumIlDesktop) {
   ASSERT_FALSE(CanLowIntegrityAccessDesktop());
   ASSERT_TRUE(::SetThreadDesktop(old_hdesk));
   ASSERT_TRUE(::CloseDesktop(hdesk));
+}
+
+TEST(RestrictedTokenTest, HardenProcessIntegrityLevelPolicy) {
+  base::win::AccessToken token = GetPrimaryToken(0);
+  EXPECT_EQ(HardenTokenIntegrityLevelPolicy(token), DWORD{ERROR_ACCESS_DENIED});
+  token = GetPrimaryToken(READ_CONTROL | WRITE_OWNER);
+  DWORD current_policy = GetMandatoryPolicy(token);
+  EXPECT_EQ(HardenTokenIntegrityLevelPolicy(token), DWORD{ERROR_SUCCESS});
+  EXPECT_EQ(GetMandatoryPolicy(token),
+            current_policy | SYSTEM_MANDATORY_LABEL_NO_READ_UP |
+                SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP);
 }
 
 }  // namespace sandbox

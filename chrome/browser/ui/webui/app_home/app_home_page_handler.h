@@ -12,11 +12,12 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -77,6 +78,9 @@ class AppHomePageHandler
   void OnWebAppRunOnOsLoginModeChanged(
       const web_app::AppId& app_id,
       web_app::RunOnOsLoginMode run_on_os_login_mode) override;
+  void OnWebAppUserDisplayModeChanged(
+      const web_app::AppId& app_id,
+      web_app::mojom::UserDisplayMode user_display_mode) override;
   void OnAppRegistrarDestroyed() override;
 
   // app_home::mojom::PageHandler:
@@ -93,6 +97,9 @@ class AppHomePageHandler
       web_app::RunOnOsLoginMode run_on_os_login_mode) override;
   void LaunchDeprecatedAppDialog() override;
   void InstallAppLocally(const std::string& app_id) override;
+  void SetUserDisplayMode(
+      const std::string& app_id,
+      web_app::mojom::UserDisplayMode display_mode) override;
 
  private:
   Browser* GetCurrentBrowser();
@@ -113,10 +120,11 @@ class AppHomePageHandler
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
                                         const std::u16string& error) override;
 
-  // Records result to UMA after OS Hooks are installed.
-  void OnOsHooksInstalled(const web_app::AppId& app_id,
-                          const web_app::OsHooksErrors os_hooks_errors);
   void InstallOsHooks(const web_app::AppId& app_id, web_app::AppLock* lock);
+  void LaunchAppInternal(const std::string& app_id,
+                         int source,
+                         app_home::mojom::ClickEventPtr click_event,
+                         bool force_launch_deprecated_apps);
   void ShowWebAppSettings(const std::string& app_id);
   void ShowExtensionAppSettings(const extensions::Extension* extension);
   void CreateWebAppShortcut(const std::string& app_id, base::OnceClosure done);

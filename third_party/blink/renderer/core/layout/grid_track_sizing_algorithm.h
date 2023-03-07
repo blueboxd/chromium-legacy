@@ -194,11 +194,8 @@ class GridTrackSizingAlgorithm final
   bool IsIntrinsicSizedGridArea(const LayoutBox&, GridAxis) const;
   void ComputeGridContainerIntrinsicSizes();
 
-  // Helper methods for step 4. Strech flexible tracks.
-  typedef HashSet<size_t,
-                  DefaultHash<size_t>,
-                  WTF::UnsignedWithZeroKeyHashTraits<size_t>>
-      TrackIndexSet;
+  // Helper methods for step 4. Stretch flexible tracks.
+  typedef HashSet<size_t, IntWithZeroKeyHashTraits<size_t>> TrackIndexSet;
   double ComputeFlexFactorUnitSize(
       const Vector<GridTrack>& tracks,
       double flex_factor_sum,

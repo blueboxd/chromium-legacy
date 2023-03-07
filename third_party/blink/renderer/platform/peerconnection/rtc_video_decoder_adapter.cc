@@ -9,9 +9,9 @@
 #include <functional>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -570,9 +570,6 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
 
   const webrtc::VideoCodecType video_codec_type =
       webrtc::PayloadStringToCodecType(format.name);
-
-  if (!Platform::Current()->IsWebRtcHWH264DecodingEnabled(video_codec_type))
-    return nullptr;
 
   // Bail early for unknown codecs.
   if (WebRtcToMediaVideoCodec(video_codec_type) == media::VideoCodec::kUnknown)

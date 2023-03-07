@@ -7,12 +7,15 @@
 #import <memory>
 
 #import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/task/single_thread_task_runner.h"
 #import "base/test/simple_test_clock.h"
 #import "components/favicon/core/large_icon_service_impl.h"
 #import "components/favicon/core/test/mock_favicon_service.h"
 #import "components/favicon_base/favicon_types.h"
 #import "components/reading_list/core/fake_reading_list_model_storage.h"
 #import "components/reading_list/core/reading_list_model_impl.h"
+#import "components/sync/base/storage_type.h"
 #import "components/url_formatter/url_formatter.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -50,8 +53,8 @@ class ReadingListMediatorTest
     auto storage = std::make_unique<FakeReadingListModelStorage>();
     base::WeakPtr<FakeReadingListModelStorage> storage_ptr =
         storage->AsWeakPtr();
-    model_ =
-        std::make_unique<ReadingListModelImpl>(std::move(storage), &clock_);
+    model_ = std::make_unique<ReadingListModelImpl>(
+        std::move(storage), syncer::StorageType::kUnspecified, &clock_);
     // Complete the initial model load from storage.
     storage_ptr->TriggerLoadCompletion();
 
@@ -61,7 +64,8 @@ class ReadingListMediatorTest
                            favicon_base::FaviconRawBitmapCallback callback,
                            base::CancelableTaskTracker* tracker) {
           return tracker->PostTask(
-              base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+              base::SingleThreadTaskRunner::GetCurrentDefault().get(),
+              FROM_HERE,
               base::BindOnce(std::move(callback),
                              favicon_base::FaviconRawBitmapResult()));
         });

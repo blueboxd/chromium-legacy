@@ -38,26 +38,27 @@ SignedWebBundleIntegrityBlock::Create(
                                        std::move(*signature_stack));
 }
 
-const std::vector<Ed25519PublicKey>
-SignedWebBundleIntegrityBlock::GetPublicKeyStack() const {
-  std::vector<Ed25519PublicKey> public_key_stack;
-  public_key_stack.reserve(signature_stack_.size());
-  base::ranges::transform(signature_stack_.entries(),
-                          std::back_inserter(public_key_stack),
-                          [](const auto& entry) { return entry.public_key(); });
-  return public_key_stack;
-}
-
 SignedWebBundleIntegrityBlock::SignedWebBundleIntegrityBlock(
-    const uint64_t size,
+    const uint64_t size_in_bytes,
     SignedWebBundleSignatureStack&& signature_stack)
-    : size_(size), signature_stack_(signature_stack) {
-  CHECK_GT(size_, 0ul);
+    : size_in_bytes_(size_in_bytes), signature_stack_(signature_stack) {
+  CHECK_GT(size_in_bytes_, 0ul);
 }
 
 SignedWebBundleIntegrityBlock::SignedWebBundleIntegrityBlock(
-    SignedWebBundleIntegrityBlock&&) = default;
+    const SignedWebBundleIntegrityBlock&) = default;
 SignedWebBundleIntegrityBlock& SignedWebBundleIntegrityBlock::operator=(
-    SignedWebBundleIntegrityBlock&&) = default;
+    const SignedWebBundleIntegrityBlock&) = default;
+
+bool SignedWebBundleIntegrityBlock::operator==(
+    const SignedWebBundleIntegrityBlock& other) const {
+  return size_in_bytes_ == other.size_in_bytes_ &&
+         signature_stack_ == other.signature_stack_;
+}
+
+bool SignedWebBundleIntegrityBlock::operator!=(
+    const SignedWebBundleIntegrityBlock& other) const {
+  return !operator==(other);
+}
 
 }  // namespace web_package

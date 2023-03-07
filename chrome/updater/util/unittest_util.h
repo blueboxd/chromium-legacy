@@ -8,12 +8,15 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/process/process_iterator.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TimeDelta;
-class FilePath;
 }  // namespace base
 
 namespace updater {
@@ -63,11 +66,12 @@ bool DeleteFileAndEmptyParentDirectories(
 base::FilePath GetLogDestinationDir();
 
 // Initializes the logging for the unit test and redirects the log output to
-// ${ISOLATED_OUTDIR} if the directory is available. The unit tests can't log
-// into the updater directory because that directory is touched by the
-// integration tests. This function must be called after the `base::TestSuite`
-// instance is created, because `base::TestSuite` initializes logging too.
-void InitLoggingForUnitTest();
+// ${ISOLATED_OUTDIR} if the directory is available. `log_base_path` is the base
+// name of the log file in the above directory. The unit tests can't log into
+// the updater directory because that directory is touched by the integration
+// tests. This function must be called after the `base::TestSuite` instance is
+// created, because `base::TestSuite` initializes logging too.
+void InitLoggingForUnitTest(const base::FilePath& log_base_path);
 
 #if BUILDFLAG(IS_WIN)
 // Change Windows Defender settings to skip scanning the paths used by the
@@ -84,7 +88,31 @@ base::FilePath StartProcmonLogging();
 // `C:\\tools\\Procmon.exe`, and `pml_file` needs to be a valid path to a
 // procmon PML file returned from `StartProcmonLogging`.
 void StopProcmonLogging(const base::FilePath& pml_file);
+
+// Returns a list of processes matching `executable_name`.
+const base::ProcessIterator::ProcessEntries FindProcesses(
+    const base::FilePath::StringType& executable_name);
+
+// Returns a log string of processes matching `executable_name`.
+base::FilePath::StringType PrintProcesses(
+    const base::FilePath::StringType& executable_name);
 #endif
+
+// Waits for a given `predicate` to become true. Invokes `still_waiting`
+// periodically to provide a indication of progress. Returns true if the
+// predicate becomes true before a timeout, otherwise returns false.
+[[nodiscard]] bool WaitFor(
+    base::RepeatingCallback<bool()> predicate,
+    base::RepeatingClosure still_waiting = base::DoNothing());
+
+struct EventHolder {
+  base::WaitableEvent event;
+  std::wstring name;
+};
+
+// Creates a waitable event with default attributes for the current process,
+// test, and test scope.
+EventHolder CreateWaitableEventForTest();
 
 }  // namespace updater::test
 

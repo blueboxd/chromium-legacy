@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_item.h"
@@ -129,8 +129,10 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaSessionNotificationItem
 
   bool frozen() const { return frozen_; }
 
-  // Returns nullptr if `remote_playback_disabled` is true in `session_info_`.
-  media_session::mojom::RemotePlaybackMetadataPtr GetRemotePlaybackMetadata();
+  // Returns nullptr if `remote_playback_disabled` is true in `session_info_` or
+  // the media duration is too short.
+  media_session::mojom::RemotePlaybackMetadataPtr GetRemotePlaybackMetadata()
+      const;
 
   void FlushForTesting();
 

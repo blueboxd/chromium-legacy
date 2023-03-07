@@ -11,8 +11,8 @@
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_lookup.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -272,7 +272,7 @@ void FastPairScannerImpl::OnDeviceLost(
 void FastPairScannerImpl::OnDevicePaired(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": device: " << device;
   if (device->classic_address()) {
-    ble_address_to_classic_[device->ble_address] =
+    ble_address_to_classic_[device->ble_address()] =
         device->classic_address().value();
   }
 }

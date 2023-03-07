@@ -4,17 +4,16 @@
 
 #include "chromeos/ash/services/libassistant/libassistant_loader_impl.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
@@ -27,8 +26,8 @@ namespace ash::libassistant {
 
 namespace {
 
-using InstallResult = chromeos::assistant::LibassistantDlcInstallResult;
-using LoadStatus = chromeos::assistant::LibassistantDlcLoadStatus;
+using InstallResult = assistant::LibassistantDlcInstallResult;
+using LoadStatus = assistant::LibassistantDlcLoadStatus;
 
 base::TaskTraits GetTaskTraits() {
   return {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
@@ -48,7 +47,7 @@ base::FilePath GetLibassisantPath(const std::string& root_path) {
   DCHECK(root_path == kLibAssistantDlcRootPath);
   base::FilePath libassistant_dlc_root =
       base::FilePath(root_path).AsEndingWithSeparator();
-  if (chromeos::assistant::features::IsLibAssistantV2Enabled()) {
+  if (assistant::features::IsLibAssistantV2Enabled()) {
     return libassistant_dlc_root.Append(base::FilePath(kLibAssistantV2DlcPath));
   }
 
@@ -89,7 +88,7 @@ void RecordLibassistantDlcLoadStatus(const LoadStatus& status) {
 }  // namespace
 
 void LibassistantLoaderImpl::Load(LoadCallback callback) {
-  if (!chromeos::assistant::features::IsLibAssistantDlcEnabled()) {
+  if (!assistant::features::IsLibAssistantDlcEnabled()) {
     std::move(callback).Run(/*success=*/true);
     return;
   }
@@ -159,7 +158,7 @@ void LibassistantLoaderImpl::OnInstallDlcComplete(
     return;
   }
 
-  if (chromeos::assistant::features::IsLibAssistantSandboxEnabled()) {
+  if (assistant::features::IsLibAssistantSandboxEnabled()) {
     // Will load the library later in the utility process.
     RunCallback(/*success=*/true);
     return;

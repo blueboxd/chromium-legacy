@@ -32,8 +32,8 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/components/phonehub/icon_decoder.h"
 #include "chromeos/ash/components/phonehub/phone_hub_manager.h"
@@ -104,6 +104,7 @@ PhoneHubTray::PhoneHubTray(Shelf* shelf)
                       ui::ImageModel::FromVectorIcon(
                           kPhoneHubPhoneIcon, kColorAshIconColorPrimary));
   icon_ = tray_container()->AddChildView(std::move(icon));
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 PhoneHubTray::~PhoneHubTray() {
@@ -112,6 +113,7 @@ PhoneHubTray::~PhoneHubTray() {
   if (phone_hub_manager_) {
     phone_hub_manager_->GetAppStreamManager()->RemoveObserver(this);
   }
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void PhoneHubTray::SetPhoneHubManager(
@@ -211,6 +213,13 @@ void PhoneHubTray::OnDisplayConfigurationChanged() {
 
 void PhoneHubTray::Initialize() {
   TrayBackgroundView::Initialize();
+  // For secondary displays to have Phone Hub visible, manager must
+  // be set.
+  phonehub::PhoneHubManager* phone_hub_tray_manager =
+      Shell::Get()->system_tray_model()->phone_hub_manager();
+  if (phone_hub_tray_manager) {
+    SetPhoneHubManager(phone_hub_tray_manager);
+  }
   UpdateVisibility();
 }
 
@@ -360,6 +369,12 @@ void PhoneHubTray::CloseBubble() {
 
   if (phone_status_view_dont_use_) {
     phone_status_view_dont_use_ = nullptr;
+  }
+
+  if (features::IsEcheSWAEnabled() && features::IsEcheLauncherEnabled() &&
+      phone_hub_manager_->GetAppStreamLauncherDataModel()) {
+    phone_hub_manager_->GetAppStreamLauncherDataModel()
+        ->SetShouldShowMiniLauncher(false);
   }
 
   bubble_.reset();

@@ -9,10 +9,10 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -882,15 +882,8 @@ CookieSamePartyStatus GetSamePartyStatus(
   };
 }
 
-base::OnceCallback<void(CookieAccessResult)> AdaptCookieAccessResultToBool(
-    base::OnceCallback<void(bool)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(bool)> inner_callback,
-         const CookieAccessResult access_result) {
-        bool success = access_result.status.IsInclude();
-        std::move(inner_callback).Run(success);
-      },
-      std::move(callback));
+bool IsCookieAccessResultInclude(CookieAccessResult cookie_access_result) {
+  return cookie_access_result.status.IsInclude();
 }
 
 CookieList StripAccessResults(

@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_TETHER_WIFI_HOTSPOT_CONNECTOR_H_
 #define CHROMEOS_ASH_COMPONENTS_TETHER_WIFI_HOTSPOT_CONNECTOR_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
@@ -69,9 +69,8 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
   void InitiateConnectionToCurrentNetwork();
   void CompleteActiveConnectionAttempt(bool success);
   void CreateWifiConfiguration();
-  base::DictionaryValue CreateWifiPropertyDictionary(
-      const std::string& ssid,
-      const std::string& password);
+  base::Value::Dict CreateWifiPropertyDictionary(const std::string& ssid,
+                                                 const std::string& password);
   void OnConnectionTimeout();
 
   void SetTestDoubles(std::unique_ptr<base::OneShotTimer> test_timer,

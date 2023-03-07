@@ -46,6 +46,13 @@ class PLATFORM_EXPORT TransformPaintPropertyNodeOrAlias
   bool Changed(PaintPropertyChangeType change,
                const TransformPaintPropertyNodeOrAlias& relative_to_node) const;
 
+  void AddChanged(PaintPropertyChangeType changed) {
+    DCHECK_NE(PaintPropertyChangeType::kUnchanged, changed);
+    GeometryMapperTransformCache::ClearCache();
+    GeometryMapperClipCache::ClearCache();
+    PaintPropertyNode::AddChanged(changed);
+  }
+
  protected:
   using PaintPropertyNode::PaintPropertyNode;
 };
@@ -56,12 +63,6 @@ class TransformPaintPropertyNodeAlias
   static scoped_refptr<TransformPaintPropertyNodeAlias> Create(
       const TransformPaintPropertyNodeOrAlias& parent) {
     return base::AdoptRef(new TransformPaintPropertyNodeAlias(parent));
-  }
-
-  PaintPropertyChangeType SetParent(
-      const TransformPaintPropertyNodeOrAlias& parent) {
-    DCHECK(IsParentAlias());
-    return PaintPropertyNode::SetParent(parent);
   }
 
  private:
@@ -95,33 +96,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     STACK_ALLOCATED();
   };
 
-  // For the purpose of computing the translation offset caused by CSS
-  // `anchor-scroll`, this structure stores the range of the scroll containers
-  // (both ends inclusive) whose scroll offsets are accumulated.
-  struct AnchorScrollContainersData {
-    USING_FAST_MALLOC(AnchorScrollContainersData);
-
-   public:
-    scoped_refptr<const TransformPaintPropertyNode> inner_most_scroll_container;
-    scoped_refptr<const TransformPaintPropertyNode> outer_most_scroll_container;
-    gfx::Vector2d accumulated_scroll_origin;
-
-    AnchorScrollContainersData(scoped_refptr<const TransformPaintPropertyNode>
-                                   inner_most_scroll_container,
-                               scoped_refptr<const TransformPaintPropertyNode>
-                                   outer_most_scroll_container,
-                               gfx::Vector2d accumulated_scroll_origin)
-        : inner_most_scroll_container(std::move(inner_most_scroll_container)),
-          outer_most_scroll_container(std::move(outer_most_scroll_container)),
-          accumulated_scroll_origin(accumulated_scroll_origin) {}
-
-    bool operator==(const AnchorScrollContainersData& other) const {
-      return inner_most_scroll_container == other.inner_most_scroll_container &&
-             outer_most_scroll_container == other.outer_most_scroll_container &&
-             accumulated_scroll_origin == other.accumulated_scroll_origin;
-    }
-  };
-
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct PLATFORM_EXPORT State {
@@ -149,7 +123,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
-    std::unique_ptr<AnchorScrollContainersData> anchor_scroll_containers_data;
+    std::unique_ptr<cc::AnchorScrollContainersData>
+        anchor_scroll_containers_data;
     // If a visible frame is rooted at this node, this represents the element
     // ID of the containing document.
     CompositorElementId visible_frame_element_id;
@@ -199,7 +174,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   }
 
   bool IsIdentityOr2dTranslation() const {
-    return state_.transform_and_origin.matrix.IsIdentityOr2DTranslation();
+    return state_.transform_and_origin.matrix.IsIdentityOr2dTranslation();
   }
   bool IsIdentity() const {
     return state_.transform_and_origin.matrix.IsIdentity();
@@ -254,7 +229,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.sticky_constraint.get();
   }
 
-  const AnchorScrollContainersData* GetAnchorScrollContainersData() const {
+  const cc::AnchorScrollContainersData* GetAnchorScrollContainersData() const {
     return state_.anchor_scroll_containers_data.get();
   }
 
@@ -425,24 +400,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #endif
   }
 
-  void AddChanged(PaintPropertyChangeType changed) {
-    // TODO(crbug.com/814815): This is a workaround of the bug. When the bug is
-    // fixed, change the following condition to
-    //   DCHECK(!transform_cache_ || !transform_cache_->IsValid());
-    DCHECK_NE(PaintPropertyChangeType::kUnchanged, changed);
-    if (transform_cache_ && transform_cache_->IsValid()) {
-      DLOG(WARNING) << "Transform tree changed without invalidating the cache.";
-      GeometryMapperTransformCache::ClearCache();
-      GeometryMapperClipCache::ClearCache();
-    }
-    TransformPaintPropertyNodeOrAlias::AddChanged(changed);
-  }
-
   // For access to GetTransformCache() and SetCachedTransform.
   friend class GeometryMapper;
   friend class GeometryMapperTest;
   friend class GeometryMapperTransformCache;
   friend class GeometryMapperTransformCacheTest;
+  friend class PaintPropertyTreeBuilderTest;
 
   const GeometryMapperTransformCache& GetTransformCache() const {
     if (!transform_cache_)

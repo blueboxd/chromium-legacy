@@ -8,16 +8,15 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/win/windows_version.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
 #include "device/bluetooth/bluetooth_classic_win.h"
@@ -51,16 +50,10 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter() {
 
 // static
 bool BluetoothAdapterWin::UseNewBLEWinImplementation() {
-  return base::FeatureList::IsEnabled(kNewBLEWinImplementation) &&
-         base::win::GetVersion() >= base::win::Version::WIN10;
+  return base::FeatureList::IsEnabled(kNewBLEWinImplementation);
 }
 
-BluetoothAdapterWin::BluetoothAdapterWin()
-    : BluetoothAdapter(),
-      initialized_(false),
-      powered_(false),
-      discovery_status_(NOT_DISCOVERING),
-      force_update_device_for_test_(false) {}
+BluetoothAdapterWin::BluetoothAdapterWin() = default;
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {
   if (task_manager_.get())

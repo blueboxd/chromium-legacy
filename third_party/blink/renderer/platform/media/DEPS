@@ -21,6 +21,7 @@ include_rules = [
   "+media/capabilities/bucket_utility.h",
   "+media/cdm",
   "+media/filters",
+  "+media/formats",
   "+media/learning/common",
   "+media/learning/mojo/public/cpp",
   "+media/media_buildflags.h",
@@ -33,6 +34,7 @@ include_rules = [
   "+net/http/http_version.h",
   "+services/device/public/mojom",
   "+services/media_session/public/cpp",
+  "+third_party/blink/renderer/platform/allow_discouraged_type.h",
   "+third_party/blink/renderer/platform/platform_export.h",
   "+third_party/blink/renderer/platform/wtf",
 ]

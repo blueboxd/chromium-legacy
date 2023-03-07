@@ -7,13 +7,13 @@
 
 #include "base/barrier_closure.h"
 #include "base/base_switches.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/metrics_hashes.h"
@@ -22,6 +22,7 @@
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -48,7 +49,6 @@
 #include "content/browser/renderer_host/navigation_type.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
@@ -62,8 +62,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/background_color_change_waiter.h"
@@ -142,8 +140,8 @@ int32_t InterfaceNameHasher(const std::string& interface_name) {
 }
 
 RenderFrameHost* FindRenderFrameHost(Page& page, const GURL& url) {
-  return content::FrameMatchingPredicate(
-      page, base::BindRepeating(&content::FrameHasSourceUrl, url));
+  return FrameMatchingPredicate(page,
+                                base::BindRepeating(&FrameHasSourceUrl, url));
 }
 
 ukm::SourceId ToSourceId(int64_t navigation_id) {
@@ -165,7 +163,7 @@ class DocumentData : public DocumentUserData<DocumentData> {
   explicit DocumentData(RenderFrameHost* render_frame_host)
       : DocumentUserData<DocumentData>(render_frame_host) {}
 
-  friend class content::DocumentUserData<DocumentData>;
+  friend class DocumentUserData<DocumentData>;
 
   base::WeakPtrFactory<DocumentData> weak_ptr_factory_{this};
 
@@ -177,13 +175,8 @@ DOCUMENT_USER_DATA_KEY_IMPL(DocumentData);
 using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
 using ukm::builders::Preloading_Attempt;
 using ukm::builders::Preloading_Prediction;
-
-PreloadingFailureReason ToPreloadingFailureReason(PrerenderFinalStatus status) {
-  return static_cast<PreloadingFailureReason>(
-      static_cast<int>(status) +
-      static_cast<int>(
-          PreloadingFailureReason::kPreloadingFailureReasonCommonEnd));
-}
+static const auto kMockElapsedTime =
+    base::ScopedMockElapsedTimersForTest::kMockElapsedTime;
 
 // Tests the params of WebContentsImpl that contains a prerendered page for a
 // new tab navigation.
@@ -191,13 +184,12 @@ void ExpectWebContentsIsForNewTabPrerendering(WebContentsImpl& web_contents) {
   // The primary page shows the initial blank page.
   EXPECT_TRUE(web_contents.GetLastCommittedURL().is_empty());
 
+  // The prerendering WebContents should not have an opener to avoid cross-page
+  // scripting during prerendering.
   EXPECT_FALSE(web_contents.HasOpener());
 
-  // In the current implementation, WebContentsImpl needs to be visible to start
-  // prerendering, but actually this WebContents is not visible to users. This
-  // should be fixed. See the TODO comment in the constructor of
-  // PrerenderNewTabHandle for details.
-  EXPECT_FALSE(web_contents.IsHidden());
+  // The prerendering WebContents should be hidden until prerender activation.
+  EXPECT_TRUE(web_contents.IsHidden());
 }
 
 class PrerenderBrowserTest : public ContentBrowserTest,
@@ -229,12 +221,10 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     host_resolver()->AddRule("*", "127.0.0.1");
     attempt_ukm_entry_builder_ =
         std::make_unique<test::PreloadingAttemptUkmEntryBuilder>(
-            ToPreloadingPredictor(
-                ContentPreloadingPredictor::kSpeculationRules));
+            content_preloading_predictor::kSpeculationRules);
     prediction_ukm_entry_builder_ =
         std::make_unique<test::PreloadingPredictionUkmEntryBuilder>(
-            ToPreloadingPredictor(
-                ContentPreloadingPredictor::kSpeculationRules));
+            content_preloading_predictor::kSpeculationRules);
     ssl_server_.AddDefaultHandlers(GetTestDataFilePath());
     ssl_server_.SetSSLConfig(
         net::test_server::EmbeddedTestServer::CERT_TEST_NAMES);
@@ -242,6 +232,8 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     WebContentsObserver::Observe(shell()->web_contents());
 
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+    scoped_test_timer_ =
+        std::make_unique<base::ScopedMockElapsedTimersForTest>();
   }
 
   void TearDownOnMainThread() override {
@@ -402,7 +394,7 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     RenderFrameHostImpl* navigated_render_frame_host = current_frame_host();
     // The new page shouldn't be in the prerendering state.
     navigated_render_frame_host->ForEachRenderFrameHost(
-        [](content::RenderFrameHostImpl* rfhi) {
+        [](RenderFrameHostImpl* rfhi) {
           // All the subframes should be transitioned to
           // LifecycleStateImpl::kActive state after activation.
           EXPECT_EQ(rfhi->lifecycle_state(),
@@ -518,6 +510,7 @@ class PrerenderBrowserTest : public ContentBrowserTest,
   std::unique_ptr<test::PreloadingPredictionUkmEntryBuilder>
       prediction_ukm_entry_builder_;
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
 };
 }  // namespace
 
@@ -581,7 +574,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationRulesPrerender) {
         PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
         PreloadingTriggeringOutcome::kSuccess,
         PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true);
+        /*accurate=*/true,
+        /*ready_time=*/kMockElapsedTime);
 
     UkmEntry prediction_expected_entry =
         prediction_ukm_entry_builder().BuildEntry(ukm_source_id,
@@ -632,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationInitiatorNavigateAway) {
         PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
         PreloadingTriggeringOutcome::kReady,
         PreloadingFailureReason::kUnspecified,
-        /*accurate=*/false);
+        /*accurate=*/false,
+        /*ready_time=*/kMockElapsedTime);
 
     UkmEntry prediction_expected_entry =
         prediction_ukm_entry_builder().BuildEntry(
@@ -1121,13 +1116,14 @@ void PrerenderBrowserTest::TestPrerenderAllowedOnIframeWithStatusCode(
   switch (origin_type) {
     case OriginType::kSameOrigin:
       // Wait for the completion of the iframe navigation.
-      iframe_navigation_manager.WaitForNavigationFinished();
+      ASSERT_TRUE(iframe_navigation_manager.WaitForNavigationFinished());
       break;
     case OriginType::kSameSiteCrossOrigin:
     case OriginType::kCrossSite:
       // Cross-origin iframe navigation is deferred in WillStartRequest() before
       // checking the status code.
-      iframe_navigation_manager.WaitForFirstYieldAfterDidStartNavigation();
+      ASSERT_TRUE(
+          iframe_navigation_manager.WaitForFirstYieldAfterDidStartNavigation());
       auto* request = static_cast<NavigationRequest*>(
           iframe_navigation_manager.GetNavigationHandle());
       EXPECT_TRUE(request->IsDeferredForTesting());
@@ -1606,6 +1602,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CloseOnPrerendering) {
 
   // Should not crash.
   shell()->Close();
+
+  ExpectFinalStatusForSpeculationRule(
+      PrerenderFinalStatus::kTabClosedWithoutUserGesture);
 }
 
 namespace {
@@ -1679,7 +1678,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SameOriginRedirection) {
         PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
         PreloadingTriggeringOutcome::kSuccess,
         PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true);
+        /*accurate=*/true,
+        /*ready_time=*/kMockElapsedTime);
 
     EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
         << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
@@ -2378,11 +2378,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ActivationDoesntRunThrottles) {
   NavigationThrottle* throttle = nullptr;
   // This will attempt to insert a throttle that DEFERs the navigation at
   // WillStartRequest into all new navigations.
-  content::ShellContentBrowserClient::Get()
+  ShellContentBrowserClient::Get()
       ->set_create_throttles_for_navigation_callback(base::BindLambdaForTesting(
-          [&throttle](content::NavigationHandle* handle)
-              -> std::vector<std::unique_ptr<content::NavigationThrottle>> {
-            std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+          [&throttle](NavigationHandle* handle)
+              -> std::vector<std::unique_ptr<NavigationThrottle>> {
+            std::vector<std::unique_ptr<NavigationThrottle>> throttles;
 
             auto throttle_ptr =
                 std::make_unique<TestNavigationThrottle>(handle);
@@ -2403,7 +2403,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ActivationDoesntRunThrottles) {
     TestNavigationManager prerender_manager(shell()->web_contents(),
                                             kPrerenderingUrl);
     AddPrerenderAsync(kPrerenderingUrl);
-    prerender_manager.WaitForFirstYieldAfterDidStartNavigation();
+    ASSERT_TRUE(prerender_manager.WaitForFirstYieldAfterDidStartNavigation());
     ASSERT_NE(throttle, nullptr);
 
     auto* request =
@@ -2413,7 +2413,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ActivationDoesntRunThrottles) {
     throttle = nullptr;
 
     request->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
-    prerender_manager.WaitForNavigationFinished();
+    ASSERT_TRUE(prerender_manager.WaitForNavigationFinished());
 
     int host_id = GetHostForUrl(kPrerenderingUrl);
     EXPECT_EQ(GetPrerenderedMainFrameHost(host_id)->GetLastCommittedURL(),
@@ -2674,11 +2674,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Insert TestPrerenderCancellerSubframeNavigationThrottle that cancels
   // prerendering on subframe navigation in a prerendered page. This should run
   // before PrerenderSubframeNavigationThrottle.
-  content::ShellContentBrowserClient::Get()
+  ShellContentBrowserClient::Get()
       ->set_create_throttles_for_navigation_callback(base::BindLambdaForTesting(
-          [](content::NavigationHandle* handle)
-              -> std::vector<std::unique_ptr<content::NavigationThrottle>> {
-            std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+          [](NavigationHandle* handle)
+              -> std::vector<std::unique_ptr<NavigationThrottle>> {
+            std::vector<std::unique_ptr<NavigationThrottle>> throttles;
             throttles.push_back(
                 std::make_unique<
                     TestPrerenderCancellerSubframeNavigationThrottle>(handle));
@@ -2736,7 +2736,7 @@ class MojoCapabilityControlTestContentBrowserClient
 
   void BindDeferInterface(
       RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<content::mojom::TestInterfaceForDefer> receiver) {
+      mojo::PendingReceiver<mojom::TestInterfaceForDefer> receiver) {
     defer_receiver_set_.Add(this, std::move(receiver));
   }
 
@@ -3019,7 +3019,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
 
   // 3. Wait until the navigation to `cross_origin_iframe_url` is deferred by
   // NavigationThrottle.
-  subframe_navigation_manager.WaitForFirstYieldAfterDidStartNavigation();
+  ASSERT_TRUE(
+      subframe_navigation_manager.WaitForFirstYieldAfterDidStartNavigation());
   FrameTreeNode* child_ftn =
       FrameTreeNode::GloballyFindByID(host_id)->child_at(0);
   NavigationRequest* child_navigation = child_ftn->navigation_request();
@@ -3413,7 +3414,7 @@ IN_PROC_BROWSER_TEST_P(SSLPrerenderBrowserTest,
   RequireClientCertsOrSendExpiredCerts();
 
   ASSERT_NE(prerender_helper()->GetHostForUrl(kPrerenderingUrl),
-            content::RenderFrameHost::kNoFrameTreeNodeId);
+            RenderFrameHost::kNoFrameTreeNodeId);
 
   // Fetch a subresrouce.
   std::string fetch_subresource_script = R"(
@@ -4120,7 +4121,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   int host_id = AddPrerender(kPrerenderingUrl);
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  test::PrerenderHostObserver host_observer(*web_contents(), host_id);
 
   // After being activated, the document can play audio and it should work as a
   // normal document.
@@ -4583,8 +4584,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
 
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
-        << content::test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                             expected_entries);
+        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
+                                                    expected_entries);
   }
 }
 
@@ -4680,9 +4681,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // Activate the embedder triggered prerender.
   test::PrerenderHostObserver embedder_observer(
       *web_contents(), GetHostForUrl(kEmbedderPrerender));
-  shell()->web_contents()->OpenURL(content::OpenURLParams(
-      kEmbedderPrerender, content::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB,
+  shell()->web_contents()->OpenURL(OpenURLParams(
+      kEmbedderPrerender, Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
       /*is_renderer_initiated=*/false));
@@ -4921,7 +4921,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
             PreloadingHoldbackStatus::kAllowed,
             PreloadingTriggeringOutcome::kSuccess,
             PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
         attempt_ukm_entry_builder().BuildEntry(
             ukm_source_id, PreloadingType::kPrerender,
             PreloadingEligibility::kEligible,
@@ -4933,8 +4934,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
 
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
-        << content::test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                             expected_entries);
+        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
+                                                    expected_entries);
   }
 }
 
@@ -4991,7 +4992,8 @@ IN_PROC_BROWSER_TEST_F(
             PreloadingHoldbackStatus::kAllowed,
             PreloadingTriggeringOutcome::kSuccess,
             PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
         attempt_ukm_entry_builder().BuildEntry(
             ukm_source_id, PreloadingType::kPrerender,
             PreloadingEligibility::kEligible,
@@ -5010,8 +5012,8 @@ IN_PROC_BROWSER_TEST_F(
 
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
-        << content::test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                             expected_entries);
+        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
+                                                    expected_entries);
   }
 }
 
@@ -5092,14 +5094,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
             PreloadingHoldbackStatus::kAllowed,
             PreloadingTriggeringOutcome::kSuccess,
             PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
         attempt_ukm_entry_builder().BuildEntry(
             ukm_source_id, PreloadingType::kPrerender,
             PreloadingEligibility::kEligible,
             PreloadingHoldbackStatus::kAllowed,
             PreloadingTriggeringOutcome::kReady,
             PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false),
+            /*accurate=*/false,
+            /*ready_time=*/kMockElapsedTime),
         attempt_ukm_entry_builder().BuildEntry(
             ukm_source_id, PreloadingType::kPrerender,
             PreloadingEligibility::kEligible,
@@ -5118,8 +5122,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
 
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
-        << content::test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                             expected_entries);
+        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
+                                                    expected_entries);
   }
 }
 
@@ -5327,7 +5331,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, InputRoutedToPrimaryFrameTree) {
   // Touch / click the link and wait for the navigation to complete.
   TestNavigationObserver navigation_observer(web_contents());
   SyntheticTapGestureParams params;
-  params.gesture_source_type = content::mojom::GestureSourceType::kTouchInput;
+  params.gesture_source_type = mojom::GestureSourceType::kTouchInput;
   params.position = GetCenterCoordinatesOfElementWithId(web_contents(), "link");
   web_contents_impl()->GetRenderViewHost()->GetWidget()->QueueSyntheticGesture(
       std::make_unique<SyntheticTapGesture>(params), base::DoNothing());
@@ -5502,7 +5506,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenURLInPrerenderingFrame) {
       kNewIframeUrl, Referrer(), child_frame->GetFrameTreeNodeId(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_SUBFRAME,
       /*is_renderer_initiated=*/false));
-  iframe_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(iframe_observer.WaitForNavigationFinished());
   EXPECT_TRUE(iframe_observer.was_committed());
   EXPECT_TRUE(iframe_observer.was_successful());
   EXPECT_EQ(child_frame->GetLastCommittedURL(), kNewIframeUrl);
@@ -5543,7 +5547,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DidFailLoadCancelsPrerendering) {
   // prerender disables the activation due to DidFailLoad.
   ASSERT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
                      JsReplace("location = $1", kPrerenderingUrl)));
-  navigation_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_observer.WaitForNavigationFinished());
   EXPECT_FALSE(prerender_observer.was_activated());
 
   ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kDidFailLoad);
@@ -5644,7 +5648,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
         kNewIframeUrl, Referrer(), child_frame->GetFrameTreeNodeId(),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_SUBFRAME,
         /*is_renderer_initiated=*/false));
-    iframe_observer.WaitForFirstYieldAfterDidStartNavigation();
+    ASSERT_TRUE(iframe_observer.WaitForFirstYieldAfterDidStartNavigation());
     NavigationRequest* request =
         static_cast<NavigationRequest*>(iframe_observer.GetNavigationHandle());
     EXPECT_EQ(request->state(), NavigationRequest::WILL_START_REQUEST);
@@ -5664,7 +5668,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Now that we're activated, the iframe navigation should be able to finish.
   // Ensure the navigation completes in the iframe.
   {
-    iframe_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(iframe_observer.WaitForNavigationFinished());
     child_frame = ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
     ASSERT_TRUE(child_frame);
     EXPECT_EQ(child_frame->GetLastCommittedURL(), kNewIframeUrl);
@@ -5710,7 +5714,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // be cancelled by PrerenderNavigationThrottle.
   TestNavigationManager bad_nav_observer(web_contents(), kPrerenderingUrl2);
   NavigatePrerenderedPage(prerender_host_id, kPrerenderingUrl2);
-  bad_nav_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(bad_nav_observer.WaitForNavigationFinished());
   EXPECT_FALSE(bad_nav_observer.was_successful());
 
   // PrerenderNavigationThrottle also cancels the activation and then starts
@@ -6100,7 +6104,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_TRUE(ExecJs(prerender_main_frame,
                      JsReplace(kNavigateScript, kCrossOriginUrl)));
 
-  iframe_nav_observer.WaitForFirstYieldAfterDidStartNavigation();
+  ASSERT_TRUE(iframe_nav_observer.WaitForFirstYieldAfterDidStartNavigation());
 
   // The PrerenderSubframeNavigationThrottle should defer it until activation.
   auto* child_ftn =
@@ -6114,7 +6118,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_TRUE(activation_observer.was_activated());
 
   // The iframe navigation should finish.
-  iframe_nav_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(iframe_nav_observer.WaitForNavigationFinished());
   EXPECT_EQ(ChildFrameAt(prerender_main_frame, 0)->GetLastCommittedURL(),
             kCrossOriginUrl);
 }
@@ -6168,53 +6172,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
         kNewIframeUrl, Referrer(), child_frame->GetFrameTreeNodeId(),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_SUBFRAME,
         /*is_renderer_initiated=*/false));
-    iframe_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(iframe_observer.WaitForNavigationFinished());
     EXPECT_EQ(child_frame->GetLastCommittedURL(), kNewIframeUrl);
   }
 
   // Allow the activation navigation to complete.
   activation_observer.WaitForNavigationFinished();
   EXPECT_TRUE(activation_observer.was_activated());
-}
-
-class ScopedDataSaverTestContentBrowserClient
-    : public TestContentBrowserClient {
- public:
-  ScopedDataSaverTestContentBrowserClient()
-      : old_client(SetBrowserClientForTesting(this)) {}
-  ~ScopedDataSaverTestContentBrowserClient() override {
-    SetBrowserClientForTesting(old_client);
-  }
-
-  // ContentBrowserClient overrides:
-  bool IsDataSaverEnabled(BrowserContext* context) override { return true; }
-
-  void OverrideWebkitPrefs(WebContents* web_contents,
-                           blink::web_pref::WebPreferences* prefs) override {
-    prefs->data_saver_enabled = true;
-  }
-
- private:
-  raw_ptr<ContentBrowserClient> old_client;
-};
-
-// Tests that prerender doesn't run when Data Saver mode is enabled.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DataSaver) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
-
-  // Enable data saver.
-  ScopedDataSaverTestContentBrowserClient scoped_content_browser_client;
-  shell()->web_contents()->OnWebPreferencesChanged();
-
-  test::PrerenderHostRegistryObserver observer(*web_contents_impl());
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-  AddPrerenderAsync(kPrerenderingUrl);
-  observer.WaitForTrigger(kPrerenderingUrl);
-
-  // Prerendering should fail.
-  ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kDataSaverEnabled);
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
 }
 
 // Tests that loading=lazy doesn't prevent image load in a prerendered page.
@@ -6278,7 +6242,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   process_host_watcher->Wait();
 
   // Navigate back to the initial page.
-  content::TestNavigationObserver observer(shell()->web_contents());
+  TestNavigationObserver observer(shell()->web_contents());
   shell()->GoBackOrForward(-1);
   observer.Wait();
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), kInitialUrl);
@@ -6321,7 +6285,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                      "new Promise(resolve => requestIdleCallback(resolve));"));
 
   // Navigate back to the initial page.
-  content::TestNavigationObserver observer(shell()->web_contents());
+  TestNavigationObserver observer(shell()->web_contents());
   shell()->GoBackOrForward(-1);
   observer.Wait();
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), kInitialUrl);
@@ -6355,7 +6319,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AbandonIfRendererProcessCrashes) {
     // We have no other ForceCrash() call sites on other than Linux and CrOS.
     // In this test, we call Shutdown(content::RESULT_CODE_HUNG) instead as
     // HungRenderDialogView does so on other platforms than Linux and CrOS.
-    process->Shutdown(content::RESULT_CODE_HUNG);
+    process->Shutdown(RESULT_CODE_HUNG);
 #else
     // On Android, ForceCrash results in TERMINATION_STATUS_NORMAL_TERMINATION.
     // On other platforms, it does in TERMINATION_STATUS_PROCESS_CRASHED.
@@ -6395,6 +6359,32 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AbandonIfRendererProcessIsKilled) {
 
   ExpectFinalStatusForSpeculationRule(
       PrerenderFinalStatus::kRendererProcessKilled);
+}
+
+// Test if the host is abandoned when the primary main page that triggers a
+// prerendering is killed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       AbandonIfPrimaryMainFrameRendererProcessIsKilled) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start a prerender.
+  int host_id = AddPrerender(kPrerenderingUrl);
+
+  // Shut down the current renderer.
+  {
+    test::PrerenderHostObserver host_observer(*web_contents_impl(), host_id);
+    RenderProcessHost* process = current_frame_host()->GetProcess();
+    ScopedAllowRendererCrashes allow_renderer_crashes(process);
+    EXPECT_TRUE(process->Shutdown(0));
+    host_observer.WaitForDestroyed();
+  }
+
+  ExpectFinalStatusForSpeculationRule(
+      PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled);
 }
 
 class PrerenderBackForwardCacheBrowserTest : public PrerenderBrowserTest {
@@ -6704,7 +6694,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
   }
 
   // Navigate back to the initial page.
-  content::TestNavigationObserver observer(web_contents());
+  TestNavigationObserver observer(web_contents());
   shell()->GoBackOrForward(-1);
   observer.Wait();
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
@@ -6784,7 +6774,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
   test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
 
   // Navigate back to the initial page.
-  content::TestNavigationObserver navigation_observer(web_contents());
+  TestNavigationObserver navigation_observer(web_contents());
   shell()->GoBackOrForward(-1);
   navigation_observer.Wait();
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
@@ -7142,7 +7132,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SkipCrossSitePrerender) {
         PreloadingHoldbackStatus::kUnspecified,
         PreloadingTriggeringOutcome::kUnspecified,
         PreloadingFailureReason::kUnspecified,
-
         /*accurate=*/true);
 
     EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
@@ -7433,7 +7422,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSameSiteCrossOriginBrowserTest,
         PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
         PreloadingTriggeringOutcome::kSuccess,
         PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true);
+        /*accurate=*/true,
+        /*ready_time=*/kMockElapsedTime);
 
     EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
         << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
@@ -7509,7 +7499,8 @@ IN_PROC_BROWSER_TEST_F(
         PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
         PreloadingTriggeringOutcome::kSuccess,
         PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true);
+        /*accurate=*/true,
+        /*ready_time=*/kMockElapsedTime);
 
     EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
         << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
@@ -7551,11 +7542,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // redirect.
   RedirectChainObserver activation_redirect_chain_observer(
       *shell()->web_contents(), redirected_url_node_2);
-  content::test::PrerenderHostObserver prerender_observer(
-      *web_contents_impl(), prerender_initial_url);
-  shell()->web_contents()->OpenURL(content::OpenURLParams(
-      prerender_initial_url, content::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB,
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                 prerender_initial_url);
+  shell()->web_contents()->OpenURL(OpenURLParams(
+      prerender_initial_url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
       /*is_renderer_initiated=*/false));
@@ -7742,8 +7732,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ColorSchemeDarkInNonPrimaryPage) {
   const GURL kPrerenderingUrl = GetUrl("/color-scheme-dark.html");
 
   // Expect initial page background color to be white.
-  content::BackgroundColorChangeWaiter empty_page_background_waiter(
-      web_contents());
+  BackgroundColorChangeWaiter empty_page_background_waiter(web_contents());
 
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -7761,7 +7750,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ColorSchemeDarkInNonPrimaryPage) {
     AddPrerender(kPrerenderingUrl);
   }
 
-  content::BackgroundColorChangeWaiter prerendered_page_background_waiter(
+  BackgroundColorChangeWaiter prerendered_page_background_waiter(
       web_contents());
   // Now set up a mock observer for BackgroundColorChanged, to test if the
   // mocked observer executes BackgroundColorChanged when activating the
@@ -7796,7 +7785,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
     AddPrerender(kPrerenderingUrl);
   }
 
-  content::ThemeChangeWaiter theme_change_waiter(web_contents());
+  ThemeChangeWaiter theme_change_waiter(web_contents());
   testing::NiceMock<MockWebContentsObserver> theme_color_observer(
       web_contents());
   EXPECT_CALL(theme_color_observer, DidChangeThemeColor()).Times(Exactly(1));
@@ -8420,7 +8409,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ExecJs(
       prerender_rfh,
       JsReplace("document.querySelector('iframe').src = $1", kSubframeUrl2)));
-  subframe_nav_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(subframe_nav_manager.WaitForNavigationFinished());
 
   // We should not dismiss dialogs when the prerender's subframe navigates and
   // swaps its RFH.
@@ -8519,7 +8508,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    ->has_received_user_gesture_before_nav());
 
   // Activate the prerendered page.
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  test::PrerenderHostObserver host_observer(*web_contents(), host_id);
   NavigatePrimaryPage(prerendering_url);
   ASSERT_TRUE(host_observer.was_activated());
 
@@ -8555,7 +8544,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    ->has_received_user_gesture_before_nav());
 
   // Activate the prerendered page.
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  test::PrerenderHostObserver host_observer(*web_contents(), host_id);
   NavigatePrimaryPage(prerendering_url);
   ASSERT_TRUE(host_observer.was_activated());
 
@@ -8565,8 +8554,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                   ->has_received_user_gesture_before_nav());
 }
 
+// TODO(https://crbug.com/1408911): This test is flaky on Mac bots.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CancelPrerenderWhenIsOverridingUserAgentDiffers \
+  DISABLED_CancelPrerenderWhenIsOverridingUserAgentDiffers
+#else
+#define MAYBE_CancelPrerenderWhenIsOverridingUserAgentDiffers \
+  CancelPrerenderWhenIsOverridingUserAgentDiffers
+#endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       CancelPrerenderWhenIsOverridingUserAgentDiffers) {
+                       MAYBE_CancelPrerenderWhenIsOverridingUserAgentDiffers) {
   const std::string user_agent_override = "foo";
 
   // Navigate to an initial page.
@@ -8589,7 +8586,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   injector.set_is_overriding_user_agent(false);
 
   // Activate the prerendered page.
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  test::PrerenderHostObserver host_observer(*web_contents(), host_id);
   NavigatePrimaryPage(prerendering_url);
   host_observer.WaitForDestroyed();
 
@@ -8989,7 +8986,7 @@ class PrerenderClientHintsBrowserTest : public PrerenderBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
                        PrerenderResponseChangesClientHintsLocally) {
   MockClientHintsControllerDelegate client_hints_controller_delegate(
-      content::GetShellUserAgentMetadata());
+      GetShellUserAgentMetadata());
   ShellContentBrowserClient::Get()
       ->browser_context()
       ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
@@ -9018,8 +9015,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
   EXPECT_TRUE(HasRequestHeader(prerender_iframe_url, "sec-ch-ua-full-version"));
   EXPECT_TRUE(HasRequestHeader(prerender_iframe_url, "sec-ch-ua-bitness"));
 
-  content::test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
-                                                          host_id);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
   NavigatePrimaryPage(prerender_url);
 
   // The prerendered page should be activated successfully. The settings on the
@@ -9041,7 +9037,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
                        ChangesToClientHintsAreDiscardIfNoActivation) {
   MockClientHintsControllerDelegate client_hints_controller_delegate(
-      content::GetShellUserAgentMetadata());
+      GetShellUserAgentMetadata());
   ShellContentBrowserClient::Get()
       ->browser_context()
       ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
@@ -9055,8 +9051,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
   GURL real_navigate_url = GetUrl("/empty.html?real");
 
   int host_id = AddPrerender(prerender_url);
-  content::test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
-                                                          host_id);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
   WaitForPrerenderLoadCompleted(host_id);
   NavigatePrimaryPage(real_navigate_url);
 
@@ -9076,7 +9071,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
                        PrimaryResponsesDoNotResetPrenderSettings) {
   MockClientHintsControllerDelegate client_hints_controller_delegate(
-      content::GetShellUserAgentMetadata());
+      GetShellUserAgentMetadata());
   ShellContentBrowserClient::Get()
       ->browser_context()
       ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
@@ -9112,8 +9107,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest,
   WaitForRequest(new_tab_image_url, 1);
   EXPECT_FALSE(HasRequestHeader(new_tab_url, "sec-ch-ua-full-version"));
 
-  content::test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
-                                                          host_id);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
   NavigatePrimaryPage(prerender_url);
 
   // The prerendered page should be activated successfully.
@@ -9264,8 +9258,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
           *web_contents_impl(), prerendering_url, redirected_url);
   test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
                                                  prerendering_url);
-  shell()->web_contents()->OpenURL(content::OpenURLParams(
-      prerendering_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+  shell()->web_contents()->OpenURL(OpenURLParams(
+      prerendering_url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
       /*is_renderer_initiated=*/false));
@@ -9293,8 +9287,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
           *web_contents_impl(), prerendering_url, redirected_url);
   test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
                                                  prerendering_url);
-  shell()->web_contents()->OpenURL(content::OpenURLParams(
-      prerendering_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+  shell()->web_contents()->OpenURL(OpenURLParams(
+      prerendering_url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
       /*is_renderer_initiated=*/false));

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_P(
       ExecJs(web_contents()->GetPrimaryMainFrame(),
              content::JsReplace("document.querySelector('iframe').src = $1",
                                 download_url)));
-  navigation_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_observer.WaitForNavigationFinished());
   EXPECT_FALSE(navigation_observer.was_successful());
 
   GetHistogramTester()->ExpectBucketCount(
@@ -699,7 +699,7 @@ IN_PROC_BROWSER_TEST_P(DownloadFramePolicyBrowserTest_UpdateIframeSandboxFlags,
                                                      download_url);
   EXPECT_TRUE(ExecJs(GetSubframeRfh(),
                      content::JsReplace("top.location = $1", download_url)));
-  navigation_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_observer.WaitForNavigationFinished());
   EXPECT_FALSE(navigation_observer.was_successful());
 
   GetHistogramTester()->ExpectBucketCount(

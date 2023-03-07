@@ -7,6 +7,8 @@
 
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
 
+#include <memory>
+
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
@@ -23,9 +25,9 @@
 // Concrete NearbyConnectionsManager implementation.
 class NearbyConnectionsManagerImpl
     : public NearbyConnectionsManager,
-      public location::nearby::connections::mojom::EndpointDiscoveryListener,
-      public location::nearby::connections::mojom::ConnectionLifecycleListener,
-      public location::nearby::connections::mojom::PayloadListener {
+      public nearby::connections::mojom::EndpointDiscoveryListener,
+      public nearby::connections::mojom::ConnectionLifecycleListener,
+      public nearby::connections::mojom::PayloadListener {
  public:
   NearbyConnectionsManagerImpl(
       ash::nearby::NearbyProcessManager* process_manager,
@@ -68,31 +70,28 @@ class NearbyConnectionsManagerImpl
   absl::optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
   void UpgradeBandwidth(const std::string& endpoint_id) override;
+  base::WeakPtr<NearbyConnectionsManager> GetWeakPtr() override;
 
  private:
-  using AdvertisingOptions =
-      location::nearby::connections::mojom::AdvertisingOptions;
-  using ConnectionInfoPtr =
-      location::nearby::connections::mojom::ConnectionInfoPtr;
-  using ConnectionOptions =
-      location::nearby::connections::mojom::ConnectionOptions;
+  using AdvertisingOptions = nearby::connections::mojom::AdvertisingOptions;
+  using ConnectionInfoPtr = nearby::connections::mojom::ConnectionInfoPtr;
+  using ConnectionOptions = nearby::connections::mojom::ConnectionOptions;
   using ConnectionLifecycleListener =
-      location::nearby::connections::mojom::ConnectionLifecycleListener;
+      nearby::connections::mojom::ConnectionLifecycleListener;
   using DiscoveredEndpointInfoPtr =
-      location::nearby::connections::mojom::DiscoveredEndpointInfoPtr;
-  using DiscoveryOptions =
-      location::nearby::connections::mojom::DiscoveryOptions;
+      nearby::connections::mojom::DiscoveredEndpointInfoPtr;
+  using DiscoveryOptions = nearby::connections::mojom::DiscoveryOptions;
   using EndpointDiscoveryListener =
-      location::nearby::connections::mojom::EndpointDiscoveryListener;
-  using MediumSelection = location::nearby::connections::mojom::MediumSelection;
-  using PayloadListener = location::nearby::connections::mojom::PayloadListener;
+      nearby::connections::mojom::EndpointDiscoveryListener;
+  using MediumSelection = nearby::connections::mojom::MediumSelection;
+  using PayloadListener = nearby::connections::mojom::PayloadListener;
   using PayloadTransferUpdate =
-      location::nearby::connections::mojom::PayloadTransferUpdate;
-  using PayloadStatus = location::nearby::connections::mojom::PayloadStatus;
+      nearby::connections::mojom::PayloadTransferUpdate;
+  using PayloadStatus = nearby::connections::mojom::PayloadStatus;
   using PayloadTransferUpdatePtr =
-      location::nearby::connections::mojom::PayloadTransferUpdatePtr;
-  using Status = location::nearby::connections::mojom::Status;
-  using Medium = location::nearby::connections::mojom::Medium;
+      nearby::connections::mojom::PayloadTransferUpdatePtr;
+  using Status = nearby::connections::mojom::Status;
+  using Medium = nearby::connections::mojom::Medium;
 
   FRIEND_TEST_ALL_PREFIXES(NearbyConnectionsManagerImplTest,
                            DiscoveryProcessStopped);
@@ -124,8 +123,7 @@ class NearbyConnectionsManagerImpl
   void OnNearbyProcessStopped(
       ash::nearby::NearbyProcessManager::NearbyProcessShutdownReason
           shutdown_reason);
-  location::nearby::connections::mojom::NearbyConnections*
-  GetNearbyConnections();
+  nearby::connections::mojom::NearbyConnections* GetNearbyConnections();
   void Reset();
 
   void OnFileCreated(int64_t payload_id,

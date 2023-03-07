@@ -585,7 +585,7 @@ if (!is_fuchsia) {
       "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
       "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
       "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-      "$root_gen_dir/ui/resources/webui_generated_resources.pak",
+      "$root_gen_dir/ui/resources/webui_resources.pak",
       "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
       "$root_gen_dir/ui/strings/ax_strings_en-US.pak",
       "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -617,6 +617,7 @@ if (!is_fuchsia) {
     repack("_cast_repack_${locale}") {
       visibility = [ ":chromecast_locales_pak" ]
       output = "$root_out_dir/chromecast_locales/${locale}.pak"
+      mark_as_data = true
       sources =
           [ "$root_gen_dir/chromecast/app/chromecast_settings_${locale}.pak" ]
       deps = [ "//chromecast/app:chromecast_settings" ]
@@ -637,9 +638,9 @@ if (!is_fuchsia) {
 
   # A meta-target which repacks resources by locale.
   group("chromecast_locales_pak") {
-    data_deps = []
+    public_deps = []
     foreach(locale, cast_locales) {
-      data_deps += [ ":_cast_repack_${locale}" ]
+      public_deps += [ ":_cast_repack_${locale}" ]
     }
   }
 }  # !is_fuchsia
@@ -678,8 +679,8 @@ if (is_android) {
     deps = [
       ":cast_shell_apk_locale_assets",
       ":cast_shell_pak",
+      "//gin:v8_snapshot_assets",
       "//third_party/icu:icu_assets",
-      "//v8:v8_external_startup_data_assets",
     ]
     disable_compression = true
   }
@@ -742,7 +743,7 @@ if (is_android) {
         min_sdk_version = 24
         target_sdk_version = 33
 
-        package_name = "cast_browser"
+        module_name = "cast_browser"
 
         # |package_id| is required because the default one conflicts with the base
         # modules' ID (0x7f).

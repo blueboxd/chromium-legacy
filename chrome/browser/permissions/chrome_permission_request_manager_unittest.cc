@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <string>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -608,16 +608,15 @@ TEST_F(ChromePermissionRequestManagerTest,
   WaitForBubbleToBeShown();
   Deny();
 
-  DictionaryPrefUpdate update(profile()->GetPrefs(),
+  ScopedDictPrefUpdate update(profile()->GetPrefs(),
                               permissions::prefs::kPermissionActions);
-  const auto& permissions_actions =
-      update->FindListPath("notifications")->GetList();
+  const auto& permissions_actions = *update->FindList("notifications");
   PermissionActionsHistoryFactory::GetForProfile(profile())->ClearHistory(
       from_time, to_time);
 
   // Check that we have cleared all entries >= |from_time| and <|end_time|.
   EXPECT_EQ(permissions_actions.size(), 3u);
-  EXPECT_EQ((base::ValueToTime(permissions_actions[0].FindKey("time")))
+  EXPECT_EQ((base::ValueToTime(permissions_actions[0].GetDict().Find("time")))
                 .value_or(base::Time()),
             recorded_time);
 }

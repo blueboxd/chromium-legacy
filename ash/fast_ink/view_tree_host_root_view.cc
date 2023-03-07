@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/display_item_list.h"
@@ -447,7 +447,8 @@ void ViewTreeHostRootView::SubmitCompositorFrame() {
   viz::TransferableResource transferable_resource =
       viz::TransferableResource::MakeGpu(
           resource->mailbox, GL_LINEAR, GL_TEXTURE_2D, resource->sync_token,
-          buffer_size_, viz::RGBA_8888, is_overlay_candidate_);
+          buffer_size_, SK_B32_SHIFT ? viz::RGBA_8888 : viz::BGRA_8888,
+          is_overlay_candidate_);
   transferable_resource.id = id_generator_.GenerateNextId();
 
   gfx::Transform buffer_to_target_transform =

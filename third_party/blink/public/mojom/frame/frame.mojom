@@ -27,6 +27,7 @@ import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
 import "third_party/blink/public/mojom/favicon/favicon_url.mojom";
 import "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom";
+import "third_party/blink/public/mojom/fenced_frame/fenced_frame_config.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
@@ -148,6 +149,24 @@ enum TraverseCancelledReason {
   kSandboxViolation,
 };
 
+// The ViewTransitionOnNavigation opt-in state for a Document. This indicates
+// whether this Document wants to enable a ViewTransition for same-origin
+// cross-document navigations initiated from it.
+enum ViewTransitionSameOriginOptIn {
+  kDisabled,
+  kEnabled,
+};
+
+enum FrameOwnerElementType {
+  kNone,
+  kIframe,
+  kObject,
+  kEmbed,
+  kFrame,
+  kPortal,
+  kFencedframe
+};
+
 // The maximum number of characters of the document's title that we're willing
 // to accept in the browser process.
 const uint16 kMaxTitleChars = 4096; // 4 * 1024;
@@ -163,13 +182,13 @@ struct IframeAttributes {
   network.mojom.ContentSecurityPolicy? parsed_csp_attribute;
   // 'credentialless' attribute of the iframe.
   bool credentialless;
-  // 'id' attribute of the iframe.
-  string id;
+  // 'id' attribute of the iframe. This can be optional because id might not be set.
+  string? id;
   // 'name' attribute of the iframe. This is different from window.name, which is
-  // tracked in FrameReplicationState.
-  string name;
-  // 'src' attribute of the iframe.
-  string src;
+  // tracked in FrameReplicationState. Optional because it might not be set.
+  string? name;
+  // 'src' attribute of the iframe. Optional because it might not be set.
+  string? src;
 };
 
 // An opaque handle that keeps alive the associated render process even after
@@ -564,6 +583,21 @@ interface LocalFrameHost {
   // RemoteFrameHost messages already signal the browser via RouteMessageEvent.
   ReceivedDelegatedCapability(DelegatedCapability delegated_capability);
 
+  // See:
+  // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
+  //
+  // This implements the API:
+  // window.fence.reportEvent({eventType, eventData, destination})
+  //
+  // A document in a fenced frames can invoke the reportEvent API to request the
+  // browser to send `eventData` in a beacon toward the URL registered against
+  // `eventType` by the worklet in registerAdBeacon. Depending on the declared
+  // `destination`, the beacon is sent to either the buyer's or the seller's
+  // registered URL.
+  SendFencedFrameReportingBeacon(string event_data,
+                                 string event_type,
+                                 ReportingDestination destination);
+
   // Sent by the renderer process to request the creation of a new portal.
   // |portal| is the pipe to be used for the Portal object, |client| is the pipe
   // used to communicate back with the caller. Returns:
@@ -611,6 +645,12 @@ interface LocalFrameHost {
       RemoteFrameInterfacesFromRenderer remote_frame_interfaces,
       blink.mojom.RemoteFrameToken frame_token,
       mojo_base.mojom.UnguessableToken devtools_frame_token);
+
+  // Notifies when the ViewTransition opt-in state for the current Document
+  // changes.
+  // See https://github.com/WICG/view-transitions/blob/main/explainer.md#declarative-opt-in-to-transitions.
+  OnViewTransitionOptInChanged(
+    ViewTransitionSameOriginOptIn view_transition_opt_in);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods
@@ -647,6 +687,22 @@ interface LocalFrame {
   GetTextSurroundingSelection(uint32 max_length)
       => (mojo_base.mojom.String16 content, uint32 start_offset,
           uint32 end_offset);
+
+  // Report ResourceTiming information about cancelled navigation in iframe
+  // initiated from this document. This is required to prevent revealing
+  // information about the status codes to the parent frame. (See crbug.com/1346924)
+  //
+  // Example of cancelled navigations:
+  // - 204 - No Content
+  // - 205 - Reset Content
+  // - Extension blocking navigation (e.g. Ad blocker)
+  // - etc
+  //
+  // |parent_frame_element_type| is used on the blink side to determine the
+  // 'initiator_type' of the entry.
+  AddResourceTimingEntryFromNonNavigatedFrame(
+    ResourceTimingInfo timing,
+    blink.mojom.FrameOwnerElementType parent_frame_element_type);
 
   // Creates an intervention report in the frame with contents |id| and
   // |message|, returns once the report has been queued. |id| identifies the

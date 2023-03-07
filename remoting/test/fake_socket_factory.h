@@ -10,9 +10,10 @@
 #include <list>
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "third_party/webrtc/api/packet_socket_factory.h"
@@ -99,11 +100,10 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
  private:
   struct PendingPacket {
     PendingPacket();
-    PendingPacket(
-        const rtc::SocketAddress& from,
-        const rtc::SocketAddress& to,
-        const scoped_refptr<net::IOBuffer>& data,
-        int data_size);
+    PendingPacket(const rtc::SocketAddress& from,
+                  const rtc::SocketAddress& to,
+                  const scoped_refptr<net::IOBuffer>& data,
+                  int data_size);
     PendingPacket(const PendingPacket& other);
     ~PendingPacket();
 

@@ -240,7 +240,6 @@ static_js_files = [
 ts_files = [
   # Common.
   "file_manager/common/js/dom_utils.ts",
-  "file_manager/common/js/tslib_shim.ts",
   "file_manager/common/js/trash.ts",
   "file_manager/common/js/entry_utils.ts",
 
@@ -283,6 +282,7 @@ ts_files = [
   "file_manager/widgets/xf_search_options.ts",
   "file_manager/widgets/xf_select.ts",
   "file_manager/widgets/xf_splitter.ts",
+  "file_manager/widgets/xf_pie_progress.ts",
   "file_manager/foreground/js/ui/search_autocomplete_list.ts",
   "file_manager/widgets/xf_tree.ts",
   "file_manager/widgets/xf_tree_item.ts",
@@ -310,7 +310,9 @@ ts_templates = [
 
 ts_test_files = [
   # Containers
+  "file_manager/containers/breadcrumb_container_unittest.ts",
   "file_manager/containers/nudge_container_unittest.ts",
+  "file_manager/containers/search_container_unittest.ts",
 
   # Lib:
   "file_manager/lib/base_store_unittest.ts",
@@ -397,6 +399,7 @@ generated_js_files = [
   "file_manager/foreground/js/ui/banners/drive_out_of_organization_space_banner.js",
   "file_manager/foreground/js/ui/banners/drive_offline_pinning_banner.js",
   "file_manager/foreground/js/ui/banners/drive_welcome_banner.js",
+  "file_manager/foreground/js/ui/banners/google_one_offer_banner.js",
   "file_manager/foreground/js/ui/banners/educational_banner.js",
   "file_manager/foreground/js/ui/banners/holding_space_welcome_banner.js",
   "file_manager/foreground/js/ui/banners/invalid_usb_filesystem_banner.js",

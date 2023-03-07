@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ Vector<String> LayoutObjectToDebugStringList(NGInlineCursor cursor) {
   return list;
 }
 
-class NGInlineCursorTest : public NGLayoutTest,
+class NGInlineCursorTest : public RenderingTest,
                            public testing::WithParamInterface<bool> {
  protected:
   NGInlineCursor SetupCursor(const String& html) {
@@ -293,12 +293,8 @@ TEST_P(NGInlineCursorTest, CulledInlineBlockChild) {
   )HTML");
   NGInlineCursor cursor;
   cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
-  if (RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) {
-    EXPECT_THAT(LayoutObjectToDebugStringList(cursor),
-                ElementsAre("#culled", "#culled", "#culled"));
-  } else {
-    EXPECT_THAT(LayoutObjectToDebugStringList(cursor), ElementsAre("#culled"));
-  }
+  EXPECT_THAT(LayoutObjectToDebugStringList(cursor),
+              ElementsAre("#culled", "#culled", "#culled"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
@@ -323,8 +319,6 @@ TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
 }
 
 TEST_P(NGInlineCursorTest, CursorForMovingAcrossFragmentainer) {
-  RuntimeEnabledFeaturesTestHelpers::ScopedLayoutNGBlockFragmentation
-      block_fragmentation(true);
   LoadAhem();
   InsertStyleElement(
       "div { font: 10px/15px Ahem; column-count: 2; width: 20ch; }");
@@ -537,8 +531,6 @@ TEST_P(NGInlineCursorTest, Next) {
 }
 
 TEST_P(NGInlineCursorTest, NextIncludingFragmentainer) {
-  RuntimeEnabledFeaturesTestHelpers::ScopedLayoutNGBlockFragmentation
-      block_fragmentation(true);
   // TDOO(yosin): Remove style for <b> once NGFragmentItem don't do culled
   // inline.
   LoadAhem();
@@ -1050,8 +1042,6 @@ TEST_P(NGInlineCursorTest, Previous) {
 }
 
 TEST_P(NGInlineCursorTest, PreviousIncludingFragmentainer) {
-  RuntimeEnabledFeaturesTestHelpers::ScopedLayoutNGBlockFragmentation
-      block_fragmentation(true);
   // TDOO(yosin): Remove style for <b> once NGFragmentItem don't do culled
   // inline.
   LoadAhem();
@@ -1245,13 +1235,7 @@ TEST_P(NGInlineCursorTest, MoveToVisualFirstOrLast) {
   EXPECT_EQ("NGPhysicalTextFragment 'some'", cursor2.Current()->ToString());
 }
 
-class NGInlineCursorBlockFragmentationTest
-    : public NGLayoutTest,
-      private ScopedLayoutNGBlockFragmentationForTest {
- public:
-  NGInlineCursorBlockFragmentationTest()
-      : ScopedLayoutNGBlockFragmentationForTest(true) {}
-};
+class NGInlineCursorBlockFragmentationTest : public RenderingTest {};
 
 TEST_F(NGInlineCursorBlockFragmentationTest, MoveToLayoutObject) {
   // This creates 3 columns, 1 line in each column.

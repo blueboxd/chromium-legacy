@@ -27,18 +27,19 @@
 #include "ash/system/message_center/message_view_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -104,6 +105,13 @@ constexpr char kUsesDefaultCapturePathPrefName[] =
 // nudge at some point and the user interacted with the capture mode session UI
 // in such a way that the nudge no longer needs to be displayed again.
 constexpr char kCanShowCameraNudge[] = "ash.capture_mode.can_show_camera_nudge";
+
+// The name of a boolean pref that determines whether we can show the demo tools
+// user nudge. When this pref is false, it means that we showed the nudge at
+// some point and the user interacted with the capture mode session UI in such a
+// way that the nudge no longer needs to be displayed again.
+constexpr char kCanShowDemoToolsNudge[] =
+    "ash.capture_mode.can_show_demo_tools_nudge";
 
 // The screenshot notification button index.
 enum ScreenshotNotificationButtonIndex {
@@ -453,7 +461,10 @@ void CaptureModeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                  /*default_value=*/base::FilePath());
   registry->RegisterBooleanPref(kUsesDefaultCapturePathPrefName,
                                 /*default_value=*/false);
-  registry->RegisterBooleanPref(kCanShowCameraNudge, /*default_value=*/true);
+  registry->RegisterBooleanPref(features::AreCaptureModeDemoToolsEnabled()
+                                    ? kCanShowDemoToolsNudge
+                                    : kCanShowCameraNudge,
+                                /*default_value=*/true);
 }
 
 bool CaptureModeController::IsActive() const {
@@ -561,11 +572,16 @@ bool CaptureModeController::CanShowUserNudge() const {
 
   auto* pref_service = session_controller->GetActivePrefService();
   DCHECK(pref_service);
-  return pref_service->GetBoolean(kCanShowCameraNudge);
+  return pref_service->GetBoolean(features::AreCaptureModeDemoToolsEnabled()
+                                      ? kCanShowDemoToolsNudge
+                                      : kCanShowCameraNudge);
 }
 
 void CaptureModeController::DisableUserNudgeForever() {
-  GetActiveUserPrefService()->SetBoolean(kCanShowCameraNudge, false);
+  GetActiveUserPrefService()->SetBoolean(
+      features::AreCaptureModeDemoToolsEnabled() ? kCanShowDemoToolsNudge
+                                                 : kCanShowCameraNudge,
+      false);
 }
 
 void CaptureModeController::SetUsesDefaultCaptureFolder(bool value) {
@@ -1492,6 +1508,8 @@ void CaptureModeController::BeginVideoRecording(
       capture_params.window, capture_params.bounds,
       base::BindOnce(&CaptureModeController::InterruptVideoRecording,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  RecordRecordingStartsWithDemoTools(enable_demo_tools_, for_projector);
 }
 
 void CaptureModeController::InterruptVideoRecording() {

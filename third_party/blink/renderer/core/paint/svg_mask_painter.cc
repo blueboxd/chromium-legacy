@@ -65,7 +65,7 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
     content_transformation.Scale(style.EffectiveZoom());
   }
 
-  sk_sp<const PaintRecord> record =
+  PaintRecord record =
       masker->CreatePaintRecord(content_transformation, context);
 
   context.Save();
@@ -73,8 +73,7 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
   bool needs_luminance_layer =
       masker->StyleRef().MaskType() == EMaskType::kLuminance;
   if (needs_luminance_layer) {
-    context.BeginLayer(1.0f, SkBlendMode::kSrcOver, nullptr,
-                       kColorFilterLuminanceToAlpha);
+    context.BeginLayer(kColorFilterLuminanceToAlpha);
   }
   context.DrawRecord(std::move(record));
   if (needs_luminance_layer)

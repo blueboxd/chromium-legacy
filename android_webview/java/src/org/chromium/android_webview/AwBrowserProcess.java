@@ -11,7 +11,6 @@ import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.os.RemoteException;
 import android.os.StrictMode;
 
 import androidx.annotation.IntDef;
@@ -38,6 +37,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -60,9 +60,7 @@ import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -241,35 +239,14 @@ public final class AwBrowserProcess {
         }
     }
 
-    /**
-     * Make a list of crash key-value pairs for in the same order as minidump file array.
-     * These crash key-value pairs are passed from native-code while generating the minidump files.
-     * This is basically reordering the crash-key maps in @code{crashesInfo} in the same order as
-     * minidump files, ignoring crashkeys for files that are not in the @code{minidumps} array and
-     * null for minidumps that don't have crash key-value maps in @code{crashesInfo}.
-     *
-     * @param minidumps array of minidump files to get crash-keys for.
-     * @param crashesInfo crash key-value pairs grouped/mapped by crash report uuid.
-     * @return list of crash key-value pairs map corresponding for each minidumps file.
-     */
-    private static List<Map<String, String>> getCrashKeysForCrashFiles(
-            File[] minidumps, Map<String, Map<String, String>> crashesInfo) {
-        List<Map<String, String>> crashesInfoList = new ArrayList<>(minidumps.length);
-        for (int i = 0; i < minidumps.length; i++) {
-            String fileName = minidumps[i].getName();
-            // crash report uuid is the minidump file name without any extensions.
-            int firstDotIndex = fileName.indexOf('.');
-            if (firstDotIndex == -1) {
-                firstDotIndex = fileName.length();
-            }
-            String crashUuid = fileName.substring(0, firstDotIndex);
-            if (crashesInfo == null) {
-                crashesInfoList.add(null);
-            } else {
-                crashesInfoList.add(crashesInfo.get(crashUuid));
-            }
+    private static String getCrashUuid(File file) {
+        String fileName = file.getName();
+        // crash report uuid is the minidump file name without any extensions.
+        int firstDotIndex = fileName.indexOf('.');
+        if (firstDotIndex == -1) {
+            firstDotIndex = fileName.length();
         }
-        return crashesInfoList;
+        return fileName.substring(0, firstDotIndex);
     }
 
     private static void deleteMinidumps(final File[] minidumpFiles) {
@@ -291,34 +268,35 @@ public final class AwBrowserProcess {
         // again if anything goes wrong. This makes sense given that a failure
         // to copy a file usually means that retrying won't succeed either,
         // because e.g. the disk is full, or the file system is corrupted.
-        final List<ParcelFileDescriptor> minidumpFds = new ArrayList<>(minidumpFiles.length);
-        try {
-            for (int i = 0; i < minidumpFiles.length; ++i) {
-                try {
-                    minidumpFds.add(ParcelFileDescriptor.open(
-                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY));
-                } catch (FileNotFoundException e) {
-                    // Don't add null file descriptors to the array.
-                }
-            }
+        int fileCount = minidumpFiles.length;
+        // TODO(https://crbug.com/1399777): We should limit the number of crashes we upload in
+        //     order to not use too much data, and in order to minimize the chance of exhausting
+        //     file descriptors (https://crbug.com/1399777).
+        ParcelFileDescriptor[] minidumpFds = new ParcelFileDescriptor[fileCount];
+        Map<String, String>[] crashInfos = new Map[fileCount];
+        for (int i = 0; i < fileCount; ++i) {
+            File file = minidumpFiles[i];
+            ParcelFileDescriptor p = null;
             try {
-                List<Map<String, String>> crashesInfoList =
-                        getCrashKeysForCrashFiles(minidumpFiles, crashesInfoMap);
-                service.transmitCrashes(
-                        minidumpFds.toArray(new ParcelFileDescriptor[0]), crashesInfoList);
-            } catch (RemoteException e) {
-                // TODO(gsennton): add a UMA metric here to ensure we aren't losing
-                // too many minidumps because of this.
+                p = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+            } catch (IOException e) {
             }
-        } finally {
-            deleteMinidumps(minidumpFiles);
-            // Close FDs
-            for (ParcelFileDescriptor fd : minidumpFds) {
-                try {
-                    fd.close();
-                } catch (IOException e) {
-                }
-            }
+            minidumpFds[i] = p;
+            crashInfos[i] = crashesInfoMap.get(getCrashUuid(file));
+        }
+
+        try {
+            // AIDL does not support arrays of objects, so use a List here.
+            service.transmitCrashes(minidumpFds, Arrays.asList(crashInfos));
+        } catch (Exception e) {
+            // Exception can be RemoteException, or "RuntimeException: Too many open files".
+            // https://crbug.com/1399777
+            // TODO(gsennton): add a UMA metric here to ensure we aren't losing
+            // too many minidumps because of this.
+        }
+        deleteMinidumps(minidumpFiles);
+        for (ParcelFileDescriptor fd : minidumpFds) {
+            StreamUtil.closeQuietly(fd);
         }
     }
 
@@ -472,9 +450,9 @@ public final class AwBrowserProcess {
                     } catch (InvalidProtocolBufferException e) {
                         Log.d(TAG, "Malformed metrics log proto", e);
                         logTransmissionResult(TransmissionResult.MALFORMED_PROTOBUF);
-                    } catch (RemoteException e) {
-                        Log.d(TAG, "Remote Exception calling MetricsBridgeService#retrieveMetrics",
-                                e);
+                    } catch (Exception e) {
+                        // RemoteException, IllegalArgumentException (https://crbug.com/1403976)
+                        Log.d(TAG, "Remote Exception in MetricsBridgeService#retrieveMetrics", e);
                         logTransmissionResult(TransmissionResult.REMOTE_EXCEPTION);
                     } finally {
                         appContext.unbindService(this);

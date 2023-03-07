@@ -9,10 +9,10 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -45,6 +45,10 @@ extern const char kHatsSurveyTriggerJourneysHistoryEntrypoint[];
 extern const char kHatsSurveyTriggerJourneysOmniboxEntrypoint[];
 extern const char kHatsSurveyTriggerNtpModules[];
 extern const char kHatsSurveyTriggerNtpPhotosModuleOptOut[];
+extern const char kHatsSurveyTriggerPerformanceControlsPerformance[];
+extern const char kHatsSurveyTriggerPerformanceControlsBatteryPerformance[];
+extern const char kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut[];
+extern const char kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut[];
 extern const char kHatsSurveyTriggerPermissionsPostPrompt[];
 extern const char kHatsSurveyTriggerPrivacyGuide[];
 extern const char kHatsSurveyTriggerPrivacySandbox[];

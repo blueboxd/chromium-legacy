@@ -22,7 +22,6 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -196,9 +195,9 @@ LoginEventRecorder::Stats LoginEventRecorder::Stats::GetCurrentStats() {
 std::string LoginEventRecorder::Stats::SerializeToString() const {
   if (uptime_.empty() && disk_.empty())
     return std::string();
-  base::DictionaryValue dictionary;
-  dictionary.SetString(kUptime, uptime_);
-  dictionary.SetString(kDisk, disk_);
+  base::Value::Dict dictionary;
+  dictionary.Set(kUptime, uptime_);
+  dictionary.Set(kDisk, disk_);
 
   std::string result;
   if (!base::JSONWriter::Write(dictionary, &result)) {

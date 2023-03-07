@@ -4,10 +4,9 @@
 
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -73,9 +72,6 @@ class LanguageSettingsPrivateDelegateTest
     dictionary->RemoveObserver(this);
 
     delegate_.reset(LanguageSettingsPrivateDelegate::Create(browser_context()));
-    delegate_->Observe(chrome::NOTIFICATION_PROFILE_ADDED,
-                       content::NotificationService::AllSources(),
-                       content::NotificationService::NoDetails());
   }
 
   void TearDown() override {

@@ -11,7 +11,6 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -29,8 +28,6 @@
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
 namespace autofill {
-
-using structured_address::VerificationStatus;
 
 Address::Address() = default;
 
@@ -79,7 +76,7 @@ bool Address::IsStructuredAddressMergeable(const Address& newer) const {
       newer.GetStructuredAddress());
 }
 
-const structured_address::Address& Address::GetStructuredAddress() const {
+const AddressNode& Address::GetStructuredAddress() const {
   return structured_address_;
 }
 
@@ -100,7 +97,7 @@ void Address::SetRawInfoWithVerificationStatus(ServerFieldType type,
     const std::u16string current_value =
         structured_address_.GetValueForType(type);
     if (!current_value.empty()) {
-      bool token_equivalent = structured_address::AreStringTokenEquivalent(
+      bool token_equivalent = AreStringTokenEquivalent(
           value, structured_address_.GetValueForType(type));
       structured_address_.SetValueForTypeIfPossible(
           ADDRESS_HOME_STREET_ADDRESS, value, status,
@@ -150,21 +147,7 @@ void Address::GetMatchingTypes(const std::u16string& text,
 }
 
 void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
-  supported_types->insert(ADDRESS_HOME_LINE1);
-  supported_types->insert(ADDRESS_HOME_LINE2);
-  supported_types->insert(ADDRESS_HOME_LINE3);
-  supported_types->insert(ADDRESS_HOME_STREET_ADDRESS);
-  supported_types->insert(ADDRESS_HOME_DEPENDENT_LOCALITY);
-  supported_types->insert(ADDRESS_HOME_CITY);
-  supported_types->insert(ADDRESS_HOME_STATE);
-  supported_types->insert(ADDRESS_HOME_ZIP);
-  supported_types->insert(ADDRESS_HOME_SORTING_CODE);
-  supported_types->insert(ADDRESS_HOME_COUNTRY);
-  supported_types->insert(ADDRESS_HOME_STREET_NAME);
-  supported_types->insert(ADDRESS_HOME_DEPENDENT_STREET_NAME);
-  supported_types->insert(ADDRESS_HOME_HOUSE_NUMBER);
-  supported_types->insert(ADDRESS_HOME_PREMISE_NAME);
-  supported_types->insert(ADDRESS_HOME_SUBPREMISE);
+  structured_address_.GetSupportedTypes(supported_types);
 }
 
 std::u16string Address::GetInfoImpl(const AutofillType& type,
@@ -195,14 +178,12 @@ bool Address::SetInfoWithVerificationStatusImpl(const AutofillType& type,
       // it is tested if a country code can be derived from the value when it is
       // interpreted as a full country name. Otherwise an empty string is
       // assigned to |country_code|.
-      if (!value.empty()) {
-        DetectionOfCountryName source = DetectionOfCountryName::kNotFound;
-        country_code =
-            CountryNames::GetInstance()->GetCountryCodeForLocalizedCountryName(
-                value, locale, &source);
-        base::UmaHistogramEnumeration(
-            "Autofill.CountryCodeResolution.WhenSettingCountryCode", source);
-      }
+      CountryNames* country_names =
+          !value.empty() ? CountryNames::GetInstance() : nullptr;
+      country_code = country_names
+                         ? country_names->GetCountryCodeForLocalizedCountryName(
+                               value, locale)
+                         : std::string();
     }
 
     structured_address_.SetValueForTypeIfPossible(ADDRESS_HOME_COUNTRY,
@@ -217,12 +198,9 @@ bool Address::SetInfoWithVerificationStatusImpl(const AutofillType& type,
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
-    DetectionOfCountryName source = DetectionOfCountryName::kNotFound;
     std::string country_code =
         CountryNames::GetInstance()->GetCountryCodeForLocalizedCountryName(
-            value, locale, &source);
-    base::UmaHistogramEnumeration(
-        "Autofill.CountryCodeResolution.WhenSettingCountryName", source);
+            value, locale);
 
     structured_address_.SetValueForTypeIfPossible(ADDRESS_HOME_COUNTRY,
                                                   country_code, status);

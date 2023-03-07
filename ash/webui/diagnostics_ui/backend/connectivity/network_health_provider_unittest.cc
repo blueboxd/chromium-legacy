@@ -4,14 +4,13 @@
 
 #include "ash/webui/diagnostics_ui/backend/connectivity/network_health_provider.h"
 
-#include "ash/constants/ash_features.h"
+#include <utility>
+
 #include "ash/system/diagnostics/networking_log.h"
 #include "ash/webui/diagnostics_ui/backend/common/histogram_util.h"
-#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
@@ -21,12 +20,13 @@
 #include "chromeos/ash/components/network/network_device_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
-#include "chromeos/services/network_config/cros_network_config.h"
-#include "chromeos/services/network_config/in_process_instance.h"
+#include "chromeos/ash/services/network_config/cros_network_config.h"
+#include "chromeos/ash/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_config/public/mojom/network_types.mojom-shared.h"
 #include "components/onc/onc_constants.h"
@@ -41,6 +41,7 @@
 
 namespace ash {
 namespace diagnostics {
+
 namespace {
 
 constexpr char kEth0DevicePath[] = "/device/eth0";
@@ -59,9 +60,6 @@ constexpr char kNetworkDataError[] = "ChromeOS.DiagnosticsUi.Error.Network";
 // Due to how CrosNetworkConfig notifies observers of changes, the
 // expectation_not_met_error will be triggered 4 times for every change.
 constexpr int kExpectationNotMetErrorCount = 4;
-
-// TODO(https://crbug.com/1164001): remove when network_config is moved to ash.
-namespace network_config = ::chromeos::network_config;
 
 class FakeNetworkListObserver : public mojom::NetworkListObserver {
  public:
@@ -184,8 +182,8 @@ class NetworkHealthProviderTest : public testing::Test {
     managed_network_configuration_handler->SetPolicy(
         ::onc::ONC_SOURCE_DEVICE_POLICY,
         /*userhash=*/std::string(),
-        /*network_configs_onc=*/base::ListValue(),
-        /*global_network_config=*/base::DictionaryValue());
+        /*network_configs_onc=*/base::Value(base::Value::Type::LIST),
+        /*global_network_config=*/base::Value(base::Value::Type::DICTIONARY));
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     network_health_provider_ = std::make_unique<NetworkHealthProvider>();
@@ -449,10 +447,10 @@ class NetworkHealthProviderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetNameServersForIPConfig(const base::ListValue& dns_servers) {
-    ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
-                                            shill::kNameServersProperty,
-                                            dns_servers, base::DoNothing());
+  void SetNameServersForIPConfig(base::Value::List dns_servers) {
+    ShillIPConfigClient::Get()->SetProperty(
+        dbus::ObjectPath(kTestIPConfigPath), shill::kNameServersProperty,
+        base::Value(std::move(dns_servers)), base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1246,12 +1244,12 @@ TEST_F(NetworkHealthProviderTest, IPConfig) {
   SetIPAddressForIPConfig(ip_address);
   const int routing_prefix = 1;
   SetRoutingPrefixForIPConfig(routing_prefix);
-  base::ListValue dns_servers;
+  base::Value::List dns_servers;
   const std::string dns_server_1 = "192.168.1.100";
   const std::string dns_server_2 = "192.168.1.101";
   dns_servers.Append(dns_server_1);
   dns_servers.Append(dns_server_2);
-  SetNameServersForIPConfig(dns_servers);
+  SetNameServersForIPConfig(std::move(dns_servers));
 
   AssociateWifiWithIPConfig();
   SetWifiOnline();
@@ -1475,8 +1473,6 @@ TEST_F(NetworkHealthProviderTest, ResetReceiverOnBindInterface) {
   // This test simulates a user refreshing the WebUI page. The receiver should
   // be reset before binding the new receiver. Otherwise we would get a DCHECK
   // error from mojo::Receiver
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kEnableNetworkingInDiagnosticsApp);
   mojo::Remote<mojom::NetworkHealthProvider> remote;
   network_health_provider_->BindInterface(remote.BindNewPipeAndPassReceiver());
   base::RunLoop().RunUntilIdle();

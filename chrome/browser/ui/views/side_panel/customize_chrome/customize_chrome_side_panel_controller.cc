@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/side_panel/customize_chrome/customize_chrome_side_panel_controller.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -64,13 +64,18 @@ void CustomizeChromeSidePanelController::DeregisterEntry() {
       SidePanelEntry::Key(SidePanelEntry::Id::kCustomizeChrome));
 }
 
-void CustomizeChromeSidePanelController::ShowCustomizeChromeSidePanel() {
+void CustomizeChromeSidePanelController::SetCustomizeChromeSidePanelVisible(
+    bool visible) {
   auto* browser_view = GetBrowserView();
   if (!browser_view)
     return;
   DCHECK(IsCustomizeChromeEntryAvailable());
-  browser_view->side_panel_coordinator()->Show(
-      SidePanelEntry::Id::kCustomizeChrome);
+  if (visible) {
+    browser_view->side_panel_coordinator()->Show(
+        SidePanelEntry::Id::kCustomizeChrome);
+  } else {
+    browser_view->side_panel_coordinator()->Close();
+  }
 }
 
 bool CustomizeChromeSidePanelController::IsCustomizeChromeEntryShowing() const {

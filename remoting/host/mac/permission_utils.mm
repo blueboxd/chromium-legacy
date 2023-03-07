@@ -7,7 +7,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <Cocoa/Cocoa.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -16,7 +16,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/cocoa/permissions_utils.h"
@@ -55,8 +57,9 @@ void ShowAccessibilityPermissionDialog() {
   // want to shrink the dialog if it is already larger than our min value.
   NSWindow* alert_window = [alert window];
   NSRect frame = [alert_window frame];
-  if (frame.size.width < kMinDialogWidthPx)
+  if (frame.size.width < kMinDialogWidthPx) {
     frame.size.width = kMinDialogWidthPx;
+  }
   [alert_window setFrame:frame display:YES];
 
   [alert setAlertStyle:NSAlertStyleWarning];
@@ -91,8 +94,9 @@ void ShowScreenRecordingPermissionDialog() {
   // want to shrink the dialog if it is already larger than our min value.
   NSWindow* alert_window = [alert window];
   NSRect frame = [alert_window frame];
-  if (frame.size.width < kMinDialogWidthPx)
+  if (frame.size.width < kMinDialogWidthPx) {
     frame.size.width = kMinDialogWidthPx;
+  }
   [alert_window setFrame:frame display:YES];
 
   [alert setAlertStyle:NSAlertStyleWarning];
@@ -109,8 +113,9 @@ namespace remoting {
 namespace mac {
 
 bool CanInjectInput() {
-  if (!base::mac::IsAtLeastOS10_14())
+  if (!base::mac::IsAtLeastOS10_14()) {
     return true;
+  }
   return AXIsProcessTrusted();
 }
 
@@ -124,8 +129,9 @@ bool CanRecordScreen() {
 // affected version and the permission has not already been approved.
 void PromptUserForAccessibilityPermissionIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (CanInjectInput())
+  if (CanInjectInput()) {
     return;
+  }
 
   LOG(WARNING) << "AXIsProcessTrusted returned false, requesting "
                << "permission from user to allow input injection.";
@@ -140,8 +146,9 @@ void PromptUserForAccessibilityPermissionIfNeeded(
 // been approved.
 void PromptUserForScreenRecordingPermissionIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (CanRecordScreen())
+  if (CanRecordScreen()) {
     return;
+  }
 
   LOG(WARNING) << "CanRecordScreen returned false, requesting permission "
                << "from user to allow screen recording.";

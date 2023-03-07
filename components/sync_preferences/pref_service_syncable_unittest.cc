@@ -8,14 +8,13 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -30,12 +29,12 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
-#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/pref_model_associator_client.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "components/sync_preferences/synced_pref_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -223,8 +222,7 @@ class PrefServiceSyncableTest : public testing::Test {
     absl::optional<syncer::ModelError> error =
         pref_sync_service_->MergeDataAndStartSyncing(
             syncer::PREFERENCES, initial_data,
-            std::make_unique<TestSyncProcessorStub>(output),
-            std::make_unique<syncer::SyncErrorFactoryMock>());
+            std::make_unique<TestSyncProcessorStub>(output));
     EXPECT_FALSE(error.has_value());
   }
 
@@ -465,8 +463,7 @@ class PrefServiceSyncableMergeTest : public testing::Test {
     absl::optional<syncer::ModelError> error =
         pref_sync_service_->MergeDataAndStartSyncing(
             syncer::PREFERENCES, initial_data,
-            std::make_unique<TestSyncProcessorStub>(output),
-            std::make_unique<syncer::SyncErrorFactoryMock>());
+            std::make_unique<TestSyncProcessorStub>(output));
     EXPECT_FALSE(error.has_value());
   }
 
@@ -626,36 +623,6 @@ TEST_F(PrefServiceSyncableMergeTest, KeepPriorityPreferencesSeparately) {
               Eq("priority-default"));
 }
 
-class ShouldNotBeNotifedObserver : public SyncedPrefObserver {
- public:
-  ShouldNotBeNotifedObserver() = default;
-  ~ShouldNotBeNotifedObserver() = default;
-
-  void OnSyncedPrefChanged(const std::string& path, bool from_sync) override {
-    ADD_FAILURE() << "Unexpected notification about a pref change with path: '"
-                  << path << "' and from_sync: " << from_sync;
-  }
-};
-
-TEST_F(PrefServiceSyncableMergeTest, RegisterShouldClearTypeMismatchingData) {
-  const std::string pref_name = "testing.pref";
-  user_prefs_->SetString(pref_name, "string_value");
-  ASSERT_TRUE(user_prefs_->GetValue(pref_name, nullptr));
-
-  // Make sure no changes will be communicated to any synced pref listeners
-  // (those listeners are typically only used for metrics but we still don't
-  // want to inform them).
-  ShouldNotBeNotifedObserver observer;
-  prefs_.AddSyncedPrefObserver(pref_name, &observer);
-
-  pref_registry_->RegisterListPref(
-      pref_name, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  EXPECT_TRUE(GetPreferenceValue(pref_name).GetList().empty());
-  EXPECT_FALSE(user_prefs_->GetValue(pref_name, nullptr));
-
-  prefs_.RemoveSyncedPrefObserver(pref_name, &observer);
-}
-
 TEST_F(PrefServiceSyncableMergeTest, ShouldIgnoreUpdatesToNotSyncablePrefs) {
   const std::string pref_name = "testing.not_syncable_pref";
   pref_registry_->RegisterStringPref(pref_name, "default_value",
@@ -671,8 +638,7 @@ TEST_F(PrefServiceSyncableMergeTest, ShouldIgnoreUpdatesToNotSyncablePrefs) {
       pref_name, base::Value("remote_value2"), SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
   // The pref isn't synced.
-  EXPECT_THAT(pref_sync_service_->GetAllSyncDataForTesting(syncer::PREFERENCES),
-              IsEmpty());
+  EXPECT_FALSE(pref_sync_service_->IsPrefSyncedForTesting(pref_name));
   EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("default_value"));
 }
 
@@ -682,8 +648,7 @@ TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   stub->FailNextProcessSyncChanges();
   absl::optional<syncer::ModelError> error =
       pref_sync_service_->MergeDataAndStartSyncing(
-          syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub),
-          std::make_unique<syncer::SyncErrorFactoryMock>());
+          syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub));
   EXPECT_TRUE(error.has_value());
 }
 
@@ -944,8 +909,7 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
     syncer::SyncDataList empty_data;
     absl::optional<syncer::ModelError> error =
         prefs_->GetSyncableService(type)->MergeDataAndStartSyncing(
-            type, empty_data, std::make_unique<TestSyncProcessorStub>(output),
-            std::make_unique<syncer::SyncErrorFactoryMock>());
+            type, empty_data, std::make_unique<TestSyncProcessorStub>(output));
     EXPECT_FALSE(error.has_value());
   }
 
@@ -1166,8 +1130,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
   syncer::SyncChangeList outgoing_changes;
   browser_associator->MergeDataAndStartSyncing(
       syncer::PREFERENCES, list,
-      std::make_unique<TestSyncProcessorStub>(&outgoing_changes),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<TestSyncProcessorStub>(&outgoing_changes));
 
   // No outgoing changes were triggered.
   EXPECT_TRUE(outgoing_changes.empty());
@@ -1233,8 +1196,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
   prefs_->GetSyncableService(syncer::OS_PREFERENCES)
       ->MergeDataAndStartSyncing(
           syncer::OS_PREFERENCES, list,
-          std::make_unique<TestSyncProcessorStub>(&outgoing_changes),
-          std::make_unique<syncer::SyncErrorFactoryMock>());
+          std::make_unique<TestSyncProcessorStub>(&outgoing_changes));
 
   EXPECT_EQ("os_pref", observer.synced_pref_);
   EXPECT_EQ(1, observer.sync_started_count_);
@@ -1266,8 +1228,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
   prefs_->GetSyncableService(syncer::OS_PREFERENCES)
       ->MergeDataAndStartSyncing(
           syncer::OS_PREFERENCES, list,
-          std::make_unique<TestSyncProcessorStub>(&outgoing_changes),
-          std::make_unique<syncer::SyncErrorFactoryMock>());
+          std::make_unique<TestSyncProcessorStub>(&outgoing_changes));
 
   EXPECT_EQ("os_pref", observer.synced_pref_);
   EXPECT_EQ(1, observer.sync_started_count_);
@@ -1289,8 +1250,7 @@ TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_EmptyCloud) {
   prefs_->GetSyncableService(syncer::OS_PREFERENCES)
       ->MergeDataAndStartSyncing(
           syncer::OS_PREFERENCES, syncer::SyncDataList(),
-          std::make_unique<TestSyncProcessorStub>(&outgoing_changes),
-          std::make_unique<syncer::SyncErrorFactoryMock>());
+          std::make_unique<TestSyncProcessorStub>(&outgoing_changes));
 
   EXPECT_EQ("", observer.synced_pref_);
   EXPECT_EQ(0, observer.sync_started_count_);

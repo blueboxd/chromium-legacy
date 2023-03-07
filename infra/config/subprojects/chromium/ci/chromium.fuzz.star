@@ -9,17 +9,17 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
-    executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium.fuzz",
-    pool = ci.DEFAULT_POOL,
+    executable = ci.DEFAULT_EXECUTABLE,
     cores = 8,
     os = os.LINUX_DEFAULT,
+    pool = ci.DEFAULT_POOL,
     sheriff_rotations = sheriff_rotations.CHROMIUM_FUZZ,
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     notifies = ["chromesec-lkgr-failures"],
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
@@ -56,9 +56,6 @@ consoles.console_view(
 
 ci.builder(
     name = "ASAN Debug",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -71,9 +68,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -81,13 +78,13 @@ ci.builder(
         short_name = "dbg",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "ASan Debug (32-bit x86 with V8-ARM)",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -100,23 +97,23 @@ ci.builder(
             target_bits = 32,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
+            gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
             archive_name_prefix = "asan-v8-arm",
             archive_subdir = "v8-arm",
-            gs_acl = "public-read",
-            gs_bucket = "chromium-browser-asan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
         category = "linux asan|x64 v8-ARM",
         short_name = "dbg",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
     ),
 )
 
 ci.builder(
     name = "ASAN Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -129,9 +126,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -139,13 +136,13 @@ ci.builder(
         short_name = "rel",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.builder(
     name = "ASan Release (32-bit x86 with V8-ARM)",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -158,23 +155,23 @@ ci.builder(
             target_bits = 32,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
+            gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
             archive_name_prefix = "asan-v8-arm",
             archive_subdir = "v8-arm",
-            gs_acl = "public-read",
-            gs_bucket = "chromium-browser-asan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
         category = "linux asan|x64 v8-ARM",
         short_name = "rel",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
     ),
 )
 
 ci.builder(
     name = "ASAN Release Media",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -187,9 +184,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chrome-test-builds/media",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -197,26 +194,26 @@ ci.builder(
         short_name = "med",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "Afl Upload Linux ASan",
     executable = "recipe:chromium_afl",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     cores = 16,
     console_view_entry = consoles.console_view_entry(
         category = "afl",
         short_name = "afl",
     ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "ASan Release Media (32-bit x86 with V8-ARM)",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -229,23 +226,23 @@ ci.builder(
             target_bits = 32,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
+            gs_bucket = "chrome-test-builds/media",
+            gs_acl = "public-read",
             archive_name_prefix = "asan-v8-arm",
             archive_subdir = "v8-arm",
-            gs_acl = "public-read",
-            gs_bucket = "chrome-test-builds/media",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
         category = "linux asan|x64 v8-ARM",
         short_name = "med",
     ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "ChromiumOS ASAN Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 6,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -261,23 +258,23 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
+            gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
             archive_name_prefix = "asan",
             archive_subdir = "chromeos",
-            gs_acl = "public-read",
-            gs_bucket = "chromium-browser-asan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
         category = "cros asan",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 6,
+    ),
 )
 
 ci.builder(
     name = "MSAN Release (chained origins)",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -291,9 +288,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "msan-chained-origins",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-msan",
+            gs_acl = "public-read",
+            archive_name_prefix = "msan-chained-origins",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -301,13 +298,13 @@ ci.builder(
         short_name = "org",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "MSAN Release (no origins)",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -321,24 +318,24 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "msan-no-origins",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-msan",
+            gs_acl = "public-read",
+            archive_name_prefix = "msan-no-origins",
         ),
     ),
-    os = os.LINUX_FOCAL,
     console_view_entry = consoles.console_view_entry(
         category = "linux msan",
         short_name = "rel",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
+    os = os.LINUX_FOCAL,
 )
 
 ci.builder(
     name = "Mac ASAN Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 2,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -351,9 +348,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     builderless = False,
@@ -363,13 +360,13 @@ ci.builder(
         category = "mac asan",
         short_name = "rel",
     ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 2,
+    ),
 )
 
 ci.builder(
     name = "Mac ASAN Release Media",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 2,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -382,9 +379,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chrome-test-builds/media",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     builderless = False,
@@ -394,13 +391,13 @@ ci.builder(
         category = "mac asan",
         short_name = "med",
     ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 2,
+    ),
 )
 
 ci.builder(
     name = "TSAN Debug",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -414,9 +411,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "tsan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-tsan",
+            gs_acl = "public-read",
+            archive_name_prefix = "tsan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -424,13 +421,13 @@ ci.builder(
         short_name = "dbg",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "TSAN Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -444,9 +441,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "tsan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-tsan",
+            gs_acl = "public-read",
+            archive_name_prefix = "tsan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -454,13 +451,13 @@ ci.builder(
         short_name = "rel",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.builder(
     name = "UBSan Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -470,9 +467,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "ubsan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-ubsan",
+            gs_acl = "public-read",
+            archive_name_prefix = "ubsan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -480,13 +477,13 @@ ci.builder(
         short_name = "rel",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "UBSan vptr Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -496,10 +493,10 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
+            gs_bucket = "chromium-browser-ubsan",
+            gs_acl = "public-read",
             archive_name_prefix = "ubsan-vptr",
             archive_subdir = "vptr",
-            gs_acl = "public-read",
-            gs_bucket = "chromium-browser-ubsan",
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -507,13 +504,13 @@ ci.builder(
         short_name = "vpt",
     ),
     reclient_jobs = 250,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.builder(
     name = "Win ASan Release",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 7,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -526,9 +523,9 @@ ci.builder(
             target_bits = 64,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chromium-browser-asan",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     builderless = False,
@@ -538,13 +535,13 @@ ci.builder(
         short_name = "rel",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 7,
+    ),
 )
 
 ci.builder(
     name = "Win ASan Release Media",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 6,
-    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(
@@ -557,9 +554,9 @@ ci.builder(
             target_bits = 32,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
-            archive_name_prefix = "asan",
-            gs_acl = "public-read",
             gs_bucket = "chrome-test-builds/media",
+            gs_acl = "public-read",
+            archive_name_prefix = "asan",
         ),
     ),
     builderless = False,
@@ -569,20 +566,23 @@ ci.builder(
         short_name = "med",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 6,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Chrome OS ASan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "chromeos-asan",
     ),
     execution_timeout = 4 * time.hour,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.builder(
@@ -590,60 +590,58 @@ ci.builder(
     executable = "recipe:chromium_libfuzzer",
     cores = 4,
     os = os.MAC_12,
+    xcode = xcode.x14main,
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "ios",
     ),
     execution_timeout = 4 * time.hour,
-    xcode = xcode.x14main,
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux ASan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "linux",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux ASan Debug",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "linux-dbg",
     ),
     execution_timeout = 4 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux MSan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "linux-msan",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
+    os = os.LINUX_FOCAL,
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux UBSan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 5,
-    ),
     # Do not use builderless for this (crbug.com/980080).
     builderless = False,
     console_view_entry = consoles.console_view_entry(
@@ -652,81 +650,84 @@ ci.builder(
     ),
     execution_timeout = 5 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux V8-ARM64 ASan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "arm64",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
     ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux V8-ARM64 ASan Debug",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "arm64-dbg",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
     ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux32 ASan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "linux32",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux32 ASan Debug",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "linux32-dbg",
     ),
     execution_timeout = 4 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux32 V8-ARM ASan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "arm",
     ),
     reclient_jobs = reclient.jobs.DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
+    ),
 )
 
 ci.builder(
     name = "Libfuzzer Upload Linux32 V8-ARM ASan Debug",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
         short_name = "arm-dbg",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
     ),
 )
 
@@ -745,9 +746,6 @@ ci.builder(
 ci.builder(
     name = "Libfuzzer Upload Windows ASan",
     executable = "recipe:chromium_libfuzzer",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
-    ),
     os = os.WINDOWS_DEFAULT,
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",
@@ -757,4 +755,7 @@ ci.builder(
     # crbug.com/1372531: Increase timeout again
     execution_timeout = 6 * time.hour,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )

@@ -35,6 +35,55 @@ base::WaitableEvent EventForSwitch(const base::CommandLine& command_line,
   return base::WaitableEvent(std::move(handle));
 }
 
+int DoMain(const base::CommandLine* command_line) {
+  if (command_line->HasSwitch(updater::kTestName)) {
+    VLOG(1) << "Running for test: "
+            << command_line->GetSwitchValueASCII(updater::kTestName);
+  }
+
+  if (command_line->HasSwitch(updater::kTestSleepMinutesSwitch)) {
+    std::string value =
+        command_line->GetSwitchValueASCII(updater::kTestSleepMinutesSwitch);
+    int sleep_minutes = 0;
+    if (!base::StringToInt(value, &sleep_minutes) || sleep_minutes <= 0) {
+      LOG(ERROR) << "Invalid sleep delay value " << value;
+      NOTREACHED();
+    }
+
+    VLOG(1) << "Process is sleeping for " << sleep_minutes << " minutes";
+    ::Sleep(base::Minutes(sleep_minutes).InMilliseconds());
+    return 0;
+  }
+
+  if (command_line->HasSwitch(updater::kTestEventToSignal)) {
+    EventForSwitch(*command_line, updater::kTestEventToSignal).Signal();
+  }
+
+  if (command_line->HasSwitch(updater::kTestEventToSignalIfMediumIntegrity)) {
+    if (!::IsUserAnAdmin()) {
+      EventForSwitch(*command_line,
+                     updater::kTestEventToSignalIfMediumIntegrity)
+          .Signal();
+    } else {
+      LOG(ERROR) << "Process running at High Integrity instead of Medium";
+    }
+  }
+
+  if (command_line->HasSwitch(updater::kTestEventToWaitOn)) {
+    EventForSwitch(*command_line, updater::kTestEventToWaitOn).Wait();
+  }
+
+  if (command_line->HasSwitch(updater::kTestExitCode)) {
+    int exit_code = 0;
+    CHECK(base::StringToInt(
+        command_line->GetSwitchValueASCII(updater::kTestExitCode), &exit_code));
+    VLOG(1) << "Process ending with exit code: " << exit_code;
+    return exit_code;
+  }
+
+  return 0;
+}
+
 }  // namespace
 
 int main(int, char**) {
@@ -51,43 +100,7 @@ int main(int, char**) {
 
   updater::NotifyInitializationDoneForTesting();
 
-  if (command_line->HasSwitch(updater::kTestSleepMinutesSwitch)) {
-    std::string value =
-        command_line->GetSwitchValueASCII(updater::kTestSleepMinutesSwitch);
-    int sleep_minutes = 0;
-    if (base::StringToInt(value, &sleep_minutes) && sleep_minutes > 0) {
-      VLOG(1) << "Process is sleeping for " << sleep_minutes << " minutes";
-      ::Sleep(base::Minutes(sleep_minutes).InMilliseconds());
-    } else {
-      LOG(ERROR) << "Invalid sleep delay value " << value;
-    }
-    NOTREACHED();
-    return 1;
-  }
-
-  if (command_line->HasSwitch(updater::kTestEventToSignal)) {
-    EventForSwitch(*command_line, updater::kTestEventToSignal).Signal();
-  } else if (command_line->HasSwitch(
-                 updater::kTestEventToSignalIfMediumIntegrity)) {
-    if (!::IsUserAnAdmin()) {
-      EventForSwitch(*command_line,
-                     updater::kTestEventToSignalIfMediumIntegrity)
-          .Signal();
-    } else {
-      LOG(ERROR) << "Process running at High Integrity instead of Medium";
-    }
-  } else if (command_line->HasSwitch(updater::kTestEventToWaitOn)) {
-    EventForSwitch(*command_line, updater::kTestEventToWaitOn).Wait();
-  }
-
-  if (command_line->HasSwitch(updater::kTestExitCode)) {
-    int exit_code = 0;
-    CHECK(base::StringToInt(
-        command_line->GetSwitchValueASCII(updater::kTestExitCode), &exit_code));
-    VLOG(1) << "Process ending with exit code: " << exit_code;
-    return exit_code;
-  }
-
-  VLOG(1) << "Process ended.";
-  return 0;
+  int exit_code = DoMain(command_line);
+  VLOG(1) << "Test process ended. Exit code: " << exit_code;
+  return exit_code;
 }

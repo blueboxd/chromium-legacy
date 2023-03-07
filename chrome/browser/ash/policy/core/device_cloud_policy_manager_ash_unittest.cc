@@ -11,13 +11,14 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
@@ -177,15 +178,15 @@ class DeviceCloudPolicyManagerAshTest
   DeviceCloudPolicyManagerAshTest()
       : state_keys_broker_(&session_manager_client_), store_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKeyForTest, "test_sn");
+        ash::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kHardwareClassKey, "test_hw");
+        ash::system::kHardwareClassKey, "test_hw");
     session_manager_client_.AddObserver(this);
   }
 
   ~DeviceCloudPolicyManagerAshTest() override {
     session_manager_client_.RemoveObserver(this);
-    chromeos::system::StatisticsProvider::SetTestProvider(nullptr);
+    ash::system::StatisticsProvider::SetTestProvider(nullptr);
   }
 
   virtual bool ShouldRegisterWithCert() const { return false; }
@@ -346,7 +347,7 @@ class DeviceCloudPolicyManagerAshTest
   StrictMock<MockJobCreationHandler> job_creation_handler_;
   FakeDeviceManagementService device_management_service_{
       &job_creation_handler_};
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   bool set_empty_system_salt_ = false;
   ServerBackedStateKeysBroker state_keys_broker_;
   StrictMock<ash::attestation::MockAttestationFlow> mock_attestation_flow_;

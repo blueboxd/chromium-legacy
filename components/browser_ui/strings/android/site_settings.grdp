@@ -37,26 +37,29 @@
   <message name="IDS_CLIPBOARD_PERMISSION_TITLE" desc="Title of the permission to read from clipboard [CHAR_LIMIT=32]">
     Clipboard
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_PAGE_TITLE" desc="The label used for the third-party cookies settings controls." translateable="false">
+  <message name="IDS_THIRD_PARTY_COOKIES_PAGE_TITLE" desc="The title of a new page. Today, Chrome has a 'Cookies and other site data' page at chrome://settings/cookies. As part of the Privacy Sandbox project (see below), Chrome is deprecating third-party cookies but maintaining first-party cookies. As a step towards the ultimate deprecation of third-party cookies, we're first separating them from other forms of 'site data', making it easier to eventually remove this page completely. Cookies are often used for honorable objectives, and the difference between first and third-party cookies is important (see any of the many resources online such as https://termly.io/resources/articles/first-party-cookies-vs-third-party-cookies/.">
     Third-party cookies
   </message>
-  <message name="IDS_SITE_DATA_PAGE_TITLE" desc="The label used for the site data settings controls." translateable="false">
+  <message name="IDS_SITE_DATA_PAGE_TITLE" desc="A page title for a new page. What is 'On-device site data'? When you interact with a site, that site can remember things about what you do. For example, you might place a pair of shoes in a shopping cart, close down your browser, and find those same shoes in your shopping cart when you visit the same site a week later. Sometimes that info is saved in the Cloud. Sometimes that info is saved on the user's device. There are several ways a site can save info to the user's device—for example, with cookies (text files saved to your device), small JavaScript databases, and even Chrome's new ad settings that are part of the Privacy Sandbox project (see details below). This page introduces the concept of on-device site data, allows the user to see which sites are using it, and allows the user to delete all saved data or just data from specific sites.">
     On-device site data
   </message>
-  <message name="IDS_SITE_SETTINGS_PAGE_SITE_DATA_ALLOWED_SUB_LABEL" desc="" translateable="false">
+  <message name="IDS_SITE_SETTINGS_PAGE_SITE_DATA_ALLOWED_SUB_LABEL" desc="1 of 3 possible states for the On-device site data setting. This text appears beneath the 'On-device site data' label and shows the user the state of the setting. With this status, sites have the most flexibility.">
     Sites can save data on your device
   </message>
-  <message name="IDS_SITE_SETTINGS_PAGE_SITE_DATA_BLOCKED_SUB_LABEL" desc="" translateable="false">
-    Sites can not save data on your device
+  <message name="IDS_SITE_SETTINGS_PAGE_SITE_DATA_BLOCKED_SUB_LABEL" desc="2 of 3 possible states for the On-device site data setting. This text appears beneath the 'On-device site data' label and shows the user the state of the setting. With this status, sites have the least flexibility.">
+    Sites aren't allowed to save data on your device
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_ENABLED" desc="" translateable="false">
-    Allowed
+  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_LABEL" desc="This text is the label of a page. Here, it serves as a button that opens the new page.">
+    Third-party cookies
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO" desc="" translateable="false">
-    Blocked in incognito
+   <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_ENABLED" desc="1 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are allowed
   </message>
-  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED" desc="" translateable="false">
-    Blocked
+  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO" desc="2 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are blocked in Incognito mode
+  </message>
+  <message name="IDS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED" desc="3 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label." >
+    Third-party cookies are blocked
   </message>
   <message name="IDS_WEBSITE_SETTINGS_IDLE_DETECTION" desc="Title of the permission to detect user activity [CHAR_LIMIT=32]">
     Your device use
@@ -255,7 +258,10 @@
   <!-- Site settings Edit Exception dialog -->
 
   <message name="IDS_WEBSITE_SETTINGS_EDIT_SITE_DIALOG_TITLE" desc="The title of the dialog to edit permissions for a website from a list.">
-    Site preference for <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph>
+    Site preference
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_EDIT_SITE_DIALOG_DESCRIPTION" desc="The description of the dialog to edit permissions for a website from a list.">
+    Select an option for <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph>
   </message>
 
   <!-- Site settings Clear Data Dialog and other ways of resetting permissions -->
@@ -273,7 +279,7 @@
     This will clear all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> or by its app on your Home screen.
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OFFLINE_MESSAGE" desc="Text of the confirmation dialog, explaining that all offline data will be cleared (when clearing a site/sites).">
-    Any offline data will be cleared.
+    Any offline data will be cleared
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to clear all data for multiple origins">
     This will clear <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites.
@@ -282,10 +288,13 @@
     This will clear <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites or by apps on your Home screen.
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SIGN_OUT_MESSAGE" desc="Text of the confirmation dialog, explaining that the user will be signed out of the site being cleared.">
-    You'll be signed out of this site.
+    You'll be signed out of this site
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SIGN_OUT_ALL_MESSAGE" desc="Text of the confirmation dialog, explaining that the user will be signed out of all sites being cleared.">
-    You'll be signed out of all sites.
+    You'll be signed out of all sites
+  </message>
+  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SITE_SETTINGS_REMOVE_SITE_AD_PERSONALIZATION" desc="A bullet in a list of data that gets deleted from the user's device when they choose 'Clear data' for a specific site. 1) Go to chrome://settings/content. 2) From the 'Recent activity' list, choose a site. 3) Click the 'Clear data' button. The 'Clear site data?' dialog appears. This string will appear as a new bullet at the bottom of the dialog.">
+    Data that affects ad personalization is deleted
   </message>
   <message name="IDS_STORAGE_CLEAR_SITE_STORAGE_TITLE" desc="Title of clear storage dialogs used in a couple different places to confirm clearing site storage data. [CHAR_LIMIT=24]">
     Clear site data?
@@ -324,6 +333,15 @@
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED_LIST" desc="Summary text explaining that the Ads permission is set to block ads on some sites. To be shown in the list of permission categories.">
     Blocked on some sites
+  </message>
+  <message name="IDS_SITE_SETTINGS_PAGE_INTRUSIVE_ADS_LABEL" desc="We're renaming the existing 'Ads' setting (visit chrome://settings/content and click 'Additional content settings'). We need to rename this setting because we're introducing 3 new ad settings on the new 'Ad privacy' page. This string is the name of a setting. Here, it serves as the label of a button that opens the 'Intrusive ads' page.">
+    Intrusive ads
+  </message>
+  <message name="IDS_SITE_SETTINGS_PAGE_INTRUSIVE_ALLOWED_SUB_LABEL" desc="1 of 2 states for the 'Intrusive ads' setting.">
+    Any site you visit can show any ad to you
+  </message>
+  <message name="IDS_SITE_SETTINGS_PAGE_INTRUSIVE_BLOCKED_SUB_LABEL" desc="2 of 2 states for the 'intrusive ads' setting.">
+    Ads are blocked on sites known to show intrusive or misleading ads
   </message>
 
   <!-- Augmented reality -->
@@ -406,9 +424,6 @@
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOW_ADDITION" desc="Additional text used to explain the allow cookies option in settings">
     Sites will work normally
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_ADDITION" desc="Additional text used to explain the block third-party cookies option in settings">
-    Features on some sites may not work
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_FPS_ADDITION" desc="Additional text used to explain the block third-party cookies option in settings when First Party Sets are enables.">
     Related sites can see your activity in the group
   </message>
@@ -426,64 +441,67 @@
   </message>
 
   <!-- Site data page -->
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_DESCRIPTION" desc="" translateable="false">
-    Sed finibus augue vel risus pellentesque, id auctor enim congue. Donec tincidunt pulvinar orci, et mattis dolor egestas ut. Nam ultrices mauris tortor, et maximus arcu iaculis vitae.
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_DESCRIPTION" desc="A paragraph that appear beneath the page title: 'On-device site data'. It defines what on-device site data is. What is 'On-device site data'? When you interact with a site, that site can remember things about what you do. For example, you might place a pair of shoes in a shopping cart, close down your browser, and find those same shoes in your shopping cart when you visit the same site a week later. Sometimes that info is saved in the Cloud. Sometimes that info is saved on the user's device. There are several ways a site can save info to the user's device—for example, with cookies (text files saved to your device), small JavaScript databases, and even Chrome's new ad settings that are part of the Privacy Sandbox project (see details below). This page introduces the concept of on-device site data, allows the user to see which sites are using it, and allows the user to delete all saved data or just data from specific sites.  **** CONTEXT PRIVACY SANDBOX **** Chrome’s Privacy Sandbox initiative 1) deprecates third-party cookies in Chrome, 2) supports free and open content on the web (by finding better ways to support ads online), 3) while providing stronger privacy protections for users. You can see a high-level description of this public project at www.privacysanbox.com.">
+    A site you visit can save info about what you’re doing so that it works as you would expect — for example, to keep you signed in to a site or to save items in your shopping cart. Often sites save this info temporarily on your device.
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_TOGGLE_SUB_LABEL_ALLOW" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_TOGGLE_SUB_LABEL_ALLOW" desc="A description of the 'On-device site data' setting. This text also reflects the state of the setting (on).">
     Sites can save data on your device
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_TOGGLE_SUB_LABEL_BLOCK" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_TOGGLE_SUB_LABEL_BLOCK" desc="A description of the 'On-device site data' setting. This text also reflects the state of the setting (off).">
     Don't allow sites to save data on your device (not recommended)
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_ADD_ALLOW_EXCEPTION_DESCRIPTION" desc="" translateable="false">
-    Allow site data for a specific site.
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_ADD_ALLOW_EXCEPTION_DESCRIPTION" desc="A description on the 'Add site' dialog box. The user is on the 'On-device site data' page in the 'Customized behaviors' section. They are creating an exception to the default rules. They clicked on 'Add', to add a site to the exception list, and the 'Add site' dialog box appears. This text appears beneath the page title to help the user understand the exception they are creating.">
+    Allow a site to save data on your device
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_ADD_BLOCK_EXCEPTION_DESCRIPTION" desc="" translateable="false">
-    Block site data for a specific site.
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_ADD_BLOCK_EXCEPTION_DESCRIPTION" desc="A description on the 'Add site' dialog box. The user is on the 'On-device site data' page in the 'Customized behaviors' section. They are creating an exception to the default rules. They clicked on 'Add', to add a site to the exception list, and the 'Add site' dialog box appears. This text appears beneath the page title to help the user understand the exception they are creating.">
+    Block a site from saving data on your device
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_TITLE" desc="" translateable="false">
-    Duis non nisi sed lectus viverra venenati?
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_TITLE" desc="The title of a dialog box that appears if the user chooses 'Don’t allow sites to save data on your device (not recommended)'. This dialog essentially serves as a 'are you sure?' reminder.">
+    Sites you visit may stop working as designed
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_DESCRIPTION" desc="" translateable="false">
-    Suspendisse vitae malesuada purus, ut molestie eros. Fusce malesuada ullamcorper sem a blandit.
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_DESCRIPTION" desc="A paragraph beneath the 'Sites you visit may stop working as designed' title on a dialog box that appears when a user chooses 'Don’t allow sites to save data on your device (not recommended)'. We want to convey that sites are generally designed to rely on saving some information about the user. Usually this is benign, but sites can abuse this power, and so we qualify the statement with 'often'.">
+    Most sites you visit probably save data to your device, often to improve your experience by saving your preferences or information you share with the site. We recommend keeping this setting on.
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_CONFIRM_BUTTON" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_CONFIRM_BUTTON" desc="A button label. The user chose 'Don’t allow sites to save data on your device (not recommended)'. As an 'are you sure' moment, we show the user a dialog box titled 'Sites you visit may stop working as designed.'. This string allows the user to confirm their intention to turn this setting off.">
     Turn off
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_CANCEL_BUTTON" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_CANCEL_BUTTON" desc="A button label on the 'Sites you visit may stop working as designed' dialog.">
     Cancel
   </message>
 
   <!-- Third-party cookies page -->
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DESCRIPTION" desc="" translateable="false">
-    Suspendisse non porta leo. Donec egestas semper justo, ac ultricies quam malesuada a. Sed vestibulum enim non consectetur volutpat. Nullam vel dolor at nunc pulvinar lobortis quis aliquam nulla. Curabitur id pharetra felis, at tempor urna.
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DESCRIPTION" desc="An explanation of what third-party cookies are that appear beneath the page title: 'Third-party cookies'. * 'embed': A site you visit uses HTML to construct the page. Tags like img src='filename.jpg' are used to show an image. 'filename.jpg' can be a local file owned by the site you visit or a site can embed an external file with something like img src='www.third-party-site.com/images/filename.jpg' This image is embedded into the site you visit and www.third-party-site.com can set a third-party cookie onto your device.">
+    A site you visit can embed content from other sites, for example, images, ads, and text. Cookies set by these other sites are called third-party cookies.
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_RADIO_LABEL" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_RADIO_LABEL" desc="1 of 3 options the user has to configure cookies. See the cookies page for context: chrome://settings/cookies.">
     Allow third-party cookies
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_RADIO_SUB_LABEL" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_RADIO_SUB_LABEL" desc="This string appears as a sub label beneath the 'Allow all cookies' label. It summarizes the result of choosing this option.">
     Sites will work normally
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_RADIO_LABEL" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_RADIO_LABEL" desc="2 of 3 options the user has to configure cookies. See the cookies page for context: chrome://settings/cookies. For more about Incognito mode, see https://support.google.com/chrome?p=incognito.">
     Block third-party cookies in Incognito mode
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_RADIO_SUB_LABEL" desc="Features on some sites may not work" translateable="false">
-    Features on some sites may not work
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_RADIO_SUB_LABEL" desc="This string appears as a sub label beneath the 'Block third-party cookies in Incognito mode' label. It summarizes the result of choosing this option. A site you visit may rely on cookies for certain functionality, such as remembering your language preferences or maintaining a shopping cart. If the user chooses this option, some sites they visit may not work as designed.">
+    Features on some sites may not work in Incognito mode
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_LABEL" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_LABEL" desc="3 of 3 options the user has to configure cookies. See the cookies page for context: chrome://settings/cookies">
     Block third-party cookies
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL" desc="" translateable="false">
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL" desc="This string appears as a sub label beneath the 'Block third-party cookies' label. It summarizes the result of choosing this option. A site you visit may rely on cookies for certain functionality, such as remembering your language preferences or maintaining a shopping cart. If the user chooses this option, some sites they visit may not work as designed.">
     Features on some sites may not work
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL_FPS_ADDITION" desc="" translateable="false">
-    Related sites can see your activity in the group
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_ALLOW_EXCEPTION_DESCRIPTION" desc="The description of a dialog box. Dialog to add a third-party cookie exception to allow a site">
+    Allow a site to use third-party cookies
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_ALLOW_EXCEPTION_DESCRIPTION" desc="The description for the allow third-party cookies for website dialog." translateable="false">
-    Allow third-party cookies for a specific site.
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_BLOCK_EXCEPTION_DESCRIPTION" desc="The description of a dialog box. Dialog to add a third-party cookie exception to block a site">
+    Don't allow a site to use third-party cookies
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_BLOCK_EXCEPTION_DESCRIPTION" desc="The description for the block third-party cookies for website dialog." translateable="false">
-    Block third-party cookies for a specific site.
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL_FPS_ENABLED" desc="* 'related sites': These words reference a new feature that's part of the Privacy Sandbox project (see details below). What are 'related sites'? ** Chrome will limit how much information 2 sites can share about a user. ** But there are legitimate purposes for sharing information about a user between 2 domains. ** For example, a company might have 2 sites, www.showBiz-music.com and www.showBiz-films.com. The company showBiz might want to keep users signed in across these sites. ** Chrome is launching a new service that allows companies to define groups of related sites. The number of sites in a group is limited to just a few. ** 'related sites' is referring to this new feature. As a counter example, www.some-shoe-store.com and www.a-different-shoe-store.com aren't considered 'related' in this context even though both sites sell shoes. * So this sentence, 'Related sites can still...' explains to the user that there is an exception to the 'Block third-party cookies' option they chose. That exception exists because the use has previously chosen to enable 'Related sites'.">
+    Some features may not work. Related sites can still use third-party cookies.
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL_FPS_DISABLED" desc="This string appears as a sub label beneath the 'Block third-party cookies' label. It summarizes the result of choosing this option. A site you visit may rely on cookies for certain functionality, such as remembering your language preferences or maintaining a shopping cart. If the user chooses this option, some sites they visit may not work as designed.">
+    Features on some sites may not work
   </message>
   <message name="IDS_WEBSITE_SETTINGS_COOKIE_INFO" desc="Text describing cookie and third-party cookie settings.">
     A site you visit can embed content from other sites, for example images, ads, and text. Any of these sites can save cookies and other data to personalize your experience.
@@ -492,7 +510,10 @@
     Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_SUBPAGE_BULLET_TWO" desc="Description for the second bullet of cookie settings subpage.">
-    While in Incognito, sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads. Features on some sites may not work.
+    Sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads. Features on some sites may not work.
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_SUBPAGE_INCOGNITO_BULLET_TWO" desc="Description for the second bullet of cookie settings subpage.">
+    While in Incognito, sites can't use your cookies to see your browsing activity across sites, even related sites. Your browsing activity isn't used for things like personalizing ads. Features on some sites may not work.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_INCOGNITO_SUBTITLE" desc="Text used as subtitle for the block third-party cookies subpage in Incognito option in settings">
     Block third-party cookies in Incognito:
@@ -671,12 +692,6 @@
 
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_ALLOWED_RECOMMENDED" desc="Summary text explaining that sites are allowed to play protected content and that it is the recommended setting.">
     Allow sites to play protected content (recommended)
-  </message>
-  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_ALLOWED" desc="Summary text explaining that sites are allowed to play protected content.">
-    Allow sites to play protected content
-  </message>
-  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_ASK_RECOMMENDED" desc="Summary text explaining that sites need to ask for permission before playing protected content and that it is the recommended setting.">
-    Ask before allowing sites to play protected content (recommended)
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_ASK" desc="Summary text explaining that sites need to ask for permission before playing protected content.">
     Ask before allowing sites to play protected content

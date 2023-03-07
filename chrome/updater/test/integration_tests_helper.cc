@@ -8,10 +8,11 @@
 #include <utility>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/ipc/ipc_support.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/unittest_util.h"
@@ -235,7 +237,6 @@ void AppTestHelper::FirstTaskRun() {
     {"set_group_policies", WithSwitch("values", Wrap(&SetGroupPolicies))},
     {"fill_log", WithSystemScope(Wrap(&FillLog))},
     {"expect_log_rotated", WithSystemScope(Wrap(&ExpectLogRotated))},
-    {"expect_active_updater", WithSystemScope(Wrap(&ExpectActiveUpdater))},
     {"expect_registered",
      WithSwitch("app_id", WithSystemScope(Wrap(&ExpectRegistered)))},
     {"expect_not_registered",
@@ -273,6 +274,7 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_legacy_policy_status_succeeds",
      WithSystemScope(Wrap(&ExpectLegacyPolicyStatusSucceeds))},
     {"run_uninstall_cmd_line", WithSystemScope(Wrap(&RunUninstallCmdLine))},
+    {"run_handoff", WithSwitch("app_id", WithSystemScope(Wrap(&RunHandoff)))},
 #endif  // BUILDFLAG(IS_WIN)
     {"expect_version_active",
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},
@@ -356,9 +358,8 @@ class TersePrinter : public EmptyTestEventListener {
 
   // Called after all test activities have ended.
   void OnTestProgramEnd(const UnitTest& unit_test) override {
-    std::cout << "Command " << (unit_test.Passed() ? "SUCCEEDED" : "FAILED")
-              << "." << std::endl
-              << std::flush;
+    VLOG(0) << "Command " << (unit_test.Passed() ? "SUCCEEDED" : "FAILED")
+            << ".";
   }
 
   // Called before a test starts.
@@ -366,12 +367,15 @@ class TersePrinter : public EmptyTestEventListener {
 
   // Called after a failed assertion or a SUCCEED() invocation. Prints a
   // backtrace showing the failure.
-  void OnTestPartResult(const TestPartResult& test_part_result) override {
-    std::cout << (test_part_result.failed() ? "*** Failure" : "Success")
-              << " in : " << test_part_result.file_name() << ":"
-              << test_part_result.line_number() << std::endl
-              << test_part_result.message() << std::endl
-              << std::flush;
+  void OnTestPartResult(const TestPartResult& result) override {
+    if (!result.failed()) {
+      return;
+    }
+    logging::LogMessage(result.file_name(), result.line_number(),
+                        logging::LOGGING_ERROR)
+            .stream()
+        << "*** Failure" << std::endl
+        << result.message();
   }
 
   // Called after a test ends.
@@ -383,9 +387,12 @@ int IntegrationTestsHelperMain(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   // Use the ${ISOLATED_OUTDIR} as a log destination. `test_suite` must be
-  // defined before setting log items.
+  // defined before setting log items. The integration test helper always
+  // logs into the same file as the `updater_tests_system` because the programs
+  // are used together.
   base::TestSuite test_suite(argc, argv);
-  updater::test::InitLoggingForUnitTest();
+  updater::test::InitLoggingForUnitTest(
+      base::FilePath(FILE_PATH_LITERAL("updater_test_system.log")));
 #if BUILDFLAG(IS_WIN)
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
@@ -408,7 +415,8 @@ int IntegrationTestsHelperMain(int argc, char** argv) {
 // command, which is typical a step of an integration test.
 TEST(TestHelperCommandRunner, Run) {
   base::test::TaskEnvironment environment;
-  EXPECT_EQ(MakeAppTestHelper()->Run(), 0);
+  ScopedIPCSupportWrapper ipc_support_;
+  ASSERT_EQ(MakeAppTestHelper()->Run(), 0);
 }
 
 }  // namespace

@@ -16,6 +16,7 @@
 #import "base/path_service.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
+#import "base/task/single_thread_task_runner.h"
 #import "base/task/thread_pool.h"
 #import "base/time/default_tick_clock.h"
 #import "components/content_settings/core/browser/cookie_settings.h"
@@ -170,7 +171,7 @@ void IOSChromeMainParts::PreCreateThreads() {
       channel == version_info::Channel::DEV) {
     sampling_profiler_ = IOSThreadProfiler::CreateAndStartOnMainThread();
     IOSThreadProfiler::SetMainThreadTaskRunner(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
   }
 
   // IMPORTANT

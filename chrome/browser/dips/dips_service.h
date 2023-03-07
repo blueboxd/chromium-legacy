@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "chrome/browser/dips/dips_redirect_info.h"
 #include "chrome/browser/dips/dips_storage.h"
@@ -57,6 +58,13 @@ class DIPSService : public KeyedService {
     HandleRedirect(redirect, chain, callback);
   }
 
+  void SetStorageClockForTesting(base::Clock* clock) {
+    DCHECK(storage_);
+    storage_.AsyncCall(&DIPSStorage::SetClockForTesting).WithArgs(clock);
+  }
+
+  void OnTimerFiredForTesting() { OnTimerFired(); }
+
  private:
   // So DIPSServiceFactory::BuildServiceInstanceFor can call the constructor.
   friend class DIPSServiceFactory;
@@ -79,9 +87,18 @@ class DIPSService : public KeyedService {
   void InitializeStorage(base::Time time, std::vector<std::string> sites);
 
   void OnTimerFired();
+  void DeleteDIPSEligibleState(base::Time deletion_start,
+                               std::vector<std::string> sites_to_clear);
+  void RunDeletionTaskOnUIThread(std::vector<std::string> sites_to_clear,
+                                 base::OnceClosure callback);
+  bool ShouldBlockThirdPartyCookies() const;
 
   raw_ptr<content::BrowserContext> browser_context_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  // The return value of CookieSettings::ShouldBlockThirdPartyCookies(), cached
+  // by Shutdown() (since we release our CookieSettings but may need the value
+  // later).
+  absl::optional<bool> cached_should_block_3pcs_;
   // The persisted timer controlling how often incidental state is cleared.
   // This timer is null if the DIPS feature isn't enabled with a valid TimeDelta
   // given for its `timer_delay` parameter.

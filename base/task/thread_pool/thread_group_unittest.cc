@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_runner.h"
@@ -103,9 +103,7 @@ class ThreadGroupTestBase : public testing::Test, public ThreadGroup::Delegate {
   void TearDown() override {
     delayed_task_manager_.Shutdown();
     service_thread_.Stop();
-    if (thread_group_)
-      thread_group_->JoinForTesting();
-    thread_group_.reset();
+    DestroyThreadGroup();
   }
 
   void CreateThreadGroup() {
@@ -125,6 +123,16 @@ class ThreadGroupTestBase : public testing::Test, public ThreadGroup::Delegate {
     thread_group_impl->Start(kMaxTasks, kMaxBestEffortTasks, TimeDelta::Max(),
                              service_thread_.task_runner(), nullptr,
                              worker_environment);
+  }
+
+  void DestroyThreadGroup() {
+    if (!thread_group_) {
+      return;
+    }
+
+    thread_group_->JoinForTesting();
+    mock_pooled_task_runner_delegate_.SetThreadGroup(nullptr);
+    thread_group_.reset();
   }
 
   Thread service_thread_{"ThreadPoolServiceThread"};
@@ -733,6 +741,7 @@ TEST_F(ThreadGroupTest, JoinJobTaskSource) {
   thread_group_->JoinForTesting();
   EXPECT_EQ(1U, task_source->HasOneRef());
   // Prevent TearDown() from calling JoinForTesting() again.
+  mock_pooled_task_runner_delegate_.SetThreadGroup(nullptr);
   thread_group_ = nullptr;
 }
 

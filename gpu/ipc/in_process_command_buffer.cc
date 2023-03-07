@@ -11,9 +11,9 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -211,7 +211,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
         task_executor_->gpu_preferences(),
         context_group_->feature_info()->workarounds(),
         task_executor_->gpu_feature_info(), context_state_.get(),
-        task_executor_->shared_image_manager(), /*image_factory=*/nullptr,
+        task_executor_->shared_image_manager(),
         /*is_for_display_compositor=*/false);
   }
 
@@ -390,9 +390,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         return ContextResult::kTransientFailure;
       }
 
-      decoder_.reset(gles2::GLES2Decoder::Create(
-          this, command_buffer_.get(), task_executor_->outputter(),
-          context_group_.get(), /*image_factory_for_nacl_swapchain=*/nullptr));
+      decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
+                                                 task_executor_->outputter(),
+                                                 context_group_.get()));
       if (use_virtualized_gl_context_) {
         context_ = base::MakeRefCounted<GLContextVirtual>(
             gl_share_group_.get(), real_context.get(), decoder_->AsWeakPtr());

@@ -8,9 +8,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/allocator/buildflags.h"
-#include "base/bind.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/debug/stack_trace.h"
+#include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
@@ -33,6 +33,8 @@
 #if BUILDFLAG(IS_APPLE)
 #include "base/allocator/partition_allocator/shim/allocator_interception_mac.h"
 #endif
+
+using base::allocator::dispatcher::AllocationSubsystem;
 
 namespace heap_profiling {
 
@@ -139,14 +141,13 @@ void AllocatorHooksHaveBeenInitialized() {
       FROM_HERE, std::move(GetOnInitAllocatorShimCallback()));
 }
 
-mojom::AllocatorType ConvertType(
-    base::PoissonAllocationSampler::AllocatorType type) {
+mojom::AllocatorType ConvertType(AllocationSubsystem type) {
   switch (type) {
-    case base::PoissonAllocationSampler::AllocatorType::kMalloc:
+    case AllocationSubsystem::kAllocatorShim:
       return mojom::AllocatorType::kMalloc;
-    case base::PoissonAllocationSampler::AllocatorType::kPartitionAlloc:
+    case AllocationSubsystem::kPartitionAllocator:
       return mojom::AllocatorType::kPartitionAlloc;
-    case base::PoissonAllocationSampler::AllocatorType::kManualForTesting:
+    case AllocationSubsystem::kManualForTesting:
       NOTREACHED();
       return mojom::AllocatorType::kMalloc;
   }

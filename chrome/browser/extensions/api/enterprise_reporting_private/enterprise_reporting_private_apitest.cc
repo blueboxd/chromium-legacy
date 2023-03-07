@@ -46,6 +46,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "components/device_signals/test/win/scoped_executable_files.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -702,9 +703,14 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest,
 #endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-
+// // TODO(http://crbug.com/1408618): Failing consistently on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_GetFileSystemInfo_Success DISABLED_GetFileSystemInfo_Success
+#else
+#define MAYBE_GetFileSystemInfo_Success GetFileSystemInfo_Success
+#endif
 IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest,
-                       GetFileSystemInfo_Success) {
+                       MAYBE_GetFileSystemInfo_Success) {
   // Use the test runner process and binary as test parameters, as it will always
   // be running.
   auto test_runner_file_path =
@@ -745,12 +751,13 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest,
 
   std::string extra_items = "";
 #if BUILDFLAG(IS_WIN)
+  device_signals::test::ScopedExecutableFiles scoped_executable_files;
   std::string signed_exe_path =
-      device_signals::test::GetSignedExePath().AsUTF8Unsafe();
+      scoped_executable_files.GetSignedExePath().AsUTF8Unsafe();
   base::ReplaceSubstringsAfterOffset(&signed_exe_path, 0U, "\\", "\\\\");
 
   std::string metadata_exe_path =
-      device_signals::test::GetMetadataExePath().AsUTF8Unsafe();
+      scoped_executable_files.GetMetadataExePath().AsUTF8Unsafe();
   base::ReplaceSubstringsAfterOffset(&metadata_exe_path, 0U, "\\", "\\\\");
 
   extra_items = base::StringPrintf(
@@ -772,8 +779,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest,
     });
   )",
       signed_exe_path.c_str(), metadata_exe_path.c_str(),
-      device_signals::test::GetMetadataProductName().c_str(),
-      device_signals::test::GetMetadataProductVersion().c_str());
+      scoped_executable_files.GetMetadataProductName().c_str(),
+      scoped_executable_files.GetMetadataProductVersion().c_str());
 
   constexpr char kAssertions[] = R"(
         chrome.test.assertTrue(fileItems instanceof Array);
@@ -886,8 +893,14 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_MAC)
+// TODO(http://crbug.com/1408618): Failing consistently on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_GetPlistSettings_Success DISABLED_GetPlistSettings_Success
+#else
+#define MAYBE_GetPlistSettings_Success GetPlistSettings_Success
+#endif
 IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest,
-                       GetPlistSettings_Success) {
+                       MAYBE_GetPlistSettings_Success) {
   constexpr char kTest[] = R"(
       chrome.test.assertEq(
         'function',

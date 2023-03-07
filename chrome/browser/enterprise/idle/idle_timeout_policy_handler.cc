@@ -38,6 +38,42 @@ bool CheckOtherPolicySet(const policy::PolicyMap& policies,
   return false;
 }
 
+absl::optional<ActionType> NameToActionType(const std::string& name) {
+#if !BUILDFLAG(IS_ANDROID)
+  if (name == "close_browsers") {
+    return ActionType::kCloseBrowsers;
+  }
+  if (name == "show_profile_picker") {
+    return ActionType::kShowProfilePicker;
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+  if (name == "clear_browsing_history") {
+    return ActionType::kClearBrowsingHistory;
+  }
+  if (name == "clear_download_history") {
+    return ActionType::kClearDownloadHistory;
+  }
+  if (name == "clear_cookies_and_other_site_data") {
+    return ActionType::kClearCookiesAndOtherSiteData;
+  }
+  if (name == "clear_cached_images_and_files") {
+    return ActionType::kClearCachedImagesAndFiles;
+  }
+  if (name == "clear_password_signin") {
+    return ActionType::kClearPasswordSignin;
+  }
+  if (name == "clear_autofill") {
+    return ActionType::kClearAutofill;
+  }
+  if (name == "clear_site_settings") {
+    return ActionType::kClearSiteSettings;
+  }
+  if (name == "clear_hosted_app_data") {
+    return ActionType::kClearHostedAppData;
+  }
+  return absl::nullopt;
+}
+
 }  // namespace
 
 IdleTimeoutPolicyHandler::IdleTimeoutPolicyHandler()
@@ -100,15 +136,13 @@ void IdleTimeoutActionsPolicyHandler::ApplyPolicySettings(
   // Convert strings to integers (from the ActionType enum).
   base::Value::List converted_actions;
   for (const base::Value& action : policy_value->GetList()) {
-    if (!action.is_string())
+    if (!action.is_string()) {
       continue;
-    const std::string& name = action.GetString();
-    if (name == "close_browsers")
-      converted_actions.Append(static_cast<int>(ActionType::kCloseBrowsers));
-    else if (name == "show_profile_picker")
-      converted_actions.Append(
-          static_cast<int>(ActionType::kShowProfilePicker));
-    // Silently drop unsupported values.
+    }
+    if (absl::optional<ActionType> action_type =
+            NameToActionType(action.GetString())) {
+      converted_actions.Append(static_cast<int>(action_type.value()));
+    }
   }
   prefs->SetValue(prefs::kIdleTimeoutActions,
                   base::Value(std::move(converted_actions)));

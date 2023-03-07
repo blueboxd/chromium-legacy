@@ -21,7 +21,6 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace base {
-class Time;
 class TimeDelta;
 }  // namespace base
 
@@ -370,6 +369,9 @@ bool ShouldDisableCGIParamMatching();
 // scopes for Site Search.
 bool IsSiteSearchStarterPackEnabled();
 
+// Omnibox UI Simplification - Square icon backgrounds.
+bool IsSquareSuggestIconEnabled();
+
 // Omnibox UI simplification - uniform row heights.
 // Returns true if the feature to enable uniform row height is enabled.
 bool IsUniformRowHeightEnabled();
@@ -527,22 +529,6 @@ bool IsZeroSuggestPrefetchingEnabled();
 bool IsZeroSuggestPrefetchingEnabledInContext(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
-// Determines the age threshold in days for local zero-prefix suggestions.
-extern const base::FeatureParam<int> kOmniboxLocalZeroSuggestAgeThresholdParam;
-
-// Returns the age threshold since the last visit in order to consider a
-// normalized keyword search term as a zero-prefix suggestion.
-base::Time GetLocalHistoryZeroSuggestAgeThreshold();
-
-// Whether duplicative visits should be ignored for local history zero-suggest.
-// A duplicative visit is a visit to the same search term in an interval smaller
-// than kAutocompleteDuplicateVisitIntervalThreshold.
-extern const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits;
-// Whether duplicative visits should be ignored for local history
-// prefix-suggest. A duplicative visit is a visit to the same search term in an
-// interval smaller than kAutocompleteDuplicateVisitIntervalThreshold.
-extern const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits;
-
 // Short bookmarks.
 // Determine whether bookmarks should look for exact matches only or prefix
 // matches as well when the input is short.
@@ -599,6 +585,9 @@ extern const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore;
 extern const base::FeatureParam<int> kDocumentProviderMaxLowQualitySuggestions;
 
 // Domain suggestions.
+// Whether enabled for counterfactual logging; i.e. shouldn't use domain
+// suggestions/scores.
+extern const base::FeatureParam<bool> kDomainSuggestionsCounterfactual;
 // The minimum number of unique URLs a domain needs to be considered highly
 // visited.
 extern const base::FeatureParam<int> kDomainSuggestionsTypedUrlsThreshold;
@@ -624,10 +613,27 @@ extern const base::FeatureParam<int> kDomainSuggestionsMaxMatchesPerDomain;
 // A value of 1 is the control behavior. A value of 2 will boost scores, but not
 // necessarily double them due to how HQP maps the factors to actual scores.
 extern const base::FeatureParam<double> kDomainSuggestionsScoreFactor;
+// Whether to use an alternative scoring algorithm based on last visit time to
+// boost scores (e.g., 1000 - 80 / day). If disabled, domain suggestions use
+// traditional HQP scoring (optionally scaled by
+// `kDomainSuggestionsScoreFactor`). If enabled, they use the max of the
+// traditional and the alternate scoring algorithms.
+extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 
 // ---------------------------------------------------------
+// ML Relevance Scoring:
+
 // For logging Omnibox scoring signals for training machine learning models.
 bool IsLogUrlScoringSignalsEnabled();
+
+// If enabled, runs the machine learning scoring model and uses the ML-based
+// relevance scores. This flag enables the omnibox autocomplete system related
+// changes to support ML scoring and moves the responsibility for scoring and
+// trimming results from the providers into the autocomplete controller.
+bool IsMlRelevanceScoringEnabled();
+
+// Whether the URL scoring model is enabled.
+bool IsUrlScoringModelEnabled();
 
 // New params should be inserted above this comment. They should be ordered
 // consistently with `omnibox_features.h`. They should be formatted as:

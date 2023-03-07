@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
@@ -66,7 +66,8 @@ class VersionUpdaterCrosTest : public ::testing::Test {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AtLeast(0));
 
-    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
+    network_handler_test_helper_ =
+        std::make_unique<ash::NetworkHandlerTestHelper>();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -99,14 +100,14 @@ class VersionUpdaterCrosTest : public ::testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
+  std::unique_ptr<ash::NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<VersionUpdater> version_updater_;
   VersionUpdaterCros* version_updater_cros_ptr_;
   ash::FakeUpdateEngineClient* fake_update_engine_client_;  // Not owned.
 
   ash::MockUserManager* mock_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
-  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 };
 
 // The test checks following behaviour:

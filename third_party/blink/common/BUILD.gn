@@ -156,6 +156,7 @@ source_set("common") {
     "fetch/fetch_api_request_body_mojom_traits.cc",
     "frame/frame_ad_evidence.cc",
     "frame/frame_ad_evidence_mojom_traits.cc",
+    "frame/frame_owner_element_type_mojom_traits.cc",
     "frame/frame_policy.cc",
     "frame/frame_policy_mojom_traits.cc",
     "frame/frame_visual_properties.cc",
@@ -221,7 +222,6 @@ source_set("common") {
     "messaging/web_message_port.cc",
     "metrics/post_message_counter.cc",
     "mime_util/mime_util.cc",
-    "native_io/native_io_utils.cc",
     "navigation/impression_mojom_traits.cc",
     "navigation/navigation_params.cc",
     "navigation/navigation_policy.cc",
@@ -333,7 +333,6 @@ source_set("common") {
   }
 
   if (is_win) {
-    sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.cc" ]
     deps += [ "//ui/gfx/" ]
   }
 
@@ -394,6 +393,7 @@ source_set("common_unittests_sources") {
     "metrics/post_message_counter_unittest.cc",
     "mime_util/mime_util_unittest.cc",
     "notifications/notification_mojom_traits_unittest.cc",
+    "notifications/platform_notification_data_unittest.cc",
     "origin_trials/origin_trials_test.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
@@ -467,7 +467,10 @@ group("common_unittests_data") {
 static_library("test_support") {
   testonly = true
 
-  sources = [ "origin_trials/scoped_test_origin_trial_policy.cc" ]
+  sources = [
+    "interest_group/test_interest_group_builder.cc",
+    "origin_trials/scoped_test_origin_trial_policy.cc",
+  ]
 
   deps = [ "//third_party/blink/public:test_headers" ]
 

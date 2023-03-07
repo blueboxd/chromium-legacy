@@ -155,7 +155,7 @@ class CC_EXPORT PictureLayerImpl
 
   // Set the paint result (PaintRecord) for a given PaintWorkletInput.
   void SetPaintWorkletRecord(scoped_refptr<const PaintWorkletInput>,
-                             sk_sp<PaintRecord>);
+                             PaintRecord);
 
   // Retrieve the map of PaintWorkletInputs to their painted results
   // (PaintRecords). If a PaintWorkletInput has not been painted yet, it will
@@ -295,7 +295,7 @@ class CC_EXPORT PictureLayerImpl
   bool directly_composited_image_default_raster_scale_changed_ : 1;
 
   LCDTextDisallowedReason lcd_text_disallowed_reason_ =
-      LCDTextDisallowedReason::kNone;
+      LCDTextDisallowedReason::kNoText;
 
   // If this scale is not zero, it indicates that this layer is a directly
   // composited image layer (i.e. the only thing drawn into this layer is an

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/task/default_delayed_task_handle_delegate.h"
 #include "base/threading/thread_local.h"
@@ -45,10 +45,7 @@ DelayedTaskHandle SequencedTaskRunner::PostCancelableDelayedTask(
   DelayedTaskHandle delayed_task_handle(
       std::move(delayed_task_handle_delegate));
 
-  // If the task fails to be posted, the handle will automatically be
-  // invalidated upon destruction of the callback object.
-  if (!PostDelayedTask(from_here, std::move(task), delay))
-    DCHECK(!delayed_task_handle.IsValid());
+  PostDelayedTask(from_here, std::move(task), delay);
 
   return delayed_task_handle;
 }

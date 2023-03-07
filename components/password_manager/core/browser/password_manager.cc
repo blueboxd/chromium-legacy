@@ -378,19 +378,6 @@ void PasswordManager::OnGeneratedPasswordAccepted(
   }
 }
 
-void PasswordManager::OnPresaveGeneratedPassword(
-    PasswordManagerDriver* driver,
-    const FormData& form_data,
-    const std::u16string& generated_password) {
-  DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
-  PasswordFormManager* form_manager =
-      GetMatchedManager(driver, form_data.unique_renderer_id);
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
-                        !form_manager);
-  if (form_manager)
-    form_manager->PresaveGeneratedPassword(form_data, generated_password);
-}
-
 void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
                                                   const FormData& form_data) {
   DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
@@ -411,6 +398,28 @@ void PasswordManager::SetGenerationElementAndTypeForForm(
     DCHECK(client_->IsSavingAndFillingEnabled(form_manager->GetURL()));
     form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(type);
+  }
+}
+
+void PasswordManager::OnPresaveGeneratedPassword(
+    PasswordManagerDriver* driver,
+    const FormData& form_data,
+    const std::u16string& generated_password) {
+  DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
+  PasswordFormManager* form_manager =
+      GetMatchedManager(driver, form_data.unique_renderer_id);
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
+                        !form_manager);
+  if (form_manager) {
+    form_manager->PresaveGeneratedPassword(form_data, generated_password);
+#if BUILDFLAG(IS_IOS)
+    // On iOS some field values are not propagated to PasswordManager timely.
+    // Provisionally save entire |form_data| to make sure the form is parsed
+    // properly afterwards (crbug.com/1170351).
+    // TODO(crbug/1399524): Invoke this from SharedPasswordController.
+    form_manager->ProvisionallySave(form_data, driver,
+                                    base::OptionalToPtr(possible_username_));
+#endif
   }
 }
 
@@ -577,9 +586,7 @@ void PasswordManager::OnPasswordFormCleared(
     return;
   }
   // If a password form was cleared, login is successful.
-  if (form_data.is_form_tag &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kDetectFormSubmissionOnFormClear)) {
+  if (form_data.is_form_tag) {
     manager->UpdateSubmissionIndicatorEvent(
         SubmissionIndicatorEvent::CHANGE_PASSWORD_FORM_CLEARED);
     OnLoginSuccessful();
@@ -591,9 +598,7 @@ void PasswordManager::OnPasswordFormCleared(
       manager->GetSubmittedForm()->new_password_element_renderer_id;
   auto it = base::ranges::find(form_data.fields, new_password_field_id,
                                &autofill::FormFieldData::unique_renderer_id);
-  if (it != form_data.fields.end() && it->value.empty() &&
-      base::FeatureList::IsEnabled(
-          features::kDetectFormSubmissionOnFormClear)) {
+  if (it != form_data.fields.end() && it->value.empty()) {
     manager->UpdateSubmissionIndicatorEvent(
         SubmissionIndicatorEvent::CHANGE_PASSWORD_FORM_CLEARED);
     OnLoginSuccessful();
@@ -815,6 +820,14 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
+  // |matched_manager->ProvisionallySave| returning true means that there is a
+  // nonempty password field. If such |matched_manager| contains
+  // |possible_username|, reset and do not consider for single username.
+  if (possible_username &&
+      matched_manager->FormHasPossibleUsername(possible_username)) {
+    possible_username_.reset();
+  }
+
   // Set all other form managers to no submission state.
   for (const auto& manager : form_managers_) {
     if (manager.get() != matched_manager)
@@ -847,26 +860,6 @@ void PasswordManager::NotifyStorePasswordCalled() {
 }
 
 #if BUILDFLAG(IS_IOS)
-void PasswordManager::PresaveGeneratedPassword(
-    PasswordManagerDriver* driver,
-    const FormData& form,
-    const std::u16string& generated_password,
-    FieldRendererId generation_element) {
-  PasswordFormManager* form_manager =
-      GetMatchedManager(driver, form.unique_renderer_id);
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
-                        !form_manager);
-
-  // TODO(https://crbug.com/886583): Create form manager if not found.
-  if (form_manager) {
-    form_manager->PresaveGeneratedPassword(driver, form, generated_password,
-                                           generation_element);
-
-    form_manager->ProvisionallySave(form, driver,
-                                    base::OptionalToPtr(possible_username_));
-  }
-}
-
 void PasswordManager::UpdateStateOnUserInput(
     PasswordManagerDriver* driver,
     FormRendererId form_id,
@@ -1232,7 +1225,7 @@ void PasswordManager::ProcessAutofillPredictions(
   }
 
   for (const FormStructure* form : forms) {
-    // |driver| might be empty on iOS or in tests.
+    // |driver| might be empty in tests.
     int driver_id = driver ? driver->GetId() : 0;
     predictions_[form->form_signature()] =
         ConvertToFormPredictions(driver_id, *form);
@@ -1286,21 +1279,6 @@ PasswordFormManager* PasswordManager::GetSubmittedManager() const {
   }
 
   return nullptr;
-}
-
-bool PasswordManager::HasSubmittedManager() const {
-  return GetSubmittedManager() != nullptr;
-}
-
-bool PasswordManager::HasSubmittedManagerWithSamePassword() const {
-  PasswordFormManager* submitted_manager = GetSubmittedManager();
-  return submitted_manager && submitted_manager->IsSamePassword();
-}
-
-void PasswordManager::SaveSubmittedManager() {
-  PasswordFormManager* submitted_manager = GetSubmittedManager();
-  DCHECK(submitted_manager);
-  submitted_manager->Save();
 }
 
 absl::optional<PasswordForm> PasswordManager::GetSubmittedCredentials() {
@@ -1430,12 +1408,6 @@ bool PasswordManager::NewFormsParsed(PasswordManagerDriver* driver,
   return base::ranges::any_of(form_data, [driver, this](const FormData& form) {
     return !GetMatchedManager(driver, form.unique_renderer_id);
   });
-}
-
-void PasswordManager::ResetPendingCredentials() {
-  for (auto& form_manager : form_managers_)
-    form_manager->ResetState();
-  owned_submitted_form_manager_.reset();
 }
 
 bool PasswordManager::IsFormManagerPendingPasswordUpdate() const {

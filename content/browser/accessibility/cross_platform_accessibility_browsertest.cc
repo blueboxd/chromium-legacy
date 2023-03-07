@@ -9,8 +9,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(1u, root->children().size());
 
   const ui::AXNode* html_element = root->children()[0];
-  ASSERT_EQ(1u, html_element->GetUnignoredChildCount());
+  EXPECT_TRUE(html_element->IsIgnored());
 
   const ui::AXNode* body = html_element->children()[0];
   ASSERT_EQ(3u, body->GetUnignoredChildCount());
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(1u, sub_document->children().size());
 
   const ui::AXNode* sub_html_element = sub_document->children()[0];
-  ASSERT_EQ(1u, sub_html_element->GetUnignoredChildCount());
+  EXPECT_TRUE(sub_html_element->IsIgnored());
 
   const ui::AXNode* sub_body = sub_html_element->children()[0];
   ASSERT_EQ(1u, sub_body->GetUnignoredChildCount());
@@ -1588,7 +1588,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
     const BrowserAccessibility* popup_area =
         manager->GetFromID(controls_ids[1]);
     ASSERT_NE(nullptr, popup_area);
-    EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_area->GetRole());
+    EXPECT_EQ(ax::mojom::Role::kGroup, popup_area->GetRole());
 
 #if !BUILDFLAG(IS_CASTOS) && !BUILDFLAG(IS_CAST_ANDROID)
     // Ensure that the bounding box of the popup area is at least 100
@@ -1653,7 +1653,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
     const BrowserAccessibility* popup_area =
         manager->GetFromID(controls_ids[0]);
     ASSERT_NE(nullptr, popup_area);
-    EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_area->GetRole());
+    EXPECT_EQ(ax::mojom::Role::kGroup, popup_area->GetRole());
   }
 }
 

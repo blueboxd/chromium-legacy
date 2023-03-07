@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/debug/alias.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/services/storage/service_worker/service_worker_resource_ops.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -164,7 +165,7 @@ void ServiceWorkerStorageControlImpl::FindRegistrationForClientUrl(
 void ServiceWorkerStorageControlImpl::FindRegistrationForScope(
     const GURL& scope,
     const blink::StorageKey& key,
-    FindRegistrationForClientUrlCallback callback) {
+    FindRegistrationForScopeCallback callback) {
   storage_->FindRegistrationForScope(
       scope, key,
       base::BindOnce(&ServiceWorkerStorageControlImpl::DidFindRegistration,
@@ -174,7 +175,7 @@ void ServiceWorkerStorageControlImpl::FindRegistrationForScope(
 void ServiceWorkerStorageControlImpl::FindRegistrationForId(
     int64_t registration_id,
     const absl::optional<blink::StorageKey>& key,
-    FindRegistrationForClientUrlCallback callback) {
+    FindRegistrationForIdCallback callback) {
   if (key.has_value()) {
     storage_->FindRegistrationForId(
         registration_id, *key,

@@ -10,8 +10,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -316,8 +316,8 @@ InputMethodPrivateOpenOptionsPageFunction::Run() {
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetSurroundingTextFunction::Run() {
-  ui::TextInputTarget* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
+  ash::TextInputTarget* input_context =
+      ash::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)
     return RespondNow(Error(InformativeError(
         kErrorInputContextHandlerNotAvailable, static_function_name())));
@@ -334,7 +334,7 @@ InputMethodPrivateGetSurroundingTextFunction::Run() {
   uint32_t param_before_length = (uint32_t)params->before_length;
   uint32_t param_after_length = (uint32_t)params->after_length;
 
-  ui::SurroundingTextInfo info = input_context->GetSurroundingTextInfo();
+  ash::SurroundingTextInfo info = input_context->GetSurroundingTextInfo();
   if (!info.selection_range.IsValid())
     return RespondNow(WithArguments(base::Value()));
 

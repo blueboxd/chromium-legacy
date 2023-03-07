@@ -21,8 +21,9 @@ MediaValues* MediaValuesDynamic::Create(Document& document) {
 
 MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
   if (!frame || !frame->View() || !frame->GetDocument() ||
-      !frame->GetDocument()->GetLayoutView())
+      !frame->GetDocument()->GetLayoutView()) {
     return MakeGarbageCollected<MediaValuesCached>();
+  }
   return MakeGarbageCollected<MediaValuesDynamic>(frame);
 }
 
@@ -61,8 +62,20 @@ float MediaValuesDynamic::ExFontSize(float zoom) const {
   return CalculateExSize(frame_);
 }
 
+float MediaValuesDynamic::RexFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rex and ex units are both based on the initial font.
+  return CalculateExSize(frame_);
+}
+
 float MediaValuesDynamic::ChFontSize(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
+  return CalculateChSize(frame_);
+}
+
+float MediaValuesDynamic::RchFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rch and ch units are both based on the initial font.
   return CalculateChSize(frame_);
 }
 
@@ -71,20 +84,34 @@ float MediaValuesDynamic::IcFontSize(float zoom) const {
   return CalculateIcSize(frame_);
 }
 
+float MediaValuesDynamic::RicFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries ric and ic units are both based on the initial font.
+  return CalculateIcSize(frame_);
+}
+
 float MediaValuesDynamic::LineHeight(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
   return CalculateLineHeight(frame_);
 }
 
+float MediaValuesDynamic::RootLineHeight(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rlh and lh units are both based on the initial font.
+  return CalculateLineHeight(frame_);
+}
+
 double MediaValuesDynamic::ViewportWidth() const {
-  if (viewport_dimensions_overridden_)
+  if (viewport_dimensions_overridden_) {
     return viewport_width_override_;
+  }
   return CalculateViewportWidth(frame_);
 }
 
 double MediaValuesDynamic::ViewportHeight() const {
-  if (viewport_dimensions_overridden_)
+  if (viewport_dimensions_overridden_) {
     return viewport_height_override_;
+  }
   return CalculateViewportHeight(frame_);
 }
 
@@ -162,10 +189,6 @@ int MediaValuesDynamic::AvailableHoverTypes() const {
 
 bool MediaValuesDynamic::ThreeDEnabled() const {
   return CalculateThreeDEnabled(frame_);
-}
-
-bool MediaValuesDynamic::InImmersiveMode() const {
-  return CalculateInImmersiveMode(frame_);
 }
 
 const String MediaValuesDynamic::MediaType() const {

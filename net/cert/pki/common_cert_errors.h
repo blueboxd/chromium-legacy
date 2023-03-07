@@ -35,17 +35,8 @@ NET_EXPORT extern const CertErrorId kSignatureAlgorithmMismatch;
 // Certificate verification was called with an empty chain.
 NET_EXPORT extern const CertErrorId kChainIsEmpty;
 
-// Certificate verification was called with a chain of length 1, which is not
-// supported (i.e. the target certificate cannot also be a trusted
-// certificate). See https://crbug.com/814994.
-NET_EXPORT extern const CertErrorId kChainIsLength1;
-
 // The certificate contains an unknown extension which is marked as critical.
 NET_EXPORT extern const CertErrorId kUnconsumedCriticalExtension;
-
-// The target certificate appears to be a CA (has Basic Constraints CA=true),
-// however does not have a keyUsage consistent with being a CA (keyCertSign).
-NET_EXPORT extern const CertErrorId kTargetCertInconsistentCaBits;
 
 // The target certificate appears to be a CA (has Basic Constraints CA=true)
 // but is being used for TLS client or server authentication.

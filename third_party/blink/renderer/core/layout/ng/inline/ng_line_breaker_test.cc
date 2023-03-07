@@ -32,7 +32,7 @@ String ToString(NGInlineItemResults line, NGInlineNode node) {
   return builder.ToString();
 }
 
-class NGLineBreakerTest : public NGLayoutTest {
+class NGLineBreakerTest : public RenderingTest {
  protected:
   NGInlineNode CreateInlineNode(const String& html_content) {
     SetBodyInnerHTML(html_content);
@@ -168,7 +168,6 @@ TEST_F(NGLineBreakerTest, SingleNode) {
 
 // For "text-combine-upright-break-inside-001a.html"
 TEST_F(NGLineBreakerTest, TextCombineCloseTag) {
-  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -195,7 +194,6 @@ TEST_F(NGLineBreakerTest, TextCombineCloseTag) {
 }
 
 TEST_F(NGLineBreakerTest, TextCombineBreak) {
-  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -214,7 +212,6 @@ TEST_F(NGLineBreakerTest, TextCombineBreak) {
 }
 
 TEST_F(NGLineBreakerTest, TextCombineNoBreak) {
-  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -233,7 +230,6 @@ TEST_F(NGLineBreakerTest, TextCombineNoBreak) {
 }
 
 TEST_F(NGLineBreakerTest, TextCombineNoBreakWithSpace) {
-  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "#container {"
@@ -898,7 +894,6 @@ B AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 }
 
 TEST_F(NGLineBreakerTest, SplitTextIntoSegements) {
-  RuntimeEnabledFeaturesTestHelpers::ScopedSVGTextNG svg_text_ng(true);
   NGInlineNode node = CreateInlineNode(
       uR"HTML(
       <!DOCTYPE html>
@@ -926,7 +921,6 @@ TEST_F(NGLineBreakerTest, SplitTextIntoSegements) {
 
 // crbug.com/1251960
 TEST_F(NGLineBreakerTest, SplitTextIntoSegementsCrash) {
-  RuntimeEnabledFeaturesTestHelpers::ScopedSVGTextNG svg_text_ng(true);
   NGInlineNode node = CreateInlineNode(R"HTML(<!DOCTYPE html>
       <svg viewBox="0 0 800 600">
       <text id="container" x="50 100 150">&#x0343;&#x2585;&#x0343;&#x2585;<!--

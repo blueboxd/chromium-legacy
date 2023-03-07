@@ -5,7 +5,7 @@
 #ifndef MEDIA_GPU_COMMAND_BUFFER_HELPER_H_
 #define MEDIA_GPU_COMMAND_BUFFER_HELPER_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -31,6 +31,8 @@ class GLImage;
 }  // namespace gl
 
 namespace media {
+
+class PictureBufferManagerImpl;
 
 // TODO(sandersd): CommandBufferHelper does not inherently need to be ref
 // counted, but some clients want that (VdaVideoDecoder and PictureBufferManager
@@ -123,25 +125,17 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // Binds level 0 of the texture to an unbound image.
   //
-  // BindTexImage()/CopyTexImage() will be called when the texture is used.
+  // BindTexImage() will be called when the texture is used.
   virtual bool BindDecoderManagedImage(GLuint service_id,
                                        gl::GLImage* image) = 0;
 #else
   // Binds level 0 of the texture to an image for which the sampler binding
   // already exists.
   //
-  // BindTexImage()/CopyTexImage() will *not* be called when the texture is
-  // used.
+  // BindTexImage() will *not* be called when the texture is used.
   virtual bool BindClientManagedImage(GLuint service_id,
                                       gl::GLImage* image) = 0;
 #endif
-
-  // Creates a mailbox for a texture.
-  //
-  // TODO(sandersd): Specify the behavior when the stub has been destroyed. The
-  // current implementation returns an empty (zero) mailbox. One solution would
-  // be to add a HasStub() method, and not define behavior when it is false.
-  virtual gpu::Mailbox CreateMailbox(GLuint service_id) = 0;
 
   // Set the callback to be called when our stub is destroyed. This callback
   // may not change the current context.
@@ -164,6 +158,20 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   virtual ~CommandBufferHelper() = default;
 
  private:
+#if !BUILDFLAG(IS_ANDROID)
+  // Creates a legacy mailbox for a texture.
+  // NOTE: We are in the process of eliminating this method. DO NOT ADD ANY NEW
+  // USAGES - instead, reach out to shared-image-team@ with your use case. See
+  // crbug.com/1273084.
+  //
+  // TODO(sandersd): Specify the behavior when the stub has been destroyed. The
+  // current implementation returns an empty (zero) mailbox. One solution would
+  // be to add a HasStub() method, and not define behavior when it is false.
+  virtual gpu::Mailbox CreateLegacyMailbox(GLuint service_id) = 0;
+
+  friend class PictureBufferManagerImpl;
+#endif
+
   friend class base::DeleteHelper<CommandBufferHelper>;
   friend class base::RefCountedDeleteOnSequence<CommandBufferHelper>;
 };

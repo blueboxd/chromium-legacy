@@ -65,7 +65,9 @@ base::UnguessableToken GetUnguessableToken(base::StringPiece str) {
   absl::optional<base::Token> token = base::Token::FromString(str);
   DCHECK(token.has_value());
 
-  return base::UnguessableToken::Deserialize(token->high(), token->low());
+  absl::optional<base::UnguessableToken> unguessable_token =
+      base::UnguessableToken::Deserialize2(token->high(), token->low());
+  return unguessable_token.value();
 }
 
 // Class used to wait for InstanceRegistry events.
@@ -258,7 +260,7 @@ class CrosWindowManagementBrowserTest : public SystemExtensionsApiBrowserTest {
     // in a tab in regular browser window.
     auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
-    web_app_info->user_display_mode = web_app::UserDisplayMode::kBrowser;
+    web_app_info->user_display_mode = web_app::mojom::UserDisplayMode::kBrowser;
     const web_app::AppId app_id = web_app::test::InstallWebApp(
         browser()->profile(), std::move(web_app_info));
     web_app::AppReadinessWaiter(browser()->profile(), app_id).Await();

@@ -11,11 +11,11 @@
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/i18n_constants.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/process/process_handle.h"
@@ -1560,8 +1560,9 @@ void NetworkHandler::SetCookie(const std::string& name,
   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
       *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
       options,
-      net::cookie_util::AdaptCookieAccessResultToBool(base::BindOnce(
-          &SetCookieCallback::sendSuccess, std::move(callback))));
+      base::BindOnce(net::cookie_util::IsCookieAccessResultInclude)
+          .Then(base::BindOnce(&SetCookieCallback::sendSuccess,
+                               std::move(callback))));
 }
 
 // static
@@ -2039,8 +2040,8 @@ Maybe<String> GetBlockedReasonFor(
 }
 
 String GetTrustTokenOperationType(
-    network::mojom::TrustTokenOperationType type) {
-  switch (type) {
+    network::mojom::TrustTokenOperationType operation) {
+  switch (operation) {
     case network::mojom::TrustTokenOperationType::kIssuance:
       return protocol::Network::TrustTokenOperationTypeEnum::Issuance;
     case network::mojom::TrustTokenOperationType::kRedemption:
@@ -2064,7 +2065,7 @@ std::unique_ptr<protocol::Network::TrustTokenParams> BuildTrustTokenParams(
     const network::mojom::TrustTokenParams& params) {
   auto protocol_params =
       protocol::Network::TrustTokenParams::Create()
-          .SetType(GetTrustTokenOperationType(params.type))
+          .SetOperation(GetTrustTokenOperationType(params.operation))
           .SetRefreshPolicy(GetTrustTokenRefreshPolicy(params.refresh_policy))
           .Build();
 
@@ -2158,6 +2159,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
     request->SetUrlFragment(url_fragment);
 
   if (common_params.post_data) {
+    request->SetHasPostData(true);
     std::string post_data;
     auto data_entries =
         std::make_unique<protocol::Array<protocol::Network::PostDataEntry>>();
@@ -2166,7 +2168,6 @@ void NetworkHandler::NavigationRequestWillBeSent(
         request->SetPostData(post_data);
       if (data_entries->size())
         request->SetPostDataEntries(std::move(data_entries));
-      request->SetHasPostData(true);
     }
   }
   // TODO(caseq): report potentially blockable types
@@ -3198,7 +3199,7 @@ void NetworkHandler::OnTrustTokenOperationDone(
 
   frontend()->TrustTokenOperationDone(
       GetTrustTokenOperationStatus(result.status),
-      GetTrustTokenOperationType(result.type), devtools_request_id,
+      GetTrustTokenOperationType(result.operation), devtools_request_id,
       std::move(top_level_origin), std::move(issuer),
       result.issued_token_count);
 }

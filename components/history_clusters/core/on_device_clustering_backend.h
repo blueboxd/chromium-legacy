@@ -48,66 +48,112 @@ class OnDeviceClusteringBackend : public ClusteringBackend {
   // ClusteringBackend:
   void GetClusters(ClusteringRequestSource clustering_request_source,
                    ClustersCallback callback,
-                   std::vector<history::AnnotatedVisit> visits) override;
+                   std::vector<history::AnnotatedVisit> visits,
+                   bool requires_ui_and_triggerability) override;
+  void GetClustersForUI(ClustersCallback callback,
+                        std::vector<history::Cluster> clusters) override;
+  void GetClusterTriggerability(
+      ClustersCallback callback,
+      std::vector<history::Cluster> clusters) override;
 
  private:
+  // Returns the unique set of entity IDs that were annotated for the visits in
+  // `clusters`.
+  base::flat_set<std::string> GetEntityIdsForClusters(
+      const std::vector<history::Cluster>& clusters);
+
+  // Whether to retrieve entity metadata for `entity`.
+  bool ShouldRetrieveEntityMetadataForEntity(
+      const history::VisitContentModelAnnotations::Category& entity);
+
+  using EntityRetrievedCallback = base::OnceCallback<void(
+      base::flat_map<std::string, optimization_guide::EntityMetadata>)>;
+  // Retrieves batch entity metadata for `entity_ids` and later invokes
+  // `entity_retrieved_callback` once the metadata has been retrieved.
+  void RetrieveBatchEntityMetadata(
+      base::flat_set<std::string> entity_ids,
+      EntityRetrievedCallback entity_retrieved_callback);
+
   // Callback invoked when batch entity metadata has been received from
-  // `completed_task`. This will normalize `annotated_visits` and proceed to
-  // cluster them after normalization.
+  // `completed_task`. Will invoke `entity_retrieved_callback` with
+  // `entity_metadata_map` after metrics collected.
   void OnBatchEntityMetadataRetrieved(
-      ClusteringRequestSource clustering_request_source,
       optimization_guide::BatchEntityMetadataTask* completed_task,
-      std::vector<history::AnnotatedVisit> annotated_visits,
       absl::optional<base::TimeTicks> entity_metadata_start,
-      ClustersCallback callback,
+      EntityRetrievedCallback entity_retrieved_callback,
       const base::flat_map<std::string, optimization_guide::EntityMetadata>&
           entity_metadata_map);
 
-  // ProcessVisits adds additional metadata that might be used for clustering or
+  // Adds additional metadata that might be used for clustering or
   // Journeys to each visit in `annotated_visits`, such as human-readable
   // entities and categories, site engagement, etc.
   void ProcessVisits(
       ClusteringRequestSource clustering_request_source,
-      optimization_guide::BatchEntityMetadataTask* completed_task,
       std::vector<history::AnnotatedVisit> annotated_visits,
-      absl::optional<base::TimeTicks> entity_metadata_start,
+      bool requires_ui_and_triggerability,
       ClustersCallback callback,
-      const base::flat_map<std::string, optimization_guide::EntityMetadata>&
+      base::flat_map<std::string, optimization_guide::EntityMetadata>
           entity_metadata_map);
 
   // Called when all visits have been processed.
   void OnAllVisitsFinishedProcessing(
       ClusteringRequestSource clustering_request_source,
-      optimization_guide::BatchEntityMetadataTask* completed_task,
       std::vector<history::ClusterVisit> cluster_visits,
+      bool requires_ui_and_triggerability,
       base::flat_map<std::string, optimization_guide::EntityMetadata>
           entity_id_to_entity_metadata_map,
       ClustersCallback callback);
+
+  // Dispatches call to `GetClustersForUIOnBackgroundThread()` from the main
+  // thread.
+  void DispatchGetClustersForUIToBackgroundThread(
+      ClustersCallback callback,
+      std::vector<history::Cluster> clusters,
+      base::flat_map<std::string, optimization_guide::EntityMetadata>
+          entity_metadata_map);
+
+  // Dispatches call to `GetClusterTriggerabilityOnBackgroundThread()` from the
+  // main thread.
+  void DispatchGetClusterTriggerabilityToBackgroundThread(
+      ClustersCallback callback,
+      std::vector<history::Cluster> clusters,
+      base::flat_map<std::string, optimization_guide::EntityMetadata>
+          entity_metadata_map);
 
   // Clusters `visits` on background thread.
   static std::vector<history::Cluster> ClusterVisitsOnBackgroundThread(
       bool engagement_score_provider_is_valid,
       std::vector<history::ClusterVisit> visits,
+      bool requires_ui_and_triggerability,
       base::flat_map<std::string, optimization_guide::EntityMetadata>&
           entity_id_to_entity_metadata_map);
 
   // Gets the displayable variant of `clusters` that will be shown on the WebUI
   // and Side Panel on background thread. This will merge similar clusters, rank
-  // visits within the cluster, as well as provide a label.
+  // visits within the cluster, as well as provide a label. If
+  // `calculate_triggerability` is set to true, it will also determine the
+  // updated triggerability metadata for the new clusters.
   //
   // TODO(sophiechang): When we support more than one surface, add an enum for
   //   which UI surface we want to calculate for.
+  //
+  // TODO(sophiechang): Remove `calculate_triggerability` field once the new
+  // path is fully migrated to. It is only separated out for metrics that are
+  // recorded by the fuller `ClusterVisitsOnBackgroundThread()`.
   static std::vector<history::Cluster> GetClustersForUIOnBackgroundThread(
+      bool engagement_score_provider_is_valid,
       std::vector<history::Cluster> clusters,
       base::flat_map<std::string, optimization_guide::EntityMetadata>&
-          entity_id_to_entity_metadata_map);
+          entity_id_to_entity_metadata_map,
+      bool calculate_triggerability);
 
   // Gets the metadata required for cluster triggerability (e.g. keywords,
-  // whether to show on prominent UI surfaces) for `cluster` on background
-  // thread.
-  static history::Cluster GetClusterTriggerabilityOnBackgroundThread(
-      bool engagement_score_proivder_is_valid,
-      history::Cluster cluster,
+  // whether to show on prominent UI surfaces) for each cluster in `clusters` on
+  // background thread.
+  static std::vector<history::Cluster>
+  GetClusterTriggerabilityOnBackgroundThread(
+      bool engagement_score_provider_is_valid,
+      std::vector<history::Cluster> clusters,
       base::flat_map<std::string, optimization_guide::EntityMetadata>&
           entity_id_to_entity_metadata_map);
 

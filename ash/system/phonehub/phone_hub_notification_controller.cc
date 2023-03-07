@@ -16,8 +16,8 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
@@ -98,7 +98,9 @@ class PhoneHubNotificationView : public message_center::NotificationView {
     custom_view_type_ = notification.custom_view_type();
     if (custom_view_type_ == kNotificationCustomCallViewType) {
       // Expand the action buttons row by default for Call Style notification.
-      SetManuallyExpandedOrCollapsed(true);
+      SetManuallyExpandedOrCollapsed(
+          !IsExpanded() ? message_center::ExpandState::USER_EXPANDED
+                        : message_center::ExpandState::USER_COLLAPSED);
       SetExpanded(true);
       return;
     }
@@ -192,7 +194,9 @@ class PhoneHubAshNotificationView : public AshNotificationView {
     custom_view_type_ = notification.custom_view_type();
     if (custom_view_type_ == kNotificationCustomCallViewType) {
       // Expand the action buttons row by default for Call Style notification.
-      SetManuallyExpandedOrCollapsed(true);
+      SetManuallyExpandedOrCollapsed(
+          !IsExpanded() ? message_center::ExpandState::USER_EXPANDED
+                        : message_center::ExpandState::USER_COLLAPSED);
       SetExpanded(true);
       return;
     }

@@ -8,15 +8,16 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_is_test.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/login/active_directory_migration_utils.h"
 #include "chrome/browser/ash/login/configuration_keys.h"
@@ -266,13 +267,15 @@ void EnrollmentScreen::UpdateFlowType() {
   if (!view_)
     return;
   if (features::IsLicensePackagedOobeFlowEnabled() &&
-      config_.license_type == policy::LicenseType::kEnterprise) {
+      config_.license_type == policy::LicenseType::kEnterprise &&
+      config_.is_license_packaged_with_device) {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterpriseLicense);
     view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
     return;
   }
   if (features::IsEducationEnrollmentOobeFlowEnabled() &&
-      config_.license_type == policy::LicenseType::kEducation) {
+      config_.license_type == policy::LicenseType::kEducation &&
+      config_.is_license_packaged_with_device) {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kEducationLicense);
     view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
     return;
@@ -487,7 +490,8 @@ void EnrollmentScreen::ProcessRetry() {
 
 bool EnrollmentScreen::HandleAccelerator(LoginAcceleratorAction action) {
   if (action == LoginAcceleratorAction::kCancelScreenAction) {
-    if (config_.is_license_packaged_with_device) {
+    if (config_.is_license_packaged_with_device && !config_.is_forced() &&
+        (!(enrollment_helper_ && enrollment_helper_->InProgress()))) {
       ShowSkipEnrollmentDialogue();
       return true;
     } else {
@@ -502,6 +506,11 @@ void EnrollmentScreen::OnCancel() {
   if (enrollment_succeeded_) {
     // Cancellation is the same to confirmation after the successful enrollment.
     OnConfirmationClosed();
+    return;
+  }
+
+  if (enrollment_helper_ && enrollment_helper_->InProgress()) {
+    // Don't allow cancellation while enrollment is in progress.
     return;
   }
 

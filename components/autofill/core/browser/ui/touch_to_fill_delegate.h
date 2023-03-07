@@ -18,7 +18,6 @@ class TouchToFillDelegate {
  public:
   virtual ~TouchToFillDelegate() = default;
 
-  // TODO(crbug.com/1247698): Define the API.
   virtual AutofillDriver* GetDriver() = 0;
 
   virtual bool ShouldShowScanCreditCard() = 0;
@@ -26,6 +25,7 @@ class TouchToFillDelegate {
   virtual void OnCreditCardScanned(const CreditCard& card) = 0;
   virtual void ShowCreditCardSettings() = 0;
   virtual void SuggestionSelected(std::string unique_id) = 0;
+  virtual void OnDismissed(bool dismissed_by_user) = 0;
 };
 
 }  // namespace autofill

@@ -9,9 +9,7 @@
 #include "chromeos/ash/components/device_activity/daily_use_case_impl.h"
 #include "chromeos/ash/components/device_activity/device_activity_controller.h"
 #include "chromeos/ash/components/device_activity/fake_psm_delegate.h"
-#include "chromeos/ash/components/device_activity/first_active_use_case_impl.h"
 #include "chromeos/ash/components/device_activity/fresnel_pref_names.h"
-#include "chromeos/ash/components/device_activity/monthly_use_case_impl.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/version_info/channel.h"
@@ -25,10 +23,6 @@ namespace psm_rlwe = private_membership::rlwe;
 
 namespace {
 
-// Initialize the constant used to represent the first active window identifier.
-constexpr char kFirstActiveWindowIdentifier[] = "FIRST_ACTIVE";
-
-// Initialize fake value used by the FirstActiveUseCaseImpl.
 // This secret should be of exactly length 64, since it is a 256 bit string
 // encoded as a hexadecimal.
 constexpr char kFakePsmDeviceActiveSecret[] =
@@ -57,23 +51,12 @@ class DeviceActiveUseCaseTest : public testing::Test {
   void SetUp() override {
     DeviceActivityController::RegisterPrefs(local_state_.registry());
 
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 
     const std::vector<psm_rlwe::RlwePlaintextId> plaintext_ids;
 
     // Each specific use case that will be unit tested is added here.
     use_cases_.push_back(std::make_unique<DailyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_,
-        // |FakePsmDelegate| can use any test case parameters.
-        std::make_unique<FakePsmDelegate>(kFakeEcCipherKey, kFakePsmSeed,
-                                          plaintext_ids)));
-    use_cases_.push_back(std::make_unique<MonthlyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_,
-        // |FakePsmDelegate| can use any test case parameters.
-        std::make_unique<FakePsmDelegate>(kFakeEcCipherKey, kFakePsmSeed,
-                                          plaintext_ids)));
-    use_cases_.push_back(std::make_unique<FirstActiveUseCaseImpl>(
         kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_,
         // |FakePsmDelegate| can use any test case parameters.
         std::make_unique<FakePsmDelegate>(kFakeEcCipherKey, kFakePsmSeed,
@@ -86,7 +69,7 @@ class DeviceActiveUseCaseTest : public testing::Test {
 
   // Fake pref service for unit testing the local state.
   TestingPrefServiceSimple local_state_;
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  system::FakeStatisticsProvider statistics_provider_;
 };
 
 TEST_F(DeviceActiveUseCaseTest, ClearSavedState) {
@@ -173,7 +156,7 @@ TEST_F(DeviceActiveUseCaseTest, CheckPsmIdGeneratedCorrectly) {
     // tests.
     std::string unhashed_psm_id =
         base::JoinString({psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()),
-                          use_case->GenerateUTCWindowIdentifier(new_ts)},
+                          use_case->GenerateWindowIdentifier(new_ts)},
                          "|");
     std::string expected_psm_id_hex =
         use_case->GetDigestString(kFakePsmDeviceActiveSecret, unhashed_psm_id);
@@ -181,7 +164,7 @@ TEST_F(DeviceActiveUseCaseTest, CheckPsmIdGeneratedCorrectly) {
   }
 }
 
-TEST_F(DeviceActiveUseCaseTest, PingRequiredInNonOverlappingUTCWindows) {
+TEST_F(DeviceActiveUseCaseTest, PingRequiredInNonOverlappingPTWindows) {
   base::Time last_ts;
   base::Time current_ts;
 
@@ -193,22 +176,6 @@ TEST_F(DeviceActiveUseCaseTest, PingRequiredInNonOverlappingUTCWindows) {
     // Set the last and current timestamps depending on the use case.
     switch (use_case->GetPsmUseCase()) {
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("02 Jan 2022 00:00:00 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY:
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("01 Feb 2022 00:00:00 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE:
         EXPECT_TRUE(
             base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_ts));
         EXPECT_TRUE(
@@ -224,7 +191,7 @@ TEST_F(DeviceActiveUseCaseTest, PingRequiredInNonOverlappingUTCWindows) {
   }
 }
 
-TEST_F(DeviceActiveUseCaseTest, PingNotRequiredInOverlappingUTCWindows) {
+TEST_F(DeviceActiveUseCaseTest, PingNotRequiredInOverlappingPTWindows) {
   base::Time last_ts;
   base::Time current_ts;
 
@@ -236,22 +203,6 @@ TEST_F(DeviceActiveUseCaseTest, PingNotRequiredInOverlappingUTCWindows) {
     // Set the last and current timestamps depending on the use case.
     switch (use_case->GetPsmUseCase()) {
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 23:59:59 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY:
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("31 Jan 2022 23:59:59 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE:
         EXPECT_TRUE(
             base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_ts));
         EXPECT_TRUE(
@@ -263,19 +214,11 @@ TEST_F(DeviceActiveUseCaseTest, PingNotRequiredInOverlappingUTCWindows) {
         NOTREACHED() << "Unsupported PSM use case";
     }
 
-    // The first active use case ping is always required. This is because the
-    // window identifier is constant, and does not depend on any timestamp,
-    // meaning the default behaviour would result in |IsDevicePingRequired|
-    // always returning false..
-    if (use_case->GetPsmUseCase() ==
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE)
-      EXPECT_TRUE(use_case->IsDevicePingRequired(current_ts));
-    else
-      EXPECT_FALSE(use_case->IsDevicePingRequired(current_ts));
+    EXPECT_FALSE(use_case->IsDevicePingRequired(current_ts));
   }
 }
 
-TEST_F(DeviceActiveUseCaseTest, CheckPingRequiredInUTCBoundaryCases) {
+TEST_F(DeviceActiveUseCaseTest, CheckPingRequiredInPTBoundaryCases) {
   base::Time last_ts;
   base::Time current_ts;
 
@@ -287,22 +230,6 @@ TEST_F(DeviceActiveUseCaseTest, CheckPingRequiredInUTCBoundaryCases) {
     // Set the last and current timestamps depending on the use case.
     switch (use_case->GetPsmUseCase()) {
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 23:59:59 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("02 Jan 2022 00:00:00 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY:
-        EXPECT_TRUE(
-            base::Time::FromString("31 Jan 2022 23:59:59 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("01 Feb 2022 00:00:00 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE:
         EXPECT_TRUE(
             base::Time::FromString("01 Jan 2022 23:59:59 GMT", &last_ts));
         EXPECT_TRUE(
@@ -337,35 +264,11 @@ TEST_F(DeviceActiveUseCaseTest, PingNotRequiredWhenLastTimeAheadOfCurrentTime) {
 
         use_case->SetLastKnownPingTimestamp(last_ts);
         break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY:
-        EXPECT_TRUE(
-            base::Time::FromString("01 Feb 2022 00:00:00 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("31 Jan 2022 23:59:59 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE:
-        EXPECT_TRUE(
-            base::Time::FromString("02 Jan 2022 00:00:00 GMT", &last_ts));
-        EXPECT_TRUE(
-            base::Time::FromString("01 Jan 2022 23:59:59 GMT", &current_ts));
-
-        use_case->SetLastKnownPingTimestamp(last_ts);
-        break;
       default:
         NOTREACHED() << "Unsupported PSM use case";
     }
 
-    // The first active use case ping is always required. This is because the
-    // window identifier is constant, and does not depend on any timestamp,
-    // meaning the default behaviour would result in |IsDevicePingRequired|
-    // always returning false..
-    if (use_case->GetPsmUseCase() ==
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE)
-      EXPECT_TRUE(use_case->IsDevicePingRequired(current_ts));
-    else
-      EXPECT_FALSE(use_case->IsDevicePingRequired(current_ts));
+    EXPECT_FALSE(use_case->IsDevicePingRequired(current_ts));
   }
 }
 
@@ -423,70 +326,21 @@ TEST_F(DeviceActiveUseCaseTest, DifferentWindowIdGeneratesDifferentPsmId) {
     absl::optional<psm_rlwe::RlwePlaintextId> psm_id_2 =
         use_case->GetPsmIdentifier();
 
-    // The first active use case always generates a single PSM ID.
-    if (use_case->GetPsmUseCase() ==
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE)
-      EXPECT_EQ(psm_id_1.value().sensitive_id(),
-                psm_id_2.value().sensitive_id());
-    else
-      EXPECT_NE(psm_id_1.value().sensitive_id(),
-                psm_id_2.value().sensitive_id());
+    EXPECT_NE(psm_id_1.value().sensitive_id(), psm_id_2.value().sensitive_id());
   }
 }
 
-TEST_F(DeviceActiveUseCaseTest, NonFirstActiveWindowIdsDependOnTimestamp) {
+TEST_F(DeviceActiveUseCaseTest, WindowIdsDependOnTimestamp) {
   base::Time ts_1;
   EXPECT_TRUE(base::Time::FromString("01 Jan 2023 00:00:00 GMT", &ts_1));
 
   for (auto& use_case : use_cases_) {
-    if (use_case->GetPsmUseCase() !=
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
-      SCOPED_TRACE(testing::Message()
-                   << "PSM use case: "
-                   << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
+    SCOPED_TRACE(testing::Message()
+                 << "PSM use case: "
+                 << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
 
-      // For use cases other than first active, the generated window identifier
-      // depends on the timestamp passed to the method.
-      EXPECT_NE(use_case->GenerateUTCWindowIdentifier(base::Time::UnixEpoch()),
-                use_case->GenerateUTCWindowIdentifier(ts_1));
-    }
-  }
-}
-
-TEST_F(DeviceActiveUseCaseTest, FirstActiveWindowIdIsAlwaysConstant) {
-  base::Time ts_1;
-  EXPECT_TRUE(base::Time::FromString("01 Jan 2023 00:00:00 GMT", &ts_1));
-
-  for (auto& use_case : use_cases_) {
-    if (use_case->GetPsmUseCase() ==
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
-      SCOPED_TRACE(testing::Message()
-                   << "PSM use case: "
-                   << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
-
-      // Different timestamps passed to first active use case
-      // |GenerateUTCWindowIdentifier| method output the same constant string.
-      EXPECT_EQ(use_case->GenerateUTCWindowIdentifier(base::Time::UnixEpoch()),
-                kFirstActiveWindowIdentifier);
-      EXPECT_EQ(use_case->GenerateUTCWindowIdentifier(ts_1),
-                kFirstActiveWindowIdentifier);
-    }
-  }
-}
-
-TEST_F(DeviceActiveUseCaseTest, FirstActiveDevicePingIsAlwaysRequired) {
-  base::Time ts_1;
-  EXPECT_TRUE(base::Time::FromString("01 Jan 2023 00:00:00 GMT", &ts_1));
-
-  for (auto& use_case : use_cases_) {
-    if (use_case->GetPsmUseCase() ==
-        psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
-      SCOPED_TRACE(testing::Message()
-                   << "PSM use case: "
-                   << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
-
-      EXPECT_TRUE(use_case->IsDevicePingRequired(ts_1));
-    }
+    EXPECT_NE(use_case->GenerateWindowIdentifier(base::Time::UnixEpoch()),
+              use_case->GenerateWindowIdentifier(ts_1));
   }
 }
 

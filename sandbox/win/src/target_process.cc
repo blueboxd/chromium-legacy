@@ -4,6 +4,7 @@
 
 #include "sandbox/win/src/target_process.h"
 
+#include <processenv.h>
 #include <windows.h>
 
 #include <stddef.h>
@@ -13,8 +14,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/free_deleter.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/win/access_token.h"
 #include "base/win/current_module.h"
 #include "base/win/security_util.h"
@@ -25,7 +28,6 @@
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "sandbox/win/src/security_capabilities.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
 #include "sandbox/win/src/startup_information_helper.h"
 #include "sandbox/win/src/win_utils.h"
@@ -33,6 +35,24 @@
 namespace sandbox {
 
 namespace {
+
+// Parses a null-terminated input string of an environment block. The key is
+// placed into the given string, and the total length of the line, including
+// the terminating null, is returned.
+size_t ParseEnvLine(const wchar_t* input, std::wstring* key) {
+  // Skip to the equals or end of the string, this is the key.
+  size_t cur = 0;
+  while (input[cur] && input[cur] != '=') {
+    cur++;
+  }
+  *key = std::wstring(&input[0], cur);
+
+  // Now just skip to the end of the string.
+  while (input[cur]) {
+    cur++;
+  }
+  return cur + 1;
+}
 
 void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
   if (!source || !size)
@@ -64,9 +84,8 @@ bool GetAppContainerImpersonationToken(
   auto app_container_sid = token->AppContainerSid();
   if (!app_container_sid)
     return false;
-  SecurityCapabilities security_caps(*app_container_sid, capabilities);
-  return CreateLowBoxToken(initial_token, IMPERSONATION, &security_caps,
-                           impersonation_token) == ERROR_SUCCESS;
+  return CreateLowBoxToken(initial_token, IMPERSONATION, *app_container_sid,
+                           capabilities, impersonation_token);
 }
 
 }  // namespace
@@ -134,13 +153,40 @@ ResultCode TargetProcess::Create(
   if (startup_info->has_extended_startup_info())
     flags |= EXTENDED_STARTUPINFO_PRESENT;
 
+  std::wstring new_env;
+
+  if (startup_info_helper->IsEnvironmentFiltered()) {
+    wchar_t* old_environment = ::GetEnvironmentStringsW();
+    if (!old_environment) {
+      return SBOX_ERROR_CANNOT_OBTAIN_ENVIRONMENT;
+    }
+
+    // Only copy a limited list of variables to the target from the broker's
+    // environment. These are
+    //  * "Path", "SystemDrive", "SystemRoot", "TEMP", "TMP": Needed for normal
+    //    operation and tests.
+    //  * "LOCALAPPDATA": Needed for App Container processes.
+    //  * "CHROME_CRASHPAD_PIPE_NAME": Needed for crashpad.
+    static constexpr base::WStringPiece to_keep[] = {
+        L"Path",
+        L"SystemDrive",
+        L"SystemRoot",
+        L"TEMP",
+        L"TMP",
+        L"LOCALAPPDATA",
+        L"CHROME_CRASHPAD_PIPE_NAME"};
+
+    new_env = FilterEnvironment(old_environment, to_keep);
+    ::FreeEnvironmentStringsW(old_environment);
+  }
+
   bool inherit_handles = startup_info_helper->ShouldInheritHandles();
   PROCESS_INFORMATION temp_process_info = {};
   if (!::CreateProcessAsUserW(lockdown_token_.Get(), exe_path, cmd_line.get(),
                               nullptr,  // No security attribute.
                               nullptr,  // No thread attribute.
                               inherit_handles, flags,
-                              nullptr,  // Use the environment of the caller.
+                              new_env.empty() ? nullptr : std::data(new_env),
                               nullptr,  // Use current directory of the caller.
                               startup_info->startup_info(),
                               &temp_process_info)) {
@@ -305,24 +351,6 @@ void TargetProcess::Terminate() {
   ::TerminateProcess(sandbox_process_info_.process_handle(), 0);
 }
 
-ResultCode TargetProcess::AssignLowBoxToken(
-    const base::win::ScopedHandle& token) {
-  if (!token.IsValid())
-    return SBOX_ALL_OK;
-  PROCESS_ACCESS_TOKEN process_access_token = {};
-  process_access_token.token = token.Get();
-
-  NTSTATUS status = GetNtExports()->SetInformationProcess(
-      sandbox_process_info_.process_handle(),
-      static_cast<PROCESSINFOCLASS>(NtProcessInformationAccessToken),
-      &process_access_token, sizeof(process_access_token));
-  if (!NT_SUCCESS(status)) {
-    ::SetLastError(GetLastErrorFromNtStatus(status));
-    return SBOX_ERROR_SET_LOW_BOX_TOKEN;
-  }
-  return SBOX_ALL_OK;
-}
-
 ResultCode TargetProcess::VerifySentinels() {
   if (!sandbox_process_info_.IsValid())
     return SBOX_ERROR_UNEXPECTED_CALL;
@@ -363,6 +391,30 @@ std::unique_ptr<TargetProcess> TargetProcess::MakeTargetProcessForTesting(
   target->sandbox_process_info_.Set(process_info);
   target->base_address_ = base_address;
   return target;
+}
+
+// static
+std::wstring TargetProcess::FilterEnvironment(
+    const wchar_t* env,
+    const base::span<const base::WStringPiece> to_keep) {
+  std::wstring result;
+
+  // Iterate all of the environment strings.
+  const wchar_t* ptr = env;
+  while (*ptr) {
+    std::wstring key;
+    size_t line_length = ParseEnvLine(ptr, &key);
+
+    // Keep only values specified in the keep vector.
+    if (std::find(to_keep.begin(), to_keep.end(), key) != to_keep.end()) {
+      result.append(ptr, line_length);
+    }
+    ptr += line_length;
+  }
+
+  // Add the terminating NUL.
+  result.push_back('\0');
+  return result;
 }
 
 }  // namespace sandbox

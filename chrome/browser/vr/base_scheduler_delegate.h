@@ -7,6 +7,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/vr/scheduler_delegate.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/util/fps_meter.h"
@@ -22,7 +23,6 @@ class SchedulerUiInterface;
 class VR_EXPORT BaseSchedulerDelegate : public SchedulerDelegate {
  public:
   BaseSchedulerDelegate(SchedulerUiInterface* ui,
-                        bool start_in_webxr_mode,
                         int webxr_spinner_timeout,
                         int webxr_initial_frame_timeout);
 
@@ -33,14 +33,11 @@ class VR_EXPORT BaseSchedulerDelegate : public SchedulerDelegate {
 
   // SchedulerDelegate implementations.
   void OnExitPresent() override;
-  void SetWebXrMode(bool enabled) override;
 
  protected:
   void ScheduleWebXrFrameTimeout();
   void CancelWebXrFrameTimeout();
   void OnNewWebXrFrame();
-
-  bool webxr_mode() const { return webxr_mode_; }
 
   uint64_t webxr_frames_received() const { return webxr_frames_received_; }
   void TickWebXrFramesReceived() { ++webxr_frames_received_; }
@@ -50,7 +47,6 @@ class VR_EXPORT BaseSchedulerDelegate : public SchedulerDelegate {
 
  private:
   raw_ptr<SchedulerUiInterface> ui_;
-  bool webxr_mode_ = false;
 
   int webxr_frames_received_ = 0;
   int webxr_spinner_timeout_seconds_;

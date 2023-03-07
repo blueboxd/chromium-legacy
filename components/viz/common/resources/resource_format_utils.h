@@ -11,10 +11,7 @@
 #include "components/viz/common/viz_resource_format_export.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
-#include "third_party/dawn/include/dawn/webgpu.h"
-#include "third_party/dawn/include/dawn/webgpu_cpp.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/gpu/GrTypes.h"
+#include "third_party/skia/include/core/SkColorType.h"
 #include "ui/gfx/buffer_types.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -27,6 +24,7 @@ VIZ_RESOURCE_FORMAT_EXPORT SkColorType
 ResourceFormatToClosestSkColorType(bool gpu_compositing, ResourceFormat format);
 
 VIZ_RESOURCE_FORMAT_EXPORT int BitsPerPixel(ResourceFormat format);
+VIZ_RESOURCE_FORMAT_EXPORT int AlphaBits(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT ResourceFormat
 SkColorTypeToResourceFormat(SkColorType color_type);
 
@@ -65,9 +63,6 @@ VIZ_RESOURCE_FORMAT_EXPORT ResourceFormat
 GetResourceFormat(gfx::BufferFormat format);
 
 VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(ResourceFormat format);
-
-// Returns true formats that require YUV (aka YCbCr) sampler.
-VIZ_RESOURCE_FORMAT_EXPORT bool IsYuvFormat(ResourceFormat format);
 
 #if BUILDFLAG(ENABLE_VULKAN)
 VIZ_RESOURCE_FORMAT_EXPORT bool HasVkFormat(ResourceFormat format);

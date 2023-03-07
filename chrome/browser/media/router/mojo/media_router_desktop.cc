@@ -4,9 +4,9 @@
 
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -46,11 +46,8 @@ void MediaRouterDesktop::OnUserGesture() {
   if (!media_sink_service_)
     return;
 
-  // Allow MRPM to intelligently update sinks and observers by passing in a
-  // media source.
-  UpdateMediaSinks(MediaSource::ForUnchosenDesktop().id());
-
-  media_sink_service_->OnUserGesture();
+  DiscoverSinksNow();
+  media_sink_service_->DiscoverSinksNow();
   if (!media_sink_service_subscription_) {
     media_sink_service_subscription_ =
         media_sink_service_->AddSinksDiscoveredCallback(

@@ -14,10 +14,10 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -44,7 +44,6 @@
 #include "components/variations/variations_ids_provider.h"
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_switches.h"
-#include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,25 +63,6 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
   if (seed_date.is_null() || seed_date < build_time)
     reference_date = build_time;
   return reference_date;
-}
-
-// Just maps one set of enum values to another. Nothing to see here.
-Study::Channel ConvertProductChannelToStudyChannel(
-    version_info::Channel product_channel) {
-  switch (product_channel) {
-    case version_info::Channel::CANARY:
-      return Study::CANARY;
-    case version_info::Channel::DEV:
-      return Study::DEV;
-    case version_info::Channel::BETA:
-      return Study::BETA;
-    case version_info::Channel::STABLE:
-      return Study::STABLE;
-    case version_info::Channel::UNKNOWN:
-      return Study::UNKNOWN;
-  }
-  NOTREACHED();
-  return Study::UNKNOWN;
 }
 
 // Records the loaded seed's expiry status.
@@ -198,6 +178,24 @@ BASE_FEATURE(kForceFieldTrialSetupCrashForTesting,
              "ForceFieldTrialSetupCrashForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+Study::Channel ConvertProductChannelToStudyChannel(
+    version_info::Channel product_channel) {
+  switch (product_channel) {
+    case version_info::Channel::CANARY:
+      return Study::CANARY;
+    case version_info::Channel::DEV:
+      return Study::DEV;
+    case version_info::Channel::BETA:
+      return Study::BETA;
+    case version_info::Channel::STABLE:
+      return Study::STABLE;
+    case version_info::Channel::UNKNOWN:
+      return Study::UNKNOWN;
+  }
+  NOTREACHED();
+  return Study::UNKNOWN;
+}
+
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
     VariationsServiceClient* client,
     std::unique_ptr<VariationsSeedStore> seed_store,
@@ -230,7 +228,7 @@ bool VariationsFieldTrialCreator::SetUpFieldTrials(
     metrics::MetricsStateManager* metrics_state_manager,
     PlatformFieldTrials* platform_field_trials,
     SafeSeedManager* safe_seed_manager,
-    absl::optional<int> low_entropy_source_value) {
+    bool add_entropy_source_to_variations_ids) {
   DCHECK(feature_list);
   DCHECK(metrics_state_manager);
   DCHECK(platform_field_trials);
@@ -244,9 +242,9 @@ bool VariationsFieldTrialCreator::SetUpFieldTrials(
   VariationsIdsProvider* http_header_provider =
       VariationsIdsProvider::GetInstance();
 
-  if (low_entropy_source_value.has_value()) {
+  if (add_entropy_source_to_variations_ids) {
     http_header_provider->SetLowEntropySourceValue(
-        low_entropy_source_value.value());
+        metrics_state_manager->GetLowEntropySource());
   }
   // Force the variation ids selected in chrome://flags and/or specified using
   // the command-line flag.

@@ -273,9 +273,8 @@ WindowPerformance::CreateNavigationTimingInstance() {
     document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
-      DomWindow(), info, time_origin_,
-      DomWindow()->CrossOriginIsolatedCapability(), std::move(server_timing),
-      document_loader->GetNavigationDeliveryType());
+      *DomWindow(), *info, time_origin_,
+      DomWindow()->CrossOriginIsolatedCapability(), std::move(server_timing));
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
@@ -422,9 +421,8 @@ void WindowPerformance::RegisterEventTiming(const Event& event,
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
       MonotonicTimeToDOMHighResTimeStamp(processing_end), event.cancelable(),
       event.target() ? event.target()->ToNode() : nullptr,
-      PerformanceEntry::GetNavigationId(
-          GetExecutionContext()));  // TODO(haoliuk): Add WPT for Event Timing.
-                                    // See crbug.com/1320878.
+      DomWindow());  // TODO(haoliuk): Add WPT for Event Timing.
+                     // See crbug.com/1320878.
   absl::optional<int> key_code;
   if (event.IsKeyboardEvent())
     key_code = DynamicTo<KeyboardEvent>(event)->keyCode();
@@ -485,15 +483,35 @@ void WindowPerformance::ReportEventTimings(
 
     events_data_.pop_front();
 
-    int duration_in_ms = std::round((end_time - entry->startTime()) / 8) * 8;
+    base::TimeTicks entry_presentation_timestamp = presentation_timestamp;
+    DOMHighResTimeStamp entry_end_time = end_time;
+
     base::TimeDelta input_delay =
         base::Milliseconds(entry->processingStart() - entry->startTime());
     base::TimeDelta processing_time =
         base::Milliseconds(entry->processingEnd() - entry->processingStart());
     base::TimeDelta time_to_next_paint =
-        base::Milliseconds(end_time - entry->processingEnd());
-    entry->SetDuration(duration_in_ms);
-    entry->SetUnsafePresentationTimestamp(presentation_timestamp);
+        base::Milliseconds(entry_end_time - entry->processingEnd());
+
+    if (last_visibility_change_timestamp_ > event_timestamp &&
+        last_visibility_change_timestamp_ < presentation_timestamp) {
+      // The page visibility was changed. Ignore the presentation_timestamp and
+      // fallback to processingEnd (as if there was no next paint needed).
+      entry_end_time = entry->processingEnd();
+      // Adjust the entry_presentation_timestamp to also be == processingEnd.
+      // Ideally we could just assign the processingEnd value, except that
+      // processingEnd is already a DOMHighResTimeStamp and we cannot convert
+      // back to TimeTicks.  Subtracting the time_to_next_paint
+      entry_presentation_timestamp -= time_to_next_paint;
+      // Set time_to_next_paint = 0
+      time_to_next_paint = base::TimeDelta();
+    }
+
+    int rounded_duration =
+        std::round((entry_end_time - entry->startTime()) / 8) * 8;
+    entry->SetDuration(rounded_duration);
+    entry->SetUnsafePresentationTimestamp(entry_presentation_timestamp);
+
     if (entry->name() == "pointerdown") {
       pending_pointer_down_input_delay_ = input_delay;
       pending_pointer_down_processing_time_ = processing_time;
@@ -515,17 +533,11 @@ void WindowPerformance::ReportEventTimings(
 
     // Event Timing
     ResponsivenessMetrics::EventTimestamps event_timestamps = {
-        event_timestamp, presentation_timestamp};
-    // The page visibility was changed. In this case, we don't care about
-    // the time to next paint.
-    if (last_visibility_change_timestamp_ > event_timestamp &&
-        last_visibility_change_timestamp_ <= presentation_timestamp) {
-      event_timestamps.end_time -= time_to_next_paint;
-    }
+        event_timestamp, entry_presentation_timestamp};
     if (SetInteractionIdAndRecordLatency(entry, key_code, pointer_id,
                                          event_timestamps)) {
       NotifyAndAddEventTimingBuffer(entry);
-    };
+    }
 
     // First Input
     //
@@ -574,7 +586,7 @@ void WindowPerformance::NotifyAndAddEventTimingBuffer(
     base::TimeTicks unsafe_start_time =
         GetTimeOriginInternal() + base::Milliseconds(entry->startTime());
     base::TimeTicks unsafe_end_time = entry->unsafePresentationTimestamp();
-    unsigned hash = WTF::StringHash::GetHash(entry->name());
+    unsigned hash = WTF::GetHash(entry->name());
     WTF::AddFloatToHash(hash, entry->startTime());
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "devtools.timeline", "EventTiming", hash, unsafe_start_time, "data",
@@ -618,7 +630,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
       intrinsic_size.width(), intrinsic_size.height(), id, element,
-      PerformanceEntry::GetNavigationId(GetExecutionContext()));
+      DomWindow());
   TRACE_EVENT2("loading", "PerformanceElementTiming", "data",
                entry->ToTracedValue(), "frame",
                ToTraceValue(DomWindow()->GetFrame()));
@@ -657,10 +669,9 @@ void WindowPerformance::AddVisibilityStateEntry(bool is_visible,
   VisibilityStateEntry* entry = MakeGarbageCollected<VisibilityStateEntry>(
       PageHiddenStateString(!is_visible),
       MonotonicTimeToDOMHighResTimeStamp(timestamp),
-      PerformanceEntry::GetNavigationId(
-          GetExecutionContext()));  // Todo(haoliuk): Add WPT for
-                                    // VisibilityStateEntry. See
-                                    // crbug.com/1320878.
+      DomWindow());  // Todo(haoliuk): Add WPT for
+                     // VisibilityStateEntry. See
+                     // crbug.com/1320878.
   if (HasObserverFor(PerformanceEntry::kVisibilityState))
     NotifyObserversOfEntry(*entry);
 
@@ -675,8 +686,7 @@ void WindowPerformance::AddSoftNavigationEntry(const AtomicString& name,
     return;
   }
   SoftNavigationEntry* entry = MakeGarbageCollected<SoftNavigationEntry>(
-      name, MonotonicTimeToDOMHighResTimeStamp(timestamp),
-      PerformanceEntry::GetNavigationId(GetExecutionContext()));
+      name, MonotonicTimeToDOMHighResTimeStamp(timestamp), DomWindow());
 
   if (HasObserverFor(PerformanceEntry::kSoftNavigation)) {
     UseCounter::Count(GetExecutionContext(),
@@ -702,6 +712,10 @@ EventCounts* WindowPerformance::eventCounts() {
   return event_counts_;
 }
 
+uint64_t WindowPerformance::interactionCount() const {
+  return responsiveness_metrics_->GetInteractionCount();
+}
+
 void WindowPerformance::OnLargestContentfulPaintUpdated(
     base::TimeTicks start_time,
     base::TimeTicks render_time,
@@ -720,8 +734,7 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
   // TODO(yoav): Should we modify start to represent the animated frame?
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
       start_timestamp, render_timestamp, paint_size, load_timestamp,
-      first_animated_frame_timestamp, id, url, element,
-      PerformanceEntry::GetNavigationId(GetExecutionContext()));
+      first_animated_frame_timestamp, id, url, element, DomWindow());
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);

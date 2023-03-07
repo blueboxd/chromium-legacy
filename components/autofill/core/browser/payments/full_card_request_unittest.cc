@@ -10,7 +10,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -271,8 +270,7 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForMaskedServerCardViaFido) {
   request()->GetFullCardViaFIDO(
       CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
       AutofillClient::UnmaskCardReason::kAutofill,
-      result_delegate()->AsWeakPtr(),
-      base::Value(base::Value::Type::DICTIONARY));
+      result_delegate()->AsWeakPtr(), base::Value::Dict());
   OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, "4111");
 }
 
@@ -402,19 +400,20 @@ TEST_F(FullCardRequestTest,
   CreditCard card;
   card.set_record_type(CreditCard::VIRTUAL_CARD);
   card.set_server_id("server_id");
+  CardUnmaskChallengeOption challenge_option =
+      test::GetCardUnmaskChallengeOptions(
+          {CardUnmaskChallengeOptionType::kCvc})[0];
   request()->GetFullVirtualCardViaCVC(
       card, AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
-      GURL("https://example.com/"), "test_context_token",
-      CardUnmaskChallengeOption{.id = "test_challenge_option_id",
-                                .type = CardUnmaskChallengeOptionType::kCvc});
+      GURL("https://example.com/"), "test_context_token", challenge_option);
   ASSERT_TRUE(request()->GetShouldUnmaskCardForTesting());
   payments::PaymentsClient::UnmaskRequestDetails* request_details =
       request()->GetUnmaskRequestDetailsForTesting();
   EXPECT_EQ(request_details->selected_challenge_option->type,
             CardUnmaskChallengeOptionType::kCvc);
-  EXPECT_EQ(request_details->selected_challenge_option->id,
-            "test_challenge_option_id");
+  EXPECT_EQ(request_details->selected_challenge_option->id.value(),
+            challenge_option.id.value());
   EXPECT_EQ(request_details->context_token, "test_context_token");
   EXPECT_EQ(request_details->last_committed_primary_main_frame_origin->spec(),
             GURL("https://example.com/").spec());
@@ -547,7 +546,8 @@ TEST_F(FullCardRequestTest, VcnRetrievalTemporaryFailure) {
       card, AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
       GURL("https://example.com/"), "test_context_token",
-      CardUnmaskChallengeOption{.type = CardUnmaskChallengeOptionType::kCvc});
+      test::GetCardUnmaskChallengeOptions(
+          {CardUnmaskChallengeOptionType::kCvc})[0]);
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
   details.cvc = u"123";
   card_unmask_delegate()->OnUnmaskPromptAccepted(details);
@@ -578,7 +578,8 @@ TEST_F(FullCardRequestTest, VcnRetrievalPermanentFailure) {
       card, AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
       GURL("https://example.com/"), "test_context_token",
-      CardUnmaskChallengeOption{.type = CardUnmaskChallengeOptionType::kCvc});
+      test::GetCardUnmaskChallengeOptions(
+          {CardUnmaskChallengeOptionType::kCvc})[0]);
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
   details.cvc = u"123";
   card_unmask_delegate()->OnUnmaskPromptAccepted(details);
@@ -704,12 +705,13 @@ TEST_F(FullCardRequestTest, VirtualCardTryAgainFailure) {
                   AutofillClient::PaymentsRpcResult::kTryAgainFailure))
       .Times(1);
 
+  CardUnmaskChallengeOption challenge_option =
+      test::GetCardUnmaskChallengeOptions(
+          {CardUnmaskChallengeOptionType::kCvc})[0];
   request()->GetFullVirtualCardViaCVC(
       test::GetVirtualCard(), AutofillClient::UnmaskCardReason::kAutofill,
       result_delegate()->AsWeakPtr(), ui_delegate()->AsWeakPtr(),
-      GURL("https://example.com/"), "test_context_token",
-      CardUnmaskChallengeOption{.id = "test_challenge_option_id",
-                                .type = CardUnmaskChallengeOptionType::kCvc});
+      GURL("https://example.com/"), "test_context_token", challenge_option);
   CardUnmaskDelegate::UserProvidedUnmaskDetails user_provided_details;
   user_provided_details.cvc = u"321";
   card_unmask_delegate()->OnUnmaskPromptAccepted(user_provided_details);
@@ -723,8 +725,8 @@ TEST_F(FullCardRequestTest, VirtualCardTryAgainFailure) {
             "test_context_token");
   EXPECT_EQ(request()
                 ->GetUnmaskRequestDetailsForTesting()
-                ->selected_challenge_option->id,
-            "test_challenge_option_id");
+                ->selected_challenge_option->id.value(),
+            challenge_option.id.value());
   EXPECT_EQ(request()
                 ->GetUnmaskRequestDetailsForTesting()
                 ->selected_challenge_option->type,

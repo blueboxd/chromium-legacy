@@ -4,12 +4,11 @@
 
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -45,6 +44,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -423,9 +423,9 @@ TEST_F(RenderViewContextMenuExtensionsTest,
                   &MenuManagerFactory::BuildServiceInstanceForTesting))));
 
   const Extension* extension1 = environment().MakeExtension(
-      base::DictionaryValue(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+      base::Value::Dict(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   const Extension* extension2 = environment().MakeExtension(
-      base::DictionaryValue(), "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+      base::Value::Dict(), "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
   // Create two items in two extensions with same title.
   ASSERT_TRUE(
@@ -582,22 +582,22 @@ class RenderViewContextMenuDlpPrefsTest
       const RenderViewContextMenuDlpPrefsTest&) = delete;
 
   void SetDlpClipboardRestriction() {
-    base::Value rules(base::Value::Type::LIST);
-    base::Value src_urls(base::Value::Type::LIST);
+    base::Value::List rules;
+    base::Value::List src_urls;
     src_urls.Append(PAGE_URL);
 
-    base::Value dst_urls(base::Value::Type::LIST);
+    base::Value::List dst_urls;
     dst_urls.Append(RESTRICTED_URL);
 
-    base::Value restrictions(base::Value::Type::LIST);
+    base::Value::List restrictions;
     restrictions.Append(policy::dlp_test_util::CreateRestrictionWithLevel(
         policy::dlp::kClipboardRestriction, policy::dlp::kBlockLevel));
 
     rules.Append(policy::dlp_test_util::CreateRule(
         "Rule #1", "Block", std::move(src_urls), std::move(dst_urls),
-        /*dst_components=*/base::Value(base::Value::Type::LIST),
-        std::move(restrictions)));
-    local_state()->Set(policy::policy_prefs::kDlpRulesList, std::move(rules));
+        /*dst_components=*/base::Value::List(), std::move(restrictions)));
+    local_state()->SetList(policy::policy_prefs::kDlpRulesList,
+                           std::move(rules));
   }
 
   static constexpr char PAGE_URL[] = "http://www.foo.com/";
@@ -1175,7 +1175,7 @@ TEST_F(RenderViewContextMenuPrefsTest, LensImageSearchDisabledFor3pDse) {
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 // Verify that the Lens Region Search menu item is displayed when the feature
 // is enabled.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
@@ -1192,31 +1192,9 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
 }
 
-TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchPdfDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures({lens::features::kLensStandalone},
-                            {lens::features::kEnableRegionSearchOnPdfViewer});
-  SetUserSelectedDefaultSearchProvider("https://www.google.com",
-                                       /*supports_image_search=*/true);
-  content::RenderFrameHost* render_frame_host =
-      web_contents()->GetPrimaryMainFrame();
-  OverrideLastCommittedOrigin(
-      render_frame_host,
-      url::Origin::Create(
-          GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai")));
-  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*render_frame_host, params);
-  menu.SetBrowser(GetBrowser());
-  menu.Init();
-
-  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
-}
-
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchPdfEnabled) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures({lens::features::kLensStandalone,
-                             lens::features::kEnableRegionSearchOnPdfViewer},
-                            {});
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::RenderFrameHost* render_frame_host =
@@ -1274,9 +1252,7 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchDisabledOnImage) {
 // browser.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchPdfDisabledNoBrowser) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures({lens::features::kLensStandalone,
-                             lens::features::kEnableRegionSearchOnPdfViewer},
-                            {});
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::RenderFrameHost* render_frame_host =
@@ -1387,7 +1363,7 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
 }
 
-#endif
+#endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 
 // Test FormatUrlForClipboard behavior
 // -------------------------------------------

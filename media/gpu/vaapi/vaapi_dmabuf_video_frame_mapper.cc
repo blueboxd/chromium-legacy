@@ -6,8 +6,8 @@
 
 #include <sys/mman.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/base/color_plane_layout.h"
@@ -181,8 +181,8 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  if (!(permissions & PROT_READ && permissions & PROT_WRITE)) {
-    LOG(ERROR) << "VAAPI DMA Buffer must be mapped read/write.";
+  if (!(permissions & PROT_READ)) {
+    LOG(ERROR) << "VAAPI DMA Buffer must be mapped with read permissions.";
     return nullptr;
   }
 

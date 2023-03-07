@@ -51,16 +51,19 @@ absl::optional<NodeSet> FindNodesByIds(bookmarks::BookmarkModel* model,
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    if (ids.find(node->id()) == ids.end())
+    if (ids.find(node->id()) == ids.end()) {
       continue;
+    }
 
     nodes.insert(node);
-    if (ids.size() == nodes.size())
+    if (ids.size() == nodes.size()) {
       break;
+    }
   }
 
-  if (ids.size() != nodes.size())
+  if (ids.size() != nodes.size()) {
     return absl::nullopt;
+  }
 
   return nodes;
 }
@@ -70,8 +73,9 @@ const BookmarkNode* FindNodeById(bookmarks::BookmarkModel* model, int64_t id) {
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    if (node->id() == id)
+    if (node->id() == id) {
       return node;
+    }
   }
 
   return nullptr;
@@ -97,8 +101,9 @@ NSString* TitleForBookmarkNode(const BookmarkNode* node) {
   }
 
   // Assign a default bookmark name if it is at top level.
-  if (node->is_root() && ![title length])
+  if (node->is_root() && ![title length]) {
     title = l10n_util::GetNSString(IDS_SYNC_DATATYPE_BOOKMARKS);
+  }
 
   return title;
 }
@@ -110,11 +115,13 @@ void DeleteBookmarks(const std::set<const BookmarkNode*>& bookmarks,
                      bookmarks::BookmarkModel* model,
                      const BookmarkNode* node) {
   // Delete children in reverse order, so that the index remains valid.
-  for (size_t i = node->children().size(); i > 0; --i)
+  for (size_t i = node->children().size(); i > 0; --i) {
     DeleteBookmarks(bookmarks, model, node->children()[i - 1].get());
+  }
 
-  if (bookmarks.find(node) != bookmarks.end())
+  if (bookmarks.find(node) != bookmarks.end()) {
     model->Remove(node);
+  }
 }
 
 // Creates a toast which will undo the changes made to the bookmark model if
@@ -125,8 +132,9 @@ MDCSnackbarMessage* CreateUndoToastWithWrapper(UndoManagerWrapper* wrapper,
   // Create the block that will be executed if the user taps the undo button.
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
   action.handler = ^{
-    if (![wrapper hasUndoManagerChanged])
+    if (![wrapper hasUndoManagerChanged]) {
       [wrapper undo];
+    }
   };
 
   action.title = l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_UNDO_BUTTON_TITLE);
@@ -302,8 +310,9 @@ bool MoveBookmarks(const std::set<const BookmarkNode*>& bookmarks,
   for (const BookmarkNode* node : bookmarks_copy) {
     // The bookmarks model can change under us at any time, so we can't make
     // any assumptions.
-    if (folder->HasAncestor(node))
+    if (folder->HasAncestor(node)) {
       continue;
+    }
     if (node->parent() != folder) {
       model->Move(node, folder, folder->children().size());
       did_perform_move = true;
@@ -330,8 +339,9 @@ MDCSnackbarMessage* MoveBookmarksWithUndoToast(
   [wrapper stopGroupingActions];
   [wrapper resetUndoManagerChanged];
 
-  if (!did_perform_move)
+  if (!did_perform_move) {
     return nil;  // Don't return a snackbar when no real move as happened.
+  }
 
   NSString* text = nil;
   if (node_count == 1) {
@@ -372,8 +382,9 @@ class FolderNodeComparator {
 
   // Returns true if `n1` precedes `n2`.
   bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) {
-    if (!collator_)
+    if (!collator_) {
       return n1->GetTitle() < n2->GetTitle();
+    }
     return base::i18n::CompareString16WithCollator(*collator_, n1->GetTitle(),
                                                    n2->GetTitle()) == UCOL_LESS;
   }
@@ -386,19 +397,23 @@ bool FolderHasAncestorInBookmarkNodes(const BookmarkNode* folder,
                                       const NodeSet& bookmarkNodes) {
   DCHECK(folder->is_folder());
   for (const BookmarkNode* node : bookmarkNodes) {
-    if (folder->HasAncestor(node))
+    if (folder->HasAncestor(node)) {
       return true;
+    }
   }
   return false;
 }
 
 bool IsObstructed(const BookmarkNode* node, const NodeSet& obstructions) {
-  if (!node->is_folder())
+  if (!node->is_folder()) {
     return true;
-  if (!node->IsVisible())
+  }
+  if (!node->IsVisible()) {
     return true;
-  if (FolderHasAncestorInBookmarkNodes(node, obstructions))
+  }
+  if (FolderHasAncestorInBookmarkNodes(node, obstructions)) {
     return true;
+  }
   return false;
 }
 
@@ -407,8 +422,9 @@ void UpdateFoldersFromNode(const BookmarkNode* folder,
                            const NodeSet& obstructions) {
   std::vector<const BookmarkNode*> directDescendants;
   for (const auto& subfolder : folder->children()) {
-    if (!IsObstructed(subfolder.get(), obstructions))
+    if (!IsObstructed(subfolder.get(), obstructions)) {
       directDescendants.push_back(subfolder.get());
+    }
   }
 
   bookmark_utils_ios::SortFolders(&directDescendants);
@@ -419,8 +435,9 @@ void UpdateFoldersFromNode(const BookmarkNode* folder,
   results->insert(it, directDescendants.begin(), directDescendants.end());
 
   // Recursively perform the operation on each direct descendant.
-  for (auto* node : directDescendants)
+  for (auto* node : directDescendants) {
     UpdateFoldersFromNode(node, results, obstructions);
+  }
 }
 
 }  // namespace
@@ -428,8 +445,9 @@ void UpdateFoldersFromNode(const BookmarkNode* folder,
 void SortFolders(NodeVector* vector) {
   UErrorCode error = U_ZERO_ERROR;
   std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
-  if (U_FAILURE(error))
+  if (U_FAILURE(error)) {
     collator.reset(NULL);
+  }
   std::sort(vector->begin(), vector->end(),
             FolderNodeComparator(collator.get()));
 }
@@ -439,8 +457,9 @@ NodeVector VisibleNonDescendantNodes(const NodeSet& obstructions,
   NodeVector primary_nodes = PrimaryPermanentNodes(model);
   NodeVector filtered_primary_nodes;
   for (auto* node : primary_nodes) {
-    if (IsObstructed(node, obstructions))
+    if (IsObstructed(node, obstructions)) {
       continue;
+    }
 
     filtered_primary_nodes.push_back(node);
   }
@@ -449,8 +468,9 @@ NodeVector VisibleNonDescendantNodes(const NodeSet& obstructions,
   NodeVector results = filtered_primary_nodes;
 
   // Iterate over a static copy of the filtered, root folders.
-  for (auto* node : filtered_primary_nodes)
+  for (auto* node : filtered_primary_nodes) {
     UpdateFoldersFromNode(node, &results, obstructions);
+  }
 
   return results;
 }
@@ -464,8 +484,9 @@ BOOL IsSubvectorOfNodes(const NodeVector& vector1, const NodeVector& vector2) {
     // the iterator on vector2 to only focus on the remaining part of vector2,
     // so that ordering is verified.
     it = std::find(it, vector2.end(), node);
-    if (it == vector2.end())
+    if (it == vector2.end()) {
       return NO;
+    }
     // If found in vector2, advance the iterator so that the match is only
     // matched once.
     it++;
@@ -514,8 +535,9 @@ NSArray* CreateBookmarkPath(bookmarks::BookmarkModel* model,
   }
 
   const BookmarkNode* bookmark = FindFolderById(model, folder_id);
-  if (!bookmark)
+  if (!bookmark) {
     return nil;
+  }
 
   NSMutableArray* bookmarkPath = [NSMutableArray array];
   [bookmarkPath addObject:[NSNumber numberWithLongLong:folder_id]];

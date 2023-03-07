@@ -20,10 +20,10 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
   return total_size;
 }
 
-sk_sp<PaintRecord> PaintArtifact::GetPaintRecord(
-    const PropertyTreeState& replay_state) const {
+PaintRecord PaintArtifact::GetPaintRecord(const PropertyTreeState& replay_state,
+                                          const gfx::Rect* cull_rect) const {
   return PaintChunksToCcLayer::Convert(PaintChunkSubset(this), replay_state,
-                                       gfx::Vector2dF());
+                                       cull_rect);
 }
 
 void PaintArtifact::RecordDebugInfo(DisplayItemClientId client_id,

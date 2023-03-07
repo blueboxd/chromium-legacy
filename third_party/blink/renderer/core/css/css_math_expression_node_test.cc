@@ -47,8 +47,9 @@
 namespace blink {
 
 void PrintTo(const CSSLengthArray& length_array, ::std::ostream* os) {
-  for (double x : length_array.values)
+  for (double x : length_array.values) {
     *os << x << ' ';
+  }
 }
 
 namespace {
@@ -94,9 +95,11 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
   ComputedStyleBuilder builder(*ComputedStyle::CreateInitialStyleSingleton());
   builder.SetEffectiveZoom(5);
   scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
+  CSSToLengthConversionData::Flags ignored_flags = 0;
   CSSToLengthConversionData conversion_data(
       style.get(), style.get(), style.get(), nullptr,
-      CSSToLengthConversionData::ContainerSizes(), style->EffectiveZoom());
+      CSSToLengthConversionData::ContainerSizes(), style->EffectiveZoom(),
+      ignored_flags);
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
@@ -302,8 +305,9 @@ TEST(CSSMathExpressionNode, TestParseDeeplyNestedExpression) {
     // max(1px, 1px + max(1px, 1px + max(1px, 1px)))
     // clamp(1px, 1px, 1px + clamp(1px, 1px, 1px + clamp(1px, 1px, 1px)))
     for (int i = 0; i < test_case.nest_num; i++) {
-      if (i)
+      if (i) {
         ss << " + ";
+      }
       switch (test_case.kind) {
         case kCalc:
           ss << "calc(1px";

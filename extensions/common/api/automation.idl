@@ -21,6 +21,7 @@
     atomicChanged,
     autoCompleteChanged,
     autocorrectionOccured,
+    autofillAvailabilityChanged,
     blur,
     busyChanged,
     caretBoundsChanged,
@@ -62,7 +63,7 @@
     labeledByChanged,
     languageChanged,
     layoutComplete,
-    layoutInvalidated,   // fired when aria-busy goes false
+    layoutInvalidated,  // fired when aria-busy goes false
     liveRegionChanged,
     liveRegionCreated,
     liveRegionNodeChanged,  // fired on a node within a live region.
@@ -645,6 +646,13 @@ enum SortDirectionType {
   ascending,
   descending,
   other
+};
+
+// A type of AutomationPosition.
+enum PositionType {
+  null,
+  text,
+  tree
 };
 
   dictionary Rect {
@@ -1542,7 +1550,7 @@ enum SortDirectionType {
         DOMString attribute);
 
     // Creates a position object backed by Chrome's accessibility position support.
-    static AutomationPosition createPosition(long offset, optional boolean isUpstream);
+    static AutomationPosition createPosition(PositionType type, long offset, optional boolean isUpstream);
   };
 
   // Called when the <code>AutomationNode</code> for the page is available.

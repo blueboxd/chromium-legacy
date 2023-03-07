@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/content_scripts.h"
+#include "extensions/common/api/extension_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
@@ -30,6 +31,7 @@
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/utils/content_script_utils.h"
+#include "extensions/common/utils/extension_types_utils.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -142,6 +144,17 @@ std::unique_ptr<UserScript> CreateUserScript(
   ParseGlobs(base::OptionalToPtr(content_script.include_globs),
              base::OptionalToPtr(content_script.exclude_globs), result.get());
 
+  // Parse execution world. This should only be possible for MV3.
+  if (content_script.world != api::extension_types::EXECUTION_WORLD_NONE) {
+    if (extension->manifest_version() >= 3) {
+      result->set_execution_world(ConvertExecutionWorld(content_script.world));
+    } else {
+      extension->AddInstallWarning(
+          InstallWarning(errors::kExecutionWorldRestrictedToMV3,
+                         ContentScriptsKeys::kContentScripts));
+    }
+  }
+
   if (!script_parsing::ParseFileSources(
           extension, base::OptionalToPtr(content_script.js),
           base::OptionalToPtr(content_script.css), definition_index,
@@ -197,9 +210,9 @@ URLPatternSet ContentScriptsInfo::GetScriptableHosts(
   return scriptable_hosts;
 }
 
-ContentScriptsHandler::ContentScriptsHandler() {}
+ContentScriptsHandler::ContentScriptsHandler() = default;
 
-ContentScriptsHandler::~ContentScriptsHandler() {}
+ContentScriptsHandler::~ContentScriptsHandler() = default;
 
 base::span<const char* const> ContentScriptsHandler::Keys() const {
   static constexpr const char* kKeys[] = {ContentScriptsKeys::kContentScripts};
@@ -209,8 +222,7 @@ base::span<const char* const> ContentScriptsHandler::Keys() const {
 bool ContentScriptsHandler::Parse(Extension* extension, std::u16string* error) {
   ContentScriptsKeys manifest_keys;
   if (!ContentScriptsKeys::ParseFromDictionary(
-          extension->manifest()->available_values().GetDict(), &manifest_keys,
-          error)) {
+          extension->manifest()->available_values(), &manifest_keys, error)) {
     return false;
   }
 
@@ -256,7 +268,7 @@ bool ContentScriptsHandler::Validate(
   // and are UTF-8 encoded.
   return script_parsing::ValidateFileSources(
       ContentScriptsInfo::GetContentScripts(extension),
-      script_parsing::GetSymlinkPolicy(extension), error);
+      script_parsing::GetSymlinkPolicy(extension), error, warnings);
 }
 
 }  // namespace extensions

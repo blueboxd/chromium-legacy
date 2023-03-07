@@ -33,6 +33,7 @@ enum class DemuxerType {
   kMediaUrlDemuxer,
   kFrameInjectingDemuxer,
   kStreamProviderDemuxer,
+  kHlsDemuxer,
 };
 
 class MEDIA_EXPORT DemuxerHost {
@@ -142,6 +143,11 @@ class MEDIA_EXPORT Demuxer : public MediaResource {
   // Carry out any actions required to seek to the given time, executing the
   // callback upon completion.
   virtual void Seek(base::TimeDelta time, PipelineStatusCallback status_cb) = 0;
+
+  // Returns whether this demuxer supports seeking and has a timeline. If false,
+  // Seek(), CancelPendingSeek(), StartWaitingForSeek(), and GetTimelineOffset()
+  // should be noops.
+  virtual bool IsSeekable() const = 0;
 
   // Stops this demuxer.
   //

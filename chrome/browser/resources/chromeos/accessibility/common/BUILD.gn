@@ -29,6 +29,7 @@ run_jsbundler("accessibility_common_copied_files") {
   dest_dir = accessibility_common_out_dir
   sources = [
     "array_util.js",
+    "async_util.js",
     "automation_predicate.js",
     "automation_util.js",
     "chrome_event_handler.js",
@@ -50,6 +51,7 @@ run_jsbundler("accessibility_common_copied_files") {
     "repeated_event_handler.js",
     "repeated_tree_change_handler.js",
     "sentence_utils.js",
+    "settings.js",
     "string_util.js",
     "testing/accessibility_test_base.js",
     "testing/test_node_generator.js",
@@ -163,6 +165,9 @@ js_library("sentence_utils") {
   externs_list = [ "$externs_path/automation.js" ]
 }
 
+js_library("string_util") {
+}
+
 js_library("word_utils") {
   deps = [ ":paragraph_utils" ]
   externs_list = [ "$externs_path/automation.js" ]
@@ -181,18 +186,13 @@ source_set("browser_tests") {
     "$root_out_dir/locales/en-US.pak",
     "$root_out_dir/locales/fr.pak",
     "$root_out_dir/resources.pak",
-    "$root_out_dir/resources/chromeos/accessibility/chromevox/",
-    "$root_out_dir/test_data/chrome/browser/resources/chromeos/accessibility/chromevox/",
 
     # The test uses data from the original location.
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/",
     "//chrome/browser/resources/chromeos/accessibility/common/",
-    "//third_party/chromevox/",
   ]
   data += js2gtest_js_libraries
 }
 
-# Note that this suite of tests still uses ChromeVox's background page as a runtime environment. There should not be anything specific to ChromeVox within the tests themselves though.
 js2gtest("accessibility_tests") {
   test_type = "extension"
   sources = [
@@ -220,7 +220,6 @@ js2gtest("accessibility_tests") {
   ]
 
   gen_include_files = [
-    "../select_to_speak/select_to_speak_e2e_test_base.js",
     "testing/accessibility_test_base.js",
     "testing/assert_additions.js",
     "testing/callback_helper.js",
@@ -228,6 +227,7 @@ js2gtest("accessibility_tests") {
     "testing/doc_utils.js",
     "testing/e2e_test_base.js",
     "testing/mock_storage.js",
+    "testing/snippets.js",
   ]
 
   if (is_chromeos_ash) {

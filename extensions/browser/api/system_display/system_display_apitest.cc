@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/debug/leak_annotations.h"
+#include "base/functional/bind.h"
+#include "base/test/gtest_tags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/test/browser_test_utils.h"
@@ -21,7 +21,6 @@
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/result_catcher.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/display/screen.h"
 
 namespace extensions {
 
@@ -116,6 +115,9 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-49098611-4862-4326-a90f-3f04b49eb336");
+
   scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)

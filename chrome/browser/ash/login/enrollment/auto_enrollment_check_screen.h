@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
@@ -128,8 +128,6 @@ class AutoEnrollmentCheckScreen : public BaseScreen,
 
   NetworkState::PortalState captive_portal_state_ =
       NetworkState::PortalState::kUnknown;
-  policy::AutoEnrollmentState auto_enrollment_state_ =
-      policy::AutoEnrollmentState::kIdle;
 
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 

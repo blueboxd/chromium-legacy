@@ -338,7 +338,8 @@ class PLATFORM_EXPORT FontDescription {
   float EffectiveFontSize()
       const;  // Returns either the computedSize or the computedPixelSize
   FontCacheKey CacheKey(const FontFaceCreationParams&,
-                        bool is_unique_match) const;
+                        bool is_unique_match,
+                        bool is_generic_family) const;
 
   void SetFamily(const FontFamily& family) { family_list_ = family; }
   void SetComputedSize(float s) { computed_size_ = ClampTo<float>(s); }
@@ -571,24 +572,6 @@ class PLATFORM_EXPORT FontDescription {
 
 namespace WTF {
 
-template <>
-struct DefaultHash<blink::FontDescription> {
-  static unsigned GetHash(const blink::FontDescription& description) {
-    return description.GetHash();
-  }
-
-  static bool Equal(const blink::FontDescription& a,
-                    const blink::FontDescription& b) {
-    return a == b;
-  }
-
-  // Empty and deleted FontDescriptions have different HashCategory flag values
-  // from all regular FontDescriptions.
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
-template <typename T>
-struct HashTraits;
 template <>
 struct HashTraits<blink::FontDescription>
     : SimpleClassHashTraits<blink::FontDescription> {

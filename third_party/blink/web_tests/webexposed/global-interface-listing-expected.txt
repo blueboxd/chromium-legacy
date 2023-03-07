@@ -10,6 +10,7 @@ interface AbortController
     method constructor
 interface AbortSignal : EventTarget
     static method abort
+    static method any
     static method timeout
     attribute @@toStringTag
     getter aborted
@@ -54,7 +55,7 @@ interface AccessibleNode : EventTarget
     getter errorMessage
     getter expanded
     getter flowTo
-    getter hasPopUp
+    getter hasPopup
     getter hidden
     getter invalid
     getter keyShortcuts
@@ -110,7 +111,7 @@ interface AccessibleNode : EventTarget
     setter errorMessage
     setter expanded
     setter flowTo
-    setter hasPopUp
+    setter hasPopup
     setter hidden
     setter invalid
     setter keyShortcuts
@@ -546,11 +547,6 @@ interface BeforeInstallPromptEvent : Event
     getter userChoice
     method constructor
     method prompt
-interface BeforeToggleEvent : Event
-    attribute @@toStringTag
-    getter currentState
-    getter newState
-    method constructor
 interface BeforeUnloadEvent : Event
     attribute @@toStringTag
     getter returnValue
@@ -643,6 +639,21 @@ interface ByteLengthQueuingStrategy
 interface CDATASection : Text
     attribute @@toStringTag
     method constructor
+interface CSPViolationReportBody : ReportBody
+    attribute @@toStringTag
+    getter blockedURL
+    getter columnNumber
+    getter disposition
+    getter documentURL
+    getter effectiveDirective
+    getter lineNumber
+    getter originalPolicy
+    getter referrer
+    getter sample
+    getter sourceFile
+    getter statusCode
+    method constructor
+    method toJSON
 interface CSSAnimation : Animation
     attribute @@toStringTag
     getter animationName
@@ -1378,6 +1389,18 @@ interface CookieStoreManager
     method getSubscriptions
     method subscribe
     method unsubscribe
+interface CoopAccessViolationReportBody : ReportBody
+    attribute @@toStringTag
+    getter columnNumber
+    getter lineNumber
+    getter openeeURL
+    getter openerURL
+    getter otherDocumentURL
+    getter property
+    getter sourceFile
+    getter type
+    method constructor
+    method toJSON
 interface CountQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -1728,6 +1751,16 @@ interface DelegatedInkTrailPresenter
     getter presentationArea
     method constructor
     method updateInkTrailStartPoint
+interface DeprecationReportBody : ReportBody
+    attribute @@toStringTag
+    getter anticipatedRemoval
+    getter columnNumber
+    getter id
+    getter lineNumber
+    getter message
+    getter sourceFile
+    method constructor
+    method toJSON
 interface DeviceMotionEvent : Event
     static method requestPermission
     attribute @@toStringTag
@@ -1814,6 +1847,7 @@ interface Document : Node
     getter linkColor
     getter links
     getter onabort
+    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -2030,6 +2064,7 @@ interface Document : Node
     setter fullscreenEnabled
     setter linkColor
     setter onabort
+    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -2178,6 +2213,16 @@ interface DocumentPictureInPictureEvent : Event
     attribute @@toStringTag
     getter window
     method constructor
+interface DocumentPolicyViolationReportBody : ReportBody
+    attribute @@toStringTag
+    getter columnNumber
+    getter disposition
+    getter featureId
+    getter lineNumber
+    getter message
+    getter sourceFile
+    method constructor
+    method toJSON
 interface DocumentTimeline : AnimationTimeline
     attribute @@toStringTag
     method constructor
@@ -3142,9 +3187,9 @@ interface HTMLButtonElement : HTMLElement
     getter formTarget
     getter labels
     getter name
-    getter popoverHideTarget
-    getter popoverShowTarget
-    getter popoverToggleTarget
+    getter popoverHideTargetElement
+    getter popoverShowTargetElement
+    getter popoverToggleTargetElement
     getter type
     getter validationMessage
     getter validity
@@ -3161,9 +3206,9 @@ interface HTMLButtonElement : HTMLElement
     setter formNoValidate
     setter formTarget
     setter name
-    setter popoverHideTarget
-    setter popoverShowTarget
-    setter popoverToggleTarget
+    setter popoverHideTargetElement
+    setter popoverShowTargetElement
+    setter popoverToggleTargetElement
     setter type
     setter value
 interface HTMLCanvasElement : HTMLElement
@@ -3254,6 +3299,7 @@ interface HTMLElement : Element
     getter offsetTop
     getter offsetWidth
     getter onabort
+    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -3390,6 +3436,7 @@ interface HTMLElement : Element
     setter lang
     setter nonce
     setter onabort
+    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -3811,9 +3858,9 @@ interface HTMLInputElement : HTMLElement
     getter name
     getter pattern
     getter placeholder
-    getter popoverHideTarget
-    getter popoverShowTarget
-    getter popoverToggleTarget
+    getter popoverHideTargetElement
+    getter popoverShowTargetElement
+    getter popoverToggleTargetElement
     getter readOnly
     getter required
     getter selectionDirection
@@ -3869,9 +3916,9 @@ interface HTMLInputElement : HTMLElement
     setter name
     setter pattern
     setter placeholder
-    setter popoverHideTarget
-    setter popoverShowTarget
-    setter popoverToggleTarget
+    setter popoverHideTargetElement
+    setter popoverShowTargetElement
+    setter popoverToggleTargetElement
     setter readOnly
     setter required
     setter selectionDirection
@@ -4845,6 +4892,7 @@ interface IdentityCredential : Credential
     getter token
     method constructor
 interface IdentityProvider
+    static method getUserInfo
     static method login
     static method logout
     attribute @@toStringTag
@@ -5012,6 +5060,15 @@ interface IntersectionObserverEntry
     getter target
     getter time
     method constructor
+interface InterventionReportBody : ReportBody
+    attribute @@toStringTag
+    getter columnNumber
+    getter id
+    getter lineNumber
+    getter message
+    getter sourceFile
+    method constructor
+    method toJSON
 interface Keyboard
     attribute @@toStringTag
     method constructor
@@ -5229,6 +5286,7 @@ interface MathMLElement : Element
     getter focusgroup
     getter nonce
     getter onabort
+    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -5342,6 +5400,7 @@ interface MathMLElement : Element
     setter focusgroup
     setter nonce
     setter onabort
+    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -5900,25 +5959,6 @@ interface NamedNodeMap
     method removeNamedItemNS
     method setNamedItem
     method setNamedItemNS
-interface NativeIOFile
-    attribute @@toStringTag
-    method close
-    method constructor
-    method flush
-    method getLength
-    method read
-    method setLength
-    method write
-interface NativeIOFileManager
-    attribute @@toStringTag
-    method constructor
-    method delete
-    method getAll
-    method getRemainingCapacity
-    method open
-    method releaseCapacity
-    method rename
-    method requestCapacity
 interface NavigateEvent : Event
     attribute @@toStringTag
     getter canIntercept
@@ -6523,6 +6563,7 @@ interface PendingPostBeacon : PendingBeacon
 interface Performance : EventTarget
     attribute @@toStringTag
     getter eventCounts
+    getter interactionCount
     getter memory
     getter navigation
     getter onresourcetimingbufferfull
@@ -6560,6 +6601,7 @@ interface PerformanceEntry
     getter entryType
     getter name
     getter navigationId
+    getter source
     getter startTime
     method constructor
     method toJSON
@@ -6638,6 +6680,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter domainLookupStart
     getter encodedBodySize
     getter fetchStart
+    getter firstInterimResponseStart
     getter initiatorType
     getter nextHopProtocol
     getter redirectEnd
@@ -6708,6 +6751,16 @@ interface Permissions
     method request
     method requestAll
     method revoke
+interface PermissionsPolicyViolationReportBody : ReportBody
+    attribute @@toStringTag
+    getter columnNumber
+    getter disposition
+    getter featureId
+    getter lineNumber
+    getter message
+    getter sourceFile
+    method constructor
+    method toJSON
 interface PictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow
@@ -6757,6 +6810,11 @@ interface PointerEvent : MouseEvent
 interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
+    method constructor
+interface PopoverToggleEvent : Event
+    attribute @@toStringTag
+    getter currentState
+    getter newState
     method constructor
 interface Presentation
     attribute @@toStringTag
@@ -6831,6 +6889,7 @@ interface PressureRecord
     getter state
     getter time
     method constructor
+    method toJSON
 interface ProcessingInstruction : CharacterData
     attribute @@toStringTag
     getter sheet
@@ -6961,6 +7020,7 @@ interface RTCEncodedVideoFrame
     method clone
     method constructor
     method getMetadata
+    method setMetadata
     method toString
     setter data
 interface RTCError : DOMException
@@ -7267,6 +7327,17 @@ interface RemotePlayback : EventTarget
     setter onconnect
     setter onconnecting
     setter ondisconnect
+interface Report
+    attribute @@toStringTag
+    getter body
+    getter type
+    getter url
+    method constructor
+    method toJSON
+interface ReportBody
+    attribute @@toStringTag
+    method constructor
+    method toJSON
 interface ReportingObserver
     attribute @@toStringTag
     method constructor
@@ -7493,6 +7564,7 @@ interface SVGElement : Element
     getter focusgroup
     getter nonce
     getter onabort
+    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -7608,6 +7680,7 @@ interface SVGElement : Element
     setter focusgroup
     setter nonce
     setter onabort
+    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -11427,6 +11500,7 @@ interface XRSession : EventTarget
     getter depthDataFormat
     getter depthUsage
     getter domOverlayState
+    getter enabledFeatures
     getter environmentBlendMode
     getter inputSources
     getter interactionMode
@@ -11835,6 +11909,7 @@ namespace CSS
     getter offscreenBuffering
     getter onabort
     getter onafterprint
+    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -11982,7 +12057,6 @@ namespace CSS
     getter speechSynthesis
     getter status
     getter statusbar
-    getter storageFoundation
     getter styleMedia
     getter toolbar
     getter top
@@ -12059,6 +12133,7 @@ namespace CSS
     setter offscreenBuffering
     setter onabort
     setter onafterprint
+    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart

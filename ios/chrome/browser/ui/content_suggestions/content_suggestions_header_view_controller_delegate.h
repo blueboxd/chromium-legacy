@@ -7,20 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol UserAccountImageUpdateDelegate;
-
 // Delegate for the ContentSuggestionsHeaderViewController.
 @protocol ContentSuggestionsHeaderViewControllerDelegate
 
-// Returns whether the collection is scrolled to the omnibox.
-- (BOOL)isScrolledToMinimumHeight;
+// Whether the scrollview is scrolled to the omnibox.
+@property(nonatomic, assign, readonly) BOOL scrolledToMinimumHeight;
 
-// Register `imageUpdater` object as delegate to refresh UI when user account
-// avatar is changed.
-- (void)registerImageUpdater:(id<UserAccountImageUpdateDelegate>)imageUpdater;
-
-// Returns whether the user is signed in for signin::ConsentLevel::kSignin.
-- (BOOL)isSignedIn;
+// Indicates to the receiver to update its state to focus the omnibox.
+- (void)focusFakebox;
 
 @end
 

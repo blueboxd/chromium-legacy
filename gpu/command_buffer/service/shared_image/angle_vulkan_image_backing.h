@@ -10,10 +10,7 @@
 #include "gpu/command_buffer/service/shared_image/gl_texture_common_representations.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-
-namespace gl {
-class GLImageEGLAngleVulkan;
-}
+#include "ui/gl/scoped_egl_image.h"
 
 namespace gpu {
 namespace gles2 {
@@ -41,7 +38,7 @@ class AngleVulkanImageBacking : public ClearTrackingSharedImageBacking,
  protected:
   // SharedImageBacking implementation.
   SharedImageBackingType GetType() const override;
-  bool UploadFromMemory(const SkPixmap& pixmap) override;
+  bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   std::unique_ptr<GLTexturePassthroughImageRepresentation>
   ProduceGLTexturePassthrough(SharedImageManager* manager,
@@ -54,7 +51,6 @@ class AngleVulkanImageBacking : public ClearTrackingSharedImageBacking,
   // GLTextureImageRepresentationClient implementation.
   bool GLTextureImageRepresentationBeginAccess(bool readonly) override;
   void GLTextureImageRepresentationEndAccess(bool readonly) override;
-  void GLTextureImageRepresentationRelease(bool have_context) override;
 
  private:
   class SkiaAngleVulkanImageRepresentation;
@@ -71,7 +67,7 @@ class AngleVulkanImageBacking : public ClearTrackingSharedImageBacking,
 
   const raw_ptr<SharedContextState> context_state_;
   std::unique_ptr<VulkanImage> vulkan_image_;
-  scoped_refptr<gl::GLImageEGLAngleVulkan> egl_image_;
+  gl::ScopedEGLImage egl_image_;
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
   GrBackendTexture backend_texture_{};
   sk_sp<SkPromiseImageTexture> promise_texture_;
@@ -81,7 +77,6 @@ class AngleVulkanImageBacking : public ClearTrackingSharedImageBacking,
   bool is_gl_write_in_process_ = false;
   int skia_reads_in_process_ = 0;
   int gl_reads_in_process_ = 0;
-  bool need_gl_finish_before_destroy_ = false;
 };
 
 }  // namespace gpu

@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <list>
 #include <map>
@@ -476,27 +477,37 @@ TEST(Table, EmptyFunctorOptimization) {
     size_t dummy;
   };
 
-  if (std::is_empty<HashtablezInfoHandle>::value) {
-    EXPECT_EQ(sizeof(MockTableInfozDisabled),
-              sizeof(raw_hash_set<StringPolicy, StatelessHash,
-                                  std::equal_to<absl::string_view>,
-                                  std::allocator<int>>));
+  struct GenerationData {
+    size_t reserved_growth;
+    GenerationType* generation;
+  };
 
-    EXPECT_EQ(sizeof(MockTableInfozDisabled) + sizeof(StatefulHash),
-              sizeof(raw_hash_set<StringPolicy, StatefulHash,
-                                  std::equal_to<absl::string_view>,
-                                  std::allocator<int>>));
-  } else {
-    EXPECT_EQ(sizeof(MockTable),
-              sizeof(raw_hash_set<StringPolicy, StatelessHash,
-                                  std::equal_to<absl::string_view>,
-                                  std::allocator<int>>));
+// Ignore unreachable-code warning. Compiler thinks one branch of each ternary
+// conditional is unreachable.
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+#endif
+  constexpr size_t mock_size = std::is_empty<HashtablezInfoHandle>()
+                                   ? sizeof(MockTableInfozDisabled)
+                                   : sizeof(MockTable);
+  constexpr size_t generation_size =
+      SwisstableGenerationsEnabled() ? sizeof(GenerationData) : 0;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
-    EXPECT_EQ(sizeof(MockTable) + sizeof(StatefulHash),
-              sizeof(raw_hash_set<StringPolicy, StatefulHash,
-                                  std::equal_to<absl::string_view>,
-                                  std::allocator<int>>));
-  }
+  EXPECT_EQ(
+      mock_size + generation_size,
+      sizeof(
+          raw_hash_set<StringPolicy, StatelessHash,
+                       std::equal_to<absl::string_view>, std::allocator<int>>));
+
+  EXPECT_EQ(
+      mock_size + sizeof(StatefulHash) + generation_size,
+      sizeof(
+          raw_hash_set<StringPolicy, StatefulHash,
+                       std::equal_to<absl::string_view>, std::allocator<int>>));
 }
 
 TEST(Table, Empty) {
@@ -1809,7 +1820,6 @@ TEST(Table, HeterogeneousLookupOverloads) {
   EXPECT_TRUE((VerifyResultOf<CallCount, TransparentTable>()));
 }
 
-// TODO(alkis): Expand iterator tests.
 TEST(Iterator, IsDefaultConstructible) {
   StringTable::iterator i;
   EXPECT_TRUE(i == StringTable::iterator());
@@ -2234,6 +2244,78 @@ TEST(Table, AlignOne) {
   for (uint8_t u : t) {
     EXPECT_EQ(verifier.count(u), 1);
   }
+}
+
+// Invalid iterator use can trigger heap-use-after-free in asan,
+// use-of-uninitialized-value in msan, or invalidated iterator assertions.
+constexpr const char* kInvalidIteratorDeathMessage =
+    "heap-use-after-free|use-of-uninitialized-value|invalidated "
+    "iterator|Invalid iterator";
+
+#if defined(__clang__) && defined(_MSC_VER)
+constexpr bool kLexan = true;
+#else
+constexpr bool kLexan = false;
+#endif
+
+TEST(Iterator, InvalidUseCrashesWithSanitizers) {
+  if (!SwisstableGenerationsEnabled()) GTEST_SKIP() << "Generations disabled.";
+  if (kLexan) GTEST_SKIP() << "Lexan doesn't support | in regexp.";
+
+  IntTable t;
+  // Start with 1 element so that `it` is never an end iterator.
+  t.insert(-1);
+  for (int i = 0; i < 10; ++i) {
+    auto it = t.begin();
+    t.insert(i);
+    EXPECT_DEATH_IF_SUPPORTED(*it, kInvalidIteratorDeathMessage);
+    EXPECT_DEATH_IF_SUPPORTED(void(it == t.begin()),
+                              kInvalidIteratorDeathMessage);
+  }
+}
+
+TEST(Iterator, InvalidUseWithReserveCrashesWithSanitizers) {
+  if (!SwisstableGenerationsEnabled()) GTEST_SKIP() << "Generations disabled.";
+  if (kLexan) GTEST_SKIP() << "Lexan doesn't support | in regexp.";
+
+  IntTable t;
+  t.reserve(10);
+  t.insert(0);
+  auto it = t.begin();
+  // Reserved growth can't rehash.
+  for (int i = 1; i < 10; ++i) {
+    t.insert(i);
+    EXPECT_EQ(*it, 0);
+  }
+  // ptr will become invalidated on rehash.
+  const int64_t* ptr = &*it;
+
+  // erase decreases size but does not decrease reserved growth so the next
+  // insertion still invalidates iterators.
+  t.erase(0);
+  // The first insert after reserved growth is 0 is guaranteed to rehash when
+  // generations are enabled.
+  t.insert(10);
+  EXPECT_DEATH_IF_SUPPORTED(*it, kInvalidIteratorDeathMessage);
+  EXPECT_DEATH_IF_SUPPORTED(void(it == t.begin()),
+                            kInvalidIteratorDeathMessage);
+  EXPECT_DEATH_IF_SUPPORTED(std::cout << *ptr,
+                            "heap-use-after-free|use-of-uninitialized-value");
+}
+
+TEST(Table, ReservedGrowthUpdatesWhenTableDoesntGrow) {
+  IntTable t;
+  for (int i = 0; i < 8; ++i) t.insert(i);
+  // Want to insert twice without invalidating iterators so reserve.
+  const size_t cap = t.capacity();
+  t.reserve(t.size() + 2);
+  // We want to be testing the case in which the reserve doesn't grow the table.
+  ASSERT_EQ(cap, t.capacity());
+  auto it = t.find(0);
+  t.insert(100);
+  t.insert(200);
+  // `it` shouldn't have been invalidated.
+  EXPECT_EQ(*it, 0);
 }
 
 }  // namespace

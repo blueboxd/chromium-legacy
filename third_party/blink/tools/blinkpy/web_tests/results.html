@@ -548,7 +548,7 @@ class PathParser {
     '-expected.png': 'expected_image',
     '-diff.png': 'image_diff',
     '-actual.txt': 'actual_text',
-    '-expected.txt': 'expected_txt',
+    '-expected.txt': 'expected_text',
     '-diff.txt': 'text_diff',
     '-pretty-diff.html': 'pretty_text_diff',
     '-actual.wav': 'actual_audio',
@@ -570,7 +570,7 @@ class PathParser {
     for (let taskId of taskIds) {
       // ResultDB invocations need run_ids which end with '1'.
       if (taskId.endsWith('0'))
-        taskId[taskId.length - 1] = '1';
+        taskId = taskId.substring(0, taskId.length - 1) + '1';
       PathParser.invocations.push(
           'invocations/task-chromium-swarm.appspot.com-' + taskId);
     }
@@ -585,7 +585,7 @@ class PathParser {
       return this.dir + this.resultPrefix + resultName;
     }
     let artifacts = await this.getArtifacts();
-    return artifacts[PathParser.resultNameToArtifactName[resultName]];
+    return artifacts[PathParser.resultNameToArtifactName[resultName]] || 'about:blank';
   }
 
   resultFilename(resultName) {
@@ -820,11 +820,11 @@ const Report = {
       traversal.html.push(`<pre class="warn">
 # The following script doesn't properly handle fallbacks. For example, if the
 # script changes a baseline that is in the fallback path of a test variant, the
-# test variant may be broken. Also this script will stop working when we finish
-# migrating results.html to ResultDB (https://crbug.com/1382949). Please use
-# blink_tool.py rebaseline-cl instead. You can use --builders=<builder> to
-# rebaseline for one builder, which can achieve basically the same result as
-# this script (but with correct fallback handling).
+# test variant may be broken. When possible, please use
+#   blink_tool.py rebaseline-cl
+# instead. You can use --builders=<builder> to rebaseline for one builder, which
+# can achieve basically the same result as this script (but with correct
+# fallback handling).
 </pre>`);
       traversal.html.push(`<pre>
 # Before running this script, you should cd into the proper baseline directory.
@@ -861,18 +861,20 @@ const Report = {
       traversal.rebaselineDir = dir;
     }
     for (let i=0; i<actualNames.length; i++) {
-      let resultLink;
-      parser.resultLink(actualNames[i]).then((href) => { resultLink = href; });
-      // This works only if resultLink() fulfills immediately.
-      console.assert(resultLink);
-      let url = new URL(resultLink, document.baseURI);
-      if (url.href.startsWith('file://')) {
-        let actualFile = url.href.substring('file://'.length);
-        traversal.html.push(`<div>cp ${actualFile} ${parser.basename + expectedNames[i]};</div>`);
-      } else {
-        traversal.html.push(`<div>wget ${url.href};</div>`);
-        traversal.html.push(`<div>mv ${parser.basename + actualNames[i]} ${parser.basename + expectedNames[i]};</div>`);
-      }
+      traversal.waitCount = (traversal.waitCount || 0) + 1;
+      let index = traversal.html.length;
+      traversal.html.push('');
+      parser.resultLink(actualNames[i]).then((href) => {
+        let url = new URL(href, document.baseURI);
+        if (url.href.startsWith('file://')) {
+          let actualFile = url.href.substring('file://'.length);
+          traversal.html[index] = `<div>cp "${actualFile}" "${parser.basename + expectedNames[i]}";</div>`;
+        } else {
+          traversal.html[index] =
+              `<div>wget "${url.href}" --backups=0 -O "${parser.basename + expectedNames[i]}";</div>`;
+        }
+        traversal.waitCount--;
+      });
     }
     traversal.rebaselinedTests = `${traversal.rebaselinedTests || ''} ${parser.dir}${parser.file}`;
   },
@@ -1210,6 +1212,10 @@ const Query = {
     let chunkSize = 1000;
     let index = 0;
     let callback = _ => {
+      if (traversal.waitCount) {
+        this.currentRAF = window.requestAnimationFrame(callback);
+        return;
+      }
       this.currentRAF = null;
       let html = traversal.html.slice(index, index + chunkSize);
       report.render(html, document.querySelector("#report"));
@@ -1228,7 +1234,6 @@ const Query = {
       this.updateFilters();
       this.currentRAF = window.requestAnimationFrame(callback);
     }, 0);
-    return this.currentPromise;
   }
 }; // Query
 
@@ -2903,11 +2908,10 @@ class AudioResultsViewer {
   // 1. For local usage, results.html is expected to be in layout-test-results
   //    directory which contains full_results_jsonp.js and test result
   //    artifacts.
-  // 2. For bot usage, a link to results.html should have the following
-  //    parameters:
-  //    - json=<URI to full_results_jsonp.js>
+  // 2. For bot usage, a link to results.html should have a parameter:
+  //      ?json=<URI to full_results_jsonp.js>
   //    If the full_results_jsonp.js calls SET_TASK_IDS(<list of task_ids>),
-  //    We'll fetch test result artifacts from ResultDB through the
+  //    we'll fetch test result artifacts from ResultDB through the
   //    QueryArtifacts rpc interface. The task ids are ids of the swarming
   //    tasks of the corresponding web tests step that produced the test
   //    that produced the test results. They are used to construct
@@ -2939,6 +2943,19 @@ class AudioResultsViewer {
 
   let script = document.createElement('script');
   script.src = jsonpUrl.substring(slashPos + 1);
+  script.onerror = () => {
+    let message = `Fail to load ${jsonpUrl}.<br>` +
+                  'This may be because the web test step has not finished yet';
+    if (location.search) {
+      let oldResults =
+          `https://test-results.appspot.com/data/layout_results/${jsonpUrl.substring(0, slashPos)}/layout-test-results/results.html`;
+      message += ', or the results are in the old format which can be' +
+                 ` accessed through <a href="${oldResults}">this link</a>.`;
+    } else {
+      message += '.';
+    }
+    document.write(message);
+  };
   document.body.appendChild(script);
 })();
 </script>

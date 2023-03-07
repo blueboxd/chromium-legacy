@@ -8,8 +8,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
@@ -516,7 +516,6 @@ void ServiceWorkerRegisterJob::OnScriptFetchCompleted(
              message);
     return;
   }
-  DCHECK(version->client_security_state());
 
   GURL final_response_url = WorkerScriptFetcher::DetermineFinalResponseUrl(
       version->script_url(), main_script_load_params.get());
@@ -564,11 +563,9 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
   }
 
   if (update_checker_) {
-    new_version()->PrepareForUpdate(
-        update_checker_->TakeComparedResults(),
-        update_checker_->updated_script_url(),
-        update_checker_->policy_container_host(),
-        update_checker_->cross_origin_embedder_policy());
+    new_version()->PrepareForUpdate(update_checker_->TakeComparedResults(),
+                                    update_checker_->updated_script_url(),
+                                    update_checker_->policy_container_host());
     update_checker_.reset();
   }
 
@@ -828,8 +825,8 @@ void ServiceWorkerRegisterJob::CompleteInternal(
       if (!registration()->newest_installed_version()) {
         registration()->NotifyRegistrationFailed();
         if (!registration()->is_deleted()) {
-          context_->registry()->DeleteRegistration(
-              registration(), registration()->key(), base::DoNothing());
+          context_->registry()->DeleteRegistration(registration(),
+                                                   base::DoNothing());
           context_->registry()->NotifyDoneUninstallingRegistration(
               registration(), ServiceWorkerRegistration::Status::kUninstalled);
         }

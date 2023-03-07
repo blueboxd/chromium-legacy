@@ -14,14 +14,13 @@
 
 #include "base/barrier_callback.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -60,6 +59,7 @@
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/browsing_topics/browsing_topics_site_data_manager_impl.h"
+#include "content/browser/browsing_topics/browsing_topics_url_loader_service.h"
 #include "content/browser/buckets/bucket_manager.h"
 #include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
@@ -77,7 +77,6 @@
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/locks/lock_manager.h"
-#include "content/browser/native_io/native_io_context_impl.h"
 #include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -863,10 +862,6 @@ storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
 
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS) {
     quota_client_types.insert(storage::QuotaClientType::kFileSystem);
-
-    // TODO(crbug.com/1137788): Add a removal mask for NativeIO after adopting a
-    // more inclusive name.
-    quota_client_types.insert(storage::QuotaClientType::kNativeIO);
   }
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
     quota_client_types.insert(storage::QuotaClientType::kDatabase);
@@ -1269,10 +1264,6 @@ void StoragePartitionImpl::Initialize(
 
   dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
 
-  native_io_context_ = base::MakeRefCounted<NativeIOContextImpl>();
-  native_io_context_->Initialize(
-      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
-
   shared_worker_service_ =
       std::make_unique<SharedWorkerServiceImpl>(this, service_worker_context_);
 
@@ -1331,6 +1322,11 @@ void StoragePartitionImpl::Initialize(
 
   prefetch_url_loader_service_ =
       std::make_unique<PrefetchURLLoaderService>(browser_context_);
+
+  if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+    browsing_topics_url_loader_service_ =
+        std::make_unique<BrowsingTopicsURLLoaderService>();
+  }
 
   cookie_store_manager_ =
       std::make_unique<CookieStoreManager>(service_worker_context_);
@@ -1651,6 +1647,12 @@ PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
   return prefetch_url_loader_service_.get();
 }
 
+BrowsingTopicsURLLoaderService*
+StoragePartitionImpl::GetBrowsingTopicsURLLoaderService() {
+  DCHECK(initialized_);
+  return browsing_topics_url_loader_service_.get();
+}
+
 CookieStoreManager* StoragePartitionImpl::GetCookieStoreManager() {
   DCHECK(initialized_);
   return cookie_store_manager_.get();
@@ -1680,6 +1682,11 @@ StoragePartitionImpl::GetFileSystemAccessManager() {
 }
 
 AttributionManager* StoragePartitionImpl::GetAttributionManager() {
+  DCHECK(initialized_);
+  return attribution_manager_.get();
+}
+
+AttributionDataModel* StoragePartitionImpl::GetAttributionDataModel() {
   DCHECK(initialized_);
   return attribution_manager_.get();
 }
@@ -1717,11 +1724,6 @@ StoragePartitionImpl::GetBrowsingTopicsSiteDataManager() {
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
   DCHECK(initialized_);
   return content_index_context_.get();
-}
-
-NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
-  DCHECK(initialized_);
-  return native_io_context_.get();
 }
 
 AggregationService* StoragePartitionImpl::GetAggregationService() {
@@ -1838,15 +1840,16 @@ void StoragePartitionImpl::OnAuthRequired(
             is_primary_main_frame =
                 render_frame_host_impl->IsInPrimaryMainFrame();
           }
-        } else {
+        } else if (NavigationRequest* ongoing_navigation =
+                       container_host->GetOngoingNavigationRequestBeforeCommit(
+                           base::PassKey<StoragePartitionImpl>())) {
+          // This auth request is for an ongoing navigation controlled
+          // by service worker. The navigation request can be nullptr if user
+          // has closed the WebContents.
           // Overwrite the context; set `type` to kNavigationRequestContext.
           // TODO(https://crbug.com/1239554): Optimize locating logic.
-          int frame_tree_node_id =
-              container_host->GetFrameTreeNodeIdForOngoingNavigation(
-                  base::PassKey<StoragePartitionImpl>());
-          context = URLLoaderNetworkContext::CreateForNavigation(
-              *(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
-                    ->navigation_request()));
+          context =
+              URLLoaderNetworkContext::CreateForNavigation(*ongoing_navigation);
         }
       }
     }
@@ -1922,15 +1925,20 @@ void StoragePartitionImpl::OnCertificateRequested(
               container_host->GetRenderFrameHostId();
           context = URLLoaderNetworkContext::CreateForRenderFrameHost(
               render_frame_host_id);
-        } else {
+        } else if (NavigationRequest* ongoing_navigation =
+                       container_host->GetOngoingNavigationRequestBeforeCommit(
+                           base::PassKey<StoragePartitionImpl>())) {
+          // This certification request is for an ongoing navigation.
           // Overwrite the context; set `type` to kNavigationRequestContext.
           // TODO(https://crbug.com/1239554): Optimize locating logic.
-          int frame_tree_node_id =
-              container_host->GetFrameTreeNodeIdForOngoingNavigation(
-                  base::PassKey<StoragePartitionImpl>());
-          context = URLLoaderNetworkContext::CreateForNavigation(
-              *(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
-                    ->navigation_request()));
+          context =
+              URLLoaderNetworkContext::CreateForNavigation(*ongoing_navigation);
+        } else {
+          // The navigation request was canceled since the WebContents was
+          // discarded, so it is meaningless to continue the certification
+          // request.
+          CallCancelRequest(std::move(cert_responder));
+          return;
         }
       }
     }
@@ -2149,6 +2157,7 @@ void StoragePartitionImpl::OnTrustAnchorUsed() {
 }
 #endif
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 void StoragePartitionImpl::OnCanSendSCTAuditingReport(
     OnCanSendSCTAuditingReportCallback callback) {
   bool allowed =
@@ -2159,6 +2168,7 @@ void StoragePartitionImpl::OnCanSendSCTAuditingReport(
 void StoragePartitionImpl::OnNewSCTAuditingReportSent() {
   GetContentClient()->browser()->OnNewSCTAuditingReportSent(browser_context_);
 }
+#endif
 
 void StoragePartitionImpl::ClearDataImpl(
     uint32_t remove_mask,
@@ -2636,7 +2646,7 @@ void StoragePartitionImpl::ClearDataForBuckets(
       base::BarrierCallback<blink::mojom::QuotaStatusCode>(
           storage_buckets.size(),
           BindPostTask(
-              base::SequencedTaskRunnerHandle::Get(),
+              base::SequencedTaskRunner::GetCurrentDefault(),
               base::BindOnce(&StoragePartitionImpl::ClearDataForBucketsDone,
                              base::Unretained(this), storage_key,
                              storage_buckets, std::move(callback))));
@@ -2644,9 +2654,9 @@ void StoragePartitionImpl::ClearDataForBuckets(
   storage::QuotaManagerProxy* quota_manager_proxy = GetQuotaManagerProxy();
 
   for (const auto& bucket : storage_buckets) {
-    quota_manager_proxy->DeleteBucket(storage_key, bucket,
-                                      base::SequencedTaskRunnerHandle::Get(),
-                                      remove_buckets_done);
+    quota_manager_proxy->DeleteBucket(
+        storage_key, bucket, base::SequencedTaskRunner::GetCurrentDefault(),
+        remove_buckets_done);
   }
 }
 
@@ -2813,7 +2823,7 @@ void StoragePartitionImpl::SetNetworkContextForTesting(
   network_context_.Bind(std::move(network_context_remote));
 }
 
-base::WeakPtr<StoragePartition> StoragePartitionImpl::GetWeakPtr() {
+base::WeakPtr<StoragePartitionImpl> StoragePartitionImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 

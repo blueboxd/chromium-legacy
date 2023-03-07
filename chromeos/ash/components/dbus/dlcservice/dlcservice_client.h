@@ -9,9 +9,9 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/observer_list_types.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/dbus/common/dbus_client.h"
@@ -150,10 +150,5 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::DlcserviceClient;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_DLCSERVICE_DLCSERVICE_CLIENT_H_

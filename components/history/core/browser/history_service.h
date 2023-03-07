@@ -13,13 +13,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -243,8 +243,8 @@ class HistoryService : public KeyedService {
       VisitContentAnnotations::PasswordState password_state);
 
   // Updates the history database with the content model annotations for the
-  // visit.
-  void AddContentModelAnnotationsForVisit(
+  // visit. Virtual for testing.
+  virtual void AddContentModelAnnotationsForVisit(
       const VisitContentModelAnnotations& model_annotations,
       VisitID visit_id);
 
@@ -255,10 +255,10 @@ class HistoryService : public KeyedService {
       VisitID visit_id);
 
   // Updates the history database with the search metadata for a search-like
-  // visit.
-  void AddSearchMetadataForVisit(const GURL& search_normalized_url,
-                                 const std::u16string& search_terms,
-                                 VisitID visit_id);
+  // visit. Virtual for testing.
+  virtual void AddSearchMetadataForVisit(const GURL& search_normalized_url,
+                                         const std::u16string& search_terms,
+                                         VisitID visit_id);
 
   // Updates the history database with additional page metadata.
   void AddPageMetadataForVisit(const std::string& alternative_title,
@@ -592,7 +592,7 @@ class HistoryService : public KeyedService {
   using ClusterIdCallback = base::OnceCallback<void(int64_t)>;
 
   // Adds a cluster with no visits and invokes `callback` with the ID of the
-  // new cluster.
+  // new cluster. It is expected for this to only be called for local visits.
   // Virtual for testing.
   virtual base::CancelableTaskTracker::TaskId ReserveNextClusterId(
       base::OnceCallback<void(int64_t)> callback,
@@ -605,6 +605,12 @@ class HistoryService : public KeyedService {
       const std::vector<ClusterVisit>& visits,
       base::CancelableTaskTracker* tracker);
 
+  // Updates the triggerability attributes for `clusters`.
+  base::CancelableTaskTracker::TaskId UpdateClusterTriggerability(
+      const std::vector<history::Cluster>& clusters,
+      base::OnceClosure callback,
+      base::CancelableTaskTracker* tracker);
+
   // Get the most recent `Cluster`s within the constraints. The most recent
   // visit of a cluster represents the cluster's time. `max_clusters` is a hard
   // cap. `max_visits_soft_cap` is a soft cap; `GetMostRecentClusters()` will
@@ -615,6 +621,7 @@ class HistoryService : public KeyedService {
       size_t max_clusters,
       size_t max_visits_soft_cap,
       base::OnceCallback<void(std::vector<Cluster>)> callback,
+      bool include_keywords_and_duplicates,
       base::CancelableTaskTracker* tracker);
 
   // Observers -----------------------------------------------------------------

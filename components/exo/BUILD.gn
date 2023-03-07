@@ -124,8 +124,6 @@ static_library("exo") {
     "window_properties.h",
     "wm_helper.cc",
     "wm_helper.h",
-    "wm_helper_chromeos.cc",
-    "wm_helper_chromeos.h",
     "xdg_shell_surface.cc",
     "xdg_shell_surface.h",
     "xkb_tracker.cc",
@@ -208,8 +206,6 @@ source_set("test_support") {
     "mock_vsync_timing_observer.h",
     "test/exo_test_base.cc",
     "test/exo_test_base.h",
-    "test/exo_test_base_views.cc",
-    "test/exo_test_base_views.h",
     "test/exo_test_data_exchange_delegate.cc",
     "test/exo_test_data_exchange_delegate.h",
     "test/exo_test_helper.cc",
@@ -288,7 +284,7 @@ source_set("unit_tests") {
     "toast_surface_unittest.cc",
     "touch_unittest.cc",
     "ui_lock_controller_unittest.cc",
-    "wm_helper_chromeos_unittest.cc",
+    "wm_helper_unittest.cc",
     "xdg_shell_surface_unittest.cc",
   ]
 

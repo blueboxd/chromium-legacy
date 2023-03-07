@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/webui/settings/ash/internet_section.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/hotspot_config_service.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/webui/network_ui/network_health_resource_provider.h"
 #include "ash/webui/network_ui/traffic_counters_resource_provider.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
@@ -32,7 +33,6 @@
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/chromeos/strings/network/network_element_localized_strings_provider.h"
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace ash::network_config {
 namespace mojom = chromeos::network_config::mojom;
 }
@@ -501,6 +501,57 @@ const std::vector<SearchConcept>& GetVpnConnectedSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetHotspotSubpageSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_HOTSPOT,
+       mojom::kHotspotSubpagePath,
+       mojom::SearchResultIcon::kHotspot,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kHotspotDetails}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetHotspotOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_HOTSPOT_TURN_OFF,
+       mojom::kHotspotSubpagePath,
+       mojom::SearchResultIcon::kHotspot,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kHotspotOnOff}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetHotspotOffSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_HOTSPOT_TURN_ON,
+       mojom::kHotspotSubpagePath,
+       mojom::SearchResultIcon::kHotspot,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kHotspotOnOff}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetHotspotAutoDisabledSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_HOTSPOT_AUTO_DISABLED,
+       mojom::kHotspotSubpagePath,
+       mojom::SearchResultIcon::kHotspot,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kHotspotAutoDisabled},
+       {IDS_OS_SETTINGS_TAG_HOTSPOT_AUTO_DISABLED_ALT1,
+        IDS_OS_SETTINGS_TAG_HOTSPOT_AUTO_DISABLED_ALT2,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
 const std::vector<mojom::Setting>& GetEthernetDetailsSettings() {
   static const base::NoDestructor<std::vector<mojom::Setting>> settings({
       mojom::Setting::kConfigureEthernet,
@@ -539,6 +590,14 @@ const std::vector<mojom::Setting>& GetCellularDetailsSettings() {
       mojom::Setting::kCellularMetered,
       mojom::Setting::kCellularRemoveESimNetwork,
       mojom::Setting::kCellularRenameESimNetwork,
+  });
+  return *settings;
+}
+
+const std::vector<mojom::Setting>& GetHotspotDetailsSettings() {
+  static const base::NoDestructor<std::vector<mojom::Setting>> settings({
+      mojom::Setting::kHotspotOnOff,
+      mojom::Setting::kHotspotAutoDisabled,
   });
   return *settings;
 }
@@ -626,11 +685,22 @@ InternetSection::InternetSection(Profile* profile,
 
   // Receive updates when devices (e.g., Ethernet, Wi-Fi) go on/offline.
   GetNetworkConfigService(cros_network_config_.BindNewPipeAndPassReceiver());
-  cros_network_config_->AddObserver(receiver_.BindNewPipeAndPassRemote());
+  cros_network_config_->AddObserver(
+      network_config_receiver_.BindNewPipeAndPassRemote());
+
+  if (ash::features::IsHotspotEnabled()) {
+    // Receive updates when hotspot info changed.
+    GetHotspotConfigService(cros_hotspot_config_.BindNewPipeAndPassReceiver());
+    cros_hotspot_config_->AddObserver(
+        hotspot_config_receiver_.BindNewPipeAndPassRemote());
+  }
 
   // Fetch initial list of devices and active networks.
   FetchDeviceList();
   FetchNetworkList();
+
+  // Fetch initial hotspot info.
+  FetchHotspotInfo();
 }
 
 InternetSection::~InternetSection() = default;
@@ -866,6 +936,43 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_HOTSPOT_ENABLED_A11Y_LABEL},
       {"hotspotDisabledA11yLabel",
        IDS_SETTINGS_INTERNET_HOTSPOT_DISABLED_A11Y_LABEL},
+      {"hotspotNameLabel", IDS_SETTINGS_INTERNET_HOTSPOT_NAME_LABEL},
+      {"hotspotConfigureButton",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIGURE_BUTTON},
+      {"hotspotConnectedDeviceCountLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONNECTED_DEVICE_COUNT_LABEL},
+      {"hotspotAutoDisableLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_AUTO_DISABLED_LABEL},
+      {"hotspotAutoDisableSublabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_AUTO_DISABLED_SUBLABEL},
+      {"hotspotSettingsTitle", IDS_SETTINGS_INTERNET_HOTSPOT_SETTINGS_TITLE},
+      {"hotspotConfigNameLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NAME_LABEL},
+      {"hotspotConfigNameInfo", IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NAME_INFO},
+      {"hotspotConfigPasswordLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_PASSWORD_LABEL},
+      {"hotspotConfigPasswordInfo",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_PASSWORD_INFO},
+      {"hotspotConfigSecurityLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_SECURITY_LABEL},
+      {"hotspotConfigBssidToggleLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_BSSID_TOGGLE_LABEL},
+      {"hotspotConfigBssidToggleSublabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_BSSID_TOGGLE_SUBLABEL},
+      {"hotspotConfigCompatibilityToggleLabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_COMPATIBILITY_TOGGLE_LABEL},
+      {"hotspotConfigCompatibilityToggleSublabel",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_COMPATIBILITY_TOGGLE_SUBLABEL},
+      {"hotspotConfigWarningMessage",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_WARNING_MESSAGE},
+      {"hotspotConfigSaveButton",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_SAVE_BUTTON},
+      {"hotspotConfigCancelButton",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_CANCEL_BUTTON},
+      {"hotspotConfigInvalidConfigurationErrorMessage",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_INVALID_CONFIGURATION_ERROR_MESSAGE},
+      {"hotspotConfigNotLoginErrorMessage",
+       IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NOT_LOGIN_ERROR_MESSAGE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -885,8 +992,6 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           features::kCellularBypassESimInstallationConnectivityCheck));
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());
-  html_source->AddBoolean("captivePortalUI2022",
-                          ash::features::IsCaptivePortalUI2022Enabled());
   html_source->AddBoolean(
       "showMeteredToggle",
       base::FeatureList::IsEnabled(::features::kMeteredShowToggle));
@@ -933,6 +1038,21 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "hotspotSubpageSubtitle",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_INTERNET_HOTSPOT_SUBTITLE_WITH_LEARN_MORE_LINK,
+          GetHelpUrlWithBoard(chrome::kInstantTetheringLearnMoreURL)));
+  html_source->AddString(
+      "hotspotMobileDataNotSupportedSublabelWithLink",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_HOTSPOT_MOBILE_DATA_NOT_SUPPORTED_SUBLABEL_WITH_LEARN_MORE_LINK,
+          GetHelpUrlWithBoard(chrome::kInstantTetheringLearnMoreURL)));
+  html_source->AddString(
+      "hotspotNoMobileDataSublabelWithLink",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_HOTSPOT_NO_MOBILE_DATA_SUBLABEL_WITH_LEARN_MORE_LINK,
+          GetHelpUrlWithBoard(chrome::kInstantTetheringLearnMoreURL)));
+  html_source->AddString(
+      "hotspotSettingsSubtitle",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_HOTSPOT_SETTINGS_SUBTITLE_WITH_LEARN_MORE_LINK,
           GetHelpUrlWithBoard(chrome::kInstantTetheringLearnMoreURL)));
 }
 
@@ -1045,8 +1165,11 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Hotspot details.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_INTERNET_HOTSPOT_DETAILS, mojom::Subpage::kHotspotDetails,
-      mojom::SearchResultIcon::kCellular,
+      mojom::SearchResultIcon::kHotspot,
       mojom::SearchResultDefaultRank::kMedium, mojom::kHotspotSubpagePath);
+  RegisterNestedSettingBulk(mojom::Subpage::kHotspotDetails,
+                            GetHotspotDetailsSettings(), generator);
+  generator->RegisterTopLevelAltSetting(mojom::Setting::kHotspotOnOff);
 
   // APN.
   generator->RegisterNestedSubpage(
@@ -1105,6 +1228,43 @@ void InternetSection::OnDeviceStateListChanged() {
 void InternetSection::OnActiveNetworksChanged(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
   FetchNetworkList();
+}
+
+void InternetSection::OnHotspotInfoChanged() {
+  FetchHotspotInfo();
+}
+
+void InternetSection::FetchHotspotInfo() {
+  if (ash::features::IsHotspotEnabled()) {
+    cros_hotspot_config_->GetHotspotInfo(base::BindOnce(
+        &InternetSection::OnHotspotInfo, base::Unretained(this)));
+  }
+}
+
+void InternetSection::OnHotspotInfo(
+    hotspot_config::mojom::HotspotInfoPtr hotspot_info) {
+  using hotspot_config::mojom::HotspotAllowStatus;
+  using hotspot_config::mojom::HotspotState;
+
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.RemoveSearchTags(GetHotspotSubpageSearchConcepts());
+  updater.RemoveSearchTags(GetHotspotOnSearchConcepts());
+  updater.RemoveSearchTags(GetHotspotOffSearchConcepts());
+  updater.RemoveSearchTags(GetHotspotAutoDisabledSearchConcepts());
+  if (hotspot_info->allow_status != HotspotAllowStatus::kAllowed) {
+    return;
+  }
+  if (hotspot_info->config) {
+    updater.AddSearchTags(GetHotspotAutoDisabledSearchConcepts());
+  }
+  updater.AddSearchTags(GetHotspotSubpageSearchConcepts());
+
+  if (hotspot_info->state == HotspotState::kEnabled) {
+    updater.AddSearchTags(GetHotspotOnSearchConcepts());
+  }
+  if (hotspot_info->state == HotspotState::kDisabled) {
+    updater.AddSearchTags(GetHotspotOffSearchConcepts());
+  }
 }
 
 void InternetSection::FetchDeviceList() {

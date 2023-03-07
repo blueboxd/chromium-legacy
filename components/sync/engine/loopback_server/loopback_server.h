@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
@@ -188,7 +188,7 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
   // ModelTypeToDebugString and the values are Value::Lists containing
   // StringValue versions of entity names. Permanent entities are excluded. Used
   // by test to verify the contents of the server state.
-  std::unique_ptr<base::Value::Dict> GetEntitiesAsDict();
+  base::Value::Dict GetEntitiesAsDictForTesting();
 
   // Modifies the entity on the server with the given |id|. The entity's
   // EntitySpecifics are replaced with |updated_specifics| and its version is

@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/history_clusters/core/features.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/performance_manager/public/features.h"
 #include "components/permissions/constants.h"
 #include "components/permissions/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -48,6 +50,14 @@ constexpr char kHatsSurveyTriggerJourneysOmniboxEntrypoint[] =
 constexpr char kHatsSurveyTriggerNtpModules[] = "ntp-modules";
 constexpr char kHatsSurveyTriggerNtpPhotosModuleOptOut[] =
     "ntp-photos-module-opt-out";
+constexpr char kHatsSurveyTriggerPerformanceControlsPerformance[] =
+    "performance-general";
+constexpr char kHatsSurveyTriggerPerformanceControlsBatteryPerformance[] =
+    "performance-battery";
+constexpr char kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut[] =
+    "performance-high-efficiency-opt-out";
+constexpr char kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut[] =
+    "performance-battery-saver-opt-out";
 constexpr char kHatsSurveyTriggerPermissionsPostPrompt[] =
     "permissions-post-prompt";
 constexpr char kHatsSurveyTriggerPrivacyGuide[] = "privacy-guide";
@@ -138,6 +148,9 @@ std::string GetLastSurveyCheckTime(const std::string& trigger) {
 
 constexpr char kAnyLastSurveyStartedTimePath[] = "any_last_survey_started_time";
 
+// Survey configs must always be hardcoded here, so that they require review
+// from HaTS owners. Do not move this method out of the anonymous namespace or
+// change its signature to work around this.
 std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
   std::vector<HatsService::SurveyConfig> survey_configs;
 
@@ -308,12 +321,28 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       std::vector<std::string>{
           permissions::kPermissionsPostPromptSurveyHadGestureKey},
       std::vector<std::string>{
-          /* String values correspond to known enumerators in
-           * permissions::PermissionPromptDisposition. */
           permissions::kPermissionsPostPromptSurveyPromptDispositionKey,
-          /* String values correspond to known enumerators in
-           * permissions::PermissionPromptDispositionReason. */
-          permissions::kPermissionsPostPromptSurveyPromptDispositionReasonKey});
+          permissions::kPermissionsPostPromptSurveyPromptDispositionReasonKey,
+          permissions::kPermissionsPostPromptSurveyActionKey,
+          permissions::kPermissionsPostPromptSurveyRequestTypeKey,
+          permissions::kPermissionsPostPromptSurveyReleaseChannelKey});
+
+  // Performance Controls surveys.
+  survey_configs.emplace_back(
+      &performance_manager::features::kPerformanceControlsPerformanceSurvey,
+      kHatsSurveyTriggerPerformanceControlsPerformance);
+  survey_configs.emplace_back(
+      &performance_manager::features::
+          kPerformanceControlsBatteryPerformanceSurvey,
+      kHatsSurveyTriggerPerformanceControlsBatteryPerformance);
+  survey_configs.emplace_back(
+      &performance_manager::features::
+          kPerformanceControlsHighEfficiencyOptOutSurvey,
+      kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut);
+  survey_configs.emplace_back(
+      &performance_manager::features::
+          kPerformanceControlsBatterySaverOptOutSurvey,
+      kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut);
 
   return survey_configs;
 }
@@ -329,15 +358,10 @@ HatsService::SurveyConfig::SurveyConfig(
     : trigger(trigger),
       product_specific_bits_data_fields(product_specific_bits_data_fields),
       product_specific_string_data_fields(product_specific_string_data_fields) {
-  DCHECK_LE(product_specific_bits_data_fields.size() +
-                product_specific_string_data_fields.size(),
-            3u)
-      << "A maximum of 3 survey specific data fields (bits and string data "
-         "together) is supported";
-
   enabled = base::FeatureList::IsEnabled(*feature);
-  if (!enabled)
+  if (!enabled) {
     return;
+  }
 
   probability = base::FeatureParam<double>(feature, kHatsSurveyProbability,
                                            kHatsSurveyProbabilityDefault)
@@ -422,8 +446,9 @@ HatsService::HatsService(Profile* profile) : profile_(profile) {
   // of whether the feature is enabled, so checking whether a particular survey
   // is enabled should be fast.
   for (const SurveyConfig& survey : surveys) {
-    if (!survey.enabled)
+    if (!survey.enabled) {
       continue;
+    }
 
     survey_configs_by_triggers_.emplace(survey.trigger, survey);
   }
@@ -489,13 +514,15 @@ bool HatsService::LaunchDelayedSurveyForWebContents(
     const SurveyStringData& product_specific_string_data,
     bool require_same_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!web_contents)
+  if (!web_contents) {
     return false;
+  }
   auto result = pending_tasks_.emplace(
       this, trigger, web_contents, product_specific_bits_data,
       product_specific_string_data, require_same_origin);
-  if (!result.second)
+  if (!result.second) {
     return false;
+  }
   auto success =
       base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
@@ -601,28 +628,33 @@ void HatsService::GetSurveyMetadataForTesting(
 
   absl::optional<int> last_major_version =
       pref_data.FindIntByDottedPath(GetMajorVersionPath(trigger));
-  if (last_major_version.has_value())
+  if (last_major_version.has_value()) {
     metadata->last_major_version = last_major_version;
+  }
 
   absl::optional<base::Time> last_survey_started_time = base::ValueToTime(
       pref_data.FindByDottedPath(GetLastSurveyStartedTime(trigger)));
-  if (last_survey_started_time.has_value())
+  if (last_survey_started_time.has_value()) {
     metadata->last_survey_started_time = last_survey_started_time;
+  }
 
   absl::optional<base::Time> any_last_survey_started_time = base::ValueToTime(
       pref_data.FindByDottedPath(kAnyLastSurveyStartedTimePath));
-  if (any_last_survey_started_time.has_value())
+  if (any_last_survey_started_time.has_value()) {
     metadata->any_last_survey_started_time = any_last_survey_started_time;
+  }
 
   absl::optional<bool> is_survey_full =
       pref_data.FindBoolByDottedPath(GetIsSurveyFull(trigger));
-  if (is_survey_full.has_value())
+  if (is_survey_full.has_value()) {
     metadata->is_survey_full = is_survey_full;
+  }
 
   absl::optional<base::Time> last_survey_check_time = base::ValueToTime(
       pref_data.FindByDottedPath(GetLastSurveyCheckTime(trigger)));
-  if (last_survey_check_time.has_value())
+  if (last_survey_check_time.has_value()) {
     metadata->last_survey_check_time = last_survey_check_time;
+  }
 }
 
 void HatsService::RemoveTask(const DelayedSurveyTask& task) {
@@ -708,8 +740,9 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
     return true;
   }
 
-  if (!CanShowAnySurvey(config.user_prompted))
+  if (!CanShowAnySurvey(config.user_prompted)) {
     return false;
+  }
 
   // Survey can not be loaded and shown if there is no network connection.
   if (net::NetworkChangeNotifier::IsOffline()) {
@@ -753,8 +786,9 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
   if (last_survey_check_time.has_value()) {
     base::TimeDelta elapsed_time_since_last_check =
         base::Time::Now() - *last_survey_check_time;
-    if (elapsed_time_since_last_check < kMinimumTimeBetweenSurveyChecks)
+    if (elapsed_time_since_last_check < kMinimumTimeBetweenSurveyChecks) {
       return false;
+    }
   }
 
   return true;
@@ -818,8 +852,9 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
-  if (!CanShowSurvey(trigger))
+  if (!CanShowSurvey(trigger)) {
     return false;
+  }
 
   auto probability = survey_configs_by_triggers_.at(trigger).probability;
   bool should_show_survey = base::RandDouble() < probability;

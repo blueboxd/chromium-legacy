@@ -4,8 +4,8 @@
 
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 
-#include "base/bind.h"
 #include "base/clang_profiling_buildflags.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
@@ -139,9 +139,6 @@ class BrowserDevToolsAgentHost::BrowserAutoAttacher final
         static_cast<WebContentsImpl*>(host->GetWebContents());
     if (!web_contents)
       return false;
-    // TODO(https://crbug.com/1264031): With MPArch a WebContents might have
-    // multiple FrameTrees. Make sure this code really just needs the
-    // primary one.
     FrameTreeNode* frame_tree_node = web_contents->GetPrimaryFrameTree().root();
     if (!frame_tree_node)
       return false;
@@ -200,7 +197,8 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->CreateAndAddHandler<protocol::SecurityHandler>();
   session->CreateAndAddHandler<protocol::StorageHandler>(
       session->GetClient()->IsTrusted());
-  session->CreateAndAddHandler<protocol::SystemInfoHandler>();
+  session->CreateAndAddHandler<protocol::SystemInfoHandler>(
+      /* is_browser_sessoin= */ true);
   if (tethering_task_runner_) {
     session->CreateAndAddHandler<protocol::TetheringHandler>(
         socket_callback_, tethering_task_runner_);

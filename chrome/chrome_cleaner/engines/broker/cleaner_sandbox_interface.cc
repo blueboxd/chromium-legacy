@@ -4,15 +4,16 @@
 
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 
+#include <ntstatus.h>
 #include <windows.h>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/chrome_utils/chrome_util.h"
@@ -27,7 +28,6 @@
 #include "chrome/chrome_cleaner/os/process.h"
 #include "chrome/chrome_cleaner/os/system_util_cleaner.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
-#include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/win_utils.h"
 
 // This typedef is not included in sandbox/'s nt_internals.h.

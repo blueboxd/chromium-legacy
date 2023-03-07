@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -51,8 +51,9 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
 
   // Adds a `capabilities` for `identity`. Requires the identity to have been
   // added to the available identites first.
-  void SetCapabilities(id<SystemIdentity> identity,
-                       NSDictionary<NSString*, NSNumber*>* capabilities);
+  void SetCapabilities(
+      id<SystemIdentity> identity,
+      const std::map<std::string, CapabilityResult>& capabilities);
 
   // Simulates reloading the identities from the keychain.
   void FireSystemIdentityReloaded();
@@ -76,6 +77,7 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
       HandleMDMNotificationCallback callback);
 
   // SystemIdentityManager implementation.
+  bool IsSigninSupported() final;
   bool HandleSessionOpenURLContexts(
       UIScene* scene,
       NSSet<UIOpenURLContext*>* url_contexts) final;

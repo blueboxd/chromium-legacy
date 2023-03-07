@@ -140,10 +140,6 @@ class ASH_EXPORT AppListFolderView : public views::View,
   // to be in the parent view's coordinate system.
   void SetBoundingBox(const gfx::Rect& bounding_box);
 
-  // Updates the highlight border of the folder view according to the folder
-  // animation.
-  void UpdateHighlightBorder(bool show);
-
   // Sets the callback that runs when the folder animation ends.
   void SetAnimationDoneTestCallback(base::OnceClosure animation_done_callback);
 
@@ -151,7 +147,7 @@ class ASH_EXPORT AppListFolderView : public views::View,
 
   FolderHeaderView* folder_header_view() { return folder_header_view_; }
 
-  views::View* background_view() { return background_view_; }
+  views::View* animating_background() { return animating_background_; }
 
   views::View* contents_container() { return contents_container_; }
 
@@ -188,6 +184,7 @@ class ASH_EXPORT AppListFolderView : public views::View,
       bool events_forwarded_to_drag_drop_host,
       bool cancel_drag,
       std::unique_ptr<AppDragIconProxy> drag_icon_proxy) override;
+  void Close() override;
   bool IsDragPointOutsideOfFolder(const gfx::Point& drag_point) override;
   bool IsOEMFolder() const override;
   void HandleKeyboardReparent(AppListItemView* reparented_view,
@@ -236,7 +233,8 @@ class ASH_EXPORT AppListFolderView : public views::View,
   AppListA11yAnnouncer* const a11y_announcer_;
 
   // The view is used to draw a background with corner radius.
-  views::View* background_view_;  // Owned by views hierarchy.
+  views::View* background_view_;
+  views::View* animating_background_;
 
   // The view is used as a container for all following views.
   views::View* contents_container_;  // Owned by views hierarchy.

@@ -92,10 +92,10 @@ ShoppingListHandler::ShoppingListHandler(
       pref_service_(prefs),
       tracker_(tracker),
       locale_(locale) {
-  if (base::FeatureList::IsEnabled(kShoppingList)) {
-    scoped_observation_.Observe(bookmark_model);
-    shopping_service_->ScheduleSavedProductUpdate();
-  }
+  // It is safe to schedule updates and observe bookmarks. If the feature is
+  // disabled, no new information will be fetched or provided to the frontend.
+  scoped_observation_.Observe(bookmark_model);
+  shopping_service_->ScheduleSavedProductUpdate();
 }
 
 ShoppingListHandler::~ShoppingListHandler() = default;
@@ -116,6 +116,21 @@ void ShoppingListHandler::GetAllPriceTrackedBookmarkProductInfo(
     // Record usage for price tracking promo.
     tracker_->NotifyEvent("price_tracking_side_panel_shown");
   }
+
+  std::move(callback).Run(std::move(info_list));
+}
+
+void ShoppingListHandler::GetAllShoppingBookmarkProductInfo(
+    GetAllShoppingBookmarkProductInfoCallback callback) {
+  if (!shopping_service_->IsShoppingListEligible()) {
+    std::move(callback).Run({});
+    return;
+  }
+  std::vector<const bookmarks::BookmarkNode*> bookmarks =
+      GetAllShoppingBookmarks(bookmark_model_);
+
+  std::vector<BookmarkProductInfoPtr> info_list =
+      BookmarkListToMojoList(*bookmark_model_, bookmarks, locale_);
 
   std::move(callback).Run(std::move(info_list));
 }

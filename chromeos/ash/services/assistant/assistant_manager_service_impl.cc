@@ -14,10 +14,10 @@
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,6 +25,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chromeos/ash/services/assistant/device_settings_host.h"
@@ -345,12 +346,6 @@ void AssistantManagerServiceImpl::StopActiveInteraction(
 void AssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {
   conversation_controller().StartEditReminderInteraction(client_id);
-}
-
-void AssistantManagerServiceImpl::StartScreenContextInteraction(
-    const std::vector<uint8_t>& assistant_screenshot) {
-  conversation_controller().StartScreenContextInteraction(nullptr,
-                                                          assistant_screenshot);
 }
 
 void AssistantManagerServiceImpl::StartTextInteraction(
@@ -716,11 +711,6 @@ void AssistantManagerServiceImpl::SendAssistantFeedback(
 AssistantNotificationController*
 AssistantManagerServiceImpl::assistant_notification_controller() {
   return context_->assistant_notification_controller();
-}
-
-AssistantScreenContextController*
-AssistantManagerServiceImpl::assistant_screen_context_controller() {
-  return context_->assistant_screen_context_controller();
 }
 
 AssistantStateBase* AssistantManagerServiceImpl::assistant_state() {

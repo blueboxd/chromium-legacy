@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Neuspeli UDP zahtevi</translation>
 <translation id="1947737735496445907">Odštampano</translation>
 <translation id="1951012854035635156">Pomoćnik</translation>
+<translation id="1962550982027027473">Podrazumevani naziv pristupne tačke je obavezan</translation>
 <translation id="1977994649430373166">Slika Google profila</translation>
 <translation id="1979103255016296513">Rok za promenu lozinke je istekao</translation>
 <translation id="1999615961760456652">Ulazni portal</translation>
@@ -317,6 +318,7 @@
 <translation id="4060260348856573701">Novi naziv pristupne tačke</translation>
 <translation id="4093865285251893588">Slika profila</translation>
 <translation id="409427325554347132">Sačuvaj detalje testa</translation>
+<translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">Izaberite album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB tačped</translation>
 <translation id="4117637339509843559">Tamni režim</translation>
@@ -635,6 +637,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6791471867139427246">boja osvetljenja tastature</translation>
 <translation id="680983167891198932">Ključ</translation>
 <translation id="6816797338148849397">Dostupne su informacije vezane za vaš izbor. Koristite taster sa strelicom nagore da biste im pristupili.</translation>
+<translation id="6838167112108853532">Ne možete da onemogućite ni uklonite ovaj naziv pristupne tačke. Uverite se da su omogućeni priloženi nazivi pristupnih tačaka onemogućeni ili uklonjeni.</translation>
 <translation id="6853312040151791195">Brzina pražnjenja</translation>
 <translation id="6889786074662672253">Ne isključujte spoljni uređaj ni računar tokom restartovanja. Možete da umanjite ovaj prozor. Ovo može da potraje nekoliko minuta, a spoljni uređaj možda neće raditi tokom tog perioda.</translation>
 <translation id="6905724422583748843">Vratite se na stranicu <ph name="PAGE_NAME" /></translation>
@@ -717,6 +720,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="7690294790491645610">Potvrdite novu lozinku</translation>
 <translation id="7701040980221191251">Ništa</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7716280709122323042">WPA3</translation>
 <translation id="773153675489693198">Broj ciklusa</translation>
 <translation id="7747039790905080783">Tajni ključ</translation>
 <translation id="7762130827864645708">Lozinka je promenjena. Od sada koristite novu lozinku.</translation>
@@ -724,6 +728,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="7769672763586021400">ID modela</translation>
 <translation id="7778717409420828014">Povratne informacije nam pomažu da poboljšamo doživljaj Chromebook-a i pregledaće ih naš tim. Zbog velikog broja izveštaja ne možemo da šaljemo odgovore.</translation>
 <translation id="7784116172884276937">Nije podešen nijedan DNS server</translation>
+<translation id="7791543448312431591">Dodaj</translation>
 <translation id="779591286616261875">Pošalji novi izveštaj</translation>
 <translation id="7799817062559422778">Svetli režim</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
@@ -799,6 +804,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="8503836310948963452">Još samo par minuta…</translation>
 <translation id="8508640263392900755">Detalji naziva pristupne tačke</translation>
 <translation id="8528615187455571738">Crosvm</translation>
+<translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Mobilni operater može da zatraži ovu opciju radi povezivanja na mrežu. Obratite se mobilnom operateru za detalje.</translation>
 <translation id="8576249514688522074">Nije pokrenuto</translation>
 <translation id="8620617069779373398">Status rominga</translation>

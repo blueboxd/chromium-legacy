@@ -26,10 +26,12 @@
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/registration_type.mojom-forward.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
+#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
@@ -72,6 +74,7 @@ namespace content {
 class AttributionDataHostManager;
 class AttributionObserver;
 class AttributionTrigger;
+class TriggerAttestation;
 
 enum class RateLimitResult : int;
 
@@ -107,15 +110,14 @@ class MockAttributionHost : public AttributionHost {
       void,
       RegisterDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       blink::mojom::AttributionRegistrationType),
+       attribution_reporting::mojom::RegistrationType),
       (override));
 
   MOCK_METHOD(
       void,
       RegisterNavigationDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       const blink::AttributionSrcToken& attribution_src_token,
-       blink::mojom::AttributionNavigationType),
+       const blink::AttributionSrcToken& attribution_src_token),
       (override));
 
  private:
@@ -152,7 +154,9 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
       attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
-      attribution_reporting::TriggerRegistration) override;
+      attribution_reporting::TriggerRegistration,
+      absl::optional<attribution_reporting::TriggerAttestation> attestation)
+      override;
 
   size_t min_source_data_count_ = 0;
   std::vector<attribution_reporting::SourceRegistration> source_data_;
@@ -284,8 +288,21 @@ class MockAttributionManager : public AttributionManager {
   MOCK_METHOD(void,
               NotifyFailedSourceRegistration,
               (const std::string& header_value,
+               const attribution_reporting::SuitableOrigin& source_origin,
                const attribution_reporting::SuitableOrigin& reporting_origin,
                attribution_reporting::mojom::SourceRegistrationError),
+              (override));
+
+  MOCK_METHOD(void,
+              GetAllDataKeys,
+              (base::OnceCallback<
+                  void(std::vector<AttributionManager::DataKey>)> callback),
+              (override));
+
+  MOCK_METHOD(void,
+              RemoveAttributionDataByDataKey,
+              (const AttributionManager::DataKey& data_key,
+               base::OnceClosure callback),
               (override));
 
   void AddObserver(AttributionObserver* observer) override;
@@ -307,6 +324,7 @@ class MockAttributionManager : public AttributionManager {
       absl::optional<uint64_t> cleared_debug_key = absl::nullopt);
   void NotifySourceRegistrationFailure(
       const std::string& header_value,
+      const attribution_reporting::SuitableOrigin& source_origin,
       const attribution_reporting::SuitableOrigin& reporting_origin,
       attribution_reporting::mojom::SourceRegistrationError);
   void NotifyDebugReportSent(const AttributionDebugReport&,
@@ -532,6 +550,9 @@ class TriggerBuilder {
   TriggerBuilder& SetAggregationCoordinator(
       ::aggregation_service::mojom::AggregationCoordinator);
 
+  TriggerBuilder& SetAttestation(
+      absl::optional<attribution_reporting::TriggerAttestation> attestation);
+
   AttributionTrigger Build(bool generate_event_trigger_data = true) const;
 
  private:
@@ -551,6 +572,7 @@ class TriggerBuilder {
   ::aggregation_service::mojom::AggregationCoordinator
       aggregation_coordinator_ =
           ::aggregation_service::mojom::AggregationCoordinator::kDefault;
+  absl::optional<attribution_reporting::TriggerAttestation> attestation_;
 };
 
 // Helper class to construct an `AttributionInfo` for tests using default data.
@@ -599,6 +621,9 @@ class ReportBuilder {
   ReportBuilder& SetAggregationCoordinator(
       ::aggregation_service::mojom::AggregationCoordinator);
 
+  ReportBuilder& SetAttestationToken(
+      absl::optional<std::string> attestation_token);
+
   AttributionReport Build() const;
 
   AttributionReport BuildAggregatableAttribution() const;
@@ -617,6 +642,7 @@ class ReportBuilder {
   ::aggregation_service::mojom::AggregationCoordinator
       aggregation_coordinator_ =
           ::aggregation_service::mojom::AggregationCoordinator::kDefault;
+  absl::optional<std::string> attestation_token_;
 };
 
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
@@ -981,6 +1007,9 @@ struct AttributionTriggerMatcherConfig {
       registration = ::testing::_;
   ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
       destination_origin = ::testing::_;
+  ::testing::Matcher<
+      const absl::optional<attribution_reporting::TriggerAttestation>&>
+      attestation = ::testing::_;
 
   ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
 

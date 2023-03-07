@@ -18,6 +18,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
@@ -254,7 +255,9 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
                                std::string encoded_alpha,
                                base::TimeTicks timestamp,
                                bool is_key_frame) {
-  DVLOG(2) << __func__ << " - " << encoded_data.size() << "B";
+  TRACE_EVENT2("media", __func__, "timestamp", timestamp - base::TimeTicks(),
+               "is_key_frame", is_key_frame);
+  DVLOG(2) << __func__ << " - " << encoded_data.size() << "B ts " << timestamp;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(params.codec == VideoCodec::kVP8 || params.codec == VideoCodec::kVP9 ||
          params.codec == VideoCodec::kH264 || params.codec == VideoCodec::kAV1)
@@ -303,7 +306,8 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
 bool WebmMuxer::OnEncodedAudio(const AudioParameters& params,
                                std::string encoded_data,
                                base::TimeTicks timestamp) {
-  DVLOG(2) << __func__ << " - " << encoded_data.size() << "B";
+  TRACE_EVENT1("media", __func__, "timestamp", timestamp - base::TimeTicks());
+  DVLOG(2) << __func__ << " - " << encoded_data.size() << "B ts " << timestamp;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   MaybeForceNewCluster();
@@ -520,6 +524,8 @@ bool WebmMuxer::FlushNextFrame() {
   }
 
   DCHECK(frame.data.data());
+  TRACE_EVENT2("media", __func__, "is_video", queue == &video_frames_,
+               "recorded_timestamp", recorded_timestamp);
   bool result =
       frame.alpha_data.empty()
           ? segment_.AddFrame(
@@ -561,6 +567,7 @@ void WebmMuxer::MaybeForceNewCluster() {
   // media timestamps
   if (base::TimeTicks::Now() - delegate_->last_data_output_timestamp() >=
       max_data_output_interval_) {
+    TRACE_EVENT0("media", "ForceNewClusterOnNextFrame");
     segment_.ForceNewClusterOnNextFrame();
   }
 }

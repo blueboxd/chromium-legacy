@@ -10,12 +10,13 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/containers/stack.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -299,7 +300,9 @@ class BASE_EXPORT RunLoop {
   // A cached reference of RunLoop::Delegate for the thread driven by this
   // RunLoop for quick access without using TLS (also allows access to state
   // from another sequence during Run(), ref. |sequence_checker_| below).
-  Delegate* const delegate_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union, #global-scope
+  RAW_PTR_EXCLUSION Delegate* const delegate_;
 
   const Type type_;
 
@@ -326,8 +329,8 @@ class BASE_EXPORT RunLoop {
   // not be accessed from any other sequence than the thread it was constructed
   // on. Exception: RunLoop can be safely accessed from one other sequence (or
   // single parallel task) during Run() -- e.g. to Quit() without having to
-  // plumb ThreatTaskRunnerHandle::Get() throughout a test to repost QuitClosure
-  // to origin thread.
+  // plumb SingleThreadTaskRunner::GetCurrentDefault() throughout a test to
+  // repost QuitClosure to origin thread.
   SEQUENCE_CHECKER(sequence_checker_);
 
   const scoped_refptr<SingleThreadTaskRunner> origin_task_runner_;

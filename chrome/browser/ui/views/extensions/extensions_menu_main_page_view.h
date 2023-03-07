@@ -5,19 +5,27 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_MAIN_PAGE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_MAIN_PAGE_VIEW_H_
 
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "ui/views/view.h"
+#include "base/memory/raw_ptr_exclusion.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_page_view.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace views {
 class Label;
+class ToggleButton;
 }
 
 class Browser;
 class ExtensionsMenuNavigationHandler;
+class ToolbarActionsModel;
+class InstalledExtensionMenuItemView;
+class ExtensionActionViewController;
 
 // The main view of the extensions menu.
-class ExtensionsMenuMainPageView : public views::View,
-                                   public TabStripModelObserver {
+class ExtensionsMenuMainPageView : public ExtensionsMenuPageView {
  public:
   explicit ExtensionsMenuMainPageView(
       Browser* browser,
@@ -27,30 +35,45 @@ class ExtensionsMenuMainPageView : public views::View,
   const ExtensionsMenuMainPageView& operator=(
       const ExtensionsMenuMainPageView&) = delete;
 
-  void Update();
+  // Creates and adds a menu item for `action_controller` at `index` for a
+  // newly-added extension.
+  void CreateAndInsertMenuItem(
+      std::unique_ptr<ExtensionActionViewController> action_controller,
+      bool allow_pinning,
+      int index);
 
-  // TabStripModelObserver:
-  // Sometimes, menu can stay open when tab changes (e.g keyboard shortcuts) or
-  // due to the extension (e.g extension switching the active tab). Thus, we
-  // listen for tab changes to properly update the menu content.
-  void TabChangedAt(content::WebContents* contents,
-                    int index,
-                    TabChangeType change_type) override;
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
+  void OnToggleButtonPressed();
+
+  // ExtensionsMenuPageView:
+  void Update(content::WebContents* web_contents) override;
+
+  // Accessors used by tests:
+  // Returns the currently-showing menu items.
+  std::vector<InstalledExtensionMenuItemView*> GetMenuItemsForTesting() const;
 
  private:
   content::WebContents* GetActiveWebContents() const;
 
-  raw_ptr<Browser> browser_;
-  raw_ptr<ExtensionsMenuNavigationHandler> navigation_handler_;
+  const raw_ptr<Browser> browser_;
+  const raw_ptr<ExtensionsMenuNavigationHandler> navigation_handler_;
+  const raw_ptr<ToolbarActionsModel> toolbar_model_;
 
+  // Subheader section.
   raw_ptr<views::Label> subheader_subtitle_;
+  raw_ptr<views::ToggleButton> site_settings_toggle_;
+
+  // Menu items section.
+  // The view containing the menu items. This is separated for easy insertion
+  // and iteration of menu items. The children are guaranteed to only be
+  // InstalledExtensionMenuItemViews.
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION views::View* menu_items_ = nullptr;
 };
 
-BEGIN_VIEW_BUILDER(/* no export */, ExtensionsMenuMainPageView, views::View)
+BEGIN_VIEW_BUILDER(/* no export */,
+                   ExtensionsMenuMainPageView,
+                   ExtensionsMenuPageView)
 END_VIEW_BUILDER
 
 DEFINE_VIEW_BUILDER(/* no export */, ExtensionsMenuMainPageView)

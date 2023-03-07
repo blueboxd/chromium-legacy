@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -97,7 +97,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void VerifyOwnerForKiosk(base::OnceClosure on_success) override;
   void ShowPasswordChangedDialog(const AccountId& account_id,
                                  bool show_password_error) override;
-  void StartCryptohomeRecovery(const AccountId& account_id) override;
+  void StartCryptohomeRecovery(
+      std::unique_ptr<UserContext> user_context) override;
   void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;

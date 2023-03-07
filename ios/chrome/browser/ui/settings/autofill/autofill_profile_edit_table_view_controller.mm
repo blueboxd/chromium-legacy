@@ -119,11 +119,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
             autofill::AutofillType(serverFieldType),
             base::SysNSStringToUTF16(item.textFieldValue),
             GetApplicationContext()->GetApplicationLocale(),
-            autofill::structured_address::VerificationStatus::kUserVerified);
+            autofill::VerificationStatus::kUserVerified);
       } else {
         _autofillProfile.SetRawInfoWithVerificationStatus(
             serverFieldType, base::SysNSStringToUTF16(item.textFieldValue),
-            autofill::structured_address::VerificationStatus::kUserVerified);
+            autofill::VerificationStatus::kUserVerified);
       }
     }
 
@@ -155,7 +155,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     AutofillEditItem* item =
         [[AutofillEditItem alloc] initWithType:ItemTypeField];
-    item.textFieldName = l10n_util::GetNSString(field.displayStringID);
+    item.fieldNameLabelText = l10n_util::GetNSString(field.displayStringID);
     item.textFieldValue = base::SysUTF16ToNSString(_autofillProfile.GetInfo(
         autofill::AutofillType(field.autofillType), locale));
     item.autofillUIType = AutofillUITypeFromAutofillType(field.autofillType);

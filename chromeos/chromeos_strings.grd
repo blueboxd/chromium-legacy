@@ -322,11 +322,6 @@
       </message>
 
       <if expr="chromeos_ash">
-        <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
-          I can't find anything on your screen I can help with.
-Try tapping the mic to ask me anything.
-        </message>
-
         <!-- The following strings are located here for accessibility from both //ash and //chrome -->
         <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
           Turn on Bluetooth to discover nearby devices
@@ -1871,6 +1866,15 @@ Try tapping the mic to ask me anything.
         <message name="IDS_ONC_TETHER_CARRIER_UNKNOWN" desc="Settings > Internet > Text displayed in the settings UI in place of a cellular provider when the actual name of the provider is unknown. In this context, the cellular provider refers to the carrier which provides mobile data service to another device which can start a tether hotspot to provide a data connection to the current device.">
           Unknown carrier
         </message>
+        <message name="IDS_ONC_HOTSPOT_WIFI_SECURITY_WPA2" desc="In settings > Network > Hotspot > Configure, a string specifying hotspot Wi-Fi security type = WPA2.">
+          WPA2
+        </message>
+        <message name="IDS_ONC_HOTSPOT_WIFI_SECURITY_WPA3" desc="In settings > Network > Hotspot > Configure, a string specifying hotspot Wi-Fi security type = WPA3.">
+          WPA3
+        </message>
+        <message name="IDS_ONC_HOTSPOT_WIFI_SECURITY_WPA2WPA3" desc="In settings > Network > Hotspot > Configure, a string specifying hotspot Wi-Fi security type = WPA2+WPA3.">
+          WPA2WPA3
+        </message>
 
         <!-- Network Health display strings -->
         <message name="IDS_NETWORK_HEALTH_STATE" desc="Label for the current state of a networking device.">
@@ -2346,6 +2350,12 @@ Try tapping the mic to ask me anything.
 
         <message name="IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL" desc="Label for the Screen saver page in Personalization app.">
           Screen saver
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_SCREENSAVER_PREVIEW_BUTTON" desc="Label for the button to preview screen saver.">
+          Preview
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_SCREENSAVER_PREVIEW_DOWNLOADING" desc="Label for the button while screen saver preview is loading.">
+          Downloading image
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_PAGE_DESCRIPTION" desc="Description for the ambient mode settings page.">
           When your screen is idle, show photos, time, weather, and media info.
@@ -3526,6 +3536,12 @@ Try tapping the mic to ask me anything.
         <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_OFFLINE_ALT_TEXT" desc="The alt text for the illustration shown when the suggested help content is unavailable because the user is offline.">
           Device is offline
         </message>
+        <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_NOT_AVAILABLE_MESSAGE" desc="The text shown when the suggested help content is unavailable because the search service is down or the search server is blocked.">
+          Help content isn't available.
+        </message>
+        <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_NOT_AVAILABLE_ALT_TEXT" desc="The alt text for the illustration shown when the suggested help content is unavailable because the search service is down or the search server is blocked.">
+          Help content isn't available
+        </message>
         <message name="IDS_FEEDBACK_TOOL_HELP_CONTENT_LABEL_TOOLTIP" desc="The tooltip text shown next to the suggested help content label.">
           Suggestions are based on your description
         </message>
@@ -3663,6 +3679,36 @@ Try tapping the mic to ask me anything.
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEYBOARD_SETTINGS" desc="Label for link to open keyboard settings in the Settings app." translateable="false">
           Keyboard settings
         </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ADD_SHORTCUT" desc="Button label to add a new shortcut for a specific action" translateable="false">
+          Add shortcut
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_RESTORE_DEFAULTS" desc="Button label to restore a specific action to its default shortcuts" translateable="false">
+          Restore defaults
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_DIALOG_DONE" desc="Used to close edit shortcuts modal dialog" translateable="false">
+          Done
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_CANCEL" desc="Used to cancel action in various modals" translateable="false">
+          Cancel
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_VIEW_STATUS_MESSAGE" desc="Instructions to user when they're inputting a new shortcut" translateable="false">
+          Press 1-4 modifiers and 1 other key on your keyboard
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_RESET_ALL_SHORTCUTS" desc="Button label to reset all shortcuts in the app to their default values" translateable="false">
+          Reset all shortcuts
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_CONFIRM_RESET_ALL_SHORTCUTS_TITLE" desc="Title of the modal shown when user clicks button to reset all shortcuts" translateable="false">
+          Reset all shortcuts to defaults?
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_CONFIRM_RESET_SHORTCUTS_BUTTON" desc="Button label for action that confirms resetting all shortcuts to their default values" translateable="false">
+          Reset
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_LOCKED_SHORTCUT_STATUS_MESSAGE" desc="The status message that displays when user clicks button to override a locked accelerator" translateable="false">
+          Shortcut is used by <ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>. Press a new shortcut to replace.
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_SHORTCUT_WITH_CONFILICT_STATUS_MESSAGE" desc="The status message that displays when user clicks button to override an accelerator" translateable="false">
+          Shortcut is used by <ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>. Press a new shortcut or press the same one again to use it for this action instead.
+        </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_TABS_AND_WINDOWS" desc="Category named 'Tabs and Windows' shown on the navigation sidebar" translateable="false">Tabs &#38; Windows</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_PAGE_AND_WEB_BROWSER" desc="Category named 'Page and Web Browser' shown on the navigation sidebar" translateable="false">Page &#38; Web Browser</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_SYSTEM_AND_DISPLAY_SETTINGS" desc="Category named 'System and Display Settings' shown on the navigation sidebar" translateable="false">System &#38; Display Settings</message>
@@ -3670,14 +3716,94 @@ Try tapping the mic to ask me anything.
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_ACCESSIBILITY" desc="Category named 'Accessibility' shown on the navigation sidebar" translateable="false">Accessibility</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEBUG" desc="Category named 'Debug' shown on the navigation sidebar" translateable="false">Debug</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEVELOPER" desc="Category named 'Developer' shown on the navigation sidebar" translateable="false">Developer</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_EVENT_REWRITER" desc="Category named 'Special Keys' shown on the navigation sidebar" translateable="false">Special Keys</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_GENERAL" desc="Subcategory named 'General' shown within main shortcuts section" translateable="false">General</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_APPS" desc="Subcategory named 'System Apps' shown within main shortcuts section" translateable="false">System Apps</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_CONTROLS" desc="Subcategory named 'System Controls' shown within main shortcuts section" translateable="false">System Controls</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SIX_PACK" desc="Subcategory named 'Six Pack' shown within main shortcuts section" translateable="false">Six Pack</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_SPACE" desc="Lowercase name of the keyboard key 'Space'" translateable="false">space</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_TAB" desc="Lowercase name of the keyboard key 'Tab'" translateable="false">tab</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_ESCAPE" desc="Lowercase name of the keyboard key 'Escape', abbreviated if possible" translateable="false">esc</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_RETURN" desc="Lowercase name of the keyboard key 'Enter'" translateable="false">enter</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_BACKSPACE" desc="Lowercase name of the keyboard key 'Backspace'" translateable="false">backspace</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow down'." translateable="false">
+          arrow down
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_LEFT" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow left'." translateable="false">
+          arrow left
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_RIGHT" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow right'." translateable="false">
+          arrow right
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow up'." translateable="false">
+          arrow up
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'volume down'." translateable="false">
+          volume down
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_MUTE" desc="The text read aloud by the screen reader describing the keyboard icon 'volume mute'." translateable="false">
+          volume mute
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'volume up'." translateable="false">
+          volume up
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'brightness down'." translateable="false">
+          brightness down
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'brightness up'." translateable="false">
+          brightness up
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_BACK" desc="The text read aloud by the screen reader describing the keyboard icon 'back'." translateable="false">
+          back
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'forward'." translateable="false">
+          forward
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_REFRESH" desc="The text read aloud by the screen reader describing the keyboard icon 'refresh'." translateable="false">
+          refresh
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BACKLIGHT_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle keyboard backlight'." translateable="false">
+          toggle keyboard backlight
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'keyboard brightness up'." translateable="false">
+          keyboard brightness up
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'keyboard brightness down'." translateable="false">
+          keyboard brightness down
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION1" desc="The text read aloud by the screen reader describing the keyboard icon 'overview'." translateable="false">
+          overview
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT" desc="The text read aloud by the screen reader describing the keyboard icon 'assistant'." translateable="false">
+          assistant
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'play pause'." translateable="false">
+          play pause
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_NEXT" desc="The text read aloud by the screen reader describing the keyboard icon 'next track'." translateable="false">
+          next track
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_PREVIOUS" desc="The text read aloud by the screen reader describing the keyboard icon 'previous track'." translateable="false">
+          previous track
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MICROPHONE_MUTE_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle microphone mute'." translateable="false">
+          toggle microphone mute
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_LAUNCHER" desc="The text read aloud by the screen reader describing the keyboard icon 'launcher'." translateable="false">
+          launcher
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_POWER" desc="The text read aloud by the screen reader describing the keyboard icon 'power'." translateable="false">
+          power
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRINT_SCREEN" desc="The text read aloud by the screen reader describing the keyboard icon 'screenshot'." translateable="false">
+          screenshot
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRIVACY_SCREEN_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle privacy screen'." translateable="false">
+          toggle privacy screen
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ZOOM_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'full screen'." translateable="false">
+          full screen
+        </message>
         <!-- End of Shortcut Customization -->
 
         <!-- APN -->
@@ -3741,10 +3867,10 @@ Try tapping the mic to ask me anything.
         <message name="IDS_SETTINGS_APN_DIALOG_IP_TYPE_LABEL" desc="Title of the section with the IP type dropdown">
           IP type
         </message>
-        <message name="IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4" desc="Name of the IPv4 IP type dropdown select item ">
+        <message name="IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4" desc="Name of the IPv4 IP type dropdown select item">
           IPv4
         </message>
-        <message name="IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV6" desc="Name of the IPv6 IP type dropdown select item ">
+        <message name="IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV6" desc="Name of the IPv6 IP type dropdown select item">
           IPv6
         </message>
         <message name="IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4_IPV6" desc="Name of the IPv4/IPv6 IP type dropdown select item ">
@@ -3756,11 +3882,29 @@ Try tapping the mic to ask me anything.
         <message name="IDS_SETTINGS_APN_DIALOG_APN_TYPE_DEFAULT_CHECKBOX" desc="Label for checkbox that specifies that the default APN type will be used">
           Default
         </message>
-        <message name="IDS_SETTINGS_APN_DIALOG_APN_TYPE_ATTACH_CHECKBOX" desc="Label for checkbox that specifies that the attach APN  type will be used">
+        <message name="IDS_SETTINGS_APN_DIALOG_APN_TYPE_ATTACH_CHECKBOX" desc="Label for checkbox that specifies that the attach APN type will be used">
           Attach
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_DEFAULT_APN_REQUIRED" desc="Error message that is shown whenever a default APN type is required">
+          A default APN is required
         </message>
         <message name="IDS_SETTINGS_APN_AUTO_DETECTED" desc="Statement that the APN is automatically detected">
           Automatically detected
+        </message>
+        <message name="IDS_SETTINGS_APN_WARNING_PROMPT_FOR_DISABLE_REMOVE" desc="Warning Prompt describing why the APN can't be disabled or removed.">
+          Can't disable or remove this APN. Make sure enabled attached APNs are disabled or removed.
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_ADD" desc="Text used for adding a new APN.">
+          Add
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_SAVE" desc="Text used to save a modified APN.">
+          Save
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_CANCEL" desc="Text used to cancel the APN dialog.">
+          Cancel
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_DONE" desc="Text used to close the APN dialog in view mode.">
+          Done
         </message>
         <!-- End of APN -->
       </if>

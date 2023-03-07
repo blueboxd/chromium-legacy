@@ -10,9 +10,9 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +39,40 @@ namespace {
 bool MatchTypeAndContentsAreEqual(const AutocompleteMatch& lhs,
                                   const AutocompleteMatch& rhs) {
   return lhs.contents == rhs.contents && lhs.type == rhs.type;
+}
+
+std::u16string GetMatchContentsForOnDeviceTailSuggestion(
+    const std::u16string& input_text,
+    const std::u16string& sanitized_suggestion) {
+  std::u16string sanitized_input;
+
+  base::TrimWhitespace(input_text, base::TRIM_TRAILING, &sanitized_input);
+  sanitized_input = AutocompleteMatch::SanitizeString(sanitized_input);
+
+  if (!base::StartsWith(sanitized_suggestion, sanitized_input,
+                        base::CompareCase::SENSITIVE)) {
+    return sanitized_suggestion;
+  }
+
+  // If there is no space inside the suggestion, show the entire suggestion in
+  // UI. Otherwise replace the completed prefix of the suggestion with tail UI
+  // symbols e.g. "...".
+  // Examples (input/suggestion -> result):
+  // 1. [googl]/[google] -> [google]
+  // 2. [google]/[google map] -> [google map]
+  // 3. [google ma]/[google map login] -> [...map login]
+  // 4. [google map ]/[google map login] -> [...map login]
+  size_t suggestion_last_space_index =
+      sanitized_suggestion.find_last_of(base::kWhitespaceUTF16);
+  size_t input_last_space_index =
+      sanitized_input.find_last_of(base::kWhitespaceUTF16);
+  if (suggestion_last_space_index == std::u16string::npos ||
+      input_last_space_index == std::u16string::npos) {
+    return sanitized_suggestion;
+  }
+  size_t start_index = input_last_space_index + 1;
+
+  return sanitized_suggestion.substr(start_index);
 }
 
 }  // namespace
@@ -148,11 +182,7 @@ void SuggestionDeletionHandler::OnURLLoadComplete(
 
 BaseSearchProvider::BaseSearchProvider(AutocompleteProvider::Type type,
                                        AutocompleteProviderClient* client)
-    : AutocompleteProvider(type),
-      client_(client),
-      field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false) {
-}
+    : AutocompleteProvider(type), client_(client) {}
 
 // static
 bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
@@ -180,9 +210,9 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (!template_url)
     return match;
   match.keyword = template_url->keyword();
-  match.image_dominant_color = suggestion.image_dominant_color();
-  match.image_url = suggestion.image_url();
-  match.entity_id = suggestion.entity_id();
+  match.image_dominant_color = suggestion.entity_info().dominant_color();
+  match.image_url = GURL(suggestion.entity_info().image_url());
+  match.entity_id = suggestion.entity_info().entity_id();
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
   match.suggestion_group_id = suggestion.suggestion_group_id();
@@ -244,7 +274,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.search_terms_args->original_query = original_query;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->additional_query_params =
-      suggestion.additional_query_params();
+      suggestion.entity_info().suggest_search_parameters();
   match.search_terms_args->append_extra_query_params_from_command_line =
       append_extra_query_params_from_command_line;
   // Must be set for deduplication and navigation. AutocompleteController will
@@ -288,12 +318,36 @@ AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
     int relevance,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
-    int accepted_suggestion) {
+    int accepted_suggestion,
+    bool is_tail_suggestion) {
+  AutocompleteMatchType::Type match_type;
+  std::u16string match_contents, match_contents_prefix;
+
+  if (is_tail_suggestion) {
+    match_type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
+    std::u16string sanitized_suggestion =
+        AutocompleteMatch::SanitizeString(suggestion);
+    match_contents = GetMatchContentsForOnDeviceTailSuggestion(
+        input.text(), sanitized_suggestion);
+
+    DCHECK_GE(sanitized_suggestion.size(), match_contents.size());
+    match_contents_prefix = sanitized_suggestion.substr(
+        0, sanitized_suggestion.size() - match_contents.size());
+  } else {
+    match_type = AutocompleteMatchType::SEARCH_SUGGEST;
+    match_contents = suggestion;
+  }
+
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, AutocompleteMatchType::SEARCH_SUGGEST,
-      /*subtypes=*/{omnibox::SUBTYPE_SUGGEST_2G_LITE},
+      suggestion, match_type, /*subtypes=*/{omnibox::SUBTYPE_SUGGEST_2G_LITE},
+      match_contents, match_contents_prefix,
+      /*annotation=*/std::u16string(),
+      /*entity_info=*/omnibox::EntityInfo(),
+      /*deletion_url=*/"",
       /*from_keyword=*/false, relevance,
       /*relevance_from_server=*/false,
+      /*should_prefetch=*/false,
+      /*should_prerender=*/false,
       base::CollapseWhitespace(input.text(), false));
   // On device providers are asynchronous.
   suggest_result.set_received_after_last_keystroke(true);
@@ -436,16 +490,6 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
   new_entry.set_provider(AsOmniboxEventProviderType());
   new_entry.set_provider_done(done_);
-  std::vector<uint32_t> field_trial_hashes;
-  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
-  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
-    if (field_trial_triggered_)
-      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
-    if (field_trial_triggered_in_session_) {
-      new_entry.mutable_field_trial_triggered_in_session()->Add(
-          field_trial_hashes[i]);
-    }
-  }
 }
 
 // static

@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
@@ -284,18 +285,18 @@ ImageProcessorFactory::CreateWithInputCandidates(
     if (processor)
       return processor;
   }
-  if (base::FeatureList::IsEnabled(media::kPreferLibYuvImageProcessor)) {
+
     auto processor = CreateLibYUVImageProcessorWithInputCandidates(
         input_candidates, input_visible_rect, output_size, client_task_runner,
         out_format_picker, error_cb);
     if (processor)
       return processor;
-  }
-  auto processor = CreateV4L2ImageProcessorWithInputCandidates(
-      input_candidates, input_visible_rect, num_buffers, client_task_runner,
-      out_format_picker, error_cb);
-  if (processor)
-    return processor;
+
+    processor = CreateV4L2ImageProcessorWithInputCandidates(
+        input_candidates, input_visible_rect, num_buffers, client_task_runner,
+        out_format_picker, error_cb);
+    if (processor)
+      return processor;
 
 #endif
 
@@ -305,5 +306,35 @@ ImageProcessorFactory::CreateWithInputCandidates(
   // protected content).
   return nullptr;
 }
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+std::unique_ptr<ImageProcessor>
+ImageProcessorFactory::CreateLibYUVImageProcessorWithInputCandidatesForTesting(
+    const std::vector<ImageProcessor::PixelLayoutCandidate>& input_candidates,
+    const gfx::Rect& input_visible_rect,
+    const gfx::Size& output_size,
+    size_t num_buffers,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+    PickFormatCB out_format_picker,
+    ImageProcessor::ErrorCB error_cb) {
+  return CreateLibYUVImageProcessorWithInputCandidates(
+      input_candidates, input_visible_rect, output_size, client_task_runner,
+      out_format_picker, error_cb);
+}
+
+std::unique_ptr<ImageProcessor>
+ImageProcessorFactory::CreateGLImageProcessorWithInputCandidatesForTesting(
+    const std::vector<ImageProcessor::PixelLayoutCandidate>& input_candidates,
+    const gfx::Rect& input_visible_rect,
+    const gfx::Size& output_size,
+    size_t num_buffers,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+    PickFormatCB out_format_picker,
+    ImageProcessor::ErrorCB error_cb) {
+  return CreateGLImageProcessorWithInputCandidates(
+      input_candidates, input_visible_rect, output_size, client_task_runner,
+      out_format_picker, error_cb);
+}
+#endif
 
 }  // namespace media

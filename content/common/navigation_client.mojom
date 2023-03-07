@@ -112,6 +112,12 @@ struct DidCommitProvisionalLoadParams {
   // RenderFrameProxies.
   url.mojom.Origin origin;
 
+  // Base url of the document. This value is only used for
+  // CreateNavigationRequestForSynchronousRendererCommit.
+  // TODO(https://crbug.com/1215096): If synchronous about:blank commits are
+  // removed, then this will no longer be needed.
+  url.mojom.Url initiator_base_url;
+
   // Information about how `origin` was calculated, to help debug if it differs
   // from the origin calculated on the browser side.
   // TODO(https://crbug.com/1220238): Remove this.
@@ -228,6 +234,10 @@ interface NavigationClient {
   // enabled. The pointer is used to start a prefetch loading via the browser
   // process.
   //
+  // |topics_loader_factory| is used to proxy topics handling
+  // (https://github.com/patcg-individual-drafts/topics) via the browser
+  // process.
+  //
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
   // token is then sent into the renderer and lands on the DocumentLoader. That
@@ -255,6 +265,7 @@ interface NavigationClient {
       blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
       blink.mojom.ServiceWorkerContainerInfoForClient? container_info,
       pending_remote<network.mojom.URLLoaderFactory>? prefetch_loader_factory,
+      pending_remote<network.mojom.URLLoaderFactory>? topics_loader_factory,
       blink.mojom.DocumentToken document_token,
       mojo_base.mojom.UnguessableToken devtools_navigation_token,
       array<blink.mojom.ParsedPermissionsPolicyDeclaration>? permissions_policy,

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
@@ -139,7 +139,7 @@ SoftwareOutputDeviceWinProxy::~SoftwareOutputDeviceWinProxy() = default;
 
 void SoftwareOutputDeviceWinProxy::OnSwapBuffers(
     SwapBuffersCallback swap_ack_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   DCHECK(swap_ack_callback_.is_null());
 
   // We aren't waiting on DrawAck() and can immediately run the callback.

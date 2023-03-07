@@ -129,6 +129,7 @@ using UkmFormEventType = ukm::builders::Autofill_FormEvent;
 using UkmEditedAutofilledFieldAtSubmission =
     ukm::builders::Autofill_EditedAutofilledFieldAtSubmission;
 using UkmAutofillKeyMetricsType = ukm::builders::Autofill_KeyMetrics;
+using UkmFieldInfoType = ukm::builders::Autofill_FieldInfo;
 
 struct ExpectedUkmMetricsPair : public std::pair<const char*, int64_t> {
   using std::pair<const char*, int64_t>::pair;
@@ -745,6 +746,81 @@ TEST_P(AutofillPerfectFillingMetricsTest,
       BucketsAre(test_case.credit_card_buckets));
 }
 
+struct SuggestionOriginPerfectFillingTestCase {
+  std::string description;
+  std::vector<Field> fields;
+  bool expected_metric_value;
+};
+
+class SuggestionOriginPerfectFillingMetricsTest
+    : public AutofillMetricsTest,
+      public ::testing::WithParamInterface<
+          SuggestionOriginPerfectFillingTestCase> {
+ public:
+  std::vector<test::FieldDescription> GetFields(std::vector<Field> fields) {
+    std::vector<test::FieldDescription> fields_to_return;
+    for (const auto& field : fields) {
+      test::FieldDescription f;
+      if (field.value) {
+        f.value = field.value;
+      } else if (field.field_type == CREDIT_CARD_NAME_FULL) {
+        f.value = u"Elvis Aaron Presley";
+      } else if (field.field_type == CREDIT_CARD_NUMBER) {
+        f.value = u"01230123012399";
+      } else {
+        NOTREACHED();
+      }
+      f.role = field.field_type;
+      f.is_autofilled = field.is_autofilled;
+      fields_to_return.push_back(f);
+    }
+    return fields_to_return;
+  }
+};
+
+TEST_P(SuggestionOriginPerfectFillingMetricsTest,
+       PerfectFilling_TouchToFill_CreditCards) {
+  SuggestionOriginPerfectFillingTestCase test_case = GetParam();
+  std::vector<Field> fields{{CREDIT_CARD_NAME_FULL}, {CREDIT_CARD_NUMBER}};
+  FormData form =
+      test::GetFormData({.description_for_logging = test_case.description,
+                         .fields = GetFields(test_case.fields),
+                         .unique_renderer_id = test::MakeFormRendererId(),
+                         .main_frame_origin = url::Origin::Create(
+                             autofill_client_->form_origin())});
+
+  std::vector<ServerFieldType> field_types;
+  for (const auto& f : test_case.fields) {
+    field_types.push_back(f.field_type);
+  }
+
+  autofill_manager().AddSeenForm(form, field_types);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager().SetSuggestionOriginMetricState(
+      AutofillSuggestionMethod::KTouchToFillCreditCard);
+  SubmitForm(form);
+  EXPECT_EQ(histogram_tester.GetBucketCount(
+                "Autofill.TouchToFill.CreditCard.PerfectFilling",
+                test_case.expected_metric_value),
+            1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AutofillMetricsTest,
+    SuggestionOriginPerfectFillingMetricsTest,
+    testing::Values(
+        // Test that we log the perfect filling metric correctly for an address
+        // form in which every field is autofilled.
+        SuggestionOriginPerfectFillingTestCase{
+            "PerfectFillingForCreditCardForm_AutofilledFromTTF",
+            {{CREDIT_CARD_NAME_FULL}, {CREDIT_CARD_NUMBER}},
+            true},
+        SuggestionOriginPerfectFillingTestCase{
+            "PerfectFillingForCreditCardForm_NotAllAutofilledFromTTF",
+            {{CREDIT_CARD_NAME_FULL}, {CREDIT_CARD_NUMBER, false}},
+            false}));
+
 // Test the emission of collisions between NUMERIC_QUANTITY and server
 // predictions as well as the potential false positives.
 TEST_F(AutofillMetricsTest, NumericQuantityCollision) {
@@ -756,7 +832,7 @@ TEST_F(AutofillMetricsTest, NumericQuantityCollision) {
 
   // Set up our form data.
   test::FormDescription form_description = {
-      .description_for_logging = "AutofilledStateFieldSource",
+      .description_for_logging = "NumericQuantityCollision",
       .fields = {{.server_type = NO_SERVER_DATA,
                   .heuristic_type = NUMERIC_QUANTITY,
                   .is_autofilled = false},
@@ -927,7 +1003,8 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
 
 // Test that the ProfileImportStatus logs a no import.
 TEST_F(AutofillMetricsTest, ProfileImportStatus_NoImport) {
-  // Set up our form data.
+  // Set up our form data. Since a ZIP code is required for US profiles, this
+  // import fails.
   FormData form = GetAndAddSeenForm(
       {.description_for_logging = "ProfileImportStatus_NoImport",
        .fields = {
@@ -936,8 +1013,7 @@ TEST_F(AutofillMetricsTest, ProfileImportStatus_NoImport) {
            {.role = ADDRESS_HOME_CITY, .value = u"New York"},
            {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
            {.role = ADDRESS_HOME_STATE, .value = u"Invalid State"},
-           {.role = ADDRESS_HOME_ZIP, .value = u"00000000000000000"},
-           {.role = ADDRESS_HOME_COUNTRY, .value = u"NoACountry"}}});
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
 
   FillTestProfile(form);
 
@@ -6969,71 +7045,62 @@ TEST_F(AutofillMetricsTest, DaysSinceLastUse_Profile) {
 TEST_F(AutofillMetricsTest, LogVerificationStatusesOfNameTokens) {
   base::HistogramTester histogram_tester;
   AutofillProfile profile;
-  profile.SetRawInfoWithVerificationStatus(
-      NAME_FULL, u"First Last",
-      structured_address::VerificationStatus::kObserved);
-  profile.SetRawInfoWithVerificationStatus(
-      NAME_FIRST, u"First", structured_address::VerificationStatus::kParsed);
-  profile.SetRawInfoWithVerificationStatus(
-      NAME_LAST, u"Last", structured_address::VerificationStatus::kParsed);
-  profile.SetRawInfoWithVerificationStatus(
-      NAME_LAST_SECOND, u"Last",
-      structured_address::VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(NAME_FULL, u"First Last",
+                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(NAME_FIRST, u"First",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(NAME_LAST, u"Last",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(NAME_LAST_SECOND, u"Last",
+                                           VerificationStatus::kParsed);
 
   AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(profile);
 
   std::string base_histo =
       "Autofill.NameTokenVerificationStatusAtProfileUsage.";
 
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "Full", structured_address::VerificationStatus::kObserved,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "First", structured_address::VerificationStatus::kParsed, 1);
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "Last", structured_address::VerificationStatus::kParsed, 1);
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "SecondLast",
-      structured_address::VerificationStatus::kParsed, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "Full",
+                                      VerificationStatus::kObserved, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "First",
+                                      VerificationStatus::kParsed, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "Last",
+                                      VerificationStatus::kParsed, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "SecondLast",
+                                      VerificationStatus::kParsed, 1);
 
   histogram_tester.ExpectTotalCount(base_histo + "Middle", 0);
   histogram_tester.ExpectTotalCount(base_histo + "FirstLast", 0);
 
   histogram_tester.ExpectTotalCount(base_histo + "Any", 4);
-  histogram_tester.ExpectBucketCount(
-      base_histo + "Any", structured_address::VerificationStatus::kObserved, 1);
-  histogram_tester.ExpectBucketCount(
-      base_histo + "Any", structured_address::VerificationStatus::kParsed, 3);
+  histogram_tester.ExpectBucketCount(base_histo + "Any",
+                                     VerificationStatus::kObserved, 1);
+  histogram_tester.ExpectBucketCount(base_histo + "Any",
+                                     VerificationStatus::kParsed, 3);
 }
 
 // Test that we log the verification status of address tokens..
 TEST_F(AutofillMetricsTest, LogVerificationStatusesOfAddressTokens) {
   base::HistogramTester histogram_tester;
   AutofillProfile profile;
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_ADDRESS,
+                                           u"123 StreetName",
+                                           VerificationStatus::kFormatted);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER, u"123",
+                                           VerificationStatus::kObserved);
   profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_STREET_ADDRESS, u"123 StreetName",
-      structured_address::VerificationStatus::kFormatted);
-  profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_HOUSE_NUMBER, u"123",
-      structured_address::VerificationStatus::kObserved);
-  profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_STREET_NAME, u"StreetName",
-      structured_address::VerificationStatus::kObserved);
+      ADDRESS_HOME_STREET_NAME, u"StreetName", VerificationStatus::kObserved);
 
   AutofillMetrics::LogVerificationStatusOfAddressTokensOnProfileUsage(profile);
 
   std::string base_histo =
       "Autofill.AddressTokenVerificationStatusAtProfileUsage.";
 
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "StreetAddress",
-      structured_address::VerificationStatus::kFormatted, 1);
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "StreetName",
-      structured_address::VerificationStatus::kObserved, 1);
-  histogram_tester.ExpectUniqueSample(
-      base_histo + "HouseNumber",
-      structured_address::VerificationStatus::kObserved, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "StreetAddress",
+                                      VerificationStatus::kFormatted, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "StreetName",
+                                      VerificationStatus::kObserved, 1);
+  histogram_tester.ExpectUniqueSample(base_histo + "HouseNumber",
+                                      VerificationStatus::kObserved, 1);
 
   histogram_tester.ExpectTotalCount(base_histo + "FloorNumber", 0);
   histogram_tester.ExpectTotalCount(base_histo + "ApartmentNumber", 0);
@@ -7041,11 +7108,10 @@ TEST_F(AutofillMetricsTest, LogVerificationStatusesOfAddressTokens) {
   histogram_tester.ExpectTotalCount(base_histo + "SubPremise", 0);
 
   histogram_tester.ExpectTotalCount(base_histo + "Any", 3);
-  histogram_tester.ExpectBucketCount(
-      base_histo + "Any", structured_address::VerificationStatus::kFormatted,
-      1);
-  histogram_tester.ExpectBucketCount(
-      base_histo + "Any", structured_address::VerificationStatus::kObserved, 2);
+  histogram_tester.ExpectBucketCount(base_histo + "Any",
+                                     VerificationStatus::kFormatted, 1);
+  histogram_tester.ExpectBucketCount(base_histo + "Any",
+                                     VerificationStatus::kObserved, 2);
 }
 
 // Verify that we correctly log the submitted form's state.
@@ -9335,64 +9401,6 @@ TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_IndexCap) {
       /*expected_count=*/1);
 }
 
-TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_CreditCard) {
-  const int index = 2;
-  const PopupType popup_type = PopupType::kCreditCards;
-
-  base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type,
-                                                      /*off_the_record=*/false);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SuggestionAcceptedIndex.CreditCard", index, 1);
-
-  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(
-      histograms,
-      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.Other"),
-                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
-}
-
-TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Profile) {
-  const int index = 1;
-  const PopupType popup_type1 = PopupType::kPersonalInformation;
-  const PopupType popup_type2 = PopupType::kAddresses;
-
-  base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
-                                                      /*off_the_record=*/false);
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
-                                                      /*off_the_record=*/false);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SuggestionAcceptedIndex.Profile", index, 2);
-
-  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(
-      histograms,
-      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
-                HasSubstr("Autofill.SuggestionAcceptedIndex.Other"))));
-}
-
-TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Other) {
-  const int index = 0;
-  const PopupType popup_type1 = PopupType::kUnspecified;
-  const PopupType popup_type2 = PopupType::kPasswords;
-
-  base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
-                                                      /*off_the_record=*/false);
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
-                                                      /*off_the_record=*/false);
-
-  histogram_tester.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex.Other",
-                                      index, 2);
-
-  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(
-      histograms,
-      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
-                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
-}
-
 TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {
   base::HistogramTester histogram_tester;
   AutofillMetrics::OnAutocompleteSuggestionsShown();
@@ -9961,43 +9969,6 @@ TEST_F(AutofillMetricsTest, PageLanguageMetricsInvalidLanguage) {
       "Autofill.ParsedFieldTypesWasPageTranslated", true, 1);
 }
 
-// Validate that the source of the autofilled state field is logged on form
-// submission.
-TEST_F(AutofillMetricsTest, AutofilledStateFieldSource) {
-  RecreateProfile(false);
-  // Set up our form data.
-  FormData form = test::GetFormData(
-      {.description_for_logging = "AutofilledStateFieldSource",
-       .fields = {{.role = NAME_FULL},
-                  {.role = ADDRESS_HOME_LINE1},
-                  {.role = ADDRESS_HOME_CITY},
-                  {.role = PHONE_HOME_NUMBER},
-                  {.role = ADDRESS_HOME_STATE,
-                   .value = u"TN",
-                   .form_control_type = "select-one",
-                   .is_autofilled = true,
-                   .select_options = {{u"TN", u"TN"}, {u"CA", u"CA"}}},
-                  {.role = ADDRESS_HOME_ZIP},
-                  {.role = ADDRESS_HOME_COUNTRY}}});
-
-  std::vector<ServerFieldType> field_types = {
-      NAME_FULL,           ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_CITY,   PHONE_HOME_CITY_AND_NUMBER,
-      ADDRESS_HOME_STATE,  ADDRESS_HOME_ZIP,
-      ADDRESS_HOME_COUNTRY};
-
-  autofill_manager().AddSeenForm(form, field_types);
-
-  base::HistogramTester histogram_tester;
-  SubmitForm(form);
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.AutofilledFieldAtSubmission.ByStateSelectionField",
-      AutofillMetrics::AutofilledSourceMetricForStateSelectionField::
-          AUTOFILL_BY_VALUE,
-      1);
-}
-
 // Tests the following 4 cases when |kAutofillPreventOverridingPrefilledValues|
 // is enabled:
 // 1. The field is not autofilled since it has an initial value but the value
@@ -10025,7 +9996,8 @@ TEST_F(AutofillMetricsTest,
   RecreateProfile(false);
 
   FormData form = test::GetFormData(
-      {.description_for_logging = "AutofilledStateFieldSource",
+      {.description_for_logging =
+           "IsValueNotAutofilledOverExistingValueSameAsSubmittedValue",
        .fields = {
            {.role = NAME_FULL},
            {.role = ADDRESS_HOME_CITY,
@@ -10150,8 +10122,7 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
     credit_card_with_cvc_ = {
         .credit_card = *autofill_manager()
                             .personal_data_manager_for_test()
-                            .GetCreditCardsToSuggest(
-                                autofill_client_->AreServerCardsSupported())
+                            .GetCreditCardsToSuggest()
                             .front(),
         .cvc = u"123"};
 
@@ -10496,6 +10467,199 @@ TEST_F(AutofillMetricsSeamlessnessTest,
            {UkmBuilder::kFormSignatureName,
             *Collapse(CalculateFormSignature(form_))},
        }});
+}
+
+// Test the field log events at the form submission.
+class AutofillMetricsFromLogEventsTest : public AutofillMetricsTest {
+ protected:
+  AutofillMetricsFromLogEventsTest() {
+    scoped_features_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillLogUKMEventsWithSampleRate,
+                              features::kAutofillParsingPatternProvider},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+// Test if we record FieldInfo UKM metrics correctly after we fill and submit an
+// address form.
+TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
+  // Create a profile.
+  RecreateProfile(/*is_server=*/false);
+  FormData form = CreateForm({CreateField("State", "state", "", "text"),
+                              CreateField("Street", "street", "", "text")});
+
+  std::vector<ServerFieldType> field_types = {ADDRESS_HOME_STATE,
+                                              ADDRESS_HOME_STREET_ADDRESS};
+
+  autofill_manager().AddSeenForm(form, field_types);
+
+  {
+    autofill_manager().OnAskForValuesToFillTest(form, form.fields[0]);
+    SubmitForm(form);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager().Reset();
+  auto entries =
+      test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
+  ASSERT_EQ(0u, entries.size());
+
+  PurgeUKM();
+  autofill_manager().AddSeenForm(form, field_types);
+
+  {
+    // Simulating submission with filled local data.
+    autofill_manager().OnAskForValuesToFillTest(
+        form, form.fields[0], gfx::RectF(), AutoselectFirstSuggestion(false),
+        FormElementWasClicked(true));
+    FillTestProfile(form);
+
+    // Simulate text input in the first fields.
+    SimulateUserChangedTextField(form, form.fields[0]);
+    SubmitForm(form);
+
+    // Record Autofill.FieldInfo UKM event at autofill manager reset.
+    autofill_manager().Reset();
+
+    entries =
+        test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
+    ASSERT_EQ(2u, entries.size());
+
+    for (size_t i = 0; i < entries.size(); ++i) {
+      SCOPED_TRACE(testing::Message() << i);
+      using UFIT = UkmFieldInfoType;
+      const auto* const entry = entries[i];
+
+      std::map<std::string, int64_t> expected = {
+          {UFIT::kFormSessionIdentifierName,
+           AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
+          {UFIT::kFieldSessionIdentifierName,
+           AutofillMetrics::FieldGlobalIdToHash64Bit(
+               form.fields[i].global_id())},
+          {UFIT::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields[i])).value()},
+          {UFIT::kWasFocusedName, i == 0},
+          {UFIT::kIsFocusableName, true},
+          {UFIT::kWasAutofilledName, true},
+          {UFIT::kAutofillSkippedStatusName,
+           DenseSet<SkipStatus>{SkipStatus::kNotSkipped}.to_uint64()},
+          {UFIT::kWasRefillName, false},
+          {UFIT::kHadValueBeforeFillingName, false},
+          {UFIT::kHadTypedOrFilledValueAtSubmissionName, true},
+      };
+      if (i == 0) {
+        expected[UFIT::kSuggestionWasAvailableName] = true;
+        expected[UFIT::kSuggestionWasShownName] = true;
+        expected[UFIT::kSuggestionWasAcceptedName] = true;
+        expected[UFIT::kUserTypedIntoFieldName] = true;
+        expected[UFIT::kFilledValueWasModifiedName] = true;
+      }
+
+      EXPECT_EQ(expected.size(), entry->metrics.size());
+      for (const auto& [metric, value] : expected) {
+        test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
+      }
+    }
+  }
+}
+
+// Test if we have recorded UKM metrics correctly about field types after
+// parsing the form by the local heuristic prediction.
+TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetrics_FieldType) {
+  FormData form = CreateForm(
+      {// Heuristic value will match with Autocomplete attribute.
+       CreateField("Last Name", "lastname", "", "text", "family-name"),
+       // Heuristic value will NOT match with Autocomplete attribute.
+       CreateField("First Name", "firstname", "", "text", "additional-name"),
+       // No autocomplete attribute.
+       CreateField("Address", "address", "", "text", ""),
+       // Heuristic value will be unknown.
+       CreateField("Garbage label", "garbage", "", "text", "postal-code")});
+
+  auto form_structure = std::make_unique<FormStructure>(form);
+  FormStructure* form_structure_ptr = form_structure.get();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  ASSERT_TRUE(
+      autofill_manager()
+          .mutable_form_structures_for_test()
+          ->emplace(form_structure_ptr->global_id(), std::move(form_structure))
+          .second);
+
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  // Server response will match with autocomplete.
+  AddFieldPredictionToForm(form.fields[0], NAME_LAST, form_suggestion);
+  // Server response will NOT match with autocomplete.
+  AddFieldPredictionToForm(form.fields[1], NAME_FIRST, form_suggestion);
+  // Not logged.
+  AddFieldPredictionToForm(form.fields[2], NAME_MIDDLE, form_suggestion);
+  // Server response will have no data.
+  AddFieldPredictionToForm(form.fields[3], NO_SERVER_DATA, form_suggestion);
+
+  std::string response_string = SerializeAndEncode(response);
+  autofill_manager().OnLoadedServerPredictionsForTest(
+      response_string, test::GetEncodedSignatures(*form_structure_ptr));
+
+  SubmitForm(form);
+  // Record Autofill.FieldInfo UKM event at autofill manager reset.
+  autofill_manager().Reset();
+
+  auto entries =
+      test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
+  ASSERT_EQ(4u, entries.size());
+  // The heuristic type of each field. The local heuristic prediction does not
+  // predict the type for the fourth field.
+  std::vector<ServerFieldType> heuristic_types{
+      NAME_LAST, NAME_FIRST, ADDRESS_HOME_LINE1, UNKNOWN_TYPE};
+  // Field types as per the autocomplete attribute in the input.
+  std::vector<HtmlFieldType> html_field_types{
+      HtmlFieldType::kFamilyName, HtmlFieldType::kAdditionalName,
+      HtmlFieldType::kUnrecognized, HtmlFieldType::kPostalCode};
+
+  for (size_t i = 0; i < entries.size(); ++i) {
+    SCOPED_TRACE(testing::Message() << i);
+    using UFIT = UkmFieldInfoType;
+    const auto* const entry = entries[i];
+    std::map<std::string, int64_t> expected = {
+        {UFIT::kFormSessionIdentifierName,
+         AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
+        {UFIT::kFieldSessionIdentifierName,
+         AutofillMetrics::FieldGlobalIdToHash64Bit(form.fields[i].global_id())},
+        {UFIT::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[i])).value()},
+        {UFIT::kIsFocusableName, true},
+        {UFIT::kRankInFieldSignatureGroupName, 1},
+        {UFIT::kWasFocusedName, false},
+    };
+    if (heuristic_types[i] != UNKNOWN_TYPE) {
+      expected.merge(std::map<std::string, int64_t>({
+          {UFIT::kHeuristicTypeName, heuristic_types[i]},
+          {UFIT::kHeuristicTypeLegacyName, heuristic_types[i]},
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
+          {UFIT::kHeuristicTypeDefaultName, heuristic_types[i]},
+          {UFIT::kHeuristicTypeExperimentalName, heuristic_types[i]},
+          {UFIT::kHeuristicTypeNextGenName, heuristic_types[i]},
+#else
+          {UFIT::kHeuristicTypeDefaultName, UNKNOWN_TYPE},
+          {UFIT::kHeuristicTypeExperimentalName, UNKNOWN_TYPE},
+          {UFIT::kHeuristicTypeNextGenName, UNKNOWN_TYPE},
+#endif
+      }));
+    }
+    if (html_field_types[i] != HtmlFieldType::kUnrecognized) {
+      expected.merge(std::map<std::string, int64_t>({
+          {UFIT::kHtmlFieldTypeName, static_cast<int>(html_field_types[i])},
+          {UFIT::kHtmlFieldModeName, static_cast<int>(HtmlFieldMode::kNone)},
+      }));
+    }
+    EXPECT_EQ(expected.size(), entry->metrics.size());
+    for (const auto& [metric, value] : expected) {
+      test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
+    }
+  }
 }
 
 // TODO(crbug.com/1352826) Delete this after collecting the metrics.

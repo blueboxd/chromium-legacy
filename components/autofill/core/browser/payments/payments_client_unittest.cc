@@ -7,20 +7,20 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
+#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -204,7 +204,7 @@ class PaymentsClientTest : public testing::Test {
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const std::u16string& context_token,
-      std::unique_ptr<base::Value> legal_message,
+      std::unique_ptr<base::Value::Dict> legal_message,
       std::vector<std::pair<int, int>> supported_card_bin_ranges) {
     result_ = result;
     legal_message_ = std::move(legal_message);
@@ -274,8 +274,7 @@ class PaymentsClientTest : public testing::Test {
 
     request_details.risk_data = "some risk data";
     if (options.use_fido) {
-      request_details.fido_assertion_info =
-          base::Value(base::Value::Type::DICTIONARY);
+      request_details.fido_assertion_info = base::Value::Dict();
     }
     if (options.use_cvc)
       request_details.user_response.cvc = base::ASCIIToUTF16(options.cvc);
@@ -284,11 +283,9 @@ class PaymentsClientTest : public testing::Test {
       request_details.last_committed_primary_main_frame_origin =
           GURL("https://www.example.com");
       if (options.use_cvc) {
-        request_details.selected_challenge_option = CardUnmaskChallengeOption{
-            .id = "123",
-            .type = CardUnmaskChallengeOptionType::kCvc,
-            .challenge_input_length = 3,
-            .cvc_position = CvcPosition::kBackOfCard};
+        request_details.selected_challenge_option =
+            test::GetCardUnmaskChallengeOptions(
+                {CardUnmaskChallengeOptionType::kCvc})[0];
       }
     }
     if (options.set_context_token)
@@ -383,7 +380,8 @@ class PaymentsClientTest : public testing::Test {
 
     CardUnmaskChallengeOption selected_challenge_option;
     selected_challenge_option.type = challenge_type;
-    selected_challenge_option.id = challenge_id;
+    selected_challenge_option.id =
+        CardUnmaskChallengeOption::ChallengeOptionId(challenge_id);
     selected_challenge_option.challenge_info = u"(***)-***-5678";
     request_details.selected_challenge_option = selected_challenge_option;
 
@@ -483,7 +481,7 @@ class PaymentsClientTest : public testing::Test {
   raw_ptr<PaymentsClient::UnmaskResponseDetails> unmask_response_details_ =
       nullptr;
   // The legal message returned from a GetDetails upload save preflight call.
-  std::unique_ptr<base::Value> legal_message_;
+  std::unique_ptr<base::Value::Dict> legal_message_;
   // A list of card BIN ranges supported by Google Payments, returned from a
   // GetDetails upload save preflight call.
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
@@ -729,21 +727,21 @@ TEST_F(PaymentsClientTest, VirtualCardRiskBasedYellowPathResponse_CvcFlagOff) {
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
   EXPECT_EQ("fake_context_token", unmask_response_details_->context_token);
   // Verify the FIDO request challenge is correctly parsed.
-  EXPECT_EQ("fake_fido_challenge",
-            *unmask_response_details_->fido_request_options->FindStringKey(
-                "challenge"));
+  EXPECT_EQ(
+      "fake_fido_challenge",
+      *unmask_response_details_->fido_request_options->FindString("challenge"));
   // Verify the two idv challenge options are both sms challenge and fields can
   // be correctly parsed.
   ASSERT_EQ(2u, unmask_response_details_->card_unmask_challenge_options.size());
   const CardUnmaskChallengeOption& challenge_option_1 =
       unmask_response_details_->card_unmask_challenge_options[0];
   EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, challenge_option_1.type);
-  EXPECT_EQ("fake_challenge_id_1", challenge_option_1.id);
+  EXPECT_EQ("fake_challenge_id_1", challenge_option_1.id.value());
   EXPECT_EQ(u"(***)-***-1234", challenge_option_1.challenge_info);
   const CardUnmaskChallengeOption& challenge_option_2 =
       unmask_response_details_->card_unmask_challenge_options[1];
   EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, challenge_option_2.type);
-  EXPECT_EQ("fake_challenge_id_2", challenge_option_2.id);
+  EXPECT_EQ("fake_challenge_id_2", challenge_option_2.id.value());
   EXPECT_EQ(u"(***)-***-5678", challenge_option_2.challenge_info);
 }
 
@@ -769,26 +767,26 @@ TEST_F(PaymentsClientTest, VirtualCardRiskBasedYellowPathResponse_CvcFlagOn) {
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
   EXPECT_EQ("fake_context_token", unmask_response_details_->context_token);
   // Verify the FIDO request challenge is correctly parsed.
-  EXPECT_EQ("fake_fido_challenge",
-            *unmask_response_details_->fido_request_options->FindStringKey(
-                "challenge"));
+  EXPECT_EQ(
+      "fake_fido_challenge",
+      *unmask_response_details_->fido_request_options->FindString("challenge"));
   // Verify the three challenge options are two sms challenge options and one
   // cvc challenge option, and fields can be correctly parsed.
   ASSERT_EQ(3u, unmask_response_details_->card_unmask_challenge_options.size());
   const CardUnmaskChallengeOption& challenge_option_1 =
       unmask_response_details_->card_unmask_challenge_options[0];
   EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, challenge_option_1.type);
-  EXPECT_EQ("fake_challenge_id_1", challenge_option_1.id);
+  EXPECT_EQ("fake_challenge_id_1", challenge_option_1.id.value());
   EXPECT_EQ(u"(***)-***-1234", challenge_option_1.challenge_info);
   const CardUnmaskChallengeOption& challenge_option_2 =
       unmask_response_details_->card_unmask_challenge_options[1];
   EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, challenge_option_2.type);
-  EXPECT_EQ("fake_challenge_id_2", challenge_option_2.id);
+  EXPECT_EQ("fake_challenge_id_2", challenge_option_2.id.value());
   EXPECT_EQ(u"(***)-***-5678", challenge_option_2.challenge_info);
   const CardUnmaskChallengeOption& challenge_option_3 =
       unmask_response_details_->card_unmask_challenge_options[2];
   EXPECT_EQ(CardUnmaskChallengeOptionType::kCvc, challenge_option_3.type);
-  EXPECT_EQ("fake_challenge_id_3", challenge_option_3.id);
+  EXPECT_EQ("fake_challenge_id_3", challenge_option_3.id.value());
   EXPECT_EQ(challenge_option_3.challenge_info,
             u"This is the 3-digit code on the back of your card");
   EXPECT_EQ(3u, challenge_option_3.challenge_input_length);
@@ -825,9 +823,9 @@ TEST_F(PaymentsClientTest,
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
   EXPECT_EQ("fake_context_token", unmask_response_details_->context_token);
   // Verify the FIDO request challenge is correctly parsed.
-  EXPECT_EQ("fake_fido_challenge",
-            *unmask_response_details_->fido_request_options->FindStringKey(
-                "challenge"));
+  EXPECT_EQ(
+      "fake_fido_challenge",
+      *unmask_response_details_->fido_request_options->FindString("challenge"));
   // Verify that the unknow new challenge option type won't break the parsing.
   // We ignore the unknown new type, and only return the supported challenge
   // option.
@@ -835,7 +833,7 @@ TEST_F(PaymentsClientTest,
   const CardUnmaskChallengeOption& sms_challenge_option =
       unmask_response_details_->card_unmask_challenge_options[0];
   EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, sms_challenge_option.type);
-  EXPECT_EQ("fake_challenge_id_1", sms_challenge_option.id);
+  EXPECT_EQ("fake_challenge_id_1", sms_challenge_option.id.value());
   EXPECT_EQ(u"(***)-***-1234", sms_challenge_option.challenge_info);
 }
 
@@ -1128,7 +1126,7 @@ TEST_F(PaymentsClientTest, EnrollAttemptReturnsCreationOptions) {
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
   EXPECT_FALSE(opt_change_response_.user_is_opted_in.value());
   EXPECT_EQ("google.com",
-            *opt_change_response_.fido_creation_options->FindStringKey(
+            *opt_change_response_.fido_creation_options->FindString(
                 "relying_party_id"));
 }
 

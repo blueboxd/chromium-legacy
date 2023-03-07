@@ -8,10 +8,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/task/single_thread_task_runner.h"
+#include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -90,9 +91,9 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_RFC_V1;
     case quic::QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_999;
-    case quic::QUIC_VERSION_IETF_2_DRAFT_01:
+    case quic::QUIC_VERSION_IETF_2_DRAFT_08:
       DCHECK(quic_version.UsesTls());
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_1;
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_8;
   }
   NOTREACHED();
   return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
@@ -164,6 +165,7 @@ int QuicHttpStream::DoHandlePromise() {
 int QuicHttpStream::DoHandlePromiseComplete(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   DCHECK_GE(OK, rv);
+  DCHECK(request_info_);
   if (rv != OK) {
     // rendezvous has failed so proceed as with a non-push request.
     next_state_ = STATE_REQUEST_STREAM;
@@ -172,10 +174,12 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
 
   stream_ = quic_session()->ReleasePromisedStream();
 
-  spdy::SpdyPriority spdy_priority =
-      ConvertRequestPriorityToQuicPriority(priority_);
-  const spdy::SpdyStreamPrecedence precedence(spdy_priority);
-  stream_->SetPriority(precedence);
+  uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority_);
+  bool incremental = quic::QuicStreamPriority::kDefaultIncremental;
+  if (base::FeatureList::IsEnabled(features::kPriorityIncremental)) {
+    incremental = request_info_->priority_incremental;
+  }
+  stream_->SetPriority(quic::QuicStreamPriority{urgency, incremental});
 
   next_state_ = STATE_OPEN;
   NetLogQuicPushStream(stream_net_log_, quic_session()->net_log(),
@@ -381,8 +385,12 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
     is_first_stream = stream_->IsFirstStream();
     load_timing_info->first_early_hints_time =
         stream_->first_early_hints_time();
-    load_timing_info->receive_headers_start =
+    load_timing_info->receive_non_informational_headers_start =
         stream_->headers_received_start_time();
+    load_timing_info->receive_headers_start =
+        load_timing_info->first_early_hints_time.is_null()
+            ? load_timing_info->receive_non_informational_headers_start
+            : load_timing_info->first_early_hints_time;
   }
 
   if (is_first_stream) {
@@ -586,21 +594,31 @@ int QuicHttpStream::DoSetRequestPriority() {
   // Set priority according to request
   DCHECK(stream_);
   DCHECK(response_info_);
+  DCHECK(request_info_);
 
-  spdy::SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
-  spdy::SpdyStreamPrecedence precedence(priority);
-  stream_->SetPriority(precedence);
+  uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority_);
+  bool incremental = quic::QuicStreamPriority::kDefaultIncremental;
+  if (base::FeatureList::IsEnabled(features::kPriorityIncremental)) {
+    incremental = request_info_->priority_incremental;
+  }
+  stream_->SetPriority(quic::QuicStreamPriority{urgency, incremental});
   next_state_ = STATE_SEND_HEADERS;
   return OK;
 }
 
 int QuicHttpStream::DoSendHeaders() {
+  uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority_);
+  bool incremental = quic::QuicStreamPriority::kDefaultIncremental;
+  if (base::FeatureList::IsEnabled(features::kPriorityIncremental)) {
+    incremental = request_info_->priority_incremental;
+  }
+  quic::QuicStreamPriority priority{urgency, incremental};
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
       [&](NetLogCaptureMode capture_mode) {
         return QuicRequestNetLogParams(stream_->id(), &request_headers_,
-                                       priority_, capture_mode);
+                                       priority, capture_mode);
       });
   DispatchRequestHeadersCallback(request_headers_);
   bool has_upload_data = request_body_stream_ != nullptr;

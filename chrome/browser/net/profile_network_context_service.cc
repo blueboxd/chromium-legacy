@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -201,7 +201,7 @@ void UpdateCookieSettings(Profile* profile) {
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
       ContentSettingsType::COOKIES, &settings);
-  profile->ForEachStoragePartition(base::BindRepeating(
+  profile->ForEachLoadedStoragePartition(base::BindRepeating(
       [](ContentSettingsForOneType settings,
          content::StoragePartition* storage_partition) {
         storage_partition->GetCookieManagerForBrowserProcess()
@@ -214,7 +214,7 @@ void UpdateLegacyCookieSettings(Profile* profile) {
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
       ContentSettingsType::LEGACY_COOKIE_ACCESS, &settings);
-  profile->ForEachStoragePartition(base::BindRepeating(
+  profile->ForEachLoadedStoragePartition(base::BindRepeating(
       [](ContentSettingsForOneType settings,
          content::StoragePartition* storage_partition) {
         storage_partition->GetCookieManagerForBrowserProcess()
@@ -229,11 +229,31 @@ void UpdateStorageAccessSettings(Profile* profile) {
     HostContentSettingsMapFactory::GetForProfile(profile)
         ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS, &settings);
 
-    profile->ForEachStoragePartition(base::BindRepeating(
+    profile->ForEachLoadedStoragePartition(base::BindRepeating(
         [](ContentSettingsForOneType settings,
            content::StoragePartition* storage_partition) {
           storage_partition->GetCookieManagerForBrowserProcess()
               ->SetStorageAccessGrantSettings(settings, base::DoNothing());
+        },
+        settings));
+  }
+}
+
+void UpdateTopLevelStorageAccessSettings(Profile* profile) {
+  // TODO(crbug.com/1385156): Switch to an independent feature flag.
+  if (base::FeatureList::IsEnabled(net::features::kStorageAccessAPI) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kStorageAccessAPIForOriginExtension)) {
+    ContentSettingsForOneType settings;
+    HostContentSettingsMapFactory::GetForProfile(profile)
+        ->GetSettingsForOneType(ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+                                &settings);
+
+    profile->ForEachLoadedStoragePartition(base::BindRepeating(
+        [](ContentSettingsForOneType settings,
+           content::StoragePartition* storage_partition) {
+          storage_partition->GetCookieManagerForBrowserProcess()
+              ->SetTopLevelStorageAccessSettings(settings, base::DoNothing());
         },
         settings));
   }
@@ -342,7 +362,7 @@ void ProfileNetworkContextService::UpdateAdditionalCertificates() {
       policy::PolicyCertServiceFactory::GetForProfile(profile_);
   if (!policy_cert_service)
     return;
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](const policy::PolicyCertService* policy_cert_service,
          content::StoragePartition* storage_partition) {
         auto additional_certificates = GetAdditionalCertificates(
@@ -389,7 +409,7 @@ void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
 }
 
 void ProfileNetworkContextService::UpdateAcceptLanguage() {
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](const std::string& accept_language,
          content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()->SetAcceptLanguage(
@@ -400,7 +420,7 @@ void ProfileNetworkContextService::UpdateAcceptLanguage() {
 
 void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
     bool block_third_party_cookies) {
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](bool block_third_party_cookies,
          content::StoragePartition* storage_partition) {
         storage_partition->GetCookieManagerForBrowserProcess()
@@ -420,7 +440,7 @@ void ProfileNetworkContextService::OnExtensionInstalled(
 
 void ProfileNetworkContextService::OnTrustTokenBlockingChanged(
     bool block_trust_tokens) {
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](bool block_trust_tokens,
          content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()->SetBlockTrustTokens(
@@ -453,7 +473,7 @@ std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
 }
 
 void ProfileNetworkContextService::UpdateReferrersEnabled() {
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](bool enable_referrers, content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()->SetEnableReferrers(
             enable_referrers);
@@ -464,7 +484,7 @@ void ProfileNetworkContextService::UpdateReferrersEnabled() {
 void ProfileNetworkContextService::UpdatePreconnect() {
   bool enable_preconnect =
       ChromeContentBrowserClient::ShouldPreconnect(profile_);
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](bool enable_preconnect, content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()->SetEnablePreconnect(
             enable_preconnect);
@@ -504,7 +524,7 @@ void ProfileNetworkContextService::UpdateCTPolicyForContexts(
 
 void ProfileNetworkContextService::UpdateCTPolicy() {
   std::vector<network::mojom::NetworkContext*> contexts;
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](std::vector<network::mojom::NetworkContext*>* contexts_ptr,
          content::StoragePartition* storage_partition) {
         contexts_ptr->push_back(storage_partition->GetNetworkContext());
@@ -532,7 +552,7 @@ void ProfileNetworkContextService::UpdateSplitAuthCacheByNetworkIsolationKey() {
   bool split_auth_cache_by_network_isolation_key =
       ShouldSplitAuthCacheByNetworkIsolationKey();
 
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](bool split_auth_cache_by_network_anonymization_key,
          content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()
@@ -547,7 +567,7 @@ void ProfileNetworkContextService::
   const bool value = profile_->GetPrefs()->GetBoolean(
       prefs::kCorsNonWildcardRequestHeadersSupport);
 
-  profile_->ForEachStoragePartition(base::BindRepeating(
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
       [](bool value, content::StoragePartition* storage_partition) {
         storage_partition->GetNetworkContext()
             ->SetCorsNonWildcardRequestHeadersSupport(value);
@@ -598,6 +618,18 @@ ProfileNetworkContextService::CreateCookieManagerParams(
         ContentSettingsType::STORAGE_ACCESS, &settings_for_storage_access);
   }
   out->settings_for_storage_access = std::move(settings_for_storage_access);
+
+  ContentSettingsForOneType settings_for_top_level_storage_access;
+  // TODO(crbug.com/1385156): Separate the two flags entirely.
+  if (base::FeatureList::IsEnabled(net::features::kStorageAccessAPI) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kStorageAccessAPIForOriginExtension)) {
+    host_content_settings_map->GetSettingsForOneType(
+        ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+        &settings_for_top_level_storage_access);
+  }
+  out->settings_for_top_level_storage_access =
+      std::move(settings_for_top_level_storage_access);
 
   out->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
@@ -932,12 +964,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   }
 #endif
 
-  if (domain_reliability::DomainReliabilityServiceFactory::
-          ShouldCreateService()) {
+  if (domain_reliability::ShouldCreateService()) {
     network_context_params->enable_domain_reliability = true;
     network_context_params->domain_reliability_upload_reporter =
-        domain_reliability::DomainReliabilityServiceFactory::
-            kUploadReporterString;
+        domain_reliability::kUploadReporterString;
     network_context_params->discard_domain_reliablity_uploads =
         g_discard_domain_reliability_uploads_for_testing
             ? *g_discard_domain_reliability_uploads_for_testing
@@ -1056,10 +1086,14 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     case ContentSettingsType::STORAGE_ACCESS:
       UpdateStorageAccessSettings(profile_);
       break;
+    case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
+      UpdateTopLevelStorageAccessSettings(profile_);
+      break;
     case ContentSettingsType::DEFAULT:
       UpdateCookieSettings(profile_);
       UpdateLegacyCookieSettings(profile_);
       UpdateStorageAccessSettings(profile_);
+      UpdateTopLevelStorageAccessSettings(profile_);
       break;
     default:
       return;

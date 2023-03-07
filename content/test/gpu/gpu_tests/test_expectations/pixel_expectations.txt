@@ -83,6 +83,7 @@
 [ android ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ android ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ android ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ android ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Skip ]
 [ chromeos ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 [ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 [ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
@@ -95,6 +96,7 @@
 [ chromeos ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ chromeos ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ chromeos ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Skip ]
 [ fuchsia ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 [ fuchsia ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 [ fuchsia ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
@@ -107,6 +109,7 @@
 [ fuchsia ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ fuchsia ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ fuchsia ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ fuchsia ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Skip ]
 
 # Skip tab switching tests on Android webview and Fuchsia since they don't have tabs
 [ android android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
@@ -236,7 +239,6 @@ crbug.com/1203317 [ mac ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
 # WebGPU pixel tests fail on Linux+SkiaRenderer+Vulkan
 crbug.com/1213657 [ linux renderer-skia-vulkan ] Pixel_WebGPU* [ Skip ]
 
-
 # WebGPU canvas capture hang on mac ASAN bot (also see crbug.com/1213170)
 crbug.com/1345767 [ mac asan ] Pixel_WebGPUCanvasOneCopyCapture [ Skip ]
 crbug.com/1345767 [ mac asan ] Pixel_WebGPUCanvasDisableOneCopyCapture* [ Skip ]
@@ -260,12 +262,8 @@ crbug.com/1353952 [ chromeos chromeos-board-kevin ] Pixel_WebGLContextRestored [
 
 crbug.com/624256 [ android ] Pixel_SolidColorBackground [ Failure ]
 
-# Failing on Nexus 5; haven't investigated why yet.
-
 crbug.com/1213674 [ mac amd-0x6821 passthrough ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
 crbug.com/1213674 [ mac nvidia passthrough ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
-
-# Fails on Nexus 5 - old hardware, won't fix.
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryOnFailure ]
@@ -288,21 +286,20 @@ crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 # Times out on Pixel 4s in webview.
 crbug.com/1176918 [ android android-pixel-4 android-webview-instrumentation renderer-skia-gl ] Pixel_Video_Context_Loss_VP9 [ Failure ]
 
-# HDR rendering with PQ color space appears to be broken on Windows RS2.
-# TODO(sunnyps): Revert this temporary suppression after ensuring pixel tests
-# always run on Windows RS3 or above.
-
-# Flakes on gpu-fyi-try-chromeos-kevin and fuchsia-x64, produces notably different image.
+# WebGL drawingBufferStorage does not work on Google Pixel devices, Samsung
+# devices or Lacros FYI x64 Release (Intel) yet.
+crbug.com/1230619 [ android android-pixel-2 ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ android android-pixel-4 ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ android android-pixel-6 angle-disabled no-passthrough ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ android android-SM-A135M ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ android android-SM-A235M ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ angle-disabled display-server-wayland intel linux no-passthrough ] Pixel_WebGLFloat [ Failure ]
 
 # Flakes on gpu-fyi-try-chromeos-amd64-generic, times out.
 crbug.com/1338173 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRoundedCorner [ Failure ]
 
-# Flaky hang.
-
 # Flaky on Fuchsia.
 crbug.com/1368748 [ fuchsia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
-
-# Still fails on Nexus 5 after all other Pixel_CanvasLowLatency* pass.
 
 # Fails on Fuchsia emulators
 crbug.com/1302427 [ fuchsia fuchsia-board-qemu-x64 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
@@ -311,7 +308,7 @@ crbug.com/1302427 [ fuchsia fuchsia-board-qemu-x64 ] Pixel_CanvasLowLatencyWebGL
 crbug.com/1268120 [ mac asan ] Pixel_WebGPUToDataURL [ Failure ]
 crbug.com/1268120 [ mac asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 
-crbug.com/1297636 [ mac ] Pixel_WebGPUImportUnaccelerated2DCanvas [ Failure ]
+crbug.com/1297636 [ mac mac-x86_64 ] Pixel_WebGPUImportUnaccelerated2DCanvas [ Failure ]
 
 # Pixel_WebGPUDisplayP3 socket timeout on Mac FYI Retina Release (NVIDIA)
 crbug.com/1392819 [ mac nvidia no-asan ] Pixel_WebGPUDisplayP3 [ Failure ]
@@ -321,18 +318,11 @@ crbug.com/1392819 [ mac nvidia no-asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 crbug.com/1268144 [ fuchsia fuchsia-board-sherlock renderer-skia-vulkan ] Pixel_BackgroundImage [ Skip ]
 crbug.com/1268144 [ fuchsia fuchsia-board-sherlock renderer-skia-vulkan ] Pixel_SolidColorBackground [ Skip ]
 
-# Pixel_Video_Media_Stream_Incompatible_Stride flakes with SkiaRenderer GL
-crbug.com/1213542 [ renderer-skia-gl linux nvidia-0x2184 passthrough ] Pixel_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
-
 # Flaky failures on Win10 AMD RX 5500 XT
 crbug.com/1288134 [ win10 amd-0x7340 renderer-skia-gl ] Pixel_DirectComposition_Video_VP9_YUY2 [ Failure ]
 
-# Pixel 4 Flaky Failures - Passthrough, WebView and Validating
-
-# Pixel 4 Flaky Failures - Passthrough and Validating on Chromium
-
 # Pixel 6 failures.
-crbug.com/1286915 [ android android-pixel-6 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
+crbug.com/1286915 [ android android-pixel-6 angle-disabled no-passthrough ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough android-chromium ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
 crbug.com/1289884 [ android android-pixel-6 renderer-skia-vulkan android-webview-instrumentation ] * [ Failure ]
 
@@ -346,49 +336,58 @@ crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pi
 # Vulkan Swiftshader WebGPU interop - flipped destination image
 crbug.com/1307787 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUCopyExternalImage* [ Failure ]
 
-# Vulkan Swiftshader WebGPU interop - missing destination image
-crbug.com/1307787 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrame [ Failure ]
-
-# Vulkan Swiftshader WebGPU interop - missing source and destination images
-crbug.com/1307787 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
-crbug.com/1307787 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameUnaccelerated [ Failure ]
-
 # Vulkan Swiftshader WebGPU interop - missing source image
 crbug.com/1307787 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 
 crbug.com/1345777 [ android ] Pixel_VideoStreamFromWebGLCanvas [ Skip ]
 
-# WebGPU interop fails on windows and mac with unaccelerated webcodec videoFrame -- pixel color diff
-crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
-crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+# WebGPU interop fails -- pixel color diff
+crbug.com/1395227 [ amd-0x679e mac-x86_64 monterey no-asan release ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ asan intel mac-x86_64 monterey release ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ mac-x86_64 mojave no-asan nvidia-0xfe9 release ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ amd-0x679e mac-x86_64 monterey no-asan release ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ asan intel mac-x86_64 monterey release ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrame [ Failure ]
-crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
-crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ amd-0x679e mac-x86_64 monterey no-asan release ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ asan intel mac-x86_64 monterey release ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ mac-x86_64 mojave no-asan nvidia-0xfe9 release ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ amd-0x7340 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
-crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrame [ Failure ]
-crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ amd-0x7340 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1395227 [ amd-0x7340 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 
 # Pixel_VideoStreamFromWebGL* tests sporadically fail on Linux FYI Release (NVIDIA) bot
-crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
+crbug.com/1348002 [ angle-opengl linux nvidia release ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
 
 crbug.com/1372144 [ android android-sm-a135m ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
 crbug.com/1372144 [ android android-sm-a135m ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 crbug.com/1372141 [ android android-sm-a235m ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
+
+# Unexplained timeout
+crbug.com/1401962 [ android android-sm-a135m ] Pixel_BackgroundImage [ RetryOnFailure ]
 
 crbug.com/1373965 [ fuchsia ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ Failure ]
 
 crbug.com/1376927 [ win10 target-cpu-32 nvidia-0x2184 ] Pixel_MediaFoundationClearDirectComposition [ Failure ]
 
 # Pixel_MediaRecorderFromVideoElement fails on several FYI bots
-crbug.com/1382332 [ win10 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
-crbug.com/1382332 [ win10 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
-crbug.com/1382332 [ mac ] Pixel_MediaRecorderFromVideoElement [ Failure ]
-crbug.com/1382332 [ mac ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ amd-0x7340 release-x64 target-cpu-64 win10 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ amd-0x6821 asan mac-x86_64 monterey release ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ mac-x86_64 mojave no-asan nvidia-0xfe9 release ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ chromeos ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ chromeos ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
-crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ android android-webview-instrumentation angle-disabled no-passthrough ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ android-chromium android-nexus-5x android-nougat angle-disabled no-passthrough qualcomm renderer-skia-gl target-cpu-64 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ android-chromium android-s android-sm-a135m angle-disabled arm no-passthrough renderer-skia-gl target-cpu-32 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ fuchsia ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ linux nvidia-0x2184 passthrough debug angle-vulkan ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+
+# WebGL tests are seeing occasional hangs on Linux FYI Release (AMD RX 5500 XT).
+crbug.com/1396451 [ linux desktop amd-0x7340 ] Pixel_WebGLSadCanvas [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

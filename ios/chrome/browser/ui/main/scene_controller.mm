@@ -6,8 +6,8 @@
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
-#import "base/callback_helpers.h"
 #import "base/feature_list.h"
+#import "base/functional/callback_helpers.h"
 #import "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -20,6 +20,8 @@
 #import "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #import "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 #import "components/breadcrumbs/core/features.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/infobars/core/infobar_manager.h"
 #import "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
@@ -50,6 +52,7 @@
 #import "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/default_browser/promo_source.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -71,10 +74,12 @@
 #import "ios/chrome/browser/sessions/session_saving_scene_agent.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/app_store_rating/app_store_rating_scene_agent.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
@@ -142,8 +147,6 @@
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_data.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -171,26 +174,6 @@ BASE_FEATURE(kForceNewTabForIntentSearch,
 // animation. It's used to temporarily disable mutally exclusive chrome
 // commands that trigger a view controller presentation.
 const int64_t kExpectedTransitionDurationInNanoSeconds = 0.2 * NSEC_PER_SEC;
-
-// Possible results of snapshotting at the moment the user enters the tab
-// switcher. These values are persisted to logs. Entries should not be
-// renumbered and numeric values should never be reused.
-enum class EnterTabSwitcherSnapshotResult {
-  // Page was loading at the time of the snapshot request, and the snapshot
-  // failed.
-  kPageLoadingAndSnapshotFailed = 0,
-  // Page was loading at the time of the snapshot request, and the snapshot
-  // succeeded.
-  kPageLoadingAndSnapshotSucceeded = 1,
-  // Page was not loading at the time of the snapshot request, and the snapshot
-  // failed.
-  kPageNotLoadingAndSnapshotFailed = 2,
-  // Page was not loading at the time of the snapshot request, and the snapshot
-  // succeeded.
-  kPageNotLoadingAndSnapshotSucceeded = 3,
-  // kMaxValue should share the value of the highest enumerator.
-  kMaxValue = kPageNotLoadingAndSnapshotSucceeded,
-};
 
 // Used to update the current BVC mode if a new tab is added while the tab
 // switcher view is being dismissed.  This is different than ApplicationMode in
@@ -435,6 +418,7 @@ void InjectNTP(Browser* browser) {
     DefaultBrowserSceneAgent* sceneAgent =
         [DefaultBrowserSceneAgent agentFromScene:self.sceneState];
     [sceneAgent.nonModalScheduler logUserEnteredAppViaFirstPartyScheme];
+    [self notifyFETAppOpenedViaFirstParty];
   }
 }
 
@@ -802,26 +786,27 @@ void InjectNTP(Browser* browser) {
       accountManagerService->GetDefaultIdentity();
   DCHECK(defaultIdentity);
 
-  __weak SceneController* weakSelf = self;
-  ios::ChromeIdentityService* identityService =
-      ios::GetChromeBrowserProvider().GetChromeIdentityService();
+  using CapabilityResult = SystemIdentityManager::CapabilityResult;
+  SystemIdentityManager* system_identity_manager =
+      GetApplicationContext()->GetSystemIdentityManager();
 
   // Asynchronously checks whether the default identity can display extended
   // sync promos and displays the sign-in promo if possible.
+  __weak SceneController* weakSelf = self;
   base::Time fetch_start = base::Time::Now();
-  identityService->CanOfferExtendedSyncPromos(
-      defaultIdentity, ^(ios::ChromeIdentityCapabilityResult result) {
-        base::TimeDelta fetch_delay = (base::Time::Now() - fetch_start);
+  system_identity_manager->CanOfferExtendedSyncPromos(
+      defaultIdentity, base::BindOnce(^(CapabilityResult result) {
+        base::TimeDelta fetch_duration = (base::Time::Now() - fetch_start);
         base::UmaHistogramTimes(
             "Signin.AccountCapabilities.GetFromSystemLibraryDuration."
             "SigninUpgradePromo",
-            fetch_delay);
-        if (fetch_delay > signin::GetWaitThresholdForCapabilities() ||
-            result != ios::ChromeIdentityCapabilityResult::kTrue) {
+            fetch_duration);
+        if (fetch_duration > signin::GetWaitThresholdForCapabilities() ||
+            result != CapabilityResult::kTrue) {
           return;
         }
         [weakSelf presentSigninUpgradePromo];
-      });
+      }));
 }
 
 - (void)initializeUI {
@@ -1094,6 +1079,20 @@ void InjectNTP(Browser* browser) {
     [applicationHandler openURLInNewTab:command];
   }
   [self maybeShowDefaultBrowserPromo:self.mainInterface.browser];
+}
+
+// Notifies the Feature Engagement Tracker that an eligibility criterion has
+// been met for the default browser blue dot promo.
+- (void)notifyFETAppOpenedViaFirstParty {
+  ChromeBrowserState* browserState = self.sceneState.appState.mainBrowserState;
+  if (!browserState || browserState->IsOffTheRecord()) {
+    return;
+  }
+
+  if (HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch()) {
+    feature_engagement::TrackerFactory::GetForBrowserState(browserState)
+        ->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
+  }
 }
 
 // `YES` if Chrome is not the default browser, the app did not crash recently,
@@ -1458,27 +1457,8 @@ void InjectNTP(Browser* browser) {
   web::WebState* currentWebState =
       self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
   if (currentWebState) {
-    BOOL loading = currentWebState->IsLoading();
     SnapshotTabHelper::FromWebState(currentWebState)
-        ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {
-          EnterTabSwitcherSnapshotResult snapshotResult;
-          if (loading && !snapshot) {
-            snapshotResult =
-                EnterTabSwitcherSnapshotResult::kPageLoadingAndSnapshotFailed;
-          } else if (loading && snapshot) {
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageLoadingAndSnapshotSucceeded;
-          } else if (!loading && !snapshot) {
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageNotLoadingAndSnapshotFailed;
-          } else {
-            DCHECK(!loading && snapshot);
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageNotLoadingAndSnapshotSucceeded;
-          }
-          UMA_HISTOGRAM_ENUMERATION("IOS.EnterTabSwitcherSnapshotResult",
-                                    snapshotResult);
-        });
+        ->UpdateSnapshotWithCallback(nil);
   }
   [self.mainCoordinator prepareToShowTabGrid];
 }
@@ -2544,9 +2524,17 @@ void InjectNTP(Browser* browser) {
   // they are not visible.
   ios::provider::HideModalViewStack();
 
+  // Exit fullscreen mode for web page when we re-enter app through external
+  // intents.
+  web::WebState* webState =
+      self.mainInterface.browser->GetWebStateList()->GetActiveWebState();
+  if (webState && webState->IsWebPageInFullscreenMode()) {
+    webState->CloseMediaPresentations();
+  }
+
   // ChromeIdentityService is responsible for the dialogs displayed by the
   // services it wraps.
-  ios::GetChromeBrowserProvider().GetChromeIdentityService()->DismissDialogs();
+  GetApplicationContext()->GetSystemIdentityManager()->DismissDialogs();
 
   // MailtoHandlerService is responsible for the dialogs displayed by the
   // services it wraps.
@@ -3197,8 +3185,8 @@ void InjectNTP(Browser* browser) {
     URLOpenerParams* options =
         [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
     NSSet* URLContextSet = [NSSet setWithObject:context];
-    if (!ios::GetChromeBrowserProvider()
-             .GetChromeIdentityService()
+    if (!GetApplicationContext()
+             ->GetSystemIdentityManager()
              ->HandleSessionOpenURLContexts(self.sceneState.scene,
                                             URLContextSet)) {
       [URLsToOpen addObject:options];

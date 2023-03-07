@@ -11,7 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/base64.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -30,9 +30,9 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
-#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -211,7 +211,7 @@ OmniboxPageHandler::OmniboxPageHandler(
     mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver)
     : profile_(profile), receiver_(this, std::move(receiver)) {
   observation_.Observe(
-      OmniboxControllerEmitter::GetForBrowserContext(profile_));
+      AutocompleteControllerEmitter::GetForBrowserContext(profile_));
   ResetController();
 }
 
@@ -358,10 +358,11 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   input.set_prefer_keyword(prefer_keyword);
   if (prefer_keyword)
     input.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
-  input.set_focus_type(zero_suggest
-                           ? metrics::OmniboxFocusType::INTERACTION_FOCUS
-                           : metrics::OmniboxFocusType::INTERACTION_DEFAULT);
-
+  input.set_focus_type(
+      zero_suggest ? input.text().empty() && current_url_gurl.is_valid()
+                         ? metrics::OmniboxFocusType::INTERACTION_CLOBBER
+                         : metrics::OmniboxFocusType::INTERACTION_FOCUS
+                   : metrics::OmniboxFocusType::INTERACTION_DEFAULT);
   controller_->Start(input);
 }
 
@@ -370,6 +371,6 @@ void OmniboxPageHandler::ResetController() {
       std::make_unique<ChromeAutocompleteProviderClient>(profile_),
       AutocompleteClassifier::DefaultOmniboxProviders());
   // We will observe our internal AutocompleteController directly, so there's
-  // no reason to hook it up to the profile-keyed OmniboxControllerEmitter.
+  // no reason to hook it up to the profile-keyed AutocompleteControllerEmitter.
   controller_->AddObserver(this);
 }

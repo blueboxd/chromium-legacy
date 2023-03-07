@@ -39,7 +39,10 @@ class BuilderListTest(unittest.TestCase):
                 'port_name': 'port-c',
                 'specifiers': ['C', 'Release'],
                 'steps': {
-                    "wpt_tests_suite (with patch)": {},
+                    'wpt_tests_suite (with patch)': {},
+                    'wpt_tests_suite_chrome (with patch)': {
+                        'product': 'chrome',
+                    },
                 },
                 'is_try_builder': True,
             },
@@ -101,22 +104,12 @@ class BuilderListTest(unittest.TestCase):
                 'main': "luci",
                 'has_webdriver_tests': True
             },
-            'Flag Specific A': {
+            'Flag Specific C': {
                 'port_name': 'port-c',
                 'specifiers': ['C', 'Release'],
                 'steps': {
                     'high_dpi_blink_web_tests (with patch)': {
                         'flag_specific': 'highdpi'
-                    },
-                },
-                "is_try_builder": True
-            },
-            'Flag Specific B': {
-                'port_name': 'port-c',
-                'specifiers': ['C', 'Release'],
-                'steps': {
-                    'layout_ng_disabled_blink_web_tests (with patch)': {
-                        'flag_specific': 'disable-layout-ng',
                     },
                 },
                 "is_try_builder": True
@@ -139,8 +132,7 @@ class BuilderListTest(unittest.TestCase):
             'CQ Try A',
             'CQ Try B',
             'CQ Try C',
-            'Flag Specific A',
-            'Flag Specific B',
+            'Flag Specific C',
             'Try A',
             'Try B',
             'some-wpt-bot',
@@ -155,8 +147,8 @@ class BuilderListTest(unittest.TestCase):
     def test_all_try_builder_names(self):
         builders = self.sample_builder_list()
         self.assertEqual([
-            'CQ Try A', 'CQ Try B', 'CQ Try C', 'Flag Specific A',
-            'Flag Specific B', 'Try A', 'Try B', 'some-wpt-bot'
+            'CQ Try A', 'CQ Try B', 'CQ Try C', 'Flag Specific C', 'Try A',
+            'Try B', 'some-wpt-bot'
         ], builders.all_try_builder_names())
 
     def test_all_cq_try_builder_names(self):
@@ -167,16 +159,21 @@ class BuilderListTest(unittest.TestCase):
 
     def test_all_flag_specific_builder_names(self):
         builders = self.sample_builder_list()
-        self.assertEqual(['CQ Try C', 'Flag Specific A'],
+        self.assertEqual(['CQ Try C', 'Flag Specific C'],
                          builders.all_flag_specific_try_builder_names(
                              flag_specific="highdpi"))
         self.assertEqual(
-            ['CQ Try C', 'Flag Specific A', 'Flag Specific B'],
+            ['CQ Try C', 'Flag Specific C'],
             builders.all_flag_specific_try_builder_names(flag_specific="*"))
+
+    def test_builders_for_rebaselining(self):
+        builders = self.sample_builder_list()
+        self.assertEqual({'Try A', 'Try B', 'CQ Try B', 'Flag Specific C'},
+                         builders.builders_for_rebaselining())
 
     def test_try_bots_with_cq_mirror(self):
         builders = self.sample_builder_list()
-        try_and_cq = [('Flag Specific A', 'CQ Try C'), ('Try A', 'CQ Try A')]
+        try_and_cq = [('Flag Specific C', 'CQ Try C'), ('Try A', 'CQ Try A')]
         self.assertEqual(try_and_cq, builders.try_bots_with_cq_mirror())
 
     def test_all_port_names(self):
@@ -224,9 +221,6 @@ class BuilderListTest(unittest.TestCase):
         builders = self.sample_builder_list()
         self.assertEqual(
             set(), builders.flag_specific_options_for_port_name('port-a'))
-        self.assertEqual(
-            {'highdpi', 'disable-layout-ng'},
-            builders.flag_specific_options_for_port_name('port-c'))
 
     def test_reject_flag_specific_multiple_ports(self):
         with self.assertRaises(ValueError):
@@ -296,7 +290,18 @@ class BuilderListTest(unittest.TestCase):
                          builders.version_specifier_for_port_name('port-b'))
         self.assertIsNone(builders.version_specifier_for_port_name('port-x'))
 
-    def test_is_wpt_builder(self):
+    def test_uses_wptrunner(self):
         builders = self.sample_builder_list()
-        self.assertFalse(builders.is_wpt_builder('Blink A'))
-        self.assertTrue(builders.is_wpt_builder('some-wpt-bot'))
+        self.assertFalse(builders.uses_wptrunner('Blink A'))
+        self.assertTrue(builders.uses_wptrunner('some-wpt-bot'))
+
+    def test_product_for_build_step(self):
+        builders = self.sample_builder_list()
+        self.assertEqual(
+            builders.product_for_build_step('some-wpt-bot',
+                                            'wpt_tests_suite (with patch)'),
+            'content_shell')
+        self.assertEqual(
+            builders.product_for_build_step(
+                'some-wpt-bot', 'wpt_tests_suite_chrome (with patch)'),
+            'chrome')

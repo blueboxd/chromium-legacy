@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include "base/callback.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/windows_spell_checker.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -157,28 +156,22 @@ void UpdateSpellingPanelWithMisspelledWord(const std::u16string& word) {
 }
 
 void RecordChromeLocalesStats(PlatformSpellChecker* spell_checker_instance,
-                              const std::vector<std::string> chrome_locales,
-                              SpellCheckHostMetrics* metrics) {
+                              const std::vector<std::string> chrome_locales) {
   if (!spell_checker_instance) {
     return;
   }
-  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
-    static_cast<WindowsSpellChecker*>(spell_checker_instance)
-        ->RecordChromeLocalesStats(std::move(chrome_locales), metrics);
-  }
+  static_cast<WindowsSpellChecker*>(spell_checker_instance)
+      ->RecordChromeLocalesStats(std::move(chrome_locales));
 }
 
 void RecordSpellcheckLocalesStats(
     PlatformSpellChecker* spell_checker_instance,
-    const std::vector<std::string> spellcheck_locales,
-    SpellCheckHostMetrics* metrics) {
+    const std::vector<std::string> spellcheck_locales) {
   if (!spell_checker_instance) {
     return;
   }
-  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
-    static_cast<WindowsSpellChecker*>(spell_checker_instance)
-        ->RecordSpellcheckLocalesStats(std::move(spellcheck_locales), metrics);
-  }
+  static_cast<WindowsSpellChecker*>(spell_checker_instance)
+      ->RecordSpellcheckLocalesStats(std::move(spellcheck_locales));
 }
 
 }  // namespace spellcheck_platform

@@ -19,6 +19,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/callback_registry.h"
@@ -217,6 +218,7 @@ class VaapiVideoDecoder : public VideoDecoderMixin,
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   VideoColorSpace color_space_;
   absl::optional<gfx::HDRMetadata> hdr_metadata_;
+  bool is_rtc_;
 
   // Aspect ratio from the config.
   VideoAspectRatio aspect_ratio_;

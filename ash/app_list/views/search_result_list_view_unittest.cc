@@ -14,13 +14,9 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/views/search_result_view.h"
-#include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/test/test_app_list_color_provider.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/test/views_test_base.h"
@@ -46,8 +42,7 @@ constexpr int num_category_without_list_type = 1;
 
 }  // namespace
 
-class SearchResultListViewTest : public views::test::WidgetTest,
-                                 public testing::WithParamInterface<bool> {
+class SearchResultListViewTest : public views::test::WidgetTest {
  public:
   SearchResultListViewTest() = default;
 
@@ -58,8 +53,6 @@ class SearchResultListViewTest : public views::test::WidgetTest,
 
   // Overridden from testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kProductivityLauncher,
-                                              IsProductivityLauncherEnabled());
     views::test::WidgetTest::SetUp();
     widget_ = CreateTopLevelPlatformWidget();
 
@@ -94,7 +87,6 @@ class SearchResultListViewTest : public views::test::WidgetTest,
   }
 
  protected:
-  bool IsProductivityLauncherEnabled() const { return GetParam(); }
   SearchResultListView* default_view() const { return default_view_.get(); }
   SearchResultListView* answer_card_view() const {
     return answer_card_view_.get();
@@ -279,21 +271,15 @@ class SearchResultListViewTest : public views::test::WidgetTest,
   void DoUpdate() { default_view()->DoUpdate(); }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestAppListColorProvider color_provider_;  // Needed by AppListView.
-  AshColorProvider
-      ash_color_provider_;  // Needed by SearchResultInlineIconView.
+  // Needed by SearchResultInlineIconView.
+  AshColorProvider ash_color_provider_;
   AppListTestViewDelegate view_delegate_;
   std::unique_ptr<SearchResultListView> default_view_;
   std::unique_ptr<SearchResultListView> answer_card_view_;
   views::Widget* widget_;
 };
 
-// Run search result list view tests with and without productivity launcher
-// enabled.
-INSTANTIATE_TEST_SUITE_P(All, SearchResultListViewTest, testing::Bool());
-
-TEST_P(SearchResultListViewTest, SpokenFeedback) {
+TEST_F(SearchResultListViewTest, SpokenFeedback) {
   SetUpSearchResults();
 
   // Result 0 has a detail text. Expect that the detail is appended to the
@@ -305,10 +291,7 @@ TEST_P(SearchResultListViewTest, SpokenFeedback) {
   EXPECT_EQ(u"Result 2", GetDefaultResultViewAt(2)->ComputeAccessibleName());
 }
 
-TEST_P(SearchResultListViewTest, KeyboardShortcutResult) {
-  if (!IsProductivityLauncherEnabled())
-    return;
-
+TEST_F(SearchResultListViewTest, KeyboardShortcutResult) {
   default_view()->SetBounds(0, 0, kPreferredWidth, 400);
   SetUpKeyboardShortcutResult();
 
@@ -321,10 +304,7 @@ TEST_P(SearchResultListViewTest, KeyboardShortcutResult) {
 // Verifies that title, details, and keyboard shortcut contents are shown for
 // keyboard shortcut answer cards normally but details are hidden for results
 // with long titles.
-TEST_P(SearchResultListViewTest, KeyboardShortcutAnswerCard) {
-  if (!IsProductivityLauncherEnabled())
-    return;
-
+TEST_F(SearchResultListViewTest, KeyboardShortcutAnswerCard) {
   default_view()->SetBounds(0, 0, kPreferredWidth, 400);
   SetUpKeyboardShortcutAnswerCard(/*long_title=*/false);
   // Title, details,and keyboard shortcut views should be visible.
@@ -351,7 +331,7 @@ TEST_P(SearchResultListViewTest, KeyboardShortcutAnswerCard) {
   EXPECT_FALSE(GetDetailsContents(GetAnswerCardResultViewAt(0))->GetVisible());
 }
 
-TEST_P(SearchResultListViewTest, CorrectEnumLength) {
+TEST_F(SearchResultListViewTest, CorrectEnumLength) {
   EXPECT_EQ(
       // Check that all types except for SearchResultListType::kUnified are
       // included in GetAllListTypesForCategoricalSearch.
@@ -368,7 +348,7 @@ TEST_P(SearchResultListViewTest, CorrectEnumLength) {
           1 /*0 indexing offset*/ - num_category_without_list_type);
 }
 
-TEST_P(SearchResultListViewTest, SearchResultViewLayout) {
+TEST_F(SearchResultListViewTest, SearchResultViewLayout) {
   // Set SearchResultListView bounds and check views are default size.
   default_view()->SetBounds(0, 0, kPreferredWidth, 400);
   SetUpSearchResults();
@@ -389,7 +369,7 @@ TEST_P(SearchResultListViewTest, SearchResultViewLayout) {
             views::LayoutOrientation::kVertical);
 }
 
-TEST_P(SearchResultListViewTest, BorderTest) {
+TEST_F(SearchResultListViewTest, BorderTest) {
   default_view()->SetBounds(0, 0, kPreferredWidth, 400);
   SetUpSearchResults();
   DoUpdate();
@@ -398,7 +378,7 @@ TEST_P(SearchResultListViewTest, BorderTest) {
   EXPECT_EQ(gfx::Insets(), GetDefaultResultViewAt(0)->GetBorder()->GetInsets());
 }
 
-TEST_P(SearchResultListViewTest, ModelObservers) {
+TEST_F(SearchResultListViewTest, ModelObservers) {
   SetUpSearchResults();
   ExpectConsistent();
 

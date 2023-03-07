@@ -34,7 +34,6 @@ static_assert(BUILDFLAG(IS_CHROMEOS_ASH), "For ChromeOS ash-chrome only");
 
 namespace ui {
 struct CompositionText;
-class TextInputMethod;
 class KeyEvent;
 
 namespace ime {
@@ -45,6 +44,7 @@ struct SuggestionDetails;
 }  // namespace ui
 
 namespace ash {
+
 namespace ime {
 struct AssistiveWindow;
 }  // namespace ime
@@ -53,7 +53,7 @@ namespace input_method {
 
 struct AssistiveWindowProperties;
 
-class InputMethodEngine : virtual public ui::TextInputMethod,
+class InputMethodEngine : virtual public TextInputMethod,
                           public ProfileObserver,
                           public SuggestionHandlerInterface {
  public:
@@ -203,15 +203,10 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
   // Returns the request ID for this key event.
   std::string AddPendingKeyEvent(
       const std::string& component_id,
-      ui::TextInputMethod::KeyEventDoneCallback callback);
+      TextInputMethod::KeyEventDoneCallback callback);
 
   // Resolves all the pending key event callbacks as not handled.
   void CancelPendingKeyEvents();
-
-  // Get the composition bounds.
-  const std::vector<gfx::Rect>& composition_bounds() const {
-    return composition_bounds_;
-  }
 
   int GetContextIdForTesting() const { return context_id_; }
 
@@ -219,8 +214,8 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
     return pref_change_registrar_.get();
   }
 
-  // ui::TextInputMethod overrides.
-  void Focus(const ui::TextInputMethod::InputContext& input_context) override;
+  // TextInputMethod overrides.
+  void Focus(const TextInputMethod::InputContext& input_context) override;
   void Blur() override;
   void OnTouch(ui::EventPointerType pointerType) override;
   void Enable(const std::string& component_id) override;
@@ -232,7 +227,6 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
                           uint32_t cursor_pos,
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;
-  void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
   void SetCaretBounds(const gfx::Rect& caret_bounds) override;
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
@@ -310,7 +304,7 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
  private:
   struct PendingKeyEvent {
     PendingKeyEvent(const std::string& component_id,
-                    ui::TextInputMethod::KeyEventDoneCallback callback);
+                    TextInputMethod::KeyEventDoneCallback callback);
     PendingKeyEvent(PendingKeyEvent&& other);
 
     PendingKeyEvent(const PendingKeyEvent&) = delete;
@@ -319,7 +313,7 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
     ~PendingKeyEvent();
 
     std::string component_id;
-    ui::TextInputMethod::KeyEventDoneCallback callback;
+    TextInputMethod::KeyEventDoneCallback callback;
   };
 
   // Notifies InputContextHandler that the composition is changed.
@@ -375,10 +369,6 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
   ui::CompositionText composition_;
 
   bool composition_changed_;
-
-  // The composition bounds returned by inputMethodPrivate.getCompositionBounds
-  // API.
-  std::vector<gfx::Rect> composition_bounds_;
 
   // The text to be committed from calling input.ime.commitText API.
   std::u16string text_;

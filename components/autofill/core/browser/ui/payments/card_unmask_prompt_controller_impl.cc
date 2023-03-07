@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -220,20 +220,14 @@ std::u16string CardUnmaskPromptControllerImpl::GetWindowTitle() const {
 }
 
 std::u16string CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
-// The prompt for server cards should reference Google Payments, whereas the
-// prompt for local cards should not.
 #if BUILDFLAG(IS_IOS)
   int ids;
   if (card_unmask_prompt_options_.reason ==
           AutofillClient::UnmaskCardReason::kAutofill &&
       ShouldRequestExpirationDate()) {
-    ids = card_.record_type() == CreditCard::LOCAL_CARD
-              ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_LOCAL_CARD
-              : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED;
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED;
   } else {
-    ids = card_.record_type() == CreditCard::LOCAL_CARD
-              ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD
-              : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS;
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS;
   }
   // The iOS UI shows the card details in the instructions text since they
   // don't fit in the title.
@@ -253,9 +247,7 @@ std::u16string CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
             card_unmask_prompt_options_.challenge_option->cvc_position));
   }
   return l10n_util::GetStringUTF16(
-      card_.record_type() == CreditCard::LOCAL_CARD
-          ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD
-          : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
+      IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
 #endif
 }
 
@@ -290,12 +282,23 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
          new_card_link_clicked_;
 }
 
-bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
-  return pref_service_->GetBoolean(
-      prefs::kAutofillWalletImportStorageCheckboxState);
+#if BUILDFLAG(IS_ANDROID)
+std::string CardUnmaskPromptControllerImpl::GetCardIconString() const {
+  return card_.CardIconStringForAutofillSuggestion();
 }
 
-#if BUILDFLAG(IS_ANDROID)
+std::u16string CardUnmaskPromptControllerImpl::GetCardName() const {
+  return card_.CardNameForAutofillDisplay();
+}
+
+std::u16string CardUnmaskPromptControllerImpl::GetCardLastFourDigits() const {
+  return card_.ObfuscatedNumberWithVisibleLastFourDigits();
+}
+
+std::u16string CardUnmaskPromptControllerImpl::GetCardExpiration() const {
+  return card_.ExpirationDateForDisplay();
+}
+
 int CardUnmaskPromptControllerImpl::GetGooglePayImageRid() const {
   return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
 }
@@ -308,11 +311,6 @@ bool CardUnmaskPromptControllerImpl::GetWebauthnOfferStartState() const {
   return pref_service_->GetBoolean(
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState);
 }
-
-bool CardUnmaskPromptControllerImpl::IsCardLocal() const {
-  return card_.record_type() == CreditCard::LOCAL_CARD;
-}
-
 #endif
 
 bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
@@ -381,9 +379,8 @@ bool CardUnmaskPromptControllerImpl::IsChallengeOptionPresent() const {
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
     const {
   return base::Milliseconds(
-      card_.record_type() == CreditCard::LOCAL_CARD ||
-              card_unmask_prompt_options_.reason ==
-                  AutofillClient::UnmaskCardReason::kPaymentRequest
+      card_unmask_prompt_options_.reason ==
+              AutofillClient::UnmaskCardReason::kPaymentRequest
           ? 0
           : 500);
 }
@@ -397,6 +394,14 @@ bool CardUnmaskPromptControllerImpl::IsVirtualCard() const {
   return card_.record_type() == CreditCard::VIRTUAL_CARD;
 }
 
+#if !BUILDFLAG(IS_IOS)
+int CardUnmaskPromptControllerImpl::GetCvcTooltipResourceId() {
+  return IsCvcInFront()
+             ? IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION_FOR_AMEX
+             : IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION;
+}
+#endif
+
 bool CardUnmaskPromptControllerImpl::AllowsRetry(
     AutofillClient::PaymentsRpcResult result) {
   if (result == AutofillClient::PaymentsRpcResult::kNetworkError ||
@@ -408,6 +413,19 @@ bool CardUnmaskPromptControllerImpl::AllowsRetry(
     return false;
   }
   return true;
+}
+
+bool CardUnmaskPromptControllerImpl::IsCvcInFront() {
+  // Rely on the challenge option to inform us whether the CVC to be entered is
+  // on the front or back of the card.
+  if (IsChallengeOptionPresent()) {
+    return card_unmask_prompt_options_.challenge_option->cvc_position ==
+           CvcPosition::kFrontOfCard;
+  }
+
+  // For normal CVC unmask case, depend on the network to inform where the CVC
+  // is on the card.
+  return card_.network() == kAmericanExpressCard;
 }
 
 bool CardUnmaskPromptControllerImpl::ShouldDismissUnmaskPromptUponResult(

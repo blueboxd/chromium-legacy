@@ -13,9 +13,9 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -51,6 +51,7 @@
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/standalone_browser/lacros_availability.h"
 #include "chromeos/ash/components/system/devicemode.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/ash/components/timezone/timezone_resolver.h"
@@ -145,7 +146,8 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(::prefs::kMinimumAllowedChromeVersion, "");
   registry->RegisterIntegerPref(
       ::prefs::kLacrosLaunchSwitch,
-      static_cast<int>(crosapi::browser_util::LacrosAvailability::kUserChoice));
+      static_cast<int>(
+          ash::standalone_browser::LacrosAvailability::kUserChoice));
   registry->RegisterIntegerPref(
       ::prefs::kLacrosSelection,
       static_cast<int>(
@@ -159,6 +161,8 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kLoginScreenWebUILazyLoading, false);
   registry->RegisterBooleanPref(::prefs::kConsumerAutoUpdateToggle, true);
   registry->RegisterBooleanPref(::prefs::kHindiInscriptLayoutEnabled, false);
+  registry->RegisterBooleanPref(::prefs::kDeviceHindiInscriptLayoutEnabled,
+                                false);
 
   RegisterLocalStatePrefs(registry);
   ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
@@ -463,6 +467,15 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsGeneralCameraIsSelected, false);
 
+  registry->RegisterInt64Pref(::prefs::kHatsBluetoothRevampCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsBluetoothRevampIsSelected, false);
+
+  registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubBaselineIsSelected,
+                                false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsPrivacyHubBaselineCycleEndTs, 0);
+
   // Personalization HaTS survey prefs for avatar, screensaver, and wallpaper
   // features.
   registry->RegisterInt64Pref(
@@ -516,6 +529,8 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterBooleanPref(prefs::kSyncOobeCompleted, false);
+
+  registry->RegisterBooleanPref(prefs::kRecordArcAppSyncMetrics, false);
 
   registry->RegisterBooleanPref(::prefs::kTPMFirmwareUpdateCleanupDismissed,
                                 false);
@@ -834,8 +849,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = mouse_reverse_scroll_.GetValue();
     if (user_is_active)
       mouse_settings.SetReverseScroll(enabled);
-    ReportBooleanPrefApplication(reason, "Mouse.ReverseScroll.Changed",
-                                 "Mouse.ReverseScroll.Started", enabled);
   }
 
   if (reason != REASON_PREF_CHANGED ||
@@ -935,8 +948,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = mouse_acceleration_.GetValue();
     if (user_is_active)
       mouse_settings.SetAcceleration(enabled);
-    ReportBooleanPrefApplication(reason, "Mouse.Acceleration.Changed",
-                                 "Mouse.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kMouseScrollAcceleration) {
@@ -957,8 +968,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = touchpad_acceleration_.GetValue();
     if (user_is_active)
       touchpad_settings.SetAcceleration(enabled);
-    ReportBooleanPrefApplication(reason, "Touchpad.Acceleration.Changed",
-                                 "Touchpad.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kTouchpadScrollAcceleration) {
@@ -1014,6 +1023,10 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (user_is_active)
       UpdateAutoRepeatRate();
   }
+
+  if (reason == REASON_INITIALIZATION)
+    SetInputMethodList();
+
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kLanguageAllowedInputMethods) {
     const std::vector<std::string> allowed_input_methods =
@@ -1043,9 +1056,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     // values.
     locale_util::RemoveDisallowedLanguagesFromPreferred(prefs_);
   }
-
-  if (reason == REASON_INITIALIZATION)
-    SetInputMethodList();
 
   if (pref_name == ::prefs::kLanguagePreloadEngines &&
       reason == REASON_PREF_CHANGED) {

@@ -20,12 +20,14 @@ class FontFeatureValuesMapIterationSource final
                      String& map_key,
                      Vector<uint32_t>& map_value,
                      ExceptionState&) override {
-    if (!aliases_)
+    if (!aliases_) {
       return false;
-    if (iterator_ == aliases_->end())
+    }
+    if (iterator_ == aliases_->end()) {
       return false;
+    }
     map_key = iterator_->key;
-    map_value = iterator_->value;
+    map_value = iterator_->value.indices;
     ++iterator_;
     return true;
   }
@@ -57,9 +59,10 @@ bool CSSFontFeatureValuesMap::GetMapEntry(ScriptState*,
                                           Vector<uint32_t>& value,
                                           ExceptionState&) {
   auto it = aliases_->find(AtomicString(key));
-  if (it == aliases_->end())
+  if (it == aliases_->end()) {
     return false;
-  value = it->value;
+  }
+  value = it->value.indices;
   return true;
 }
 
@@ -72,12 +75,14 @@ CSSFontFeatureValuesMap* CSSFontFeatureValuesMap::set(
   switch (value->GetContentType()) {
     case V8UnionUnsignedLongOrUnsignedLongSequence::ContentType::
         kUnsignedLong: {
-      aliases_->Set(key_atomic, Vector<uint32_t>({value->GetAsUnsignedLong()}));
+      aliases_->Set(key_atomic, FeatureIndicesWithPriority{Vector<uint32_t>(
+                                    {value->GetAsUnsignedLong()})});
       break;
     }
     case V8UnionUnsignedLongOrUnsignedLongSequence::ContentType::
         kUnsignedLongSequence: {
-      aliases_->Set(key_atomic, value->GetAsUnsignedLongSequence());
+      aliases_->Set(key_atomic, FeatureIndicesWithPriority{
+                                    value->GetAsUnsignedLongSequence()});
       break;
     }
   }
@@ -95,8 +100,9 @@ bool CSSFontFeatureValuesMap::deleteForBinding(ScriptState*,
                                                ExceptionState&) {
   CSSStyleSheet::RuleMutationScope mutation_scope(parent_rule_);
   auto it = aliases_->find(AtomicString(key));
-  if (it == aliases_->end())
+  if (it == aliases_->end()) {
     return false;
+  }
   aliases_->erase(it);
   return true;
 }

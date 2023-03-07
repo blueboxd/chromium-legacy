@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/process/launch.h"
 #include "base/strings/strcat.h"
@@ -92,6 +93,12 @@ absl::optional<base::FilePath> GetKSAdminPath(UpdaterScope scope) {
   return absl::make_optional(ksadmin_path);
 }
 
+base::ScopedCFTypeRef<CFStringRef> CopyWakeLaunchdName(UpdaterScope scope) {
+  return base::SysUTF8ToCFStringRef(
+      IsSystemInstall(scope) ? MAC_BUNDLE_IDENTIFIER_STRING ".wake.system"
+                             : MAC_BUNDLE_IDENTIFIER_STRING ".wake");
+}
+
 bool RemoveJobFromLaunchd(UpdaterScope scope,
                           Launchd::Domain domain,
                           Launchd::Type type,
@@ -160,14 +167,6 @@ absl::optional<base::FilePath> GetUpdaterAppBundlePath(UpdaterScope scope) {
       base::StrCat({PRODUCT_FULLNAME_STRING, kExecutableSuffix, ".app"}));
 }
 
-absl::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
-  if (!path)
-    return absl::nullopt;
-  return path->Append(ExecutableFolderPath())
-      .AppendASCII(base::StrCat({PRODUCT_FULLNAME_STRING, kExecutableSuffix}));
-}
-
 base::FilePath GetExecutableRelativePath() {
   return ExecutableFolderPath().Append(
       base::StrCat({PRODUCT_FULLNAME_STRING, kExecutableSuffix}));
@@ -209,6 +208,33 @@ bool ConfirmFilePermissions(const base::FilePath& root_path,
   }
 
   return true;
+}
+
+absl::optional<base::FilePath> GetBaseInstallDirectory(UpdaterScope scope) {
+  absl::optional<base::FilePath> path = GetLibraryFolderPath(scope);
+  return path ? absl::optional<base::FilePath>(
+                    path->Append(GetUpdaterFolderName()))
+              : absl::nullopt;
+}
+
+absl::optional<base::FilePath> GetUpdateServiceLauncherPath(
+    UpdaterScope scope) {
+  absl::optional<base::FilePath> install_dir = GetBaseInstallDirectory(scope);
+  return install_dir
+             ? absl::optional<base::FilePath>(install_dir->Append("launcher"))
+             : absl::nullopt;
+}
+
+bool RemoveQuarantineAttributes(const base::FilePath& updater_bundle_path) {
+  bool success = base::mac::RemoveQuarantineAttribute(updater_bundle_path);
+  base::FileEnumerator file_enumerator(
+      base::FilePath(updater_bundle_path), true,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath name = file_enumerator.Next(); !name.empty();
+       name = file_enumerator.Next()) {
+    success = base::mac::RemoveQuarantineAttribute(name) && success;
+  }
+  return success;
 }
 
 }  // namespace updater

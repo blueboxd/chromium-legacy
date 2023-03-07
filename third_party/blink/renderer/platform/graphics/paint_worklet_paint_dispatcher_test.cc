@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "cc/paint/paint_worklet_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,10 +59,9 @@ class MockPaintWorkletPainter
   ~MockPaintWorkletPainter() override = default;
 
   MOCK_CONST_METHOD0(GetWorkletId, int());
-  MOCK_METHOD2(
-      Paint,
-      sk_sp<PaintRecord>(const cc::PaintWorkletInput*,
-                         const cc::PaintWorkletJob::AnimatedPropertyValues&));
+  MOCK_METHOD2(Paint,
+               PaintRecord(const cc::PaintWorkletInput*,
+                           const cc::PaintWorkletJob::AnimatedPropertyValues&));
 };
 
 class MockPaintWorkletInput : public cc::PaintWorkletInput {

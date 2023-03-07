@@ -22,64 +22,64 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v112.0.5608.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5557.0/test_ash_chrome',
     ],
-    'description': 'Run with ash-chrome version 112.0.5608.0',
+    'description': 'Run with ash-chrome version 111.0.5557.0',
     'identifier': 'Lacros version skew testing ash canary',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v112.0.5608.0',
-          'revision': 'version:112.0.5608.0',
+          'location': 'lacros_version_skew_tests_v111.0.5557.0',
+          'revision': 'version:111.0.5557.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_DEV': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v112.0.5594.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5464.0/test_ash_chrome',
     ],
-    'description': 'Run with ash-chrome version 112.0.5594.0',
+    'description': 'Run with ash-chrome version 110.0.5464.0',
     'identifier': 'Lacros version skew testing ash dev',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v112.0.5594.0',
-          'revision': 'version:112.0.5594.0',
+          'location': 'lacros_version_skew_tests_v110.0.5464.0',
+          'revision': 'version:110.0.5464.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_BETA': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.31/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v108.0.5359.58/test_ash_chrome',
     ],
-    'description': 'Run with ash-chrome version 111.0.5563.31',
+    'description': 'Run with ash-chrome version 108.0.5359.58',
     'identifier': 'Lacros version skew testing ash beta',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v111.0.5563.31',
-          'revision': 'version:111.0.5563.31',
+          'location': 'lacros_version_skew_tests_v108.0.5359.58',
+          'revision': 'version:108.0.5359.58',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_STABLE': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.112/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v108.0.5359.172/test_ash_chrome',
     ],
-    'description': 'Run with ash-chrome version 110.0.5481.112',
+    'description': 'Run with ash-chrome version 108.0.5359.172',
     'identifier': 'Lacros version skew testing ash stable',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v110.0.5481.112',
-          'revision': 'version:110.0.5481.112',
+          'location': 'lacros_version_skew_tests_v108.0.5359.172',
+          'revision': 'version:108.0.5359.172',
         },
       ],
     },
@@ -175,16 +175,16 @@
       'ios_runtime_cache_14_5',
     ],
   },
-  'SIM_IPAD_AIR_3RD_GEN_16_1': {
+  'SIM_IPAD_AIR_3RD_GEN_16_2': {
     'args': [
       '--platform',
       'iPad Air (3rd generation)',
       '--version',
-      '16.1'
+      '16.2'
     ],
-    'identifier': 'iPad Air (3rd generation) 16.1',
+    'identifier': 'iPad Air (3rd generation) 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
   # In Xcode 12, "iPad Pro (12.9-inch)" requires a generation suffix in
@@ -201,16 +201,16 @@
       'ios_runtime_cache_14_5',
     ],
   },
-  'SIM_IPAD_PRO_3RD_GEN_16_1': {
+  'SIM_IPAD_PRO_3RD_GEN_16_2': {
     'args': [
       '--platform',
       'iPad Pro (12.9-inch) (3rd generation)',
       '--version',
-      '16.1',
+      '16.2',
     ],
-    'identifier': 'iPad Pro (12.9-inch) (3rd generation) 16.1',
+    'identifier': 'iPad Pro (12.9-inch) (3rd generation) 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
   'SIM_IPAD_PRO_3RD_GEN_15_5': {
@@ -225,16 +225,16 @@
       'ios_runtime_cache_15_5',
     ],
   },
-  'SIM_IPAD_6_GEN_16_1': {
+  'SIM_IPAD_6_GEN_16_2': {
     'args': [
       '--platform',
       'iPad (6th generation)',
       '--version',
-      '16.1',
+      '16.2',
     ],
-    'identifier': 'iPad (6th generation) 16.1',
+    'identifier': 'iPad (6th generation) 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
   'SIM_IPHONE_6S_14_4': {
@@ -333,28 +333,28 @@
       'ios_runtime_cache_15_5',
     ],
   },
-  'SIM_IPHONE_8_16_1': {
+  'SIM_IPHONE_8_16_2': {
     'args': [
       '--platform',
       'iPhone 8',
       '--version',
-      '16.1',
+      '16.2',
     ],
-    'identifier': 'iPhone 8 16.1',
+    'identifier': 'iPhone 8 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
-  'SIM_IPHONE_8_PLUS_16_1': {
+  'SIM_IPHONE_8_PLUS_16_2': {
     'args': [
       '--platform',
       'iPhone 8 Plus',
       '--version',
-      '16.1',
+      '16.2',
     ],
-    'identifier': 'iPhone 8 Plus 16.1',
+    'identifier': 'iPhone 8 Plus 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
   'SIM_IPHONE_SE_1ST_GEN_14_5': {
@@ -381,16 +381,16 @@
       'ios_runtime_cache_15_5',
     ],
   },
-  'SIM_IPHONE_SE_3RD_GEN_16_1': {
+  'SIM_IPHONE_SE_3RD_GEN_16_2': {
     'args': [
       '--platform',
       'iPhone SE (3rd generation)',
       '--version',
-      '16.1',
+      '16.2',
     ],
-    'identifier': 'iPhone SE (3rd generation) 16.1',
+    'identifier': 'iPhone SE (3rd generation) 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
   'SIM_IPHONE_X_14_4': {
@@ -441,16 +441,16 @@
       'ios_runtime_cache_15_5',
     ],
   },
-  'SIM_IPHONE_X_16_1': {
+  'SIM_IPHONE_X_16_2': {
     'args': [
       '--platform',
       'iPhone X',
       '--version',
-      '16.1',
+      '16.2',
     ],
-    'identifier': 'iPhone X 16.1',
+    'identifier': 'iPhone X 16.2',
     'mixins': [
-      'ios_runtime_cache_16_1',
+      'ios_runtime_cache_16_2',
     ],
   },
   'WEBVIEW_TRICHROME_FULL_CTS_TESTS': {
@@ -470,35 +470,35 @@
   'CROS_DEDEDE_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'dedede',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'dedede-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'dedede-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'DEDEDE_RELEASE_LKGM',
   },
   'CROS_DEDEDE_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'dedede',
-      'cros_chrome_version': '112.0.5594.0',
-      'cros_img': 'dedede-release/R112-15350.0.0',
+      'cros_chrome_version': '111.0.5544.0',
+      'cros_img': 'dedede-release/R111-15320.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'DEDEDE_RELEASE_DEV',
   },
   'CROS_DEDEDE_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'dedede',
-      'cros_chrome_version': '111.0.5563.31',
-      'cros_img': 'dedede-release/R111-15329.24.0',
+      'cros_chrome_version': '110.0.5481.41',
+      'cros_img': 'dedede-release/R110-15278.36.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'DEDEDE_RELEASE_BETA',
   },
   'CROS_DEDEDE_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'dedede',
-      'cros_chrome_version': '110.0.5481.112',
-      'cros_img': 'dedede-release/R110-15278.64.0',
+      'cros_chrome_version': '109.0.5414.94',
+      'cros_img': 'dedede-release/R109-15236.66.0',
     },
     'enabled': True,
     'identifier': 'DEDEDE_RELEASE_STABLE',
@@ -506,10 +506,10 @@
   'CROS_EVE_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'eve-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'eve-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'EVE_RELEASE_LKGM',
   },
   'CROS_EVE_RELEASE_DEV': {
@@ -518,23 +518,23 @@
       'cros_chrome_version': '111.0.5544.0',
       'cros_img': 'eve-release/R111-15320.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'EVE_RELEASE_DEV',
   },
   'CROS_EVE_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '111.0.5563.14',
-      'cros_img': 'eve-release/R111-15329.13.0',
+      'cros_chrome_version': '110.0.5481.32',
+      'cros_img': 'eve-release/R110-15278.29.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'EVE_RELEASE_BETA',
   },
   'CROS_EVE_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '108.0.5359.219',
-      'cros_img': 'eve-release/R108-15183.82.0',
+      'cros_chrome_version': '108.0.5359.172',
+      'cros_img': 'eve-release/R108-15183.78.0',
     },
     'enabled': True,
     'identifier': 'EVE_RELEASE_STABLE',
@@ -552,35 +552,35 @@
   'CROS_HANA_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'hana',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'hana-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'hana-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'HANA_RELEASE_LKGM',
   },
   'CROS_HANA_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'hana',
-      'cros_chrome_version': '112.0.5594.0',
-      'cros_img': 'hana-release/R112-15350.0.0',
+      'cros_chrome_version': '111.0.5544.0',
+      'cros_img': 'hana-release/R111-15320.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'HANA_RELEASE_DEV',
   },
   'CROS_HANA_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'hana',
-      'cros_chrome_version': '111.0.5563.31',
-      'cros_img': 'hana-release/R111-15329.24.0',
+      'cros_chrome_version': '110.0.5481.41',
+      'cros_img': 'hana-release/R110-15278.36.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'HANA_RELEASE_BETA',
   },
   'CROS_HANA_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'hana',
-      'cros_chrome_version': '110.0.5481.112',
-      'cros_img': 'hana-release/R110-15278.64.0',
+      'cros_chrome_version': '109.0.5414.94',
+      'cros_img': 'hana-release/R109-15236.66.0',
     },
     'enabled': True,
     'identifier': 'HANA_RELEASE_STABLE',
@@ -588,44 +588,44 @@
   'CROS_HEROBRINE_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'herobrine',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'herobrine-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'herobrine-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'HEROBRINE_RELEASE_LKGM',
   },
   'CROS_JACUZZI_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'jacuzzi-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'jacuzzi-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'JACUZZI_RELEASE_LKGM',
   },
   'CROS_JACUZZI_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_chrome_version': '112.0.5594.0',
-      'cros_img': 'jacuzzi-release/R112-15350.0.0',
+      'cros_chrome_version': '111.0.5544.0',
+      'cros_img': 'jacuzzi-release/R111-15320.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'JACUZZI_RELEASE_DEV',
   },
   'CROS_JACUZZI_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_chrome_version': '111.0.5563.31',
-      'cros_img': 'jacuzzi-release/R111-15329.24.0',
+      'cros_chrome_version': '110.0.5481.41',
+      'cros_img': 'jacuzzi-release/R110-15278.36.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'JACUZZI_RELEASE_BETA',
   },
   'CROS_JACUZZI_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_chrome_version': '110.0.5481.112',
-      'cros_img': 'jacuzzi-release/R110-15278.64.0',
+      'cros_chrome_version': '109.0.5414.94',
+      'cros_img': 'jacuzzi-release/R109-15236.66.0',
     },
     'enabled': True,
     'identifier': 'JACUZZI_RELEASE_STABLE',
@@ -660,38 +660,48 @@
     'enabled': True,
     'identifier': 'OCTOPUS_FULL',
   },
+  'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_chrome_version': '110.0.5423.0',
+      'cros_img': 'octopus-release/R110-15249.0.0',
+      'autotest_name': 'tast.chrome-from-tls',
+    },
+    'enabled': True,
+    'identifier': 'OCTOPUS_RELEASE_CHROME_FROM_TLS',
+  },
   'CROS_OCTOPUS_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'octopus-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'octopus-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_LKGM',
   },
   'CROS_OCTOPUS_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '112.0.5594.0',
-      'cros_img': 'octopus-release/R112-15350.0.0',
+      'cros_chrome_version': '111.0.5544.0',
+      'cros_img': 'octopus-release/R111-15320.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_DEV',
   },
   'CROS_OCTOPUS_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '111.0.5563.31',
-      'cros_img': 'octopus-release/R111-15329.24.0',
+      'cros_chrome_version': '110.0.5481.41',
+      'cros_img': 'octopus-release/R110-15278.36.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_BETA',
   },
   'CROS_OCTOPUS_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '110.0.5481.112',
-      'cros_img': 'octopus-release/R110-15278.64.0',
+      'cros_chrome_version': '109.0.5414.94',
+      'cros_img': 'octopus-release/R109-15236.66.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_STABLE',
@@ -699,35 +709,35 @@
   'CROS_STRONGBAD_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_chrome_version': '110.0.5464.0',
-      'cros_img': 'strongbad-release/R110-15274.0.0',
+      'cros_chrome_version': '111.0.5550.0',
+      'cros_img': 'strongbad-release/R111-15324.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'STRONGBAD_RELEASE_LKGM',
   },
   'CROS_STRONGBAD_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_chrome_version': '112.0.5594.0',
-      'cros_img': 'strongbad-release/R112-15350.0.0',
+      'cros_chrome_version': '111.0.5544.0',
+      'cros_img': 'strongbad-release/R111-15320.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'strongbad_RELEASE_DEV',
   },
   'CROS_STRONGBAD_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_chrome_version': '111.0.5563.31',
-      'cros_img': 'strongbad-release/R111-15329.24.0',
+      'cros_chrome_version': '110.0.5481.41',
+      'cros_img': 'strongbad-release/R110-15278.36.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'STRONGBAD_RELEASE_BETA',
   },
   'CROS_STRONGBAD_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_chrome_version': '110.0.5481.112',
-      'cros_img': 'strongbad-release/R110-15278.64.0',
+      'cros_chrome_version': '109.0.5414.94',
+      'cros_img': 'strongbad-release/R109-15236.66.0',
     },
     'enabled': True,
     'identifier': 'STRONGBAD_RELEASE_STABLE',
@@ -814,11 +824,11 @@
       ],
     },
   },
-  'WIN10_INTEL_HD_630_STABLE': {
+  'WIN10_INTEL_UHD_630_STABLE': {
     'identifier': '8086:9bc5',
     'mixins': [
       'swarming_containment_auto',
-      'win10_intel_hd_630_stable',
+      'win10_intel_uhd_630_stable',
     ],
   },
   'WIN10_NVIDIA_GTX_1660_STABLE': {

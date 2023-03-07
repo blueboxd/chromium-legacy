@@ -7,7 +7,7 @@ import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_c
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 
 import {AsyncQueue} from '../common/js/async_util.js';
-import {strf} from '../common/js/util.js';
+import {str, strf} from '../common/js/util.js';
 
 import {getTemplate} from './xf_conflict_dialog.html.js';
 
@@ -67,8 +67,9 @@ export class XfConflictDialog extends HTMLElement {
    * DOM connected callback.
    */
   connectedCallback() {
-    this.dialog_.addEventListener('close', this.onClose_.bind(this));
+    this.dialog_.addEventListener('close', this.closed_.bind(this));
 
+    this.getCheckboxElement().onchange = this.checked_.bind(this);
     this.getCancelButton().onclick = this.cancel_.bind(this);
     this.getKeepbothButton().onclick = this.keepboth_.bind(this);
     this.getReplaceButton().onclick = this.replace_.bind(this);
@@ -76,15 +77,24 @@ export class XfConflictDialog extends HTMLElement {
 
   /**
    * Open the modal dialog to ask the user to resolve a conflict for the given
-   * |filename|. Set |checkbox| true to display the 'Apply to all' checkbox.
+   * |filename|. The default parameters after |filename| are as follows:
+   *
+   * Set |checkbox| true to display the 'Apply to all' checkbox in the dialog,
+   *   and should be set true if there are potentially, multiple file names in
+   *   a copy or move operation that conflict. The default is false.
+   *
+   * Set |directory| true if the |filename| is a directory (aka a folder). The
+   *   default is false.
    */
-  async show(filename: string, checkbox?: boolean): Promise<ConflictResult> {
+  async show(
+      filename: string, checkbox: boolean = false,
+      directory: boolean = false): Promise<ConflictResult> {
     const unlock = await this.mutex_.lock();
     try {
       return await new Promise<ConflictResult>((resolve, reject) => {
         this.resolve_ = resolve;
         this.reject_ = reject;
-        this.showModal_(filename, !!checkbox);
+        this.showModal_(filename, checkbox, directory);
       });
     } finally {
       unlock();
@@ -92,19 +102,41 @@ export class XfConflictDialog extends HTMLElement {
   }
 
   /**
-   * Resets the dialog message content for the given |filename| and |checkbox|
-   * display state, and then shows the modal dialog.
+   * Resets the dialog for the given |filename| |checkbox| and |folder| values
+   * and then shows the modal dialog.
    */
-  private showModal_(filename: string, checkbox: boolean) {
-    const message = strf('CONFLICT_DIALOG_MESSAGE', filename);
-    this.getMessageElement().innerText = message;
+  private showModal_(filename: string, checkbox: boolean, folder: boolean) {
+    const message =  // 'A folder named ...' or 'A file named ...'
+        folder ? 'CONFLICT_DIALOG_FOLDER_MESSAGE' : 'CONFLICT_DIALOG_MESSAGE';
+    this.getMessageElement().innerText = strf(message, filename);
 
     const applyToAll = this.getCheckboxElement();
     applyToAll.hidden = !checkbox;
     applyToAll.checked = false;
 
     this.action_ = '';
+    this.checked_();
     this.dialog_.showModal();
+    this.setFocus_();
+  }
+
+  /**
+   * The conflict dialog has no title. Remove the <cr-dialog> title child that
+   * would focus, remove its <dialog> aria-labelledby and aria-describedby, so
+   * ARIA announces the #message (that is the initial focus) once.
+   *
+   * Per https://w3c.github.io/aria-practices/#dialog_roles_states_props, adds
+   * aria-modal='true' meaning all content outside the <dialog> is inert.
+   */
+  private setFocus_() {
+    this.dialog_.shadowRoot!.querySelector('#title')?.remove();
+
+    const element = this.getHtmlDialogElement();
+    element.setAttribute('aria-modal', 'true');
+    element.removeAttribute('aria-labelledby');
+    element.removeAttribute('aria-describedby');
+
+    this.getMessageElement().focus();
   }
 
   /**
@@ -112,6 +144,13 @@ export class XfConflictDialog extends HTMLElement {
    */
   getDialogElement(): CrDialogElement {
     return this.shadowRoot!.querySelector('#conflict-dialog')!;
+  }
+
+  /**
+   * Returns 'dialog' <dialog> element.
+   */
+  getHtmlDialogElement(): HTMLDialogElement {
+    return this.dialog_.getNative()!;
   }
 
   /**
@@ -126,6 +165,24 @@ export class XfConflictDialog extends HTMLElement {
    */
   getCheckboxElement(): CrCheckboxElement {
     return this.shadowRoot!.querySelector('#checkbox')!;
+  }
+
+  /**
+   * 'Apply to all' checkbox value changed.
+   */
+  private checked_() {
+    const checked = this.getCheckboxElement().checked;
+
+    if (checked) {
+      this.getKeepbothButton().innerText = str('CONFLICT_DIALOG_KEEP_ALL');
+      this.getReplaceButton().innerText = str('CONFLICT_DIALOG_REPLACE_ALL');
+    } else {
+      this.getKeepbothButton().innerText = str('CONFLICT_DIALOG_KEEP_BOTH');
+      this.getReplaceButton().innerText = str('CONFLICT_DIALOG_REPLACE');
+    }
+
+    this.getCheckboxElement().focus();
+    this.toggleAttribute('checked', checked);
   }
 
   /**
@@ -174,10 +231,10 @@ export class XfConflictDialog extends HTMLElement {
   }
 
   /*
-   * Triggered by <cr-dialog>.close(): reject the Promise if the dialog was
-   * cancelled, or resolve the Promise with the dialog result.
+   * Triggered by the modal dialog close(): rejects the Promise if the dialog
+   * was cancelled or resolves it with the dialog result.
    */
-  private onClose_() {
+  private closed_() {
     if (!this.action_) {
       this.reject_(new Error('dialog cancelled'));
       return;

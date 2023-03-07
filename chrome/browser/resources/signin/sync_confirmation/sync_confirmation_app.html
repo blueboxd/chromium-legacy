@@ -2,12 +2,44 @@
   :host {
     --banner-size: auto;
     --footer-margin: 24px;
-    --tangible-sync-illustration-url: url(./images/tangible_sync_illustration.svg);
+    --tangible-sync-dialog-illustration-url:
+        url(./images/tangible_sync_dialog_illustration.svg);
+    --tangible-sync-window-illustration-width: 17vw;
+    --tangible-sync-window-left-illustration-url:
+        url(./images/tangible_sync_window_left_illustration.svg);
+    --tangible-sync-window-right-illustration-url:
+        url(./images/tangible_sync_window_right_illustration.svg);
     --sync-benefits-list-color: var(--google-grey-50);
     --sync-benefit-icon-color: var(--google-blue-600);
-    --sync-info-title-color: var(--google-grey-800);
     color: var(--cr-primary-text-color);
     display: block;
+  }
+
+  @keyframes left-illustration-slide-animation {
+    0% {
+      transform: translateX(calc(-1 * var(--tangible-sync-window-illustration-width)));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes right-illustration-slide-animation {
+    0% {
+      transform: translateX(var(--tangible-sync-window-illustration-width));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fade-in-animation {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 100%;
+    }
   }
 
   .secondary {
@@ -221,8 +253,13 @@
   }
 
   #tangible-sync-button-container cr-button {
+    font-family: 'Google Sans', arial, sans-serif;
     font-size: 0.75rem;
     min-width: 111px;
+  }
+
+  .window-button-container {
+    --cr-button-height: 36px;
   }
 
   #headerContainer.signin-intercept-design {
@@ -270,16 +307,31 @@
     column-gap: 12px;
   }
 
-  #contentContainer.tangible-sync {
+  .tangible-sync {
     --action-container-padding: 24px;
-    --sync-info-desc-bottom-margin: 48px;
-    --container-bottom-padding: calc(var(--sync-info-desc-bottom-margin) +
-        var(--cr-button-height) + var(--action-container-padding));
+  }
+
+  .tangible-sync #contentContainer {
     align-items: stretch;
     display: flex;
     flex-direction: column;
     margin: auto;
     max-width: 500px;
+  }
+
+  .window-main-container {
+    --button-container-height: calc(2 * var(--action-container-padding) +
+        var(--cr-button-height));
+    display: flex;
+    height: calc(100vh - var(--button-container-height));
+    width: 100vw;
+  }
+
+  .dialog-main-container.tangible-sync #contentContainer {
+    --sync-info-desc-bottom-margin: 48px;
+    --container-bottom-padding: calc(var(--sync-info-desc-bottom-margin) +
+        var(--cr-button-height) + var(--action-container-padding));
+
     /* Bottom padding is needed to save space for the button row in
     the modal dialog view. */
     padding: 32px 0 var(--container-bottom-padding);
@@ -301,16 +353,26 @@
 
   .tangible-sync #syncConfirmationHeading {
     font-family: 'Google Sans', arial, sans-serif;
-    font-size: 1.25rem;
+    font-size: 2.25rem;
     font-weight: 500;
+    line-height: 43px;
+    margin: 24px 0 16px;
+  }
+
+  .dialog-main-container.tangible-sync #syncConfirmationHeading {
+    font-size: 1.25rem;
     line-height: 24px;
-    margin: 16px 0 12px;
+    margin: 16px 0 12px
   }
 
   #syncInfoTitle {
-    color: var(--sync-info-title-color);
-    font-size: 0.94rem;
+    color: var(--cr-secondary-text-color);
+    font-size: 1.25rem;
     line-height: 24px;
+  }
+
+  .dialog-main-container.tangible-sync #syncInfoTitle {
+    font-size: 0.94rem;
   }
 
   #syncBenefitsList {
@@ -321,9 +383,14 @@
     font-size: 0.81rem;
     font-weight: 400;
     line-height: 20px;
+    margin: 24px 0 16px;
+    padding: 24px;
+    row-gap: 16px;
+  }
+
+  .dialog-main-container.tangible-sync #syncBenefitsList {
     margin: 16px 38px;
     padding: 20px 24px;
-    row-gap: 16px;
   }
 
   .sync-benefit {
@@ -343,11 +410,14 @@
   #syncInfoDesc {
     font-size: 0.75rem;
     line-height: 20px;
+  }
+
+  .dialog-main-container.tangible-sync #syncInfoDesc {
     margin: 0 38px;
   }
 
-  #tangible-sync-illustration {
-    content: var(--tangible-sync-illustration-url);
+  #tangible-sync-dialog-illustration {
+    content: var(--tangible-sync-dialog-illustration-url);
     height: 68px;
     left: 50%;
     position: absolute;
@@ -356,13 +426,44 @@
     width: 328px;
   }
 
+  #tangible-sync-window-left-illustration {
+    animation-duration: 500ms;
+    animation-name: left-illustration-slide-animation, fade-in-animation;
+    content: var(--tangible-sync-window-left-illustration-url);
+    left: 0;
+    transition-timing-function: ease-in-out;
+  }
+
+  #tangible-sync-window-right-illustration {
+    animation-duration: 500ms;
+    animation-name: right-illustration-slide-animation, fade-in-animation;
+    content: var(--tangible-sync-window-right-illustration-url);
+    right: 0;
+    transition-timing-function: ease-in-out;
+  }
+
+  #tangible-sync-window-left-illustration,
+  #tangible-sync-window-right-illustration {
+    max-width: 320px;
+    position: absolute;
+    top: 0;
+    width: var(--tangible-sync-window-illustration-width)
+  }
+
+  .fade-in {
+    animation: 500ms ease-in-out fade-in-animation;
+  }
+
   @media (prefers-color-scheme: dark) {
     :host {
-      --tangible-sync-illustration-url:
-          url(./images/tangible_sync_illustration_dark.svg);
+      --tangible-sync-dialog-illustration-url:
+          url(./images/tangible_sync_dialog_illustration_dark.svg);
+      --tangible-sync-window-left-illustration-url:
+          url(./images/tangible_sync_window_left_illustration_dark.svg);
+      --tangible-sync-window-right-illustration-url:
+          url(./images/tangible_sync_window_right_illustration_dark.svg);
       --sync-benefits-list-color: var(--google-grey-800);
       --sync-benefit-icon-color: var(--google-blue-300);
-      --sync-info-title-color: var(--google-grey-500);
     }
 
     /* Modal dialog design */
@@ -388,6 +489,18 @@
 
     .signin-intercept-design .work-badge {
       border-color: var(--google-grey-500);
+    }
+  }
+
+  @media screen and ((max-width: 780px) or (max-height: 600px)) {
+    .window-main-container.tangible-sync #syncConfirmationHeading {
+      font-size: 1.5rem;
+      line-height: 32px;
+    }
+
+    .window-main-container.tangible-sync #syncInfoTitle {
+      font-size: 0.94rem;
+      line-height: 22px;
     }
   }
 </style>
@@ -518,39 +631,43 @@
 </template>
 
 <template is="dom-if" if="[[isTangibleSync_]]">
-  <img id="tangible-sync-illustration">
-  <div id="contentContainer" class="tangible-sync">
-    <div id="avatarContainer">
-      <img id="avatar" alt="" src="[[accountImageSrc_]]">
-      <div class="work-badge" id="badge" hidden="[[!showEnterpriseBadge_]]">
-        <iron-icon icon="cr:domain"></iron-icon>
+  <div class$="tangible-sync [[getMainContainerClass_()]]">
+    <img id="tangible-sync-dialog-illustration" hidden="[[!isModalDialog_]]">
+    <img id="tangible-sync-window-left-illustration" hidden="[[isModalDialog_]]">
+    <img id="tangible-sync-window-right-illustration" hidden="[[isModalDialog_]]">
+    <div id="contentContainer" class$="[[getAnimationClass_()]]">
+      <div id="avatarContainer">
+        <img id="avatar" alt="" src="[[accountImageSrc_]]">
+        <div class="work-badge" id="badge" hidden="[[!showEnterpriseBadge_]]">
+          <iron-icon icon="cr:domain"></iron-icon>
+        </div>
+      </div>
+      <h1 id="syncConfirmationHeading" consent-description>
+        $i18n{syncConfirmationTitle}
+      </h1>
+      <div id="syncInfoTitle" consent-description>
+        $i18n{syncConfirmationSyncInfoTitle}
+      </div>
+      <div id="syncBenefitsList">
+        <template is="dom-repeat" items="[[syncBenefitsList_]]">
+          <div class="sync-benefit">
+            <iron-icon class="sync-benefit-icon" icon="[[item.iconName]]">
+            </iron-icon>
+            <div class="sync-benefit-text" consent-description>
+              [[i18n(item.title)]]
+            </div>
+          </div>
+        </template>
+      </div>
+      <div id="syncInfoDesc" class="secondary" consent-description>
+        $i18n{syncConfirmationSyncInfoDesc}
       </div>
     </div>
-    <h1 id="syncConfirmationHeading" consent-description>
-      $i18n{syncConfirmationTitle}
-    </h1>
-    <div id="syncInfoTitle" consent-description>
-      $i18n{syncConfirmationSyncInfoTitle}
-    </div>
-    <div id="syncBenefitsList">
-      <template is="dom-repeat" items="[[syncBenefitsList_]]">
-        <div class="sync-benefit">
-          <iron-icon class="sync-benefit-icon" icon="[[item.iconName]]">
-          </iron-icon>
-          <div class="sync-benefit-text" consent-description>
-            [[i18n(item.title)]]
-          </div>
-        </div>
-      </template>
-    </div>
-    <div id="syncInfoDesc" class="secondary" consent-description>
-      $i18n{syncConfirmationSyncInfoDesc}
-    </div>
   </div>
-
-  <div class="action-row">
+  <div class$="action-row tangible-sync [[getAnimationClass_()]]">
     <paper-spinner-lite active="[[anyButtonClicked_]]"></paper-spinner-lite>
-    <div id="tangible-sync-button-container" class="action-container">
+    <div id="tangible-sync-button-container"
+        class$="action-container [[getButtonContainerClass_()]]">
       <cr-button id="confirmButton" class="action-button" on-click="onConfirm_"
           disabled="[[anyButtonClicked_]]" consent-confirmation
           autofocus="[[isModalDialog_]]">

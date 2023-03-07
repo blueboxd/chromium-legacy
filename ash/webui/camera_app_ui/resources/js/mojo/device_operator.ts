@@ -8,6 +8,7 @@ import {reportError} from '../error.js';
 import {Point} from '../geometry.js';
 import * as state from '../state.js';
 import {
+  CameraSuspendError,
   ErrorLevel,
   ErrorType,
   Facing,
@@ -597,9 +598,10 @@ export class DeviceOperator {
 
     function suspendObserver(val: boolean) {
       if (val) {
+        console.warn('camera suspended');
         for (const [effect, event] of reprocessEvents.entries()) {
           if (effect === Effect.PORTRAIT_MODE) {
-            event.signalError(new Error('camera suspended'));
+            event.signalError(new CameraSuspendError());
           }
         }
       }
@@ -744,7 +746,8 @@ export class DeviceOperator {
         const val = Reflect.get(target, property);
         if (val instanceof Function) {
           return (...args: unknown[]) => operationQueue.push(
-                     () => Reflect.apply(val, target, args));
+                     () =>
+                         Reflect.apply(val, target, args) as Promise<unknown>);
         }
         return val;
       },

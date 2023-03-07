@@ -6,6 +6,7 @@
 
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -13,14 +14,13 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/system_identity_interaction_manager.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_manager.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,9 +38,6 @@ using signin_metrics::PromoAction;
 @property(nonatomic, strong) SigninCoordinator* userSigninCoordinator;
 // Manager that handles sign-in add account UI.
 @property(nonatomic, strong) AddAccountSigninManager* addAccountSigninManager;
-// Manager that handles interactions to add identities.
-@property(nonatomic, strong)
-    ChromeIdentityInteractionManager* identityInteractionManager;
 // View where the sign-in button was displayed.
 @property(nonatomic, assign) AccessPoint accessPoint;
 // Promo button used to trigger the sign-in.
@@ -108,10 +105,10 @@ using signin_metrics::PromoAction;
       ChromeAccountManagerServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
 
-  ChromeIdentityInteractionManager* identityInteractionManager =
-      ios::GetChromeBrowserProvider()
-          .GetChromeIdentityService()
-          ->CreateChromeIdentityInteractionManager();
+  id<SystemIdentityInteractionManager> identityInteractionManager =
+      GetApplicationContext()
+          ->GetSystemIdentityManager()
+          ->CreateInteractionManager();
 
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(

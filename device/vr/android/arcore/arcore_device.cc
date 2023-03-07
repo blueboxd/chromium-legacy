@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/android/android_hardware_buffer_compat.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/numerics/math_constants.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "device/base/features.h"
 #include "device/vr/android/arcore/ar_image_transport.h"
 #include "device/vr/android/arcore/arcore_gl.h"
 #include "device/vr/android/arcore/arcore_gl_thread.h"
@@ -32,18 +32,18 @@ namespace {
 
 const std::vector<mojom::XRSessionFeature>& GetSupportedFeatures() {
   static base::NoDestructor<std::vector<mojom::XRSessionFeature>>
-      kSupportedFeatures{{
-    mojom::XRSessionFeature::REF_SPACE_VIEWER,
-    mojom::XRSessionFeature::REF_SPACE_LOCAL,
-    mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
-    mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
-    mojom::XRSessionFeature::DOM_OVERLAY,
-    mojom::XRSessionFeature::LIGHT_ESTIMATION,
-    mojom::XRSessionFeature::ANCHORS,
-    mojom::XRSessionFeature::PLANE_DETECTION,
-    mojom::XRSessionFeature::DEPTH,
-    mojom::XRSessionFeature::IMAGE_TRACKING
-  }};
+      kSupportedFeatures{{mojom::XRSessionFeature::REF_SPACE_VIEWER,
+                          mojom::XRSessionFeature::REF_SPACE_LOCAL,
+                          mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+                          mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+                          mojom::XRSessionFeature::DOM_OVERLAY,
+                          mojom::XRSessionFeature::LIGHT_ESTIMATION,
+                          mojom::XRSessionFeature::ANCHORS,
+                          mojom::XRSessionFeature::PLANE_DETECTION,
+                          mojom::XRSessionFeature::DEPTH,
+                          mojom::XRSessionFeature::IMAGE_TRACKING,
+                          mojom::XRSessionFeature::HIT_TEST,
+                          mojom::XRSessionFeature::FRONT_FACING}};
 
   return *kSupportedFeatures;
 }
@@ -75,10 +75,6 @@ ArCoreDevice::ArCoreDevice(
 
   std::vector<mojom::XRSessionFeature> device_features(
         GetSupportedFeatures());
-
-  // Only support hit test if the feature flag is enabled.
-  if (base::FeatureList::IsEnabled(features::kWebXrHitTest))
-      device_features.emplace_back(mojom::XRSessionFeature::HIT_TEST);
 
   // Only support camera access if the device supports shared buffers.
   if (base::AndroidHardwareBufferCompat::IsSupportAvailable())

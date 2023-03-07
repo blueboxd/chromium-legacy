@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -50,8 +50,9 @@ namespace internal {
 class SheetView : public views::BoxLayoutView, public views::FocusTraversable {
  public:
   METADATA_HEADER(SheetView);
-  explicit SheetView(const base::RepeatingCallback<void(bool*)>&
-                         enter_key_accelerator_callback)
+  explicit SheetView(
+      const base::RepeatingCallback<void(bool*, const ui::Event&)>&
+          enter_key_accelerator_callback)
       : enter_key_accelerator_callback_(enter_key_accelerator_callback) {
     if (enter_key_accelerator_callback_)
       AddAccelerator(enter_key_accelerator_);
@@ -115,7 +116,8 @@ class SheetView : public views::BoxLayoutView, public views::FocusTraversable {
       return views::View::AcceleratorPressed(accelerator);
 
     bool is_enabled = false;
-    enter_key_accelerator_callback_.Run(&is_enabled);
+    enter_key_accelerator_callback_.Run(&is_enabled,
+                                        enter_key_accelerator_.ToKeyEvent());
     return is_enabled;
   }
 
@@ -131,7 +133,8 @@ class SheetView : public views::BoxLayoutView, public views::FocusTraversable {
                                            /*cycle=*/true,
                                            /*accessibility_mode=*/false);
   ui::Accelerator enter_key_accelerator_{ui::VKEY_RETURN, ui::EF_NONE};
-  base::RepeatingCallback<void(bool*)> enter_key_accelerator_callback_;
+  base::RepeatingCallback<void(bool*, const ui::Event&)>
+      enter_key_accelerator_callback_;
 };
 
 BEGIN_METADATA(SheetView, views::BoxLayoutView)
@@ -259,11 +262,11 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   auto view =
       views::Builder<internal::SheetView>(
           std::make_unique<internal::SheetView>(
-              primary_button_
+              ShouldAccelerateEnterKey()
                   ? base::BindRepeating(&PaymentRequestSheetController::
                                             PerformPrimaryButtonAction,
-                                        weak_ptr_factory_.GetWeakPtr())
-                  : base::RepeatingCallback<void(bool*)>()))
+                                        GetWeakPtr())
+                  : base::RepeatingCallback<void(bool*, const ui::Event&)>()))
           .SetOrientation(views::BoxLayout::Orientation::kVertical)
           .CustomConfigure(base::BindOnce(
               [](PaymentRequestSheetController* controller,
@@ -534,12 +537,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
 }
 
 views::View* PaymentRequestSheetController::GetFirstFocusedView() {
-  if (primary_button_ && primary_button_->GetEnabled())
-    return primary_button_;
-
-  if (secondary_button_)
-    return secondary_button_;
-
+  // Do not focus either of the buttons, per guidelines in
+  // docs/security/security-considerations-for-browser-ui.md
   DCHECK(content_view_);
   return content_view_;
 }
@@ -550,6 +549,12 @@ bool PaymentRequestSheetController::GetSheetId(DialogViewID* sheet_id) {
 
 bool PaymentRequestSheetController::DisplayDynamicBorderForHiddenContents() {
   return true;
+}
+
+bool PaymentRequestSheetController::ShouldAccelerateEnterKey() {
+  // Subclasses must explicitly opt-into this behavior. Be aware of the risks of
+  // enabling click-jacking of the Enter key; see https://crbug.com/1403539
+  return false;
 }
 
 void PaymentRequestSheetController::CloseButtonPressed() {
@@ -586,7 +591,8 @@ void PaymentRequestSheetController::AddSecondaryButton(views::View* container) {
 }
 
 void PaymentRequestSheetController::PerformPrimaryButtonAction(
-    bool* is_enabled) {
+    bool* is_enabled,
+    const ui::Event& event) {
   // Set |is_enabled| to "true" to prevent other views from handling the event.
   *is_enabled = true;
 
@@ -594,7 +600,7 @@ void PaymentRequestSheetController::PerformPrimaryButtonAction(
       primary_button_->GetEnabled()) {
     ButtonCallback callback = GetPrimaryButtonCallback();
     if (callback)
-      callback.Run();
+      callback.Run(event);
   }
 }
 

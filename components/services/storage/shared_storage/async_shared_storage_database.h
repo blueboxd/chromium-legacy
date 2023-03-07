@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
@@ -63,12 +63,12 @@ class AsyncSharedStorageDatabase {
   // `TrimMemory()`, `Get()`, `Set()`, `Append()`, `Delete()`, `Clear()`,
   // `Length()`, `Keys()`, `Entries()`, `PurgeMatchingOrigins()`,
   // `PurgeStale()`, `FetchOrigins()`, `MakeBudgetWithdrawal()`,
-  // `GetRemainingBudget()`, `GetCreationTime()`, `GetMetadata()`, and
-  // `GetEntriesForDevTools()` are all async versions of the corresponding
-  // methods in `storage::SharedStorageDatabase`, with the modification that
-  // `Set()` and `Append()` take a boolean callback to indicate that a value was
-  // set or appended, rather than a long integer callback with the row number
-  // for the next available row.
+  // `GetRemainingBudget()`, `GetCreationTime()`, `GetMetadata()`,
+  // `GetEntriesForDevTools()`, and `ResetBudgetForDevTools() are all async
+  // versions of the corresponding methods in `storage::SharedStorageDatabase`,
+  // with the modification that `Set()` and `Append()` take a boolean callback
+  // to indicate that a value was set or appended, rather than a long integer
+  // callback with the row number for the next available row.
   //
   // It is OK to call these async methods even if the database has failed to
   // initialize, as there is an alternate code path to handle this case that
@@ -198,12 +198,10 @@ class AsyncSharedStorageDatabase {
 
   // Fetches a vector of `mojom::StorageUsageInfoPtr`, with one
   // `mojom::StorageUsageInfoPtr` for each origin currently using shared
-  // storage in this profile. If `exclude_empty_origins` is true, then only
-  // those with positive `length` are included in the vector.
+  // storage in this profile.
   virtual void FetchOrigins(
       base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
-          callback,
-      bool exclude_empty_origins = true) = 0;
+          callback) = 0;
 
   // Makes a withdrawal of `bits_debit` stamped with the current time from the
   // privacy budget of `context_origin`.
@@ -242,6 +240,13 @@ class AsyncSharedStorageDatabase {
   virtual void GetEntriesForDevTools(
       url::Origin context_origin,
       base::OnceCallback<void(EntriesResult)> callback) = 0;
+
+  // Removes all budget withdrawals for `context_origin`. Calls `callback` to
+  // indicate whether the transaction succeeded. Intended as a convenience for
+  // the DevTools UX.
+  virtual void ResetBudgetForDevTools(
+      url::Origin context_origin,
+      base::OnceCallback<void(OperationResult)> callback) = 0;
 };
 
 }  // namespace storage

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/history/chrome_history_client.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/chrome_history_backend_client.h"
 #include "chrome/browser/history/history_utils.h"
@@ -72,7 +72,7 @@ void ChromeHistoryClient::UpdateBookmarkLastUsedTime(int64_t bookmark_node_id,
   // This call is async so the BookmarkNode could have already been deleted.
   if (!node)
     return;
-  bookmark_model_->UpdateLastUsedTime(node, time);
+  bookmark_model_->UpdateLastUsedTime(node, time, /*just_opened=*/true);
 }
 
 void ChromeHistoryClient::StopObservingBookmarkModel() {

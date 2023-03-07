@@ -9,14 +9,13 @@
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/mojo/mojom/speech_recognition.mojom.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -66,6 +65,12 @@ void ProjectorMetadataController::RecordTranscription(
   metadata_->AddTranscript(std::make_unique<ProjectorTranscript>(
       timing->audio_start_time, timing->audio_end_time,
       speech_result.transcription, timing->hypothesis_parts.value()));
+}
+
+void ProjectorMetadataController::SetSpeechRecognitionStatus(
+    RecognitionStatus status) {
+  DCHECK(metadata_);
+  metadata_->SetSpeechRecognitionStatus(status);
 }
 
 void ProjectorMetadataController::RecordKeyIdea() {

@@ -31,7 +31,6 @@ using base::UTF8ToUTF16;
 
 namespace autofill {
 
-using structured_address::VerificationStatus;
 constexpr VerificationStatus kObserved = VerificationStatus::kObserved;
 
 namespace {
@@ -1050,12 +1049,10 @@ TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
   AutofillProfile b = a;
   b.set_guid(base::GenerateGUID());
   b.set_origin(kSettingsOrigin);
-  b.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_LINE2, u"Unit 5, area 51",
-      structured_address::VerificationStatus::kObserved);
-  b.SetRawInfoWithVerificationStatus(
-      COMPANY_NAME, std::u16string(),
-      structured_address::VerificationStatus::kObserved);
+  b.SetRawInfoWithVerificationStatus(ADDRESS_HOME_LINE2, u"Unit 5, area 51",
+                                     VerificationStatus::kObserved);
+  b.SetRawInfoWithVerificationStatus(COMPANY_NAME, std::u16string(),
+                                     VerificationStatus::kObserved);
 
   b.SetRawInfo(NAME_MIDDLE, u"M.");
   b.SetRawInfo(NAME_FULL, u"Marion M. Morrison");
@@ -1110,9 +1107,8 @@ TEST(AutofillProfileTest, OverwriteName_AddNameFull) {
   AutofillProfile b = a;
   a.FinalizeAfterImport();
 
-  b.SetRawInfoWithVerificationStatus(
-      NAME_FULL, u"Marion Mitchell Morrison",
-      structured_address::VerificationStatus::kUserVerified);
+  b.SetRawInfoWithVerificationStatus(NAME_FULL, u"Marion Mitchell Morrison",
+                                     VerificationStatus::kUserVerified);
   b.FinalizeAfterImport();
 
   EXPECT_TRUE(a.MergeDataFrom(b, "en-US"));
@@ -1763,20 +1759,23 @@ TEST(AutofillProfileTest, GetNonEmptyRawTypes) {
                        "johnwayne@me.xyz", nullptr, "123 Zoo St.", nullptr,
                        "Hollywood", "CA", "91601", "US", "14155678910");
 
-  std::vector<ServerFieldType> expected_raw_types{NAME_FIRST,
-                                                  NAME_LAST,
-                                                  NAME_FULL,
-                                                  EMAIL_ADDRESS,
-                                                  PHONE_HOME_WHOLE_NUMBER,
-                                                  ADDRESS_HOME_LINE1,
-                                                  ADDRESS_HOME_CITY,
-                                                  ADDRESS_HOME_STATE,
-                                                  ADDRESS_HOME_ZIP,
-                                                  ADDRESS_HOME_COUNTRY,
-                                                  ADDRESS_HOME_STREET_ADDRESS,
-                                                  ADDRESS_HOME_STREET_NAME,
-                                                  ADDRESS_HOME_HOUSE_NUMBER,
-                                                  NAME_LAST_SECOND};
+  std::vector<ServerFieldType> expected_raw_types{
+      NAME_FIRST,
+      NAME_LAST,
+      NAME_FULL,
+      EMAIL_ADDRESS,
+      PHONE_HOME_WHOLE_NUMBER,
+      ADDRESS_HOME_ADDRESS,
+      ADDRESS_HOME_LINE1,
+      ADDRESS_HOME_CITY,
+      ADDRESS_HOME_STATE,
+      ADDRESS_HOME_ZIP,
+      ADDRESS_HOME_COUNTRY,
+      ADDRESS_HOME_STREET_ADDRESS,
+      ADDRESS_HOME_STREET_NAME,
+      ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
+      ADDRESS_HOME_HOUSE_NUMBER,
+      NAME_LAST_SECOND};
 
   ServerFieldTypeSet non_empty_raw_types;
   profile.GetNonEmptyRawTypes(&non_empty_raw_types);

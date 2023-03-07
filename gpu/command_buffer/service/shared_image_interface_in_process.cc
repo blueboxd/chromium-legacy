@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_interface_in_process.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
@@ -14,14 +14,12 @@
 #include "gpu/command_buffer/service/command_buffer_task_executor.h"
 #include "gpu/command_buffer/service/display_compositor_memory_and_task_controller_on_gpu.h"
 #include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/single_task_sequence.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/common/gpu_client_ids.h"
 #include "ui/gl/gl_context.h"
 
 namespace gpu {
@@ -32,7 +30,6 @@ struct SharedImageInterfaceInProcess::SetUpOnGpuParams {
   const GpuFeatureInfo gpu_feature_info;
   const raw_ptr<gpu::SharedContextState> context_state;
   const raw_ptr<SharedImageManager> shared_image_manager;
-  const raw_ptr<ImageFactory> image_factory;
   const bool is_for_display_compositor;
 
   SetUpOnGpuParams(const GpuPreferences& gpu_preferences,
@@ -40,14 +37,12 @@ struct SharedImageInterfaceInProcess::SetUpOnGpuParams {
                    const GpuFeatureInfo& gpu_feature_info,
                    gpu::SharedContextState* context_state,
                    SharedImageManager* shared_image_manager,
-                   ImageFactory* image_factory,
                    bool is_for_display_compositor)
       : gpu_preferences(gpu_preferences),
         gpu_workarounds(gpu_workarounds),
         gpu_feature_info(gpu_feature_info),
         context_state(context_state),
         shared_image_manager(shared_image_manager),
-        image_factory(image_factory),
         is_for_display_compositor(is_for_display_compositor) {}
 
   ~SetUpOnGpuParams() = default;
@@ -67,7 +62,6 @@ SharedImageInterfaceInProcess::SharedImageInterfaceInProcess(
           display_controller->gpu_feature_info(),
           display_controller->shared_context_state(),
           display_controller->shared_image_manager(),
-          display_controller->image_factory(),
           /*is_for_display_compositor=*/true) {}
 
 SharedImageInterfaceInProcess::SharedImageInterfaceInProcess(
@@ -78,7 +72,6 @@ SharedImageInterfaceInProcess::SharedImageInterfaceInProcess(
     const GpuFeatureInfo& gpu_feature_info,
     gpu::SharedContextState* context_state,
     SharedImageManager* shared_image_manager,
-    ImageFactory* image_factory,
     bool is_for_display_compositor)
     : task_sequence_(task_sequence),
       command_buffer_id_(
@@ -91,7 +84,7 @@ SharedImageInterfaceInProcess::SharedImageInterfaceInProcess(
           &SharedImageInterfaceInProcess::SetUpOnGpu, base::Unretained(this),
           std::make_unique<SetUpOnGpuParams>(
               gpu_preferences, gpu_workarounds, gpu_feature_info, context_state,
-              shared_image_manager, image_factory, is_for_display_compositor)),
+              shared_image_manager, is_for_display_compositor)),
       {});
 }
 
@@ -116,7 +109,7 @@ void SharedImageInterfaceInProcess::SetUpOnGpu(
         auto shared_image_factory = std::make_unique<SharedImageFactory>(
             params->gpu_preferences, params->gpu_workarounds,
             params->gpu_feature_info, params->context_state,
-            params->shared_image_manager, params->image_factory,
+            params->shared_image_manager,
             params->context_state->memory_tracker(),
             params->is_for_display_compositor);
         return shared_image_factory;
@@ -321,11 +314,9 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
 
   auto mailbox = Mailbox::GenerateForSharedImage();
   gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
-  bool requires_sync_token = handle.type == gfx::IO_SURFACE_BUFFER;
-  SyncToken sync_token;
   {
     base::AutoLock lock(lock_);
-    sync_token = MakeSyncToken(next_fence_sync_release_++);
+    SyncToken sync_token = MakeSyncToken(next_fence_sync_release_++);
     // Note: we enqueue the task under the lock to guarantee monotonicity of
     // the release ids as seen by the service. Unretained is safe because
     // InProcessCommandBuffer synchronizes with the GPU thread at destruction
@@ -338,11 +329,7 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
             color_space, surface_origin, alpha_type, usage, sync_token),
         {});
   }
-  if (requires_sync_token) {
-    sync_token.SetVerifyFlush();
-    gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
-                                                       sync_token);
-  }
+
   return mailbox;
 }
 
@@ -366,8 +353,8 @@ void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
 
   DCHECK(shared_image_factory_);
   if (!shared_image_factory_->CreateSharedImage(
-          mailbox, kDisplayCompositorClientId, std::move(handle), format, plane,
-          size, color_space, surface_origin, alpha_type, usage)) {
+          mailbox, std::move(handle), format, plane, size, color_space,
+          surface_origin, alpha_type, usage)) {
     context_state_->MarkContextLost();
     return;
   }

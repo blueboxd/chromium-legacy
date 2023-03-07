@@ -10,10 +10,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_accelerators.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -91,10 +91,12 @@ const test::UIPath kDemoPreferencesScreen = {kDemoPrefsId};
 const test::UIPath kDemoPreferencesCountry = {kDemoPrefsId, "countrySelect"};
 const test::UIPath kDemoPreferencesCountrySelect = {kDemoPrefsId,
                                                     "countrySelect", "select"};
-const test::UIPath kDemoPreferencesRetailerStoreId = {kDemoPrefsId,
-                                                      "retailerIdInput"};
-const test::UIPath kDemoPreferencesRetailerStoreIdInputDisplayMessage = {
-    kDemoPrefsId, "retailer-id-input-display-text"};
+const test::UIPath kDemoPreferencesRetailerName = {kDemoPrefsId,
+                                                   "retailerNameInput"};
+const test::UIPath kDemoPreferencesStoreNumber = {kDemoPrefsId,
+                                                  "storeNumberInput"};
+const test::UIPath kDemoPreferencesStoreNumberInputDisplayMessage = {
+    kDemoPrefsId, "store-number-input-display-text"};
 const test::UIPath kDemoPreferencesNext = {kDemoPrefsId, "nextButton"};
 
 const test::UIPath kNetworkScreen = {kNetworkId};
@@ -268,6 +270,22 @@ class DemoSetupTestBase : public OobeBaseTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void ProceedThroughDemoPreferencesScreen() {
+    SetAndVerifyValidRetailerNameAndStoreNumber("Retailer", "1234");
+    test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  }
+
+  // Type in valid input and the "continue" button is enabled.
+  void SetAndVerifyValidRetailerNameAndStoreNumber(
+      const std::string& expected_retailer_name,
+      const std::string& expected_store_number) {
+    test::OobeJS().TypeIntoPath(expected_retailer_name,
+                                kDemoPreferencesRetailerName);
+    test::OobeJS().TypeIntoPath(expected_store_number,
+                                kDemoPreferencesStoreNumber);
+    test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+  }
+
   // Sets fake time in MultiTapDetector to remove dependency on real time in
   // test environment.
   void SetFakeTimeForMultiTapDetector(base::Time fake_time) {
@@ -297,8 +315,7 @@ class DemoSetupTestBase : public OobeBaseTest {
 class DemoSetupArcSupportedTest : public DemoSetupTestBase {
  public:
   DemoSetupArcSupportedTest() {
-    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
-                                             "us");
+    statistics_provider_.SetMachineStatistic(system::kRegionKey, "us");
     statistics_provider_.SetVpdStatus(
         system::StatisticsProvider::VpdStatus::kValid);
   }
@@ -333,33 +350,15 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
     test::OobeJS().ExpectVisiblePath(kCCAcceptButton);
   }
 
-  // Type in valid input and the "continue" button is enabled.
-  void ContinueForValidRetailerAndStoreId(
-      const std::string& expected_retailer_store_id) {
-    test::OobeJS().TypeIntoPath(expected_retailer_store_id,
-                                kDemoPreferencesRetailerStoreId);
-    test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
-    test::OobeJS().ExpectElementText(
-        l10n_util::GetStringUTF8(
-            IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_HELP_TEXT),
-        kDemoPreferencesRetailerStoreIdInputDisplayMessage);
-    test::OobeJS().ClickOnPath(kDemoPreferencesNext);
-
-    EXPECT_EQ(expected_retailer_store_id, WizardController::default_controller()
-                                              ->demo_setup_controller()
-                                              ->get_retailer_store_id_input());
-  }
-
   // Type in invalid input and the "continue" button is disabled.
-  void DisableContinueButtonForInvalidRetailerAndStoreId(
-      const std::string& expected_retailer_store_id) {
-    test::OobeJS().TypeIntoPath(expected_retailer_store_id,
-                                kDemoPreferencesRetailerStoreId);
+  void SetAndVerifyInvalidRetailerNameAndStoreNumber(
+      const std::string& expected_retailer_name,
+      const std::string& expected_store_number) {
+    test::OobeJS().TypeIntoPath(expected_retailer_name,
+                                kDemoPreferencesRetailerName);
+    test::OobeJS().TypeIntoPath(expected_store_number,
+                                kDemoPreferencesStoreNumber);
     test::OobeJS().ExpectDisabledPath(kDemoPreferencesNext);
-    test::OobeJS().ExpectElementText(
-        l10n_util::GetStringUTF8(
-            IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_ERROR_TEXT),
-        kDemoPreferencesRetailerStoreIdInputDisplayMessage);
   }
 
   void AcceptArcTos() {
@@ -540,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   UseOnlineModeOnNetworkScreen();
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupProgress();
 
@@ -587,6 +586,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
     EXPECT_EQ(it->second, test::OobeJS().GetString(query));
   }
 
+  SetAndVerifyValidRetailerNameAndStoreNumber("Retailer", "1234");
+
   // Expect active "OK" button with "US" selected as country.
   test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
   test::OobeJS().ExpectElementValue("US", kDemoPreferencesCountrySelect);
@@ -595,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       OnlineSetupFlowSuccessWithRetailerAndStoreId) {
+                       OnlineSetupFlowSuccessWithValidRetailerAndStore) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -606,46 +607,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   UseOnlineModeOnNetworkScreen();
 
-  ContinueForValidRetailerAndStoreId("ABC-1234");
+  // Test a couple valid inputs, verify the "continue" button is enabled.
+  SetAndVerifyValidRetailerNameAndStoreNumber("Ret@iler with $ymb0ls", "0000");
+  SetAndVerifyValidRetailerNameAndStoreNumber("R", "1");
+  SetAndVerifyValidRetailerNameAndStoreNumber("Retailer", "1234");
 
-  AcceptTermsAndExpectDemoSetupProgress();
-
-  EXPECT_EQ("admin-us@cros-demo-mode.com",
-            DemoSetupController::GetSubOrganizationEmail());
-  // LoginOrLockScreen is shown at beginning of OOBE, so we need to wait until
-  // it's shown again when Demo setup completes.
-  LoginOrLockScreenVisibleWaiter().WaitEvenIfShown();
-
-  EXPECT_EQ("ABC", g_browser_process->local_state()->GetString(
-                       prefs::kDemoModeRetailerId));
-  EXPECT_EQ("1234", g_browser_process->local_state()->GetString(
-                        prefs::kDemoModeStoreId));
-
-  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
-  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
-}
-
-/**
- * Test the cases of valid retailer and store ID.
- */
-using DemoSetupValidRetailerAndStoreIdTest = DemoSetupArcSupportedTest;
-
-IN_PROC_BROWSER_TEST_F(DemoSetupValidRetailerAndStoreIdTest,
-                       OnlineSetupFlowSuccessWithValidNullRetailerAndStoreId) {
-  // Simulate successful online setup.
-  enrollment_helper_.ExpectEnrollmentMode(
-      policy::EnrollmentConfig::MODE_ATTESTATION);
-  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
-  SimulateNetworkConnected();
-
-  TriggerDemoModeOnWelcomeScreen();
-
-  UseOnlineModeOnNetworkScreen();
-
-  DisableContinueButtonForInvalidRetailerAndStoreId("ABC-12345");
-
-  // Clear the input, the "continue" button is enabled.
-  ContinueForValidRetailerAndStoreId("");
+  test::OobeJS().ExpectElementText(
+      l10n_util::GetStringUTF8(
+          IDS_OOBE_DEMO_SETUP_PREFERENCES_STORE_NUMBER_INPUT_HELP_TEXT),
+      kDemoPreferencesStoreNumberInputDisplayMessage);
 
   test::OobeJS().ClickOnPath(kDemoPreferencesNext);
 
@@ -657,45 +627,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupValidRetailerAndStoreIdTest,
   // it's shown again when Demo setup completes.
   LoginOrLockScreenVisibleWaiter().WaitEvenIfShown();
 
-  EXPECT_EQ("", g_browser_process->local_state()->GetString(
-                    prefs::kDemoModeRetailerId));
-  EXPECT_EQ(
-      "", g_browser_process->local_state()->GetString(prefs::kDemoModeStoreId));
-
-  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
-  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    DemoSetupValidRetailerAndStoreIdTest,
-    OnlineSetupFlowSuccessWithValidNonNullRetailerAndStoreId) {
-  // Simulate successful online setup.
-  enrollment_helper_.ExpectEnrollmentMode(
-      policy::EnrollmentConfig::MODE_ATTESTATION);
-  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
-  SimulateNetworkConnected();
-
-  TriggerDemoModeOnWelcomeScreen();
-
-  UseOnlineModeOnNetworkScreen();
-
-  DisableContinueButtonForInvalidRetailerAndStoreId("AB-1235");
-
-  // Type in the valid input, the "continue" button is enabled.
-  ContinueForValidRetailerAndStoreId("BBY-1234");
-
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
-
-  AcceptTermsAndExpectDemoSetupProgress();
-
-  EXPECT_EQ("admin-us@cros-demo-mode.com",
-            DemoSetupController::GetSubOrganizationEmail());
-  // LoginOrLockScreen is shown at beginning of OOBE, so we need to wait until
-  // it's shown again when Demo setup completes.
-  LoginOrLockScreenVisibleWaiter().WaitEvenIfShown();
-
-  EXPECT_EQ("BBY", g_browser_process->local_state()->GetString(
-                       prefs::kDemoModeRetailerId));
+  EXPECT_EQ("Retailer", g_browser_process->local_state()->GetString(
+                            prefs::kDemoModeRetailerId));
   EXPECT_EQ("1234", g_browser_process->local_state()->GetString(
                         prefs::kDemoModeStoreId));
 
@@ -703,28 +636,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-/**
- * Test the cases of invalid retailer and store ID.
- */
-class DemoSetupInvalidRetailerAndStoreIdTest
-    : public DemoSetupArcSupportedTest,
-      public ::testing::WithParamInterface<std::string> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    DemoSetupInvalidRetailerAndStoreIdTest,
-    ::testing::Values(
-        "ABCD-1234",  // Retailer ID letters are more than three.
-        "A-1234",     // Retailer ID letters are less than three.
-        "ABC-123",    // Store ID digits are less than four.
-        "ABC-12345",  // Store ID digits are more than four.
-        "abC-1234",   // Retailer ID contains lower case letters.
-        "ABC_1234",   // There is no hyphen between retailer ID and store ID.
-        "ABC1234"     // There is no hyphen between retailer ID and store ID.
-        ));
-
-IN_PROC_BROWSER_TEST_P(DemoSetupInvalidRetailerAndStoreIdTest,
-                       OnlineSetupNoEnrollmentWithInvalidRetailerAndStoreId) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       OnlineSetupNoEnrollmentWithInvalidRetailerAndStore) {
   // Simulate demo online setup not finished.
   enrollment_helper_.ExpectNoEnrollment();
   SimulateNetworkConnected();
@@ -733,14 +646,22 @@ IN_PROC_BROWSER_TEST_P(DemoSetupInvalidRetailerAndStoreIdTest,
 
   UseOnlineModeOnNetworkScreen();
 
-  // Display the valid message if no retailer and store ID is provided.
   test::OobeJS().ExpectElementText(
       l10n_util::GetStringUTF8(
-          IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_HELP_TEXT),
-      kDemoPreferencesRetailerStoreIdInputDisplayMessage);
-  test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+          IDS_OOBE_DEMO_SETUP_PREFERENCES_STORE_NUMBER_INPUT_HELP_TEXT),
+      kDemoPreferencesStoreNumberInputDisplayMessage);
+  test::OobeJS().ExpectDisabledPath(kDemoPreferencesNext);
 
-  DisableContinueButtonForInvalidRetailerAndStoreId(GetParam());
+  SetAndVerifyInvalidRetailerNameAndStoreNumber("ValidRetailer", "NotANumber");
+  SetAndVerifyInvalidRetailerNameAndStoreNumber("", "1234");
+  SetAndVerifyInvalidRetailerNameAndStoreNumber("ValidRetailer", "");
+  SetAndVerifyInvalidRetailerNameAndStoreNumber("ValidRetailer", "1234a");
+  SetAndVerifyInvalidRetailerNameAndStoreNumber("ValidRetailer", "12-34");
+
+  // Verify that continue button goes back to being disabled after enabled
+  // for correct input
+  SetAndVerifyValidRetailerNameAndStoreNumber("ValidRetailer", "1234");
+  SetAndVerifyInvalidRetailerNameAndStoreNumber("", "");
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
@@ -759,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowErrorDefault) {
 
   UseOnlineModeOnNetworkScreen();
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupFailure();
 
@@ -789,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   UseOnlineModeOnNetworkScreen();
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupFailure();
 
@@ -821,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
       ->SetCrOSComponentLoadErrorForTest(
           component_updater::CrOSComponentManager::Error::INSTALL_FAILURE);
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupFailure();
 
@@ -850,7 +771,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, ClickNetworkOnNetworkScreen) {
   SimulateNetworkConnected();
 
   OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+  ProceedThroughDemoPreferencesScreen();
 
   if (features::IsOobeConsolidatedConsentEnabled()) {
     test::WaitForConsolidatedConsentScreen();
@@ -873,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   if (features::IsOobeConsolidatedConsentEnabled()) {
     test::WaitForConsolidatedConsentScreen();
@@ -900,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnTermsScreen) {
   if (features::IsOobeConsolidatedConsentEnabled()) {
     UseOnlineModeOnNetworkScreen();
     OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
-    test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+    ProceedThroughDemoPreferencesScreen();
     test::WaitForConsolidatedConsentScreen();
     test::OobeJS().ClickOnPath(kCCBackButton);
     histogram_tester_.ExpectTotalCount(
@@ -916,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnTermsScreen) {
     StartupUtils::MarkEulaAccepted();
     UseOnlineModeOnNetworkScreen();
     OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
-    test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+    ProceedThroughDemoPreferencesScreen();
     OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
     test::OobeJS().ClickOnPath(kArcTosBackButton);
   }
@@ -936,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnErrorScreen) {
 
   UseOnlineModeOnNetworkScreen();
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupFailure();
 
@@ -965,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, MAYBE_RetryOnErrorScreen) {
 
   UseOnlineModeOnNetworkScreen();
 
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupFailure();
   test::LockDemoDeviceInstallAttributes();
@@ -1101,8 +1023,7 @@ class DemoSetupVariantCountryCodeRegionTest : public DemoSetupArcSupportedTest {
   ~DemoSetupVariantCountryCodeRegionTest() override = default;
 
   DemoSetupVariantCountryCodeRegionTest() {
-    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
-                                             "ca.fr");
+    statistics_provider_.SetMachineStatistic(system::kRegionKey, "ca.fr");
   }
 };
 
@@ -1145,8 +1066,7 @@ class DemoSetupVirtualSetRegionCodeTest : public DemoSetupArcSupportedTest {
   ~DemoSetupVirtualSetRegionCodeTest() override = default;
 
   DemoSetupVirtualSetRegionCodeTest() {
-    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
-                                             "nordic");
+    statistics_provider_.SetMachineStatistic(system::kRegionKey, "nordic");
   }
 };
 
@@ -1185,7 +1105,7 @@ class DemoSetupRegionCodeNotExistTest : public DemoSetupArcSupportedTest {
   ~DemoSetupRegionCodeNotExistTest() override = default;
 
   DemoSetupRegionCodeNotExistTest() {
-    statistics_provider_.ClearMachineStatistic(chromeos::system::kRegionKey);
+    statistics_provider_.ClearMachineStatistic(system::kRegionKey);
   }
 };
 
@@ -1217,8 +1137,7 @@ class DemoSetupBlazeyDeviceTest : public DemoSetupArcSupportedTest {
   ~DemoSetupBlazeyDeviceTest() override = default;
 
   DemoSetupBlazeyDeviceTest() {
-    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
-                                             "us");
+    statistics_provider_.SetMachineStatistic(system::kRegionKey, "us");
     feature_list_.InitAndEnableFeature(chromeos::features::kCloudGamingDevice);
   }
 
@@ -1244,9 +1163,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupBlazeyDeviceTest,
   UseOnlineModeOnNetworkScreen();
 
   // Expect active "OK" button when entering the preference screen.
-  test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
   test::OobeJS().ExpectElementValue("US", kDemoPreferencesCountrySelect);
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  ProceedThroughDemoPreferencesScreen();
 
   AcceptTermsAndExpectDemoSetupProgress();
 

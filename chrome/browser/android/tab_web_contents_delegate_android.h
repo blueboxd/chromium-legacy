@@ -98,7 +98,8 @@ class TabWebContentsDelegateAndroid
       content::WebContents* web_contents) override;
   void ExitPictureInPicture() override;
   bool IsBackForwardCacheSupported() override;
-  bool IsPrerender2Supported(content::WebContents& web_contents) override;
+  content::PreloadingEligibility IsPrerender2Supported(
+      content::WebContents& web_contents) override;
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
@@ -130,7 +131,6 @@ class TabWebContentsDelegateAndroid
   bool IsNightModeEnabled() const;
   bool IsForceDarkWebContentEnabled() const;
   bool CanShowAppBanners() const;
-  bool IsTabLargeEnoughForDesktopSite() const;
 
   // Returns true if this tab is currently presented in the context of custom
   // tabs. Tabs can be moved between different activities so the returned value

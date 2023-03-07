@@ -5,6 +5,7 @@
 #include "media/gpu/test/fake_command_buffer_helper.h"
 
 #include "base/logging.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -163,13 +164,13 @@ bool FakeCommandBufferHelper::BindImageInternal(GLuint service_id,
   return has_stub_;
 }
 
-gpu::Mailbox FakeCommandBufferHelper::CreateMailbox(GLuint service_id) {
+gpu::Mailbox FakeCommandBufferHelper::CreateLegacyMailbox(GLuint service_id) {
   DVLOG(2) << __func__ << "(" << service_id << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(service_ids_.count(service_id));
   if (!has_stub_)
     return gpu::Mailbox();
-  return gpu::Mailbox::Generate();
+  return gpu::Mailbox::GenerateLegacyMailboxForTesting();
 }
 
 void FakeCommandBufferHelper::SetWillDestroyStubCB(

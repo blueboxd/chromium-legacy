@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace payments {
 
@@ -19,9 +19,11 @@ class IframeCspTest : public PaymentRequestPlatformBrowserTestBase,
  public:
   IframeCspTest() {
     if (WebPaymentAPICSPEnabled()) {
-      features_.InitAndEnableFeature(::features::kWebPaymentAPICSP);
+      features_.InitAndDisableFeature(
+          blink::features::kIgnoreCSPInWebPaymentAPI);
     } else {
-      features_.InitAndDisableFeature(::features::kWebPaymentAPICSP);
+      features_.InitAndEnableFeature(
+          blink::features::kIgnoreCSPInWebPaymentAPI);
     }
   }
 

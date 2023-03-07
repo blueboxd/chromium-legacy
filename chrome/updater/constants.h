@@ -369,6 +369,12 @@ inline constexpr int kErrorFailedToLinkLauncher = 38;
 // Failed to rename the old launcher to the new one during activation.
 inline constexpr int kErrorFailedToRenameLauncher = 39;
 
+// Failed to install one or more Systemd units.
+inline constexpr int kErrorFailedToInstallSystemdUnit = 40;
+
+// Failed to remove one or more Systemd units during uninstallation.
+inline constexpr int kErrorFailedToRemoveSystemdUnit = 41;
+
 inline constexpr int kErrorTagParsing = 50;
 
 // Metainstaller errors.
@@ -411,6 +417,13 @@ inline constexpr int kPolicyForceInstallUser = 6;
 
 inline constexpr bool kInstallPolicyDefault = kPolicyEnabled;
 inline constexpr bool kUpdatePolicyDefault = kPolicyEnabled;
+
+// Policy manager `source()` constants.
+extern const char kSourceGroupPolicyManager[];
+extern const char kSourceDMPolicyManager[];
+extern const char kSourceManagedPreferencePolicyManager[];
+extern const char kSourceDefaultValuesPolicyManager[];
+extern const char kSourceDictValuesPolicyManager[];
 
 inline constexpr int kUninstallPingReasonUninstalled = 0;
 inline constexpr int kUninstallPingReasonUserNotAnOwner = 1;

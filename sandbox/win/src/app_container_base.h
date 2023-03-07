@@ -31,15 +31,15 @@ class AppContainerBase final : public AppContainer {
   bool GetPipePath(const wchar_t* pipe_name,
                    base::FilePath* pipe_path) override;
   bool AccessCheck(const wchar_t* object_name,
-                   SecurityObjectType object_type,
+                   base::win::SecurityObjectType object_type,
                    DWORD desired_access,
                    DWORD* granted_access,
                    BOOL* access_status) override;
-  bool AddCapability(const wchar_t* capability_name) override;
-  bool AddCapability(base::win::WellKnownCapability capability) override;
+  void AddCapability(const wchar_t* capability_name) override;
+  void AddCapability(base::win::WellKnownCapability capability) override;
   bool AddCapabilitySddl(const wchar_t* sddl_sid) override;
-  bool AddImpersonationCapability(const wchar_t* capability_name) override;
-  bool AddImpersonationCapability(
+  void AddImpersonationCapability(const wchar_t* capability_name) override;
+  void AddImpersonationCapability(
       base::win::WellKnownCapability capability) override;
   bool AddImpersonationCapabilitySddl(const wchar_t* sddl_sid) override;
   void SetEnableLowPrivilegeAppContainer(bool enable) override;
@@ -72,8 +72,7 @@ class AppContainerBase final : public AppContainer {
   static bool Delete(const wchar_t* package_name);
 
   // Build the token for the lowbox
-  ResultCode BuildLowBoxToken(base::win::ScopedHandle* token,
-                              base::win::ScopedHandle* lockdown = nullptr);
+  ResultCode BuildLowBoxToken(base::win::ScopedHandle* token);
 
  private:
   AppContainerBase(base::win::Sid& package_sid, AppContainerType type);

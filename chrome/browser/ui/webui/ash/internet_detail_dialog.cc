@@ -22,7 +22,7 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_util.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -95,7 +95,8 @@ class PortalNetworkMessageHandler : public content::WebUIMessageHandler {
       return;
     }
     const std::string& guid = args[0].GetString();
-    NetworkConnect::Get()->ShowPortalSignin(guid);
+    NetworkConnect::Get()->ShowPortalSignin(guid,
+                                            NetworkConnect::Source::kSettings);
   }
 };
 
@@ -130,7 +131,7 @@ void InternetDetailDialog::ShowDialog(const std::string& network_id,
 }
 
 InternetDetailDialog::InternetDetailDialog(const NetworkState& network)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetDetailDialogURL),
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIInternetDetailDialogURL),
                               /* title= */ std::u16string()),
       network_id_(network.guid()),
       network_type_(network_util::TranslateShillTypeToONC(network.type())),
@@ -167,18 +168,14 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<PortalNetworkMessageHandler>());
 
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUIInternetDetailDialogHost);
-  source->DisableTrustedTypesCSP();
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUIInternetDetailDialogHost);
   source->AddBoolean("showTechnologyBadge",
                      !features::IsSeparateNetworkIconsEnabled());
-  source->AddBoolean("captivePortalUI2022",
-                     features::IsCaptivePortalUI2022Enabled());
   source->AddBoolean("apnRevamp", features::IsApnRevampEnabled());
   cellular_setup::AddNonStringLoadTimeData(source);
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_DETAIL);
-  source->UseStringsJs();
 
   webui::SetupWebUIDataSource(
       source,
@@ -186,7 +183,6 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
                       kInternetDetailDialogResourcesSize),
       IDR_INTERNET_DETAIL_DIALOG_INTERNET_DETAIL_DIALOG_CONTAINER_HTML);
   source->DisableTrustedTypesCSP();
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 InternetDetailDialogUI::~InternetDetailDialogUI() {}

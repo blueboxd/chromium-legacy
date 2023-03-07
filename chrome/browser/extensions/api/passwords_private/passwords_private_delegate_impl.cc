@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -178,6 +178,8 @@ extensions::api::passwords_private::ImportEntry ConvertImportEntry(
 // extensions::api::passwords_private::ImportResults.
 extensions::api::passwords_private::ImportResults ConvertImportResults(
     const password_manager::ImportResults& results) {
+  base::UmaHistogramEnumeration("PasswordManager.ImportResultsStatus2",
+                                results.status);
   extensions::api::passwords_private::ImportResults private_results;
   private_results.status =
       static_cast<extensions::api::passwords_private::ImportResultsStatus>(
@@ -679,6 +681,11 @@ void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
 std::vector<api::passwords_private::PasswordUiEntry>
 PasswordsPrivateDelegateImpl::GetInsecureCredentials() {
   return password_check_delegate_.GetInsecureCredentials();
+}
+
+std::vector<api::passwords_private::PasswordUiEntryList>
+PasswordsPrivateDelegateImpl::GetCredentialsWithReusedPassword() {
+  return password_check_delegate_.GetCredentialsWithReusedPassword();
 }
 
 bool PasswordsPrivateDelegateImpl::MuteInsecureCredential(

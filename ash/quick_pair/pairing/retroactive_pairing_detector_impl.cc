@@ -14,10 +14,10 @@
 #include "ash/quick_pair/repository/fast_pair_repository.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -41,6 +41,16 @@ bool ShouldBeEnabledForLoginStatus(ash::LoginStatus status) {
       return true;
   }
 }
+
+// Enforce a 60 second timeout to discover a device for the retroactive pairing
+// scenario to align with Android implementation and adhere to the Fast Pair
+// spec where providers can only allow account keys to be written within the
+// 60 seconds following classic Bluetooth pairing:
+// https://developers.google.com/nearby/fast-pair/specifications/extensions/retroactiveacctkey#RetroactivelyWritingAccountKey
+// The device is expected to enforce this requirement, however as mentioned
+// above, to align with Android, ChromeOS will include consideration for the
+// 60 seconds expected to retroactively write the account key.
+constexpr base::TimeDelta kRetroactiveDevicePairingTimeout = base::Seconds(60);
 
 }  // namespace
 
@@ -173,6 +183,7 @@ void RetroactivePairingDetectorImpl::DevicePairedChanged(
   // |potential_retroactive_addresses_|.
   const std::string& classic_address = device->GetAddress();
   potential_retroactive_addresses_.insert(classic_address);
+  AddDevicePairingInformation(classic_address);
 
   // In order to confirm that this device is a retroactive pairing, we need to
   // first check if it has already been saved to the user's account. If it has
@@ -187,6 +198,19 @@ void RetroactivePairingDetectorImpl::DevicePairedChanged(
 void RetroactivePairingDetectorImpl::AttemptRetroactivePairing(
     const std::string& classic_address,
     bool is_device_saved_to_account) {
+  // This check handles the case where the request for checked if the device is
+  // saved takes longer than expected. We register `AttemptRetroactivePairing`
+  // as a callback for when this request completes, but it gets called after
+  // we get the call to `OnDevicePaired`, which removes the device information.
+  // If the device is removed via `OnDevicePaired`, this indicated a Fast Pair
+  // pairing event, in which case we will never show a retroactive pairing
+  // notification, so we can stop the flow here for this device.
+  if (!base::Contains(potential_retroactive_addresses_, classic_address)) {
+    QP_LOG(VERBOSE) << __func__ << ": device at " << classic_address
+                    << ": was removed before call to Footprints completed";
+    return;
+  }
+
   if (is_device_saved_to_account) {
     QP_LOG(INFO) << __func__ << ": device already saved to user's account";
     RemoveDeviceInformation(classic_address);
@@ -220,11 +244,31 @@ void RetroactivePairingDetectorImpl::OnMessageStreamConnected(
   GetModelIdAndAddressFromMessageStream(device_address, message_stream);
 }
 
+void RetroactivePairingDetectorImpl::AddDevicePairingInformation(
+    const std::string& device_address) {
+  QP_LOG(VERBOSE) << __func__;
+
+  // There is potential for the device at |device_address| to already be in
+  // the map (in the case of repairing for example). If it is already in the
+  // map, update the timeout with the new timestamp. If it isn't already in
+  // the map, create a value with default empty values, and add the expiry
+  // timeout.
+  device_pairing_information_[device_address].expiry_timestamp =
+      base::Time::Now() + kRetroactiveDevicePairingTimeout;
+
+  // Anytime |device_pairing_information_| is updated, parse list to remove
+  // expired devices.
+  RemoveExpiredDevicesFromStoredDeviceData();
+}
+
 void RetroactivePairingDetectorImpl::GetModelIdAndAddressFromMessageStream(
     const std::string& device_address,
     MessageStream* message_stream) {
   DCHECK(message_stream);
-  DCHECK(device_pairing_information_.find(device_address) ==
+
+  // The device at |device_address| is expected to be added in
+  // `AddDevicePairingInformation` once discovered.
+  DCHECK(device_pairing_information_.find(device_address) !=
          device_pairing_information_.end());
 
   // If the MessageStream is immediately available and |DevicePairedChanged|
@@ -233,9 +277,6 @@ void RetroactivePairingDetectorImpl::GetModelIdAndAddressFromMessageStream(
   // here.
   if (!base::Contains(potential_retroactive_addresses_, device_address))
     return;
-
-  RetroactivePairingInformation info;
-  device_pairing_information_[device_address] = info;
 
   // Iterate over messages for ble address and model id, which is what we
   // need for retroactive pairing.
@@ -270,9 +311,31 @@ void RetroactivePairingDetectorImpl::GetModelIdAndAddressFromMessageStream(
     return;
   }
 
+  // At this point, we have both the model id and BLE address for the device,
+  // but we check if it has reached its expiry timeout. If so, we do not
+  // notify of the scenario being detected. `CheckAndRemoveIfDeviceExpired`
+  // will remove corresponding device information if it has expired.
+  if (CheckAndRemoveIfDeviceExpired(device_address)) {
+    return;
+  }
+
   NotifyDeviceFound(device_pairing_information_[device_address].model_id,
                     device_pairing_information_[device_address].ble_address,
                     device_address);
+}
+
+bool RetroactivePairingDetectorImpl::CheckAndRemoveIfDeviceExpired(
+    const std::string& device_address) {
+  if (base::Time::Now() >=
+      device_pairing_information_[device_address].expiry_timestamp) {
+    QP_LOG(VERBOSE) << __func__ << ": device at " << device_address
+                    << " has exceeded the time allotted for detecting "
+                       "retroactive scenario. Removing device information.";
+    RemoveDeviceInformation(device_address);
+    return true;
+  }
+
+  return false;
 }
 
 void RetroactivePairingDetectorImpl::OnModelIdMessage(
@@ -295,15 +358,21 @@ void RetroactivePairingDetectorImpl::OnBleAddressUpdateMessage(
 
 void RetroactivePairingDetectorImpl::CheckPairingInformation(
     const std::string& device_address) {
+  // The device at |device_address| is expected to be added in
+  // `AddDevicePairingInformation` once discovered.
   DCHECK(device_pairing_information_.find(device_address) !=
          device_pairing_information_.end());
 
   // If the MessageStream is immediately available and |DevicePairedChanged|
   // fires before FastPair's |OnDevicePaired|, it might be possible for us to
   // find a false positive for a retroactive pairing scenario which we mitigate
-  // here.
-  if (!base::Contains(potential_retroactive_addresses_, device_address))
+  // here. Also check if the device has expired for detecting scenario, if so
+  // do not continue. `CheckAndRemoveIfDeviceExpired` will remove device
+  // information if it has expired.
+  if (!base::Contains(potential_retroactive_addresses_, device_address) ||
+      CheckAndRemoveIfDeviceExpired(device_address)) {
     return;
+  }
 
   if (device_pairing_information_[device_address].model_id.empty() ||
       device_pairing_information_[device_address].ble_address.empty()) {
@@ -413,6 +482,15 @@ void RetroactivePairingDetectorImpl::VerifyDeviceFound(
 void RetroactivePairingDetectorImpl::RemoveDeviceInformation(
     const std::string& device_address) {
   QP_LOG(VERBOSE) << __func__ << ": device = " << device_address;
+  RemoveDeviceInformationHelper(device_address);
+
+  // Anytime |device_pairing_information_| is updated, parse list to remove
+  // expired devices.
+  RemoveExpiredDevicesFromStoredDeviceData();
+}
+
+void RetroactivePairingDetectorImpl::RemoveDeviceInformationHelper(
+    const std::string& device_address) {
   potential_retroactive_addresses_.erase(device_address);
   device_pairing_information_.erase(device_address);
 
@@ -420,11 +498,28 @@ void RetroactivePairingDetectorImpl::RemoveDeviceInformation(
   // before the MessageStreams are observed, connected, and/or added to our
   // list here if we get a false positive instance of a potential retroactive
   // pairing device.
-  if (!base::Contains(message_streams_, device_address))
-    return;
+  if (base::Contains(message_streams_, device_address)) {
+    message_streams_[device_address]->RemoveObserver(this);
+    message_streams_.erase(device_address);
+  }
+}
 
-  message_streams_[device_address]->RemoveObserver(this);
-  message_streams_.erase(device_address);
+void RetroactivePairingDetectorImpl::
+    RemoveExpiredDevicesFromStoredDeviceData() {
+  // If the RetroactivePairingDetector never receives the model id or
+  // BLE address from the MessageStream, it will not be removed in
+  // `CheckPairingInformation` if it has exceeded the allotted time for
+  // detecting the scenario (kDetectRetroactiveScenarioTimeout). We clean up
+  // these devices here.
+  for (auto it = device_pairing_information_.begin();
+       it != device_pairing_information_.end(); ++it) {
+    if (base::Time::Now() >= it->second.expiry_timestamp) {
+      QP_LOG(VERBOSE) << __func__ << ": Removing device at " << it->first
+                      << "that has exceeded the time allotted for detecting "
+                         "retroactive scenario.";
+      RemoveDeviceInformationHelper(it->first);
+    }
+  }
 }
 
 void RetroactivePairingDetectorImpl::OnPairFailure(scoped_refptr<Device> device,

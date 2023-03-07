@@ -102,6 +102,11 @@ const char kIosPreRestoreAccountInfo[] = "ios.pre_restore_account_info";
 // campaigns.
 const char kIosPromosManagerActivePromos[] = "ios.promos_manager.active_promos";
 
+// Dict preference maintaining the dict of single-display, pending promo
+// campaigns. Key is the promo name, value is the time to become active.
+const char kIosPromosManagerSingleDisplayPendingPromos[] =
+    "ios.promos_manager.pending_promos";
+
 // List preference containing the promo impression history.
 const char kIosPromosManagerImpressions[] = "ios.promos_manager.impressions";
 
@@ -161,6 +166,10 @@ const char kDefaultFollowingFeedSortTypeChanged[] =
 // the new overflow menu carousel.
 const char kOverflowMenuDestinationUsageHistory[] =
     "overflow_menu.destination_usage_history";
+
+// List preference which tracks new destinations added to the overflow menu
+// carousel.
+const char kOverflowMenuNewDestinations[] = "overflow_menu.new_destinations";
 
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";

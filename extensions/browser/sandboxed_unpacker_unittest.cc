@@ -9,10 +9,10 @@
 #include <tuple>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -20,8 +20,8 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/unzip/content/unzip_service.h"
@@ -488,7 +488,7 @@ TEST_F(SandboxedUnpackerTest, TestRewriteManifestInjections) {
                   fingerprint.c_str(),
                   base::checked_cast<int>(fingerprint.size()));
   absl::optional<base::Value::Dict> manifest(RewriteManifestFile(
-      DictionaryBuilder().Set(kVersionStr, kTestVersion).BuildDict()));
+      DictionaryBuilder().Set(kVersionStr, kTestVersion).Build()));
   auto* key = manifest->FindString("key");
   auto* version = manifest->FindString(kVersionStr);
   auto* differential_fingerprint =

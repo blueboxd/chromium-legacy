@@ -15,12 +15,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/extensions/api/identity/web_auth_flow_info_bar_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/identity_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -93,20 +95,18 @@ BASE_FEATURE(kPersistentStorageForWebAuthFlow,
              "PersistentStorageForWebAuthFlow",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kWebAuthFlowInBrowserTab,
-             "WebAuthFlowInBrowserTab",
-             base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
-
 WebAuthFlow::WebAuthFlow(Delegate* delegate,
                          Profile* profile,
                          const GURL& provider_url,
                          Mode mode,
-                         Partition partition)
+                         Partition partition,
+                         const std::string& extension_name)
     : delegate_(delegate),
       profile_(profile),
       provider_url_(provider_url),
       mode_(mode),
-      partition_(partition) {
+      partition_(partition),
+      extension_name_(extension_name) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("identity", "WebAuthFlow", this);
 }
 
@@ -116,6 +116,8 @@ WebAuthFlow::~WebAuthFlow() {
   if (using_auth_with_browser_tab_ && web_contents()) {
     web_contents()->Close();
   }
+
+  CloseInfoBar();
 
   // Stop listening to notifications first since some of the code
   // below may generate notifications.
@@ -135,7 +137,7 @@ void WebAuthFlow::Start() {
   DCHECK(!profile_->IsOffTheRecord());
 
   if (partition_ == WebAuthFlow::Partition::LAUNCH_WEB_AUTH_FLOW &&
-      base::FeatureList::IsEnabled(kWebAuthFlowInBrowserTab)) {
+      base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
     using_auth_with_browser_tab_ = true;
 
     content::WebContents::CreateParams params(profile_);
@@ -192,8 +194,9 @@ void WebAuthFlow::DetachDelegateAndDelete() {
 content::StoragePartition* WebAuthFlow::GetGuestPartition() {
   // When using the Auth through the Browser Tab, the guest partition shouldn't
   // be used, consider using `Profile::GetDefaultStoragePartition()` instead.
-  if (base::FeatureList::IsEnabled(kWebAuthFlowInBrowserTab))
+  if (base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
     return nullptr;
+  }
 
   return profile_->GetStoragePartition(
       GetWebViewPartitionConfig(partition_, profile_));
@@ -246,6 +249,20 @@ bool WebAuthFlow::IsObservingProviderWebContents() const {
          (embedded_window_created_ || using_auth_with_browser_tab_);
 }
 
+void WebAuthFlow::DisplayInfoBar() {
+  DCHECK(web_contents());
+  DCHECK(using_auth_with_browser_tab_);
+
+  info_bar_delegate_ =
+      WebAuthFlowInfoBarDelegate::Create(web_contents(), extension_name_);
+}
+
+void WebAuthFlow::CloseInfoBar() {
+  if (info_bar_delegate_) {
+    info_bar_delegate_->CloseInfoBar();
+  }
+}
+
 void WebAuthFlow::BeforeUrlLoaded(const GURL& url) {
   if (delegate_ && IsObservingProviderWebContents())
     delegate_->OnAuthFlowURLChange(url);
@@ -265,6 +282,8 @@ void WebAuthFlow::AfterUrlLoaded() {
     NavigateParams params(browser_displayer.browser(),
                           std::move(web_contents_));
     Navigate(&params);
+
+    DisplayInfoBar();
   }
 }
 
@@ -308,22 +327,26 @@ void WebAuthFlow::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // If web_contents_ is nullptr, then the auth page tab is opened.
   // If the navigation is initiated by the user, the tab will exit the auth
-  // flow screen, this should result in a declined authentication.
+  // flow screen, this should result in a declined authentication and deleting
+  // the flow.
   if (using_auth_with_browser_tab_ && !web_contents_ &&
       !navigation_handle->IsRendererInitiated()) {
     // Stop observing the web contents since it is not part of the flow anymore.
     WebContentsObserver::Observe(nullptr);
     delegate_->OnAuthFlowFailure(Failure::USER_NAVIGATED_AWAY);
+    return;
   }
 
-  if (navigation_handle->IsInPrimaryMainFrame())
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     BeforeUrlLoaded(navigation_handle->GetURL());
+  }
 }
 
 void WebAuthFlow::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInPrimaryMainFrame())
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     BeforeUrlLoaded(navigation_handle->GetURL());
+  }
 }
 
 void WebAuthFlow::DidFinishNavigation(
@@ -375,8 +398,14 @@ void WebAuthFlow::DidFinishNavigation(
         navigation_handle->GetResponseHeaders()->response_code());
   }
 
-  if (failed && delegate_)
+  if (failed && delegate_) {
     delegate_->OnAuthFlowFailure(LOAD_FAILED);
+  }
+}
+
+base::WeakPtr<WebAuthFlowInfoBarDelegate>
+WebAuthFlow::GetInfoBarDelegateForTesting() {
+  return info_bar_delegate_;
 }
 
 }  // namespace extensions

@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/functional/bind.h"
 #include "chromeos/ash/components/dbus/private_computing/private_computing_service.pb.h"
 
 namespace ash {

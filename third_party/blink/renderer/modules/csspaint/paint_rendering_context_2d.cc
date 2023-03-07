@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
 
 #include <memory>
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 
 namespace blink {
@@ -51,14 +52,12 @@ int PaintRenderingContext2D::Height() const {
   return container_size_.height();
 }
 
-bool PaintRenderingContext2D::ParseColorOrCurrentColor(
-    Color& color,
-    const String& color_string) const {
+Color PaintRenderingContext2D::GetCurrentColor() const {
   // We ignore "currentColor" for PaintRenderingContext2D and just make it
   // "black". "currentColor" can be emulated by having "color" as an input
   // property for the css-paint-api.
   // https://github.com/w3c/css-houdini-drafts/issues/133
-  return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
+  return Color::kBlack;
 }
 
 // We need to account for the |effective_zoom_| for shadow effects only, and not
@@ -129,7 +128,7 @@ PredefinedColorSpace PaintRenderingContext2D::GetDefaultImageDataColorSpace()
 }
 
 void PaintRenderingContext2D::WillOverwriteCanvas() {
-  previous_frame_.reset();
+  previous_frame_ = absl::nullopt;
   if (did_record_draw_commands_in_paint_recorder_) {
     // Discard previous draw commands
     paint_recorder_.finishRecordingAsPicture();
@@ -163,15 +162,15 @@ void PaintRenderingContext2D::resetTransform() {
                                     0);
 }
 
-sk_sp<PaintRecord> PaintRenderingContext2D::GetRecord() {
+PaintRecord PaintRenderingContext2D::GetRecord() {
   if (!did_record_draw_commands_in_paint_recorder_ && !!previous_frame_) {
-    return previous_frame_;  // Reuse the previous frame
+    return *previous_frame_;  // Reuse the previous frame
   }
 
   DCHECK(paint_recorder_.getRecordingCanvas());
   previous_frame_ = paint_recorder_.finishRecordingAsPicture();
   InitializePaintRecorder();
-  return previous_frame_;
+  return *previous_frame_;
 }
 
 }  // namespace blink

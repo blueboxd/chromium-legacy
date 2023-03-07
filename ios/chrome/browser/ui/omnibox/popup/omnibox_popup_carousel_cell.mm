@@ -55,8 +55,7 @@ UIStackView* CarouselStackView() {
   return stackView;
 }
 
-/// CAGradientLayer used in OmniboxPopupCarouselCell with PopupVariation1 on
-/// iPad.
+/// CAGradientLayer used in OmniboxPopupCarouselCell on iPad.
 CAGradientLayer* CarouselGradientLayer() {
   CAGradientLayer* maskLayer = [CAGradientLayer layer];
   UIColor* opaqueColor = [[UIColor colorNamed:kGroupedSecondaryBackgroundColor]
@@ -173,8 +172,7 @@ CAGradientLayer* CarouselGradientLayer() {
 - (BOOL)shouldApplyLayoutMarginsGuide {
   // Apply layoutMarginsGuide in Visual Treatment 1 only on Tablet because there
   // is a minimum layoutMargin of 8 that we don't want on phones.
-  return IsOmniboxActionsVisualTreatment1() &&
-         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
+  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
 }
 
 #pragma mark - Accessibility
@@ -204,13 +202,10 @@ CAGradientLayer* CarouselGradientLayer() {
     [control setCarouselItem:item];
   }
 
-  if (base::FeatureList::IsEnabled(kOmniboxCarouselDynamicSpacing)) {
-    if (static_cast<NSInteger>(carouselItems.count) >
-        self.visibleTilesCapacity) {
-      self.suggestionsStackView.spacing = self.dynamicSpacing;
-    } else {
-      self.suggestionsStackView.spacing = kMinStackSpacing;
-    }
+  if (static_cast<NSInteger>(carouselItems.count) > self.visibleTilesCapacity) {
+    self.suggestionsStackView.spacing = self.dynamicSpacing;
+  } else {
+    self.suggestionsStackView.spacing = kMinStackSpacing;
   }
 }
 
@@ -243,6 +238,13 @@ CAGradientLayer* CarouselGradientLayer() {
     return;
   }
   [control removeFromSuperview];
+  // Remove voice over focus to avoid focusing an invisible tile. Focus instead
+  // on the first tile.
+  if (self.suggestionsStackView.arrangedSubviews.firstObject) {
+    UIAccessibilityPostNotification(
+        UIAccessibilityScreenChangedNotification,
+        self.suggestionsStackView.arrangedSubviews.firstObject);
+  }
   [self.delegate carouselCellDidChangeItemCount:self];
 }
 

@@ -50,7 +50,6 @@ SharedMemoryImageBackingFactory::CreateSharedImage(
 std::unique_ptr<SharedImageBacking>
 SharedMemoryImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
     gfx::BufferPlane plane,
@@ -60,12 +59,11 @@ SharedMemoryImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage) {
   DCHECK(handle.type == gfx::SHARED_MEMORY_BUFFER);
-  viz::ResourceFormat format = viz::GetResourceFormat(buffer_format);
   SharedMemoryRegionWrapper shm_wrapper;
-  if (!shm_wrapper.Initialize(handle, size, format)) {
+  if (!shm_wrapper.Initialize(handle, size, buffer_format, plane)) {
     return nullptr;
   }
-
+  const auto format = viz::GetResourceFormat(buffer_format);
   auto backing = std::make_unique<SharedMemoryImageBacking>(
       mailbox, viz::SharedImageFormat::SinglePlane(format), size, color_space,
       surface_origin, alpha_type, usage, std::move(shm_wrapper));
@@ -80,9 +78,6 @@ bool SharedMemoryImageBackingFactory::IsSupported(
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
-  if (format.is_multi_plane()) {
-    return false;
-  }
   if (gmb_type != gfx::SHARED_MEMORY_BUFFER) {
     return false;
   }

@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 GEN_INCLUDE(['../testing/fake_objects.js']);
 
 /**
  * Test fixture for Download_Handler.
  */
-ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxDownloadTest = class extends ChromeVoxE2ETest {
   addFakeApi(timeRemainingUnits) {
     // Fake out Chrome Downloads API namespace.
     chrome.downloads = {};
-    chrome.downloads.search = function(query, callback) {
+    chrome.downloads.search = (query, callback) => {
       callback([{
         id: query.id,
         fileName: 'test.pdf',
@@ -22,7 +22,7 @@ ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
         totalBytes: 10,
         estimatedEndTime: this.getTimeRemaining(timeRemainingUnits),
       }]);
-    }.bind(this);
+    };
     chrome.downloads.onChanged = new FakeChromeEvent();
 
     chrome.downloads.State = {
@@ -35,7 +35,7 @@ ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   setUp() {
     super.setUp();
-    window.simulateEvent = this.simulateEvent.bind(this);
+    globalThis.simulateEvent = item => this.simulateEvent(item);
   }
 
   /** @override */

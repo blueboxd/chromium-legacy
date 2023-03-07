@@ -115,7 +115,7 @@
     case IdentitySigninStateSignedOut: {
       __weak __typeof(self) weakSelf = self;
       self.authenticationService->SignOut(
-          signin_metrics::ABORT_SIGNIN,
+          signin_metrics::ProfileSignout::kAbortSignin,
           /*force_clear_browsing_data=*/false, ^{
             [weakSelf onSigninStateRestorationCompleted];
           });
@@ -132,7 +132,7 @@
       } else {
         __weak __typeof(self) weakSelf = self;
         self.authenticationService->SignOut(
-            signin_metrics::ABORT_SIGNIN,
+            signin_metrics::ProfileSignout::kAbortSignin,
             /*force_clear_browsing_data=*/false, ^() {
               [weakSelf
                   signinWithIdentityOnStartAfterSignout:signinIdentityOnStart];
@@ -232,7 +232,7 @@
   }
 }
 
-- (void)identityChanged:(id<SystemIdentity>)identity {
+- (void)identityUpdated:(id<SystemIdentity>)identity {
   if ([self.selectedIdentity isEqual:identity]) {
     [self updateConsumerIdentity];
   }

@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/tick_clock.h"
@@ -66,6 +66,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   }
   double screen_brightness_percent() const {
     return screen_brightness_percent_.value();
+  }
+  double keyboard_brightness_percent() const {
+    return keyboard_brightness_percent_.value();
   }
   bool is_projecting() const { return is_projecting_; }
   bool have_video_activity_report() const {

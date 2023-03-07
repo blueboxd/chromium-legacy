@@ -13,24 +13,26 @@
 #include <windows.h>
 
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/win/nt_status.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/security_level.h"
 #include "third_party/blink/public/common/switches.h"
 #endif
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#if BUILDFLAG(USE_ZYGOTE)
 #include "content/public/common/content_switches.h"
 #include "content/public/common/zygote/zygote_handle.h"  // nogncheck
 #endif
 
 namespace content {
 
-#if BUILDFLAG(USE_ZYGOTE_HANDLE)
-ZygoteHandle RendererSandboxedProcessLauncherDelegate::GetZygote() {
+#if BUILDFLAG(USE_ZYGOTE)
+ZygoteCommunication* RendererSandboxedProcessLauncherDelegate::GetZygote() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType renderer_prefix =
@@ -39,7 +41,7 @@ ZygoteHandle RendererSandboxedProcessLauncherDelegate::GetZygote() {
     return nullptr;
   return GetGenericZygote();
 }
-#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
 #if BUILDFLAG(IS_MAC)
 bool RendererSandboxedProcessLauncherDelegate::EnableCpuSecurityMitigations() {
@@ -116,6 +118,9 @@ bool RendererSandboxedProcessLauncherDelegateWin::PreSpawnTarget(
         return false;
       }
     }
+
+    config->SetFilterEnvironment(base::FeatureList::IsEnabled(
+        sandbox::policy::features::kRendererFilterEnvironment));
   }
 
   ContentBrowserClient::ChildSpawnFlags flags(

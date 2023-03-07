@@ -11,10 +11,11 @@
 #import <OCMock/OCMock.h>
 
 #import "base/base64.h"
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #import "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
@@ -1166,7 +1167,7 @@ TEST_F(WebStateImplTest, LastActiveTimeUpdatedWhenBecomeVisible) {
   // Spin the RunLoop a bit to ensure that the active time changes.
   {
     base::RunLoop run_loop;
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(1));
     run_loop.Run();
   }

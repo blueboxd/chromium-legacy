@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -85,8 +85,6 @@ class CONTENT_EXPORT AggregatableReportScheduler {
   virtual bool NotifyInProgressRequestFailed(
       AggregationServiceStorage::RequestId request_id,
       int previous_failed_attempts);
-
-  // TODO(crbug.com/1340042): Implement offline and startup handling
 
  private:
   class TimerDelegate : public ReportSchedulerTimer::Delegate {

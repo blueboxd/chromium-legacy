@@ -21,6 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/system/holding_space/holding_space_animation_registry.h"
 #include "ash/system/holding_space/holding_space_progress_indicator_util.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
@@ -29,12 +30,12 @@
 #include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/pickle.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
@@ -181,6 +182,10 @@ std::unique_ptr<views::ImageView> CreateDefaultTrayIcon() {
   icon->SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   icon->SetPaintToLayer();
   icon->layer()->SetFillsBoundsOpaquely(false);
+  icon->SetImage(ui::ImageModel::FromVectorIcon(
+      features::IsHoldingSpaceRefreshEnabled() ? kHoldingSpaceRefreshIcon
+                                               : kHoldingSpaceIcon,
+      kColorAshIconColorPrimary, kHoldingSpaceTrayIconSize));
   return icon;
 }
 
@@ -195,6 +200,8 @@ std::unique_ptr<views::ImageView> CreateDropTargetIcon() {
       gfx::Size(kHoldingSpaceIconSize, kHoldingSpaceIconSize));
   icon->SetPaintToLayer();
   icon->layer()->SetFillsBoundsOpaquely(false);
+  icon->SetImage(gfx::CreateVectorIcon(
+      views::kUnpinIcon, kColorAshIconColorPrimary, kHoldingSpaceIconSize));
   return icon;
 }
 
@@ -486,19 +493,6 @@ void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
 
 void HoldingSpaceTray::OnThemeChanged() {
   TrayBackgroundView::OnThemeChanged();
-
-  const SkColor color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconColorPrimary);
-
-  // Default tray icon.
-  default_tray_icon_->SetImage(gfx::CreateVectorIcon(
-      features::IsHoldingSpaceRefreshEnabled() ? kHoldingSpaceRefreshIcon
-                                               : kHoldingSpaceIcon,
-      kHoldingSpaceTrayIconSize, color));
-
-  // Drop target icon.
-  drop_target_icon_->SetImage(
-      gfx::CreateVectorIcon(views::kUnpinIcon, kHoldingSpaceIconSize, color));
 
   // Progress indicator.
   progress_indicator_->InvalidateLayer();

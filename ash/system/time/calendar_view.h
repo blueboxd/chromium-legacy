@@ -46,6 +46,8 @@ class IconButton;
 // The header of the calendar view, which shows the current month and year.
 class CalendarHeaderView : public views::View {
  public:
+  METADATA_HEADER(CalendarHeaderView);
+
   CalendarHeaderView(const std::u16string& month, const std::u16string& year);
   CalendarHeaderView(const CalendarHeaderView& other) = delete;
   CalendarHeaderView& operator=(const CalendarHeaderView& other) = delete;
@@ -334,6 +336,23 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   // Removes the "Up next" view.
   void RemoveUpNextView();
 
+  // Sets the bounds of the up next view to be flush with the bottom of the
+  // scrollview. We need to do this manually so it sits over the top of the
+  // scrollview, rather than as an adjacent sibling.
+  void SetUpNextViewBounds();
+
+  // Used by the `CalendarUpNextView` to open the event list for today's date.
+  void OpenEventListForTodaysDate();
+
+  enum class ScrollViewState {
+    FULL_HEIGHT,
+    UP_NEXT_SHOWING,
+    EVENT_LIST_SHOWING
+  };
+  // Used for clipping the calendar scroll view height to the different states
+  // that the calendar view can be in.
+  void ClipScrollViewHeight(ScrollViewState state_to_change_to);
+
   // Setters for animation flags.
   void set_should_header_animate(bool should_animate) {
     should_header_animate_ = should_animate;
@@ -376,6 +395,8 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   std::map<base::Time, CalendarModel::FetchingStatus> on_screen_month_;
   CalendarModel* calendar_model_ =
       Shell::Get()->system_tray_model()->calendar_model();
+
+  std::unique_ptr<ui::LayerOwner> up_next_view_mask_;
 
   // If it `is_resetting_scroll_`, we don't calculate the scroll position and we
   // don't need to check if we need to update the month or not.

@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/test/mock_callback.h"
@@ -449,10 +449,10 @@ class AccountProfileMapperTest : public testing::Test {
 
   void SetLacrosAccountsInLocalState(
       const base::flat_set<std::string>& account_ids) {
-    base::Value list(base::Value::Type::LIST);
+    base::Value::List list;
     for (const auto& gaia_id : account_ids)
       list.Append(gaia_id);
-    local_state()->Set(kLacrosAccountIdsPref, list);
+    local_state()->SetList(kLacrosAccountIdsPref, std::move(list));
   }
 
   base::flat_set<std::string> GetLacrosAccountsFromLocalState() {

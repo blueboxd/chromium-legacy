@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
@@ -108,12 +108,6 @@ class Arrow : public Button {
     canvas->ClipRect(GetContentsBounds());
     gfx::Rect arrow_bounds = GetLocalBounds();
     arrow_bounds.ClampToCenteredSize(ComboboxArrowSize());
-    if (features::IsChromeRefresh2023()) {
-      PaintComboboxArrowBackground(
-          GetColorProvider()->GetColor(ui::kColorAlertHighSeverity), canvas,
-          gfx::PointF(arrow_bounds.x() - kComboboxArrowPaddingWidth,
-                      (height() - kComboboxArrowContainerWidth) / 2.0f));
-    }
     // Make sure the arrow use the same color as the text in the combobox.
     PaintComboboxArrow(style::GetColor(*this, style::CONTEXT_TEXTFIELD,
                                        GetEnabled() ? style::STYLE_PRIMARY
@@ -367,8 +361,12 @@ EditableCombobox::EditableCombobox(
                                    : ui::TEXT_INPUT_TYPE_TEXT);
   AddChildView(textfield_.get());
   if (display_arrow) {
-    textfield_->SetExtraInsets(gfx::Insets::TLBR(
-        0, 0, 0, kComboboxArrowContainerWidth - kComboboxArrowPaddingWidth));
+    textfield_->SetExtraInsets(
+        gfx::Insets::TLBR(0, 0, 0,
+                          GetComboboxArrowContainerWidthAndMargins() -
+                              (features::IsChromeRefresh2023()
+                                   ? kComboboxArrowPaddingWidthChromeRefresh2023
+                                   : kComboboxArrowPaddingWidth)));
     arrow_ = AddChildView(std::make_unique<Arrow>(base::BindRepeating(
         &EditableCombobox::ArrowButtonPressed, base::Unretained(this))));
   }
@@ -406,10 +404,10 @@ void EditableCombobox::SelectRange(const gfx::Range& range) {
   textfield_->SetSelectedRange(range);
 }
 
-void EditableCombobox::SetAccessibleName(const std::u16string& name) {
-  textfield_->SetAccessibleName(name);
+void EditableCombobox::OnAccessibleNameChanged(const std::u16string& new_name) {
+  textfield_->SetAccessibleName(new_name);
   if (arrow_)
-    arrow_->SetAccessibleName(name);
+    arrow_->SetAccessibleName(new_name);
 }
 
 void EditableCombobox::SetAssociatedLabel(View* labelling_view) {
@@ -431,7 +429,7 @@ void EditableCombobox::Layout() {
   if (arrow_) {
     gfx::Rect arrow_bounds(
         /*x=*/width() - GetComboboxArrowContainerWidthAndMargins(),
-        /*y=*/0, kComboboxArrowContainerWidth, height());
+        /*y=*/0, GetComboboxArrowContainerWidth(), height());
     arrow_->SetBoundsRect(arrow_bounds);
   }
 }

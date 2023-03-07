@@ -29,10 +29,6 @@ BASE_FEATURE(kSharedHighlightingIOS,
              "SharedHighlightingIOS",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableFREDefaultBrowserPromoScreen,
-             "EnableFREDefaultBrowserPromoScreen",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
 BASE_FEATURE(kModernTabStrip,
@@ -45,7 +41,7 @@ BASE_FEATURE(kIncognitoNtpRevamp,
 
 BASE_FEATURE(kIOS3PIntentsInIncognito,
              "IOS3pIntentsInIncognito",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserFullscreenPromoExperiment,
              "DefaultBrowserFullscreenPromoExperiment",
@@ -59,22 +55,9 @@ BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kIOSOmniboxUpdatedPopupUI,
-             "IOSOmniboxUpdatedPopupUI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kRemoveCrashInfobar,
              "RemoveCrashInfobar",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-const char kIOSOmniboxUpdatedPopupUIVariationName[] = "PopupUIVariant";
-
-extern const char kIOSOmniboxUpdatedPopupUIVariation1[] = "variant-one";
-extern const char kIOSOmniboxUpdatedPopupUIVariation2[] = "variant-two";
-extern const char kIOSOmniboxUpdatedPopupUIVariation1UIKit[] =
-    "variant-one-UIKit";
-extern const char kIOSOmniboxUpdatedPopupUIVariation2UIKit[] =
-    "variant-two-UIKit";
 
 BASE_FEATURE(kIOSLocationBarUseNativeContextMenu,
              "IOSLocationBarUseNativeContextMenu",
@@ -126,6 +109,8 @@ BASE_FEATURE(kEnableExpKitAppleCalendar,
              "EnableExpKitAppleCalendar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEnableEmails, "EnableEmails", base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEnablePhoneNumbers,
              "EnablePhoneNumbers",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -143,6 +128,18 @@ BASE_FEATURE(kEnableMiniMap,
 
 BASE_FEATURE(kTabGridRecencySort,
              "TabGridRecencySort",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableNewBookmarksImplementation,
+             "EnableNewBookmarksImplementation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMultilineFadeTruncatingLabel,
+             "MultilineFadeTruncatingLabel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage,
+             "EnableAccessibilityIdentifierToOmniboxLeadingImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsTabGridSortedByRecency() {

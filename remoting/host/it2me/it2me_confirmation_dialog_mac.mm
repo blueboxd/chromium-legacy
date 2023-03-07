@@ -10,8 +10,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/i18n/message_formatter.h"
 #include "base/location.h"
 #include "base/mac/scoped_nsobject.h"
@@ -44,7 +44,7 @@ namespace remoting {
 namespace {
 // Time to wait before closing the dialog and cancelling the connection.
 constexpr base::TimeDelta kDialogTimeout = base::Minutes(1);
-}
+}  // namespace
 
 // Bridge between C++ and ObjC implementations of It2MeConfirmationDialog.
 class It2MeConfirmationDialogMac : public It2MeConfirmationDialog {

@@ -19,10 +19,10 @@
 #include <limits>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/bits.h"
-#include "base/callback.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/page_size.h"
@@ -34,6 +34,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

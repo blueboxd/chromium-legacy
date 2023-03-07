@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 
 #include <android/bitmap.h>
-#include <android/native_window_jni.h>
 #include <stdint.h>
 
 #include <string>
@@ -17,9 +16,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -27,6 +27,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
+#include "base/task/common/task_annotator.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
@@ -212,12 +213,14 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   void SetWideColorEnabled(bool enabled) override {
     // TODO(cblume): Add support for multiple compositors.
     // If one goes wide, all should go wide.
-    if (compositor_->root_window_)
+    if (compositor_->root_window_) {
       compositor_->root_window_->SetWideColorEnabled(enabled);
+    }
   }
   void SetPreferredRefreshRate(float refresh_rate) override {
-    if (compositor_->root_window_)
+    if (compositor_->root_window_) {
       compositor_->root_window_->SetPreferredRefreshRate(refresh_rate);
+    }
   }
 
  private:
@@ -234,8 +237,12 @@ class CompositorImpl::HostBeginFrameObserver
         task_runner_(std::move(task_runner)) {}
 
   void OnStandaloneBeginFrame(const viz::BeginFrameArgs& args) override {
-    if (args.type == viz::BeginFrameArgs::MISSED)
+    // Mark the current task as interesting, as it maybe be responsible for
+    // handling input events for flings.
+    base::TaskAnnotator::MarkCurrentTaskAsInterestingForTracing();
+    if (args.type == viz::BeginFrameArgs::MISSED) {
       return;
+    }
 
     if (pending_coalesce_callback_) {
       begin_frame_args_ = args;
@@ -319,8 +326,9 @@ CompositorImpl::ReadbackRefImpl::ReadbackRefImpl(
 
 CompositorImpl::ReadbackRefImpl::~ReadbackRefImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (compositor_weakptr_)
+  if (compositor_weakptr_) {
     compositor_weakptr_->DecrementPendingReadbacks();
+  }
 }
 
 // static
@@ -381,8 +389,8 @@ void CompositorImpl::DetachRootWindow() {
   root_window_->SetLayer(nullptr);
 }
 
-ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
-  return *this;
+base::WeakPtr<ui::UIResourceProvider> CompositorImpl::GetUIResourceProvider() {
+  return weak_factory_.GetWeakPtr();
 }
 
 ui::ResourceManager& CompositorImpl::GetResourceManager() {
@@ -472,8 +480,9 @@ void CompositorImpl::CreateLayerTreeHost() {
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
-  if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders))
+  if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     settings.initial_debug_state.show_debug_borders.set();
+  }
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
 
@@ -492,8 +501,9 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_->SetViewportRectAndScale(gfx::Rect(size_), root_window_->GetDipScale(),
                                  GenerateLocalSurfaceId());
   OnUpdateOverlayTransform();
-  if (needs_animate_)
+  if (needs_animate_) {
     host_->SetNeedsAnimate();
+  }
 }
 
 void CompositorImpl::SetVisible(bool visible) {
@@ -519,8 +529,9 @@ void CompositorImpl::SetVisible(bool visible) {
     RegisterRootFrameSink();
     host_->SetVisible(true);
     has_submitted_frame_since_became_visible_ = false;
-    if (layer_tree_frame_sink_request_pending_)
+    if (layer_tree_frame_sink_request_pending_) {
       HandlePendingLayerTreeFrameSinkRequest();
+    }
   }
 }
 
@@ -542,8 +553,9 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
   // before it can be reset.
   display_private_.reset();
   GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
-  if (display_client_)
+  if (display_client_) {
     display_client_->SetPreferredRefreshRate(0);
+  }
   display_client_.reset();
   host_begin_frame_observer_.reset();
 }
@@ -553,14 +565,16 @@ void CompositorImpl::RegisterRootFrameSink() {
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
-  for (auto& frame_sink_id : pending_child_frame_sink_ids_)
+  for (auto& frame_sink_id : pending_child_frame_sink_ids_) {
     AddChildFrameSink(frame_sink_id);
+  }
   pending_child_frame_sink_ids_.clear();
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
-  if (size_ == size)
+  if (size_ == size) {
     return;
+  }
 
   size_ = size;
   if (host_) {
@@ -570,8 +584,9 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
                                    GenerateLocalSurfaceId());
   }
 
-  if (display_private_)
+  if (display_private_) {
     display_private_->Resize(size);
+  }
 
   root_window_->GetLayer()->SetBounds(size);
 }
@@ -585,8 +600,9 @@ void CompositorImpl::SetRequiresAlphaChannel(bool flag) {
 }
 
 void CompositorImpl::SetNeedsComposite() {
-  if (!host_->IsVisible())
+  if (!host_->IsVisible()) {
     return;
+  }
   TRACE_EVENT0("compositor", "Compositor::SetNeedsComposite");
   host_->SetNeedsAnimate();
 }
@@ -595,26 +611,11 @@ void CompositorImpl::SetNeedsRedraw() {
   host_->SetNeedsRedrawRect(host_->device_viewport_rect());
 }
 
-void CompositorImpl::DidUpdateLayers() {
-  // Dump property trees and layers if run with:
-  //   --vmodule=compositor_impl_android=3
-  VLOG(3) << "After updating layers:\n"
-          << "property trees:\n"
-          << host_->property_trees()->ToString() << "\n"
-          << "cc::Layers:\n"
-          << host_->LayersAsString();
-}
-
 void CompositorImpl::BeginMainFrame(const viz::BeginFrameArgs& args) {
-  latest_frame_time_ = args.frame_time;
-}
-
-void CompositorImpl::UpdateLayerTreeHost() {
-  DCHECK(!latest_frame_time_.is_null());
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
     needs_animate_ = false;
-    root_window_->Animate(latest_frame_time_);
+    root_window_->Animate(args.frame_time);
   }
 }
 
@@ -641,8 +642,9 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
   DCHECK(layer_tree_frame_sink_request_pending_);
 
   // We might have been made invisible now.
-  if (!host_->IsVisible())
+  if (!host_->IsVisible()) {
     return;
+  }
 
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(base::BindOnce(
@@ -658,8 +660,9 @@ void CompositorImpl::OnGpuChannelEstablished(
   // We might end up queing multiple GpuChannel requests for the same
   // LayerTreeFrameSink request as the visibility of the compositor changes, so
   // the LayerTreeFrameSink request could have been handled already.
-  if (!layer_tree_frame_sink_request_pending_)
+  if (!layer_tree_frame_sink_request_pending_) {
     return;
+  }
 
   if (!gpu_channel_host) {
     HandlePendingLayerTreeFrameSinkRequest();
@@ -716,8 +719,9 @@ void CompositorImpl::OnGpuChannelEstablished(
 void CompositorImpl::DidSwapBuffers(const gfx::Size& swap_size) {
   client_->DidSwapBuffers(swap_size);
 
-  if (swap_completed_with_size_for_testing_)
+  if (swap_completed_with_size_for_testing_) {
     swap_completed_with_size_for_testing_.Run(swap_size);
+  }
 }
 
 cc::UIResourceId CompositorImpl::CreateUIResource(
@@ -737,10 +741,12 @@ bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {
 
 std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
     base::TimeDelta timeout) {
-  if (!host_)
+  if (!host_) {
     return nullptr;
-  return lock_manager_.GetCompositorLock(/*client=*/nullptr, timeout,
-                                         host_->DeferMainFrameUpdate());
+  }
+  return lock_manager_.GetCompositorLock(
+      /*client=*/nullptr, timeout,
+      base::DoNothingWithBoundArgs(host_->DeferMainFrameUpdate()));
 }
 
 void CompositorImpl::PostRequestPresentationTimeForNextFrame(
@@ -788,8 +794,9 @@ void CompositorImpl::RequestCopyOfOutputOnRootLayer(
 
 void CompositorImpl::SetNeedsAnimate() {
   needs_animate_ = true;
-  if (!host_->IsVisible())
+  if (!host_->IsVisible()) {
     return;
+  }
 
   TRACE_EVENT0("compositor", "Compositor::SetNeedsAnimate");
   host_->SetNeedsAnimate();
@@ -848,23 +855,27 @@ bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
 }
 
 void CompositorImpl::SetVSyncPaused(bool paused) {
-  if (vsync_paused_ == paused)
+  if (vsync_paused_ == paused) {
     return;
+  }
 
   vsync_paused_ = paused;
-  if (display_private_)
+  if (display_private_) {
     display_private_->SetVSyncPaused(paused);
+  }
 }
 
 void CompositorImpl::OnUpdateRefreshRate(float refresh_rate) {
-  if (display_private_)
+  if (display_private_) {
     display_private_->UpdateRefreshRate(refresh_rate);
+  }
 }
 
 void CompositorImpl::OnUpdateSupportedRefreshRates(
     const std::vector<float>& supported_refresh_rates) {
-  if (display_private_)
+  if (display_private_) {
     display_private_->SetSupportedRefreshRates(supported_refresh_rates);
+  }
 }
 
 // WindowAndroid can call this callback
@@ -874,8 +885,9 @@ void CompositorImpl::OnUpdateSupportedRefreshRates(
 // main lcd has 270 degrees panel orientation, but sub lcd does not have it.
 void CompositorImpl::OnUpdateOverlayTransform() {
   gfx::OverlayTransform hint = root_window_->GetOverlayTransform();
-  if (host_)
+  if (host_) {
     host_->set_display_transform_hint(hint);
+  }
 }
 
 void CompositorImpl::InitializeVizLayerTreeFrameSink(
@@ -972,8 +984,9 @@ void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
       << "Fatal error making Gpu context";
 
   constexpr size_t kMaxConsecutiveSurfaceFailures = 10u;
-  if (++num_of_consecutive_surface_failures_ > kMaxConsecutiveSurfaceFailures)
+  if (++num_of_consecutive_surface_failures_ > kMaxConsecutiveSurfaceFailures) {
     FatalSurfaceFailure();
+  }
 
   if (context_result == gpu::ContextResult::kSurfaceFailure) {
     SetSurface(nullptr, false);
@@ -997,14 +1010,16 @@ void CompositorImpl::EvictCachedBackBuffer() {
 }
 
 void CompositorImpl::PreserveChildSurfaceControls() {
-  if (display_private_)
+  if (display_private_) {
     display_private_->PreserveChildSurfaceControls();
+  }
 }
 
 void CompositorImpl::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
-  if (!host_)
+  if (!host_) {
     return;
+  }
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
 }
 
@@ -1014,8 +1029,9 @@ void CompositorImpl::RequestSuccessfulPresentationTimeForNextFrame(
 }
 
 void CompositorImpl::SetDidSwapBuffersCallbackEnabled(bool enable) {
-  if (enable_swap_completion_callbacks_ == enable)
+  if (enable_swap_completion_callbacks_ == enable) {
     return;
+  }
   enable_swap_completion_callbacks_ = enable;
   if (display_private_) {
     display_private_->SetSwapCompletionCallbackEnabled(
@@ -1051,11 +1067,13 @@ void CompositorImpl::MaybeUpdateObserveBeginFrame() {
     return;
   }
 
-  if (host_begin_frame_observer_)
+  if (host_begin_frame_observer_) {
     return;
+  }
 
-  if (!display_private_)
+  if (!display_private_) {
     return;
+  }
 
   host_begin_frame_observer_ = std::make_unique<HostBeginFrameObserver>(
       simple_begin_frame_observers_,

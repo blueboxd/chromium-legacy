@@ -6,10 +6,11 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/url_request/redirect_info.h"
@@ -250,7 +251,9 @@ void SyncLoadContext::OnCompletedRequest(
   response_->should_collapse_initiator = status.should_collapse_initiator;
   response_->cors_error = status.cors_error_status;
   response_->head->encoded_data_length = status.encoded_data_length;
-  response_->head->encoded_body_length = status.encoded_body_length;
+  DCHECK_GE(status.encoded_body_length, 0);
+  response_->head->encoded_body_length =
+      network::mojom::EncodedBodyLength::New(status.encoded_body_length);
   if ((blob_response_started_ && !blob_finished_) || body_handle_.is_valid()) {
     // The body is still begin downloaded as a Blob, or being read through the
     // handle. Wait until it's completed.

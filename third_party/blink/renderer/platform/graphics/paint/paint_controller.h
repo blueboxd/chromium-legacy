@@ -28,6 +28,8 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 
+class SkTextBlob;
+
 namespace blink {
 
 class PaintUnderInvalidationChecker;
@@ -168,11 +170,10 @@ class PLATFORM_EXPORT PaintController {
   void AssertLastCheckedCachedItem(const DisplayItemClient&, DisplayItem::Type);
 #endif
 
-  // This can only be called if the previous UseCachedItemIfPossible() returned
-  // false. Returns the cached display item that was matched in the previous
-  // UseCachedItemIfPossible() for an invalidated DisplayItemClient, or nullptr
-  // if there is no matching item.
-  DisplayItem* MatchingCachedItemToBeRepainted();
+  // Returns the SkTextBlob in DrawTextBlobOp in
+  // MatchingCachedItemToBeRepainted() if it exists and can be reused for
+  // repainting.
+  sk_sp<SkTextBlob> CachedTextBlob() const;
 
   // Tries to find the cached subsequence corresponding to the given parameters.
   // If found, copies the cache subsequence to the new display list and returns
@@ -304,19 +305,12 @@ class PLATFORM_EXPORT PaintController {
   // previous ones (|current_paint_artifact_| and |current_subsequences_|).
   void ReserveCapacity();
 
-  // Called at the beginning of a paint cycle, as defined by
-  // PaintControllerCycleScope.
-  void StartCycle(
-      HeapVector<Member<const DisplayItemClient>>& clients_to_validate,
-      bool record_debug_info);
+  // Called at the beginning of a paint cycle (see |PaintControllerCycleScope|).
+  void StartCycle(bool record_debug_info);
 
-  // Called at the end of a paint cycle, as defined by
-  // PaintControllerCycleScope. The PaintController will cleanup data that will
-  // no longer be used for the next cycle, and update status to be ready for the
-  // next cycle. It updates caching status of DisplayItemClients, so if there
-  // are DisplayItemClients painting on multiple PaintControllers, we should
-  // call there FinishCycle() at the same time to ensure consistent caching
-  // status.
+  // Called at the end of a paint cycle (see |PaintControllerCycleScope|). This
+  // will cleanup data that will no longer be used for the next cycle, validate
+  // clients, and prepare for the next cycle.
   void FinishCycle();
 
   // True if all display items associated with the client are validly cached.
@@ -335,6 +329,12 @@ class PLATFORM_EXPORT PaintController {
 
   // Set new item state (cache skipping, etc) for the last new display item.
   void ProcessNewItem(const DisplayItemClient&, DisplayItem&);
+
+  // This can only be called if the previous UseCachedItemIfPossible() returned
+  // false. Returns the cached display item that was matched in the previous
+  // UseCachedItemIfPossible() for an invalidated DisplayItemClient for
+  // non-layout reason, or nullptr if there is no such item.
+  const DisplayItem* MatchingCachedItemToBeRepainted() const;
 
   void CheckNewItem(DisplayItem&);
   void CheckNewChunkId(const PaintChunk::Id&);
@@ -403,8 +403,8 @@ class PLATFORM_EXPORT PaintController {
   // CommitNewDisplayItems().
   scoped_refptr<PaintArtifact> new_paint_artifact_;
   PaintChunker paint_chunker_;
-  WeakPersistent<HeapVector<Member<const DisplayItemClient>>>
-      clients_to_validate_ = nullptr;
+  Persistent<HeapVector<Member<const DisplayItemClient>>> clients_to_validate_ =
+      nullptr;
 
   bool cache_is_all_invalid_ = true;
   bool committed_ = false;
@@ -437,6 +437,8 @@ class PLATFORM_EXPORT PaintController {
   wtf_size_t next_item_to_index_ = 0;
 
   wtf_size_t last_matching_item_ = kNotFound;
+  PaintInvalidationReason last_matching_client_invalidation_reason_ =
+      PaintInvalidationReason::kNone;
 
 #if DCHECK_IS_ON()
   wtf_size_t num_indexed_items_ = 0;
@@ -476,28 +478,15 @@ class PLATFORM_EXPORT PaintControllerCycleScope {
   STACK_ALLOCATED();
 
  public:
-  explicit PaintControllerCycleScope(bool record_debug_info)
-      : record_debug_info_(record_debug_info) {
-    clients_to_validate_ =
-        MakeGarbageCollected<HeapVector<Member<const DisplayItemClient>>>();
-  }
   explicit PaintControllerCycleScope(PaintController& controller,
                                      bool record_debug_info)
-      : PaintControllerCycleScope(record_debug_info) {
-    AddController(controller);
+      : controller_(controller) {
+    controller.StartCycle(record_debug_info);
   }
-  void AddController(PaintController& controller) {
-    controller.StartCycle(*clients_to_validate_, record_debug_info_);
-    controllers_.push_back(&controller);
-  }
-  ~PaintControllerCycleScope();
+  ~PaintControllerCycleScope() { controller_.FinishCycle(); }
 
  protected:
-  Vector<PaintController*> controllers_;
-
- private:
-  HeapVector<Member<const DisplayItemClient>>* clients_to_validate_;
-  bool record_debug_info_;
+  PaintController& controller_;
 };
 
 }  // namespace blink

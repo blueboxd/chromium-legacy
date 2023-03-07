@@ -60,8 +60,8 @@ luci.gitiles_poller(
 [consoles.overview_console_view(
     name = name,
     repo = "https://chromium.googlesource.com/chromium/src",
-    refs = [settings.ref],
     title = title,
+    refs = [settings.ref],
     top_level_ordering = [
         "chromium",
         "chromium.win",
@@ -130,11 +130,12 @@ consoles.console_view(
     ("fuchsia-fyi-arm64-size", "gardener|p/chrome|arm64", "size"),
     ("fuchsia-fyi-astro", "gardener|hardware", "ast"),
     ("fuchsia-fyi-atlas", "fyi|hardware", "atl"),
-    ("fuchsia-fyi-sherlock", "fyi|hardware", "sher"),
+    ("fuchsia-fyi-sherlock", "gardener|hardware", "sher"),
     ("fuchsia-perf-ast", "gardener|hardware|perf", "ast"),
     ("fuchsia-perf-atlas-fyi", "fyi|hardware|perf", "atl"),
     ("fuchsia-perf-fyi", "fyi|hardware|perf", "ast"),
-    ("fuchsia-perf-sherlock-fyi", "fyi|hardware|perf", "sher"),
+    ("fuchsia-perf-nsn", "gardener|hardware|perf", "nsn"),
+    ("fuchsia-perf-nuc-fyi", "fyi|hardware|perf", "nuc"),
     ("fuchsia-perf-shk", "gardener|hardware|perf", "sher"),
     ("fuchsia-x64", "gardener|p/chrome|x64", "rel"),
 )]
@@ -149,6 +150,7 @@ exec("./ci/chromium.angle.star")
 exec("./ci/chromium.cft.star")
 exec("./ci/chromium.chromiumos.star")
 exec("./ci/chromium.clang.star")
+exec("./ci/chromium.coverage.star")
 exec("./ci/chromium.dawn.star")
 exec("./ci/chromium.fuchsia.star")
 exec("./ci/chromium.fuchsia.fyi.star")

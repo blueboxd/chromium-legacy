@@ -8,11 +8,13 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/login_accelerators.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/check_deref.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ash/login/ui/login_feedback.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/nearby/quick_start_connectivity_service_factory.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/profiles/signin_profile_handler.h"
@@ -195,6 +198,8 @@ LoginDisplayHostCommon::LoginDisplayHostCommon()
           &LoginDisplayHostCommon::OnAppTerminating, base::Unretained(this)));
   BrowserList::AddObserver(this);
   AuthMetricsRecorder::Get()->ResetLoginData();
+  AuthMetricsRecorder::Get()->OnAuthenticationSurfaceChange(
+      AuthMetricsRecorder::AuthenticationSurface::kLogin);
 }
 
 LoginDisplayHostCommon::~LoginDisplayHostCommon() {
@@ -299,6 +304,14 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
     return;
   }
 
+  const auto& existing_user_controller =
+      CHECK_DEREF(GetExistingUserController());
+  if (existing_user_controller.IsSigninInProgress() ||
+      existing_user_controller.IsUserSigninCompleted()) {
+    LOG(ERROR) << "Cancel kiosk launch. Another user signin detected.";
+    return;
+  }
+
   SetKioskLaunchStateCrashKey(KioskLaunchState::kStartLaunch);
 
   OnStartAppLaunch();
@@ -362,6 +375,12 @@ void LoginDisplayHostCommon::SetDisplayAndGivenName(
   if (GetExistingUserController())
     GetExistingUserController()->SetDisplayAndGivenName(display_name,
                                                         given_name);
+}
+
+bool LoginDisplayHostCommon::IsGaiaDialogVisibleForTesting() {
+  return IsOobeUIDialogVisible() &&
+         GetWizardController()->current_screen()->screen_id() ==
+             GaiaView::kScreenId;
 }
 
 void LoginDisplayHostCommon::ShowAllowlistCheckFailedError() {
@@ -687,8 +706,17 @@ base::WeakPtr<quick_start::TargetDeviceBootstrapController>
 LoginDisplayHostCommon::GetQuickStartBootstrapController() {
   DCHECK(features::IsOobeQuickStartEnabled());
   if (!bootstrap_controller_) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    DCHECK(profile);
+
+    quick_start::QuickStartConnectivityService* service =
+        quick_start::QuickStartConnectivityServiceFactory::GetForProfile(
+            profile);
+    DCHECK(service);
+
     bootstrap_controller_ =
-        std::make_unique<ash::quick_start::TargetDeviceBootstrapController>();
+        std::make_unique<ash::quick_start::TargetDeviceBootstrapController>(
+            service->GetNearbyConnectionsManager());
   }
   return bootstrap_controller_->GetAsWeakPtrForClient();
 }

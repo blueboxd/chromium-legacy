@@ -9,14 +9,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -37,10 +37,12 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -221,7 +223,7 @@ class StartupWebAppCreator
     // by the application.
     WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile_);
     DCHECK(provider->on_registry_ready().is_signaled());
-    WebAppRegistrar& registrar = provider->registrar();
+    WebAppRegistrar& registrar = provider->registrar_unsafe();
     if (registrar.IsDisallowedLaunchProtocol(app_id_, protocol_url.scheme())) {
       // If disallowed, return `kHandled` to signal that the launch is spoken
       // for, but do not launch a browser or app window. `this` will be deleted.
@@ -265,7 +267,7 @@ class StartupWebAppCreator
     if (file_launch_infos_.empty())
       return LaunchResult::kNotHandled;
 
-    const WebApp* web_app = provider->registrar().GetAppById(app_id_);
+    const WebApp* web_app = provider->registrar_unsafe().GetAppById(app_id_);
     DCHECK(web_app);
 
     // `this` will stay alive until `launch_callback` is executed or destroyed.
@@ -306,8 +308,11 @@ class StartupWebAppCreator
     if (remember_user_choice) {
       WebAppProvider* provider = WebAppProvider::GetForWebApps(profile_);
       if (!protocol_url_.is_empty()) {
+        ApiApprovalState approval_state = allowed
+                                              ? ApiApprovalState::kAllowed
+                                              : ApiApprovalState::kDisallowed;
         provider->scheduler().UpdateProtocolHandlerUserApproval(
-            app_id_, protocol_url_.scheme(), allowed,
+            app_id_, protocol_url_.scheme(), approval_state,
             std::move(persist_callback));
       } else {
         DCHECK(!file_launch_infos_.empty());

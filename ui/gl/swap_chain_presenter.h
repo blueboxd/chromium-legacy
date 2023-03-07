@@ -16,11 +16,10 @@
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gl/dc_layer_overlay_params.h"
 #include "ui/gl/dc_layer_tree.h"
-#include "ui/gl/dc_renderer_layer_params.h"
 
 namespace gl {
-class GLImageMemory;
 
 // SwapChainPresenter holds a swap chain, direct composition visuals, and other
 // associated resources for a single overlay layer.  It is updated by calling
@@ -42,7 +41,7 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // returns a modified |visual_transform| and |visual_clip_rect| that should be
   // used instead of the ones on |overlay|.
   // Returns true on success.
-  bool PresentToSwapChain(const ui::DCRendererLayerParams& overlay,
+  bool PresentToSwapChain(DCLayerOverlayParams& overlay,
                           gfx::Transform* visual_transform,
                           gfx::Rect* visual_clip_rect);
 
@@ -51,6 +50,8 @@ class SwapChainPresenter : public base::PowerStateObserver {
   }
 
   const Microsoft::WRL::ComPtr<IUnknown>& content() const { return content_; }
+
+  const gfx::Size& content_size() const { return content_size_; }
 
   void SetFrameRate(float frame_rate);
 
@@ -90,9 +91,10 @@ class SwapChainPresenter : public base::PowerStateObserver {
 
   // Upload given YUV buffers to an NV12 texture that can be used to create
   // video processor input view.  Returns nullptr on failure.
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> UploadVideoImages(
-      GLImageMemory* y_image_memory,
-      GLImageMemory* uv_image_memory);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> UploadVideoImage(
+      const gfx::Size& size,
+      const uint8_t* nv12_pixmap,
+      size_t stride);
 
   // Releases resources that might hold indirect references to the swap chain.
   void ReleaseSwapChainResources();
@@ -132,19 +134,18 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // needed to scale the swap chain backbuffer to the monitor size.
   // The visual_clip_rect will be adjusted to the monitor size for fullscreen
   // mode, and to the video overlay quad for letterboxing mode.
-  void AdjustTargetToOptimalSizeIfNeeded(
-      const ui::DCRendererLayerParams& params,
-      const gfx::Rect& overlay_onscreen_rect,
-      gfx::Size* swap_chain_size,
-      gfx::Transform* visual_transform,
-      gfx::Rect* visual_clip_rect);
+  void AdjustTargetToOptimalSizeIfNeeded(const DCLayerOverlayParams& params,
+                                         const gfx::Rect& overlay_onscreen_rect,
+                                         gfx::Size* swap_chain_size,
+                                         gfx::Transform* visual_transform,
+                                         gfx::Rect* visual_clip_rect);
 
   // If the swap chain size is very close to the screen size but not exactly the
   // same, the swap chain should be adjusted to fit the screen size in order to
   // get the fullscreen DWM optimizations.
   bool AdjustTargetToFullScreenSizeIfNeeded(
       const gfx::Size& monitor_size,
-      const ui::DCRendererLayerParams& params,
+      const DCLayerOverlayParams& params,
       const gfx::Rect& overlay_onscreen_rect,
       gfx::Size* swap_chain_size,
       gfx::Transform* visual_transform,
@@ -152,14 +153,14 @@ class SwapChainPresenter : public base::PowerStateObserver {
 
   void AdjustTargetForFullScreenLetterboxing(
       const gfx::Size& monitor_size,
-      const ui::DCRendererLayerParams& params,
+      const DCLayerOverlayParams& params,
       const gfx::Rect& overlay_onscreen_rect,
       gfx::Size* swap_chain_size,
       gfx::Transform* visual_transform,
       gfx::Rect* visual_clip_rect);
 
   // Returns optimal swap chain size for given layer.
-  gfx::Size CalculateSwapChainSize(const ui::DCRendererLayerParams& params,
+  gfx::Size CalculateSwapChainSize(const DCLayerOverlayParams& params,
                                    gfx::Transform* visual_transform,
                                    gfx::Rect* visual_clip_rect);
 
@@ -205,7 +206,7 @@ class SwapChainPresenter : public base::PowerStateObserver {
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> GetSwapChainMedia() const;
 
   // Present the Direct Composition surface from MediaFoundationRenderer.
-  bool PresentDCOMPSurface(const ui::DCRendererLayerParams& overlay,
+  bool PresentDCOMPSurface(DCLayerOverlayParams& overlay,
                            gfx::Transform* visual_transform,
                            gfx::Rect* visual_clip_rect);
 
@@ -253,9 +254,11 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // DCLayerTree and set as the content of the content visual when the subtree
   // is updated.
   Microsoft::WRL::ComPtr<IUnknown> content_;
+  // Size of the swap chain or dcomp surface assigned to |content_|.
+  gfx::Size content_size_;
 
-  // GLImages that were presented in the last frame.
-  ui::DCRendererLayerParams::OverlayImages last_presented_images_;
+  // Overlay image that was presented in the last frame.
+  absl::optional<DCLayerOverlayImage> last_overlay_image_;
 
   // NV12 staging texture used for software decoded YUV buffers.  Mapped to CPU
   // for copying from YUV buffers.  Texture usage is DYNAMIC or STAGING.

@@ -5,8 +5,8 @@
 #include <tuple>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -130,7 +130,7 @@ class ServiceWorkerObjectHostTest : public testing::Test {
         blink::mojom::ScriptType::kClassic);
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
-        10, version_->script_url(), 100));
+        10, version_->script_url(), 100, /*sha256_checksum=*/""));
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptResponse(
         std::make_unique<ServiceWorkerVersion::MainScriptResponse>(

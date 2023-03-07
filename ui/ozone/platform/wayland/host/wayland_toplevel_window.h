@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -73,17 +74,12 @@ class WaylandToplevelWindow : public WaylandWindow,
                                    int32_t height,
                                    const WindowStates& window_states) override;
   void HandleSurfaceConfigure(uint32_t serial) override;
-  void UpdateVisualSize(const gfx::Size& size_px) override;
+  void OnSequencePoint(int64_t seq) override;
   bool IsSurfaceConfigured() override;
   void AckConfigure(uint32_t serial) override;
-  void UpdateDecorations() override;
-  void PropagateBufferScale(float new_scale) override;
 
-  // Apply the bounds specified in the most recent configure event. This should
-  // be called after processing all pending events in the wayland connection.
-  void ApplyPendingBounds() override;
-
-  bool OnInitialize(PlatformWindowInitProperties properties) override;
+  bool OnInitialize(PlatformWindowInitProperties properties,
+                    State* state) override;
   bool IsActive() const override;
   void SetWindowGeometry(gfx::Size size_dip) override;
   bool IsScreenCoordinatesEnabled() const override;
@@ -93,6 +89,7 @@ class WaylandToplevelWindow : public WaylandWindow,
                    const base::TimeDelta show_delay,
                    const base::TimeDelta hide_delay) override;
   void HideTooltip() override;
+  void PropagateBufferScale(float new_scale) override;
 
   // WmDragHandler overrides:
   bool ShouldReleaseCaptureForDrag(ui::OSExchangeData* data) const override;
@@ -139,7 +136,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   void EndMoveLoop() override;
 
   // WaylandExtension:
-  void StartWindowDraggingSessionIfNeeded(bool allow_system_drag) override;
+  void StartWindowDraggingSessionIfNeeded(
+      ui::mojom::DragEventSource event_source,
+      bool allow_system_drag) override;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetImmersiveFullscreenStatus(bool status) override;
 #endif
@@ -251,8 +250,10 @@ class WaylandToplevelWindow : public WaylandWindow,
   // Contains the previous state of the window.
   PlatformWindowState previous_state_ = PlatformWindowState::kUnknown;
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Contains the current state of the tiled edges.
   WindowTiledEdges tiled_state_;
+#endif
 
   bool is_active_ = false;
 
@@ -295,24 +296,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   // (PlatformWindowDelegate) more than once, for the same window show state
   // change.
   uint32_t requested_window_show_state_count_ = 0;
-  // Prevents the window geometry from being changed during transitions of the
-  // window state.
-  //
-  // Due to expectations of the higher levels, when the window changes its
-  // state, the DWTH is notified about the state change before the one actually
-  // happens, see TriggerStateChanges().  However, one of consequences of the
-  // DWTH being notified is that it wants to update the decoration insets, which
-  // implies updating the window geometry.  This flag is used to skip updating
-  // the geometry until new window bounds are applied.
-  //
-  // See https://crbug.com/1223005
-  bool state_change_in_transit_ = false;
-  // Some use cases such as changing the theme need to update the window
-  // geometry without changing its configuration.  They should set this flag.
-  // It will result in sending the updated geometry in the next frame update.
-  //
-  // See https://crbug.com/1223005
-  bool set_geometry_on_next_frame_ = false;
 
   // Information used by the compositor to restore the window state upon
   // creation.

@@ -493,7 +493,7 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
 
 void FrameTreeNode::SetAttributes(
     blink::mojom::IframeAttributesPtr attributes) {
-  if (!credentialless() && attributes->credentialless) {
+  if (!Credentialless() && attributes->credentialless) {
     // Log this only when credentialless is changed to true.
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         parent_, blink::mojom::WebFeature::kAnonymousIframe);
@@ -995,6 +995,15 @@ bool FrameTreeNode::AncestorOrSelfHasCSPEE() const {
   return csp_attribute() || (parent() && parent()->required_csp());
 }
 
+void FrameTreeNode::ResetAllNavigationsForFrameDetach() {
+  NavigationDiscardReason reason = NavigationDiscardReason::kWillRemoveFrame;
+  for (FrameTreeNode* frame : frame_tree().SubtreeNodes(this)) {
+    frame->ResetNavigationRequest(reason);
+    frame->current_frame_host()->ResetOwnedNavigationRequests(reason);
+    frame->GetRenderFrameHostManager().DiscardSpeculativeRFH(reason);
+  }
+}
+
 void FrameTreeNode::RestartNavigationAsCrossDocument(
     std::unique_ptr<NavigationRequest> navigation_request) {
   navigator().RestartNavigationAsCrossDocument(std::move(navigation_request));
@@ -1012,6 +1021,10 @@ RenderFrameHostManager& FrameTreeNode::GetRenderFrameHostManager() {
   return render_manager_;
 }
 
+FrameTreeNode* FrameTreeNode::GetOpener() const {
+  return opener_;
+}
+
 void FrameTreeNode::SetFocusedFrame(SiteInstanceGroup* source) {
   frame_tree_->delegate()->SetFocusedFrame(this, source);
 }
@@ -1027,6 +1040,7 @@ FrameTreeNode::CreateNavigationRequestForSynchronousRendererCommit(
     bool is_same_document,
     const GURL& url,
     const url::Origin& origin,
+    const absl::optional<GURL>& initiator_base_url,
     const net::IsolationInfo& isolation_info_for_subresources,
     blink::mojom::ReferrerPtr referrer,
     const ui::PageTransition& transition,
@@ -1043,10 +1057,11 @@ FrameTreeNode::CreateNavigationRequestForSynchronousRendererCommit(
     int http_response_code) {
   return NavigationRequest::CreateForSynchronousRendererCommit(
       this, render_frame_host, is_same_document, url, origin,
-      isolation_info_for_subresources, std::move(referrer), transition,
-      should_replace_current_entry, method, has_transient_activation,
-      is_overriding_user_agent, redirects, original_url,
-      std::move(coep_reporter), std::move(web_bundle_navigation_info),
+      initiator_base_url, isolation_info_for_subresources, std::move(referrer),
+      transition, should_replace_current_entry, method,
+      has_transient_activation, is_overriding_user_agent, redirects,
+      original_url, std::move(coep_reporter),
+      std::move(web_bundle_navigation_info),
       std::move(subresource_web_bundle_navigation_info), http_response_code);
 }
 
@@ -1055,6 +1070,10 @@ void FrameTreeNode::CancelNavigation() {
     navigation_request()->set_net_error(net::ERR_ABORTED);
   }
   ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+}
+
+bool FrameTreeNode::Credentialless() const {
+  return attributes_->credentialless;
 }
 
 }  // namespace content

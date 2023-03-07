@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
@@ -59,7 +59,8 @@ struct ComponentInfo {
   ComponentInfo(const std::string& id,
                 const std::string& fingerprint,
                 const std::u16string& name,
-                const base::Version& version);
+                const base::Version& version,
+                const std::string& cohort_id);
   ComponentInfo(const ComponentInfo& other);
   ComponentInfo& operator=(const ComponentInfo& other);
   ComponentInfo(ComponentInfo&& other);
@@ -70,6 +71,7 @@ struct ComponentInfo {
   std::string fingerprint;
   std::u16string name;
   base::Version version;
+  std::string cohort_id;
 };
 
 struct ComponentRegistration {
@@ -210,7 +212,6 @@ class OnDemandUpdater {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class CrOSComponentInstaller;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  friend class VrAssetsComponentInstallerPolicy;
 
   // Triggers an update check for a component. |id| is a value
   // returned by GetCrxComponentID(). If an update for this component is already

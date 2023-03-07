@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
@@ -217,8 +217,7 @@ void TestMediaRouteProvider::DetachRoute(const std::string& route_id) {
 
 void TestMediaRouteProvider::EnableMdnsDiscovery() {}
 
-void TestMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
-}
+void TestMediaRouteProvider::DiscoverSinksNow() {}
 
 void TestMediaRouteProvider::CreateMediaRouteController(
     const std::string& route_id,

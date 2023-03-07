@@ -31,6 +31,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/suggestion_group_util.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/http/http_response_headers.h"
@@ -38,6 +39,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/omnibox_proto/entity_info.pb.h"
 #include "ui/base/device_form_factor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -239,11 +241,8 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
                     suggestion,
                     /*match_contents_prefix=*/std::u16string(),
                     /*annotation=*/std::u16string(),
-                    /*additional_query_params=*/"",
-                    /*entity_id=*/"",
+                    /*entity_info=*/omnibox::EntityInfo(),
                     /*deletion_url=*/"",
-                    /*image_dominant_color=*/"",
-                    /*image_url=*/"",
                     from_keyword,
                     relevance,
                     relevance_from_server,
@@ -258,11 +257,8 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const std::u16string& match_contents,
     const std::u16string& match_contents_prefix,
     const std::u16string& annotation,
-    const std::string& additional_query_params,
-    const std::string& entity_id,
+    omnibox::EntityInfo entity_info,
     const std::string& deletion_url,
-    const std::string& image_dominant_color,
-    const std::string& image_url,
     bool from_keyword,
     int relevance,
     bool relevance_from_server,
@@ -277,14 +273,15 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
              deletion_url),
       suggestion_(suggestion),
       match_contents_prefix_(match_contents_prefix),
-      annotation_(annotation),
-      additional_query_params_(additional_query_params),
-      entity_id_(entity_id),
-      image_dominant_color_(image_dominant_color),
-      image_url_(GURL(image_url)),
+      entity_info_(std::move(entity_info)),
       should_prefetch_(should_prefetch),
       should_prerender_(should_prerender) {
-  match_contents_ = match_contents;
+  annotation_ = !entity_info_.annotation().empty()
+                    ? base::UTF8ToUTF16(entity_info_.annotation())
+                    : annotation;
+  match_contents_ = !entity_info_.name().empty()
+                        ? base::UTF8ToUTF16(entity_info_.name())
+                        : match_contents;
   DCHECK(!match_contents_.empty());
   ClassifyMatchContents(true, input_text);
 }
@@ -790,8 +787,16 @@ bool SearchSuggestionParser::ParseSuggestResults(
             continue;
         }
         if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
-          annotation = has_equals_prefix ? suggestion : match_contents;
-          match_contents = query;
+          if (OmniboxFieldTrial::IsUniformRowHeightEnabled()) {
+            // If calculator results are going to be displayed on 1 line,
+            // keep everything in the match contents
+            match_contents = l10n_util::GetStringFUTF16(
+                IDS_OMNIBOX_ONE_LINE_CALCULATOR_SUGGESTION_TEMPLATE, query,
+                suggestion);
+          } else {
+            annotation = has_equals_prefix ? suggestion : match_contents;
+            match_contents = query;
+          }
         }
       }
 
@@ -827,11 +832,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
               FindStringKeyOrEmpty(suggestion_detail, "zae"));
         }
 
-        if (!entity_info.annotation().empty())
-          annotation = base::UTF8ToUTF16(entity_info.annotation());
-        if (!entity_info.name().empty())
-          match_contents = base::UTF8ToUTF16(entity_info.name());
-
         match_contents_prefix =
             base::UTF8ToUTF16(FindStringKeyOrEmpty(suggestion_detail, "mp"));
 
@@ -860,11 +860,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
       results->suggest_results.push_back(SuggestResult(
           suggestion, match_type, subtypes[index],
           base::CollapseWhitespace(match_contents, false),
-          match_contents_prefix, annotation,
-          entity_info.suggest_search_parameters(), entity_info.entity_id(),
-          deletion_url, entity_info.dominant_color(), entity_info.image_url(),
-          is_keyword_result, relevance, relevances != nullptr, should_prefetch,
-          should_prerender, trimmed_input));
+          match_contents_prefix, annotation, std::move(entity_info),
+          deletion_url, is_keyword_result, relevance, relevances != nullptr,
+          should_prefetch, should_prerender, trimmed_input));
 
       if (answer_parsed_successfully) {
         results->suggest_results.back().SetAnswer(answer);

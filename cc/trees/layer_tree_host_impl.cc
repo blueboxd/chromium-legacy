@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
@@ -25,6 +24,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -34,6 +34,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -199,30 +200,6 @@ void PopulateMetadataContentColorUsage(
     metadata->content_color_usage =
         std::max(metadata->content_color_usage, layer->GetContentColorUsage());
   }
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SourceIdConsistency : int {
-  kConsistent = 0,
-  kContainsInvalid = 1,
-  kNonUnique = 2,
-  kInvalidAndNonUnique = 3,
-  kMaxValue = kInvalidAndNonUnique,
-};
-
-void RecordSourceIdConsistency(bool all_valid, bool all_unique) {
-  SourceIdConsistency consistency =
-      all_unique ? (all_valid ? SourceIdConsistency::kConsistent
-                              : SourceIdConsistency::kContainsInvalid)
-                 : (all_valid ? SourceIdConsistency::kNonUnique
-                              : SourceIdConsistency::kInvalidAndNonUnique);
-
-  // TODO(crbug.com/1062764): we're sometimes seeing unexpected values for the
-  // ukm::SourceId. We'll use this histogram to track how often it happens so
-  // we can properly (de-)prioritize a fix.
-  UMA_HISTOGRAM_ENUMERATION("Event.LatencyInfo.Debug.SourceIdConsistency",
-                            consistency);
 }
 
 // Dump verbose log with
@@ -803,7 +780,7 @@ void LayerTreeHostImpl::CommitComplete() {
       mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
-    if (mutator_host_->HasSharedElementTransition()) {
+    if (mutator_host_->HasViewTransition()) {
       frame_trackers_.StartSequence(
           FrameSequenceTrackerType::kSETMainThreadAnimation);
     }
@@ -904,7 +881,7 @@ PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
     for (const auto& entry : layer->GetPaintWorkletRecordMap()) {
       const scoped_refptr<const PaintWorkletInput>& input = entry.first;
       const PaintImage::Id& paint_image_id = entry.second.first;
-      const sk_sp<PaintRecord>& record = entry.second.second;
+      const absl::optional<PaintRecord>& record = entry.second.second;
       // If we already have a record we can reuse it and so the
       // PaintWorkletInput isn't dirty.
       if (record)
@@ -2198,8 +2175,12 @@ void LayerTreeHostImpl::ReclaimResources(
   // aggressively flush here to make sure those DeleteTextures make it to the
   // GPU process to free up the memory.
   if (!visible_ && layer_tree_frame_sink_->context_provider()) {
-    auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
-    gl->ShallowFlushCHROMIUM();
+    auto* compositor_context = layer_tree_frame_sink_->context_provider();
+    compositor_context->ContextGL()->ShallowFlushCHROMIUM();
+    if (base::FeatureList::IsEnabled(
+            features::kReclaimResourcesFlushInBackground)) {
+      compositor_context->ContextSupport()->FlushPendingWork();
+    }
   }
 }
 
@@ -2565,7 +2546,7 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
         FrameSequenceTrackerType::kMainThreadAnimation);
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kSETMainThreadAnimation);
-  } else if (!mutator_host_->HasSharedElementTransition()) {
+  } else if (!mutator_host_->HasViewTransition()) {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kSETMainThreadAnimation);
   }
@@ -2757,17 +2738,10 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
     ApplyFirstScrollTracking(metadata.latency_info.front(),
                              metadata.frame_token);
-    ukm::SourceId exemplar = metadata.latency_info.front().ukm_source_id();
-    bool all_valid = true;
-    bool all_unique = true;
     for (auto& latency : metadata.latency_info) {
       latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, draw_time);
-      all_valid &= latency.ukm_source_id() != ukm::kInvalidSourceId;
-      all_unique &= latency.ukm_source_id() == exemplar;
     }
-
-    RecordSourceIdConsistency(all_valid, all_unique);
   }
   ui::LatencyInfo::TraceIntermediateFlowEvents(
       metadata.latency_info,
@@ -2990,9 +2964,6 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   total_frame_counter_.OnBeginFrame(args);
   devtools_instrumentation::DidBeginFrame(id_, args.frame_time,
                                           args.frame_id.sequence_number);
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.AcceleratedSurfaceRefreshRate",
-                              1 / args.interval.InSecondsF(), 0, 121, 122);
 
   // When there is a |target_local_surface_id_|, we do not wish to begin
   // producing Impl Frames for an older viz::LocalSurfaceId, as it will never
@@ -3523,7 +3494,17 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     auto now = base::TimeTicks::Now();
     total_frame_counter_.OnHide(now);
     dropped_frame_counter_.ResetPendingFrames(now);
+
+    // When page is invisible, throw away corresponding EventsMetrics since
+    // these metrics will be incorrect due to duration of page being invisible.
+    active_tree()->TakeEventsMetrics();
+    events_metrics_manager_.TakeSavedEventsMetrics();
+    if (pending_tree()) {
+      pending_tree()->TakeEventsMetrics();
+    }
   }
+  // Notify reporting controller of transition between visible and invisible
+  compositor_frame_reporting_controller_->SetVisible(visible_);
   DidVisibilityChange(this, visible_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 
@@ -4321,7 +4302,7 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
         FrameSequenceTrackerType::kCompositorAnimation);
   }
 
-  if (animated && mutator_host_->HasSharedElementTransition()) {
+  if (animated && mutator_host_->HasViewTransition()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kSETCompositorAnimation);
   } else {
@@ -5169,9 +5150,9 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
 
 void LayerTreeHostImpl::SetUkmSmoothnessDestination(
     base::WritableSharedMemoryMapping ukm_smoothness_data) {
-  ukm_smoothness_mapping_ = std::move(ukm_smoothness_data);
   dropped_frame_counter_.SetUkmSmoothnessDestination(
-      ukm_smoothness_mapping_.GetMemoryAs<UkmSmoothnessDataShared>());
+      ukm_smoothness_data.GetMemoryAs<UkmSmoothnessDataShared>());
+  ukm_smoothness_mapping_ = std::move(ukm_smoothness_data);
 }
 
 void LayerTreeHostImpl::NotifyDidPresentCompositorFrameOnImplThread(

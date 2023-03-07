@@ -91,10 +91,10 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   struct PopoverTargetElement final {
    public:
     DISALLOW_NEW();
-    WeakMember<HTMLElement> element;
+    WeakMember<HTMLElement> popover;
     PopoverTriggerAction action;
     QualifiedName attribute_name;
-    void Trace(Visitor* visitor) const { visitor->Trace(element); }
+    void Trace(Visitor* visitor) const { visitor->Trace(popover); }
   };
 
   enum class PopoverTriggerSupport {
@@ -105,7 +105,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   // Retrieves the element pointed to by 'popovertoggletarget',
   // 'popovershowtarget', and/or 'popoverhidetarget' content attributes, if any,
   // and only if this form control element supports popover triggering.
-  PopoverTargetElement popoverTargetElement() const;
+  PopoverTargetElement popoverTargetElement();
   virtual PopoverTriggerSupport SupportsPopoverTriggering() const {
     return PopoverTriggerSupport::kNone;
   }

@@ -26,6 +26,7 @@ build_webui("build") {
     "bookmarks.ts",
     "api_listener.ts",
     "bookmarks_api_proxy.ts",
+    "bookmark_manager_api_proxy.ts",
     "browser_proxy.ts",
     "constants.ts",
     "debouncer.ts",
@@ -61,12 +62,12 @@ build_webui("build") {
   ts_deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/managed_footnote:build_ts",
   ]
 
   optimize = optimize_webui
   if (optimize) {
     optimize_webui_host = "bookmarks"
-    optimize_webui_out_files = [ "bookmarks.rollup.js" ]
     optimize_webui_in_files = [ "bookmarks.js" ]
     optimize_webui_excludes = [ "chrome://resources/js/cr.js" ]
     optimize_webui_resource_paths_rewrites =

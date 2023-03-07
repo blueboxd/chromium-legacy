@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_bar.h"
 #include <algorithm>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -210,7 +210,9 @@ void SavedTabGroupBar::OnTabGroupButtonPressed(const base::GUID& id,
   if (event.flags() & ui::EF_LEFT_MOUSE_BUTTON) {
     if (group->saved_tabs().empty())
       return;
-    chrome::OpenSavedTabGroup(browser_, group->saved_guid(),
-                              group->saved_tabs().size());
+    SavedTabGroupKeyedService* keyed_service =
+        SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
+
+    keyed_service->OpenSavedTabGroupInBrowser(browser_, group->saved_guid());
   }
 }

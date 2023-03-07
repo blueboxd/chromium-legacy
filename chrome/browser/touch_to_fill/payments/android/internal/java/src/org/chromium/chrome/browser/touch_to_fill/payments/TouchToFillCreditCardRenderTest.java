@@ -10,7 +10,6 @@ import static org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils.te
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
-import android.os.Build.VERSION_CODES;
 import android.view.View;
 
 import androidx.test.filters.MediumTest;
@@ -30,7 +29,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -47,13 +46,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * These tests render screenshots of touch to fill for credit cards sheet and compare them
- * to a gold standard.
+ * These tests render screenshots of touch to fill for credit cards sheet and compare them to a gold
+ * standard.
  */
 @RunWith(ParameterizedRunner.class)
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@DisableIf.Build(sdk_is_less_than = VERSION_CODES.O_MR1, message = "https://crbug.com/1404413")
 public class TouchToFillCreditCardRenderTest {
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -69,7 +67,7 @@ public class TouchToFillCreditCardRenderTest {
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
-                    .setRevision(1)
+                    .setRevision(3)
                     .setBugComponent(Component.UI_BROWSER_AUTOFILL)
                     .build();
 
@@ -84,6 +82,12 @@ public class TouchToFillCreditCardRenderTest {
     private static final CreditCard SERVER_MASTER_CARD = createCreditCard("MasterCard-GPay",
             "5454545454545454", "11", AutofillTestHelper.nextYear(), false, "MasterCard-GPay",
             "• • • • 5454", R.drawable.mc_card);
+    private static final CreditCard DISCOVER =
+            createCreditCard("Discover", "6011111111111117", "9", AutofillTestHelper.nextYear(),
+                    true, "Discover", "• • • • 1117", R.drawable.discover_card);
+    private static final CreditCard AMERICAN_EXPRESS = createCreditCard("American Express",
+            "378282246310005", "10", AutofillTestHelper.nextYear(), true, "American Express",
+            "• • • • 0005", R.drawable.amex_card);
 
     private BottomSheetController mBottomSheetController;
     private TouchToFillCreditCardCoordinator mCoordinator;
@@ -98,6 +102,7 @@ public class TouchToFillCreditCardRenderTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+        mActivityTestRule.waitForActivityCompletelyLoaded();
         mBottomSheetController = mActivityTestRule.getActivity()
                                          .getRootUiCoordinatorForTesting()
                                          .getBottomSheetController();
@@ -122,14 +127,119 @@ public class TouchToFillCreditCardRenderTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testShowsVisaAndMastercard() throws IOException {
+    public void testShowsOneCard() throws IOException {
+        runOnUiThreadBlocking(() -> { mCoordinator.showSheet(new CreditCard[] {VISA}, true); });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
+        mRenderTestRule.render(bottomSheetView, "touch_to_fill_credit_card_sheet_one_card");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsOneCardHalfState() throws IOException {
+        runOnUiThreadBlocking(() -> { mCoordinator.showSheet(new CreditCard[] {VISA}, true); });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "touch_to_fill_credit_card_sheet_one_card_half_state");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testShowsTwoCards() throws IOException {
         runOnUiThreadBlocking(() -> {
             mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD}, true);
         });
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
         View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
-        mRenderTestRule.render(bottomSheetView, "touch_to_fill_credit_card_sheet");
+        mRenderTestRule.render(bottomSheetView, "touch_to_fill_credit_card_sheet_two_cards");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsTwoCardsHalfState() throws IOException {
+        runOnUiThreadBlocking(() -> {
+            mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD}, true);
+        });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "touch_to_fill_credit_card_sheet_two_cards_half_state");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testShowsThreeCards() throws IOException {
+        runOnUiThreadBlocking(() -> {
+            mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD, DISCOVER}, true);
+        });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
+        mRenderTestRule.render(bottomSheetView, "touch_to_fill_credit_card_sheet_three_cards");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsThreeCardsHalfState() throws IOException {
+        runOnUiThreadBlocking(() -> {
+            mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD, DISCOVER}, true);
+        });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "touch_to_fill_credit_card_sheet_three_cards_half_state");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testShowsFourCards() throws IOException {
+        runOnUiThreadBlocking(() -> {
+            mCoordinator.showSheet(
+                    new CreditCard[] {VISA, MASTER_CARD, DISCOVER, AMERICAN_EXPRESS}, true);
+        });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
+        mRenderTestRule.render(bottomSheetView, "touch_to_fill_credit_card_sheet_four_cards");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1407272 - This test is temporarily disabled to suppress the flake impact.")
+    public void
+    testShowsFourCardsHalfState() throws IOException {
+        runOnUiThreadBlocking(() -> {
+            mCoordinator.showSheet(
+                    new CreditCard[] {VISA, MASTER_CARD, DISCOVER, AMERICAN_EXPRESS}, true);
+        });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        View rootView = mActivityTestRule.getActivity().getWindow().getDecorView().getRootView();
+        mRenderTestRule.render(rootView, "touch_to_fill_credit_card_sheet_four_cards_half_state");
     }
 
     @Test
@@ -142,6 +252,7 @@ public class TouchToFillCreditCardRenderTest {
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
         View bottomSheetView = mActivityTestRule.getActivity().findViewById(R.id.bottom_sheet);
-        mRenderTestRule.render(bottomSheetView, "touch_to_fill_credit_card_sheet");
+        mRenderTestRule.render(
+                bottomSheetView, "touch_to_fill_credit_card_sheet_shows_local_and_server_cards");
     }
 }

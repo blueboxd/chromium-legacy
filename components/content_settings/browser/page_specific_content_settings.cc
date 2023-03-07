@@ -724,7 +724,7 @@ void AddToContainer(browsing_data::LocalSharedObjectsContainer& container,
       container.indexed_dbs()->Add(blink::StorageKey(origin));
       return;
     case StorageType::CACHE:
-      container.cache_storages()->Add(origin);
+      container.cache_storages()->Add(blink::StorageKey(origin));
       return;
     case StorageType::FILE_SYSTEM:
       container.file_systems()->Add(origin);
@@ -1117,12 +1117,18 @@ bool PageSpecificContentSettings::HasAccessedTopics() const {
 std::vector<privacy_sandbox::CanonicalTopic>
 PageSpecificContentSettings::GetAccessedTopics() const {
   if (accessed_topics_.empty() &&
-      privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get() &&
+      (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting
+           .Get() ||
+       privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting
+           .Get()) &&
       page().GetMainDocument().GetLastCommittedURL().host() == "example.com") {
     // TODO(crbug.com/1286276): Remove sample topic when API is ready.
     return {privacy_sandbox::CanonicalTopic(
-        browsing_topics::Topic(1),
-        privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
+                browsing_topics::Topic(3),
+                privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY),
+            privacy_sandbox::CanonicalTopic(
+                browsing_topics::Topic(4),
+                privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
   }
   return {accessed_topics_.begin(), accessed_topics_.end()};
 }

@@ -94,6 +94,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       StoragePartitionImpl* partition);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NavigationURLLoaderImplTest,
+                           OnAcceptCHFrameReceivedUKM);
   // Starts the loader by finalizing loader factories initialization and
   // calling Restart().
   // This is called only once (while Restart can be called multiple times).
@@ -140,7 +142,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   void FallbackToNonInterceptedRequest(bool reset_subresource_loader_params);
 
   scoped_refptr<network::SharedURLLoaderFactory>
-  PrepareForNonInterceptedRequest(uint32_t* out_options);
+  PrepareForNonInterceptedRequest();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void CheckPluginAndContinueOnReceiveResponse(

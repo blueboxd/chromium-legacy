@@ -23,13 +23,12 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "components/download/public/common/download_item_rename_progress_update.h"
 #include "components/download/public/common/download_source.h"
 #include "net/base/isolation_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -51,7 +50,6 @@ class HttpResponseHeaders;
 
 namespace download {
 class DownloadFile;
-class DownloadItemRenameHandler;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download.
@@ -442,15 +440,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Gets the pointer to the DownloadFile owned by this object.
   virtual DownloadFile* GetDownloadFile() = 0;
-
-  // Gets a handler to perform the rename for a download item.  If no special
-  // rename handling is required, this function returns null and the default
-  // rename handling is performed.  The caller does not own the returned
-  // pointer.
-  virtual DownloadItemRenameHandler* GetRenameHandler() = 0;
-
-  // Gets the metadata needed to recover rename handler state.
-  virtual const DownloadItemRerouteInfo& GetRerouteInfo() const = 0;
 
   //    Progress State accessors -----------------------------------------------
 

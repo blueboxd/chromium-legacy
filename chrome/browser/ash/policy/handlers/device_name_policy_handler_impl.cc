@@ -5,7 +5,7 @@
 #include "chrome/browser/ash/policy/handlers/device_name_policy_handler_impl.h"
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/device_name_policy_handler_name_generator.h"
@@ -42,12 +42,12 @@ DeviceNamePolicyHandlerImpl::DeviceNamePolicyHandlerImpl(
     ash::CrosSettings* cros_settings)
     : DeviceNamePolicyHandlerImpl(
           cros_settings,
-          chromeos::system::StatisticsProvider::GetInstance(),
+          ash::system::StatisticsProvider::GetInstance(),
           ash::NetworkHandler::Get()->network_state_handler()) {}
 
 DeviceNamePolicyHandlerImpl::DeviceNamePolicyHandlerImpl(
     ash::CrosSettings* cros_settings,
-    chromeos::system::StatisticsProvider* statistics_provider,
+    ash::system::StatisticsProvider* statistics_provider,
     ash::NetworkStateHandler* handler)
     : cros_settings_(cros_settings),
       statistics_provider_(statistics_provider),

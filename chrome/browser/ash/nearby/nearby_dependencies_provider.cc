@@ -5,9 +5,9 @@
 #include "chrome/browser/ash/nearby/nearby_dependencies_provider.h"
 
 #include "ash/public/cpp/network_config_service.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/ash/nearby/bluetooth_adapter_manager.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_switches.h"
@@ -96,7 +96,6 @@ NearbyDependenciesProvider::NearbyDependenciesProvider(
     signin::IdentityManager* identity_manager)
     : profile_(profile), identity_manager_(identity_manager) {
   DCHECK(profile_);
-  DCHECK(identity_manager_);
   bluetooth_manager_ = std::make_unique<BluetoothAdapterManager>();
 }
 
@@ -122,7 +121,7 @@ NearbyDependenciesProvider::GetDependencies() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNearbyShareVerboseLogging)) {
     dependencies->min_log_severity =
-        location::nearby::api::LogMessage::Severity::kVerbose;
+        ::nearby::api::LogMessage::Severity::kVerbose;
   }
 
   return dependencies;

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -341,14 +341,15 @@ void PasswordSyncTokenFetcher::ProcessValidTokenResponse(
     }
     case RequestType::kGetToken: {
       std::string sync_token;
-      const auto* token_list_entry = json_response->FindKey(kTokenEntry);
-      if (!token_list_entry || !token_list_entry->is_list()) {
+      const auto* token_list_entry =
+          json_response->GetDict().FindList(kTokenEntry);
+      if (!token_list_entry) {
         LOG(WARNING) << "Response does not contain list of sync tokens.";
         RecordEvent(InSessionPasswordSyncEvent::kErrorNoTokenInGetResponse);
         consumer_->OnApiCallFailed(ErrorType::kGetNoList);
         return;
       }
-      const base::Value::List& list_of_tokens = token_list_entry->GetList();
+      const base::Value::List& list_of_tokens = *token_list_entry;
       if (list_of_tokens.size() > 0) {
         const auto* sync_token_value =
             list_of_tokens[0].FindKeyOfType(kToken, base::Value::Type::STRING);

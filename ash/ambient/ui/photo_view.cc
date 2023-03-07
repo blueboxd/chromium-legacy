@@ -15,7 +15,7 @@
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -180,6 +180,10 @@ bool PhotoView::NeedToAnimateTransition() const {
 
 gfx::ImageSkia PhotoView::GetVisibleImageForTesting() {
   return image_views_.at(image_index_)->GetCurrentImage();
+}
+
+JitterCalculator* PhotoView::GetJitterCalculatorForTesting() {
+  return &glanceable_info_jitter_calculator_;
 }
 
 BEGIN_METADATA(PhotoView, views::View)

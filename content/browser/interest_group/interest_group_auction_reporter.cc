@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -436,6 +436,8 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
 void InterestGroupAuctionReporter::OnReportingComplete(
     const std::vector<std::string>& errors) {
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "reporting_phase",
+                                  top_level_seller_winning_bid_info_.trace_id);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "auction",
                                   top_level_seller_winning_bid_info_.trace_id);
   errors_.insert(errors_.end(), errors.begin(), errors.end());
   std::move(callback_).Run();

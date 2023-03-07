@@ -1,12 +1,8 @@
-// Copyright 2017 The Chromium Authors
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
-
-#import "base/memory/ptr_util.h"
-#import "base/metrics/user_metrics.h"
-#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -26,6 +22,17 @@ FindTabHelper::FindTabHelper(web::WebState* web_state) {
 
 FindTabHelper::~FindTabHelper() {}
 
+void FindTabHelper::DismissFindNavigator() {
+  // Same as `StopFinding()` except the UI is not marked as inactive so it can
+  // be set back up if needed later.
+  [controller_ disableFindInPage];
+}
+
+void FindTabHelper::CreateFindInPageController(web::WebState* web_state) {
+  DCHECK(!controller_);
+  controller_ = [[FindInPageController alloc] initWithWebState:web_state];
+}
+
 void FindTabHelper::SetResponseDelegate(
     id<FindInPageResponseDelegate> response_delegate) {
   if (!controller_) {
@@ -35,8 +42,8 @@ void FindTabHelper::SetResponseDelegate(
   }
 }
 
-void FindTabHelper::StartFinding(NSString* search_term) {
-  [controller_ findStringInPage:search_term];
+void FindTabHelper::StartFinding(NSString* search_string) {
+  [controller_ findStringInPage:search_string];
 }
 
 void FindTabHelper::ContinueFinding(FindDirection direction) {
@@ -80,15 +87,6 @@ void FindTabHelper::RestoreSearchTerm() {
   [controller_ restoreSearchTerm];
 }
 
-void FindTabHelper::CreateFindInPageController(web::WebState* web_state) {
-  DCHECK(!controller_);
-  controller_ = [[FindInPageController alloc] initWithWebState:web_state];
-  if (response_delegate_) {
-    controller_.responseDelegate = response_delegate_;
-    response_delegate_ = nil;
-  }
-}
-
 void FindTabHelper::WebStateRealized(web::WebState* web_state) {
   CreateFindInPageController(web_state);
 }
@@ -106,6 +104,7 @@ void FindTabHelper::DidFinishNavigation(
   if (navigation_context->IsSameDocument()) {
     return;
   }
+
   if (IsFindUIActive()) {
     StopFinding();
   }

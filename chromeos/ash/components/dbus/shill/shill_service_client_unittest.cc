@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -24,7 +24,7 @@ namespace ash {
 
 namespace {
 
-const char kExampleServicePath[] = "/foo/bar";
+const char kExampleServicePath[] = "/service/1";
 
 }  // namespace
 
@@ -334,24 +334,24 @@ TEST_F(ShillServiceClientTest, RequestPortalDetection) {
 
 TEST_F(ShillServiceClientTest, RequestTrafficCounters) {
   // Set up value of response.
-  base::Value traffic_counters(base::Value::Type::LIST);
+  base::Value::List traffic_counters;
 
-  base::Value chrome_dict(base::Value::Type::DICTIONARY);
-  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
-  chrome_dict.SetKey("rx_bytes", base::Value(12));
-  chrome_dict.SetKey("tx_bytes", base::Value(34));
+  base::Value::Dict chrome_dict;
+  chrome_dict.Set("source", shill::kTrafficCounterSourceChrome);
+  chrome_dict.Set("rx_bytes", 12);
+  chrome_dict.Set("tx_bytes", 34);
   traffic_counters.Append(std::move(chrome_dict));
 
-  base::Value user_dict(base::Value::Type::DICTIONARY);
-  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
-  user_dict.SetKey("rx_bytes", base::Value(90));
-  user_dict.SetKey("tx_bytes", base::Value(87));
+  base::Value::Dict user_dict;
+  user_dict.Set("source", shill::kTrafficCounterSourceUser);
+  user_dict.Set("rx_bytes", 90);
+  user_dict.Set("tx_bytes", 87);
   traffic_counters.Append(std::move(user_dict));
 
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
-  AppendValueDataAsVariant(&writer, traffic_counters);
+  AppendValueDataAsVariant(&writer, base::Value(traffic_counters.Clone()));
 
   // Set expectations.
   PrepareForMethodCall(shill::kRequestTrafficCountersFunction,
@@ -362,7 +362,7 @@ TEST_F(ShillServiceClientTest, RequestTrafficCounters) {
   client_->RequestTrafficCounters(
       dbus::ObjectPath(kExampleServicePath),
       base::BindOnce(
-          [](base::Value* expected_traffic_counters,
+          [](const base::Value::List* expected_traffic_counters,
              base::OnceClosure quit_closure,
              absl::optional<base::Value> actual_traffic_counters) {
             ASSERT_TRUE(actual_traffic_counters);
@@ -389,6 +389,24 @@ TEST_F(ShillServiceClientTest, ResetTrafficCounters) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ShillServiceClientTest, InvalidServicePath) {
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Expect the callback to not run and the error callback to run once.
+  base::MockCallback<base::OnceClosure> mock_closure;
+  base::MockCallback<ShillServiceClient::ErrorCallback> mock_error_callback;
+  PrepareForMethodCall(shill::kConnectFunction,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(0);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(1);
+
+  // Call method.
+  client_->Connect(dbus::ObjectPath("/invalid/path"), mock_closure.Get(),
+                   mock_error_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 

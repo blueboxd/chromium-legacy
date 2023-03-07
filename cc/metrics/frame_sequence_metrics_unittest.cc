@@ -51,7 +51,7 @@ TEST(FrameSequenceMetricsTest, ScrollingThreadMergeMetrics) {
   second->main_throughput().frames_produced = 10;
   second->main_throughput().frames_ontime = 10;
 
-  ASSERT_DEATH(first.Merge(std::move(second)), "");
+  ASSERT_DEATH_IF_SUPPORTED(first.Merge(std::move(second)), "");
 }
 #endif  // DCHECK_IS_ON()
 

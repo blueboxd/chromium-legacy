@@ -9,8 +9,8 @@
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "base/bind.h"
 #include "base/callback_list.h"
+#include "base/functional/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -229,15 +229,9 @@ class ApkWebAppServiceLacrosBrowserTest : public InProcessBrowserTest,
   void PublishToAppService(std::vector<apps::AppPtr> apps) {
     auto* proxy =
         apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-    // Emulate what |apps::WebAppsCrosapi| does, need to publish both mojom and
-    // non-mojom for |apps::AppRegistryCache| to get the update.
-    std::vector<apps::mojom::AppPtr> mojom_apps;
-    for (const auto& app : apps) {
-      mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
-    }
+    // Emulate what |apps::WebAppsCrosapi| does, need to publish apps for
+    // |apps::AppRegistryCache| to get the update.
     proxy->OnApps(std::move(apps), apps::AppType::kWeb,
-                  !published_initial_apps_);
-    proxy->OnApps(std::move(mojom_apps), apps::mojom::AppType::kWeb,
                   !published_initial_apps_);
     published_initial_apps_ = true;
   }

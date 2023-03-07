@@ -145,10 +145,9 @@ class CreditCard : public AutofillDataModel {
                         const std::string& app_locale,
                         ServerFieldTypeSet* matching_types) const override;
   std::u16string GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfoWithVerificationStatus(
-      ServerFieldType type,
-      const std::u16string& value,
-      structured_address::VerificationStatus status) override;
+  void SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                        const std::u16string& value,
+                                        VerificationStatus status) override;
 
   // Special method to set value for HTML5 month input type.
   void SetInfoForMonthInputType(const std::u16string& value);
@@ -299,12 +298,14 @@ class CreditCard : public AutofillDataModel {
   std::u16string NetworkForDisplay() const;
   // A label for this card formatted as '••••2345' where the number of dots are
   // specified by the `obfuscation_length`.
-  std::u16string ObfuscatedLastFourDigits(int obfuscation_length = 4) const;
+  std::u16string ObfuscatedNumberWithVisibleLastFourDigits(
+      int obfuscation_length = 4) const;
   // A label for this card formatted '••••••••••••2345' where every digit in the
   // the credit card number is obfuscated except for the last four. This method
   // is primarily used for splitting the preview of a credit card number into
   // several fields.
-  std::u16string ObfuscatedLastFourDigitsForSplitFields() const;
+  std::u16string ObfuscatedNumberWithVisibleLastFourDigitsForSplitFields()
+      const;
   // The string used to represent the icon to be used for the autofill
   // suggestion. For ex: visaCC, googleIssuedCC, americanExpressCC, etc.
   std::string CardIconStringForAutofillSuggestion() const;
@@ -354,10 +355,6 @@ class CreditCard : public AutofillDataModel {
   std::u16string Expiration2DigitYearAsString() const;
   std::u16string Expiration4DigitYearAsString() const;
 
-  // Whether the cardholder name was created from separate first name and last
-  // name fields.
-  bool HasFirstAndLastName() const;
-
   // Returns whether the card has a cardholder name.
   bool HasNameOnCard() const;
 
@@ -400,11 +397,10 @@ class CreditCard : public AutofillDataModel {
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
   std::u16string GetInfoImpl(const AutofillType& type,
                              const std::string& app_locale) const override;
-  bool SetInfoWithVerificationStatusImpl(
-      const AutofillType& type,
-      const std::u16string& value,
-      const std::string& app_locale,
-      structured_address::VerificationStatus status) override;
+  bool SetInfoWithVerificationStatusImpl(const AutofillType& type,
+                                         const std::u16string& value,
+                                         const std::string& app_locale,
+                                         VerificationStatus status) override;
 
   // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
   std::u16string NetworkForFill() const;

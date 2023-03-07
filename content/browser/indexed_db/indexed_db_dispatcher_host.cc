@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -27,7 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/transaction_impl.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -180,12 +180,27 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void IndexedDBDispatcherHost::AddReceiver(
+IndexedDBDispatcherHost::ReceiverContext::ReceiverContext() = default;
+IndexedDBDispatcherHost::ReceiverContext::ReceiverContext(
     absl::optional<storage::BucketInfo> bucket,
+    mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+        client_state_checker_remote)
+    : bucket(bucket),
+      client_state_checker(
+          base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
+              std::move(client_state_checker_remote))) {}
+
+IndexedDBDispatcherHost::ReceiverContext::ReceiverContext(
+    IndexedDBDispatcherHost::ReceiverContext&&) noexcept = default;
+
+IndexedDBDispatcherHost::ReceiverContext::~ReceiverContext() = default;
+
+void IndexedDBDispatcherHost::AddReceiver(
+    IndexedDBDispatcherHost::ReceiverContext context,
     mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  receivers_.Add(this, std::move(pending_receiver), bucket);
+  receivers_.Add(this, std::move(pending_receiver), std::move(context));
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
@@ -243,7 +258,7 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Return error if failed to retrieve bucket from the QuotaManager.
-  if (!receivers_.current_context().has_value()) {
+  if (!receivers_.current_context().bucket.has_value()) {
     auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
         this->AsWeakPtr(), absl::nullopt, std::move(pending_callbacks),
         IDBTaskRunner());
@@ -253,7 +268,7 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
     return;
   }
 
-  const auto& bucket = *receivers_.current_context();
+  const auto& bucket = *receivers_.current_context().bucket;
   auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
       this->AsWeakPtr(), bucket, std::move(pending_callbacks), IDBTaskRunner());
 
@@ -276,7 +291,7 @@ void IndexedDBDispatcherHost::Open(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Return error if failed to retrieve bucket from the QuotaManager.
-  if (!receivers_.current_context().has_value()) {
+  if (!receivers_.current_context().bucket.has_value()) {
     auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
         this->AsWeakPtr(), absl::nullopt, std::move(pending_callbacks),
         IDBTaskRunner());
@@ -286,7 +301,7 @@ void IndexedDBDispatcherHost::Open(
     return;
   }
 
-  const auto& bucket = *receivers_.current_context();
+  const auto& bucket = *receivers_.current_context().bucket;
   auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
       this->AsWeakPtr(), bucket, std::move(pending_callbacks), IDBTaskRunner());
   auto database_callbacks = base::MakeRefCounted<IndexedDBDatabaseCallbacks>(
@@ -306,8 +321,9 @@ void IndexedDBDispatcherHost::Open(
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),
-                                             bucket_locator, indexed_db_path);
+  indexed_db_context_->GetIDBFactory()->Open(
+      name, std::move(connection), bucket_locator, indexed_db_path,
+      receivers_.current_context().client_state_checker);
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
@@ -317,7 +333,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Return error if failed to retrieve bucket from the QuotaManager.
-  if (!receivers_.current_context().has_value()) {
+  if (!receivers_.current_context().bucket.has_value()) {
     auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
         this->AsWeakPtr(), absl::nullopt, std::move(pending_callbacks),
         IDBTaskRunner());
@@ -327,7 +343,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
     return;
   }
 
-  const auto& bucket = *receivers_.current_context();
+  const auto& bucket = *receivers_.current_context().bucket;
   auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
       this->AsWeakPtr(), bucket, std::move(pending_callbacks), IDBTaskRunner());
 

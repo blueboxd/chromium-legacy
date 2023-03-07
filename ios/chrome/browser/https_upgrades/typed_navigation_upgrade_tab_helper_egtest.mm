@@ -4,7 +4,7 @@
 
 #import <string>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "components/omnibox/common/omnibox_features.h"
@@ -292,7 +292,7 @@ std::string GetURLWithoutScheme(const GURL& url) {
 // enabled.
 - (void)test_TypeHTTPWithGoodHTTPS_HTTPSOnlyModeEnabled_ShouldUpgrade {
   // Enable HTTPS-Only Mode.
-  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kHttpsOnlyModeEnabled];
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kHttpsOnlyModeEnabled];
 
   [HttpsUpgradeAppInterface setHTTPSPortForTesting:self.goodHTTPSServer->port()
                                       useFakeHTTPS:true];

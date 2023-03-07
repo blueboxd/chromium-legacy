@@ -7,10 +7,11 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +20,8 @@
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/webui/help_bubble_webui.h"
 #include "components/user_education/webui/tracked_element_webui.h"
+#include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/webui/resources/cr_components/help_bubble/help_bubble.mojom-shared.h"
@@ -104,6 +107,7 @@ struct HelpBubbleHandlerBase::ElementData {
   std::unique_ptr<TrackedElementWebUI> element;
   std::unique_ptr<HelpBubbleParams> params;
   base::raw_ptr<HelpBubbleWebUI> help_bubble = nullptr;
+  base::CallbackListSubscription external_bubble_subscription;
 
   // This is set to true if we are closing the help bubble as the result of a
   // message from the WebUI, rather than a browser-side event. It is used as a
@@ -132,6 +136,10 @@ HelpBubbleHandlerBase::~HelpBubbleHandlerBase() {
     if (data.help_bubble)
       data.help_bubble->Close();
   }
+}
+
+content::WebContents* HelpBubbleHandlerBase::GetWebContents() {
+  return GetController()->web_ui()->GetWebContents();
 }
 
 help_bubble::mojom::HelpBubbleClient* HelpBubbleHandlerBase::GetClient() {
@@ -214,7 +222,8 @@ void HelpBubbleHandlerBase::OnHelpBubbleClosing(
 
 void HelpBubbleHandlerBase::HelpBubbleAnchorVisibilityChanged(
     const std::string& identifier_name,
-    bool visible) {
+    bool visible,
+    const gfx::RectF& rect) {
   ui::ElementIdentifier id;
   ElementData* const data = GetDataByName(identifier_name, &id);
   if (!data)
@@ -222,7 +231,7 @@ void HelpBubbleHandlerBase::HelpBubbleAnchorVisibilityChanged(
 
   // Note: any of the following calls could destroy *this* via a callback.
   if (!data->element->visible() && visible) {
-    data->element->SetVisible(true);
+    data->element->SetVisible(true, rect);
   } else if (data->element->visible() && !visible) {
     // Is a help bubble currently showing?
     if (data->params) {
@@ -387,6 +396,31 @@ gfx::Rect HelpBubbleHandlerBase::GetHelpBubbleBoundsInScreen(
   return gfx::Rect();
 }
 
+void HelpBubbleHandlerBase::OnFloatingHelpBubbleCreated(
+    ui::ElementIdentifier anchor_id,
+    HelpBubble* help_bubble) {
+  GetClient()->ExternalHelpBubbleUpdated(anchor_id.GetName(), true);
+  const auto it = element_data_.find(anchor_id);
+  if (it == element_data_.end()) {
+    return;
+  }
+  DCHECK(!it->second.external_bubble_subscription);
+  it->second.external_bubble_subscription = help_bubble->AddOnCloseCallback(
+      base::BindOnce(&HelpBubbleHandlerBase::OnFloatingHelpBubbleClosed,
+                     weak_ptr_factory_.GetWeakPtr(), anchor_id));
+}
+
+void HelpBubbleHandlerBase::OnFloatingHelpBubbleClosed(
+    ui::ElementIdentifier anchor_id,
+    HelpBubble* help_bubble) {
+  const auto it = element_data_.find(anchor_id);
+  if (it == element_data_.end()) {
+    return;
+  }
+  it->second.external_bubble_subscription = base::CallbackListSubscription();
+  GetClient()->ExternalHelpBubbleUpdated(anchor_id.GetName(), false);
+}
+
 HelpBubbleHandlerBase::ElementData* HelpBubbleHandlerBase::GetDataByName(
     const std::string& identifier_name,
     ui::ElementIdentifier* found_identifier) {
@@ -421,15 +455,22 @@ HelpBubbleHandler::HelpBubbleHandler(
     mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler>
         pending_handler,
     mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> pending_client,
-    content::WebContents* web_contents,
+    content::WebUIController* controller,
     const std::vector<ui::ElementIdentifier>& identifiers)
     : HelpBubbleHandlerBase(
           std::make_unique<ClientProvider>(std::move(pending_client)),
           identifiers,
-          ui::ElementContext(web_contents)),
-      receiver_(this, std::move(pending_handler)) {}
+          ui::ElementContext(controller)),
+      receiver_(this, std::move(pending_handler)),
+      controller_(controller) {
+  DCHECK(controller);
+}
 
 HelpBubbleHandler::~HelpBubbleHandler() = default;
+
+content::WebUIController* HelpBubbleHandler::GetController() {
+  return controller_;
+}
 
 void HelpBubbleHandler::ReportBadMessage(base::StringPiece error) {
   receiver_.ReportBadMessage(std::move(error));

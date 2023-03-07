@@ -7,8 +7,8 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
@@ -540,9 +540,48 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
       registration->active_version()->CountFeature(
           blink::mojom::WebFeature::kServiceWorkerSkippedForEmptyFetchHandler);
       CompleteWithoutLoader();
+      if (!features::kStartServiceWorkerForEmptyFetchHandler.Get()) {
+        return;
+      }
+      // Start service worker if it is not running so that we run the code
+      // written in the top level.
+      if (registration->active_version()->running_status() ==
+              EmbeddedWorkerStatus::STARTING ||
+          registration->active_version()->running_status() ==
+              EmbeddedWorkerStatus::RUNNING) {
+        return;
+      }
+      registration->active_version()->StartWorker(
+          ServiceWorkerMetrics::EventType::SKIP_EMPTY_FETCH_HANDLER,
+          base::BindOnce(&ServiceWorkerControlleeRequestHandler::DidStartWorker,
+                         weak_factory_.GetWeakPtr()));
       return;
     }
     case ServiceWorkerVersion::FetchHandlerType::kNotSkippable: {
+      // When FetchHandlerType::kNotSkippable, then check if the fetch handler
+      // should bypassed or not. First, check the origin trial token. If there
+      // is no valid origin trial token, then check the eligibility based on the
+      // feature flag and the url.
+      if (ShouldBypassFetchHandlerForMainResourceByOriginTrial(
+              registration->active_version()) ||
+          ShouldBypassFetchHandlerForMainResource(stripped_url_)) {
+        // If true, the main resource request bypasses ServiceWorker and starts
+        // the worker in parallel for subsequent subresources.
+        CompleteWithoutLoader();
+        if (registration->active_version()->running_status() ==
+                EmbeddedWorkerStatus::STARTING ||
+            registration->active_version()->running_status() ==
+                EmbeddedWorkerStatus::RUNNING) {
+          return;
+        }
+        registration->active_version()->StartWorker(
+            ServiceWorkerMetrics::EventType::BYPASS_MAIN_RESOURCE,
+            base::BindOnce(
+                &ServiceWorkerControlleeRequestHandler::DidStartWorker,
+                weak_factory_.GetWeakPtr()));
+        return;
+      }
+      // Otherwise, record the skip reason as kNotSkipped.
       RecordSkipReason(FetchHandlerSkipReason::kNotSkipped);
       TRACE_EVENT_WITH_FLOW1(
           "ServiceWorker",
@@ -552,29 +591,6 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
           "Forwarding to the ServiceWorker");
       break;
     }
-  }
-
-  // Check if the fetch handler should bypassed or not.
-  // First, check the origin trial token. If there is no valid origin trial
-  // token, then check the eligibility based on the feature flag and the url.
-  if (ShouldBypassFetchHandlerForMainResourceByOriginTrial(
-          registration->active_version()) ||
-      ShouldBypassFetchHandlerForMainResource(stripped_url_)) {
-    // If true, the main resource request bypasses ServiceWorker and starts the
-    // worker in parallel for subsequent subresources.
-    CompleteWithoutLoader();
-    if (registration->active_version()->running_status() ==
-            EmbeddedWorkerStatus::STARTING ||
-        registration->active_version()->running_status() ==
-            EmbeddedWorkerStatus::RUNNING) {
-      return;
-    }
-    registration->active_version()->StartWorker(
-        ServiceWorkerMetrics::EventType::BYPASS_MAIN_RESOURCE,
-        base::BindOnce(&ServiceWorkerControlleeRequestHandler::
-                           DidStartWorkerForSubresources,
-                       weak_factory_.GetWeakPtr()));
-    return;
   }
 
   // Finally, we want to forward to the service worker! Make a
@@ -589,11 +605,10 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
                          loader_wrapper_->get()->AsWeakPtr())));
 }
 
-void ServiceWorkerControlleeRequestHandler::DidStartWorkerForSubresources(
+void ServiceWorkerControlleeRequestHandler::DidStartWorker(
     blink::ServiceWorkerStatusCode status) {
   TRACE_EVENT_WITH_FLOW1(
-      "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::DidStartWorkerForSubresources",
+      "ServiceWorker", "ServiceWorkerControlleeRequestHandler::DidStartWorker",
       TRACE_ID_LOCAL(this),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Status",
       blink::ServiceWorkerStatusToString(status));

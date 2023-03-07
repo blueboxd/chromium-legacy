@@ -99,8 +99,7 @@ class FontPlatformDataCache final {
    private:
     using SizeToDataMap = HashMap<unsigned,
                                   std::unique_ptr<FontPlatformData>,
-                                  WTF::IntHash<unsigned>,
-                                  WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+                                  IntWithZeroKeyHashTraits<unsigned>>;
 
     SizedFontPlatformDataSet();
 

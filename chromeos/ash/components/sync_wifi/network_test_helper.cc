@@ -7,12 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_metadata_store.h"
 #include "chromeos/ash/components/sync_wifi/network_type_conversions.h"
-#include "chromeos/services/network_config/in_process_instance.h"
+#include "chromeos/ash/services/network_config/in_process_instance.h"
 #include "components/account_id/account_id.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -33,7 +34,7 @@ NetworkTestHelper::NetworkTestHelper()
       NetworkConfigurationHandler::InitializeForTest(
           network_state_helper_.network_state_handler(),
           network_device_handler());
-  ui_proxy_config_service_ = std::make_unique<chromeos::UIProxyConfigService>(
+  ui_proxy_config_service_ = std::make_unique<UIProxyConfigService>(
       &user_prefs_, &local_state_,
       network_state_helper_.network_state_handler(),
       network_profile_handler_.get());
@@ -45,8 +46,8 @@ NetworkTestHelper::NetworkTestHelper()
   managed_network_configuration_handler_->SetPolicy(
       ::onc::ONC_SOURCE_DEVICE_POLICY,
       /*userhash=*/std::string(),
-      /*network_configs_onc=*/base::ListValue(),
-      /*global_network_config=*/base::DictionaryValue());
+      /*network_configs_onc=*/base::Value(base::Value::List()),
+      /*global_network_config=*/base::Value(base::Value::Dict()));
 
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
   auto primary_account_id = AccountId::FromUserEmail("primary@test.com");

@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
+#import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
@@ -61,38 +62,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SafetyCheckMediator (Test)
-- (void)checkAndReconfigureSafeBrowsingState;
-- (void)resetsCheckStartItemIfNeeded;
-- (void)passwordCheckStateDidChange:(PasswordCheckState)state;
-- (void)reconfigurePasswordCheckItem;
-- (void)reconfigureUpdateCheckItem;
-- (void)reconfigureSafeBrowsingCheckItem;
-- (void)reconfigureCheckStartSection;
-- (void)handleOmahaResponse:(const UpgradeRecommendedDetails&)details;
-@property(nonatomic, strong) SettingsCheckItem* updateCheckItem;
-@property(nonatomic, assign) UpdateCheckRowStates updateCheckRowState;
-@property(nonatomic, assign) UpdateCheckRowStates previousUpdateCheckRowState;
-@property(nonatomic, strong) SettingsCheckItem* passwordCheckItem;
-@property(nonatomic, assign) PasswordCheckRowStates passwordCheckRowState;
-@property(nonatomic, assign)
-    PasswordCheckRowStates previousPasswordCheckRowState;
-@property(nonatomic, strong) SettingsCheckItem* safeBrowsingCheckItem;
-@property(nonatomic, assign)
-    SafeBrowsingCheckRowStates safeBrowsingCheckRowState;
-@property(nonatomic, assign)
-    SafeBrowsingCheckRowStates previousSafeBrowsingCheckRowState;
-@property(nonatomic, strong) TableViewTextItem* checkStartItem;
-@property(nonatomic, assign) CheckStartStates checkStartState;
-@property(nonatomic, assign) BOOL checkDidRun;
-@property(nonatomic, assign) PasswordCheckState currentPasswordCheckState;
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* safeBrowsingPreference;
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* enhancedSafeBrowsingPreference;
-
-@end
-
 namespace {
 
 typedef NS_ENUM(NSInteger, SafetyCheckItemType) {
@@ -110,18 +79,6 @@ using password_manager::InsecureCredential;
 using password_manager::InsecureType;
 using password_manager::TestPasswordStore;
 using l10n_util::GetNSString;
-
-// Sets test password store and returns pointer to it.
-scoped_refptr<TestPasswordStore> BuildTestPasswordStore(
-    ChromeBrowserState* _browserState) {
-  return base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
-      IOSChromePasswordStoreFactory::GetInstance()
-          ->SetTestingFactoryAndUse(
-              _browserState,
-              base::BindRepeating(&password_manager::BuildPasswordStore<
-                                  web::BrowserState, TestPasswordStore>))
-          .get()));
-}
 
 // Registers account preference that will be used for Safe Browsing.
 PrefService* SetPrefService() {
@@ -162,6 +119,11 @@ class SafetyCheckMediatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
         base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
+    test_cbs_builder.AddTestingFactory(
+        IOSChromePasswordStoreFactory::GetInstance(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<web::BrowserState,
+                                                  TestPasswordStore>));
     browser_state_ = test_cbs_builder.Build();
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         browser_state_.get(),
@@ -170,7 +132,11 @@ class SafetyCheckMediatorTest : public PlatformTest {
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             browser_state_.get()));
 
-    store_ = BuildTestPasswordStore(browser_state_.get());
+    store_ =
+        base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
+            IOSChromePasswordStoreFactory::GetForBrowserState(
+                browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
+                .get()));
 
     password_check_ = IOSChromePasswordCheckManagerFactory::GetForBrowserState(
         browser_state_.get());
@@ -356,33 +322,9 @@ TEST_F(SafetyCheckMediatorTest, SafeBrowsingSafeUI) {
   EXPECT_EQ(mediator_.safeBrowsingCheckItem.trailingImage, SafeImage());
 }
 
-// Tests UI for Safe Browsing row in Safety Check settings with one of the
-// Enhanced Protection features enabled.
+// Tests UI for Safe Browsing row in Safety Check settings.
 TEST_F(SafetyCheckMediatorTest,
        SafeBrowsingSafeUIStandardAndEnhancedProtection) {
-  mediator_.safeBrowsingCheckRowState = SafeBrowsingCheckRowStateSafe;
-  [mediator_ reconfigureSafeBrowsingCheckItem];
-  EXPECT_NSEQ(
-      mediator_.safeBrowsingCheckItem.detailText,
-      GetNSString(
-          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED_DESC));
-  EXPECT_EQ(mediator_.safeBrowsingCheckItem.trailingImage, SafeImage());
-
-  mediator_.enhancedSafeBrowsingPreference.value = false;
-  [mediator_ reconfigureSafeBrowsingCheckItem];
-  EXPECT_NSEQ(
-      mediator_.safeBrowsingCheckItem.detailText,
-      GetNSString(
-          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_STANDARD_PROTECTION_ENABLED_DESC_WITH_ENHANCED_PROTECTION));
-  EXPECT_EQ(mediator_.safeBrowsingCheckItem.trailingImage, SafeImage());
-}
-
-// TODO(crbug.com/1348254): Consolidate with other test when feature is
-// launched.
-// Tests UI for Safe Browsing row in Safety Check settings with Enhanced
-// Protection features enabled.
-TEST_F(SafetyCheckMediatorTest,
-       SafeBrowsingSafeUIStandardAndEnhancedProtectionPhase2IOS) {
   // Check UI when Safe Browsing protection choice is "Enhanced Protection".
   mediator_.safeBrowsingCheckRowState = SafeBrowsingCheckRowStateSafe;
   [mediator_ reconfigureSafeBrowsingCheckItem];

@@ -1026,10 +1026,17 @@ void PaintOpReader::ReadMatrixConvolutionPaintFilter(
   sk_sp<PaintFilter> input;
 
   ReadSimple(&kernel_size);
-  if (!valid_)
+  if (!valid_) {
     return;
-  auto size =
-      static_cast<size_t>(sk_64_mul(kernel_size.width(), kernel_size.height()));
+  }
+  if (kernel_size.isEmpty()) {
+    SetInvalid(
+        DeserializationError::
+            kInsufficientRemainingBytes_ReadMatrixConvolutionPaintFilter);
+    return;
+  }
+  auto size = static_cast<size_t>(kernel_size.width()) *
+              static_cast<size_t>(kernel_size.height());
   if (size > remaining_bytes_) {
     SetInvalid(
         DeserializationError::
@@ -1037,8 +1044,9 @@ void PaintOpReader::ReadMatrixConvolutionPaintFilter(
     return;
   }
   std::vector<SkScalar> kernel(size);
-  for (size_t i = 0; i < size; ++i)
+  for (size_t i = 0; i < size; ++i) {
     Read(&kernel[i]);
+  }
   Read(&gain);
   Read(&bias);
   ReadSimple(&kernel_offset);
@@ -1111,7 +1119,6 @@ void PaintOpReader::ReadRecordPaintFilter(
   gfx::SizeF raster_scale = {0.f, 0.f};
   PaintShader::ScalingBehavior scaling_behavior =
       PaintShader::ScalingBehavior::kRasterAtScale;
-  sk_sp<PaintRecord> record;
 
   ReadSimple(&record_bounds);
   ReadSimple(&raster_scale);
@@ -1134,10 +1141,12 @@ void PaintOpReader::ReadRecordPaintFilter(
     return;
   }
 
+  absl::optional<PaintRecord> record;
   Read(&record);
-  if (!valid_)
+  if (!valid_) {
     return;
-  filter->reset(new RecordPaintFilter(std::move(record), record_bounds,
+  }
+  filter->reset(new RecordPaintFilter(std::move(*record), record_bounds,
                                       raster_scale, scaling_behavior));
 }
 
@@ -1243,7 +1252,7 @@ void PaintOpReader::ReadShaderPaintFilter(
   using Dither = SkImageFilters::Dither;
 
   sk_sp<PaintShader> shader;
-  uint8_t alpha = 255;
+  float alpha = 1.0f;
   PaintFlags::FilterQuality quality = PaintFlags::FilterQuality::kNone;
   Dither dither = Dither::kNo;
 
@@ -1362,7 +1371,7 @@ void PaintOpReader::ReadLightingSpotPaintFilter(
       std::move(input), base::OptionalToPtr(crop_rect)));
 }
 
-size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
+size_t PaintOpReader::Read(absl::optional<PaintRecord>* record) {
   size_t size_bytes = 0;
   ReadSize(&size_bytes);
   AlignMemory(PaintOpBuffer::kPaintOpAlign);
@@ -1373,7 +1382,7 @@ size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
       SetInvalid(DeserializationError::kPaintRecordForbidden);
       return 0;
     }
-    *record = sk_make_sp<PaintOpBuffer>();
+    *record = PaintRecord();
     return 0;
   }
 
@@ -1383,11 +1392,13 @@ size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
   if (!valid_)
     return 0;
 
-  *record = PaintOpBuffer::MakeFromMemory(memory_, size_bytes, *options_);
-  if (!*record) {
+  sk_sp<PaintOpBuffer> buffer =
+      PaintOpBuffer::MakeFromMemory(memory_, size_bytes, *options_);
+  if (!buffer) {
     SetInvalid(DeserializationError::kPaintOpBufferMakeFromMemoryFailure);
     return 0;
   }
+  *record = buffer->ReleaseAsRecord();
   DidRead(size_bytes);
   return size_bytes;
 }

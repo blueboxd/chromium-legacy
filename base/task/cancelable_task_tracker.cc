@@ -8,9 +8,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
@@ -109,7 +109,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(weak_this_);
 
-  // We need a SequencedTaskRunnerHandle to run |reply|.
+  // We need a SequencedTaskRunner::CurrentDefaultHandle to run |reply|.
   DCHECK(SequencedTaskRunner::HasCurrentDefault());
 
   auto flag = MakeRefCounted<TaskCancellationFlag>();

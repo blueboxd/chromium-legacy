@@ -48,8 +48,9 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
                      CSSPrimitiveValue::UnitType type,
                      T& result) const {
     double temp_result;
-    if (!ComputeLengthImpl(value, type, temp_result))
+    if (!ComputeLengthImpl(value, type, temp_result)) {
       return false;
+    }
     result = ClampTo<T>(temp_result);
     return true;
   }
@@ -69,7 +70,6 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
   virtual mojom::blink::HoverType PrimaryHoverType() const = 0;
   virtual int AvailableHoverTypes() const = 0;
   virtual bool ThreeDEnabled() const = 0;
-  virtual bool InImmersiveMode() const = 0;
   virtual const String MediaType() const = 0;
   virtual blink::mojom::DisplayMode DisplayMode() const = 0;
   virtual bool StrictMode() const = 0;
@@ -115,7 +115,6 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
   static const String CalculateMediaType(LocalFrame*);
   static blink::mojom::DisplayMode CalculateDisplayMode(LocalFrame*);
   static bool CalculateThreeDEnabled(LocalFrame*);
-  static bool CalculateInImmersiveMode(LocalFrame*);
   static mojom::blink::PointerType CalculatePrimaryPointerType(LocalFrame*);
   static int CalculateAvailablePointerTypes(LocalFrame*);
   static mojom::blink::HoverType CalculatePrimaryHoverType(LocalFrame*);

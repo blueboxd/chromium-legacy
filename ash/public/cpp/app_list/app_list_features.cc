@@ -35,9 +35,9 @@ BASE_FEATURE(kDynamicSearchUpdateAnimation,
 BASE_FEATURE(kLauncherPlayStoreSearch,
              "LauncherPlayStoreSearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kAnimateScaleOnTabletModeTransition,
-             "AnimateScaleOnTabletModeTransition",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kDragAndDropRefactor,
+             "AppListDragAndDropRefactor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsAppReinstallZeroStateEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppReinstallZeroState);
@@ -79,8 +79,8 @@ bool IsLauncherPlayStoreSearchEnabled() {
   return base::FeatureList::IsEnabled(kLauncherPlayStoreSearch);
 }
 
-bool IsAnimateScaleOnTabletModeTransitionEnabled() {
-  return base::FeatureList::IsEnabled(kAnimateScaleOnTabletModeTransition);
+bool IsDragAndDropRefactorEnabled() {
+  return base::FeatureList::IsEnabled(kDragAndDropRefactor);
 }
 
 }  // namespace app_list_features

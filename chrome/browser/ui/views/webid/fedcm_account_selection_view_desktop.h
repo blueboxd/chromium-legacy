@@ -58,7 +58,8 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   virtual views::Widget* CreateBubble(
       Browser* browser,
       const std::u16string& rp_etld_plus_one,
-      const absl::optional<std::u16string>& idp_title);
+      const absl::optional<std::u16string>& idp_title,
+      blink::mojom::RpContext rp_context);
 
   // Returns AccountSelectionBubbleViewInterface for bubble views::Widget.
   virtual AccountSelectionBubbleViewInterface* GetBubbleView();
@@ -83,7 +84,8 @@ class FedCmAccountSelectionView : public AccountSelectionView,
 
   // AccountSelectionBubbleView::Observer:
   void OnAccountSelected(const Account& account,
-                         const IdentityProviderDisplayData& idp_data) override;
+                         const IdentityProviderDisplayData& idp_data,
+                         bool auto_signin) override;
   void OnLinkClicked(LinkType link_type, const GURL& url) override;
   void OnBackButtonClicked() override;
   void OnCloseButtonClicked() override;

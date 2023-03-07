@@ -15,9 +15,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_helpers.h"
 #include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -581,12 +581,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetWebPreferences(const blink::web_pref::WebPreferences& prefs) override;
   void OnWebPreferencesChanged() override;
 
-  void DisablePrerender2() override;
-  void ResetPrerender2Disabled() override;
-  // Resets the bit to explicitly disable Prerender2 for this WebContents. Note
-  // that this may not equate to the feature being enabled.
-  bool IsPrerender2Disabled();
-
   void AboutToBeDiscarded(WebContents* new_contents) override;
 
   // RenderFrameHostDelegate ---------------------------------------------------
@@ -822,7 +816,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             base::TerminationStatus status,
                             int error_code) override;
   void RenderViewDeleted(RenderViewHost* render_view_host) override;
-  void Close(RenderViewHost* render_view_host) override;
   bool DidAddMessageToConsole(
       RenderFrameHostImpl* source_frame,
       blink::mojom::ConsoleMessageLevel log_level,
@@ -973,7 +966,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsShowingContextMenuOnPage() const override;
   void DidChangeScreenOrientation() override;
   gfx::Rect GetWindowsControlsOverlayRect() const override;
-  VisibleTimeRequestTrigger* GetVisibleTimeRequestTrigger() final;
+  VisibleTimeRequestTrigger& GetVisibleTimeRequestTrigger() final;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -2349,6 +2342,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Stores WebContents::CreateParams::lock_picture_in_picture_aspect_ratio.
   bool pip_lock_aspect_ratio_ = false;
 
+  // Pip might require the content window to continue rendering. This handle
+  // ensures that rendering continues despite occlusion or hidden window state.
+  base::ScopedClosureRunner pip_capture_handle_;
+
   VisibleTimeRequestTrigger visible_time_request_trigger_;
 
   // Stores the information whether last navigation was prerender activation for
@@ -2356,8 +2353,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // either DevTools is opened and consults this value or when a non-prerendered
   // navigation commits in the primary main frame.
   bool last_navigation_was_prerender_activation_for_devtools_ = false;
-
-  bool prerender2_disabled_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

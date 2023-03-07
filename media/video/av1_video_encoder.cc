@@ -18,6 +18,7 @@
 #include "media/base/video_color_space.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "media/video/video_encoder_info.h"
 #include "third_party/libaom/source/libaom/aom/aomcx.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 
@@ -120,6 +121,9 @@ EncoderStatus SetUpAomConfig(const VideoEncoder::Options& opts,
   svc_params.number_spatial_layers = 1;
   if (opts.scalability_mode.has_value()) {
     switch (opts.scalability_mode.value()) {
+      case SVCScalabilityMode::kL1T1:
+        // Nothing to do
+        break;
       case SVCScalabilityMode::kL1T2:
         svc_params.framerate_factor[0] = 2;
         svc_params.framerate_factor[1] = 1;
@@ -176,6 +180,7 @@ Av1VideoEncoder::Av1VideoEncoder() : codec_(nullptr, FreeCodecCtx) {}
 
 void Av1VideoEncoder::Initialize(VideoCodecProfile profile,
                                  const Options& options,
+                                 EncoderInfoCB info_cb,
                                  OutputCB output_cb,
                                  EncoderStatusCB done_cb) {
   done_cb = BindCallbackToCurrentLoopIfNeeded(std::move(done_cb));
@@ -278,6 +283,12 @@ void Av1VideoEncoder::Initialize(VideoCodecProfile profile,
   originally_configured_size_ = options.frame_size;
   output_cb_ = BindCallbackToCurrentLoopIfNeeded(std::move(output_cb));
   codec_ = std::move(codec);
+
+  VideoEncoderInfo info;
+  info.implementation_name = "Av1VideoEncoder";
+  info.is_hardware_accelerated = false;
+  BindCallbackToCurrentLoopIfNeeded(std::move(info_cb)).Run(info);
+
   std::move(done_cb).Run(EncoderStatus::Codes::kOk);
 }
 

@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind.h"
@@ -213,38 +213,32 @@ TEST(CookieUtilTest, TestRequestCookieParsing) {
   // Simple case.
   tests.emplace_back();
   tests.back().str = "key=value";
-  tests.back().parsed.push_back(std::make_pair(std::string("key"),
-                                               std::string("value")));
+  tests.back().parsed.emplace_back(std::string("key"), std::string("value"));
   // Multiple key/value pairs.
   tests.emplace_back();
   tests.back().str = "key1=value1; key2=value2";
-  tests.back().parsed.push_back(std::make_pair(std::string("key1"),
-                                               std::string("value1")));
-  tests.back().parsed.push_back(std::make_pair(std::string("key2"),
-                                               std::string("value2")));
+  tests.back().parsed.emplace_back(std::string("key1"), std::string("value1"));
+  tests.back().parsed.emplace_back(std::string("key2"), std::string("value2"));
   // Empty value.
   tests.emplace_back();
   tests.back().str = "key=; otherkey=1234";
-  tests.back().parsed.push_back(std::make_pair(std::string("key"),
-                                               std::string()));
-  tests.back().parsed.push_back(std::make_pair(std::string("otherkey"),
-                                               std::string("1234")));
+  tests.back().parsed.emplace_back(std::string("key"), std::string());
+  tests.back().parsed.emplace_back(std::string("otherkey"),
+                                   std::string("1234"));
   // Special characters (including equals signs) in value.
   tests.emplace_back();
   tests.back().str = "key=; a2=s=(./&t=:&u=a#$; a3=+~";
-  tests.back().parsed.push_back(std::make_pair(std::string("key"),
-                                               std::string()));
-  tests.back().parsed.push_back(std::make_pair(std::string("a2"),
-                                               std::string("s=(./&t=:&u=a#$")));
-  tests.back().parsed.push_back(std::make_pair(std::string("a3"),
-                                               std::string("+~")));
+  tests.back().parsed.emplace_back(std::string("key"), std::string());
+  tests.back().parsed.emplace_back(std::string("a2"),
+                                   std::string("s=(./&t=:&u=a#$"));
+  tests.back().parsed.emplace_back(std::string("a3"), std::string("+~"));
   // Quoted value.
   tests.emplace_back();
   tests.back().str = "key=\"abcdef\"; otherkey=1234";
-  tests.back().parsed.push_back(std::make_pair(std::string("key"),
-                                               std::string("\"abcdef\"")));
-  tests.back().parsed.push_back(std::make_pair(std::string("otherkey"),
-                                               std::string("1234")));
+  tests.back().parsed.emplace_back(std::string("key"),
+                                   std::string("\"abcdef\""));
+  tests.back().parsed.emplace_back(std::string("otherkey"),
+                                   std::string("1234"));
 
   for (size_t i = 0; i < tests.size(); i++) {
     SCOPED_TRACE(testing::Message() << "Test " << i);
@@ -259,8 +253,7 @@ TEST(CookieUtilTest, TestRequestCookieParsing_Malformed) {
   // Missing equal sign.
   tests.emplace_back();
   tests.back().str = "key";
-  tests.back().parsed.emplace_back(
-      std::make_pair(std::string("key"), std::string()));
+  tests.back().parsed.emplace_back(std::string("key"), std::string());
   tests.back().serialized = "key=";
 
   // Quoted value with unclosed quote.
@@ -274,17 +267,15 @@ TEST(CookieUtilTest, TestRequestCookieParsing_Malformed) {
   // Quoted value with unclosed quote followed by another quoted value.
   tests.emplace_back();
   tests.back().str = "key=\"abcdef; otherkey=\"1234\"";
-  tests.back().parsed.emplace_back(
-      std::make_pair(std::string("key"), std::string("\"abcdef; otherkey=\"")));
-  tests.back().parsed.emplace_back(
-      std::make_pair(std::string("234\""), std::string()));
+  tests.back().parsed.emplace_back(std::string("key"),
+                                   std::string("\"abcdef; otherkey=\""));
+  tests.back().parsed.emplace_back(std::string("234\""), std::string());
   tests.back().serialized = "key=\"abcdef; otherkey=\"; 234\"=";
 
   // Regular value followed by quoted value with unclosed quote.
   tests.emplace_back();
   tests.back().str = "key=abcdef; otherkey=\"1234";
-  tests.back().parsed.emplace_back(
-      std::make_pair(std::string("key"), std::string("abcdef")));
+  tests.back().parsed.emplace_back(std::string("key"), std::string("abcdef"));
   tests.back().serialized = "key=abcdef";
 
   for (size_t i = 0; i < tests.size(); i++) {
@@ -1550,30 +1541,11 @@ INSTANTIATE_TEST_SUITE_P(/* no label */,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool()));
 
-TEST(CookieUtilTest, AdaptCookieAccessResultToBool) {
-  bool result_out = true;
-  base::OnceCallback<void(bool)> callback = base::BindLambdaForTesting(
-      [&result_out](bool result) { result_out = result; });
+TEST(CookieUtilTest, IsCookieAccessResultInclude) {
+  EXPECT_FALSE(cookie_util::IsCookieAccessResultInclude(CookieAccessResult(
+      CookieInclusionStatus(CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR))));
 
-  base::OnceCallback<void(CookieAccessResult)> adapted_callback =
-      cookie_util::AdaptCookieAccessResultToBool(std::move(callback));
-
-  std::move(adapted_callback)
-      .Run(CookieAccessResult(
-          CookieInclusionStatus(CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)));
-
-  EXPECT_FALSE(result_out);
-
-  result_out = false;
-  callback = base::BindLambdaForTesting(
-      [&result_out](bool result) { result_out = result; });
-
-  adapted_callback =
-      cookie_util::AdaptCookieAccessResultToBool(std::move(callback));
-
-  std::move(adapted_callback).Run(CookieAccessResult());
-
-  EXPECT_TRUE(result_out);
+  EXPECT_TRUE(cookie_util::IsCookieAccessResultInclude(CookieAccessResult()));
 }
 
 TEST(CookieUtilTest, GetSamePartyStatus_NotInSet) {

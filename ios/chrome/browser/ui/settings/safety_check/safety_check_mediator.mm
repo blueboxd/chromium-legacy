@@ -15,7 +15,6 @@
 #import "base/version.h"
 #import "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -34,6 +33,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
+#import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/upgrade/upgrade_constants.h"
 #import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
@@ -117,59 +116,12 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
 // Header for the Safety Check page.
 @property(nonatomic, strong) TableViewLinkHeaderFooterItem* headerItem;
 
-// SettingsCheckItem used to display the state of the Safe Browsing check.
-@property(nonatomic, strong) SettingsCheckItem* safeBrowsingCheckItem;
-
-// Current state of the Safe Browsing check.
-@property(nonatomic, assign)
-    SafeBrowsingCheckRowStates safeBrowsingCheckRowState;
-
-// Previous on load or finished check state of the Safe Browsing check.
-@property(nonatomic, assign)
-    SafeBrowsingCheckRowStates previousSafeBrowsingCheckRowState;
-
-// SettingsCheckItem used to display the state of the update check.
-@property(nonatomic, strong) SettingsCheckItem* updateCheckItem;
-
-// Current state of the update check.
-@property(nonatomic, assign) UpdateCheckRowStates updateCheckRowState;
-
-// Previous on load or finished check state of the update check.
-@property(nonatomic, assign) UpdateCheckRowStates previousUpdateCheckRowState;
-
-// SettingsCheckItem used to display the state of the password check.
-@property(nonatomic, strong) SettingsCheckItem* passwordCheckItem;
-
-// Current state of the password check.
-@property(nonatomic, assign) PasswordCheckRowStates passwordCheckRowState;
-
-// Previous on load or finished check state of the password check.
-@property(nonatomic, assign)
-    PasswordCheckRowStates previousPasswordCheckRowState;
-
-// Row button to start the safety check.
-@property(nonatomic, strong) TableViewTextItem* checkStartItem;
-
-// Current state of the start safety check row button.
-@property(nonatomic, assign) CheckStartStates checkStartState;
-
-// Preference value for Safe Browsing.
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* safeBrowsingPreference;
-
-// Preference value for Enhanced Safe Browsing.
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* enhancedSafeBrowsingPreference;
-
 // If the Safe Browsing preference is managed.
 @property(nonatomic, assign) BOOL safeBrowsingPreferenceManaged;
 
 // The service responsible for password check feature.
 @property(nonatomic, assign) scoped_refptr<IOSChromePasswordCheckManager>
     passwordCheckManager;
-
-// Current state of password check.
-@property(nonatomic, assign) PasswordCheckState currentPasswordCheckState;
 
 // If any checks in safety check are still running.
 @property(nonatomic, assign, readonly) BOOL checksRemaining;
@@ -182,9 +134,6 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
 
 // Service used to check user preference values.
 @property(nonatomic, assign, readonly) PrefService* userPrefService;
-
-// Whether or not a safety check just ran.
-@property(nonatomic, assign) BOOL checkDidRun;
 
 // When the check was started.
 @property(nonatomic, assign) base::Time checkStartTime;
@@ -270,12 +219,7 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       passwordCheckIcon = CustomSymbolTemplateWithPointSize(
           kPasswordSymbol, kLeadingSymbolImagePointSize);
     } else {
-      NSString* imageName = base::FeatureList::IsEnabled(
-                                password_manager::features::
-                                    kIOSEnablePasswordManagerBrandingUpdate)
-                                ? @"password_key"
-                                : @"legacy_password_key";
-      passwordCheckIcon = [[UIImage imageNamed:imageName]
+      passwordCheckIcon = [[UIImage imageNamed:@"password_key"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
 
@@ -287,9 +231,9 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
     _passwordCheckItem.infoButtonHidden = YES;
     _passwordCheckItem.trailingImage = nil;
 
-    // Show unsafe state if user already ran safety check and there are
-    // compromised credentials.
-    if (!_passwordCheckManager->GetUnmutedCompromisedCredentials().empty() &&
+    // Show unsafe state if user already ran safety check and there are insecure
+    // credentials.
+    if (!_passwordCheckManager->GetInsecureCredentials().empty() &&
         PreviousSafetyCheckIssueFound()) {
       _passwordCheckRowState = PasswordCheckRowStateUnSafe;
     }
@@ -543,8 +487,8 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       self.currentPasswordCheckState == PasswordCheckState::kRunning;
   self.currentPasswordCheckState = newState;
 
-  BOOL noCompromisedPasswords =
-      self.passwordCheckManager->GetUnmutedCompromisedCredentials().empty();
+  BOOL noInsecurePasswords =
+      self.passwordCheckManager->GetInsecureCredentials().empty();
 
   switch (self.currentPasswordCheckState) {
     case PasswordCheckState::kRunning:
@@ -554,26 +498,26 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
     case PasswordCheckState::kSignedOut:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kSignedOut);
-      return noCompromisedPasswords ? PasswordCheckRowStateError
-                                    : PasswordCheckRowStateUnSafe;
+      return noInsecurePasswords ? PasswordCheckRowStateError
+                                 : PasswordCheckRowStateUnSafe;
     case PasswordCheckState::kOffline:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kOffline);
-      return noCompromisedPasswords ? PasswordCheckRowStateError
-                                    : PasswordCheckRowStateUnSafe;
+      return noInsecurePasswords ? PasswordCheckRowStateError
+                                 : PasswordCheckRowStateUnSafe;
     case PasswordCheckState::kQuotaLimit:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kQuotaLimit);
-      return noCompromisedPasswords ? PasswordCheckRowStateError
-                                    : PasswordCheckRowStateUnSafe;
+      return noInsecurePasswords ? PasswordCheckRowStateError
+                                 : PasswordCheckRowStateUnSafe;
     case PasswordCheckState::kOther:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kError);
-      return noCompromisedPasswords ? PasswordCheckRowStateError
-                                    : PasswordCheckRowStateUnSafe;
+      return noInsecurePasswords ? PasswordCheckRowStateError
+                                 : PasswordCheckRowStateUnSafe;
     case PasswordCheckState::kCanceled:
     case PasswordCheckState::kIdle: {
-      if (!noCompromisedPasswords) {
+      if (!noInsecurePasswords) {
         base::UmaHistogramEnumeration(
             kSafetyCheckMetricsPasswords,
             safety_check::PasswordsStatus::kCompromisedExist);
@@ -621,8 +565,9 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
 
 // Computes the appropriate error info to be displayed in the passwords popover.
 - (NSAttributedString*)passwordCheckErrorInfo {
-  if (!self.passwordCheckManager->GetUnmutedCompromisedCredentials().empty())
+  if (!self.passwordCheckManager->GetInsecureCredentials().empty()) {
     return nil;
+  }
 
   NSString* message;
   GURL linkURL;
@@ -1120,8 +1065,7 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       break;
     }
     case PasswordCheckRowStateSafe: {
-      DCHECK(self.passwordCheckManager->GetUnmutedCompromisedCredentials()
-                 .empty());
+      DCHECK(self.passwordCheckManager->GetInsecureCredentials().empty());
       UIImage* safeIconImage =
           UseSymbols()
               ? DefaultSymbolTemplateWithPointSize(
@@ -1140,8 +1084,7 @@ constexpr double kSafeBrowsingRowMinDelay = 3.0;
       self.passwordCheckItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
-              self.passwordCheckManager->GetUnmutedCompromisedCredentials()
-                  .size()));
+              self.passwordCheckManager->GetInsecureCredentials().size()));
       UIImage* unSafeIconImage =
           UseSymbols()
               ? DefaultSymbolTemplateWithPointSize(

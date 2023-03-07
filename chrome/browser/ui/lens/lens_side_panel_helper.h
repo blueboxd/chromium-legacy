@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_LENS_LENS_SIDE_PANEL_HELPER_H_
 #define CHROME_BROWSER_UI_LENS_LENS_SIDE_PANEL_HELPER_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -53,14 +53,6 @@ views::Widget* OpenLensRegionSearchInstructions(
     Browser* browser,
     base::OnceClosure close_callback,
     base::OnceClosure escape_callback);
-
-// For testing purposes, retrieves the web contents used by the Lens side panel
-// view.
-content::WebContents* GetLensSidePanelWebContentsForTesting(Browser* browser);
-
-// For testing purposes, creates the LensSidePanelController in the
-// corresponding BrowserView of |browser|.
-void CreateLensSidePanelControllerForTesting(Browser* browser);
 
 // For testing purposes, retrieves the web contents used by the lens unified
 // side panel view. This is there because of BUILD rules for browser test where

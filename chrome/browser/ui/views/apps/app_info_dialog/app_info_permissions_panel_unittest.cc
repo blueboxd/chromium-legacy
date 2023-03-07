@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "apps/saved_files_service.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -39,7 +39,7 @@ class AppInfoPermissionsPanelTest : public testing::Test {
  protected:
   AppInfoPermissionsPanelTest() {}
 
-  std::unique_ptr<base::DictionaryValue> ValidAppManifest() {
+  base::Value::Dict ValidAppManifest() {
     return extensions::DictionaryBuilder()
         .Set("name", "Test App Name")
         .Set("version", "2.0")

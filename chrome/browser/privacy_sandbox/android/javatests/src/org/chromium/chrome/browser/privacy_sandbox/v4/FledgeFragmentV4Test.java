@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.privacy_sandbox.v4;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -15,15 +17,16 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxTestUtils.clickImageButtonNextToText;
 import static org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxTestUtils.getRootViewSanitized;
+import static org.chromium.ui.test.util.ViewUtils.clickOnClickableSpan;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.view.View;
@@ -41,13 +44,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy_sandbox.FakePrivacySandboxBridge;
-import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridgeJni;
 import org.chromium.chrome.browser.privacy_sandbox.R;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -55,6 +57,8 @@ import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -69,7 +73,7 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+@EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
 public final class FledgeFragmentV4Test {
     private static final String SITE_NAME_1 = "first.com";
     private static final String SITE_NAME_2 = "second.com";
@@ -91,11 +95,14 @@ public final class FledgeFragmentV4Test {
     public JniMocker mocker = new JniMocker();
 
     private FakePrivacySandboxBridge mFakePrivacySandboxBridge;
+    private UserActionTester mUserActionTester;
 
     @Before
     public void setUp() {
         mFakePrivacySandboxBridge = new FakePrivacySandboxBridge();
         mocker.mock(PrivacySandboxBridgeJni.TEST_HOOKS, mFakePrivacySandboxBridge);
+
+        mUserActionTester = new UserActionTester();
     }
 
     @After
@@ -104,11 +111,14 @@ public final class FledgeFragmentV4Test {
             PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
             prefService.clearPref(Pref.PRIVACY_SANDBOX_M1_FLEDGE_ENABLED);
         });
+
+        mUserActionTester.tearDown();
     }
 
     private void startFledgeSettings() {
         mSettingsActivityTestRule.startSettingsActivity();
-        ViewUtils.onViewWaiting(withText(R.string.settings_fledge_page_title));
+        ViewUtils.onViewWaiting(allOf(withText(R.string.settings_fledge_page_title),
+                withParent(withId(R.id.action_bar))));
     }
 
     private Matcher<View> getFledgeToggleMatcher() {
@@ -118,7 +128,19 @@ public final class FledgeFragmentV4Test {
     }
 
     private View getFledgeRootView() {
-        return getRootViewSanitized(R.string.settings_fledge_page_title);
+        return getRootViewSanitized(R.string.settings_fledge_page_toggle_sub_label);
+    }
+
+    private View getAllSitesPageRootView() {
+        return getRootViewSanitized(R.string.settings_fledge_all_sites_sub_page_title);
+    }
+
+    private View getBlockedSitesPageRootView() {
+        return getRootViewSanitized(R.string.settings_fledge_page_blocked_sites_sub_page_title);
+    }
+
+    private View getLearnMoreRootView() {
+        return getRootViewSanitized(R.string.settings_fledge_page_learn_more_heading);
     }
 
     private void setFledgePrefEnabled(boolean isEnabled) {
@@ -170,6 +192,52 @@ public final class FledgeFragmentV4Test {
 
     @Test
     @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderAllSitesPage() throws IOException {
+        setFledgePrefEnabled(true);
+        for (int i = 0; i < FledgeFragmentV4.MAX_DISPLAYED_SITES + 1; i++) {
+            mFakePrivacySandboxBridge.setFledgeJoiningAllowed(generateSiteFromNr(i), true);
+        }
+        startFledgeSettings();
+        scrollToSetting(withText(R.string.settings_fledge_page_see_all_sites_label));
+        onView(withText(R.string.settings_fledge_page_see_all_sites_label)).perform(click());
+        mRenderTestRule.render(getAllSitesPageRootView(), "fledge_all_sites_page");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderBlockedSitesPageEmpty() throws IOException {
+        setFledgePrefEnabled(false);
+        startFledgeSettings();
+        onView(withText(R.string.settings_fledge_page_blocked_sites_heading)).perform(click());
+        mRenderTestRule.render(getBlockedSitesPageRootView(), "fledge_blocked_sites_empty");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderBlockedSitesPagePopulated() throws IOException {
+        setFledgePrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedFledgeSites(SITE_NAME_1, SITE_NAME_2);
+        startFledgeSettings();
+        onView(withText(R.string.settings_fledge_page_blocked_sites_heading)).perform(click());
+        mRenderTestRule.render(getBlockedSitesPageRootView(), "fledge_blocked_sites_populated");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderLearnMore() throws IOException {
+        setFledgePrefEnabled(true);
+        mFakePrivacySandboxBridge.setCurrentFledgeSites(SITE_NAME_1, SITE_NAME_2);
+        startFledgeSettings();
+        onView(withText(containsString("Learn more"))).perform(clickOnClickableSpan(0));
+        mRenderTestRule.render(getLearnMoreRootView(), "fledge_learn_more");
+    }
+
+    @Test
+    @SmallTest
     public void testToggleUncheckedWhenFledgeOff() {
         setFledgePrefEnabled(false);
         startFledgeSettings();
@@ -196,6 +264,9 @@ public final class FledgeFragmentV4Test {
                 .check(matches(isDisplayed()));
         onView(withText(R.string.settings_fledge_page_current_sites_description_disabled))
                 .check(doesNotExist());
+
+        assertThat(
+                mUserActionTester.getActions(), hasItems("Settings.PrivacySandbox.Fledge.Enabled"));
     }
 
     @Test
@@ -212,13 +283,13 @@ public final class FledgeFragmentV4Test {
         // Click on the toggle.
         onView(getFledgeToggleMatcher()).perform(click());
 
-        // Check that the all sites pref is displayed
-        onViewWaiting(withText(R.string.settings_fledge_page_see_all_sites_label))
-                .check(matches(isDisplayed()));
-
         // Check that the sites list is displayed when Fledge is enabled.
         onView(withText(SITE_NAME_1)).check(matches(isDisplayed()));
         onView(withText(SITE_NAME_2)).check(matches(isDisplayed()));
+
+        // Check that actions are reported
+        assertThat(
+                mUserActionTester.getActions(), hasItems("Settings.PrivacySandbox.Fledge.Enabled"));
     }
 
     @Test
@@ -233,6 +304,9 @@ public final class FledgeFragmentV4Test {
                 .check(matches(isDisplayed()));
         onView(withText(R.string.settings_fledge_page_current_sites_description_empty))
                 .check(doesNotExist());
+
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.Disabled"));
     }
 
     @Test
@@ -242,6 +316,10 @@ public final class FledgeFragmentV4Test {
         mFakePrivacySandboxBridge.setCurrentFledgeSites(SITE_NAME_1, SITE_NAME_2);
         startFledgeSettings();
 
+        // Check that the all sites pref is not displayed
+        onView(withText(R.string.settings_fledge_page_see_all_sites_label)).check(doesNotExist());
+
+        // Check that the sites are displayed.
         onView(withText(SITE_NAME_1)).check(matches(isDisplayed()));
         onView(withText(SITE_NAME_2)).check(matches(isDisplayed()));
     }
@@ -258,36 +336,192 @@ public final class FledgeFragmentV4Test {
         // Scroll to pref below last displayed site.
         scrollToSetting(withText(R.string.settings_fledge_page_see_all_sites_label));
 
+        String lastDisplayedSite = generateSiteFromNr(FledgeFragmentV4.MAX_DISPLAYED_SITES - 1);
+        String firstNotDisplayedSite = generateSiteFromNr(FledgeFragmentV4.MAX_DISPLAYED_SITES);
+
         // Verify that only MAX_DISPLAY_SITES are shown.
-        onView(withText(generateSiteFromNr(FledgeFragmentV4.MAX_DISPLAYED_SITES - 1)))
-                .check(matches(isDisplayed()));
-        onView(withText(generateSiteFromNr(FledgeFragmentV4.MAX_DISPLAYED_SITES)))
-                .check(doesNotExist());
+        onView(withText(lastDisplayedSite)).check(matches(isDisplayed()));
+        onView(withText(firstNotDisplayedSite)).check(doesNotExist());
+
+        // Navigate to All Sites page.
+        onView(withText(R.string.settings_fledge_page_see_all_sites_label)).perform(click());
+
+        // Verify that all sites are displayed
+        scrollToSetting(withText(firstNotDisplayedSite));
+        onView(withText(firstNotDisplayedSite)).check(matches(isDisplayed()));
+
+        // Verify actions are reported
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.AllSitesOpened"));
     }
 
     @Test
     @SmallTest
-    public void testRemoveSitesFromList() {
+    public void testBlockSites() {
         setFledgePrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentFledgeSites(SITE_NAME_1, SITE_NAME_2);
         startFledgeSettings();
 
-        // Remove the first site from the list and check that it is blocked.
+        // Remove the first site from the list.
         clickImageButtonNextToText(SITE_NAME_1);
         onView(withText(SITE_NAME_1)).check(doesNotExist());
-        assertThat(PrivacySandboxBridge.getBlockedFledgeJoiningTopFramesForDisplay(),
-                hasItem(SITE_NAME_1));
+        onView(withText(R.string.settings_fledge_page_block_site_snackbar))
+                .check(matches(isDisplayed()));
 
-        // Remove the second site from the list and check that it is blocked.
+        // Remove the second site from the list.
         clickImageButtonNextToText(SITE_NAME_2);
         onView(withText(SITE_NAME_2)).check(doesNotExist());
-        assertThat(PrivacySandboxBridge.getBlockedFledgeJoiningTopFramesForDisplay(),
-                hasItem(SITE_NAME_2));
+        onView(withText(R.string.settings_fledge_page_block_site_snackbar))
+                .check(matches(isDisplayed()));
 
         // Check that the empty state UI is displayed when the sites list is empty.
         onView(withText(R.string.settings_fledge_page_current_sites_description_empty))
                 .check(matches(isDisplayed()));
+
+        // Open the blocked sites sub-page.
+        onView(withText(R.string.settings_fledge_page_blocked_sites_heading)).perform(click());
+        onViewWaiting(withText(R.string.settings_fledge_page_blocked_sites_sub_page_title));
+
+        // Verify that the sites are blocked.
+        onView(withText(SITE_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(SITE_NAME_2)).check(matches(isDisplayed()));
+
+        // Verify that actions are reported
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.BlockedSitesOpened",
+                        "Settings.PrivacySandbox.Fledge.SiteRemoved"));
     }
-    // TODO(http://b/261823248): Add Managed state tests when the Privacy Sandbox policy is
-    // implemented.
+
+    @Test
+    @SmallTest
+    public void testUnblockSites() {
+        setFledgePrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedFledgeSites(SITE_NAME_1, SITE_NAME_2);
+        startFledgeSettings();
+
+        // Open the blocked sites sub-page.
+        onView(withText(R.string.settings_fledge_page_blocked_sites_heading)).perform(click());
+        onViewWaiting(withText(R.string.settings_fledge_page_blocked_sites_sub_page_title));
+
+        // Unblock the first site.
+        clickImageButtonNextToText(SITE_NAME_1);
+        onView(withText(SITE_NAME_1)).check(doesNotExist());
+        onView(withText(R.string.settings_fledge_page_add_site_snackbar))
+                .check(matches(isDisplayed()));
+
+        // Unblock the second site.
+        clickImageButtonNextToText(SITE_NAME_2);
+        onView(withText(SITE_NAME_2)).check(doesNotExist());
+        onView(withText(R.string.settings_fledge_page_add_site_snackbar))
+                .check(matches(isDisplayed()));
+
+        // Check that the empty state UI is displayed when the site list is empty.
+        onView(withText(R.string.settings_fledge_page_blocked_sites_description_empty))
+                .check(matches(isDisplayed()));
+
+        // Go back to the main Fledge fragment.
+        pressBack();
+        onViewWaiting(withText(R.string.settings_fledge_page_toggle_sub_label));
+
+        // Verify that the sites are unblocked.
+        onView(withText(SITE_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(SITE_NAME_2)).check(matches(isDisplayed()));
+
+        // Verify that actions are reported
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.BlockedSitesOpened",
+                        "Settings.PrivacySandbox.Fledge.SiteAdded"));
+    }
+
+    @Test
+    @SmallTest
+    public void testBlockedSitesAppearWhenFledgeOff() {
+        setFledgePrefEnabled(false);
+        mFakePrivacySandboxBridge.setBlockedFledgeSites(SITE_NAME_1, SITE_NAME_2);
+        startFledgeSettings();
+        onView(withText(R.string.settings_fledge_page_blocked_sites_heading)).perform(click());
+
+        onViewWaiting(withText(R.string.settings_fledge_page_blocked_sites_sub_page_title));
+        onView(withText(SITE_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(SITE_NAME_2)).check(matches(isDisplayed()));
+
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.BlockedSitesOpened"));
+    }
+
+    @Test
+    @SmallTest
+    public void testBlockedSitesAppearWhenFledgeOn() {
+        setFledgePrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedFledgeSites(SITE_NAME_1, SITE_NAME_2);
+        startFledgeSettings();
+        onView(withText(R.string.settings_fledge_page_blocked_sites_heading)).perform(click());
+
+        onViewWaiting(withText(R.string.settings_fledge_page_blocked_sites_sub_page_title));
+        onView(withText(SITE_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(SITE_NAME_2)).check(matches(isDisplayed()));
+
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.BlockedSitesOpened"));
+    }
+
+    @Test
+    @SmallTest
+    @Policies.Add({
+        @Policies.Item(key = "PrivacySandboxSiteEnabledAdsEnabled", string = "false")
+        , @Policies.Item(key = "PrivacySandboxPromptEnabled", string = "false")
+    })
+    public void
+    testFledgeManaged() {
+        startFledgeSettings();
+
+        // Check default state and try to press the toggle.
+        assertFalse(isFledgePrefEnabled());
+        onView(getFledgeToggleMatcher()).check(matches(not(isChecked())));
+        onView(getFledgeToggleMatcher()).perform(click());
+
+        // Check that the state of the pref and the toggle did not change.
+        assertFalse(isFledgePrefEnabled());
+        onView(getFledgeToggleMatcher()).check(matches(not(isChecked())));
+    }
+
+    @Test
+    @SmallTest
+    public void testLearnMoreLink() {
+        startFledgeSettings();
+        // Open the Fledge learn more activity
+        onView(withText(containsString("Learn more"))).perform(clickOnClickableSpan(0));
+        onViewWaiting(withText(R.string.settings_fledge_page_learn_more_heading))
+                .check(matches(isDisplayed()));
+        // Close the additional activity
+        pressBack();
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Fledge.LearnMoreClicked"));
+    }
+
+    @Test
+    @SmallTest
+    public void testFooterTopicsLink() throws IOException {
+        setFledgePrefEnabled(true);
+        startFledgeSettings();
+        // Open a Topics settings activity.
+        onView(withText(containsString("Ad topics"))).perform(clickOnClickableSpan(0));
+        onViewWaiting(withText(R.string.settings_topics_page_toggle_sub_label))
+                .check(matches(isDisplayed()));
+        // Close the additional activity by navigating back.
+        pressBack();
+    }
+
+    @Test
+    @SmallTest
+    public void testFooterCookieSettingsLink() throws IOException {
+        setFledgePrefEnabled(true);
+        startFledgeSettings();
+        // Open a CookieSettings activity.
+        onView(withText(containsString("cookie settings"))).perform(clickOnClickableSpan(1));
+        onViewWaiting(withText(R.string.third_party_cookies_page_title))
+                .check(matches(isDisplayed()));
+        // Close the additional activity by navigating back.
+        pressBack();
+    }
 }

@@ -20,6 +20,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -258,7 +259,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                                               gl::GLImage* image) override {
     NOTREACHED();
   }
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
                                              uint32_t texture_target,
                                              gl::GLImage* image) override {
@@ -384,6 +385,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   int32_t GetPreferredAdapterIndex(WGPUPowerPreference power_preference,
                                    bool force_fallback) const;
 
+  // Decide if a device feature is exposed to render process.
   bool IsFeatureExposed(WGPUFeatureName feature) const;
 
   // Dawn wire uses procs which forward their calls to these methods.
@@ -444,6 +446,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::vector<std::string> force_enabled_toggles_;
   std::vector<std::string> force_disabled_toggles_;
   bool allow_unsafe_apis_;
+  bool tiered_adapter_limits_;
 
   // Isolation key that is necessary for device requests. Optional to
   // differentiate between an empty isolation key, and an unset one.
@@ -503,12 +506,12 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       viz::SharedImageFormat format = representation->format();
       // Include list of formats this is tested to work with.
       // See gpu/command_buffer/tests/webgpu_mailbox_unittest.cc
-      if (format != viz::SharedImageFormat::kBGRA_8888 &&
+      if (format != viz::SinglePlaneFormat::kBGRA_8888 &&
 // TODO(crbug.com/1241369): Handle additional formats.
 #if !BUILDFLAG(IS_MAC)
-          format != viz::SharedImageFormat::kRGBA_8888 &&
+          format != viz::SinglePlaneFormat::kRGBA_8888 &&
 #endif
-          format != viz::SharedImageFormat::kRGBA_F16) {
+          format != viz::SinglePlaneFormat::kRGBA_F16) {
         return nullptr;
       }
 
@@ -1113,6 +1116,11 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   allow_unsafe_apis_ =
       base::Contains(force_disabled_toggles_, "disallow_unsafe_apis");
 
+  // Force adapters to report their limits in predetermined tiers unless the
+  // adapter_limit_tiers toggle is explicitly disabled.
+  tiered_adapter_limits_ =
+      !base::Contains(force_disabled_toggles_, "tiered_adapter_limits");
+
   DawnProcTable wire_procs = dawn::native::GetProcs();
   wire_procs.createInstance =
       [](const WGPUInstanceDescriptor*) -> WGPUInstance {
@@ -1192,10 +1200,14 @@ bool WebGPUDecoderImpl::IsFeatureExposed(WGPUFeatureName feature) const {
     case WGPUFeatureName_TimestampQueryInsidePasses:
     case WGPUFeatureName_PipelineStatisticsQuery:
     case WGPUFeatureName_ChromiumExperimentalDp4a:
+    // TODO(crbug.com/1258986): DawnMultiPlanarFormats is a stable feature in
+    // Dawn, but currently we hide it from Render process as unsafe apis, so
+    // that 0-copy code path, which explicitly checks this feature, is protected
+    // under unsafe apis as well.
     case WGPUFeatureName_DawnMultiPlanarFormats:
-    case WGPUFeatureName_DepthClipControl:
       return allow_unsafe_apis_;
     case WGPUFeatureName_Depth32FloatStencil8:
+    case WGPUFeatureName_DepthClipControl:
     case WGPUFeatureName_TextureCompressionBC:
     case WGPUFeatureName_TextureCompressionETC2:
     case WGPUFeatureName_TextureCompressionASTC:
@@ -1337,7 +1349,9 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   // SharedImage / interop methods that would need specific usages.
   required_features.push_back(WGPUFeatureName_DawnInternalUsages);
 
-  // Always enable "multi-planar-formats" as long as available.
+  // Always require "multi-planar-formats" as long as supported, although
+  // currently this feature is not exposed to render process if unsafe apis
+  // disallowed.
   if (dawn::native::GetProcs().adapterHasFeature(
           adapter, WGPUFeatureName_DawnMultiPlanarFormats)) {
     required_features.push_back(WGPUFeatureName_DawnMultiPlanarFormats);
@@ -1548,7 +1562,7 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
 
   std::vector<dawn::native::Adapter> adapters = dawn_instance_->GetAdapters();
   for (dawn::native::Adapter& adapter : adapters) {
-    adapter.SetUseTieredLimits(true);
+    adapter.SetUseTieredLimits(tiered_adapter_limits_);
 
     WGPUAdapterProperties adapterProperties = {};
     adapter.GetProperties(&adapterProperties);
@@ -1593,7 +1607,8 @@ int32_t WebGPUDecoderImpl::GetPreferredAdapterIndex(
     adapter.GetProperties(&adapterProperties);
 
     if (force_fallback &&
-        adapterProperties.adapterType != WGPUAdapterType_CPU) {
+        (adapterProperties.adapterType != WGPUAdapterType_CPU ||
+         adapterProperties.backendType != WGPUBackendType_Vulkan)) {
       continue;
     }
 
@@ -1835,21 +1850,45 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   uint32_t generation = static_cast<uint32_t>(c.generation);
   WGPUTextureUsage usage = static_cast<WGPUTextureUsage>(c.usage);
   MailboxFlags flags = static_cast<MailboxFlags>(c.flags);
+  uint32_t view_format_count = static_cast<uint32_t>(c.view_format_count);
+
+  GLuint packed_entry_count = c.count;
+  // The immediate_data should be uint32_t-sized words that exactly matches
+  // the packed_entry_count.
+  if (immediate_data_size % sizeof(uint32_t) != 0 ||
+      immediate_data_size / sizeof(uint32_t) != packed_entry_count) {
+    return error::kOutOfBounds;
+  }
+
+  volatile const uint32_t* packed_data =
+      gles2::GetImmediateDataAs<volatile const uint32_t*>(
+          c, immediate_data_size, immediate_data_size);
+
+  // Compute the expected number of packed entries. Cast to uint64_t to
+  // avoid overflow.
+  static_assert(sizeof(Mailbox) % sizeof(uint32_t) == 0u);
+  constexpr uint32_t kMailboxNumEntries = sizeof(Mailbox) / sizeof(uint32_t);
+  uint64_t expected_packed_entries =
+      static_cast<uint64_t>(kMailboxNumEntries) + view_format_count;
+
+  // The packed data should be non-empty and exactly match the expected number
+  // of entries.
+  if (packed_data == nullptr || packed_entry_count != expected_packed_entries) {
+    return error::kOutOfBounds;
+  }
 
   // Unpack the mailbox
-  if (sizeof(Mailbox) > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLbyte* mailbox_bytes =
-      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, sizeof(Mailbox),
-                                                        immediate_data_size);
-  if (mailbox_bytes == nullptr) {
-    return error::kOutOfBounds;
-  }
   Mailbox mailbox = Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile Mailbox*>(mailbox_bytes));
+      *reinterpret_cast<const volatile Mailbox*>(packed_data));
+  packed_data += kMailboxNumEntries;
   DLOG_IF(ERROR, !mailbox.Verify())
       << "AssociateMailbox was passed an invalid mailbox";
+
+  // Copy the view formats into a vector.
+  static_assert(sizeof(WGPUTextureFormat) == sizeof(uint32_t));
+  std::vector<WGPUTextureFormat> view_formats(view_format_count);
+  memcpy(view_formats.data(), const_cast<const uint32_t*>(packed_data),
+         view_format_count * sizeof(WGPUTextureFormat));
 
   if (usage & ~kAllowedMailboxTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";
@@ -1865,11 +1904,12 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   auto it = known_device_metadata_.find(device);
   DCHECK(it != known_device_metadata_.end());
   if (it->second.adapterType == WGPUAdapterType_CPU) {
-    representation_and_access =
-        AssociateMailboxUsingSkiaFallback(mailbox, flags, device, usage, {});
+    representation_and_access = AssociateMailboxUsingSkiaFallback(
+        mailbox, flags, device, usage, std::move(view_formats));
   } else {
-    representation_and_access = AssociateMailboxDawn(
-        mailbox, flags, device, it->second.backendType, usage, {});
+    representation_and_access =
+        AssociateMailboxDawn(mailbox, flags, device, it->second.backendType,
+                             usage, std::move(view_formats));
   }
 
   if (!representation_and_access) {
@@ -1954,6 +1994,11 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     // before destroy.
     // TODO(crbug.com/1242712): Use the C++ WebGPU API.
     const auto& procs = dawn::native::GetProcs();
+
+    // Push an error scope to capture errors here. The texture may be
+    // an error texture, so this code would produce additional errors
+    // which should not be visible to the client.
+    procs.devicePushErrorScope(device, WGPUErrorFilter_Validation);
     WGPUTextureView view = procs.textureCreateView(texture, nullptr);
 
     WGPURenderPassColorAttachment color_attachment = {};
@@ -1987,6 +2032,16 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     procs.renderPassEncoderRelease(pass);
     procs.commandEncoderRelease(encoder);
     procs.textureViewRelease(view);
+
+    // Pop the error scope and log errors.
+    procs.devicePopErrorScope(
+        device,
+        [](WGPUErrorType, const char* message, void*) {
+          if (message) {
+            DLOG(ERROR) << "Clear contents to black had error: " << message;
+          }
+        },
+        nullptr);
   }
 
   associated_shared_image_map_.erase(it);
@@ -2015,30 +2070,35 @@ error::Error WebGPUDecoderImpl::HandleSetWebGPUExecutionContextToken(
   blink::WebGPUExecutionContextToken::Tag type{c.type};
   uint64_t high = uint64_t(c.high_high) << 32 | uint64_t(c.high_low);
   uint64_t low = uint64_t(c.low_high) << 32 | uint64_t(c.low_low);
-  base::UnguessableToken unguessable_token =
-      base::UnguessableToken::Deserialize(high, low);
+  absl::optional<base::UnguessableToken> unguessable_token =
+      base::UnguessableToken::Deserialize2(high, low);
+  if (!unguessable_token.has_value()) {
+    return error::kInvalidArguments;
+  }
   blink::WebGPUExecutionContextToken execution_context_token;
   switch (type) {
     case blink::WebGPUExecutionContextToken::IndexOf<blink::DocumentToken>(): {
       execution_context_token = blink::WebGPUExecutionContextToken(
-          blink::DocumentToken(unguessable_token));
+          blink::DocumentToken(unguessable_token.value()));
       break;
     }
     case blink::WebGPUExecutionContextToken::IndexOf<
         blink::DedicatedWorkerToken>(): {
       execution_context_token = blink::WebGPUExecutionContextToken(
-          blink::DedicatedWorkerToken(unguessable_token));
+          blink::DedicatedWorkerToken(unguessable_token.value()));
       break;
     }
     default:
       NOTREACHED();
       return error::kInvalidArguments;
   }
-  isolation_key_provider_->GetIsolationKey(
-      execution_context_token,
-      base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
-                         base::BindOnce(&WebGPUDecoderImpl::OnGetIsolationKey,
-                                        weak_ptr_factory_.GetWeakPtr())));
+  if (enable_unsafe_webgpu_) {
+    isolation_key_provider_->GetIsolationKey(
+        execution_context_token,
+        base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           base::BindOnce(&WebGPUDecoderImpl::OnGetIsolationKey,
+                                          weak_ptr_factory_.GetWeakPtr())));
+  }
   return error::kNoError;
 }
 

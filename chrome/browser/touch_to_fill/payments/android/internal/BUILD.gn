@@ -14,6 +14,7 @@ android_library("java") {
     "//chrome/browser/autofill/android:java",
     "//chrome/browser/autofill/android:java",
     "//chrome/browser/touch_to_fill/android/internal:java",
+    "//chrome/browser/touch_to_fill/common/android:java",
     "//chrome/browser/touch_to_fill/common/android:java_resources",
     "//chrome/browser/touch_to_fill/payments/android:public_java",
     "//components/browser_ui/bottomsheet/android:java",
@@ -42,7 +43,6 @@ android_library("java") {
 
 android_resources("java_resources") {
   sources = [
-    "java/res/drawable/touch_to_fill_credit_card_background.xml",
     "java/res/layout/touch_to_fill_credit_card_header_item.xml",
     "java/res/layout/touch_to_fill_credit_card_sheet.xml",
     "java/res/layout/touch_to_fill_credit_card_sheet_item.xml",

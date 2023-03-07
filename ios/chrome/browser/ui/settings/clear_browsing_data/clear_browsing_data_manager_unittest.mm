@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/mac/foundation_util.h"
 #import "base/strings/utf_string_conversions.h"
 #import "components/browsing_data/core/pref_names.h"
@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -40,7 +41,6 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -97,8 +97,10 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
         browser_state_.get());
     template_url_service_->Load();
 
-    ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-        ->AddIdentities(@[ @"foo" ]);
+    FakeSystemIdentityManager* system_identity_manager =
+        FakeSystemIdentityManager::FromSystemIdentityManager(
+            GetApplicationContext()->GetSystemIdentityManager());
+    system_identity_manager->AddIdentities(@[ @"foo" ]);
 
     model_ = [[TableViewModel alloc] init];
     remover_ = std::make_unique<FakeBrowsingDataRemover>();
@@ -329,7 +331,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedIn) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedOut) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignOut(signin_metrics::ABORT_SIGNIN,
+      ->SignOut(signin_metrics::ProfileSignout::kAbortSignin,
                 /*force_clear_browsing_data=*/false, nil);
 
   [manager_ loadModel:model_];
@@ -372,7 +374,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedIn) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedOut) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignOut(signin_metrics::ABORT_SIGNIN,
+      ->SignOut(signin_metrics::ProfileSignout::kAbortSignin,
                 /*force_clear_browsing_data=*/false, nil);
 
   // Set DSE to one from "prepoulated list".
@@ -440,7 +442,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestCustomTextSignedIn) {
 
 TEST_F(ClearBrowsingDataManagerTest, TestCustomeTextSignedOut) {
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignOut(signin_metrics::ABORT_SIGNIN,
+      ->SignOut(signin_metrics::ProfileSignout::kAbortSignin,
                 /*force_clear_browsing_data=*/false, nil);
 
   // Set DSE to a be fully custom.

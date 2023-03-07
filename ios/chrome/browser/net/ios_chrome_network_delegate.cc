@@ -24,7 +24,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_options.h"
-#include "net/first_party_sets/same_party_context.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
 
@@ -77,11 +77,11 @@ bool IOSChromeNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     net::CookieAccessResultList& excluded_cookies) {
   // `cookie_settings_` is null during tests, or when we're running in the
   // system context.
-  bool allowed =
-      !cookie_settings_ ||
-      cookie_settings_->IsFullCookieAccessAllowed(
-          request.url(), request.site_for_cookies().RepresentativeUrl(),
-          QueryReason::kCookies);
+  bool allowed = !cookie_settings_ ||
+                 cookie_settings_->IsFullCookieAccessAllowed(
+                     request.url(), request.site_for_cookies(),
+                     request.isolation_info().top_frame_origin(),
+                     request.cookie_setting_overrides(), QueryReason::kCookies);
 
   if (!allowed) {
     ExcludeAllCookies(
@@ -101,22 +101,22 @@ bool IOSChromeNetworkDelegate::OnCanSetCookie(
     return true;
 
   return cookie_settings_->IsFullCookieAccessAllowed(
-      request.url(), request.site_for_cookies().RepresentativeUrl(),
-      QueryReason::kCookies);
+      request.url(), request.site_for_cookies(),
+      request.isolation_info().top_frame_origin(),
+      request.cookie_setting_overrides(), QueryReason::kCookies);
 }
 
 net::NetworkDelegate::PrivacySetting
 IOSChromeNetworkDelegate::OnForcePrivacyMode(
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    net::SamePartyContext::Type same_party_context_type) const {
+    const net::URLRequest& request) const {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
     return net::NetworkDelegate::PrivacySetting::kStateAllowed;
 
   return cookie_settings_->IsFullCookieAccessAllowed(
-             url, site_for_cookies, top_frame_origin, QueryReason::kCookies)
+             request.url(), request.site_for_cookies(),
+             request.isolation_info().top_frame_origin(),
+             request.cookie_setting_overrides(), QueryReason::kCookies)
              ? net::NetworkDelegate::PrivacySetting::kStateAllowed
              : net::NetworkDelegate::PrivacySetting::kStateDisallowed;
 }

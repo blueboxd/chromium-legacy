@@ -206,7 +206,9 @@ Rankings::ScopedRankingsBlock::ScopedRankingsBlock(Rankings* rankings,
                                                    CacheRankingsBlock* node)
     : std::unique_ptr<CacheRankingsBlock>(node), rankings_(rankings) {}
 
-Rankings::Iterator::Iterator() = default;
+Rankings::Iterator::Iterator() {
+  memset(this, 0, sizeof(Iterator));
+}
 
 void Rankings::Iterator::Reset() {
   if (my_rankings) {
@@ -214,9 +216,7 @@ void Rankings::Iterator::Reset() {
       ScopedRankingsBlock(my_rankings, node);
     }
   }
-  my_rankings = nullptr;
-  nodes = {nullptr, nullptr, nullptr};
-  list = List::NO_USE;
+  memset(this, 0, sizeof(Iterator));
 }
 
 Rankings::Rankings() = default;

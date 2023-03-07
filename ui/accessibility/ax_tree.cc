@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -23,7 +23,6 @@
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
@@ -40,15 +39,15 @@ namespace ui {
 
 namespace {
 
-std::string TreeToStringHelper(const AXNode* node, int indent) {
+std::string TreeToStringHelper(const AXNode* node, int indent, bool verbose) {
   if (!node)
     return "";
 
   return std::accumulate(
       node->children().cbegin(), node->children().cend(),
-      std::string(2 * indent, ' ') + node->data().ToString() + "\n",
-      [indent](const std::string& str, const auto* child) {
-        return str + TreeToStringHelper(child, indent + 1);
+      std::string(2 * indent, ' ') + node->data().ToString(verbose) + "\n",
+      [indent, verbose](const std::string& str, const auto* child) {
+        return str + TreeToStringHelper(child, indent + 1, verbose);
       });
 }
 
@@ -1420,8 +1419,9 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
   return table_info;
 }
 
-std::string AXTree::ToString() const {
-  return "AXTree" + data_.ToString() + "\n" + TreeToStringHelper(root_, 0);
+std::string AXTree::ToString(bool verbose) const {
+  return "AXTree" + data_.ToString() + "\n" +
+         TreeToStringHelper(root_, 0, verbose);
 }
 
 AXNode* AXTree::CreateNode(AXNode* parent,
@@ -2244,30 +2244,28 @@ bool AXTree::CreateNewChildVector(AXNode* node,
                                          node->id()));
         } else {
           // --- Begin temporary change ---
-          // TODO(crbug.com/1156601) Revert this once we have the crash data we
-          // need (crrev.com/c/2892259)
-          // Diagnose strange errors "Node 1 reparented from 0 to 2", which
-          // sounds like the root node is getting the <html> element as a parent
-          // -- in the normal case, the root is 1 and <html> is 2.
+          // TODO(crbug.com/1156601, crbug.com/1402673) Revert this once we have
+          // the crash data we need (crrev.com/c/2892259) Diagnose strange
+          // errors:
+          // Node did not have a previous parent, but reparenting error
+          // triggered:
+          // * New parent = id=3 rootWebArea FOCUSABLE
+          // * Child = id=1 rootWebArea (0, 0)-(0, 0) busy=true
           std::ostringstream error;
           error << "Node did not have a previous parent, but "
                    "reparenting error triggered:"
-                << "\n* Child = " << *child << "\n* New parent = " << *node
                 << "\n* root_will_be_created = "
                 << update_state->root_will_be_created
                 << "\n* pending_root_id = "
                 << (update_state->pending_root_id
                         ? *update_state->pending_root_id
                         : kInvalidAXNodeID)
-                << "\nTree update: "
-                << update_state->pending_tree_update->ToString();
-
-          // Add a crash key so we can figure out why this is happening.
-          static crash_reporter::CrashKeyString<256> ax_tree_error(
-              "ax_reparenting_error");
-          ax_tree_error.Set(error.str());
-          LOG(ERROR) << error.str();
-          CHECK(false);
+                << "\n* new parent = " << *node << "\n* Old parent = "
+                << (child->parent()
+                        ? child->parent()->data().ToString(/*verbose*/ false)
+                        : "-")
+                << "\n* child = " << *child;
+          RecordError(*update_state, error.str(), /* fatal */ true);
           // --- End temporary change ---
         }
         success = false;
@@ -2599,6 +2597,10 @@ void AXTree::ComputeSetSizePosInSetAndCacheHelper(
 }
 
 absl::optional<int> AXTree::GetPosInSet(const AXNode& node) {
+  if (node.IsIgnored()) {
+    return absl::nullopt;
+  }
+
   if ((node.GetRole() == ax::mojom::Role::kComboBoxSelect ||
        node.GetRole() == ax::mojom::Role::kPopUpButton) &&
       node.GetUnignoredChildCount() == 0 &&
@@ -2617,8 +2619,9 @@ absl::optional<int> AXTree::GetPosInSet(const AXNode& node) {
 
   // Only allow this to be called on nodes that can hold PosInSet values,
   // which are defined in the ARIA spec.
-  if (!node.IsOrderedSetItem() || node.IsIgnored())
+  if (!node.IsOrderedSetItem()) {
     return absl::nullopt;
+  }
 
   const AXNode* ordered_set = node.GetOrderedSet();
   if (!ordered_set)
@@ -2634,6 +2637,10 @@ absl::optional<int> AXTree::GetPosInSet(const AXNode& node) {
 }
 
 absl::optional<int> AXTree::GetSetSize(const AXNode& node) {
+  if (node.IsIgnored()) {
+    return absl::nullopt;
+  };
+
   if ((node.GetRole() == ax::mojom::Role::kComboBoxSelect ||
        node.GetRole() == ax::mojom::Role::kPopUpButton) &&
       node.GetUnignoredChildCount() == 0 &&
@@ -2653,7 +2660,7 @@ absl::optional<int> AXTree::GetSetSize(const AXNode& node) {
   // Only allow this to be called on nodes that can hold SetSize values, which
   // are defined in the ARIA spec. However, we allow set-like items to receive
   // SetSize values for internal purposes.
-  if ((!node.IsOrderedSetItem() && !node.IsOrderedSet()) || node.IsIgnored() ||
+  if ((!node.IsOrderedSetItem() && !node.IsOrderedSet()) ||
       node.IsEmbeddedGroup()) {
     return absl::nullopt;
   }
@@ -2727,38 +2734,36 @@ void AXTree::NotifyTreeManagerWillBeRemoved(AXTreeID previous_tree_id) {
 }
 
 void AXTree::RecordError(const AXTreeUpdateState& update_state,
-                         std::string new_error) {
+                         std::string new_error,
+                         bool is_fatal) {
+  // Aggregate error with previous errors.
   if (!error_.empty())
     error_ = error_ + "\n";  // Add visual separation between errors.
   error_ = error_ + new_error;
 
-  LOG(ERROR) << new_error;
-
-  if (disallow_fail_fast_)
-    return;
-
-  static auto* const ax_tree_error_key = base::debug::AllocateCrashKeyString(
-      "ax_tree_error", base::debug::CrashKeySize::Size256);
-  static auto* const ax_tree_update_key = base::debug::AllocateCrashKeyString(
-      "ax_tree_update", base::debug::CrashKeySize::Size256);
-  static auto* const ax_tree_key = base::debug::AllocateCrashKeyString(
-      "ax_tree", base::debug::CrashKeySize::Size256);
-  static auto* const ax_tree_data_key = base::debug::AllocateCrashKeyString(
-      "ax_tree_data", base::debug::CrashKeySize::Size256);
-
-  // Log additional crash keys so we can debug bad tree updates.
-  base::debug::SetCrashKeyString(ax_tree_error_key, new_error);
-  base::debug::SetCrashKeyString(ax_tree_update_key,
-                                 update_state.pending_tree_update->ToString());
-  base::debug::SetCrashKeyString(ax_tree_key, TreeToStringHelper(root_, 1));
-  base::debug::SetCrashKeyString(ax_tree_data_key, data().ToString());
-
-  // In fast-failing-builds, crash immediately with a message, otherwise
+  // In fast-failing-builds, crash immediately with a full message, otherwise
   // rely on AccessibilityFatalError(), which will not crash until multiple
   // errors occur.
-  SANITIZER_NOTREACHED() << new_error << "\n"
-                         << update_state.pending_tree_update->ToString() << "\n"
-                         << ToString();
+  // TODO(accessibility) Make AXTree errors fatal in Canary and Dev builds, as
+  // they indicate fundamental problems in part of the engine. They are much
+  // less frequent than in the past -- it should not be highimpact on users.
+#if defined(AX_FAIL_FAST_BUILD)
+  is_fatal = true;
+#endif
+
+  std::ostringstream verbose_error;
+  verbose_error << new_error << "\n** Pending tree update **\n"
+                << update_state.pending_tree_update->ToString(
+                       /*verbose*/ false)
+                << "\n** AXTreeData ** \n"
+                << data_.ToString() + "\n** AXTree **"
+                << TreeToStringHelper(root_, 0, false).substr(0, 1000);
+
+  if (is_fatal && !disallow_fail_fast_) {
+    LOG(FATAL) << verbose_error.str();
+  } else {
+    LOG(ERROR) << verbose_error.str();
+  }
 }
 
 }  // namespace ui

@@ -245,9 +245,21 @@ TEST(TriggerRegistrationTest, Parse) {
       },
   };
 
+  static constexpr char kTriggerRegistrationErrorMetric[] =
+      "Conversions.TriggerRegistrationError";
+
   for (const auto& test_case : kTestCases) {
-    EXPECT_EQ(TriggerRegistration::Parse(test_case.json), test_case.expected)
-        << test_case.description;
+    base::HistogramTester histograms;
+
+    auto trigger = TriggerRegistration::Parse(test_case.json);
+    EXPECT_EQ(trigger, test_case.expected) << test_case.description;
+
+    if (trigger.has_value()) {
+      histograms.ExpectTotalCount(kTriggerRegistrationErrorMetric, 0);
+    } else {
+      histograms.ExpectUniqueSample(kTriggerRegistrationErrorMetric,
+                                    trigger.error(), 1);
+    }
   }
 }
 
@@ -290,10 +302,18 @@ TEST(TriggerRegistrationTest, Parse_RecordsMetrics) {
 
   base::HistogramTester histograms;
 
-  for (size_t count : std::vector<size_t>{
-           0, 1, 1, 3, kMaxAggregatableTriggerDataPerTrigger + 1}) {
-    ParseWithAggregatableTriggerData(count);
+  for (size_t count : {
+           0,
+           1,
+           1,
+           3,
+       }) {
+    ASSERT_TRUE(ParseWithAggregatableTriggerData(count).has_value());
   }
+
+  ASSERT_FALSE(ParseWithAggregatableTriggerData(
+                   kMaxAggregatableTriggerDataPerTrigger + 1)
+                   .has_value());
 
   EXPECT_THAT(
       histograms.GetAllSamples("Conversions.AggregatableTriggerDataLength"),

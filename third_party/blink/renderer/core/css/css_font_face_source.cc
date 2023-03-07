@@ -61,16 +61,18 @@ scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
   }
 
   bool is_unique_match = false;
-  FontCacheKey key =
-      font_description.CacheKey(FontFaceCreationParams(), is_unique_match);
+  bool is_generic_family = false;
+  FontCacheKey key = font_description.CacheKey(
+      FontFaceCreationParams(), is_unique_match, is_generic_family);
 
   // Get or create the font data. Take care to avoid dangling references into
   // font_data_table_, because it is modified below during pruning.
   scoped_refptr<SimpleFontData> font_data;
   {
     auto* it = font_data_table_.insert(key, nullptr).stored_value;
-    if (!it->value)
+    if (!it->value) {
       it->value = CreateFontData(font_description, font_selection_capabilities);
+    }
     font_data = it->value;
   }
 
@@ -90,19 +92,22 @@ void CSSFontFaceSource::PruneOldestIfNeeded() {
     auto font_data_entry = font_data_table_.Take(key);
     font_cache_key_age.pop_back();
     DCHECK_EQ(font_cache_key_age.size(), kMaxCachedFontData);
-    if (font_data_entry && font_data_entry->GetCustomFontData())
+    if (font_data_entry && font_data_entry->GetCustomFontData()) {
       font_data_entry->GetCustomFontData()->ClearFontFaceSource();
+    }
   }
 }
 
 void CSSFontFaceSource::PruneTable() {
-  if (font_data_table_.empty())
+  if (font_data_table_.empty()) {
     return;
+  }
 
   for (const auto& item : font_data_table_) {
     SimpleFontData* font_data = item.value.get();
-    if (font_data && font_data->GetCustomFontData())
+    if (font_data && font_data->GetCustomFontData()) {
       font_data->GetCustomFontData()->ClearFontFaceSource();
+    }
   }
   font_cache_key_age.clear();
   font_data_table_.clear();

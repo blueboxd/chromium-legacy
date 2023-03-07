@@ -905,7 +905,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accel_NewTabInGroup">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User added a new tab to the existing group by keyboard shortcut Ctrl-T.
@@ -3433,6 +3433,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.Survey.ShowSurveyInfoBar">
+  <obsolete>
+    Deprecated 12/2022 as part of survey message launch cleanup.
+  </obsolete>
   <owner>danielpark@chromium.org</owner>
   <description>The survey infobar was displayed.</description>
 </action>
@@ -4934,6 +4937,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BookmarkBar_ContextMenu_AddToBookmarkBar">
+  <owner>emshack@chromium.org</owner>
+  <description>
+    The user added one or more bookmarks to the Bookmarks Bar using the context
+    menu.
+  </description>
+</action>
+
 <action name="BookmarkBar_ContextMenu_Edit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -6063,7 +6074,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CloseGroupedTab">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>User closed a tab that belongs to a group.</description>
 </action>
@@ -8964,6 +8975,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="FileBrowser.GoogleOneOffer.Dismiss">
+  <owner>yawano@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <description>
+    Google One offer files banner gets dismissed by the user.
+  </description>
+</action>
+
+<action name="FileBrowser.GoogleOneOffer.GetPerk">
+  <owner>yawano@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <description>
+    Get perk button of Google One offer files banner gets activated.
+  </description>
+</action>
+
+<action name="FileBrowser.GoogleOneOffer.Shown">
+  <owner>yawano@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <description>
+    Google One offer files banner gets shown on Files app.
+  </description>
+</action>
+
 <action name="FileBrowser.PhotoEditor.Edit">
   <obsolete>Removed in M92.</obsolete>
   <owner>simmonsjosh@google.com</owner>
@@ -9059,6 +9094,22 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated 02/2017.</obsolete>
   <owner>thestig@chromium.org</owner>
   <description>Count of Flash plugin instances.</description>
+</action>
+
+<action name="FloatWindowTucked">
+  <owner>sophiewen@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
+  <description>
+    Recorded when a floated window is tucked in tablet mode.
+  </description>
+</action>
+
+<action name="FloatWindowUntucked">
+  <owner>sophiewen@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
+  <description>
+    Recorded when a floated window is untucked in tablet mode.
+  </description>
 </action>
 
 <action name="FocusAppMenu">
@@ -11392,6 +11443,16 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user triggered the &quot;get-directions&quot;
     context after a long press on an address.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.MenuDisplayed">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user triggered the maps context menu after a long
+    press on an address, this includes all the menu contexts,
+    &quot;get-directions&quot;,&quot;view-location&quot;, and copy.
   </description>
 </action>
 
@@ -26714,6 +26775,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="QS_Subpage_Network_JoinNetwork">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <description>
+    User clicked on the Join Wi-Fi network entry in the quick settings network
+    subpage on ChromeOS.
+  </description>
+</action>
+
 <action name="QuickActionSearchWidget.LensQuery">
   <owner>ender@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -28144,6 +28214,24 @@ should be able to be added at any place in this file.
   <description>User starts the Privacy guide via the promo.</description>
 </action>
 
+<action name="Settings.PrivacySandbox.AdMeasurement.Disabled">
+  <owner>rubindl@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User disables the privacy sandbox Ad Measurement API in the Ad Measurement
+    setting page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.AdMeasurement.Enabled">
+  <owner>rubindl@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User enables the privacy sandbox Ad Measurement API in the Ad Measurement
+    setting page.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.AdMeasurement.Opened">
   <owner>dullweber@google.com</owner>
   <owner>sauski@google.com</owner>
@@ -28171,6 +28259,8 @@ should be able to be added at any place in this file.
   <owner>sauski@google.com</owner>
   <description>
     User removed a site that was previously in their allowed sites list.
+    TODO(crbug.com/1378703): Deprecate this action in favor of
+    Settings.PrivacySandbox.Fledge.SiteRemoved after the feature is launched.
   </description>
 </action>
 
@@ -28179,6 +28269,8 @@ should be able to be added at any place in this file.
   <owner>sauski@google.com</owner>
   <description>
     User removed a topic that was previously in their allowed topics list.
+    TODO(crbug.com/1378703): Deprecate this action in favor of
+    Settings.PrivacySandbox.Topics.TopicRemoved after the feature is launched.
   </description>
 </action>
 
@@ -28236,6 +28328,15 @@ should be able to be added at any place in this file.
   <description>User declined the privacy sandbox consent.</description>
 </action>
 
+<action name="Settings.PrivacySandbox.Consent.LearnMoreClosed">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User closed the Learn More in the Privacy Sandbox Consent.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Consent.LearnMoreExpanded">
   <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
@@ -28245,11 +28346,87 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.PrivacySandbox.Consent.MoreButtonClicked">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>
+    User clicked on the More button in the Privacy Sandbox Consent.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Consent.Shown">
   <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <description>User is shown the Privacy Sandbox consent.</description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.AllSitesOpened">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened the all sites subpage, by clicking on the pref in the Fledge
+    settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.BlockedSitesOpened">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened the blocked sites section, by clicking on the button in the
+    Topics settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.Disabled">
+  <owner>rubindl@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User disables the privacy sandbox Fledge API in the Fledge settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.Enabled">
+  <owner>rubindl@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User enables the privacy sandbox Fledge API in the Fledge settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.LearnMoreClicked">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened the learn more about fledge section, by clicking on the button
+    in the Fledge settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.Opened">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened Fledge subpage from main sandbox settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.SiteAdded">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User added back a site that was previously in their removed sites list.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Fledge.SiteRemoved">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User removed a site that was previously in their allowed sites list.
+  </description>
 </action>
 
 <action name="Settings.PrivacySandbox.FlocSubpageOpened">
@@ -28295,12 +28472,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.PrivacySandbox.Notice.LearnMoreClosed">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>tommasin@chromium.org</owner>
+  <description>
+    User closed the Learn More in the Privacy Sandbox Notice.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Notice.LearnMoreExpanded">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>tommasin@chromium.org</owner>
   <description>
     User expanded the Learn More in the Privacy Sandbox Notice.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.MoreButtonClicked">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>
+    User clicked on the More button in the Privacy Sandbox Notice.
   </description>
 </action>
 
@@ -28364,6 +28559,8 @@ should be able to be added at any place in this file.
   <owner>sauski@google.com</owner>
   <description>
     User added back a site that was previously in their removed sites list.
+    TODO(crbug.com/1378703): Deprecate this action in favor of
+    Settings.PrivacySandbox.Fledge.SiteAdded after the feature is launched.
   </description>
 </action>
 
@@ -28372,6 +28569,8 @@ should be able to be added at any place in this file.
   <owner>sauski@google.com</owner>
   <description>
     User added back a topic that was previously in their removed topics list.
+    TODO(crbug.com/1378703): Deprecate this action in favor of
+    Settings.PrivacySandbox.Topics.TopicAdded after the feature is launched.
   </description>
 </action>
 
@@ -28379,6 +28578,64 @@ should be able to be added at any place in this file.
   <owner>dullweber@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>User opened Fraud prevention subpage.</description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.BlockedTopicsOpened">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened the blocked Topics section, by clicking on the button in the
+    Topics settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.Disabled">
+  <owner>rubindl@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User disables the privacy sandbox Topics API in the Topics setting page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.Enabled">
+  <owner>rubindl@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User enables the privacy sandbox Topics API in the Topics settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.LearnMoreClicked">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened the learn more about topics section, by clicking on the button
+    in the Topics settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.Opened">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opened Topics subpage from main sandbox settings page.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.TopicAdded">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User added back a topic that was previously in their removed topics list.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Topics.TopicRemoved">
+  <owner>rubindl@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User removed a topic that was previously in their allowed topics list.
+  </description>
 </action>
 
 <action name="Settings.SafetyCheck.ChromeCleanerCaretNavigation">
@@ -33463,7 +33720,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_NewTabInGroup">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User added a tab to an existing group by choosing 'Add to existing group'
@@ -33661,7 +33918,7 @@ should be able to be added at any place in this file.
   <obsolete>
     This action no longer occurs as of 11/2022. Tab groups can always collapse.
   </obsolete>
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User clicked on the tab group header of the last expanded tab group. This
@@ -33670,13 +33927,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_SwitchGroupedTab">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>User switched to a tab that belongs in a group.</description>
 </action>
 
 <action name="TabGroups_TabGroupBubble_CloseGroup">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User closed a group by choosing 'Close group' from the tab group editor
@@ -33685,7 +33942,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_ColorChanged">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User changed the color of a group through the color picker in the tab group
@@ -33694,7 +33951,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_GroupSaved">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User saved an existing tab group by switching the toggle to the right next
@@ -33703,7 +33960,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_GroupUnsaved">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User unsaved an existing tab group by switching the toggle to the left next
@@ -33712,7 +33969,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_NameChanged">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User changed the name of a group through the editor bubble.
@@ -33720,7 +33977,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_NewTabInGroup">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User added a new tab to an existing group by choosing 'New tab in group'
@@ -33729,7 +33986,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_SendFeedback">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User opened the feedback app by choosing 'Send feedback' from the tab group
@@ -33738,7 +33995,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupBubble_Ungroup">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User removed all tabs in a group from that group by choosing 'Ungroup' from
@@ -33747,7 +34004,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupHeader_Collapsed">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User clicked on the tab group header of an expanded tab group to collapse
@@ -33756,7 +34013,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGroups_TabGroupHeader_Expanded">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     User clicked on the tab group header of a collapsed tab group to expand the
@@ -34006,12 +34263,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabStrip">
+  <obsolete>The feature was deprecated and code deleted.</obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>User actions about conditional tab strip.</description>
 </action>
 
 <action name="TabStrip.SessionVisibility">
+  <obsolete>The feature was deprecated and code deleted.</obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
@@ -35646,7 +35905,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="WrenchMenu_OpenRecentGroup">
-  <owner>connily@chromium.org</owner>
+  <owner>dpenning@chromium.org</owner>
   <description>App Menu: Recently Closed: Open a recent group.</description>
 </action>
 
@@ -35852,6 +36111,8 @@ should be able to be added at any place in this file.
   <suffix name="GMCCastStartStop" label="For GMCCastStartStop feature."/>
   <suffix name="GMCCastStartStopFeature"
       label="For Global Media Controls Cast start and stop feature."/>
+  <suffix name="GoogleOneOfferNotification"
+      label="For google one offer notification feature."/>
   <suffix name="HighEfficiencyInfoMode"
       label="For HighEfficiencyInfoMode feature."/>
   <suffix name="HighEfficiencyModeFeature"

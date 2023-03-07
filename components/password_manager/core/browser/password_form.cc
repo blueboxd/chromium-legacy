@@ -153,7 +153,7 @@ void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
   target.Set("date_password_modified", form.date_password_modified.ToDoubleT());
   target.Set("date_created", form.date_created.ToDoubleT());
   target.Set("type", ToString(form.type));
-  target.Set("times_used", form.times_used);
+  target.Set("times_used_in_html_form", form.times_used_in_html_form);
   target.Set("form_data", ToString(form.form_data));
   target.Set("generation_upload_status",
              ToString(form.generation_upload_status));
@@ -318,24 +318,22 @@ absl::optional<std::u16string> PasswordForm::GetNoteWithEmptyUniqueDisplayName()
                                  : absl::nullopt;
 }
 
-PasswordNoteChangeResult PasswordForm::SetNoteWithEmptyUniqueDisplayName(
+void PasswordForm::SetNoteWithEmptyUniqueDisplayName(
     const std::u16string& new_note_value) {
   const auto& note_itr = base::ranges::find_if(
       notes, &std::u16string::empty, &PasswordNote::unique_display_name);
   // if the old note doesn't exist, the note is just created.
   if (note_itr == notes.end()) {
     notes.emplace_back(new_note_value, base::Time::Now());
-    return PasswordNoteChangeResult::kNoteAdded;
+    return;
   }
   // Note existed, but it was empty.
   if (note_itr->value.empty()) {
     note_itr->value = new_note_value;
     note_itr->date_created = base::Time::Now();
-    return PasswordNoteChangeResult::kNoteAdded;
+    return;
   }
   note_itr->value = new_note_value;
-  return new_note_value.empty() ? PasswordNoteChangeResult::kNoteRemoved
-                                : PasswordNoteChangeResult::kNoteEdited;
 }
 
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
@@ -369,7 +367,7 @@ bool operator==(const PasswordForm& lhs, const PasswordForm& rhs) {
          lhs.date_last_used == rhs.date_last_used &&
          lhs.date_password_modified == rhs.date_password_modified &&
          lhs.blocked_by_user == rhs.blocked_by_user && lhs.type == rhs.type &&
-         lhs.times_used == rhs.times_used &&
+         lhs.times_used_in_html_form == rhs.times_used_in_html_form &&
          lhs.form_data.SameFormAs(rhs.form_data) &&
          lhs.generation_upload_status == rhs.generation_upload_status &&
          lhs.display_name == rhs.display_name && lhs.icon_url == rhs.icon_url &&

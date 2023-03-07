@@ -78,6 +78,11 @@ struct StructTraits<
     return profile.scalability_modes;
   }
 
+  static bool is_software_codec(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.is_software_codec;
+  }
+
   static bool Read(
       media::mojom::VideoEncodeAcceleratorSupportedProfileDataView data,
       media::VideoEncodeAccelerator::SupportedProfile* out);
@@ -204,6 +209,10 @@ class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
   static const media::BitstreamBufferMetadata& codec_metadata(
       const media::BitstreamBufferMetadata& bbm) {
     return bbm;
+  }
+  static absl::optional<gfx::Size> encoded_size(
+      const media::BitstreamBufferMetadata& bbm) {
+    return bbm.encoded_size;
   }
 
   static bool Read(media::mojom::BitstreamBufferMetadataDataView data,

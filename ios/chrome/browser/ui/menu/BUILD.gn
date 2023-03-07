@@ -61,12 +61,12 @@ source_set("menu") {
   ]
 }
 
-source_set("context_menu_delegate") {
+source_set("tab_context_menu_delegate") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [ "tab_context_menu_delegate.h" ]
 
-  deps = [ "//ios/chrome/browser/ui/activity_services" ]
+  deps = [ "//ios/chrome/browser/ui/sharing/activity_services" ]
 }
 
 source_set("unit_tests") {
@@ -99,6 +99,7 @@ source_set("unit_tests") {
     "resources:search_image",
     "resources:select",
     "resources:share",
+    "resources:unpin",
     "//base",
     "//base/test:test_support",
     "//components/sync_preferences:test_support",

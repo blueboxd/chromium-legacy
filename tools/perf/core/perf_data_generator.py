@@ -415,7 +415,8 @@ FYI_BUILDERS = {
         ],
     },
     'fuchsia-builder-perf-x64': {
-        'additional_compile_targets': ['chrome_pkg', 'base_perftests'],
+        'additional_compile_targets':
+        ['chrome_pkg', 'base_perftests', 'sync_performance_tests'],
     },
 }
 
@@ -1204,7 +1205,7 @@ BUILDERS = {
             'cpu': 'arm',
             'mac_model': 'Macmini9,1',
             'os': 'Mac',
-            'pool': 'chrome.tests.perf',
+            'pool': 'chrome.tests.perf-pgo',
         },
     },
     'linux-perf': {
@@ -1560,6 +1561,11 @@ GTEST_BENCHMARKS = {
         'skyostil@chromium.org, gab@chromium.org', 'Internals>SequenceManager',
         ('https://chromium.googlesource.com/chromium/src/+/HEAD/base/' +
          'README.md#performance-testing')),
+    'sync_performance_tests':
+    BenchmarkMetadata(
+        'mastiz@chromium.org', 'Services>Sync',
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/components/sync/README.md'
+    ),
     'tracing_perftests':
     BenchmarkMetadata('eseckler@chromium.org, oysteine@chromium.org',
                       'Speed>Tracing'),
@@ -1919,6 +1925,7 @@ def generate_telemetry_args(tester_config, platform):
     '--browser=%s' % browser_name,
     '--upload-results',
     '--test-shard-map-filename=%s' % platform.shards_map_file_name,
+    '--ignore-benchmark-exit-code',
   ]
   if platform.run_reference_build:
     test_args.append('--run-ref-build')

@@ -18,12 +18,12 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
@@ -149,23 +149,12 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfFeature(features::kWebAssemblyBaseline, "--liftoff");
   SetV8FlagIfNotFeature(features::kWebAssemblyBaseline, "--no-liftoff");
 
-  SetV8FlagIfFeature(features::kWebAssemblyCodeProtection,
-                     "--wasm-write-protect-code-memory");
-  SetV8FlagIfNotFeature(features::kWebAssemblyCodeProtection,
-                        "--no-wasm-write-protect-code-memory");
-
-#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
-  SetV8FlagIfFeature(features::kWebAssemblyCodeProtectionPku,
-                     "--wasm-memory-protection-keys");
-  SetV8FlagIfNotFeature(features::kWebAssemblyCodeProtectionPku,
-                        "--no-wasm-memory-protection-keys");
-#endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&
-        // defined(ARCH_CPU_X86_64)
-
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
-  SetV8FlagIfFeature(features::kEnableExperimentalWebAssemblyStackSwitching,
+  // V8's WASM stack switching support is sufficient to enable JavaScript
+  // Promise Integration.
+  SetV8FlagIfFeature(features::kEnableExperimentalWebAssemblyJSPI,
                      "--experimental-wasm-stack-switching");
-  SetV8FlagIfNotFeature(features::kEnableExperimentalWebAssemblyStackSwitching,
+  SetV8FlagIfNotFeature(features::kEnableExperimentalWebAssemblyJSPI,
                         "--no-experimental-wasm-stack-switching");
 #endif  // defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
 

@@ -8,13 +8,13 @@
 
 namespace syncer {
 
-BASE_FEATURE(kAllowSilentTrustedVaultDeviceRegistration,
-             "AllowSilentTrustedVaultDeviceRegistration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCacheBaseEntitySpecificsInMetadata,
              "CacheBaseEntitySpecificsInMetadata",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDeferredSyncStartupCustomDelay,
+             "DeferredSyncStartupCustomDelay",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
              "IgnoreSyncEncryptionKeysLongMissing",
@@ -32,18 +32,6 @@ BASE_FEATURE(kSyncAllowWalletDataInTransportModeWithCustomPassphrase,
 BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
              "SyncAndroidLimitNTPPromoImpressions",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithAlternativeTitle,
-             "SyncAndroidPromosWithAlternativeTitle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithIllustration,
-             "SyncAndroidPromosWithIllustration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithSingleButton,
-             "SyncAndroidPromosWithSingleButton",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithTitle,
-             "SyncAndroidPromosWithTitle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kSyncAutofillWalletUsageData,
@@ -62,10 +50,6 @@ BASE_FEATURE(kSyncSegmentationDataType,
              "SyncSegmentationDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncSendInterestedDataTypes,
-             "SyncSendInterestedDataTypes",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kSyncSettingsShowLacrosSideBySideWarning,
              "SyncSettingsShowLacrosSideBySideWarning",
@@ -77,6 +61,10 @@ BASE_FEATURE(kSyncChromeOSExplicitPassphraseSharing,
 
 BASE_FEATURE(kSyncChromeOSAppsToggleSharing,
              "SyncChromeOSAppsToggleSharing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kChromeOSSyncedSessionSharing,
+             "ChromeOSSyncedSessionSharing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -90,10 +78,6 @@ BASE_FEATURE(kSyncTrustedVaultPassphrasePromo,
 
 // Keep this entry in sync with the equivalent name in
 // ChromeFeatureList.java.
-BASE_FEATURE(kSyncTrustedVaultPassphraseRecovery,
-             "SyncTrustedVaultPassphraseRecovery",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncTrustedVaultVerifyDeviceRegistration,
              "SyncTrustedVaultVerifyDeviceRegistration",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -134,12 +118,6 @@ BASE_FEATURE(kSyncEnableContactInfoDataType,
              "SyncEnableContactInfoDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Causes sync to pause fully for all persistent auth errors, instead of doing
-// this exclusively for web signouts.
-BASE_FEATURE(kSyncPauseUponAnyPersistentAuthError,
-             "SyncPauseUponAnyPersistentAuthError",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
              "SyncEnforceBookmarksCountLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -151,5 +129,9 @@ BASE_FEATURE(kSyncIgnoreAccountWithoutRefreshToken,
 BASE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes,
              "SyncDoNotPropagateBrowserShutdownToDataTypes",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped,
+             "SyncAllowClearingMetadataWhenDataTypeIsStopped",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace syncer

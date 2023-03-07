@@ -23,7 +23,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -41,22 +40,14 @@ using chrome_test_util::IdentityCellMatcherForEmail;
 
 namespace {
 
-// Returns YES if the email is considered as managed.
-BOOL IsEmailManaged(NSString* email) {
-  return [ios::GetManagedEmailSuffixes()
-             indexOfObjectPassingTest:^BOOL(NSString* suffix, NSUInteger idx,
-                                            BOOL* stop) {
-               return [email hasSuffix:suffix];
-             }] != NSNotFound;
-}
-
 // Closes the managed account dialog, if `fakeIdentity` is a managed account.
 void CloseSigninManagedAccountDialogIfAny(FakeSystemIdentity* fakeIdentity) {
-  if (!IsEmailManaged(fakeIdentity.userEmail)) {
-    // Don't expect a managed account dialog when the account isn't considered
-    // managed.
+  // Don't expect a managed account dialog when the account isn't considered
+  // managed.
+  if ([fakeIdentity.userEmail hasSuffix:@"@gmail.com"]) {
     return;
   }
+
   // Synchronization off due to an infinite spinner, in the user consent view,
   // under the managed consent dialog. This spinner is started by the sign-in
   // process.
@@ -92,8 +83,10 @@ void CloseSigninManagedAccountDialogIfAny(FakeSystemIdentity* fakeIdentity) {
     return;
   }
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
+  [[[EarlGrey selectElementWithMatcher:chrome_test_util::PrimarySignInButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+      onElementWithMatcher:chrome_test_util::SettingsCollectionView()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kIdentityButtonControlIdentifier)]
       performAction:grey_tap()];
@@ -302,11 +295,24 @@ void CloseSigninManagedAccountDialogIfAny(FakeSystemIdentity* fakeIdentity) {
 }
 
 + (void)verifyWebSigninIsVisible:(BOOL)isVisible {
-  id<GREYMatcher> visibilityMatcher =
+  NSString* conditionDescription = isVisible
+                                       ? @"Web sign-in should be visible"
+                                       : @"Web sign-in should not be visible";
+  id<GREYMatcher> matcher =
       isVisible ? grey_sufficientlyVisible() : grey_notVisible();
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kWebSigninAccessibilityIdentifier)]
-      assertWithMatcher:visibilityMatcher];
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:conditionDescription
+                  block:^BOOL {
+                    NSError* error;
+                    [[EarlGrey selectElementWithMatcher:
+                                   grey_accessibilityID(
+                                       kWebSigninAccessibilityIdentifier)]
+                        assertWithMatcher:matcher
+                                    error:&error];
+                    return error == nil;
+                  }];
+  GREYAssertTrue([condition waitWithTimeout:10 pollInterval:0.1],
+                 conditionDescription);
 }
 
 + (void)submitSyncPassphrase:(NSString*)passphrase {

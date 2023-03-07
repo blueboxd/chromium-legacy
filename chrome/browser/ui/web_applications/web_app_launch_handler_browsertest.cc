@@ -92,6 +92,18 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
     return GetWebApp(app_id)->launch_handler();
   }
 
+  void ExpectNavigateNewBehavior(const AppId& app_id) {
+    std::string start_url = GetWebApp(app_id)->start_url().spec();
+
+    Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url);
+
+    Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
+
+    EXPECT_NE(browser_1, browser_2);
+  }
+
   std::string AwaitNextLaunchParamsTargetUrl(Browser* browser) {
     const char* script = R"(
       new Promise(resolve => {
@@ -119,123 +131,6 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
         .ExtractString();
   }
 
-  void ExpectNavigateExistingBehaviour(const AppId& app_id,
-                                       const GURL& start_url) {
-    base::HistogramTester histogram_tester;
-    EXPECT_EQ(GetLaunchHandler(app_id),
-              (LaunchHandler{ClientMode::kNavigateExisting}));
-
-    // Create first web app browser window.
-    Browser* app_browser = LaunchWebAppBrowserAndWait(profile(), app_id);
-    content::WebContents* app_web_contents =
-        app_browser->tab_strip_model()->GetActiveWebContents();
-    EXPECT_EQ(app_web_contents->GetLastCommittedURL(), start_url);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser), start_url.spec());
-
-    // Navigate window away from start_url to check that the next launch navs to
-    // start_url again.
-    {
-      GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-      NavigateToURLAndWait(app_browser, alt_url);
-      EXPECT_EQ(app_web_contents->GetLastCommittedURL(), alt_url);
-
-      Browser* app_browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-      EXPECT_EQ(app_browser, app_browser_2);
-      EXPECT_EQ(app_web_contents->GetLastCommittedURL(), start_url);
-      EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser_2),
-                start_url.spec());
-    }
-
-    // Reparent an in scope browser tab and check that it navigates the existing
-    // web app window.
-    {
-      content::TestNavigationObserver observer(
-          app_web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-
-      chrome::NewTab(browser());
-      EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
-      NavigateToURLAndWait(browser(), start_url);
-      ReparentWebAppForActiveTab(browser());
-      EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
-
-      observer.WaitForNavigationFinished();
-      EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser), start_url.spec());
-    }
-
-    histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
-                                        ClientMode::kNavigateExisting, 3);
-  }
-
-  void ExpectFocusExistingBehaviour(const AppId& app_id,
-                                    const GURL& start_url) {
-    base::HistogramTester histogram_tester;
-    EXPECT_EQ(GetLaunchHandler(app_id),
-              (LaunchHandler{ClientMode::kFocusExisting}));
-
-    Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-    content::WebContents* web_contents =
-        browser_1->tab_strip_model()->GetActiveWebContents();
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
-
-    // Navigate window away from start_url to an in scope URL, check that the
-    // next launch doesn't navigate to start_url.
-    {
-      GURL in_scope_url =
-          embedded_test_server()->GetURL("/web_apps/basic.html");
-      NavigateToURLAndWait(browser_1, in_scope_url);
-      EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
-
-      ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
-      Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
-      EXPECT_EQ(browser_1, browser_2);
-      EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
-                start_url.spec());
-      EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
-    }
-
-    // Navigate window away from start_url to an out of scope URL, check that
-    // the next launch does navigate to start_url.
-    {
-      GURL out_of_scope_url = embedded_test_server()->GetURL("/empty.html");
-      NavigateToURLAndWait(browser_1, out_of_scope_url);
-      EXPECT_EQ(web_contents->GetLastCommittedURL(), out_of_scope_url);
-
-      Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-      EXPECT_EQ(browser_1, browser_2);
-      EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
-      EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-    }
-
-    // Trigger launch during navigation, check that the navigation gets
-    // cancelled.
-    {
-      ASSERT_TRUE(EvalJs(web_contents, "window.thisIsTheSamePage = true")
-                      .ExtractBool());
-
-      GURL hanging_url = embedded_test_server()->GetURL("/hang");
-      NavigateParams params(browser_1, hanging_url, ui::PAGE_TRANSITION_LINK);
-      Navigate(&params);
-      EXPECT_EQ(web_contents->GetVisibleURL(), hanging_url);
-      EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-
-      ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
-      Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
-      EXPECT_EQ(browser_1, browser_2);
-      EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
-                start_url.spec());
-      EXPECT_EQ(web_contents->GetVisibleURL(), start_url);
-      EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-
-      // Check that we never left the current page.
-      EXPECT_TRUE(
-          EvalJs(web_contents, "window.thisIsTheSamePage").ExtractBool());
-    }
-
-    histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
-                                        ClientMode::kFocusExisting, 4);
-  }
-
  private:
   base::test::ScopedFeatureList feature_list_{
       blink::features::kWebAppEnableLaunchHandler};
@@ -248,9 +143,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
   EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
 
-  Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
-  Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
-  EXPECT_NE(browser_1, browser_2);
+  ExpectNavigateNewBehavior(app_id);
 
   histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
                                       ClientMode::kAuto, 2);
@@ -262,15 +155,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeAuto) {
       "/web_apps/get_manifest.html?launch_handler_client_mode_auto.json");
   EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{ClientMode::kAuto}));
 
-  std::string start_url = GetWebApp(app_id)->start_url().spec();
-
-  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url);
-
-  Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
-
-  EXPECT_NE(browser_1, browser_2);
+  ExpectNavigateNewBehavior(app_id);
 
   histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
                                       ClientMode::kAuto, 2);
@@ -284,15 +169,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeNavigateNew) {
   EXPECT_EQ(GetLaunchHandler(app_id),
             (LaunchHandler{ClientMode::kNavigateNew}));
 
-  std::string start_url = GetWebApp(app_id)->start_url().spec();
-
-  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url);
-
-  Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
-
-  EXPECT_NE(browser_1, browser_2);
+  ExpectNavigateNewBehavior(app_id);
 
   histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
                                       ClientMode::kNavigateNew, 2);
@@ -303,9 +180,53 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_existing.json");
-  ExpectNavigateExistingBehaviour(
-      app_id, embedded_test_server()->GetURL("/web_apps/basic.html?"
-                                             "client_mode=navigate-existing"));
+
+  GURL start_url = embedded_test_server()->GetURL(
+      "/web_apps/basic.html?"
+      "client_mode=navigate-existing");
+
+  base::HistogramTester histogram_tester;
+  EXPECT_EQ(GetLaunchHandler(app_id),
+            (LaunchHandler{ClientMode::kNavigateExisting}));
+
+  // Create first web app browser window.
+  Browser* app_browser = LaunchWebAppBrowserAndWait(profile(), app_id);
+  content::WebContents* app_web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(app_web_contents->GetLastCommittedURL(), start_url);
+  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser), start_url.spec());
+
+  // Navigate window away from start_url to check that the next launch navs to
+  // start_url again.
+  {
+    GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+    NavigateToURLAndWait(app_browser, alt_url);
+    EXPECT_EQ(app_web_contents->GetLastCommittedURL(), alt_url);
+
+    Browser* app_browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(app_browser, app_browser_2);
+    EXPECT_EQ(app_web_contents->GetLastCommittedURL(), start_url);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser_2), start_url.spec());
+  }
+
+  // Reparent an in scope browser tab and check that it navigates the existing
+  // web app window.
+  {
+    content::TestNavigationObserver observer(
+        app_web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
+
+    chrome::NewTab(browser());
+    EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
+    NavigateToURLAndWait(browser(), start_url);
+    ReparentWebAppForActiveTab(browser());
+    EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+
+    observer.WaitForNavigationFinished();
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser), start_url.spec());
+  }
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateExisting, 3);
 }
 
 // TODO(crbug.com/1308334): Fix flakiness.
@@ -314,9 +235,75 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_focus_existing.json");
-  ExpectFocusExistingBehaviour(
-      app_id, embedded_test_server()->GetURL("/web_apps/basic.html?"
-                                             "client_mode=focus-existing"));
+
+  GURL start_url = embedded_test_server()->GetURL(
+      "/web_apps/basic.html?"
+      "client_mode=focus-existing");
+
+  base::HistogramTester histogram_tester;
+  EXPECT_EQ(GetLaunchHandler(app_id),
+            (LaunchHandler{ClientMode::kFocusExisting}));
+
+  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
+  content::WebContents* web_contents =
+      browser_1->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
+
+  // Navigate window away from start_url to an in scope URL, check that the
+  // next launch doesn't navigate to start_url.
+  {
+    GURL in_scope_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+    NavigateToURLAndWait(browser_1, in_scope_url);
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
+
+    ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
+    Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+    EXPECT_EQ(browser_1, browser_2);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
+              start_url.spec());
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
+  }
+
+  // Navigate window away from start_url to an out of scope URL, check that
+  // the next launch does navigate to start_url.
+  {
+    GURL out_of_scope_url = embedded_test_server()->GetURL("/empty.html");
+    NavigateToURLAndWait(browser_1, out_of_scope_url);
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), out_of_scope_url);
+
+    Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(browser_1, browser_2);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+  }
+
+  // Trigger launch during navigation, check that the navigation gets
+  // cancelled.
+  {
+    ASSERT_TRUE(
+        EvalJs(web_contents, "window.thisIsTheSamePage = true").ExtractBool());
+
+    GURL hanging_url = embedded_test_server()->GetURL("/hang");
+    NavigateParams params(browser_1, hanging_url, ui::PAGE_TRANSITION_LINK);
+    Navigate(&params);
+    EXPECT_EQ(web_contents->GetVisibleURL(), hanging_url);
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+
+    ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
+    Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+    EXPECT_EQ(browser_1, browser_2);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
+              start_url.spec());
+    EXPECT_EQ(web_contents->GetVisibleURL(), start_url);
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+
+    // Check that we never left the current page.
+    EXPECT_TRUE(EvalJs(web_contents, "window.thisIsTheSamePage").ExtractBool());
+  }
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kFocusExisting, 4);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
@@ -464,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, SelectActiveBrowser) {
 
   {
     ScopedRegistryUpdate update(
-        &WebAppProvider::GetForTest(profile())->sync_bridge());
+        &WebAppProvider::GetForTest(profile())->sync_bridge_unsafe());
     WebApp* web_app = update->UpdateApp(app_id);
     web_app->SetLaunchHandler(LaunchHandler{ClientMode::kFocusExisting});
   }
@@ -477,9 +464,8 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, SelectActiveBrowser) {
 class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
  public:
   WebAppLaunchHandlerDisabledBrowserTest() {
-    feature_list_.InitWithFeatures({},
-                                   {blink::features::kWebAppEnableLaunchHandler,
-                                    blink::features::kFileHandlingAPI});
+    feature_list_.InitWithFeatures(
+        {}, {blink::features::kWebAppEnableLaunchHandler});
   }
   ~WebAppLaunchHandlerDisabledBrowserTest() override = default;
 
@@ -498,7 +484,8 @@ class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
   OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest,
+                       LaunchQueueNoLaunchHandlers) {
   base::HistogramTester histogram_tester;
   AppId app_id = InstallWebAppFromPage(
       browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
@@ -507,9 +494,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
   content::WebContents* web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
-  EXPECT_FALSE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
-  EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
+  EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
+  EXPECT_TRUE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
+  EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
 
   histogram_tester.ExpectTotalCount(kLaunchHandlerHistogram, 0);
 }

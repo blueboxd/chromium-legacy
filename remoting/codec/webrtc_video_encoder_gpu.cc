@@ -8,9 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -344,8 +344,8 @@ void WebrtcVideoEncoderGpu::Core::BitstreamBufferReady(
   auto callback_it = callbacks_.find(metadata.timestamp);
   DCHECK(callback_it != callbacks_.end())
       << "Callback not found for timestamp " << metadata.timestamp;
-  std::move(std::get<1>(*callback_it)).Run(
-      EncodeResult::SUCCEEDED, std::move(encoded_frame));
+  std::move(std::get<1>(*callback_it))
+      .Run(EncodeResult::SUCCEEDED, std::move(encoded_frame));
   callbacks_.erase(metadata.timestamp);
 }
 

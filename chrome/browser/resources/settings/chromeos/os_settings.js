@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview The main entry point for the ChromeOS Settings SWA. This
+ * imports all of the necessary modules and custom elements to load the page.
+ */
+
+import '../strings.m.js';
 import '../prefs/prefs.js';
 import './device_page/audio.js';
 import './device_page/cros_audio_config.js';
@@ -9,8 +15,13 @@ import './device_page/device_page.js';
 import './device_page/display.js';
 import './device_page/display_layout.js';
 import './device_page/display_overscan_dialog.js';
+import './device_page/fake_input_device_settings_provider.js';
+import './device_page/input_device_settings_types.js';
 import './device_page/keyboard.js';
 import './device_page/per_device_keyboard.js';
+import './device_page/per_device_mouse.js';
+import './device_page/per_device_pointing_stick.js';
+import './device_page/per_device_touchpad.js';
 import './device_page/pointers.js';
 import './device_page/power.js';
 import './device_page/storage.js';
@@ -42,6 +53,7 @@ import './nearby_share_page/nearby_share_receive_dialog.js';
 import './nearby_share_page/nearby_share_subpage.js';
 import './personalization_page/personalization_page.js';
 import './os_a11y_page/change_dictation_locale_dialog.js';
+import './os_a11y_page/os_a11y_page.js';
 import './os_about_page/channel_switcher_dialog.js';
 import './os_about_page/detailed_build_info.js';
 import './os_about_page/os_about_page.js';
@@ -102,6 +114,9 @@ import './os_toolbar/os_toolbar.js';
 import './parental_controls_page/parental_controls_page.js';
 import './settings_scheduler_slider/settings_scheduler_slider.js';
 
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+
 import * as crosAudioConfigMojomWebui from '../mojom-webui/audio/cros_audio_config.mojom-webui.js';
 import * as appNotificationHandlerMojomWebui from '../mojom-webui/os_apps_page/app_notification_handler.mojom-webui.js';
 import * as personalizationSearchMojomWebui from '../mojom-webui/personalization/search.mojom-webui.js';
@@ -113,6 +128,11 @@ import * as settingMojomWebui from '../mojom-webui/setting.mojom-webui.js';
 
 import * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
 
+/**
+ * With the optimize_webui() build step, the generated JS files are bundled
+ * into a single JS file. The exports below are necessary so they can be
+ * imported into browser tests.
+ */
 export {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 export {BrowserProxy as AppManagementComponentBrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
 export {PageType, WindowMode} from 'chrome://resources/cr_components/app_management/constants.js';
@@ -124,12 +144,13 @@ export {ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_p
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
 export {CrSettingsPrefs} from '../prefs/prefs_types.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '../privacy_page/privacy_page_browser_proxy.js';
-export {Route, Router} from './router.js';
 export {getContactManager, observeContactManager, setContactManagerForTesting} from '../shared/nearby_contact_manager.js';
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '../shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsBehavior} from '../shared/nearby_share_settings_behavior.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
 export {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, setDisplayApiForTesting, StorageSpaceState} from './device_page/device_page_browser_proxy.js';
+export {FakeInputDeviceSettingsProvider} from './device_page/fake_input_device_settings_provider.js';
+export {Keyboard, KeyboardSettings, MetaKey} from './device_page/input_device_settings_types.js';
 export {FindShortcutBehavior, FindShortcutManager} from './find_shortcut_behavior.js';
 export {GoogleAssistantBrowserProxyImpl} from './google_assistant_page/google_assistant_browser_proxy.js';
 export {ConsentStatus, DspHotwordState} from './google_assistant_page/google_assistant_page.js';
@@ -173,8 +194,10 @@ export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataA
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
 export {routes} from './os_route.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
+export {OsSettingsSearchBoxBrowserProxyImpl} from './os_settings_search_box/os_settings_search_box_browser_proxy.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.js';
 export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from './personalization_page/personalization_hub_browser_proxy.js';
+export {Route, Router} from './router.js';
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
 export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './search/settings_search_handler.js';
 export {
@@ -187,4 +210,21 @@ export {
   searchResultIconMojomWebui,
   settingMojomWebui,
   userActionRecorderMojomWebui,
+};
+
+// TODO(b/257329722) After the Jelly experiment is launched, add the CSS link
+// element directly to the HTML.
+const jellyEnabled = loadTimeData.getBoolean('isJellyEnabled');
+if (jellyEnabled) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'chrome://theme/colors.css?sets=legacy,sys';
+  document.head.appendChild(link);
+  document.body.classList.add('jelly-enabled');
+}
+
+window.onload = () => {
+  if (jellyEnabled) {
+    startColorChangeUpdater();
+  }
 };

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -62,6 +62,9 @@ class TestCookieManager : public network::mojom::CookieManager {
   void SetStorageAccessGrantSettings(
       const std::vector<::ContentSettingPatternSource>& settings,
       SetStorageAccessGrantSettingsCallback callback) override {}
+  void SetTopLevelStorageAccessSettings(
+      const std::vector<::ContentSettingPatternSource>& settings,
+      SetTopLevelStorageAccessSettingsCallback callback) override {}
 
   void DispatchCookieChange(const net::CookieChangeInfo& change);
 

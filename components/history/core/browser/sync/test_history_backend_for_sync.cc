@@ -283,17 +283,41 @@ bool TestHistoryBackendForSync::UpdateVisitReferrerOpenerIDs(
   return false;
 }
 
+void TestHistoryBackendForSync::AddVisitToSyncedCluster(
+    const ClusterVisit& cluster_visit,
+    const std::string& originator_cache_guid,
+    int64_t cluster_id) {
+  ++add_visit_to_synced_cluster_count_;
+}
+
+int64_t TestHistoryBackendForSync::GetClusterIdContainingVisit(
+    VisitID visit_id) {
+  // For testing purposes, just put every visit in a different cluster.
+  return 1000 + static_cast<int64_t>(visit_id);
+}
+
 std::vector<GURL> TestHistoryBackendForSync::GetFaviconURLsForURL(
     const GURL& page_url) {
   // For the unit tests based on this class, favicon URLs aren't required.
   return {};
 }
 
-bool TestHistoryBackendForSync::DeleteAllForeignVisits() {
+void TestHistoryBackendForSync::MarkVisitAsKnownToSync(VisitID visit_id) {
+  for (auto& visit : visits_) {
+    if (visit.visit_id == visit_id) {
+      // This persists into the vector because we're operating on a reference.
+      visit.is_known_to_sync = true;
+    }
+  }
+}
+
+void TestHistoryBackendForSync::DeleteAllForeignVisitsAndResetIsKnownToSync() {
   ++delete_all_foreign_visits_call_count_;
 
   for (auto it = visits_.begin(); it != visits_.end();) {
-    const VisitRow& visit = *it;
+    VisitRow& visit = *it;
+    visit.is_known_to_sync = false;
+
     if (visit.originator_cache_guid.empty()) {
       // Local visit, leave it.
       ++it;
@@ -308,7 +332,6 @@ bool TestHistoryBackendForSync::DeleteAllForeignVisits() {
       // but currently isn't necessary for the unit tests that use this class.
     }
   }
-  return true;
 }
 
 void TestHistoryBackendForSync::AddObserver(HistoryBackendObserver* observer) {

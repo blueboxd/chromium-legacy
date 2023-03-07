@@ -19,12 +19,11 @@
                     animated:(BOOL)animated {
   BOOL shouldDismissOnTouchOutside = YES;
 
-      UIViewController<UIAdaptivePresentationControllerDelegate>*
-          adaptiveViewController = base::mac::ObjCCast<
-              UIViewController<UIAdaptivePresentationControllerDelegate>>(
-              viewController);
-      navigationController.presentationController.delegate =
-          adaptiveViewController;
+  UIViewController<UIAdaptivePresentationControllerDelegate>*
+      adaptiveViewController = base::mac::ObjCCast<
+          UIViewController<UIAdaptivePresentationControllerDelegate>>(
+          viewController);
+  navigationController.presentationController.delegate = adaptiveViewController;
 
   ChromeTableViewController* tableViewController =
       base::mac::ObjCCast<ChromeTableViewController>(viewController);

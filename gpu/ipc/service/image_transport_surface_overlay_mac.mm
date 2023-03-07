@@ -7,10 +7,11 @@
 #include <memory>
 #include <sstream>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -26,6 +27,7 @@
 #include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/scoped_cgl.h"
 
@@ -53,6 +55,7 @@ ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL(
       delegate_(delegate),
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
+      vsync_callback_(delegate->GetGpuVSyncCallback()),
       gl_renderer_id_(0),
       weak_ptr_factory_(this) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
@@ -95,10 +98,6 @@ void ImageTransportSurfaceOverlayMacEGL::Destroy() {
   ca_layer_tree_coordinator_.reset();
 }
 
-bool ImageTransportSurfaceOverlayMacEGL::IsOffscreen() {
-  return false;
-}
-
 void ImageTransportSurfaceOverlayMacEGL::ApplyBackpressure() {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ApplyBackpressure");
   // Create the fence for the current frame before waiting on the previous
@@ -116,10 +115,11 @@ void ImageTransportSurfaceOverlayMacEGL::BufferPresented(
   std::move(callback).Run(feedback);
 }
 
-gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::SwapBuffersInternal(
+void ImageTransportSurfaceOverlayMacEGL::Present(
     gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback) {
-  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
+    gl::GLSurface::PresentationCallback presentation_callback,
+    gfx::FrameData data) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::Present");
 
   constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
   constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
@@ -205,68 +205,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::SwapBuffersInternal(
       base::BindOnce(&ImageTransportSurfaceOverlayMacEGL::BufferPresented,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(presentation_callback), feedback));
-  return gfx::SwapResult::SWAP_ACK;
-}
-
-gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::SwapBuffers(
-    gl::GLSurface::PresentationCallback callback,
-    gl::FrameData data) {
-  return SwapBuffersInternal(base::DoNothing(), std::move(callback));
-}
-
-void ImageTransportSurfaceOverlayMacEGL::SwapBuffersAsync(
-    gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  SwapBuffersInternal(std::move(completion_callback),
-                      std::move(presentation_callback));
-}
-
-gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::PostSubBuffer(
-    int x,
-    int y,
-    int width,
-    int height,
-    gl::GLSurface::PresentationCallback callback,
-    gl::FrameData data) {
-  return SwapBuffersInternal(base::DoNothing(), std::move(callback));
-}
-
-void ImageTransportSurfaceOverlayMacEGL::PostSubBufferAsync(
-    int x,
-    int y,
-    int width,
-    int height,
-    gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  SwapBuffersInternal(std::move(completion_callback),
-                      std::move(presentation_callback));
-}
-
-gfx::SwapResult ImageTransportSurfaceOverlayMacEGL::CommitOverlayPlanes(
-    gl::GLSurface::PresentationCallback callback,
-    gl::FrameData data) {
-  return SwapBuffersInternal(base::DoNothing(), std::move(callback));
-}
-
-void ImageTransportSurfaceOverlayMacEGL::CommitOverlayPlanesAsync(
-    gl::GLSurface::SwapCompletionCallback completion_callback,
-    gl::GLSurface::PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  SwapBuffersInternal(std::move(completion_callback),
-                      std::move(presentation_callback));
-}
-
-bool ImageTransportSurfaceOverlayMacEGL::SupportsPostSubBuffer() {
-  return true;
 }
 
 bool ImageTransportSurfaceOverlayMacEGL::SupportsCommitOverlayPlanes() {
-  return true;
-}
-
-bool ImageTransportSurfaceOverlayMacEGL::SupportsAsyncSwap() {
   return true;
 }
 
@@ -330,14 +271,6 @@ bool ImageTransportSurfaceOverlayMacEGL::ScheduleCALayer(
       ->ScheduleCALayer(params);
 }
 
-bool ImageTransportSurfaceOverlayMacEGL::IsSurfaceless() const {
-  return true;
-}
-
-gfx::SurfaceOrigin ImageTransportSurfaceOverlayMacEGL::GetOrigin() const {
-  return gfx::SurfaceOrigin::kTopLeft;
-}
-
 bool ImageTransportSurfaceOverlayMacEGL::Resize(
     const gfx::Size& pixel_size,
     float scale_factor,
@@ -375,6 +308,21 @@ void ImageTransportSurfaceOverlayMacEGL::OnGpuSwitched(
 void ImageTransportSurfaceOverlayMacEGL::SetCALayerErrorCode(
     gfx::CALayerResult ca_layer_error_code) {
   ca_layer_error_code_ = ca_layer_error_code;
+}
+
+void ImageTransportSurfaceOverlayMacEGL::SetVSyncDisplayID(int64_t display_id) {
+}
+
+bool ImageTransportSurfaceOverlayMacEGL::SupportsGpuVSync() const {
+  return features::UseGpuVsync();
+}
+
+void ImageTransportSurfaceOverlayMacEGL::SetGpuVSyncEnabled(bool enabled) {
+  if (gpu_vsync_enabled_ == enabled) {
+    return;
+  }
+
+  gpu_vsync_enabled_ = enabled;
 }
 
 }  // namespace gpu

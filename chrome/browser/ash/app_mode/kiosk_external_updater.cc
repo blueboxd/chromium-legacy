@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ash/app_mode/kiosk_external_updater.h"
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/notifications/kiosk_external_update_notification.h"
@@ -31,24 +32,23 @@ constexpr base::FilePath::CharType kExternalUpdateManifest[] =
 constexpr char kExternalCrx[] = "external_crx";
 constexpr char kExternalVersion[] = "external_version";
 
-std::pair<std::unique_ptr<base::DictionaryValue>,
-          KioskExternalUpdater::ErrorCode>
+std::pair<base::Value, KioskExternalUpdater::ErrorCode>
 ParseExternalUpdateManifest(const base::FilePath& external_update_dir) {
   base::FilePath manifest = external_update_dir.Append(kExternalUpdateManifest);
   if (!base::PathExists(manifest)) {
-    return std::make_pair(nullptr,
+    return std::make_pair(base::Value(),
                           KioskExternalUpdater::ErrorCode::kNoManifest);
   }
 
   JSONFileValueDeserializer deserializer(manifest);
-  std::unique_ptr<base::DictionaryValue> extensions =
-      base::DictionaryValue::From(deserializer.Deserialize(nullptr, nullptr));
+  std::unique_ptr<base::Value> extensions =
+      deserializer.Deserialize(nullptr, nullptr);
   if (!extensions) {
-    return std::make_pair(nullptr,
+    return std::make_pair(base::Value(),
                           KioskExternalUpdater::ErrorCode::kInvalidManifest);
   }
 
-  return std::make_pair(std::move(extensions),
+  return std::make_pair(base::Value::FromUniquePtrValue(std::move(extensions)),
                         KioskExternalUpdater::ErrorCode::kNone);
 }
 
@@ -201,7 +201,7 @@ void KioskExternalUpdater::ProcessParsedManifest(
     const ParseManifestResult& result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const std::unique_ptr<base::DictionaryValue>& parsed_manifest = result.first;
+  const base::Value& parsed_manifest = result.first;
   ErrorCode parsing_error = result.second;
   if (parsing_error == ErrorCode::kNoManifest) {
     KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
@@ -220,7 +220,7 @@ void KioskExternalUpdater::ProcessParsedManifest(
           IDS_KIOSK_EXTERNAL_UPDATE_IN_PROGRESS));
 
   external_update_path_ = external_update_dir;
-  for (auto manifest : parsed_manifest->DictItems()) {
+  for (auto manifest : parsed_manifest.GetDict()) {
     std::string app_id = manifest.first;
     std::string cached_version_str;
     base::FilePath cached_crx;

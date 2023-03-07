@@ -96,7 +96,6 @@ source_set("policy") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/common",
-    "//ios/public/provider/chrome/browser/signin",
     "//services/network/public/cpp",
     "//url",
   ]
@@ -221,6 +220,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/signin:fake_system_identity",
+    "//ios/chrome/browser/signin:fake_system_identity_manager",
     "//ios/chrome/browser/signin:signin",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt",
@@ -228,7 +228,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main/test",
     "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/web/public/test:test",
     "//net",
     "//services/network:test_support",
@@ -269,6 +268,7 @@ source_set("eg2_tests") {
     "//components/strings",
     "//google_apis",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/signin:fake_system_identity",
@@ -292,7 +292,6 @@ source_set("eg2_tests") {
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:switches",
-    "//ios/public/provider/chrome/browser/signin:constants",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//net:test_support",
@@ -343,7 +342,6 @@ source_set("eg_test_support+eg2") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]

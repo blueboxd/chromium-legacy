@@ -41,6 +41,28 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
       "Network.Ash.Cellular.Apn.RemoveCustomApn.Result";
   static constexpr char kRemoveCustomApnApnTypesHistogram[] =
       "Network.Ash.Cellular.Apn.RemoveCustomApn.ApnTypes";
+  static constexpr char kModifyCustomApnResultHistogram[] =
+      "Network.Ash.Cellular.Apn.ModifyCustomApn.Result";
+  static constexpr char kModifyCustomApnApnTypesHistogram[] =
+      "Network.Ash.Cellular.Apn.ModifyCustomApn.ApnTypes";
+  static constexpr char kEnableCustomApnResultHistogram[] =
+      "Network.Ash.Cellular.Apn.EnableCustomApn.Result";
+  static constexpr char kEnableCustomApnApnTypesHistogram[] =
+      "Network.Ash.Cellular.Apn.EnableCustomApn.ApnTypes";
+  static constexpr char kDisableCustomApnResultHistogram[] =
+      "Network.Ash.Cellular.Apn.DisableCustomApn.Result";
+  static constexpr char kDisableCustomApnApnTypesHistogram[] =
+      "Network.Ash.Cellular.Apn.DisableCustomApn.ApnTypes";
+  static constexpr char kConnectResultHasEnabledCustomApnsAllHistogram[] =
+      "Network.Ash.Cellular.ConnectionResult.HasEnabledCustomApns.All";
+  static constexpr char kConnectResultNoEnabledCustomApnsAllHistogram[] =
+      "Network.Ash.Cellular.ConnectionResult.NoEnabledCustomApns.All";
+  static constexpr char kCustomApnsCountHistogram[] =
+      "Network.Ash.Cellular.Apn.CustomApns.Count";
+  static constexpr char kCustomApnsEnabledCountHistogram[] =
+      "Network.Ash.Cellular.Apn.CustomApns.Enabled.Count";
+  static constexpr char kCustomApnsDisabledCountHistogram[] =
+      "Network.Ash.Cellular.Apn.CustomApns.Disabled.Count";
 
   CellularNetworkMetricsLogger(
       NetworkStateHandler* network_state_handler,
@@ -58,6 +80,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
   static void LogRemoveCustomApnResult(
       bool success,
       std::vector<chromeos::network_config::mojom::ApnType> apn_types);
+  static void LogModifyCustomApnResult(
+      bool success,
+      std::vector<chromeos::network_config::mojom::ApnType> old_apn_types,
+      absl::optional<chromeos::network_config::mojom::ApnState> apn_state,
+      absl::optional<chromeos::network_config::mojom::ApnState> old_apn_state);
 
  private:
   // ConnectionInfoMetricsLogger::Observer:

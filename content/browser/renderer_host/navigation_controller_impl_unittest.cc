@@ -12,9 +12,9 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -217,7 +217,12 @@ TEST(TimeSmoother, ClockBackwardsJump) {
 class NavigationControllerTest : public RenderViewHostImplTestHarness,
                                  public WebContentsObserver {
  public:
-  NavigationControllerTest() = default;
+  NavigationControllerTest() {
+    // Disable BackForward cache size overwritten by
+    // `kBackForwardCacheSize` so that it won't break some tests assumption.
+    scoped_feature_list_.InitWithFeaturesAndParameters({},
+                                                       {kBackForwardCacheSize});
+  }
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -288,6 +293,9 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
   size_t form_repost_counter_ = 0;
   PrunedDetails last_navigation_entry_pruned_details_;
   ReloadType last_reload_type_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class TestWebContentsDelegate : public WebContentsDelegate {
@@ -2374,9 +2382,10 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   std::unique_ptr<NavigationEntryImpl> entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), browser_context(),
-              nullptr /* blob_url_loader_factory */));
+              url, Referrer(), /* initiator_origin= */ absl::nullopt,
+              /* initiator_base_url= */ absl::nullopt,
+              ui::PAGE_TRANSITION_RELOAD, false, std::string(),
+              browser_context(), nullptr /* blob_url_loader_factory */));
   entry->SetTitle(u"Title");
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
@@ -2448,9 +2457,10 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   std::unique_ptr<NavigationEntryImpl> new_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), browser_context(),
-              nullptr /* blob_url_loader_factory */));
+              url, Referrer(), /* initiator_origin= */ absl::nullopt,
+              /* initiator_base_url= */ absl::nullopt,
+              ui::PAGE_TRANSITION_RELOAD, false, std::string(),
+              browser_context(), nullptr /* blob_url_loader_factory */));
   new_entry->SetTitle(u"Title");
   std::unique_ptr<NavigationEntryRestoreContextImpl> context =
       std::make_unique<NavigationEntryRestoreContextImpl>();
@@ -3647,7 +3657,8 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
     std::unique_ptr<NavigationEntryImpl> entry =
         NavigationEntryImpl::FromNavigationEntry(
             NavigationController::CreateNavigationEntry(
-                restoredUrl, Referrer(), absl::nullopt,
+                restoredUrl, Referrer(), absl::nullopt /* initiator_origin= */,
+                /* initiator_base_url= */ absl::nullopt,
                 ui::PAGE_TRANSITION_RELOAD, false, std::string(),
                 browser_context(), nullptr /* blob_url_loader_factory */));
     entry->SetPageState(blink::PageState::CreateFromURL(restoredUrl),
@@ -4324,8 +4335,9 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
       subframe_node->current_frame_host(), kSrcDoc,
       nullptr /* initiator_frame_token */,
       ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
-      url::Origin::Create(kUrl2), true /* is_renderer_initiated */,
-      main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
+      url::Origin::Create(kUrl2), /* initiator_base_url= */ absl::nullopt,
+      true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
+      Referrer(), ui::PAGE_TRANSITION_LINK,
       false /* should_replace_current_entry */,
       blink::NavigationDownloadPolicy(), "GET", nullptr, "",
       network::mojom::SourceLocation::New(), nullptr,
@@ -4368,10 +4380,11 @@ TEST_F(NavigationControllerTest,
   other_controller.NavigateFromFrameProxy(
       frame, other_contents_url, nullptr /* initiator_frame_token */,
       ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
-      url::Origin::Create(main_url), true /* is_renderer_initiated */,
-      main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
-      should_replace_current_entry, blink::NavigationDownloadPolicy(), "GET",
-      nullptr, "", network::mojom::SourceLocation::New(), nullptr,
+      url::Origin::Create(main_url), /* initiator_base_url= */ absl::nullopt,
+      true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
+      Referrer(), ui::PAGE_TRANSITION_LINK, should_replace_current_entry,
+      blink::NavigationDownloadPolicy(), "GET", nullptr, "",
+      network::mojom::SourceLocation::New(), nullptr,
       false /*is_form_submission*/, absl::nullopt,
       blink::mojom::NavigationInitiatorActivationAndAdStatus::
           kDidNotStartWithTransientActivation,
@@ -4702,9 +4715,10 @@ TEST_F(NavigationControllerFencedFrameTest, NoURLRewriteForFencedFrames) {
       fenced_frame_root, GURL(kTestRewriteURL),
       nullptr /* initiator_frame_token */,
       ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
-      url::Origin::Create(kUrl2), true /* is_renderer_initiated */,
-      fenced_frame_root->GetSiteInstance(), Referrer(),
-      ui::PAGE_TRANSITION_LINK, false /* should_replace_current_entry */,
+      url::Origin::Create(kUrl2), /* initiator_base_url= */ absl::nullopt,
+      true /* is_renderer_initiated */, fenced_frame_root->GetSiteInstance(),
+      Referrer(), ui::PAGE_TRANSITION_LINK,
+      false /* should_replace_current_entry */,
       blink::NavigationDownloadPolicy(), "GET", nullptr, "",
       network::mojom::SourceLocation::New(), nullptr,
       false /*is_form_submission*/, absl::nullopt,

@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "extensions/browser/api/extension_types_utils.h"
 #include "extensions/browser/api/scripting/scripting_constants.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -41,6 +40,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/utils/content_script_utils.h"
+#include "extensions/common/utils/extension_types_utils.h"
 
 namespace extensions {
 
@@ -51,6 +51,9 @@ constexpr char kDuplicateFileSpecifiedError[] =
     "Duplicate file specified: '*'.";
 constexpr char kExactlyOneOfCssAndFilesError[] =
     "Exactly one of 'css' and 'files' must be specified.";
+constexpr char kFilesExceededSizeLimitError[] =
+    "Scripts could not be loaded because '*' exceeds the maximum script size "
+    "or the extension's maximum total script size.";
 
 // Note: CSS always injects as soon as possible, so we default to
 // document_start. Because of tab loading, there's no guarantee this will
@@ -501,8 +504,18 @@ ValidateContentScriptsResult ValidateParsedScriptsOnFileThread(
   // Validate that claimed script resources actually exist, and are UTF-8
   // encoded.
   std::string error;
-  bool are_script_files_valid =
-      script_parsing::ValidateFileSources(*scripts, symlink_policy, &error);
+  std::vector<InstallWarning> warnings;
+  bool are_script_files_valid = script_parsing::ValidateFileSources(
+      *scripts, symlink_policy, &error, &warnings);
+
+  // Script files over the per script/extension limit are recorded as warnings.
+  // However, for the scripting API we should treat "install warnings" as
+  // errors by turning this call into a no-op and returning an error.
+  if (!warnings.empty() && error.empty()) {
+    error = ErrorUtils::FormatErrorMessage(kFilesExceededSizeLimitError,
+                                           warnings[0].specific);
+    are_script_files_valid = false;
+  }
 
   return std::make_pair(std::move(scripts), are_script_files_valid
                                                 ? absl::nullopt

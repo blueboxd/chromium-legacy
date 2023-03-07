@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirm_dialog_overlay.h"
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/alert_constants.h"
@@ -40,7 +40,7 @@ std::unique_ptr<OverlayResponse> CreateDialogResponse(
 
   JavaScriptConfirmDialogResponse::Action action =
       JavaScriptConfirmDialogResponse::Action::kCancel;
-  size_t button_index = alert_response->tapped_button_index();
+  size_t button_index = alert_response->tapped_button_row_index();
   if (button_index == kButtonIndexOk) {
     action = JavaScriptConfirmDialogResponse::Action::kConfirm;
   } else if (button_index == kConfirmBlockButtonIndex) {
@@ -74,12 +74,13 @@ void JavaScriptConfirmDialogRequest::CreateAuxiliaryData(
   NSString* alert_title = DialogTitle(is_main_frame_, message());
   NSString* alert_message = DialogMessage(is_main_frame_, message());
 
-  std::vector<ButtonConfig> button_configs{
-      ButtonConfig(l10n_util::GetNSString(IDS_OK)),
-      ButtonConfig(l10n_util::GetNSString(IDS_CANCEL),
-                   UIAlertActionStyleCancel)};
+  std::vector<std::vector<ButtonConfig>> button_configs{
+      {ButtonConfig(l10n_util::GetNSString(IDS_OK))},
+      {ButtonConfig(l10n_util::GetNSString(IDS_CANCEL),
+                    UIAlertActionStyleCancel)}};
   if (ShouldAddBlockDialogsButton(web_state())) {
-    button_configs.push_back(BlockDialogsButtonConfig());
+    button_configs.push_back(
+        std::vector<ButtonConfig>{BlockDialogsButtonConfig()});
   }
 
   AlertRequest::CreateForUserData(user_data, alert_title, alert_message,

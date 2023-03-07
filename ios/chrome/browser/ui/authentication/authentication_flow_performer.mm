@@ -6,8 +6,8 @@
 
 #import <memory>
 
-#import "base/bind.h"
 #import "base/check_op.h"
+#import "base/functional/bind.h"
 #import "base/ios/block_types.h"
 #import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
@@ -21,6 +21,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "google_apis/gaia/gaia_auth_util.h"
 #import "google_apis/gaia/gaia_urls.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -32,6 +33,7 @@
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -43,7 +45,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -101,25 +102,20 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)fetchManagedStatus:(ChromeBrowserState*)browserState
                forIdentity:(id<SystemIdentity>)identity {
-  ios::ChromeIdentityService* identityService =
-      ios::GetChromeBrowserProvider().GetChromeIdentityService();
-  NSString* hostedDomain =
-      identityService->GetCachedHostedDomainForIdentity(identity);
-  if (hostedDomain) {
+  SystemIdentityManager* systemIdentityManager =
+      GetApplicationContext()->GetSystemIdentityManager();
+  if (NSString* hostedDomain =
+          systemIdentityManager->GetCachedHostedDomainForIdentity(identity)) {
     [_delegate didFetchManagedStatus:hostedDomain];
     return;
   }
 
   [self startWatchdogTimerForManagedStatus];
   __weak AuthenticationFlowPerformer* weakSelf = self;
-  ios::GetChromeBrowserProvider()
-      .GetChromeIdentityService()
-      ->GetHostedDomainForIdentity(
-          identity, ^(NSString* hosted_domain, NSError* error) {
-            [weakSelf handleGetHostedDomain:hosted_domain
-                                      error:error
-                               browserState:browserState];
-          });
+  systemIdentityManager->GetHostedDomain(
+      identity, base::BindOnce(^(NSString* hostedDomain, NSError* error) {
+        [weakSelf handleGetHostedDomain:hostedDomain error:error];
+      }));
 }
 
 - (void)signInIdentity:(id<SystemIdentity>)identity
@@ -132,7 +128,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 - (void)signOutBrowserState:(ChromeBrowserState*)browserState {
   __weak __typeof(_delegate) weakDelegate = _delegate;
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+      ->SignOut(signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
                 /*force_clear_browsing_data=*/false, ^{
                   [weakDelegate didSignOut];
                 });
@@ -140,7 +136,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)signOutImmediatelyFromBrowserState:(ChromeBrowserState*)browserState {
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignOut(signin_metrics::ABORT_SIGNIN,
+      ->SignOut(signin_metrics::ProfileSignout::kAbortSignin,
                 /*force_clear_browsing_data=*/false, nil);
 }
 
@@ -497,9 +493,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                           true);
 }
 
-- (void)handleGetHostedDomain:(NSString*)hostedDomain
-                        error:(NSError*)error
-                 browserState:(ChromeBrowserState*)browserState {
+- (void)handleGetHostedDomain:(NSString*)hostedDomain error:(NSError*)error {
   if (![self stopWatchdogTimer]) {
     // Watchdog timer has already fired, don't notify the delegate.
     return;

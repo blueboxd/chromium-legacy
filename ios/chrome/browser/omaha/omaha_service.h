@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
@@ -47,9 +47,12 @@ class OmahaService {
   OmahaService(const OmahaService&) = delete;
   OmahaService& operator=(const OmahaService&) = delete;
 
-  // Posts to CheckNowOnIOThread on IO thread to perform an immediate check
-  // if the device is up to date.
+  // Performs an immediate check to see if the device is up to date. Start must
+  // have been previously called.
   static void CheckNow(OneOffCallback callback);
+
+  // Stops the service in preparation for browser shutdown.
+  static void Stop();
 
   // Returns debug information about the omaha service.
   static void GetDebugInformation(
@@ -146,10 +149,6 @@ class OmahaService {
   // Returns the xml representation of the ping message to send to the Omaha
   // server. Use the current state of the service to compute the right message.
   std::string GetCurrentPingContent();
-
-  // Performs an immediate check to see if the device is up to date. Start must
-  // have been previously called.
-  void CheckNowOnIOThread(OneOffCallback callback);
 
   // Computes debugging information and fill `result`.
   void GetDebugInformationOnIOThread(

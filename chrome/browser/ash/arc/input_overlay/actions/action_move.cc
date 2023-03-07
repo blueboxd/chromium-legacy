@@ -80,6 +80,7 @@ class ActionMove::ActionMoveMouseView : public ActionView {
   void OnBindingToKeyboard() override { NOTIMPLEMENTED(); }
   void OnBindingToMouse(std::string mouse_action) override { NOTIMPLEMENTED(); }
   void OnMenuEntryPressed() override { NOTIMPLEMENTED(); }
+  void AddTouchPoint() override { NOTIMPLEMENTED(); }
 
   void ChildPreferredSizeChanged(View* child) override {
     if (static_cast<ActionLabel*>(child) != labels_[0])
@@ -112,10 +113,6 @@ class ActionMove::ActionMoveKeyView : public ActionView {
     int radius = std::max(kActionMoveMinRadius, action_->GetUIRadius());
     auto* action_move = static_cast<ActionMove*>(action_);
     action_move->set_move_distance(radius / 2);
-    if (show_circle() && !circle_) {
-      auto circle = std::make_unique<ActionCircle>(radius);
-      circle_ = AddChildView(std::move(circle));
-    }
     center_.set_x(radius);
     center_.set_y(radius);
     UpdateTrashButtonPosition();
@@ -190,6 +187,7 @@ class ActionMove::ActionMoveKeyView : public ActionView {
   void OnBindingToKeyboard() override { NOTIMPLEMENTED(); }
   void OnBindingToMouse(std::string mouse_action) override { NOTIMPLEMENTED(); }
   void OnMenuEntryPressed() override { NOTIMPLEMENTED(); }
+  void AddTouchPoint() override { ActionView::AddTouchPoint(ActionType::MOVE); }
 
   void ChildPreferredSizeChanged(View* child) override {
     DCHECK_EQ(labels_.size(), kActionMoveKeysSize);

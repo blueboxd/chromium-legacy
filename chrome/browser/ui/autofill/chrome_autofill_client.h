@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -71,6 +71,8 @@ class ChromeAutofillClient
 
   // AutofillClient:
   version_info::Channel GetChannel() const override;
+  bool IsOffTheRecord() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IBANManager* GetIBANManager() override;
@@ -179,11 +181,12 @@ class ChromeAutofillClient
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
+  bool TryToShowFastCheckout(const FormData& form,
+                             const FormFieldData& field,
+                             AutofillDriver* driver) override;
+  void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
-  bool IsFastCheckoutTriggerForm(const FormData& form,
-                                 const FormFieldData& field) override;
-  bool ShowFastCheckout(base::WeakPtr<FastCheckoutDelegate> delegate) override;
-  void HideFastCheckout() override;
+  bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
@@ -222,7 +225,6 @@ class ChromeAutofillClient
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
@@ -244,6 +246,11 @@ class ChromeAutofillClient
     return popup_controller_;
   }
   void KeepPopupOpenForTesting() { keep_popup_open_for_testing_ = true; }
+  std::unique_ptr<CardUnmaskPromptControllerImpl>
+  SetCardUnmaskControllerForTesting(
+      std::unique_ptr<CardUnmaskPromptControllerImpl> test_controller) {
+    return std::exchange(unmask_controller_, std::move(test_controller));
+  }
 
 #if !BUILDFLAG(IS_ANDROID)
   // ZoomObserver implementation.
@@ -280,7 +287,7 @@ class ChromeAutofillClient
   SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
   TouchToFillCreditCardController touch_to_fill_credit_card_controller_;
 #endif
-  CardUnmaskPromptControllerImpl unmask_controller_;
+  std::unique_ptr<CardUnmaskPromptControllerImpl> unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;
   std::unique_ptr<AutofillProgressDialogControllerImpl>
       autofill_progress_dialog_controller_;

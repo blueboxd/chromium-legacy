@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -367,16 +367,15 @@ void FullscreenController::WindowFullscreenStateChanged() {
 void FullscreenController::FullscreenTransititionCompleted() {
   if (fullscreen_transition_complete_callback_)
     std::move(fullscreen_transition_complete_callback_).Run();
-  started_fullscreen_transition_ = false;
-  if (IsTabFullscreen()) {
+#if DCHECK_IS_ON()
+  if (started_fullscreen_transition_ && IsTabFullscreen()) {
     DCHECK(exclusive_access_tab());
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-    // TODO(crbug.com/1385866): This is flaky on ChromeOS Lacros browser tests.
     DCHECK_EQ(tab_fullscreen_target_display_id_,
               GetDisplayId(*exclusive_access_tab()));
-#endif
   }
+#endif  // DCHECK_IS_ON()
   tab_fullscreen_target_display_id_ = display::kInvalidDisplayId;
+  started_fullscreen_transition_ = false;
 }
 
 void FullscreenController::RunOrDeferUntilTransitionIsComplete(

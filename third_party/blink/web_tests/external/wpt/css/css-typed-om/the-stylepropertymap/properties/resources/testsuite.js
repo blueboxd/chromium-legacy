@@ -193,12 +193,17 @@ const gTestSyntaxExamples = {
         description: "one fraction",
         input: new CSSUnitValue(1, 'fr')
       },
+      // TODO(https://github.com/w3c/css-houdini-drafts/issues/734):
+      // Add calc tests involving 'fr' when that is spec'd in CSS.
+    ],
+  },
+  '<negative-flex>': {
+    description: 'a flexible length',
+    examples: [
       {
         description: "negative fraction",
         input: new CSSUnitValue(-3.14, 'fr')
       },
-      // TODO(https://github.com/w3c/css-houdini-drafts/issues/734):
-      // Add calc tests involving 'fr' when that is spec'd in CSS.
     ],
   },
   '<number>': {
@@ -349,12 +354,12 @@ function testIsImageValidForProperty(propertyName) {
 
 // Test that styleMap.set throws for invalid values
 function testPropertyInvalid(propertyName, examples, description) {
-  test(t => {
-    let styleMap = createInlineStyleMap(t);
-    for (const example of examples) {
+  for (const example of examples) {
+    test(t => {
+      let styleMap = createInlineStyleMap(t);
       assert_throws_js(TypeError, () => styleMap.set(propertyName, example.input));
-    }
-  }, `Setting '${propertyName}' to ${description} throws TypeError`);
+    }, `Setting '${propertyName}' to ${description}: ${example.input} throws TypeError`);
+  }
 }
 
 // Test that styleMap.get/.set roundtrips correctly for unsupported values.
@@ -378,7 +383,7 @@ function testUnsupportedValue(propertyName, cssText) {
     assert_style_value_equals(resultAll[0], result,
       `getAll() with single unsupported value returns single-item list ` +
       `with same result as get()`);
-  }, `'${propertyName}' does not supported '${cssText}'`);
+  }, `'${propertyName}' does not support '${cssText}'`);
 }
 
 function createKeywordExample(keyword) {

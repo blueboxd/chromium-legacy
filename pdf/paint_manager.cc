@@ -12,9 +12,9 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
@@ -305,7 +305,7 @@ void PaintManager::Flush() {
                                    SkSamplingOptions(), /*paint=*/nullptr);
   client_->UpdateSnapshot(std::move(snapshot));
 
-  // TODO(crbug.com/1302059): Complete flush synchronously.
+  // TODO(crbug.com/1403311): Complete flush synchronously.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&PaintManager::OnFlushComplete,
                                 weak_factory_.GetWeakPtr()));

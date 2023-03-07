@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "components/cast_streaming/public/mojom/demuxer_connector.mojom.h"
 #include "components/cast_streaming/public/mojom/renderer_controller.mojom.h"
@@ -59,13 +59,6 @@ class ReceiverSession {
     // Returns true if calls may be made to this object.
     virtual bool IsValid() const = 0;
 
-    // Starts rendering from |time|. May only be called if this object is valid.
-    virtual void StartPlayingFrom(base::TimeDelta time) = 0;
-
-    // Updates the current playback rate. The default playback rate should be 0.
-    // May only be called if this object is valid.
-    virtual void SetPlaybackRate(double playback_rate) = 0;
-
     // Sets the output volume. The default volume should be 1. May only be
     // called if this object is valid.
     virtual void SetVolume(float volume) = 0;
@@ -95,17 +88,15 @@ class ReceiverSession {
 
   // Schedules a call to begin streaming, following initial internal
   // initialization of the component. Following this initialization, audio
-  // and/or video frames will be sent over a Mojo channel.
-  // NOTE: Depending on the media::Renderer currently being used for media
-  // playback, additional steps may be required to begin playback. If the
-  // |PlaybackCommandForwardingRenderer| is being used, the below overload is
-  // recommended instead.
+  // and/or video frames will be sent over a Mojo channel. May only be called
+  // when remoting is NOT enabled.
   virtual void StartStreamingAsync(
       mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector) = 0;
 
   // As above, but also sets the |renderer_controller| to be used to control a
   // renderer-process |PlaybackCommandForwardingRenderer|. This control may then
   // be done through the RenderControls returned by GetRendererControls() below.
+  // May only be called when Remoting IS enabled.
   virtual void StartStreamingAsync(
       mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector,
       mojo::AssociatedRemote<mojom::RendererController>

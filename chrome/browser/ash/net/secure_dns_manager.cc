@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_is_test.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -101,7 +101,7 @@ base::Value SecureDnsManager::GetProviders(const std::string& mode,
   const bool want_all = doh_providers.DictEmpty();
   for (const auto& provider : local_doh_providers_) {
     const std::string& server_template = provider.first.server_template();
-    if (want_all || doh_providers.FindKey(server_template)) {
+    if (want_all || doh_providers.GetDict().contains(server_template)) {
       doh_providers.SetKey(server_template, base::Value(provider.second));
     }
   }

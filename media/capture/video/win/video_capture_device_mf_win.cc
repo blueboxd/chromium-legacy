@@ -16,7 +16,7 @@
 #include <thread>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
@@ -1771,11 +1772,6 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal(
   bool delivered_texture = false;
 
   if (client_.get()) {
-    if (!has_sent_on_started_to_client_) {
-      has_sent_on_started_to_client_ = true;
-      client_->OnStarted();
-    }
-
     // We always calculate camera rotation for the first frame. We also cache
     // the latest value to use when AutoRotation is turned off.
     if (!camera_rotation_.has_value() || IsAutoRotationEnabled())

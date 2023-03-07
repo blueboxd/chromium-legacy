@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
@@ -75,9 +75,11 @@ void MaybeCreateSafeBrowsing(
 
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
-                     resource_context, std::move(get_checker_delegate),
-                     std::move(receiver)));
+      base::BindOnce(
+          &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
+          // TODO(https://crbug.com/1407653) Fix this dangling pointer.
+          base::UnsafeDanglingUntriaged(resource_context),
+          std::move(get_checker_delegate), std::move(receiver)));
 }
 
 }  // namespace

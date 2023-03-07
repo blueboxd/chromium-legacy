@@ -21,6 +21,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/timer.h"
@@ -68,7 +69,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/shell_surface_builder.h"
-#include "components/exo/wm_helper_chromeos.h"
+#include "components/exo/wm_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -249,7 +250,7 @@ void ClickSaveDeskAsTemplateButton() {
 }
 
 void ClickTemplateItem(int index) {
-  ClickButton(GetTemplateItemButton(/*index=*/0));
+  ClickButton(GetSavedDeskItemButton(/*index=*/0));
 }
 
 }  // namespace
@@ -1010,8 +1011,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   SetShouldRestore(app_launch_handler.get());
 
   // Create a WMHelper instance for Surface to set in the constructor.
-  std::unique_ptr<exo::WMHelper> wm_helper =
-      std::make_unique<exo::WMHelperChromeOS>();
+  std::unique_ptr<exo::WMHelper> wm_helper = std::make_unique<exo::WMHelper>();
 
   // Create the Lacros window surface and restore it.
   auto shell_surface =
@@ -3165,7 +3165,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
   // Snap |window| to the left and store its window properties.
   // TODO(sammiequon): Store and check desk id and restore bounds.
   auto* window_state = WindowState::Get(window);
-  const WindowSnapWMEvent left_snap_event(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent left_snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&left_snap_event);
   const chromeos::WindowStateType pre_save_state_type =
       window_state->GetStateType();

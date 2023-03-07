@@ -75,6 +75,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
       'undoIgnoreNotificationPermissionForOrigins',
       'getFpsMembershipLabel',
       'getNumCookiesString',
+      'getExtensionName',
     ]);
 
 
@@ -424,11 +425,9 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
 
   /** @override */
   resetChooserExceptionForSite(
-      chooserType: ChooserType, origin: string, embeddingOrigin: string,
-      exception: Object) {
+      chooserType: ChooserType, origin: string, exception: Object) {
     this.methodCalled(
-        'resetChooserExceptionForSite',
-        [chooserType, origin, embeddingOrigin, exception]);
+        'resetChooserExceptionForSite', [chooserType, origin, exception]);
   }
 
   /** @override */
@@ -651,5 +650,10 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
     this.methodCalled('getNumCookiesString', numCookies);
     return Promise.resolve(
         `${numCookies} ` + (numCookies === 1 ? 'cookie' : 'cookies'));
+  }
+
+  getExtensionName(id: string) {
+    this.methodCalled('getExtensionName', id);
+    return Promise.resolve(`Test Extension ${id}`);
   }
 }

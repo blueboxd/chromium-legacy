@@ -10,17 +10,16 @@
 #include <map>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/nix/xdg_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_features.h"
 #include "media/audio/cras/cras_input.h"
@@ -89,22 +88,25 @@ AudioOutputStream* AudioManagerCrasBase::MakeOutputStream(
 }
 
 AudioInputStream* AudioManagerCrasBase::MakeInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id) {
   return new CrasInputStream(params, this, device_id);
 }
 
 void AudioManagerCrasBase::RegisterSystemAecDumpSource(
     AecdumpRecordingSource* stream) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  if (aecdump_recording_manager_)
+  if (aecdump_recording_manager_) {
     aecdump_recording_manager_->RegisterAecdumpSource(stream);
+  }
 }
 
 void AudioManagerCrasBase::DeregisterSystemAecDumpSource(
     AecdumpRecordingSource* stream) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  if (aecdump_recording_manager_)
+  if (aecdump_recording_manager_) {
     aecdump_recording_manager_->DeregisterAecdumpSource(stream);
+  }
 }
 
 void AudioManagerCrasBase::SetAecDumpRecordingManager(

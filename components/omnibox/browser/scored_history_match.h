@@ -20,8 +20,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "omnibox_event.pb.h"
 
-class ScoredHistoryMatchTest;
-
 // An HistoryMatch that has a score as well as metrics defining where in the
 // history item's URL and/or page title matches have occurred.
 struct ScoredHistoryMatch : public history::HistoryMatch {
@@ -93,9 +91,30 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
       size_t end_pos,
       bool allow_midword_continuations = false);
 
+  // Computes the total length of term matches for the first max allowed number
+  // of words from the text being matched against.
+  //
+  // `terms_to_word_starts_offsets` contains the offsets of word starts in the
+  // input text being searched for. `matches` are term matches from the text
+  // being searched in (i.e. suggestion title), and `word_starts` contains the
+  // word starts within the text.
+  static size_t ComputeTotalMatchLength(
+      const WordStarts& terms_to_word_starts_offsets,
+      const TermMatches& matches,
+      const WordStarts& word_starts,
+      size_t num_words_to_allow);
+
+  // Count the number of unique matching terms.
+  static size_t CountUniqueMatchTerms(const TermMatches& term_matches);
+
   // An interim score taking into consideration location and completeness
   // of the match.
-  int raw_score;
+  int raw_score = 0;
+
+  // `kDomainSuggestions` may boost the score. These record the original and
+  // boosted scores for logging.
+  int raw_score_before_domain_boosting = 0;
+  int raw_score_after_domain_boosting = 0;
 
   // Both these TermMatches contain the set of matches that are considered
   // important.  At this time, that means they exclude mid-word matches
@@ -115,14 +134,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   metrics::OmniboxEventProto::Suggestion::ScoringSignals scoring_signals;
 
  private:
-  friend class ScoredHistoryMatchTest;
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetDocumentSpecificityScore);
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFinalRelevancyScore);
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFrequency);
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetHQPBucketsFromString);
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, ScoringBookmarks);
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, ScoringScheme);
-  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, ScoringTLD);
+  friend class ScoredHistoryMatchPublic;
 
   // Initialize ScoredHistoryMatch statics. Must be called before any other
   // method of ScoredHistoryMatch and before creating any instances.
@@ -142,6 +154,13 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
                            const base::OffsetAdjuster::Adjustments& adjustments,
                            const WordStarts& terms_to_word_starts_offsets,
                            const RowWordStarts& word_starts);
+
+  // Increment term scores based on title matches.
+  // Only uses the first `num_title_words_to_allow_` matches.
+  void IncrementTitleMatchTermScores(
+      const WordStarts& terms_to_word_starts_offsets,
+      const WordStarts& title_word_starts,
+      std::vector<int>* term_scores);
 
   // Returns a recency score based on |last_visit_days_ago|, which is
   // how many days ago the page was last visited.
@@ -178,6 +197,13 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // malformed |buckets_str|.
   static ScoreMaxRelevances GetHQPBucketsFromString(
       const std::string& buckets_str);
+
+  // Returns a score based on last visit time intended for suggestions from
+  // highly visited domains. This is an alternative to
+  // `GetFinalRelevancyScore()`; suggestions from highly visited domains will
+  // use the max of the 2 while other suggestions will use just
+  // `GetFinalRelevancyScore()`.
+  int GetDomainRelevancyScore(base::Time now) const;
 
   // If true, assign raw scores to be max(whatever it normally would be, a
   // score that's similar to the score HistoryURL provider would assign).

@@ -4,7 +4,6 @@
 
 #include "base/allocator/partition_alloc_features.h"
 
-#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/base_export.h"
 #include "base/feature_list.h"
@@ -45,13 +44,13 @@ const base::FeatureParam<DanglingPtrMode> kDanglingPtrModeParam{
     &kDanglingPtrModeOption,
 };
 
-#if defined(PA_ALLOW_PCSCAN)
+#if PA_CONFIG(ALLOW_PCSCAN)
 // If enabled, PCScan is turned on by default for all partitions that don't
 // disable it explicitly.
 BASE_FEATURE(kPartitionAllocPCScan,
              "PartitionAllocPCScan",
              FEATURE_DISABLED_BY_DEFAULT);
-#endif  // defined(PA_ALLOW_PCSCAN)
+#endif  // PA_CONFIG(ALLOW_PCSCAN)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 // If enabled, PCScan is turned on only for the browser's malloc partition.
@@ -106,7 +105,7 @@ constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
         {BackupRefPtrEnabledProcesses::kAllProcesses, "all-processes"}};
 
 const base::FeatureParam<BackupRefPtrEnabledProcesses>
-    kBackupRefPtrEnabledProcessesParam{
+    kBackupRefPtrEnabledProcessesParam {
   &kPartitionAllocBackupRefPtr, "enabled-processes",
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || \
     (BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) && BUILDFLAG(IS_LINUX))
@@ -157,6 +156,12 @@ const base::FeatureParam<AlternateBucketDistributionMode>
         &kPartitionAllocUseAlternateDistribution, "mode",
         AlternateBucketDistributionMode::kDefault,
         &kPartitionAllocAlternateDistributionOption};
+
+// Configures whether we set a lower limit for renderers that do not have a main
+// frame, similar to the limit that is already done for backgrounded renderers.
+BASE_FEATURE(kLowerPAMemoryLimitForNonMainRenderers,
+             "LowerPAMemoryLimitForNonMainRenderers",
+             FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, switches PCScan scheduling to a mutator-aware scheduler. Does not
 // affect whether PCScan is enabled itself.

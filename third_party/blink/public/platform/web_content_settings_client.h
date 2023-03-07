@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
 
@@ -114,11 +114,9 @@ class WebContentSettingsClient {
   // frame.
   virtual bool ShouldAutoupgradeMixedContent() { return true; }
 
-  // Controls whether the SharedElementTransition callback needs to be larger
-  // than default.
-  virtual bool IncreaseSharedElementTransitionCallbackTimeout() const {
-    return false;
-  }
+  // Controls whether the ViewTransition callback needs to be larger than
+  // default.
+  virtual bool IncreaseViewTransitionCallbackTimeout() const { return false; }
 
   virtual ~WebContentSettingsClient() = default;
 };

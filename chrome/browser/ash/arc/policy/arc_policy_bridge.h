@@ -14,7 +14,7 @@
 
 #include "ash/components/arc/mojom/policy.mojom.h"
 #include "ash/components/arc/session/connection_observer.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -193,8 +193,6 @@ class ArcPolicyBridge : public KeyedService,
   void OnReportComplianceParse(
       base::OnceCallback<void(const std::string&)> callback,
       data_decoder::DataDecoder::ValueOrError result);
-
-  void UpdateComplianceReportMetrics(const base::DictionaryValue* report);
 
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

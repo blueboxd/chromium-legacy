@@ -7,9 +7,9 @@
 #include <string>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -481,21 +480,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeUi_FromWebstore) {
-  set_type(ExtensionInstallPrompt::WEBSTORE_WIDGET_PROMPT);
-  set_from_webstore();
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeUi_FromWebstoreWithPermission) {
-  set_type(ExtensionInstallPrompt::WEBSTORE_WIDGET_PROMPT);
-  set_from_webstore();
-  AddPermission("Example permission");
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
                        InvokeUi_MultilinePermission) {
   AddPermission(
       "In the shade of the house, in the sunshine of the riverbank "
@@ -777,10 +761,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogWithWithholdPermissionsUI,
 class ExtensionInstallDialogViewRequestTest
     : public ExtensionInstallDialogViewTestBase {
  public:
-  ExtensionInstallDialogViewRequestTest() {
-    feature_list_.InitAndEnableFeature(
-        features::kExtensionWorkflowJustification);
-  }
+  ExtensionInstallDialogViewRequestTest() = default;
   ExtensionInstallDialogViewRequestTest(
       const ExtensionInstallDialogViewRequestTest&) = delete;
   ExtensionInstallDialogViewRequestTest& operator=(
@@ -809,9 +790,6 @@ class ExtensionInstallDialogViewRequestTest
 
     return delegate_view;
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewRequestTest, NotifyDelegate) {

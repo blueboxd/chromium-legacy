@@ -13,8 +13,8 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -740,7 +740,7 @@ ExtensionFunction::ResponseAction DebuggerSendCommandFunction::Run() {
 }
 
 void DebuggerSendCommandFunction::SendResponseBody(base::Value response) {
-  if (base::Value* error_body = response.FindKey("error")) {
+  if (base::Value* error_body = response.GetDict().Find("error")) {
     std::string error;
     base::JSONWriter::Write(*error_body, &error);
     Respond(Error(std::move(error)));

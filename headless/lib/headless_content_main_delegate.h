@@ -31,7 +31,6 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
  public:
   explicit HeadlessContentMainDelegate(
       std::unique_ptr<HeadlessBrowserImpl> browser);
-  explicit HeadlessContentMainDelegate(HeadlessBrowser::Options options);
 
   HeadlessContentMainDelegate(const HeadlessContentMainDelegate&) = delete;
   HeadlessContentMainDelegate& operator=(const HeadlessContentMainDelegate&) =
@@ -39,34 +38,34 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 
   ~HeadlessContentMainDelegate() override;
 
+ private:
   // content::ContentMainDelegate implementation:
   absl::optional<int> BasicStartupComplete() override;
   void PreSandboxStartup() override;
   absl::variant<int, content::MainFunctionParams> RunProcess(
       const std::string& process_type,
       content::MainFunctionParams main_function_params) override;
-#if BUILDFLAG(IS_MAC)
   absl::optional<int> PreBrowserMain() override;
-#endif
   content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
 
   absl::optional<int> PostEarlyInitialization(InvokedIn invoked_in) override;
+#if BUILDFLAG(IS_MAC)
+  void PlatformPreBrowserMain();
+#endif
 
+  // TODO(caseq): get rid of this method and GetInstance(), tests should get
+  // browser through other means.
+  // Note this is nullptr in processes other than the browser.
   HeadlessBrowserImpl* browser() const { return browser_.get(); }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   void ZygoteForked() override;
 #endif
 
- private:
   friend class HeadlessBrowserTest;
-
-  void Init();
-
-  HeadlessBrowser::Options* options();
 
   static HeadlessContentMainDelegate* GetInstance();
 
@@ -79,7 +78,6 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
   HeadlessContentClient content_client_;
 
   std::unique_ptr<HeadlessBrowserImpl> browser_;
-  std::unique_ptr<HeadlessBrowser::Options> options_;
 };
 
 }  // namespace headless

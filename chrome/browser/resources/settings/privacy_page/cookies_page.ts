@@ -21,8 +21,8 @@ import './do_not_track_toggle.js';
 import '../controls/settings_radio_group.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -31,9 +31,9 @@ import {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
 import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
-import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
+import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
+import {Route, RouteObserverMixin, Router} from '../router.js';
 import {ContentSetting, ContentSettingsTypes, CookieControlsMode} from '../site_settings/constants.js';
 import {CookiePrimarySetting} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
@@ -43,7 +43,7 @@ import {getTemplate} from './cookies_page.html.js';
  * Must be kept in sync with the C++ enum of the same name (see
  * chrome/browser/prefetch/prefetch_prefs.h).
  */
-enum NetworkPredictionOptions {
+export enum NetworkPredictionOptions {
   STANDARD = 0,
   WIFI_ONLY_DEPRECATED = 1,
   DISABLED = 2,
@@ -57,13 +57,8 @@ export interface SettingsCookiesPageElement {
   };
 }
 
-const SettingsCookiesPageElementBase =
-    RouteObserverMixin(
-        WebUiListenerMixin(I18nMixin(PrefsMixin(PolymerElement)))) as {
-      new (): PolymerElement & I18nMixinInterface &
-          WebUiListenerMixinInterface & PrefsMixinInterface &
-          RouteObserverMixinInterface,
-    };
+const SettingsCookiesPageElementBase = RouteObserverMixin(
+    WebUiListenerMixin(I18nMixin(PrefsMixin(PolymerElement))));
 
 export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   static get is() {
@@ -154,6 +149,11 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         type: Boolean,
         value: () => loadTimeData.getBoolean('isPrivacySandboxSettings4'),
       },
+
+      showPreloadingSubPage_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('showPreloadingSubPage'),
+      },
     };
   }
 
@@ -168,7 +168,9 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   private exceptionListsReadOnly_: boolean;
   private blockAllPref_: chrome.settingsPrivate.PrefObject;
   focusConfig: FocusConfig;
+  private enableFirstPartySetsUI_: boolean;
   private isPrivacySandboxSettings4_: boolean;
+  private showPreloadingSubPage_: boolean;
 
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
@@ -184,12 +186,39 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
     this.focusConfig.set(
         `${routes.SITE_SETTINGS_ALL.path}_${routes.COOKIES.path}`,
         selectSiteDataLinkRow);
+
+    if (this.showPreloadingSubPage_) {
+      const selectPreloadingLinkRow = () => {
+        const toFocus =
+            this.shadowRoot!.querySelector<HTMLElement>('#preloadingLinkRow');
+        assert(toFocus);
+        focusWithoutInk(toFocus);
+      };
+      this.focusConfig.set(
+          `${routes.PRELOADING.path}_${routes.COOKIES.path}`,
+          selectPreloadingLinkRow);
+    }
   }
 
   override currentRouteChanged(route: Route) {
     if (route !== routes.COOKIES) {
       this.$.toast.hide();
     }
+  }
+
+  private getThirdPartyCookiesPageBlockThirdPartyIncognitoBulTwoLabel_():
+      string {
+    return this.i18n(
+        this.enableFirstPartySetsUI_ ?
+            'cookiePageBlockThirdIncognitoBulTwoFps' :
+            'thirdPartyCookiesPageBlockIncognitoBulTwo');
+  }
+
+  private getCookiesPageBlockThirdPartyIncognitoBulTwoLabel_(): string {
+    return this.i18n(
+        this.enableFirstPartySetsUI_ ?
+            'cookiePageBlockThirdIncognitoBulTwoFps' :
+            'cookiePageBlockThirdIncognitoBulTwo');
   }
 
   // <if expr="not chromeos_ash">
@@ -250,9 +279,18 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
     // is launched and element isn't in dom-if anymore.
     const primarySettingGroup: SettingsRadioGroupElement =
         this.shadowRoot!.querySelector('#primarySettingGroup')!;
-
     const selection = Number(primarySettingGroup.selected);
-    // TODO(crbug.com/1378703): Record metrics based on the selection.
+    if (selection === CookieControlsMode.OFF) {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.THIRD_PARTY_COOKIES_ALLOW);
+    } else if (selection === CookieControlsMode.INCOGNITO_ONLY) {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.THIRD_PARTY_COOKIES_BLOCK_IN_INCOGNITO);
+    } else {
+      assert(selection === CookieControlsMode.BLOCK_THIRD_PARTY);
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.THIRD_PARTY_COOKIES_BLOCK);
+    }
 
     // If this change resulted in the user now blocking 3P cookies where they
     // previously were not, and any of privacy sandbox APIs are enabled,
@@ -343,6 +381,28 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   private onNetworkPredictionChange_() {
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
         PrivacyElementInteractions.NETWORK_PREDICTION);
+  }
+
+  private onPreloadingClick_() {
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        PrivacyElementInteractions.NETWORK_PREDICTION);
+    Router.getInstance().navigateTo(routes.PRELOADING);
+  }
+
+  private getNetworkPredictionsOptionsLabel_(
+      networkPredictionOption: NetworkPredictionOptions): string {
+    if (networkPredictionOption === NetworkPredictionOptions.DISABLED) {
+      return this.i18n('preloadingPageNoPreloadingTitle');
+    }
+
+    if (networkPredictionOption === NetworkPredictionOptions.EXTENDED) {
+      return this.i18n('preloadingPageExtendedPreloadingTitle');
+    }
+
+    // NetworkPredictionOptions.WIFI_ONLY_DEPRECATED is treated the same as
+    // NetworkPredictionOptions.STANDARD.
+    // See chrome/browser/prefetch/prefetch_prefs.h.
+    return this.i18n('preloadingPageStandardPreloadingTitle');
   }
 
   private onPrivacySandboxClick_() {

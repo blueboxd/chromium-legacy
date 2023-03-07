@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -24,8 +25,8 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.mojom.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/test/policy_container_utils.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -92,6 +93,8 @@ class FakeNavigationClient : public mojom::NavigationClient {
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          topics_loader_factory,
       const blink::DocumentToken& document_token,
       const base::UnguessableToken& devtools_navigation_token,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
@@ -195,7 +198,7 @@ class ResourceWriter {
   void DidWriteMetadata(int result) {
     DCHECK_EQ(result, static_cast<int>(meta_data_.size()));
     std::move(callback_).Run(storage::mojom::ServiceWorkerResourceRecord::New(
-        resource_id_, script_url_, body_.size()));
+        resource_id_, script_url_, body_.size(), /*sha256_checksum=*/""));
   }
 
   const raw_ref<const mojo::Remote<storage::mojom::ServiceWorkerStorageControl>>
@@ -258,8 +261,8 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
       blink::CreateCommitNavigationParams(),
       network::mojom::URLResponseHead::New(),
       mojo::ScopedDataPipeConsumerHandle(), nullptr, nullptr, absl::nullopt,
-      nullptr, std::move(info), mojo::NullRemote(), blink::DocumentToken(),
-      base::UnguessableToken::Create(),
+      nullptr, std::move(info), mojo::NullRemote(), mojo::NullRemote(),
+      blink::DocumentToken(), base::UnguessableToken::Create(),
       std::vector<blink::ParsedPermissionsPolicyDeclaration>(),
       CreateStubPolicyContainer(), mojo::NullRemote(), nullptr, nullptr,
       base::BindOnce(
@@ -428,8 +431,6 @@ scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
           }));
   run_loop.Run();
   DCHECK(version);
-  version->set_policy_container_host(
-      base::MakeRefCounted<PolicyContainerHost>(PolicyContainerPolicies()));
   return version;
 }
 
@@ -448,9 +449,9 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
       CreateNewServiceWorkerVersion(context->registry(), registration.get(),
                                     script, blink::mojom::ScriptType::kClassic);
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
-  records.push_back(
-      storage::mojom::ServiceWorkerResourceRecord::New(resource_id, script,
-                                                       /*size_bytes=*/100));
+  records.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id, script,
+      /*size_bytes=*/100, /*sha256_checksum=*/""));
   version->script_cache_map()->SetResources(records);
   version->set_fetch_handler_type(
       ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
@@ -790,8 +791,7 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
           ? script_url
           : GURL(),
-      base::MakeRefCounted<PolicyContainerHost>(),
-      network::CrossOriginEmbedderPolicy());
+      base::MakeRefCounted<PolicyContainerHost>());
 }
 
 void ServiceWorkerUpdateCheckTestUtils::

@@ -9,6 +9,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -54,7 +55,7 @@ std::u16string SanitizeCreditCardFieldValue(const std::u16string& value) {
 
 // Returns the card-linked offers map with credit card guid as the key and the
 // pointer to the linked AutofillOfferData as the value.
-std::map<std::string, AutofillOfferData*> getCardLinkedOffers(
+std::map<std::string, AutofillOfferData*> GetCardLinkedOffers(
     AutofillClient* autofill_client) {
   AutofillOfferManager* offer_manager =
       autofill_client->GetAutofillOfferManager();
@@ -81,14 +82,6 @@ int GetObfuscationLength() {
 bool ShouldSplitCardNameAndLastFourDigits() {
 #if BUILDFLAG(IS_IOS)
   return false;
-#elif BUILDFLAG(IS_ANDROID)
-  return base::FeatureList::IsEnabled(
-             features::kAutofillEnableVirtualCardMetadata) &&
-         base::FeatureList::IsEnabled(
-             features::kAutofillEnableCardProductName) &&
-         // TODO(crbug.com/1313616): Remove keyboard accessory check and merge
-         // Android with Desktop after the logic for truncation is implemented.
-         !base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory);
 #else
   return base::FeatureList::IsEnabled(
              features::kAutofillEnableVirtualCardMetadata) &&
@@ -156,36 +149,15 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
   std::vector<Suggestion> suggestions;
 
   std::map<std::string, AutofillOfferData*> card_linked_offers_map =
-      getCardLinkedOffers(autofill_client_);
+      GetCardLinkedOffers(autofill_client_);
   with_offer = !card_linked_offers_map.empty();
-
-  DCHECK(personal_data_);
-  std::vector<CreditCard*> cards_to_suggest =
-      personal_data_->GetCreditCardsToSuggest(
-          autofill_client_->AreServerCardsSupported());
-
-  // If a card has available card linked offers on the last committed url, rank
-  // it to the top.
-  if (!card_linked_offers_map.empty()) {
-    base::ranges::stable_sort(
-        cards_to_suggest,
-        [&card_linked_offers_map](const CreditCard* a, const CreditCard* b) {
-          return base::Contains(card_linked_offers_map, a->guid()) &&
-                 !base::Contains(card_linked_offers_map, b->guid());
-        });
-  }
 
   // The field value is sanitized before attempting to match it to the user's
   // data.
   auto field_contents = SanitizeCreditCardFieldValue(field.value);
 
-  // Suppress disused credit cards when triggered from an empty field.
-  if (field_contents.empty()) {
-    const base::Time min_last_used =
-        AutofillClock::Now() - kDisusedDataModelTimeDelta;
-    RemoveExpiredCreditCardsNotUsedSinceTimestamp(
-        AutofillClock::Now(), min_last_used, &cards_to_suggest);
-  }
+  std::vector<CreditCard*> cards_to_suggest =
+      GetOrderedCardsToSuggest(autofill_client_, field_contents.empty());
 
   std::u16string field_contents_lower = base::i18n::ToLower(field_contents);
 
@@ -243,8 +215,45 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
 }
 
 // static
+std::vector<CreditCard*> AutofillSuggestionGenerator::GetOrderedCardsToSuggest(
+    // PersonalDataManager* personal_data,
+    AutofillClient* autofill_client,
+    bool suppress_disused_cards) {
+  DCHECK(autofill_client);
+  std::map<std::string, AutofillOfferData*> card_linked_offers_map =
+      GetCardLinkedOffers(autofill_client);
+
+  PersonalDataManager* personal_data =
+      autofill_client->GetPersonalDataManager();
+  DCHECK(personal_data);
+  std::vector<CreditCard*> cards_to_suggest =
+      personal_data->GetCreditCardsToSuggest();
+
+  // If a card has available card linked offers on the last committed url, rank
+  // it to the top.
+  if (!card_linked_offers_map.empty()) {
+    base::ranges::stable_sort(
+        cards_to_suggest,
+        [&card_linked_offers_map](const CreditCard* a, const CreditCard* b) {
+          return base::Contains(card_linked_offers_map, a->guid()) &&
+                 !base::Contains(card_linked_offers_map, b->guid());
+        });
+  }
+
+  // Suppress disused credit cards when triggered from an empty field.
+  if (suppress_disused_cards) {
+    const base::Time min_last_used =
+        AutofillClock::Now() - kDisusedDataModelTimeDelta;
+    AutofillSuggestionGenerator::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+        AutofillClock::Now(), min_last_used, &cards_to_suggest);
+  }
+
+  return cards_to_suggest;
+}
+
+// static
 std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForIBANs(
-    const std::vector<IBAN*>& ibans) {
+    const std::vector<const IBAN*>& ibans) {
   std::vector<Suggestion> suggestions;
   for (const IBAN* iban : ibans) {
     Suggestion& suggestion = suggestions.emplace_back(iban->value());
@@ -519,7 +528,8 @@ AutofillSuggestionGenerator::GetSuggestionMainTextAndMinorTextForCard(
     std::u16string nickname = GetDisplayNicknameForCreditCard(credit_card);
     if (ShouldSplitCardNameAndLastFourDigits()) {
       main_text = credit_card.CardNameForAutofillDisplay(nickname);
-      minor_text = credit_card.ObfuscatedLastFourDigits(GetObfuscationLength());
+      minor_text = credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
+          GetObfuscationLength());
     } else {
       main_text = credit_card.CardIdentifierStringForAutofillDisplay(
           nickname, GetObfuscationLength());
@@ -579,21 +589,21 @@ AutofillSuggestionGenerator::GetSuggestionLabelsForCard(
   // On Android devices, the label is formatted as
   // "Product Description/Nickname/Network  ••••1234" when the keyboard
   // accessory experiment is disabled and as "••1234" when it's enabled.
-  // TODO(crbug.com/1313616): Remove keyboard accessory check after the logic
-  // for truncation is implemented.
   if (base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
-    return {Suggestion::Text(
-        credit_card.ObfuscatedLastFourDigits(GetObfuscationLength()))};
+    return {
+        Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
+            GetObfuscationLength()))};
   }
 
   // E.g. "Product Description/Nickname/Network  ••••1234". If card name is too
   // long, it will be truncated from the tail.
   if (ShouldSplitCardNameAndLastFourDigits()) {
-    return {Suggestion::Text(credit_card.CardNameForAutofillDisplay(nickname),
-                             Suggestion::Text::IsPrimary(false),
-                             Suggestion::Text::ShouldTruncate(true)),
-            Suggestion::Text(
-                credit_card.ObfuscatedLastFourDigits(GetObfuscationLength()))};
+    return {
+        Suggestion::Text(credit_card.CardNameForAutofillDisplay(nickname),
+                         Suggestion::Text::IsPrimary(false),
+                         Suggestion::Text::ShouldTruncate(true)),
+        Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
+            GetObfuscationLength()))};
   }
   // E.g. "Nickname/Network  ••••1234".
   return {Suggestion::Text(
@@ -601,19 +611,22 @@ AutofillSuggestionGenerator::GetSuggestionLabelsForCard(
 
 #elif BUILDFLAG(IS_IOS)
   // E.g. "••••1234"".
-  return {Suggestion::Text(
-      credit_card.ObfuscatedLastFourDigits(GetObfuscationLength()))};
+  return {
+      Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
+          GetObfuscationLength()))};
 
 #else
   // E.g. "Product Description/Nickname/Network  ••••1234". If card name is too
   // long, it will be truncated from the tail.
   if (ShouldSplitCardNameAndLastFourDigits()) {
-    return {Suggestion::Text(credit_card.CardNameForAutofillDisplay(nickname),
-                             Suggestion::Text::IsPrimary(false),
-                             Suggestion::Text::ShouldTruncate(true)),
-            Suggestion::Text(
-                credit_card.ObfuscatedLastFourDigits(GetObfuscationLength()))};
+    return {
+        Suggestion::Text(credit_card.CardNameForAutofillDisplay(nickname),
+                         Suggestion::Text::IsPrimary(false),
+                         Suggestion::Text::ShouldTruncate(true)),
+        Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
+            GetObfuscationLength()))};
   }
+
   // E.g. "Product Description/Nickname/Network  ••••1234, expires on 01/25".
   return {Suggestion::Text(
       credit_card.CardIdentifierStringAndDescriptiveExpiration(app_locale))};
@@ -635,27 +648,61 @@ void AutofillSuggestionGenerator::AdjustVirtualCardSuggestionContent(
   suggestion.feature_for_iph =
       feature_engagement::kIPHAutofillVirtualCardSuggestionFeature.name;
 
-  // TODO(crbug.com/1344629): Update "Virtual card" label for other fields.
-  // For virtual cards, prefix "Virtual card" label to field suggestions. For
-  // card number field in a dropdown, show the "Virtual card" label below the
-  // card number for Metadata experiment.
+  // Add virtual card labelling to suggestions. For keyboard accessory, it is
+  // prefixed to the suggestion, and for the dropdown, it is shown as a label on
+  // a separate line.
+  const std::u16string& VIRTUAL_CARD_LABEL = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
   if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardMetadata) ||
-      base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+          features::kAutofillEnableVirtualCardMetadata)) {
     suggestion.minor_text.value = suggestion.main_text.value;
-    suggestion.main_text.value = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
-  } else if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-    // If the focused field is a credit card number field, reset all labels and
-    // populate only the virtual card text.
-    suggestion.labels = {{Suggestion::Text(l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))}};
-  } else {
-    // Otherwise, add the virtual card text after the original label, so it
-    // will be shown on the third line.
-    suggestion.labels.push_back(std::vector<Suggestion::Text>{
-        Suggestion::Text(l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))});
+    suggestion.main_text.value = VIRTUAL_CARD_LABEL;
+  } else if (IsKeyboardAccessoryEnabled()) {
+    // The keyboard accessory chips can only accommodate 2 strings which are
+    // displayed on a single row. The minor_text and the labels are
+    // concatenated, so we have: String 1 = main_text, String 2 = minor_text +
+    // labels.
+    // There is a limit on the size of the keyboard accessory chips. When the
+    // suggestion content exceeds this limit, the card name or the cardholder
+    // name can be truncated, the last 4 digits should never be truncated.
+    // Contents in the main_text are automatically truncated from the right end
+    // on the Android side when the size limit is exceeded, so the card name and
+    // the cardholder name is appended to the main_text.
+    // Here we modify the `Suggestion` members to make it suitable for showing
+    // on the keyboard accessory.
+    // Card number field:
+    // Before: main_text = card name, minor_text = last 4 digits, labels =
+    // expiration date.
+    // After: main_text = virtual card label + card name, minor_text = last 4
+    // digits, labels = null.
+    // Cardholder name field:
+    // Before: main_text = cardholder name, minor_text = null, labels = last 4
+    // digits.
+    // After: main_text = virtual card label + cardholder name, minor_text =
+    // null, labels = last 4 digits.
+    if (ShouldSplitCardNameAndLastFourDigits()) {
+      suggestion.main_text.value =
+          base::StrCat({VIRTUAL_CARD_LABEL, u"  ", suggestion.main_text.value});
+    } else {
+      suggestion.minor_text.value = suggestion.main_text.value;
+      suggestion.main_text.value = VIRTUAL_CARD_LABEL;
+    }
+    if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+      // The expiration date is not shown for the card number field, so it is
+      // removed.
+      suggestion.labels = {};
+    }
+  } else {  // Desktop/Android dropdown.
+    if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+      // If the focused field is a credit card number field, reset all labels
+      // and populate only the virtual card text.
+      suggestion.labels = {{Suggestion::Text(VIRTUAL_CARD_LABEL)}};
+    } else {
+      // For other fields, add the virtual card text after the original label,
+      // so it will be shown on the third line.
+      suggestion.labels.push_back(
+          std::vector<Suggestion::Text>{Suggestion::Text(VIRTUAL_CARD_LABEL)});
+    }
   }
 }
 

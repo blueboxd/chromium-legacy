@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ref.h"
 #include "content/browser/private_aggregation/private_aggregation_budget_key.h"
 #include "content/common/content_export.h"
@@ -36,7 +36,7 @@ class CONTENT_EXPORT PrivateAggregationHost
   enum class SendHistogramReportResult {
     kSuccess = 0,
     kApiDisabledInSettings = 1,
-    kTooManyContributions = 2,
+    kSuccessButTruncatedDueToTooManyContributions = 2,
     kDebugKeyPresentWithoutDebugMode = 3,
     kReportRequestCreationFailed = 4,
     kMaxValue = kReportRequestCreationFailed,

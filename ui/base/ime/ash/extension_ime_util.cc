@@ -9,6 +9,7 @@
 #include "build/branding_buildflags.h"
 
 namespace ash {
+
 namespace {
 
 const char kExtensionIMEPrefix[] = "_ext_ime_";
@@ -48,7 +49,7 @@ const char kChineseCangjieExtensionId[] = "aeebooiibjahgpgmhkeocbeekccfknbj";
 #endif
 
 const char kBrailleImeExtensionId[] = "jddehjeebkoimngcbdkaahpobgicbffp";
-const char kBrailleImeExtensionPath[] = "chromeos/accessibility/braille_ime";
+const char kBrailleImeExtensionPath[] = "chromeos/accessibility";
 const char kBrailleImeEngineId[] =
     "_comp_ime_jddehjeebkoimngcbdkaahpobgicbffpbraille";
 

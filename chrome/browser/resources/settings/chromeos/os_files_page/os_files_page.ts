@@ -11,24 +11,22 @@ import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
+import './office_page.js';
 import './smb_shares_page.js';
 
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {routes} from '../os_route.js';
-import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
+import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
 import {getTemplate} from './os_files_page.html.js';
 
 const OsSettingsFilesPageElementBase =
-    mixinBehaviors([DeepLinkingBehavior], RouteObserverMixin(PolymerElement)) as
-    {
-      new (): PolymerElement & RouteObserverMixinInterface &
-          DeepLinkingBehaviorInterface,
-    };
+    DeepLinkingMixin(RouteObserverMixin(PolymerElement));
 
 class OsSettingsFilesPageElement extends OsSettingsFilesPageElementBase {
   static get is() {
@@ -50,11 +48,11 @@ class OsSettingsFilesPageElement extends OsSettingsFilesPageElementBase {
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([Setting.kGoogleDriveConnection]),
+        value: () => new Set<Setting>([Setting.kGoogleDriveConnection]),
       },
 
       focusConfig_: {
@@ -67,11 +65,18 @@ class OsSettingsFilesPageElement extends OsSettingsFilesPageElementBase {
           return map;
         },
       },
+
+      /** @private */
+      showOfficeSettings_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('showOfficeSettings');
+        },
+      },
     };
   }
 
   prefs: Object;
-  override supportedSettingIds: Set<Setting>;
   private focusConfig_: Map<string, string>;
 
   override currentRouteChanged(route: Route, _oldRoute?: Route) {
@@ -85,6 +90,10 @@ class OsSettingsFilesPageElement extends OsSettingsFilesPageElementBase {
 
   private onTapSmbShares_() {
     Router.getInstance().navigateTo(routes.SMB_SHARES);
+  }
+
+  private onTapOffice_() {
+    Router.getInstance().navigateTo(routes.OFFICE);
   }
 }
 

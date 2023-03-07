@@ -4,7 +4,7 @@
 
 #include "services/device/public/cpp/test/scoped_pressure_manager_overrider.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "services/device/device_service.h"
 #include "services/device/public/mojom/pressure_update.mojom.h"
 
@@ -28,15 +28,15 @@ void FakePressureManager::AddClient(
     AddClientCallback callback) {
   if (is_supported_) {
     clients_.Add(std::move(client));
-    std::move(callback).Run(true);
+    std::move(callback).Run(mojom::PressureStatus::kOk);
   } else {
-    std::move(callback).Run(false);
+    std::move(callback).Run(mojom::PressureStatus::kNotSupported);
   }
 }
 
 void FakePressureManager::UpdateClients(const mojom::PressureUpdate& update) {
   for (auto& client : clients_)
-    client->PressureStateChanged(update.Clone());
+    client->OnPressureUpdated(update.Clone());
 }
 
 void FakePressureManager::set_is_supported(bool is_supported) {

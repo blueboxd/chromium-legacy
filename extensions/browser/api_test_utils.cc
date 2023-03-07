@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
@@ -212,7 +212,7 @@ bool RunFunction(ExtensionFunction* function,
                  std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags) {
   SendResponseHelper response_helper(function);
-  function->SetArgs(base::Value(std::move(args)));
+  function->SetArgs(std::move(args));
 
   CHECK(dispatcher);
   function->SetDispatcher(dispatcher->AsWeakPtr());

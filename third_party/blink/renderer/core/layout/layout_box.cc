@@ -612,7 +612,8 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     // The background of the root element or the body element could propagate up
     // to the canvas. Just dirty the entire canvas when our style changes
     // substantially.
-    if ((diff.NeedsPaintInvalidation() || diff.NeedsLayout()) && GetNode() &&
+    if ((diff.NeedsNormalPaintInvalidation() || diff.NeedsLayout()) &&
+        GetNode() &&
         (IsDocumentElement() || IsA<HTMLBodyElement>(*GetNode()))) {
       View()->SetShouldDoFullPaintInvalidation();
     }
@@ -827,7 +828,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   if (IsCustomItem())
     GetCustomLayoutChild()->styleMap()->UpdateStyle(GetDocument(), StyleRef());
 
-  if (diff.NeedsPaintInvalidation()) {
+  if (diff.NeedsNormalPaintInvalidation()) {
     if (const AnchorScrollValue* old_anchor_scroll =
             old_style ? old_style->AnchorScroll() : nullptr;
         !base::ValuesEquivalent(StyleRef().AnchorScroll().Get(),
@@ -1034,8 +1035,7 @@ void LayoutBox::UpdateFromStyle() {
 
 void LayoutBox::LayoutSubtreeRoot() {
   NOT_DESTROYED();
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !IsLayoutNGObject() &&
-      GetSingleCachedLayoutResult()) {
+  if (!IsLayoutNGObject() && GetSingleCachedLayoutResult()) {
     // If this object is laid out by the legacy engine, while its containing
     // block is laid out by NG, it means that we normally (when laying out
     // starting at the real root, i.e. LayoutView) enter layout of this object
@@ -1094,7 +1094,7 @@ DISABLE_CFI_PERF
 LayoutUnit LayoutBox::ClientWidth() const {
   NOT_DESTROYED();
   // We need to clamp negative values. This function may be called during layout
-  // before frame_rect_ gets the final proper value. Another reason: While
+  // before frame_size_ gets the final proper value. Another reason: While
   // border side values are currently limited to 2^20px (a recent change in the
   // code), if this limit is raised again in the future, we'd have ill effects
   // of saturated arithmetic otherwise.
@@ -1112,7 +1112,7 @@ DISABLE_CFI_PERF
 LayoutUnit LayoutBox::ClientHeight() const {
   NOT_DESTROYED();
   // We need to clamp negative values. This function can be called during layout
-  // before frame_rect_ gets the final proper value. The scrollbar may be wider
+  // before frame_size_ gets the final proper value. The scrollbar may be wider
   // than the padding box. Another reason: While border side values are
   // currently limited to 2^20px (a recent change in the code), if this limit is
   // raised again in the future, we'd have ill effects of saturated arithmetic
@@ -5059,13 +5059,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
   // then we must subtract the border and padding from the cell's
   // |available_height| (given by |OverrideLogicalHeight|) to arrive
   // at the child's computed height.
-  bool subtract_border_and_padding =
-      IsTable() ||
-      (!RuntimeEnabledFeatures::LayoutNGEnabled() && cb->IsTableCell() &&
-       !skipped_auto_height_containing_block &&
-       cb->HasOverrideLogicalHeight() &&
-       StyleRef().BoxSizing() == EBoxSizing::kContentBox);
-  if (subtract_border_and_padding) {
+  if (IsTable()) {
     result -= BorderAndPaddingLogicalHeight();
     return std::max(LayoutUnit(), result);
   }
@@ -5298,15 +5292,6 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
         while (!IsA<LayoutView>(cb) &&
                (cb->StyleRef().LogicalHeight().IsAuto() ||
                 cb->StyleRef().LogicalHeight().IsPercentOrCalc())) {
-          if (!RuntimeEnabledFeatures::LayoutNGEnabled() && cb->IsTableCell()) {
-            // Don't let table cells squeeze percent-height replaced elements
-            // <http://bugs.webkit.org/show_bug.cgi?id=15359>
-            available_height =
-                std::max(available_height, IntrinsicLogicalHeight());
-            return ValueForLength(
-                logical_height,
-                available_height - BorderAndPaddingLogicalHeight());
-          }
           To<LayoutBlock>(cb)->AddPercentHeightDescendant(
               const_cast<LayoutBox*>(this));
           cb = cb->ContainingBlock();
@@ -5314,8 +5299,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
       }
 
       return AdjustContentBoxLogicalHeightForBoxSizing(
-          (RuntimeEnabledFeatures::LayoutNGEnabled() &&
-           available_height == kIndefiniteSize)
+          available_height == kIndefiniteSize
               ? IntrinsicLogicalHeight()
               : ValueForLength(logical_height, available_height));
     }
@@ -5335,25 +5319,12 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
 LayoutUnit LayoutBox::AvailableLogicalHeight(
     AvailableLogicalHeightType height_type) const {
   NOT_DESTROYED();
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    // LayoutNG code is correct, Legacy code incorrectly ConstrainsMinMax
-    // when height is -1, and returns 0, not -1.
-    // The reason this code is NG-only is that this code causes performance
-    // regression for nested-percent-height-tables test case.
-    // This code gets executed 740 times in the test case.
-    // https://chromium-review.googlesource.com/c/chromium/src/+/1103289
-    LayoutUnit height =
-        AvailableLogicalHeightUsing(StyleRef().LogicalHeight(), height_type);
-    if (UNLIKELY(height == -1))
-      return height;
-    return ConstrainContentBoxLogicalHeightByMinMax(height, LayoutUnit(-1));
+  LayoutUnit height =
+      AvailableLogicalHeightUsing(StyleRef().LogicalHeight(), height_type);
+  if (UNLIKELY(height == -1)) {
+    return height;
   }
-  // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested
-  // in the content height.
-  // FIXME: Should we pass intrinsicContentLogicalHeight() instead of -1 here?
-  return ConstrainContentBoxLogicalHeightByMinMax(
-      AvailableLogicalHeightUsing(StyleRef().LogicalHeight(), height_type),
-      LayoutUnit(-1));
+  return ConstrainContentBoxLogicalHeightByMinMax(height, LayoutUnit(-1));
 }
 
 LayoutUnit LayoutBox::AvailableLogicalHeightUsing(

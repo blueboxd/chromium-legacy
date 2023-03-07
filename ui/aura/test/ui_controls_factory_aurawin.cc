@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -58,31 +57,43 @@ class UIControlsWin : public UIControlsAura {
     return ui_controls::internal::SendKeyPressImpl(window, key, control, shift,
                                                    alt, std::move(task));
   }
-  bool SendMouseMove(int screen_x, int screen_y) override {
+
+  // The following functions take a window hint, but do not need it as
+  // determining the active window at a particular screen point is - at least as
+  // far as we currently know - not problematic on Windows.
+  //
+  // If this turns out not to be the case, the hints can be routed to the
+  // relevant ui_controls::internal methods.
+
+  bool SendMouseMove(int screen_x, int screen_y, aura::Window*) override {
     return ui_controls::internal::SendMouseMoveImpl(screen_x, screen_y,
                                                     base::OnceClosure());
   }
   bool SendMouseMoveNotifyWhenDone(int screen_x,
                                    int screen_y,
-                                   base::OnceClosure task) override {
+                                   base::OnceClosure task,
+                                   aura::Window*) override {
     return ui_controls::internal::SendMouseMoveImpl(screen_x, screen_y,
                                                     std::move(task));
   }
   bool SendMouseEvents(MouseButton type,
                        int button_state,
-                       int accelerator_state) override {
+                       int accelerator_state,
+                       aura::Window*) override {
     return ui_controls::internal::SendMouseEventsImpl(
         type, button_state, base::OnceClosure(), accelerator_state);
   }
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                      int button_state,
                                      base::OnceClosure task,
-                                     int accelerator_state) override {
+                                     int accelerator_state,
+                                     aura::Window*) override {
     return ui_controls::internal::SendMouseEventsImpl(
         type, button_state, std::move(task), accelerator_state);
   }
-  bool SendMouseClick(MouseButton type) override {
-    return SendMouseEvents(type, UP | DOWN, ui_controls::kNoAccelerator);
+  bool SendMouseClick(MouseButton type, aura::Window* window_hint) override {
+    return SendMouseEvents(type, UP | DOWN, ui_controls::kNoAccelerator,
+                           window_hint);
   }
   bool SendTouchEvents(int action, int num, int x, int y) override {
     return ui_controls::internal::SendTouchEventsImpl(action, num, x, y);

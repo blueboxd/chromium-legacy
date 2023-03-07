@@ -16,6 +16,7 @@
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "components/reading_list/core/reading_list_model_storage.h"
 #include "components/reading_list/core/reading_list_sync_bridge.h"
+#include "components/sync/base/storage_type.h"
 
 namespace base {
 class Clock;
@@ -30,8 +31,11 @@ class ReadingListModelImpl : public ReadingListModel {
  public:
   // Initialize a ReadingListModelImpl to load and save data in
   // |storage_layer|, which must not be null.
+  // |sync_storage_type| specifies whether the model is meant to sync in
+  // transport-mode or the default and traditional unspecified mode.
   // |clock| will be used to timestamp all the operations.
   ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage_layer,
+                       syncer::StorageType sync_storage_type,
                        base::Clock* clock);
   ~ReadingListModelImpl() override;
 
@@ -40,8 +44,11 @@ class ReadingListModelImpl : public ReadingListModel {
 
   // ReadingListModel implementation.
   bool loaded() const override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetSyncControllerDelegate()
+      override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetSyncControllerDelegateForTransportMode() override;
   bool IsPerformingBatchUpdates() const override;
-  ReadingListSyncBridge* GetModelTypeSyncBridge() override;
   std::unique_ptr<ScopedReadingListBatchUpdate> BeginBatchUpdates() override;
   base::flat_set<GURL> GetKeys() const override;
   size_t size() const override;
@@ -78,6 +85,7 @@ class ReadingListModelImpl : public ReadingListModel {
   void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry);
   ReadingListEntry* SyncMergeEntry(std::unique_ptr<ReadingListEntry> entry);
   void SyncRemoveEntry(const GURL& url);
+  void SyncDeleteAllEntriesAndSyncMetadata();
 
   class ScopedReadingListBatchUpdateImpl : public ScopedReadingListBatchUpdate,
                                            public ReadingListModelObserver {
@@ -86,6 +94,7 @@ class ReadingListModelImpl : public ReadingListModel {
     ~ScopedReadingListBatchUpdateImpl() override;
 
     syncer::MetadataChangeList* GetSyncMetadataChangeList();
+    ReadingListModelStorage::ScopedBatchUpdate* GetStorageBatch();
 
     // ReadingListModelObserver overrides.
     void ReadingListModelLoaded(const ReadingListModel* model) override;
@@ -104,12 +113,17 @@ class ReadingListModelImpl : public ReadingListModel {
   // Test-only factory function to inject an arbitrary change processor.
   static std::unique_ptr<ReadingListModelImpl> BuildNewForTest(
       std::unique_ptr<ReadingListModelStorage> storage_layer,
+      syncer::StorageType sync_storage_type,
       base::Clock* clock,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+
+  // Exposes the sync bridge publicly for testing purposes.
+  ReadingListSyncBridge* GetSyncBridgeForTest();
 
  private:
   ReadingListModelImpl(
       std::unique_ptr<ReadingListModelStorage> storage_layer,
+      syncer::StorageType sync_storage_type,
       base::Clock* clock,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
 

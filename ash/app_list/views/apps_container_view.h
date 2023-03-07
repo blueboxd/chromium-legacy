@@ -34,7 +34,6 @@ class AppListNudgeController;
 class ContentsView;
 class ContinueSectionView;
 class FolderBackgroundView;
-class GradientLayerDelegate;
 class PageSwitcher;
 class SearchResultPageAnchoredDialog;
 
@@ -138,12 +137,6 @@ class ASH_EXPORT AppsContainerView
       AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const override;
-  void AnimateOpacity(AppListViewState current_view_state,
-                      AppListViewState target_view_state,
-                      const OpacityAnimator& animator) override;
-  void AnimateYPosition(AppListViewState target_view_state,
-                        const TransformAnimator& animator,
-                        float default_offset) override;
 
   // AppListModelProvider::Observer:
   void OnActiveAppListModelsChanged(AppListModel* model,
@@ -217,9 +210,8 @@ class ASH_EXPORT AppsContainerView
     return app_list_nudge_controller_.get();
   }
 
-  // Updates recent apps from app list model. `needs_layout` indicates whether
-  // the apps container relaid out when the recent apps results are updated.
-  void UpdateRecentApps(bool needs_layout);
+  // Updates recent apps from app list model.
+  void UpdateRecentApps();
 
   // Gets the height of the `separator_` including its vertical margin.
   int GetSeparatorHeight();
@@ -287,12 +279,13 @@ class ASH_EXPORT AppsContainerView
   // `scrollable_container_`.
   void UpdateGradientMaskBounds();
 
-  // Creates a layer mask for gradient alpha when the feature is enabled. The
-  // gradient appears at the top and bottom of the 'scrollable_container_' to
-  // create a "fade out" effect when dragging the whole page.
+  // Creates a layer mask for gradient alpha and applies it to the
+  // `scrollable_container_` layer. The gradient appears at the top and bottom
+  // of the `scrollable_container_` to create a "fade out" effect when dragging
+  // the whole page.
   void MaybeCreateGradientMask();
 
-  // Removes the gradient mask from being set as the mask layer.
+  // Removes the gradient mask from the `scrollable_container_`.
   void MaybeRemoveGradientMask();
 
   // Called when the animation to fade out app list items is completed.
@@ -313,6 +306,9 @@ class ASH_EXPORT AppsContainerView
 
   // Called after sort to handle focus.
   void HandleFocusAfterSort();
+
+  // Called when the zero state search completes in order to update recent apps.
+  void OnZeroStateSearchDone();
 
   // While true, the gradient mask will not be removed as a mask layer until
   // cardified state ends.
@@ -363,8 +359,6 @@ class ASH_EXPORT AppsContainerView
   // |cached_container_margins_|, provided the method arguments match the cached
   // arguments (otherwise the margins will be recalculated).
   CachedContainerMargins cached_container_margins_;
-
-  std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
 
   // A closure to update item positions. It should run at the end of the fade
   // out animation when items are reordered.

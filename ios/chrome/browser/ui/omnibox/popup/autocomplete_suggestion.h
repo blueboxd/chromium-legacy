@@ -33,8 +33,6 @@ typedef NS_ENUM(NSUInteger, SuggestTileType) {
 @property(nonatomic, readonly) BOOL isAppendable;
 /// Some suggestions are opened in an other tab.
 @property(nonatomic, readonly) BOOL isTabMatch;
-/// Some suggestions come from the clipboard provider.
-@property(nonatomic, readonly) BOOL isClipboardMatch;
 /// Text of the suggestion.
 @property(nonatomic, readonly) NSAttributedString* text;
 /// Second line of text.
@@ -71,7 +69,7 @@ typedef NS_ENUM(NSUInteger, SuggestTileType) {
 @property(nonatomic, readonly) BOOL isTailSuggestion;
 
 /// Common prefix for tail suggestions. Empty otherwise.
-@property(nonatomic, readonly) NSString* commonPrefix;
+@property(nonatomic, readonly, copy) NSString* commonPrefix;
 
 @end
 

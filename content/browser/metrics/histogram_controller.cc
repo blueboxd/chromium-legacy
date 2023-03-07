@@ -4,7 +4,6 @@
 
 #include "content/browser/metrics/histogram_controller.h"
 
-#include "base/bind.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
@@ -14,8 +13,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
@@ -60,7 +59,7 @@ void HistogramController::Unregister(const HistogramSubscriber* subscriber) {
 
 template <class T>
 void HistogramController::NotifyChildDied(T* host) {
-  RemoveChildHistogramFetcherInterface(host);
+  RemoveChildHistogramFetcherInterface(MayBeDangling<T>(host));
 }
 
 template void HistogramController::NotifyChildDied(RenderProcessHost* host);
@@ -126,7 +125,8 @@ HistogramController::GetChildHistogramFetcherInterface(T* host) {
 }
 
 template <class T>
-void HistogramController::RemoveChildHistogramFetcherInterface(T* host) {
+void HistogramController::RemoveChildHistogramFetcherInterface(
+    MayBeDangling<T> host) {
   GetChildHistogramFetcherMap<T>().erase(host);
 }
 

@@ -39,7 +39,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Android.Build" enum="BooleanSuccess"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -61,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Android.SitesChannel" enum="BooleanUsage"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
   <owner>peter@chromium.org</owner>
   <summary>
     Recorded when the Sites channel (which we hope to deprecate) is used as a
@@ -128,18 +128,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.ClosedCount"
-    units="notifications" expires_after="2023-05-07">
+    units="notifications" expires_after="2023-07-09">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
     The number of muted notifications that got closed programmatically (e.g. by
     the developer via JS) during a screen capture session before they were shown
     to the user. Logged once after each screen capture session ends.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used. We expect that the number of &quot;0&quot;
+    samples is likely an overestimate because of this. This issue is tracked in
+    crbug.com/1385455.
   </summary>
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.MutedCount"
-    units="notifications" expires_after="2022-08-14">
+    units="notifications" expires_after="2023-07-09">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -148,44 +153,73 @@ chromium-metrics-reviews@google.com.
     actual number of queued notifications at the end of a session as some
     notifications might have been closed programmatically before that. Logged
     once after each screen capture session ends.
+
+    This metric was expired between August 2022 and January 2023, and may be
+    missing data until M111.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used. We expect that the number of &quot;0&quot;
+    samples is likely an overestimate because of this. This issue is tracked in
+    crbug.com/1385455.
   </summary>
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.ReplacedCount"
-    units="notifications" expires_after="2023-05-07">
+    units="notifications" expires_after="2023-07-09">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
     The number of muted notifications that got replaced during a screen capture
     session. The user will only see the final state of the notification without
     the previous versions. Logged once after each screen capture session ends.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used. We expect that the number of &quot;0&quot;
+    samples is likely an overestimate because of this. This issue is tracked in
+    crbug.com/1385455.
   </summary>
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.RevealDuration" units="ms"
-    expires_after="2022-06-26">
+    expires_after="2023-07-09">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
     Records the time from the start of a screen capture session until the user
     decided to reveal notification content again. Only logged if and when the
     user takes that action.
+
+    This metric was expired between June 2022 and January 2023, and may be
+    missing data until M111.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used. We expect that the number of &quot;0&quot;
+    samples is likely an overestimate because of this. This issue is tracked in
+    crbug.com/1385455.
   </summary>
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.SessionDuration"
-    units="ms" expires_after="2022-12-25">
+    units="ms" expires_after="2023-07-09">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
     Records the length of a screen capture session. Notifications will be muted
     initially but the user may reveal them during a session. This metric will be
     logged after the screen capture session ends.
+
+    This metric was expired between December 2022 and January 2023, and may be
+    missing data until M111.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used. We expect that the number of &quot;0&quot;
+    samples is likely an overestimate because of this. This issue is tracked in
+    crbug.com/1385455.
   </summary>
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.SnoozedCount"
-    units="notifications" expires_after="2022-08-21">
+    units="notifications" expires_after="2023-07-09">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -194,6 +228,14 @@ chromium-metrics-reviews@google.com.
     the &quot;Snooze&quot; action of a muted notification and continued to
     receive notifications but we queued them without notifying the user at all.
     Logged once after each screen capture session ends.
+
+    This metric was expired between August 2022 and January 2023, and may be
+    missing data until M111.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used. We expect that the number of &quot;0&quot;
+    samples is likely an overestimate because of this. This issue is tracked in
+    crbug.com/1385455.
   </summary>
 </histogram>
 
@@ -350,7 +392,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Database.ExpiredNotificationCount"
-    units="notifications" expires_after="2023-04-16">
+    units="notifications" expires_after="2023-06-18">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -389,6 +431,10 @@ chromium-metrics-reviews@google.com.
   <owner>peter@chromium.org</owner>
   <summary>
     Records the result status codes of opening the Web Notification database.
+
+    This metric may be logged at possibly inappropriate times, such as when
+    system profiles are being used, for which the notification database is
+    usually not required. This issue is tracked in crbug.com/1385455.
   </summary>
 </histogram>
 
@@ -425,7 +471,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Database.ReadResult"
-    enum="NotificationDatabaseStatus" expires_after="2023-04-16">
+    enum="NotificationDatabaseStatus" expires_after="2023-06-18">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -585,7 +631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.NotifierType" enum="NotifierType"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>tbarzic@chromium.org</owner>
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>

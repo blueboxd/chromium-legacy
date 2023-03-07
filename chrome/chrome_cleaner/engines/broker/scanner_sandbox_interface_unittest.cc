@@ -4,6 +4,7 @@
 
 #include "chrome/chrome_cleaner/engines/broker/scanner_sandbox_interface.h"
 
+#include <ntstatus.h>
 #include <windows.h>
 
 #include <string>
@@ -36,7 +37,6 @@
 #include "chrome/chrome_cleaner/test/test_strings.h"
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
-#include "sandbox/win/src/nt_internals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_cleaner::GetWow64RedirectedSystemPath;

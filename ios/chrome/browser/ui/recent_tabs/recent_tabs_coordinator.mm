@@ -10,7 +10,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
@@ -21,8 +20,8 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
-#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
@@ -44,8 +43,6 @@
 @property(nonatomic, strong)
     TableViewNavigationController* recentTabsNavigationController;
 @property(nonatomic, strong)
-    RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
-@property(nonatomic, strong)
     RecentTabsTableViewController* recentTabsTableViewController;
 @property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
 @property(nonatomic, strong)
@@ -56,7 +53,6 @@
 @synthesize completion = _completion;
 @synthesize mediator = _mediator;
 @synthesize recentTabsNavigationController = _recentTabsNavigationController;
-@synthesize recentTabsTransitioningDelegate = _recentTabsTransitioningDelegate;
 
 - (void)start {
   // Initialize and configure RecentTabsTableViewController.
@@ -109,21 +105,10 @@
       initWithTable:self.recentTabsTableViewController];
   self.recentTabsNavigationController.toolbarHidden = YES;
 
-  BOOL useCustomPresentation = YES;
-      [self.recentTabsNavigationController
-          setModalPresentationStyle:UIModalPresentationFormSheet];
-      self.recentTabsNavigationController.presentationController.delegate =
-          self.recentTabsTableViewController;
-      useCustomPresentation = NO;
-
-  if (useCustomPresentation) {
-    self.recentTabsTransitioningDelegate =
-        [[RecentTabsTransitioningDelegate alloc] init];
-    self.recentTabsNavigationController.transitioningDelegate =
-        self.recentTabsTransitioningDelegate;
-    [self.recentTabsNavigationController
-        setModalPresentationStyle:UIModalPresentationCustom];
-  }
+  [self.recentTabsNavigationController
+      setModalPresentationStyle:UIModalPresentationFormSheet];
+  self.recentTabsNavigationController.presentationController.delegate =
+      self.recentTabsTableViewController;
 
   self.recentTabsTableViewController.preventUpdates = NO;
 
@@ -143,7 +128,6 @@
   self.recentTabsContextMenuHelper = nil;
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
-  self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
 }
 

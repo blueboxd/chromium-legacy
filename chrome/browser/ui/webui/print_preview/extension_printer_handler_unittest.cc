@@ -11,9 +11,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
@@ -569,10 +569,12 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
       fake_usb_manager_.CreateAndAddDevice(0, 1, "Google", "USB Printer", "");
   base::RunLoop().RunUntilIdle();
 
-  const Extension* extension_1 = env_.MakeExtension(
-      base::test::ParseJson(kExtension1), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  const Extension* extension_2 = env_.MakeExtension(
-      base::test::ParseJson(kExtension2), "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  const Extension* extension_1 =
+      env_.MakeExtension(base::test::ParseJsonDict(kExtension1),
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  const Extension* extension_2 =
+      env_.MakeExtension(base::test::ParseJsonDict(kExtension2),
+                         "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
   extensions::DevicePermissionsManager* permissions_manager =
       extensions::DevicePermissionsManager::Get(env_.profile());
@@ -604,7 +606,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
           .Set("extensionName", "Provider 1")
           .Set("extensionId", extension_1->id())
           .Set("provisional", true)
-          .BuildDict();
+          .Build();
   base::Value::Dict extension_2_entry =
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
@@ -614,7 +616,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
           .Set("extensionName", "Provider 2")
           .Set("extensionId", extension_2->id())
           .Set("provisional", true)
-          .BuildDict();
+          .Build();
   EXPECT_TRUE(base::Contains(printers, extension_1_entry));
   EXPECT_TRUE(base::Contains(printers, extension_2_entry));
 
@@ -993,7 +995,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
   base::Value::Dict original_printer_info = DictionaryBuilder()
                                                 .Set("id", "printer1")
                                                 .Set("name", "Printer 1")
-                                                .BuildDict();
+                                                .Build();
 
   fake_api->TriggerNextUsbPrinterInfoCallback(original_printer_info.Clone());
 
@@ -1026,7 +1028,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
   base::Value::Dict original_printer_info = DictionaryBuilder()
                                                 .Set("id", "printer1")
                                                 .Set("name", "Printer 1")
-                                                .BuildDict();
+                                                .Build();
 
   fake_api->TriggerNextUsbPrinterInfoCallback(std::move(original_printer_info));
 

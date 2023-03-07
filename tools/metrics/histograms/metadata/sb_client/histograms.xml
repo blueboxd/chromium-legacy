@@ -129,16 +129,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientDownload.DocumentAnalysisSuccess" enum="Boolean"
-    expires_after="2023-02-19">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    For each Office file analyzed by the SafeBrowsing download service, records
-    if analysis by maldoca was successful.
-  </summary>
-</histogram>
-
 <histogram name="SBClientDownload.DocumentCheckDownloadStats"
     enum="SBClientDownloadCheckDownloadStats" expires_after="2023-06-10">
   <owner>drubery@chromium.org</owner>
@@ -161,7 +151,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadExtensions"
-    enum="SBClientDownloadExtensions" expires_after="2023-04-23">
+    enum="SBClientDownloadExtensions" expires_after="2023-06-25">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -183,7 +173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms"
-    expires_after="2023-06-11">
+    expires_after="2023-07-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -337,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.FileFeatureExtractionDuration" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -347,7 +337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.GetTabRedirectsDuration" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -379,7 +369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.MemoryMapFileDuration" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -488,7 +478,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SBClientDownload.UserGestureFileType.Attributes"
     enum="SBClientDownloadUserGestureFileTypeAttributes"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -608,8 +598,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.BrowserReadyOnClassifierNotReady"
-    enum="BooleanReady" expires_after="2023-01-24">
-  <owner>drubery@chromium.org</owner>
+    enum="BooleanReady" expires_after="2023-07-24">
+  <owner>andysjlim@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     When a renderer-side classification returns the error
@@ -641,7 +631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.ClassificationStart" enum="BooleanHit"
-    expires_after="2023-05-08">
+    expires_after="2023-07-09">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -655,7 +645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.Classifier.Event"
-    enum="SBPhishingClassifierEvent" expires_after="2023-05-07">
+    enum="SBPhishingClassifierEvent" expires_after="2023-07-09">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -708,18 +698,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.MainFrameRemoteConnected"
-    enum="BooleanConnected" expires_after="2023-02-12">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records whether we the mojo::Remote for the main frame's PhishingDetector is
-    connected. This is recorded on every classification (a large fraction of
-    navigations) where the mojo::Remote exists (see
-    SBClientPhishing.MainFrameRemoteExists).
-  </summary>
-</histogram>
-
 <histogram name="SBClientPhishing.MainFrameRemoteExists" enum="BooleanExists"
     expires_after="2022-08-29">
   <obsolete>
@@ -745,16 +723,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.ModelDynamicUpdateVersion"
-    units="client phishing model version" expires_after="2023-01-15">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the model version on a successful dynamic update. This is logged
-    when a new model is pushed (rare), or on each startup.
-  </summary>
-</histogram>
-
 <histogram name="SBClientPhishing.NetworkRequestDuration" units="ms"
     expires_after="2023-03-19">
   <owner>drubery@chromium.org</owner>
@@ -776,7 +744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.PhishingDetectionDuration" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -799,7 +767,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SBClientPhishing.PreClassificationCheckResult"
     enum="SBClientDetectionPreClassificationCheckResult"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -808,16 +776,6 @@ chromium-metrics-reviews@google.com.
 
     Starting in M95, the PRIVATE_IP bucket was split to include LOCAL_RESOURCE
     and CHROME_UI_PAGE.
-  </summary>
-</histogram>
-
-<histogram name="SBClientPhishing.ProtobufScorer.CreationStatus"
-    enum="SBClientPhishingScorerCreationStatus" expires_after="2023-02-12">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the status when we create a Protobuf scorer object for the
-    client-side phishing detection classifier.
   </summary>
 </histogram>
 
@@ -834,13 +792,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.RequestWithToken" enum="BooleanSent"
-    expires_after="2023-02-12">
-  <owner>drubery@chromium.org</owner>
+<histogram name="SBClientPhishing.RTLookupForceRequest"
+    enum="BooleanForceRequest" expires_after="2023-11-28">
+  <owner>andysjlim@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
-    Records if the phishing request was sent with a GAIA-tied OAuth2 token. This
-    token is sent only for signed-in Enhanced Safe Browsing users.
+    Records if the RTUrlLookupResponse contains FORCE_REQUEST in
+    client_side_detection_type, which forces the Client Side Detection -
+    Phishing ping to be sent to the server if the user also has Enhanced Safe
+    Browsing or Safe Browsing Extended Reporting opt-in. This histogram is
+    logged once on every successful classification.
   </summary>
 </histogram>
 
@@ -924,7 +885,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.VisualFeatureTime" units="ms"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

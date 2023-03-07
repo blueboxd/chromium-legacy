@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -75,8 +75,7 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
  public:
   ThreadCheckVideoEncoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(task_runner) {
-  }
+      : task_runner_(task_runner) {}
 
   ThreadCheckVideoEncoder(const ThreadCheckVideoEncoder&) = delete;
   ThreadCheckVideoEncoder& operator=(const ThreadCheckVideoEncoder&) = delete;

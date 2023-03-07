@@ -346,8 +346,9 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
       NOTREACHED();
       return nullptr;
   }
-  if (parent_rule)
+  if (parent_rule) {
     rule->SetParentRule(parent_rule);
+  }
   return rule;
 }
 
@@ -395,11 +396,20 @@ const CSSPropertyValueSet& StyleRule::Properties() const {
 }
 
 StyleRule::StyleRule(const StyleRule& other, size_t flattened_size)
-    : StyleRuleBase(kStyle),
-      properties_(other.Properties().MutableCopy()),
-      child_rules_(other.child_rules_) {
+    : StyleRuleBase(kStyle), properties_(other.Properties().MutableCopy()) {
   for (unsigned i = 0; i < flattened_size; ++i) {
     new (&SelectorArray()[i]) CSSSelector(other.SelectorArray()[i]);
+  }
+  if (other.child_rules_ != nullptr) {
+    // Since we are getting copied, we also need to copy any child rules
+    // so that both old and new can be freely mutated. This also
+    // parses them eagerly (see comment in StyleSheetContents'
+    // copy constructor).
+    child_rules_ = MakeGarbageCollected<HeapVector<Member<StyleRuleBase>>>();
+    child_rules_->ReserveInitialCapacity(other.child_rules_->size());
+    for (const StyleRuleBase* child_rule : *other.child_rules_) {
+      child_rules_->push_back(child_rule->Copy());
+    }
   }
 }
 
@@ -419,8 +429,9 @@ StyleRule::~StyleRule() {
 
 MutableCSSPropertyValueSet& StyleRule::MutableProperties() {
   // Ensure properties_ is initialized.
-  if (!Properties().IsMutable())
+  if (!Properties().IsMutable()) {
     properties_ = properties_->MutableCopy();
+  }
   return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
@@ -501,8 +512,9 @@ StyleRulePage::StyleRulePage(const StyleRulePage& page_rule)
       selector_list_(page_rule.selector_list_->Copy()) {}
 
 MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
-  if (!properties_->IsMutable())
+  if (!properties_->IsMutable()) {
     properties_ = properties_->MutableCopy();
+  }
   return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
@@ -523,8 +535,9 @@ StyleRuleProperty::StyleRuleProperty(const StyleRuleProperty& property_rule)
       properties_(property_rule.properties_->MutableCopy()) {}
 
 MutableCSSPropertyValueSet& StyleRuleProperty::MutableProperties() {
-  if (!properties_->IsMutable())
+  if (!properties_->IsMutable()) {
     properties_ = properties_->MutableCopy();
+  }
   return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
@@ -554,8 +567,9 @@ StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& font_face_rule)
       properties_(font_face_rule.properties_->MutableCopy()) {}
 
 MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
-  if (!properties_->IsMutable())
+  if (!properties_->IsMutable()) {
     properties_ = properties_->MutableCopy();
+  }
   return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
@@ -592,8 +606,9 @@ StyleRuleGroup::StyleRuleGroup(RuleType type,
 
 StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& group_rule)
     : StyleRuleBase(group_rule), child_rules_(group_rule.child_rules_.size()) {
-  for (unsigned i = 0; i < child_rules_.size(); ++i)
+  for (unsigned i = 0; i < child_rules_.size(); ++i) {
     child_rules_[i] = group_rule.child_rules_[i]->Copy();
+  }
 }
 
 void StyleRuleGroup::WrapperInsertRule(unsigned index, StyleRuleBase* rule) {
@@ -614,8 +629,9 @@ String StyleRuleBase::LayerNameAsString(
     const StyleRuleBase::LayerName& name_parts) {
   StringBuilder result;
   for (const auto& part : name_parts) {
-    if (result.length())
+    if (result.length()) {
       result.Append(".");
+    }
     result.Append(part);
   }
   return result.ReleaseString();
@@ -650,8 +666,9 @@ void StyleRuleLayerStatement::TraceAfterDispatch(
 
 Vector<String> StyleRuleLayerStatement::GetNamesAsStrings() const {
   Vector<String> result;
-  for (const auto& name : names_)
+  for (const auto& name : names_) {
     result.push_back(LayerNameAsString(name));
+  }
   return result;
 }
 

@@ -8,6 +8,7 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CanvasDrawingProvider} from './drawing_provider.js';
@@ -44,15 +45,15 @@ interface Point {
 const TouchscreenTesterElementBase = I18nMixin(PolymerElement);
 
 export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
-  static get is() {
+  static get is(): string {
     return 'touchscreen-tester';
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       touchscreenIdUnderTesting: {
         type: Number,
@@ -78,7 +79,7 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
   // Manages all event listeners.
   private eventTracker: EventTracker = new EventTracker();
 
-  private receiver_: TabletModeObserverReceiver|null = null;
+  private receiver: TabletModeObserverReceiver|null = null;
 
   private inputDataProvider: InputDataProviderInterface =
       getInputDataProvider();
@@ -123,9 +124,9 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
   async showTester(evdevId: number): Promise<void> {
     this.inputDataProvider.moveAppToTestingScreen(evdevId);
 
-    this.receiver_ = new TabletModeObserverReceiver(this);
+    this.receiver = new TabletModeObserverReceiver(this);
     const {isTabletMode} = await this.inputDataProvider.observeTabletMode(
-        this.receiver_.$.bindNewPipeAndPassRemote());
+        this.receiver.$.bindNewPipeAndPassRemote());
     this.isTabletMode = isTabletMode;
 
     const introDialog = this.getDialog(DialogType.INTRO);
@@ -178,8 +179,8 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
     if (document.fullscreenElement) {
       document.exitFullscreen();
     }
-    if (this.receiver_) {
-      this.receiver_.$.close();
+    if (this.receiver) {
+      this.receiver.$.close();
     }
   }
 
@@ -299,7 +300,7 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
    * Implements TabletModeObserver.OnTabletModeChanged.
    * @param isTabletMode Is current display on tablet mode.
    */
-  onTabletModeChanged(isTabletMode: boolean) {
+  onTabletModeChanged(isTabletMode: boolean): void {
     this.isTabletMode = isTabletMode;
     // TODO(wenyu): Show exit instruction toaster.
   }

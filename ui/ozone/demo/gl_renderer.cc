@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -68,12 +68,12 @@ void GlRenderer::RenderFrame() {
                        weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&GlRenderer::OnPresentation,
                        weak_ptr_factory_.GetWeakPtr()),
-        gl::FrameData());
+        gfx::FrameData());
   } else {
     PostRenderFrameTask(gfx::SwapCompletionResult(
         gl_surface_->SwapBuffers(base::BindOnce(&GlRenderer::OnPresentation,
                                                 weak_ptr_factory_.GetWeakPtr()),
-                                 gl::FrameData())));
+                                 gfx::FrameData())));
   }
 }
 

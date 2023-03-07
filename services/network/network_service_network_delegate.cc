@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/optional_util.h"
@@ -17,6 +17,7 @@
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/first_party_sets/same_party_context.h"
 #include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
@@ -195,8 +196,8 @@ bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
            .AnnotateAndMoveUserBlockedCookies(
                request.url(), request.site_for_cookies(),
                base::OptionalToPtr(request.isolation_info().top_frame_origin()),
-               first_party_set_metadata, maybe_included_cookies,
-               excluded_cookies)) {
+               first_party_set_metadata, request.cookie_setting_overrides(),
+               maybe_included_cookies, excluded_cookies)) {
     // CookieSettings has already moved and annotated the cookies.
     return false;
   }
@@ -228,9 +229,12 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
   bool allowed =
       network_context_->cookie_manager()->cookie_settings().IsCookieAccessible(
           cookie, request.url(), request.site_for_cookies(),
-          request.isolation_info().top_frame_origin());
+          request.isolation_info().top_frame_origin(),
+          request.cookie_setting_overrides());
   if (!allowed)
     return false;
+  // The remaining checks do not consider setting overrides since they enforce
+  // explicit disablement via Android Webview APIs.
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader)
     return url_loader->AllowCookies(request.url(), request.site_for_cookies());
@@ -244,14 +248,12 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
 
 net::NetworkDelegate::PrivacySetting
 NetworkServiceNetworkDelegate::OnForcePrivacyMode(
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    net::SamePartyContext::Type same_party_context_type) const {
+    const net::URLRequest& request) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsPrivacyModeEnabled(url, site_for_cookies, top_frame_origin,
-                            same_party_context_type);
+      .IsPrivacyModeEnabled(request.url(), request.site_for_cookies(),
+                            request.isolation_info().top_frame_origin(),
+                            request.cookie_setting_overrides());
 }
 
 bool NetworkServiceNetworkDelegate::
@@ -282,8 +284,9 @@ bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
-                                 QueryReason::kSiteStorage);
+      .IsFullCookieAccessAllowed(
+          origin.GetURL(), net::SiteForCookies::FromOrigin(origin), origin,
+          net::CookieSettingOverrides(), QueryReason::kSiteStorage);
 }
 
 void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
@@ -315,8 +318,9 @@ bool NetworkServiceNetworkDelegate::OnCanSetReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
-                                 QueryReason::kSiteStorage);
+      .IsFullCookieAccessAllowed(
+          origin.GetURL(), net::SiteForCookies::FromOrigin(origin), origin,
+          net::CookieSettingOverrides(), QueryReason::kSiteStorage);
 }
 
 bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
@@ -324,8 +328,9 @@ bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL(),
-                                 QueryReason::kSiteStorage);
+      .IsFullCookieAccessAllowed(
+          origin.GetURL(), net::SiteForCookies::FromOrigin(origin), origin,
+          net::CookieSettingOverrides(), QueryReason::kSiteStorage);
 }
 
 absl::optional<net::FirstPartySetsCacheFilter::MatchInfo>

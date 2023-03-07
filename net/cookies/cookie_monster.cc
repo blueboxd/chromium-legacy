@@ -49,10 +49,10 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -123,27 +123,11 @@ void MaybeRunDeleteCallback(base::WeakPtr<net::CookieMonster> cookie_monster,
     std::move(callback).Run();
 }
 
-template <typename T>
-void MaybeRunCookieCallback(base::OnceCallback<void(const T&)> callback,
-                            const T& result) {
-  if (callback)
-    std::move(callback).Run(result);
-}
-
-template <typename T, typename U>
-void MaybeRunCookieCallback(
-    base::OnceCallback<void(const T&, const U&)> callback,
-    const T& first,
-    const U& second) {
-  if (callback)
-    std::move(callback).Run(first, second);
-}
-
-template <typename T>
-void MaybeRunCookieCallback(base::OnceCallback<void(T)> callback,
-                            const T& result) {
-  if (callback)
-    std::move(callback).Run(result);
+template <typename CB, typename... R>
+void MaybeRunCookieCallback(base::OnceCallback<CB> callback, R&&... result) {
+  if (callback) {
+    std::move(callback).Run(std::forward<R>(result)...);
+  }
 }
 
 // Anonymous and Fenced Frame uses a CookiePartitionKey with a nonce. In these

@@ -16,10 +16,11 @@
 #include "base/synchronization/lock.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "content/public/browser/browser_child_process_observer.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/child_process_host.h"
+#include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/common/process_type.h"
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 
@@ -33,6 +34,7 @@ namespace crash_reporter {
 // purpose of reacting to child process crashes.
 // The ChildExitObserver instance exists on the browser main thread.
 class ChildExitObserver : public content::BrowserChildProcessObserver,
+                          public content::RenderProcessHostCreationObserver,
                           public content::NotificationObserver,
                           public crashpad::CrashHandlerHost::Observer {
  public:
@@ -73,7 +75,6 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
         base::android::ChildBindingState::UNBOUND;
     bool threw_exception_during_init = false;
     bool was_killed_intentionally_by_browser = false;
-    int best_effort_reverse_rank = -1;
 
     // Applies to renderer process only. Generally means renderer is hosting
     // one or more visible tabs.
@@ -120,6 +121,9 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
 
   // crashpad::CrashHandlerHost::Observer
   void ChildReceivedCrashSignal(base::ProcessId pid, int signo) override;
+
+  // content::RenderProcessHostCreationObserver implementation.
+  void OnRenderProcessHostCreated(content::RenderProcessHost* host) override;
 
  private:
   // content::BrowserChildProcessObserver implementation:

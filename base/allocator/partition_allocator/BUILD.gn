@@ -180,10 +180,7 @@ component("partition_alloc") {
     "yield_processor.h",
   ]
 
-  # Add *Scan sources if building inside Chromium. Currently,
-  # we see no need to add a more dedicated buildflag for this, as
-  # we don't anticipate Chromium-external usage of *Scan.
-  if (build_with_chromium) {
+  if (use_starscan) {
     sources += [
       "starscan/logging.h",
       "starscan/metadata_allocator.cc",
@@ -290,7 +287,7 @@ component("partition_alloc") {
       ]
     }
   }
-  if (build_with_chromium) {
+  if (use_starscan) {
     if (current_cpu == "x64") {
       defines += [ "PA_PCSCAN_STACK_SUPPORTED" ]
       sources += [ "starscan/stack/asm/x64/push_registers_asm.cc" ]
@@ -367,6 +364,25 @@ component("partition_alloc") {
   }
 }
 
+source_set("raw_ptr") {
+  # `gn check` is unhappy with most `#includes` when PA isn't
+  # actually built.
+  check_includes = use_partition_alloc
+  public = [
+    "pointers/raw_ptr.h",
+    "pointers/raw_ptr_exclusion.h",
+    "pointers/raw_ref.h",
+  ]
+  sources = [ "pointers/raw_ptr.cc" ]
+  if (use_partition_alloc) {
+    public_deps = [ ":partition_alloc" ]
+  }
+  deps = [ ":buildflags" ]
+
+  # See also: `partition_alloc_base/component_export.h`
+  defines = [ "IS_RAW_PTR_IMPL" ]
+}
+
 buildflag_header("partition_alloc_buildflags") {
   header = "partition_alloc_buildflags.h"
 
@@ -384,7 +400,7 @@ buildflag_header("partition_alloc_buildflags") {
   # gen/base/allocator/buildflags.h defines and chrome includes.
   flags = [
     "USE_PARTITION_ALLOC=$use_partition_alloc",
-    "ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT=$use_partition_alloc_as_malloc",
+    "USE_PARTITION_ALLOC_AS_MALLOC=$use_partition_alloc_as_malloc",
 
     "ENABLE_BACKUP_REF_PTR_SUPPORT=$enable_backup_ref_ptr_support",
     "ENABLE_BACKUP_REF_PTR_SLOW_CHECKS=$enable_backup_ref_ptr_slow_checks",
@@ -394,10 +410,13 @@ buildflag_header("partition_alloc_buildflags") {
     "PUT_REF_COUNT_IN_PREVIOUS_SLOT=$put_ref_count_in_previous_slot",
     "USE_ASAN_BACKUP_REF_PTR=$use_asan_backup_ref_ptr",
     "USE_ASAN_UNOWNED_PTR=$use_asan_unowned_ptr",
+    "USE_HOOKABLE_RAW_PTR=$use_hookable_raw_ptr",
     "ENABLE_GWP_ASAN_SUPPORT=$_enable_gwp_asan_support",
 
+    "FORCE_ENABLE_RAW_PTR_EXCLUSION=$force_enable_raw_ptr_exclusion",
+
     # Not to be used directly - instead use
-    # defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+    # PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
     "ENABLE_MTE_CHECKED_PTR_SUPPORT=$enable_mte_checked_ptr_support",
 
     "RECORD_ALLOC_INFO=$_record_alloc_info",
@@ -406,8 +425,7 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_POINTER_COMPRESSION=$enable_pointer_compression_support",
     "ENABLE_SHADOW_METADATA_FOR_64_BITS_POINTERS=$enable_shadow_metadata",
 
-    # *Scan is currently only used by Chromium.
-    "STARSCAN=$build_with_chromium",
+    "STARSCAN=$use_starscan",
 
     "ENABLE_PKEYS=$enable_pkeys",
   ]

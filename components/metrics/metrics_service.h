@@ -14,9 +14,9 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -528,6 +528,9 @@ class MetricsService {
 
   // Updates the "last live" browser timestamp and schedules the next update.
   void UpdateLastLiveTimestampTask();
+
+  // Returns whether it is too early to close a log.
+  bool IsTooEarlyToCloseLog();
 
   // Snapshots histogram deltas using the passed |log_histogram_writer| and then
   // finalizes |log| by calling FinalizeLog(). |log|, |current_app_version| and

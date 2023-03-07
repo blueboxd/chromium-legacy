@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -299,17 +299,17 @@ base::Value::List ForeignSessionHandler::GetForeignSessions() {
     // Note: we don't own the SyncedSessions themselves.
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
       const sync_sessions::SyncedSession* session = sessions[i];
-      const std::string& session_tag = session->session_tag;
+      const std::string& session_tag = session->GetSessionTag();
       base::Value::Dict session_data;
       // The items which are to be written into |session_data| are also
       // described in chrome/browser/resources/history/externs.js
       // @typedef for ForeignSession. Please update it whenever you add or
       // remove any keys here.
       session_data.Set("tag", session_tag);
-      session_data.Set("name", session->session_name);
+      session_data.Set("name", session->GetSessionName());
       session_data.Set("modifiedTime",
-                       FormatSessionTime(session->modified_time));
-      session_data.Set("timestamp", session->modified_time.ToJsTime());
+                       FormatSessionTime(session->GetModifiedTime()));
+      session_data.Set("timestamp", session->GetModifiedTime().ToJsTime());
 
       bool is_collapsed = collapsed_sessions.Find(session_tag);
       session_data.Set("collapsed", is_collapsed);

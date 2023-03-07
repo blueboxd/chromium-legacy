@@ -7,8 +7,11 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "printing/backend/cups_ipp_constants.h"
+#include "printing/backend/mock_cups_printer.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,43 +34,6 @@ constexpr char kUsername[] = "test user";
 
 constexpr char kDocumentName[] = "document name";
 constexpr char16_t kDocumentName16[] = u"document name";
-
-class MockCupsPrinter : public CupsPrinter {
- public:
-  MOCK_CONST_METHOD0(is_default, bool());
-  MOCK_CONST_METHOD0(GetName, std::string());
-  MOCK_CONST_METHOD0(GetMakeAndModel, std::string());
-  MOCK_CONST_METHOD0(GetInfo, std::string());
-  MOCK_CONST_METHOD0(GetUri, std::string());
-  MOCK_CONST_METHOD0(EnsureDestInfo, bool());
-  MOCK_CONST_METHOD1(ToPrinterInfo, bool(PrinterBasicInfo* basic_info));
-  MOCK_METHOD4(CreateJob,
-               ipp_status_t(int* job_id,
-                            const std::string& title,
-                            const std::string& username,
-                            const std::vector<cups_option_t>& options));
-  MOCK_METHOD5(StartDocument,
-               bool(int job_id,
-                    const std::string& docname,
-                    bool last_doc,
-                    const std::string& username,
-                    const std::vector<cups_option_t>& options));
-  MOCK_METHOD1(StreamData, bool(const std::vector<char>& buffer));
-  MOCK_METHOD0(FinishDocument, bool());
-  MOCK_METHOD2(CloseJob, ipp_status_t(int job_id, const std::string& username));
-  MOCK_METHOD1(CancelJob, bool(int job_id));
-  MOCK_METHOD1(GetMediaMarginsByName,
-               CupsMediaMargins(const std::string& media_id));
-
-  MOCK_CONST_METHOD1(GetSupportedOptionValues,
-                     ipp_attribute_t*(const char* option_name));
-  MOCK_CONST_METHOD1(GetSupportedOptionValueStrings,
-                     std::vector<base::StringPiece>(const char* option_name));
-  MOCK_CONST_METHOD1(GetDefaultOptionValue,
-                     ipp_attribute_t*(const char* option_name));
-  MOCK_CONST_METHOD2(CheckOptionSupported,
-                     bool(const char* name, const char* value));
-};
 
 class MockCupsConnection : public CupsConnection {
  public:
@@ -127,6 +93,19 @@ class PrintingContextTest : public testing::Test,
       }
     }
     EXPECT_STREQ(expected_option_value, ret);
+  }
+
+  absl::optional<std::string> GetCupsOptionValue(
+      const char* option_name) const {
+    DCHECK(option_name);
+    auto cups_options = SettingsToCupsOptions(settings_);
+    absl::optional<std::string> ret;
+    for (const auto& option : cups_options) {
+      if (option->name && !strcmp(option_name, option->name)) {
+        ret = std::string(option->value);
+      }
+    }
+    return ret;
   }
 
   TestPrintSettings settings_;
@@ -265,6 +244,37 @@ TEST_F(PrintingContextTest, SettingsToCupsOptions_DoNotSendUserInfo) {
   EXPECT_EQ(start_document_username, "");
 }
 
+TEST_F(PrintingContextTest, SettingsToCupsOptionsClientInfo) {
+  mojom::IppClientInfo valid_client_info(
+      mojom::IppClientInfo::ClientType::kOperatingSystem, "aB.1-_", "aB.1-_",
+      "aB.1-_", "aB.1-_");
+  mojom::IppClientInfo invalid_client_info(
+      mojom::IppClientInfo::ClientType::kOperatingSystem, "{}", "aB.1-_",
+      "aB.1-_", "aB.1-_");
+  settings_.set_client_infos(
+      {valid_client_info, invalid_client_info, valid_client_info});
+  absl::optional<std::string> option_val = GetCupsOptionValue(kIppClientInfo);
+  ASSERT_TRUE(option_val.has_value());
+
+  // Check that the invalid item is skipped in the CUPS option string.
+  size_t client_info_item_count =
+      base::SplitString(option_val.value(), ",", base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_ALL)
+          .size();
+  EXPECT_EQ(client_info_item_count, 2u);
+}
+
+TEST_F(PrintingContextTest, SettingsToCupsOptionsClientInfoEmpty) {
+  settings_.set_client_infos({});
+  absl::optional<std::string> option_val = GetCupsOptionValue(kIppClientInfo);
+  EXPECT_FALSE(option_val.has_value());
+
+  mojom::IppClientInfo invalid_client_info(
+      mojom::IppClientInfo::ClientType::kOther, "$", " ", "{}", absl::nullopt);
+
+  settings_.set_client_infos({invalid_client_info});
+  EXPECT_FALSE(GetCupsOptionValue(kIppClientInfo).has_value());
+}
 }  // namespace
 
 }  // namespace printing

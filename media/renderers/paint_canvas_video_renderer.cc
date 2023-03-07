@@ -8,9 +8,9 @@
 #include <limits>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -740,23 +740,23 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 
   sk_sp<SkData> GetEncodedData() const override { return nullptr; }
 
-  bool GetPixels(const SkImageInfo& info,
-                 void* pixels,
-                 size_t row_bytes,
+  bool GetPixels(SkPixmap dst_pixmap,
                  size_t frame_index,
                  cc::PaintImage::GeneratorClientId client_id,
                  uint32_t lazy_pixel_ref) override {
     DCHECK_EQ(frame_index, 0u);
 
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
-    PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(frame_.get(), pixels,
-                                                           row_bytes);
+    PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+        frame_.get(), dst_pixmap.writable_addr(), dst_pixmap.rowBytes());
 
     if (!SkColorSpace::Equals(GetSkImageInfo().colorSpace(),
-                              info.colorSpace())) {
-      SkPixmap src(GetSkImageInfo(), pixels, row_bytes);
-      if (!src.readPixels(info, pixels, row_bytes))
+                              dst_pixmap.colorSpace())) {
+      SkPixmap src(GetSkImageInfo(), dst_pixmap.writable_addr(),
+                   dst_pixmap.rowBytes());
+      if (!src.readPixels(dst_pixmap)) {
         return false;
+      }
     }
     return true;
   }
@@ -1010,7 +1010,7 @@ void PaintCanvasVideoRenderer::Paint(
         video_frame->format() == PIXEL_FORMAT_XBGR ||
         video_frame->HasTextures())) {
     cc::PaintFlags black_with_alpha_flags;
-    black_with_alpha_flags.setAlpha(flags.getAlpha());
+    black_with_alpha_flags.setAlphaf(flags.getAlphaf());
     canvas->drawRect(dest, black_with_alpha_flags);
     canvas->flush();
     return;
@@ -1027,7 +1027,7 @@ void PaintCanvasVideoRenderer::Paint(
   DCHECK(image);
 
   cc::PaintFlags video_flags;
-  video_flags.setAlpha(flags.getAlpha());
+  video_flags.setAlphaf(flags.getAlphaf());
   video_flags.setBlendMode(flags.getBlendMode());
 
   const bool need_rotation = video_transformation.rotation != VIDEO_ROTATION_0;

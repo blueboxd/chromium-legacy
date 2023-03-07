@@ -12,14 +12,14 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -817,11 +817,11 @@ bool ExtensionService::UninstallExtension(
     if (!GetExtensionFileTaskRunner()->PostTaskAndReply(
             FROM_HERE,
             base::BindOnce(&ExtensionService::UninstallExtensionOnFileThread,
-                           extension->id(),
-                           base::UnsafeDanglingUntriaged(profile_),
+                           extension->id(), profile_->GetProfileUserName(),
                            install_directory_, extension->path()),
-            subtask_done_callback))
+            subtask_done_callback)) {
       NOTREACHED();
+    }
   }
 
   DataDeleter::StartDeleting(profile_, extension.get(), subtask_done_callback);
@@ -836,21 +836,19 @@ bool ExtensionService::UninstallExtension(
   extension_prefs_->OnExtensionUninstalled(
       extension->id(), extension->location(), external_uninstall);
 
-  // Track the uninstallation.
-  UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
-
   return true;
 }
 
 // static
 void ExtensionService::UninstallExtensionOnFileThread(
     const std::string& id,
-    Profile* profile,
+    const std::string& profile_user_name,
     const base::FilePath& install_dir,
     const base::FilePath& extension_path) {
   ExtensionAssetsManager* assets_manager =
       ExtensionAssetsManager::GetInstance();
-  assets_manager->UninstallExtension(id, profile, install_dir, extension_path);
+  assets_manager->UninstallExtension(id, profile_user_name, install_dir,
+                                     extension_path);
 }
 
 bool ExtensionService::IsExtensionEnabled(
@@ -1560,18 +1558,11 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
 
   // If the extension is disabled due to a permissions increase, but does in
   // fact have all permissions, remove that disable reason.
-  // TODO(devlin): This was added to fix crbug.com/616474, but it's unclear
-  // if this behavior should stay forever.
-  if (disable_reasons & disable_reason::DISABLE_PERMISSIONS_INCREASE) {
-    bool reset_permissions_increase = false;
-    if (!is_privilege_increase) {
-      reset_permissions_increase = true;
-      disable_reasons &= ~disable_reason::DISABLE_PERMISSIONS_INCREASE;
-      extension_prefs_->RemoveDisableReason(
-          extension->id(), disable_reason::DISABLE_PERMISSIONS_INCREASE);
-    }
-    UMA_HISTOGRAM_BOOLEAN("Extensions.ResetPermissionsIncrease",
-                          reset_permissions_increase);
+  if (disable_reasons & disable_reason::DISABLE_PERMISSIONS_INCREASE &&
+      !is_privilege_increase) {
+    disable_reasons &= ~disable_reason::DISABLE_PERMISSIONS_INCREASE;
+    extension_prefs_->RemoveDisableReason(
+        extension->id(), disable_reason::DISABLE_PERMISSIONS_INCREASE);
   }
 
   // Extension has changed permissions significantly. Disable it. A

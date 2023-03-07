@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -23,6 +23,7 @@ namespace autofill {
 
 class CardUnmaskPromptView;
 
+// This class is owned by `ChromeAutofillClient`.
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
   explicit CardUnmaskPromptControllerImpl(PrefService* pref_service);
@@ -42,10 +43,11 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   // Functions called by ChromeAutofillClient.
   // It is guaranteed that |view_factory| is called before this function
   // returns, i.e., the callback will not outlive the stack frame of ShowPrompt.
-  void ShowPrompt(CardUnmaskPromptViewFactory view_factory,
-                  const CreditCard& card,
-                  const CardUnmaskPromptOptions& card_unmask_prompt_options,
-                  base::WeakPtr<CardUnmaskDelegate> delegate);
+  virtual void ShowPrompt(
+      CardUnmaskPromptViewFactory view_factory,
+      const CreditCard& card,
+      const CardUnmaskPromptOptions& card_unmask_prompt_options,
+      base::WeakPtr<CardUnmaskDelegate> delegate);
   // The CVC the user entered went through validation.
   void OnVerificationResult(AutofillClient::PaymentsRpcResult result);
 
@@ -61,12 +63,14 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   std::u16string GetOkButtonLabel() const override;
   int GetCvcImageRid() const override;
   bool ShouldRequestExpirationDate() const override;
-  bool GetStoreLocallyStartState() const override;
 #if BUILDFLAG(IS_ANDROID)
+  std::string GetCardIconString() const override;
+  std::u16string GetCardName() const override;
+  std::u16string GetCardLastFourDigits() const override;
+  std::u16string GetCardExpiration() const override;
   int GetGooglePayImageRid() const override;
   bool ShouldOfferWebauthn() const override;
   bool GetWebauthnOfferStartState() const override;
-  bool IsCardLocal() const override;
 #endif
   bool InputCvcIsValid(const std::u16string& input_text) const override;
   bool InputExpirationIsValid(const std::u16string& month,
@@ -76,6 +80,9 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::TimeDelta GetSuccessMessageDuration() const override;
   AutofillClient::PaymentsRpcResult GetVerificationResult() const override;
   bool IsVirtualCard() const override;
+#if !BUILDFLAG(IS_IOS)
+  int GetCvcTooltipResourceId() override;
+#endif
 
  protected:
   // Exposed for testing.
@@ -83,6 +90,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
  private:
   bool AllowsRetry(AutofillClient::PaymentsRpcResult result);
+  bool IsCvcInFront();
   bool ShouldDismissUnmaskPromptUponResult(
       AutofillClient::PaymentsRpcResult result);
   void LogOnCloseEvents();

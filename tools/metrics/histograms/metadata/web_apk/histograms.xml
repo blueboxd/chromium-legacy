@@ -64,7 +64,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayErrorCode"
-    enum="WebApkInstallGooglePlayErrorCode" expires_after="2023-05-07">
+    enum="WebApkInstallGooglePlayErrorCode" expires_after="2023-07-16">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.InstallDuration" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -101,7 +101,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.InstallEvent" enum="WebApkInstallEvent"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.PathToInstall" enum="PwaInstallPath"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <owner>
@@ -142,7 +142,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.RequestTokenDurationV2" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>hartmanng@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <owner>
@@ -197,7 +197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Notification.Permission.Status2" enum="ContentSetting"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>hartmanng@chromium.org</owner>
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>
@@ -252,22 +252,6 @@ chromium-metrics-reviews@google.com.
     This is recorded iff: - This is a cold startup of Chrome. - Chrome has not
     been sent to the background since launch. - There was no recents entry for
     Chrome (Android replays intents if a recents entry exists), which otherwise
-    adds noise/long-tail to this histogram.
-  </summary>
-</histogram>
-
-<histogram name="WebApk.Startup.Cold.ShellLaunchToSplashscreenHidden"
-    units="ms" expires_after="2020-08-31">
-  <owner>mheikal@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Tracks the time to splashscreen hidden starting from the launch of the
-    WebAPK shell (rather than from the launch of Chrome). The splashscreen is
-    hidden after the first visually non-empty paint.
-
-    This is recorded iff: - This is a cold startup of Chrome. - Chrome has not
-    been sent to the background since launch. - There was no recents entry for
-    Chrome (android replays intents if a recents entry exists), which otherwise
     adds noise/long-tail to this histogram.
   </summary>
 </histogram>

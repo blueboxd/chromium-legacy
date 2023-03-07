@@ -15,9 +15,7 @@
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_model.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_toolbar_view.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_page_handler.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "ui/accessibility/ax_node_id_forward.h"
-#include "ui/accessibility/ax_tree_update_forward.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "ui/base/models/combobox_model.h"
 
 class Browser;
@@ -36,8 +34,7 @@ class Browser;
 class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
                                public ReadAnythingFontCombobox::Delegate,
                                public ReadAnythingPageHandler::Delegate,
-                               public TabStripModelObserver,
-                               public content::WebContentsObserver {
+                               public TabStripModelObserver {
  public:
   ReadAnythingController(ReadAnythingModel* model, Browser* browser);
   ReadAnythingController(const ReadAnythingController&) = delete;
@@ -48,6 +45,14 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   // it is currently shown in the side panel.
   void Activate(bool active);
   bool IsActiveForTesting() { return active_; }
+
+  // Called by ReadAnythingWebContentsObserver. Sends |details| to the WebUI.
+  void AccessibilityEventReceived(
+      const content::AXEventNotificationDetails& details);
+
+  // Called by ReadAnythingWebContentsObserver. Notifies the WebUI that the
+  // AXTree for |web_contents| has been destroyed.
+  void WebContentsDestroyed(content::WebContents* web_contents);
 
  private:
   friend class ReadAnythingControllerTest;
@@ -77,17 +82,8 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
       const TabStripSelectionChange& selection) override;
   void OnTabStripModelDestroyed(TabStripModel* tab_strip_model) override;
 
-  // content::WebContentsObserver:
-  void DidStopLoading() override;
-
-  // Requests a distilled AXTree for the main frame of the currently active
-  // web contents.
-  void DistillAXTree();
-
-  // Callback method which receives an AXTree snapshot and a list of AXNodes
-  // which correspond to nodes in the tree that contain main content.
-  void OnAXTreeDistilled(const ui::AXTreeUpdate& snapshot,
-                         const std::vector<ui::AXNodeID>& content_node_ids);
+  // Notifies the model that the AXTreeID has changed.
+  void NotifyActiveAXTreeIDChanged();
 
   const raw_ptr<ReadAnythingModel> model_;
   std::vector<ReadAnythingModel::Observer*> observers_;

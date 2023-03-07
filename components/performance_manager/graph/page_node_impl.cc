@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/time/default_tick_clock.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl.h"
@@ -576,6 +576,18 @@ uint64_t PageNodeImpl::EstimateResidentSetSize() const {
       this, base::BindRepeating(
                 [](uint64_t* total, const FrameNode* frame_node) {
                   *total += frame_node->GetResidentSetKbEstimate();
+                  return true;
+                },
+                &total));
+  return total;
+}
+
+uint64_t PageNodeImpl::EstimatePrivateFootprintSize() const {
+  uint64_t total = 0;
+  performance_manager::GraphOperations::VisitFrameTreePreOrder(
+      this, base::BindRepeating(
+                [](uint64_t* total, const FrameNode* frame_node) {
+                  *total += frame_node->GetPrivateFootprintKbEstimate();
                   return true;
                 },
                 &total));

@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -36,7 +36,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie.h"
@@ -2255,9 +2254,35 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
   EXPECT_EQ(1u, cookies.size());
 }
 
-// Test that cookie expiration works when there are only partitioned cookies and
-// expiration happens without SetCookie.
-TEST_F(CookieMonsterTest, DeleteExpiredPartitionedCookiesOnlyOnGet) {
+// Test that cookie expiration works correctly when a cookie expires because
+// time elapses.
+TEST_F(CookieMonsterTest, DeleteExpiredCookiesAfterTimeElapsed) {
+  auto cm = std::make_unique<CookieMonster>(
+      /*store=*/nullptr, net::NetLog::Get());
+
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-A=B; secure; path=/",
+                        /*cookie_partition_key=*/absl::nullopt));
+  // Set a cookie with a Max-Age. Since we only parse integers for this
+  // attribute, 1 second is the minimum allowable time.
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-C=D; secure; path=/; max-age=1",
+                        /*cookie_partition_key=*/absl::nullopt));
+
+  CookieList cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                                           CookiePartitionKeyCollection());
+  EXPECT_EQ(2u, cookies.size());
+
+  // Sleep for entire Max-Age of the second cookie.
+  base::PlatformThread::Sleep(base::Seconds(1));
+
+  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                                CookiePartitionKeyCollection());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_EQ("__Host-A", cookies[0].Name());
+}
+
+TEST_F(CookieMonsterTest, DeleteExpiredPartitionedCookiesAfterTimeElapsed) {
   auto cm = std::make_unique<CookieMonster>(
       /*store=*/nullptr, net::NetLog::Get());
   auto cookie_partition_key =
@@ -2284,6 +2309,103 @@ TEST_F(CookieMonsterTest, DeleteExpiredPartitionedCookiesOnlyOnGet) {
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
                           CookiePartitionKeyCollection(cookie_partition_key));
   EXPECT_EQ(1u, cookies.size());
+  EXPECT_EQ("__Host-A", cookies[0].Name());
+}
+
+TEST_F(CookieMonsterTest, DeleteExpiredAfterTimeElapsed_GetAllCookies) {
+  auto cm = std::make_unique<CookieMonster>(
+      /*store=*/nullptr, net::NetLog::Get());
+
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-A=B; secure; path=/",
+                        /*cookie_partition_key=*/absl::nullopt));
+  // Set a cookie with a Max-Age. Since we only parse integers for this
+  // attribute, 1 second is the minimum allowable time.
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-C=D; secure; path=/; max-age=1",
+                        /*cookie_partition_key=*/absl::nullopt));
+
+  GetAllCookiesCallback get_cookies_callback1;
+  cm->GetAllCookiesAsync(get_cookies_callback1.MakeCallback());
+  get_cookies_callback1.WaitUntilDone();
+  ASSERT_EQ(2u, get_cookies_callback1.cookies().size());
+
+  // Sleep for entire Max-Age of the second cookie.
+  base::PlatformThread::Sleep(base::Seconds(1));
+
+  GetAllCookiesCallback get_cookies_callback2;
+  cm->GetAllCookiesAsync(get_cookies_callback2.MakeCallback());
+  get_cookies_callback2.WaitUntilDone();
+
+  ASSERT_EQ(1u, get_cookies_callback2.cookies().size());
+  EXPECT_EQ("__Host-A", get_cookies_callback2.cookies()[0].Name());
+}
+
+TEST_F(CookieMonsterTest,
+       DeleteExpiredPartitionedCookiesAfterTimeElapsed_GetAllCookies) {
+  auto cm = std::make_unique<CookieMonster>(
+      /*store=*/nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
+
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-A=B; secure; path=/; partitioned",
+                        cookie_partition_key));
+  // Set a cookie with a Max-Age. Since we only parse integers for this
+  // attribute, 1 second is the minimum allowable time.
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-C=D; secure; path=/; max-age=1; partitioned",
+                        cookie_partition_key));
+
+  GetAllCookiesCallback get_cookies_callback1;
+  cm->GetAllCookiesAsync(get_cookies_callback1.MakeCallback());
+  get_cookies_callback1.WaitUntilDone();
+  ASSERT_EQ(2u, get_cookies_callback1.cookies().size());
+
+  // Sleep for entire Max-Age of the second cookie.
+  base::PlatformThread::Sleep(base::Seconds(1));
+
+  GetAllCookiesCallback get_cookies_callback2;
+  cm->GetAllCookiesAsync(get_cookies_callback2.MakeCallback());
+  get_cookies_callback2.WaitUntilDone();
+
+  ASSERT_EQ(1u, get_cookies_callback2.cookies().size());
+  EXPECT_EQ("__Host-A", get_cookies_callback2.cookies()[0].Name());
+}
+
+TEST_F(CookieMonsterTest, DeletePartitionedCookie) {
+  auto cm = std::make_unique<CookieMonster>(
+      /*store=*/nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
+
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-A=B; secure; path=/; partitioned",
+                        cookie_partition_key));
+  // Set another partitioned and an unpartitioned cookie and make sure they are
+  // unaffected.
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-C=D; secure; path=/; partitioned",
+                        cookie_partition_key));
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-E=F; secure; path=/", absl::nullopt));
+
+  auto cookie = CanonicalCookie::Create(
+      https_www_bar_.url(), "__Host-A=B; secure; path=/; partitioned",
+      /*creation_time=*/Time::Now(), /*server_time=*/absl::nullopt,
+      cookie_partition_key);
+  ASSERT_TRUE(cookie);
+
+  ResultSavingCookieCallback<unsigned int> delete_callback;
+  cm->DeleteCanonicalCookieAsync(*cookie, delete_callback.MakeCallback());
+  delete_callback.WaitUntilDone();
+
+  CookieList cookies =
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeyCollection(cookie_partition_key));
+  EXPECT_EQ(2u, cookies.size());
+  EXPECT_EQ(cookies[0].Name(), "__Host-C");
+  EXPECT_EQ(cookies[1].Name(), "__Host-E");
 }
 
 // Tests importing from a persistent cookie store that contains duplicate
@@ -3065,6 +3187,13 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
       CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
       false,
       CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"))));
+  // Expired cookie, should not be stored.
+  list.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "expired", "foobar", https_www_foo_.url().host(), "/",
+      base::Time::Now() - base::Days(1), base::Time::Now() - base::Days(2),
+      base::Time(), base::Time(), /*secure=*/true, /*httponly=*/false,
+      CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+      /*same_party=*/false));
 
   // SetAllCookies must not flush.
   ASSERT_EQ(0, store->flush_count());
@@ -5472,6 +5601,10 @@ TEST_F(CookieMonsterTest, SiteHasCookieInOtherPartition) {
   // method only considers partitioned cookies.
   EXPECT_THAT(cm->SiteHasCookieInOtherPartition(site, partition_key),
               testing::Optional(false));
+
+  // Should return nullopt when the partition key is nullopt.
+  EXPECT_FALSE(
+      cm->SiteHasCookieInOtherPartition(site, /*partition_key=*/absl::nullopt));
 }
 
 // Tests which use this class verify the expiry date clamping behavior when

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
+#include "chrome/browser/ui/webui/settings/ash/send_search_feedback_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -156,6 +157,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_LABEL},
       {"subpageBackButtonAriaRoleDescription",
        IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_ROLE_DESCRIPTION},
+      {"subpageLearnMoreAriaLabel", IDS_SETTINGS_SUBPAGE_LEARN_MORE_ARIA_LABEL},
       {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
       {"notValidWebAddressForContentType",
        IDS_SETTINGS_NOT_VALID_WEB_ADDRESS_FOR_CONTENT_TYPE},
@@ -208,6 +210,8 @@ void MainSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::BrowserLifetimeHandler>());
 
   web_ui->AddMessageHandler(CreatePluralStringHandler());
+
+  web_ui->AddMessageHandler(std::make_unique<SendSearchFeedbackHandler>());
 }
 
 int MainSection::GetSectionNameMessageId() const {

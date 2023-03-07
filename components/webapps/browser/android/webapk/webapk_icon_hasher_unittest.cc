@@ -6,15 +6,14 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -238,6 +237,49 @@ TEST_F(WebApkIconHasherTest, SVGImage) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("12895188166704127516", runner.icon().hash);
+  EXPECT_FALSE(runner.icon().unsafe_data.empty());
+}
+
+TEST_F(WebApkIconHasherTest, WebpImage) {
+  GURL icon_url("http://www.google.com/chrome/test/data/android/splash.webp");
+  base::FilePath source_path;
+  base::FilePath icon_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+  icon_path = source_path.AppendASCII("components")
+                  .AppendASCII("test")
+                  .AppendASCII("data")
+                  .AppendASCII("webapps")
+                  .AppendASCII("splash.webp");
+  std::string icon_data;
+  ASSERT_TRUE(base::ReadFileToString(icon_path, &icon_data));
+  auto head = network::mojom::URLResponseHead::New();
+  std::string headers("HTTP/1.1 200 OK\nContent-type: image/webp\n\n");
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
+  head->mime_type = "image/webp";
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = icon_data.size();
+  test_url_loader_factory()->AddResponse(icon_url, std::move(head), icon_data,
+                                         status);
+
+  WebApkIconHasherRunner runner;
+  WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
+      test_url_loader_factory(), web_contents()->GetWeakPtr(),
+      url::Origin::Create(icon_url), icon_url, /*timeout_ms=*/300,
+      base::BindOnce(&WebApkIconHasherRunner::OnCompleted,
+                     base::Unretained(&runner)));
+  base::RunLoop().RunUntilIdle();
+
+  SkBitmap dummy_bitmap;
+  dummy_bitmap.allocN32Pixels(10, 10);
+  dummy_bitmap.setImmutable();
+  EXPECT_TRUE(content::WebContentsTester::For(web_contents())
+                  ->TestDidDownloadImage(
+                      icon_url, 200, std::vector<SkBitmap>{dummy_bitmap},
+                      std::vector<gfx::Size>{gfx::Size(10, 10)}));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ("2160198985949168049", runner.icon().hash);
   EXPECT_FALSE(runner.icon().unsafe_data.empty());
 }
 

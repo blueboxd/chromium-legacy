@@ -13,7 +13,7 @@ import sys
 import tempfile
 
 from contextlib import AbstractContextManager
-from typing import Iterable, Optional
+from typing import IO, Iterable, List, Optional
 
 from common import check_ssh_config_file, run_ffx_command, \
                    run_continuous_ffx_command, SDK_ROOT
@@ -62,7 +62,14 @@ class ScopedFfxConfig(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if self._new_value != self._old_value:
-            run_ffx_command(['config', 'remove', self._name])
+
+            # Allow removal of config to fail.
+            remove_cmd = run_ffx_command(['config', 'remove', self._name],
+                                         check=False)
+            if remove_cmd.returncode != 0:
+                logging.warning('Error when removing ffx config %s',
+                                self._name)
+
             if self._old_value is not None:
                 # Explicitly set the value back only if removing the new value
                 # doesn't already restore the old value.
@@ -347,3 +354,19 @@ class FfxTestRunner(AbstractContextManager):
         """
         self._parse_test_outputs()
         return self._debug_data_directory
+
+
+def run_symbolizer(symbol_paths: List[str], input_fd: IO,
+                   output_fd: IO) -> subprocess.Popen:
+    """Runs symbolizer that symbolizes |input| and outputs to |output|."""
+
+    symbolize_cmd = ([
+        'debug', 'symbolize', '--', '--omit-module-lines', '--build-id-dir',
+        os.path.join(SDK_ROOT, '.build-id')
+    ])
+    for path in symbol_paths:
+        symbolize_cmd.extend(['--ids-txt', path])
+    return run_continuous_ffx_command(symbolize_cmd,
+                                      stdin=input_fd,
+                                      stdout=output_fd,
+                                      stderr=subprocess.STDOUT)

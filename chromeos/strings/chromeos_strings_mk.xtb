@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Неуспешни UDP-барања</translation>
 <translation id="1947737735496445907">Отпечатено</translation>
 <translation id="1951012854035635156">Помошник</translation>
+<translation id="1962550982027027473">Стандардна APN е задолжителна</translation>
 <translation id="1977994649430373166">Фотографија на профилот на Google</translation>
 <translation id="1979103255016296513">Измина рокот за промена на лозинката</translation>
 <translation id="1999615961760456652">Портал за проверка</translation>
@@ -317,6 +318,7 @@
 <translation id="4060260348856573701">Нов APN</translation>
 <translation id="4093865285251893588">Профилна слика</translation>
 <translation id="409427325554347132">Зачувај детали од тестот</translation>
+<translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">Изберете го албумот <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Подлога за допир со USB</translation>
 <translation id="4117637339509843559">Темен режим</translation>
@@ -635,6 +637,7 @@
 <translation id="6791471867139427246">боја на светло на тастатурата</translation>
 <translation id="680983167891198932">Клуч</translation>
 <translation id="6816797338148849397">Достапни се информации поврзани со вашиот избор. Користете го копчето со стрелка нагоре за да пристапите.</translation>
+<translation id="6838167112108853532">Не може да се оневозможи или отстрани оваа APN. Погрижете се дека овозможените прикачени APN се оневозможени или отстранети.</translation>
 <translation id="6853312040151791195">Брзина на празнење</translation>
 <translation id="6889786074662672253">Додека се рестартира, не исклучувајте го надворешниов уред од струја или не исклучувајте го компјутерот. Може да го минимизирате прозорецов. Ова може да потрае неколку минути и надворешниот уред можеби нема да работи во ова време.</translation>
 <translation id="6905724422583748843">Назад на <ph name="PAGE_NAME" /></translation>
@@ -717,6 +720,7 @@
 <translation id="7690294790491645610">Потврдете ја новата лозинка</translation>
 <translation id="7701040980221191251">Нема</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7716280709122323042">WPA3</translation>
 <translation id="773153675489693198">Број на циклуси</translation>
 <translation id="7747039790905080783">Претходно споделен клуч</translation>
 <translation id="7762130827864645708">Успешно ја променивте лозинката. Отсега користете ја новата лозинка.</translation>
@@ -724,6 +728,7 @@
 <translation id="7769672763586021400">ID на модел</translation>
 <translation id="7778717409420828014">Вашите повратни информации ни помагаат да го подобриме доживувањето на Chromebook и ќе бидат разгледани од нашиот тим. Поради големиот број на извештаи, нема да можеме да испратиме одговор.</translation>
 <translation id="7784116172884276937">Нема поставени DNS-сервери</translation>
+<translation id="7791543448312431591">Додај</translation>
 <translation id="779591286616261875">Испратете нова пријава</translation>
 <translation id="7799817062559422778">Светол режим</translation>
 <translation id="780301667611848630">Не, фала</translation>
@@ -799,6 +804,7 @@
 <translation id="8503836310948963452">Само уште неколку минути…</translation>
 <translation id="8508640263392900755">Детали за APN</translation>
 <translation id="8528615187455571738">Crosvm</translation>
+<translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Оваа опција може да е задолжителна за да се поврзете на мрежата на операторот. Контактирајте со операторот за детали.</translation>
 <translation id="8576249514688522074">Неиницијализирана</translation>
 <translation id="8620617069779373398">Статус на роаминг</translation>

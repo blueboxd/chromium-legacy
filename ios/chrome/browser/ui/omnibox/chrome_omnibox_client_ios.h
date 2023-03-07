@@ -12,11 +12,11 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 
 class ChromeBrowserState;
-class WebOmniboxEditController;
+class WebOmniboxEditModelDelegate;
 
 class ChromeOmniboxClientIOS : public OmniboxClient {
  public:
-  ChromeOmniboxClientIOS(WebOmniboxEditController* controller,
+  ChromeOmniboxClientIOS(WebOmniboxEditModelDelegate* edit_model_delegate,
                          ChromeBrowserState* browser_state);
 
   ChromeOmniboxClientIOS(const ChromeOmniboxClientIOS&) = delete;
@@ -46,6 +46,7 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
                                const TemplateURL* template_url,
                                const AutocompleteMatch& match,
                                WindowOpenDisposition disposition) override;
+  void OnUserPastedInOmniboxResultingInValidURL() override;
   void OnFocusChanged(OmniboxFocusState state,
                       OmniboxFocusChangeReason reason) override;
   void OnResultChanged(const AutocompleteResult& result,
@@ -58,7 +59,7 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
   gfx::Image GetFavicon() const override;
 
  private:
-  WebOmniboxEditController* controller_;
+  WebOmniboxEditModelDelegate* edit_model_delegate_;
   ChromeBrowserState* browser_state_;
   AutocompleteSchemeClassifierImpl scheme_classifier_;
 };

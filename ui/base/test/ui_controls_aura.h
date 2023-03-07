@@ -5,7 +5,7 @@
 #ifndef UI_BASE_TEST_UI_CONTROLS_AURA_H_
 #define UI_BASE_TEST_UI_CONTROLS_AURA_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/test/ui_controls.h"
@@ -35,23 +35,27 @@ class UIControlsAura {
                                           base::OnceClosure task) = 0;
 
   // Simulate a mouse move. (x,y) are absolute screen coordinates.
-  virtual bool SendMouseMove(int x, int y) = 0;
+  virtual bool SendMouseMove(int x, int y, gfx::NativeWindow window_hint) = 0;
   virtual bool SendMouseMoveNotifyWhenDone(int x,
                                            int y,
-                                           base::OnceClosure task) = 0;
+                                           base::OnceClosure task,
+                                           gfx::NativeWindow window_hint) = 0;
 
   // Sends a mouse down and/or up message. The click will be sent to wherever
   // the cursor currently is, so be sure to move the cursor before calling this
   // (and be sure the cursor has arrived!).
   virtual bool SendMouseEvents(MouseButton type,
                                int button_state,
-                               int accelerator_state) = 0;
+                               int accelerator_state,
+                               gfx::NativeWindow window_hint) = 0;
   virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                              int button_state,
                                              base::OnceClosure task,
-                                             int accelerator_state) = 0;
+                                             int accelerator_state,
+                                             gfx::NativeWindow window_hint) = 0;
   // Same as SendMouseEvents with BUTTON_UP | BUTTON_DOWN.
-  virtual bool SendMouseClick(MouseButton type) = 0;
+  virtual bool SendMouseClick(MouseButton type,
+                              gfx::NativeWindow window_hint) = 0;
 
 #if BUILDFLAG(IS_WIN)
   virtual bool SendTouchEvents(int action, int num, int x, int y) = 0;

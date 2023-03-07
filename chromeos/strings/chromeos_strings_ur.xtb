@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">‏UDP درخواست کی ناکامیاں</translation>
 <translation id="1947737735496445907">پرنٹ ہو گیا</translation>
 <translation id="1951012854035635156">اسسٹنٹ</translation>
+<translation id="1962550982027027473">‏ایک ڈیفالٹ APN درکار ہے</translation>
 <translation id="1977994649430373166">‏Google پروفائل کی تصویر</translation>
 <translation id="1979103255016296513">پاس ورڈ تبدیل کرنے میں تاخیر ہو گئی ہے</translation>
 <translation id="1999615961760456652">کیپٹو پورٹل</translation>
@@ -317,6 +318,7 @@
 <translation id="4060260348856573701">‏نیا APN</translation>
 <translation id="4093865285251893588">پروفائل تصویر</translation>
 <translation id="409427325554347132">ٹیسٹ کی تفصیلات محفوظ کریں</translation>
+<translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">البم <ph name="TITLE" /> <ph name="DESC" /> منتخب کریں</translation>
 <translation id="4111761024568264522">‏USB ٹچ پیڈ</translation>
 <translation id="4117637339509843559">تاریک وضع</translation>
@@ -634,6 +636,7 @@
 <translation id="6791471867139427246">کی بورڈ کا ہلکا رنگ</translation>
 <translation id="680983167891198932">کلید</translation>
 <translation id="6816797338148849397">آپ کے انتخاب سے متعلقہ معلومات دستیاب ہے۔ رسائی حاصل کرنے کے لئے اوپر تیر کے نشان کی کلید کا استعمال کریں۔</translation>
+<translation id="6838167112108853532">‏اس APN کو غیر فعال یا ہٹا نہیں سکتے۔ یقینی بنائیں کہ فعال کردہ منسلکہ APNs کو غیر فعال یا ہٹا دیا گیا ہے۔</translation>
 <translation id="6853312040151791195">ڈسچارج ہونے کی شرح</translation>
 <translation id="6889786074662672253">ری سٹارٹ کرنے کے دوران، اس خارجی آلے کو ان پلگ نہ کریں یا اپنے کمپیوٹر کو شٹ ڈاؤن نہ کریں۔ آپ اس ونڈو کو چھوٹا کر سکتے ہیں۔ اس اپ ڈیٹ میں کچھ منٹ لگ سکتے ہیں اور ہو سکتا ہے کہ آپ کا خارجی آلہ اس دوران کام نہ کرے۔</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> پر واپس جائیں</translation>
@@ -716,6 +719,7 @@
 <translation id="7690294790491645610">نئے پاس ورڈ کی توثیق کریں</translation>
 <translation id="7701040980221191251">کوئی نہیں</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7716280709122323042">WPA3</translation>
 <translation id="773153675489693198">دورانیے کی تعداد</translation>
 <translation id="7747039790905080783">پہلے سے اشتراک کردہ کلید</translation>
 <translation id="7762130827864645708">آپ کا پاس ورڈ کامیابی سے تبدیل کر دیا گیا۔ براہ کرم اب سے نیا پاس ورڈ استعمال کریں۔</translation>
@@ -723,6 +727,7 @@
 <translation id="7769672763586021400">‏ماڈل ID</translation>
 <translation id="7778717409420828014">‏آپ کے تاثرات Chromebook کے تجربے کو بہتر بنانے میں ہماری مدد کرتے ہیں اور ہماری ٹیم اس کا جائزہ لے گی۔ رپورٹس کی بڑی تعداد کی وجہ سے، ہم جواب نہیں بھیج سکیں گے۔</translation>
 <translation id="7784116172884276937">‏کوئی DNS سرور سیٹ اپ نہیں کیا گیا ہے</translation>
+<translation id="7791543448312431591">شامل کریں</translation>
 <translation id="779591286616261875">نئی رپورٹ بھیجیں</translation>
 <translation id="7799817062559422778">لائٹ موڈ</translation>
 <translation id="780301667611848630">نہیں شکریہ</translation>
@@ -798,6 +803,7 @@
 <translation id="8503836310948963452">صرف چند مزید منٹ...</translation>
 <translation id="8508640263392900755">‏APN کی تفصیلات</translation>
 <translation id="8528615187455571738">Crosvm</translation>
+<translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">آپ کے کیریئر کو اپنے نیٹ ورک سے منسلک ہونے کیلئے اس اختیار کی ضرورت پڑ سکتی ہے۔ تفصیلات کیلئے اپنے کیریئر سے رابطہ کریں۔</translation>
 <translation id="8576249514688522074">شروع نہیں کیا گیا</translation>
 <translation id="8620617069779373398">رومنگ کی صورتحال</translation>

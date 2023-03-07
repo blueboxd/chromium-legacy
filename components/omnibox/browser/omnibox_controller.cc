@@ -4,13 +4,12 @@
 
 #include "components/omnibox/browser/omnibox_controller.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_client.h"
-#include "components/omnibox/browser/omnibox_controller_emitter.h"
-#include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
@@ -25,7 +24,8 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
           AutocompleteClassifier::DefaultOmniboxProviders())) {
   autocomplete_controller_->AddObserver(this);
 
-  OmniboxControllerEmitter* emitter = client_->GetOmniboxControllerEmitter();
+  AutocompleteControllerEmitter* emitter =
+      client_->GetAutocompleteControllerEmitter();
   if (emitter)
     autocomplete_controller_->AddObserver(emitter);
 }

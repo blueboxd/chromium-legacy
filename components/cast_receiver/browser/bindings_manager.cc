@@ -4,10 +4,9 @@
 
 #include "components/cast_receiver/browser/bindings_manager.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/cast/message_port/blink_message_port_adapter.h"
 #include "components/cast/message_port/platform_message_port.h"
 #include "components/cast_receiver/browser/public/message_port_service.h"

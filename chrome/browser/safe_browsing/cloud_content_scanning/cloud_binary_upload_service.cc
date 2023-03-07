@@ -380,7 +380,7 @@ void CloudBinaryUploadService::OnGetRequestData(Request* request,
         std::move(traffic_annotation), std::move(callback));
   } else if (!data.path.empty()) {
     upload_request = MultipartUploadRequest::CreateFileRequest(
-        url_loader_factory_, std::move(url), metadata, data.path,
+        url_loader_factory_, std::move(url), metadata, data.path, data.size,
         std::move(traffic_annotation), std::move(callback));
   } else if (data.page.IsValid()) {
     upload_request = MultipartUploadRequest::CreatePageRequest(
@@ -698,11 +698,6 @@ void CloudBinaryUploadService::ResetAuthorizationData(const GURL& url) {
 }
 
 void CloudBinaryUploadService::Shutdown() {
-  if (!active_requests_.empty()) {
-    base::UmaHistogramCounts10000(
-        "SafeBrowsingCloudBinaryUploadService.ActiveRequestsAtShutdown",
-        active_requests_.size());
-  }
   if (binary_fcm_service_)
     binary_fcm_service_->Shutdown();
 }

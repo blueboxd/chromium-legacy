@@ -13,11 +13,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -966,7 +966,10 @@ void WebBluetoothServiceImpl::ForgetDevice(
   if (!base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend)) {
     auto device_address = allowed_devices().GetDeviceAddress(device_id);
-    allowed_devices().RemoveDevice(device_address);
+    // allowed_devices().RemoveDevice() expects a valid |device_address|.
+    if (!device_address.empty()) {
+      allowed_devices().RemoveDevice(device_address);
+    }
     std::move(callback).Run();
     return;
   }

@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/span.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
@@ -240,24 +240,6 @@ class AuthenticatorRequestDialogModel {
     CABLE_V2_2ND_FACTOR,
   };
 
-  // ExperimentServerLinkSheet controls the the arms of an experiment to tweak
-  // the behaviour and visibility of buttons on the server-link sheet.
-  enum class ExperimentServerLinkSheet {
-    CONTROL = 1,
-    ARM_2 = 2,
-    ARM_3 = 3,
-    ARM_4 = 4,
-    ARM_5 = 5,
-    ARM_6 = 6,
-  };
-
-  // ExperimentServerLinkTitle enumerates the arms of an experiment to tweak the
-  // title on the server-link sheet.
-  enum class ExperimentServerLinkTitle {
-    CONTROL = 11,
-    UNLOCK_YOUR_PHONE = 12,
-  };
-
   explicit AuthenticatorRequestDialogModel(
       content::RenderFrameHost* render_frame_host);
 
@@ -266,7 +248,7 @@ class AuthenticatorRequestDialogModel {
   AuthenticatorRequestDialogModel& operator=(
       const AuthenticatorRequestDialogModel&) = delete;
 
-  ~AuthenticatorRequestDialogModel();
+  virtual ~AuthenticatorRequestDialogModel();
 
   Step current_step() const { return current_step_; }
 
@@ -530,7 +512,7 @@ class AuthenticatorRequestDialogModel {
 
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
-  base::span<const Mechanism> mechanisms() const;
+  virtual base::span<const Mechanism> mechanisms() const;
 
   // current_mechanism returns the index into |mechanisms| of the most recently
   // activated mechanism, or nullopt if there isn't one.
@@ -630,11 +612,6 @@ class AuthenticatorRequestDialogModel {
   bool offer_try_again_in_ui() const { return offer_try_again_in_ui_; }
 
   base::WeakPtr<AuthenticatorRequestDialogModel> GetWeakPtr();
-
-  ExperimentServerLinkTitle experiment_server_link_title_ =
-      ExperimentServerLinkTitle::CONTROL;
-  ExperimentServerLinkSheet experiment_server_link_sheet_ =
-      ExperimentServerLinkSheet::CONTROL;
 
  private:
   // Contains the state that will be reset when calling StartOver(). StartOver()

@@ -10,6 +10,7 @@
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands/scoped_key_rotation_command_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/mock_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/test/device_trust_test_environment.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "crypto/scoped_mock_unexportable_key_provider.h"
 
 namespace enterprise_connectors {
@@ -22,18 +23,23 @@ class DeviceTrustTestEnvironmentWin : public DeviceTrustTestEnvironment,
 
   // KeyRotationCommandFactory:
   std::unique_ptr<KeyRotationCommand> CreateCommand(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      PrefService* local_prefs) override;
-
-  // DeviceTrustTestEnvironment:
-  void SetUploadResult(HttpResponseCode upload_response_code) override;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
 
   // DeviceTrustTestEnvironment:
   void SetUpExistingKey() override;
 
+  // DeviceTrustTestEnvironment:
+  std::vector<uint8_t> GetWrappedKey() override;
+
+ private:
   // RegistryOverrideManager for testing with registry
   registry_util::RegistryOverrideManager registry_override_manager_;
+
   crypto::ScopedMockUnexportableKeyProvider scoped_key_provider_;
+
+  // Used to fake that the browser was a system-level installation.
+  install_static::ScopedInstallDetails install_details_;
 };
 
 }  // namespace enterprise_connectors

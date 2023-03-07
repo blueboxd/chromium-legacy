@@ -4,9 +4,9 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -262,6 +262,10 @@ void OptimizationGuideKeyedService::Initialize() {
           // |this| owns |prediction_manager_|.
           base::Unretained(this)));
 
+  // Register for profile initialization event to initialize the model
+  // downloads.
+  profile_observation_.Observe(profile);
+
   // Some previous paths were written in incorrect locations. Delete the
   // old paths.
   //
@@ -388,6 +392,23 @@ void OptimizationGuideKeyedService::CanApplyOptimizationOnDemand(
 
   hints_manager_->CanApplyOptimizationOnDemand(urls, optimization_types,
                                                request_context, callback);
+}
+
+void OptimizationGuideKeyedService::OnProfileInitializationComplete(
+    Profile* profile) {
+  DCHECK(profile_observation_.IsObservingSource(profile));
+  profile_observation_.Reset();
+
+  if (!optimization_guide::features::IsInstallWideModelStoreEnabled()) {
+    return;
+  }
+
+  if (profile->IsOffTheRecord()) {
+    return;
+  }
+
+  GetPredictionManager()->MaybeInitializeModelDownloads(
+      BackgroundDownloadServiceProvider());
 }
 
 void OptimizationGuideKeyedService::AddHintForTesting(

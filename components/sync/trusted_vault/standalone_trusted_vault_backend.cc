@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
@@ -16,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -803,14 +803,6 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice() {
       FindUserVault(primary_account_->gaia);
   DCHECK(per_user_vault);
 
-  if (per_user_vault->vault_key().empty() &&
-      !base::FeatureList::IsEnabled(
-          kAllowSilentTrustedVaultDeviceRegistration)) {
-    // Either vault key with known version should be available or registration
-    // without it should be allowed through feature flag.
-    return absl::nullopt;
-  }
-
   if (per_user_vault->local_device_registration_info().device_registered() &&
       per_user_vault->local_device_registration_info()
               .device_registered_version() ==
@@ -1142,9 +1134,7 @@ bool StandaloneTrustedVaultBackend::AreConnectionRequestsThrottled() {
     last_failed_request_time = base::Time();
   }
 
-  return last_failed_request_time +
-             kTrustedVaultServiceThrottlingDuration.Get() >
-         current_time;
+  return last_failed_request_time + kThrottlingDuration > current_time;
 }
 
 void StandaloneTrustedVaultBackend::

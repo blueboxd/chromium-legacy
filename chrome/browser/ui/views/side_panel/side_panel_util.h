@@ -31,7 +31,9 @@ class SidePanelUtil {
     kSidePanelEntryDeregistered = 6,
     kIPHSideSearchAutoTrigger = 7,
     kContextMenuSearchOption = 8,
-    kMaxValue = kContextMenuSearchOption,
+    kReadAnythingContextMenu = 9,
+    kExtensionEntryRegistered = 10,
+    kMaxValue = kExtensionEntryRegistered,
   };
 
   static void PopulateGlobalEntries(Browser* browser,

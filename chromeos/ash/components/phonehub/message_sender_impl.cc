@@ -40,8 +40,10 @@ MessageSenderImpl::MessageSenderImpl(
 
 MessageSenderImpl::~MessageSenderImpl() = default;
 
-void MessageSenderImpl::SendCrosState(bool notification_setting_enabled,
-                                      bool camera_roll_setting_enabled) {
+void MessageSenderImpl::SendCrosState(
+    bool notification_setting_enabled,
+    bool camera_roll_setting_enabled,
+    const std::vector<std::string>* attestation_certs) {
   proto::NotificationSetting is_notification_enabled =
       notification_setting_enabled
           ? proto::NotificationSetting::NOTIFICATIONS_ON
@@ -52,12 +54,15 @@ void MessageSenderImpl::SendCrosState(bool notification_setting_enabled,
   proto::CrosState request;
   request.set_notification_setting(is_notification_enabled);
   request.set_camera_roll_setting(is_camera_roll_enabled);
-  if (features::IsPhoneHubMonochromeNotificationIconsEnabled()) {
-    // Updated Chromebooks should always use the new flag, but a flag is still
-    // necessary to identify end-of-support Chromebooks so the phone can know
-    // to send backwards-compatible messages.
-    request.set_notification_icon_styling(
-        proto::NotificationIconStyling::ICON_STYLE_MONOCHROME_SMALL_ICON);
+
+  if (attestation_certs != nullptr) {
+    proto::AttestationData* attestation_data =
+        request.mutable_attestation_data();
+    attestation_data->set_type(
+        proto::AttestationData::CROS_SOFT_BIND_CERT_CHAIN);
+    for (const std::string& cert : *attestation_certs) {
+      attestation_data->add_certificates(cert);
+    }
   }
 
   SendMessage(proto::MessageType::PROVIDE_CROS_STATE, &request);

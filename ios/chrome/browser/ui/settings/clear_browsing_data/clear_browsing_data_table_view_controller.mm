@@ -11,7 +11,6 @@
 #import "components/browsing_data/core/pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
-#import "components/signin/public/base/signin_switches.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -348,7 +347,6 @@
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)url {
   if (url.gurl == GURL(kCBDSignOutOfChromeURL)) {
-    DCHECK(base::FeatureList::IsEnabled(switches::kEnableCbdSignOut));
     [self showSignOutWithItemView:[view contentView]];
     return;
   }
@@ -566,8 +564,8 @@
     // An action is already in progress, ignore user's request.
     return;
   }
-  signin_metrics::ProfileSignout signout_source_metric =
-      signin_metrics::USER_CLICKED_SIGNOUT_FROM_CLEAR_BROWSING_DATA_PAGE;
+  signin_metrics::ProfileSignout signout_source_metric = signin_metrics::
+      ProfileSignout::kUserClickedSignoutFromClearBrowsingDataPage;
   _signoutCoordinator = [[SignoutActionSheetCoordinator alloc]
       initWithBaseViewController:self
                          browser:_browser

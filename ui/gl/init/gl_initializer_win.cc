@@ -8,8 +8,8 @@
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -22,6 +22,7 @@
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_utils.h"
+#include "ui/gl/init/gl_display_initializer.h"
 #include "ui/gl/vsync_provider_win.h"
 
 namespace gl {
@@ -123,13 +124,13 @@ bool InitializeStaticEGLInternal(GLImplementationParts implementation) {
 
 }  // namespace
 
-GLDisplay* InitializeGLOneOffPlatform(uint64_t system_device_id) {
+GLDisplay* InitializeGLOneOffPlatform(gl::GpuPreference gpu_preference) {
   VSyncProviderWin::InitializeOneOff();
 
-  GLDisplayEGL* display = GetDisplayEGL(system_device_id);
+  GLDisplayEGL* display = GetDisplayEGL(gpu_preference);
   switch (GetGLImplementation()) {
     case kGLImplementationEGLANGLE:
-      if (!display->Initialize(EGLDisplayPlatform(GetDC(nullptr)))) {
+      if (!InitializeDisplay(display, EGLDisplayPlatform(GetDC(nullptr)))) {
         LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
         return nullptr;
       }

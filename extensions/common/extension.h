@@ -95,10 +95,11 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
     // Chrome Web Store.
     FROM_WEBSTORE = 1 << 3,
 
-    // |FROM_BOOKMARK| indicates the extension is a bookmark app which has been
-    // generated from a web page. Bookmark apps have no permissions or extent
-    // and launch the web page they are created from when run.
-    FROM_BOOKMARK = 1 << 4,
+    // DEPRECATED - |FROM_BOOKMARK| indicates the extension is a bookmark app
+    // which has been generated from a web page. Bookmark apps have no
+    // permissions or extent and launch the web page they are created from when
+    // run.
+    // FROM_BOOKMARK = 1 << 4,
 
     // |FOLLOW_SYMLINKS_ANYWHERE| means that resources can be symlinks to
     // anywhere in the filesystem, rather than being restricted to the
@@ -226,19 +227,9 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
 
-  // Returns true if the extension requires a valid ordinal for sorting, e.g.,
-  // for displaying in a launcher or new tab page.
-  bool RequiresSortOrdinal() const;
-
   // TODO(devlin): The core Extension class shouldn't be responsible for these
-  // ShouldDisplay/ShouldExpose style functions; it doesn't know about the NTP,
-  // Management API, etc.
-
-  // Returns true if the extension should be displayed in the app launcher.
-  bool ShouldDisplayInAppLauncher() const;
-
-  // Returns true if the extension should be displayed in the browser NTP.
-  bool ShouldDisplayInNewTabPage() const;
+  // ShouldExpose-style functions; it doesn't know about the Management API,
+  // etc.
 
   // Returns true if the extension should be exposed via the chrome.management
   // API.
@@ -311,11 +302,6 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
-  // TODO(crbug.com/1065748): Retire this function when there are no old
-  // entries.
-  bool from_deprecated_bookmark() const {
-    return (creation_flags_ & FROM_BOOKMARK) != 0;
-  }
   bool may_be_untrusted() const {
     return (creation_flags_ & MAY_BE_UNTRUSTED) != 0;
   }
@@ -465,12 +451,6 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // initialization happens from the same thread (this can happen when certain
   // parts of the initialization process need information from previous parts).
   base::ThreadChecker thread_checker_;
-
-  // Should this app be shown in the app launcher.
-  bool display_in_launcher_;
-
-  // Should this app be shown in the browser New Tab Page.
-  bool display_in_new_tab_page_;
 
   // Whether the extension has host permissions or user script patterns that
   // imply access to file:/// scheme URLs (the user may not have actually

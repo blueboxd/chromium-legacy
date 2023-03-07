@@ -21,16 +21,17 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {isMac} from 'chrome://resources/js/platform.js';
-import {KeyboardShortcutList} from 'chrome://resources/js/keyboard_shortcut_list.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
+import {KeyboardShortcutList} from 'chrome://resources/js/keyboard_shortcut_list.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {isMac} from 'chrome://resources/js/platform.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {afterNextRender, flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {deselectItems, selectAll, selectFolder} from './actions.js';
 import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
+import {BookmarkManagerApiProxyImpl} from './bookmark_manager_api_proxy.js';
 import {BrowserProxy, BrowserProxyImpl} from './browser_proxy.js';
 import {getTemplate} from './command_manager.html.js';
 import {Command, IncognitoAvailability, MenuSource, OPEN_CONFIRMATION_LIMIT, ROOT_NODE_ID} from './constants.js';
@@ -163,6 +164,10 @@ export class BookmarksCommandManagerElement extends
 
   getMenuIdsForTesting(): Set<string> {
     return this.menuIds_;
+  }
+
+  getMenuSourceForTesting(): MenuSource {
+    return this.menuSource_;
   }
 
   /**
@@ -323,7 +328,7 @@ export class BookmarksCommandManagerElement extends
       }
       case Command.COPY: {
         const idList = Array.from(itemIds);
-        chrome.bookmarkManagerPrivate.copy(idList, () => {
+        chrome.bookmarkManagerPrivate.copy(idList).then(() => {
           let labelPromise: Promise<string>;
           if (idList.length === 1) {
             labelPromise =
@@ -361,9 +366,10 @@ export class BookmarksCommandManagerElement extends
               'toastItemsDeleted', idList.length);
         }
 
-        chrome.bookmarkManagerPrivate.removeTrees(idList, () => {
-          this.showTitleToast_(labelPromise, title, true);
-        });
+        BookmarkManagerApiProxyImpl.getInstance().removeTrees(idList).then(
+            () => {
+              this.showTitleToast_(labelPromise, title, true);
+            });
         break;
       }
       case Command.UNDO:
@@ -406,12 +412,12 @@ export class BookmarksCommandManagerElement extends
         const selectedFolder = state.selectedFolder;
         const selectedItems = state.selection.items;
         trackUpdatedItems();
-        chrome.bookmarkManagerPrivate.paste(
-            selectedFolder, Array.from(selectedItems), highlightUpdatedItems);
+        chrome.bookmarkManagerPrivate
+            .paste(selectedFolder, Array.from(selectedItems))
+            .then(highlightUpdatedItems);
         break;
       case Command.SORT:
         chrome.bookmarkManagerPrivate.sortChildren(state.selectedFolder);
-        getToastManager().querySelector('dom-if')!.if = true;
         getToastManager().show(loadTimeData.getString('toastFolderSorted'));
         break;
       case Command.ADD_BOOKMARK:
@@ -760,16 +766,12 @@ export class BookmarksCommandManagerElement extends
           result.collapsible = !!p.arg;
           return result;
         });
-    getToastManager().querySelector('dom-if')!.if = canUndo;
-    getToastManager().showForStringPieces(pieces);
+    getToastManager().showForStringPieces(pieces, /*hideSlotted*/ !canUndo);
   }
 
   private updateCanPaste_(targetId: string): Promise<void> {
-    return new Promise(resolve => {
-      chrome.bookmarkManagerPrivate.canPaste(`${targetId}`, result => {
-        this.canPaste_ = result;
-        resolve();
-      });
+    return chrome.bookmarkManagerPrivate.canPaste(targetId).then(result => {
+      this.canPaste_ = result;
     });
   }
 

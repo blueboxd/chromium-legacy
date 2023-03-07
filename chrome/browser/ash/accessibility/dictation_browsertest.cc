@@ -10,11 +10,14 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/shell.h"
+#include "ash/system/notification_center/notification_center_test_api.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_test_helper.h"
 #include "base/base_paths.h"
-#include "base/bind.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
@@ -53,6 +56,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_host_test_helper.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
@@ -106,6 +110,10 @@ constexpr char kPumpkinTestFilePath[] =
     "pumpkin";
 constexpr char kContentEditableUrl[] =
     "data:text/html;charset=utf-8,<div id='input' contenteditable></div>";
+constexpr char kFormattedContentEditableUrl[] = R"(
+    data:text/html;charset=utf-8,<div id='input' contenteditable>
+    <p><strong>This</strong> <b>is</b> a <em>test</em></p></div>
+)";
 constexpr char kInputUrl[] =
     "data:text/html;charset=utf-8,<input id='input' type='text'></input>";
 constexpr char kTextAreaUrl[] =
@@ -138,6 +146,10 @@ static const char* kEnglishDictationCommands[] = {
     "move to the next sentence",
     "move to the previous sentence"};
 
+constexpr char kTestSupportPath[] =
+    "chrome/browser/resources/chromeos/accessibility/accessibility_common/"
+    "dictation/dictation_test_support.js";
+
 PrefService* GetActiveUserPrefs() {
   return ProfileManager::GetActiveUserProfile()->GetPrefs();
 }
@@ -150,21 +162,13 @@ void EnableChromeVox() {
   GetManager()->EnableSpokenFeedback(true);
 }
 
-std::string ToString(DictationBubbleIconType icon) {
-  switch (icon) {
-    case DictationBubbleIconType::kHidden:
-      return "hidden";
-    case DictationBubbleIconType::kStandby:
-      return "standby";
-    case DictationBubbleIconType::kMacroSuccess:
-      return "macro success";
-    case DictationBubbleIconType::kMacroFail:
-      return "macro fail";
-  }
-}
-
 // The type of editable field to use in tests.
-enum class EditableType { kContentEditable, kInput, kTextArea };
+enum class EditableType {
+  kContentEditable,
+  kFormattedContentEditable,
+  kInput,
+  kTextArea
+};
 
 // A class used to define the parameters of a test case.
 class TestConfig {
@@ -334,6 +338,9 @@ class DictationTestBase : public InProcessBrowserTest,
       case EditableType::kTextArea:
         url = kTextAreaUrl;
         break;
+      case EditableType::kFormattedContentEditable:
+        url = kFormattedContentEditableUrl;
+        break;
       case EditableType::kInput:
         url = kInputUrl;
         break;
@@ -346,12 +353,14 @@ class DictationTestBase : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         nullptr, ui::KeyboardCode::VKEY_TAB, false, false, false, false)));
 
+    // Create an instance of the DictationTestSupport JS class, which can be
+    // used from these tests to interact with Dictation JS. For more
+    // information, see kTestSupportPath.
+    SetUpTestSupport();
+
     // Increase Dictation's NO_FOCUSED_IME timeout to reduce flakiness on slower
     // builds.
-    std::string script = R"(
-      accessibilityCommon.dictation_.increaseNoFocusedImeTimeoutForTesting_();
-      window.domAutomationController.send("done");
-    )";
+    std::string script = "testSupport.increaseNoFocusedImeTimeout();";
     ExecuteAccessibilityCommonScript(script);
 
     // Dictation will request a Pumpkin install when it starts up. Wait for
@@ -364,6 +373,17 @@ class DictationTestBase : public InProcessBrowserTest,
       content::SpeechRecognitionManager::SetManagerForTesting(nullptr);
 
     InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  void SetUpTestSupport() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath source_dir;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+    auto test_support_path = source_dir.AppendASCII(kTestSupportPath);
+    std::string script;
+    ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))
+        << test_support_path;
+    ExecuteAccessibilityCommonScript(script);
   }
 
   void SetUpPumpkinDir() {
@@ -391,18 +411,8 @@ class DictationTestBase : public InProcessBrowserTest,
       return;
     }
 
-    std::string error_message = "Waiting for Pumpkin Tagger to initialize";
-    SuccessWaiter(
-        base::BindLambdaForTesting([&]() { return GetPumpkinTaggerReady(); }),
-        error_message)
-        .Wait();
-  }
-
-  bool GetPumpkinTaggerReady() {
-    std::string script =
-        "window.domAutomationController.send(String(accessibilityCommon."
-        "dictation_.speechParser_.pumpkinParseStrategy_.pumpkinTaggerReady_));";
-    return "true" == ExecuteAccessibilityCommonScript(script);
+    std::string script = "testSupport.waitForPumpkinTaggerReady();";
+    ExecuteAccessibilityCommonScript(script);
   }
 
   // Routers to SpeechRecognitionTestHelper methods.
@@ -454,6 +464,8 @@ class DictationTestBase : public InProcessBrowserTest,
     ASSERT_TRUE(selection_waiter.WaitForNotification());
   }
 
+  // TODO(b:259353252): Update this method to use testSupport JS, similar to
+  // what's done in DictationFormattedContentEditableTest::WaitForSelection.
   void SendFinalResultAndWaitForCaretBoundsChanged(const std::string& result) {
     content::AccessibilityNotificationWaiter selection_waiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
@@ -485,9 +497,13 @@ class DictationTestBase : public InProcessBrowserTest,
             "document.getElementById('input').value)";
         break;
       case EditableType::kContentEditable:
+      case EditableType::kFormattedContentEditable:
+        // Replace all non-breaking spaces with regular spaces. Otherwise,
+        // string comparisons will unexpectedly fail.
         script =
             "window.domAutomationController.send("
-            "document.getElementById('input').innerText)";
+            "document.getElementById('input').innerText.replaceAll("
+            "'\u00a0', ' '));";
         break;
     }
     CHECK(ExecuteScriptAndExtractString(
@@ -496,34 +512,14 @@ class DictationTestBase : public InProcessBrowserTest,
   }
 
   void WaitForEditableValue(const std::string& value) {
-    std::string error_message = "Still waiting for text area value: " + value;
-    SuccessWaiter(base::BindLambdaForTesting(
-                      [&]() { return value == GetEditableValue(); }),
-                  error_message)
-        .Wait();
+    std::string script = base::StringPrintf(
+        "testSupport.waitForEditableValue(`%s`);", value.c_str());
+    ExecuteAccessibilityCommonScript(script);
   }
 
   void WaitForFocusHandler() {
-    std::string error_message = "Still waiting for FocusHandler";
-    std::string script = R"(
-      if (accessibilityCommon.dictation_.focusHandler_.isReadyForTesting()) {
-        window.domAutomationController.send("ready");
-      } else {
-        window.domAutomationController.send("not ready");
-      }
-    )";
-    SuccessWaiter(
-        base::BindLambdaForTesting([&]() {
-          std::string result =
-              extensions::browsertest_util::ExecuteScriptInBackgroundPage(
-                  /*context=*/browser()->profile(),
-                  /*extension_id=*/
-                  extension_misc::kAccessibilityCommonExtensionId,
-                  /*script=*/script);
-          return result == "ready";
-        }),
-        error_message)
-        .Wait();
+    std::string script = "testSupport.waitForFocusHandler();";
+    ExecuteAccessibilityCommonScript(script);
   }
 
   void ToggleDictationWithKeystroke() {
@@ -532,8 +528,8 @@ class DictationTestBase : public InProcessBrowserTest,
   }
 
   void InstallMockInputContextHandler() {
-    input_context_handler_ = std::make_unique<ui::MockIMEInputContextHandler>();
-    ui::IMEBridge::Get()->SetInputContextHandler(input_context_handler_.get());
+    input_context_handler_ = std::make_unique<MockIMEInputContextHandler>();
+    IMEBridge::Get()->SetInputContextHandler(input_context_handler_.get());
   }
 
   // Retrieves the number of times commit text is updated.
@@ -553,16 +549,19 @@ class DictationTestBase : public InProcessBrowserTest,
         .Wait();
   }
 
+  void WaitForSelection(int start, int end) {
+    std::string script =
+        base::StringPrintf("testSupport.waitForSelection(%d, %d);", start, end);
+    ExecuteAccessibilityCommonScript(script);
+  }
+
   const base::flat_map<std::string, Dictation::LocaleData>
   GetAllSupportedLocales() {
     return Dictation::GetAllSupportedLocales();
   }
 
   void DisablePumpkin() {
-    std::string script = R"(
-      accessibilityCommon.dictation_.disablePumpkinForTesting_();
-      window.domAutomationController.send("done");
-    )";
+    std::string script = "testSupport.disablePumpkin();";
     ExecuteAccessibilityCommonScript(script);
   }
 
@@ -581,9 +580,12 @@ class DictationTestBase : public InProcessBrowserTest,
   }
 
   bool RunOnMultilineContent() {
+    // TODO(b:259353252): Contenteditables have an error where inserting a \n
+    // actually inserts two \n characters.
     // <input> represents a one-line plain text control, so multiline test cases
-    // should be skipped.
-    return editable_type() != EditableType::kInput;
+    // should be skipped. Run multiline test cases only on <textarea> for these
+    // reasons.
+    return editable_type() == EditableType::kTextArea;
   }
 
   speech::SpeechRecognitionType speech_recognition_type() {
@@ -595,7 +597,7 @@ class DictationTestBase : public InProcessBrowserTest,
  private:
   SpeechRecognitionTestHelper test_helper_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<ui::MockIMEInputContextHandler> input_context_handler_;
+  std::unique_ptr<MockIMEInputContextHandler> input_context_handler_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
   std::unique_ptr<ExtensionConsoleErrorObserver> console_observer_;
 };
@@ -921,22 +923,21 @@ IN_PROC_BROWSER_TEST_P(DictationTest, SmartDeletePhraseNoChange) {
 
 // Is a DictationTest for the same reason as the above test.
 IN_PROC_BROWSER_TEST_P(DictationTest, Help) {
+  // Setup a TestNavigationObserver, which will allow us to know when the help
+  // center URL is loaded.
+  auto observer = std::make_unique<content::TestNavigationObserver>(
+      GURL("https://support.google.com/chromebook?p=text_dictation_m100"));
+  observer->WatchExistingWebContents();
+  observer->StartWatchingNewWebContents();
+
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
   SendFinalResultAndWait("help");
 
-  // Wait for the help URL to load.
-  SuccessWaiter(
-      base::BindLambdaForTesting([&]() {
-        content::WebContents* web_contents =
-            browser()->tab_strip_model()->GetActiveWebContents();
-        return web_contents->GetVisibleURL() ==
-               "https://support.google.com/chromebook?p=text_dictation_m100";
-      }),
-      "Still waiting for help URL to load")
-      .Wait();
-
+  // Speech recognition should automatically turn off.
   WaitForRecognitionStopped();
+  // Wait for the help center URL to load.
+  observer->Wait();
 }
 
 // Confirms that punctuation can be sent and entered into the editable. We
@@ -1147,9 +1148,6 @@ class DictationRegexCommandsTest : public DictationTest {
     WaitForRecognitionStopped();
     DictationTest::TearDownOnMainThread();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1163,6 +1161,12 @@ INSTANTIATE_TEST_SUITE_P(
     DictationRegexCommandsTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
                                  EditableType::kInput)));
+
+INSTANTIATE_TEST_SUITE_P(
+    NetworkContentEditable,
+    DictationRegexCommandsTest,
+    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
+                                 EditableType::kContentEditable)));
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, TypesCommands) {
   std::string expected_text = "";
@@ -1427,7 +1431,8 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SmartInsertBefore) {
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SmartSelectBetween) {
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
-  SendFinalResultAndWaitForSelectionChanged("select from this to test");
+  SendFinalResultAndWait("select from this to test");
+  WaitForSelection(0, 14);
   SendFinalResultAndWaitForEditableValue("Hello world", "Hello world.");
 }
 
@@ -1459,7 +1464,7 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
                        CursorPositionSmartDeletePhrase) {
   SendFinalResultAndWaitForEditableValue("This is a difficult test",
                                          "This is a difficult test");
-  SendFinalResultAndWaitForCaretBoundsChanged("delete difficult");
+  SendFinalResultAndWaitForEditableValue("delete difficult", "This is a test");
   SendFinalResultAndWaitForEditableValue("simple", "This is a simple test");
 }
 
@@ -1467,7 +1472,8 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
                        CursorPositionSmartReplacePhrase) {
   SendFinalResultAndWaitForEditableValue("This is a difficult test",
                                          "This is a difficult test");
-  SendFinalResultAndWaitForCaretBoundsChanged("replace difficult with simple");
+  SendFinalResultAndWaitForEditableValue("replace difficult with simple",
+                                         "This is a simple test");
   SendFinalResultAndWaitForEditableValue("biology",
                                          "This is a simple biology test");
   SendFinalResultAndWaitForEditableValue(
@@ -1477,7 +1483,8 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
                        CursorPositionSmartInsertBefore) {
   SendFinalResultAndWaitForEditableValue("This is a test", "This is a test");
-  SendFinalResultAndWaitForCaretBoundsChanged("insert simple before test");
+  SendFinalResultAndWaitForEditableValue("insert simple before test",
+                                         "This is a simple test");
   SendFinalResultAndWaitForEditableValue("biology",
                                          "This is a simple biology test");
 }
@@ -1536,12 +1543,13 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, Metrics) {
 
 // Tests the behavior of the Dictation bubble UI.
 class DictationUITest : public DictationTest {
- protected:
+ public:
   DictationUITest() = default;
   ~DictationUITest() override = default;
   DictationUITest(const DictationUITest&) = delete;
   DictationUITest& operator=(const DictationUITest&) = delete;
 
+ protected:
   void SetUpOnMainThread() override {
     DictationTest::SetUpOnMainThread();
     dictation_bubble_test_helper_ =
@@ -1553,57 +1561,15 @@ class DictationUITest : public DictationTest {
       DictationBubbleIconType icon,
       const absl::optional<std::u16string>& text,
       const absl::optional<std::vector<std::u16string>>& hints) {
-    WaitForVisibility(visible);
-    WaitForVisibleIcon(icon);
+    dictation_bubble_test_helper_->WaitForVisibility(visible);
+    dictation_bubble_test_helper_->WaitForVisibleIcon(icon);
     if (text.has_value())
-      WaitForVisibleText(text.value());
+      dictation_bubble_test_helper_->WaitForVisibleText(text.value());
     if (hints.has_value())
-      WaitForVisibleHints(hints.value());
+      dictation_bubble_test_helper_->WaitForVisibleHints(hints.value());
   }
 
  private:
-  void WaitForVisibility(bool visible) {
-    std::string error_message = "Still waiting for UI visibility: ";
-    error_message += visible ? "true" : "false";
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-                    return dictation_bubble_test_helper_->IsVisible() ==
-                           visible;
-                  }),
-                  error_message)
-        .Wait();
-  }
-
-  void WaitForVisibleIcon(DictationBubbleIconType icon) {
-    std::string error_message = "Still waiting for UI icon: " + ToString(icon);
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-                    return dictation_bubble_test_helper_->GetVisibleIcon() ==
-                           icon;
-                  }),
-                  error_message)
-        .Wait();
-  }
-
-  void WaitForVisibleText(const std::u16string& text) {
-    std::string error_message =
-        "Still waiting for UI text: " + base::UTF16ToUTF8(text);
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-                    return dictation_bubble_test_helper_->GetText() == text;
-                  }),
-                  error_message)
-        .Wait();
-  }
-
-  void WaitForVisibleHints(const std::vector<std::u16string>& hints) {
-    std::string error_message = base::UTF16ToUTF8(
-        u"Still waiting for UI hints: " + base::JoinString(hints, u","));
-    SuccessWaiter(
-        base::BindLambdaForTesting([&]() {
-          return dictation_bubble_test_helper_->HasVisibleHints(hints);
-        }),
-        error_message)
-        .Wait();
-  }
-
   std::unique_ptr<DictationBubbleTestHelper> dictation_bubble_test_helper_;
 };
 
@@ -1851,11 +1817,6 @@ class DictationPumpkinTest : public DictationTest {
     WaitForRecognitionStopped();
     DictationTest::TearDownOnMainThread();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  base::ScopedTempDir pumpkin_root_dir_;
-  std::vector<std::unique_ptr<base::ScopedTempDir>> sub_dirs_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1870,8 +1831,11 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
                                  EditableType::kInput)));
 
-// TODO(b:259353252): Add NetworkContentEditable test once commands are working
-// in content editables.
+INSTANTIATE_TEST_SUITE_P(
+    NetworkContentEditable,
+    DictationPumpkinTest,
+    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
+                                 EditableType::kContentEditable)));
 
 // TODO(crbug.com/1368843): Test is flaky on MSAN builds.
 #if defined(MEMORY_SANITIZER)
@@ -1976,8 +1940,8 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SmartInsertBefore) {
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SmartSelectBetween) {
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
-  SendFinalResultAndWaitForSelectionChanged(
-      "highlight everything between is and test");
+  SendFinalResultAndWait("highlight everything between is and test");
+  WaitForSelection(5, 14);
   SendFinalResultAndWaitForEditableValue("was a quiz", "This was a quiz.");
 }
 
@@ -2103,13 +2067,7 @@ class DictationContextCheckingTest : public DictationTest {
   }
 
   void WaitForVisibleIcon(DictationBubbleIconType icon) {
-    std::string error_message = "Still waiting for UI icon: " + ToString(icon);
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-                    return dictation_bubble_test_helper_->GetVisibleIcon() ==
-                           icon;
-                  }),
-                  error_message)
-        .Wait();
+    dictation_bubble_test_helper_->WaitForVisibleIcon(icon);
   }
 
  private:
@@ -2145,6 +2103,148 @@ IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, UnselectNoSelection) {
   SendFinalResultAndWaitForEditableValue(text, text);
   SendFinalResultAndWait("unselect");
   WaitForVisibleIcon(DictationBubbleIconType::kMacroFail);
+}
+
+class NotificationCenterDictationTest : public DictationTest {
+ public:
+  NotificationCenterDictationTest() = default;
+  NotificationCenterDictationTest(const NotificationCenterDictationTest&) =
+      delete;
+  NotificationCenterDictationTest& operator=(
+      const NotificationCenterDictationTest&) = delete;
+  ~NotificationCenterDictationTest() override = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DictationTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndEnableFeature(features::kQsRevamp);
+  }
+
+  void SetUpOnMainThread() override {
+    DictationTest::SetUpOnMainThread();
+    ToggleDictationWithKeystroke();
+    WaitForRecognitionStarted();
+  }
+
+  void TearDownOnMainThread() override {
+    ToggleDictationWithKeystroke();
+    WaitForRecognitionStopped();
+    DictationTest::TearDownOnMainThread();
+  }
+
+  NotificationCenterTestApi* test_api() {
+    if (!test_api_) {
+      test_api_ = std::make_unique<NotificationCenterTestApi>(
+          StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+              ->notification_center_tray());
+    }
+    return test_api_.get();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<NotificationCenterTestApi> test_api_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    NetworkTextArea,
+    NotificationCenterDictationTest,
+    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
+                                 EditableType::kTextArea)));
+
+// Tests that clicking the notification center tray does not crash when
+// dictation is enabled.
+IN_PROC_BROWSER_TEST_P(NotificationCenterDictationTest, OpenBubble) {
+  // Add a notification to ensure the tray is visible.
+  test_api()->AddNotification();
+  ASSERT_TRUE(test_api()->IsTrayShown());
+
+  // Click on the tray and verify the bubble shows up.
+  test_api()->ToggleBubble();
+  EXPECT_TRUE(test_api()->GetWidget()->IsActive());
+  EXPECT_TRUE(test_api()->IsBubbleShown());
+}
+
+// A test class that only runs on formatted content editables.
+class DictationFormattedContentEditableTest : public DictationPumpkinTest {
+ public:
+  DictationFormattedContentEditableTest() = default;
+  ~DictationFormattedContentEditableTest() override = default;
+  DictationFormattedContentEditableTest(
+      const DictationFormattedContentEditableTest&) = delete;
+  DictationFormattedContentEditableTest& operator=(
+      const DictationFormattedContentEditableTest&) = delete;
+
+ protected:
+  void SetUpOnMainThread() override {
+    DictationPumpkinTest::SetUpOnMainThread();
+
+    // Place the selection at the end of the content editable (the pre-populated
+    // editable value has a length of 14).
+    std::string script = "testSupport.setSelection(14, 14);";
+    ExecuteAccessibilityCommonScript(script);
+  }
+};
+
+// Note: For these tests, the content editable comes pre-populated with a value
+// of "This is a test". See `kFormattedContentEditableUrl` for more details.
+INSTANTIATE_TEST_SUITE_P(
+    NetworkFormattedContentEditable,
+    DictationFormattedContentEditableTest,
+    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
+                                 EditableType::kFormattedContentEditable)));
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, DeletePhrase) {
+  SendFinalResultAndWaitForEditableValue("delete a", "This is test");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest,
+                       ReplacePhraseMultipleWords) {
+  std::string command = "replace the phrase is a test with was just one exam";
+  std::string expected_value = "This was just one exam";
+  SendFinalResultAndWaitForEditableValue(command, expected_value);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest,
+                       ReplacePhraseFirstWord) {
+  std::string command = "replace this with it";
+  std::string expected_value = "It is a test";
+  SendFinalResultAndWaitForEditableValue(command, expected_value);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest,
+                       ReplacePhraseLastWord) {
+  std::string command = "replace test with quiz";
+  std::string expected_value = "This is a quiz";
+  SendFinalResultAndWaitForEditableValue(command, expected_value);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, InsertBefore) {
+  std::string command = "insert the phrase simple before test";
+  std::string expected_value = "This is a simple test";
+  SendFinalResultAndWaitForEditableValue(command, expected_value);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, MoveBySentence) {
+  SendFinalResultAndWaitForEditableValue(", good luck.",
+                                         "This is a test, good luck.");
+  SendFinalResultAndWait("move to the previous sentence");
+  // Wait for the selection to move to the beginning of the editable.
+  WaitForSelection(0, 0);
+  SendFinalResultAndWaitForEditableValue(
+      "Good morning. ", "Good morning. This is a test, good luck.");
+  SendFinalResultAndWait("forward one sentence");
+  // Wait for the selection to move to the end of the editable.
+  WaitForSelection(40, 40);
+  SendFinalResultAndWaitForEditableValue(
+      " Have fun.", "Good morning. This is a test, good luck. Have fun.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest,
+                       SmartSelectBetween) {
+  SendFinalResultAndWait("highlight everything between is and a");
+  WaitForSelection(5, 9);
+  SendFinalResultAndWaitForEditableValue("was one", "This was one test");
 }
 
 }  // namespace ash

@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -120,7 +120,7 @@ class MirrorBrowserTest : public InProcessBrowserTest {
     auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
         nullptr, browser()->profile(),
         https_server.GetURL("google.com", kAuthPath),
-        extensions::WebAuthFlow::INTERACTIVE, partition);
+        extensions::WebAuthFlow::INTERACTIVE, partition, "extension_name");
 
     web_auth_flow->Start();
     run_loop.Run();

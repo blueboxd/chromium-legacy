@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
@@ -25,8 +26,9 @@ namespace blink {
 static int ComputeNumberOfTracks(const CSSValueList* value_list) {
   int number_of_tracks = 0;
   for (auto& value : *value_list) {
-    if (value->IsGridLineNamesValue())
+    if (value->IsGridLineNamesValue()) {
       continue;
+    }
     if (auto* repeat_value =
             DynamicTo<cssvalue::CSSGridIntegerRepeatValue>(*value)) {
       number_of_tracks +=
@@ -670,6 +672,103 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyBackgroundImageImageSet) {
 
   ParseProperty(CSSPropertyID::kBackgroundImage, "image-set(url(foo) 2x)");
   EXPECT_TRUE(IsCounted(feature));
+}
+
+TEST(CSSPropertyParserTest, ImageSetDefaultResolution) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set(url(foo))",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_NE(value, nullptr);
+
+  const CSSValueList* val_list = To<CSSValueList>(value);
+  ASSERT_NE(val_list, nullptr);
+  ASSERT_EQ(val_list->length(), 1U);
+
+  const CSSImageSetValue& image_set_value =
+      To<CSSImageSetValue>(val_list->Last());
+  EXPECT_EQ("image-set(url(\"foo\") 1x)", image_set_value.CustomCSSText());
+}
+
+TEST(CSSPropertyParserTest, ImageSetUrlFunction) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set(url('foo') 1x)",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_NE(value, nullptr);
+
+  const CSSValueList* val_list = To<CSSValueList>(value);
+  ASSERT_NE(val_list, nullptr);
+  ASSERT_EQ(val_list->length(), 1U);
+
+  const CSSImageSetValue& image_set_value =
+      To<CSSImageSetValue>(val_list->Last());
+  EXPECT_EQ("image-set(url(\"foo\") 1x)", image_set_value.CustomCSSText());
+}
+
+TEST(CSSPropertyParserTest, ImageSetUrlFunctionEmptyStrUrl) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set(url('') 1x)",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_NE(value, nullptr);
+
+  const CSSValueList* val_list = To<CSSValueList>(value);
+  ASSERT_NE(val_list, nullptr);
+  ASSERT_EQ(val_list->length(), 1U);
+
+  const CSSImageSetValue& image_set_value =
+      To<CSSImageSetValue>(val_list->Last());
+  EXPECT_EQ("image-set(url(\"\") 1x)", image_set_value.CustomCSSText());
+}
+
+TEST(CSSPropertyParserTest, ImageSetUrlFunctionNoQuotationMarks) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set(url(foo) 1x)",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_NE(value, nullptr);
+
+  const CSSValueList* val_list = To<CSSValueList>(value);
+  ASSERT_NE(val_list, nullptr);
+  ASSERT_EQ(val_list->length(), 1U);
+
+  const CSSImageSetValue& image_set_value =
+      To<CSSImageSetValue>(val_list->Last());
+  EXPECT_EQ("image-set(url(\"foo\") 1x)", image_set_value.CustomCSSText());
+}
+
+TEST(CSSPropertyParserTest, ImageSetNoUrlFunction) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set('foo' 1x)",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_NE(value, nullptr);
+
+  const CSSValueList* val_list = To<CSSValueList>(value);
+  ASSERT_NE(val_list, nullptr);
+  ASSERT_EQ(val_list->length(), 1U);
+
+  const CSSImageSetValue& image_set_value =
+      To<CSSImageSetValue>(val_list->Last());
+  EXPECT_EQ("image-set(url(\"foo\") 1x)", image_set_value.CustomCSSText());
+}
+
+TEST(CSSPropertyParserTest, ImageSetEmptyStrUrl) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set('' 1x)",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_NE(value, nullptr);
+
+  const CSSValueList* val_list = To<CSSValueList>(value);
+  ASSERT_NE(val_list, nullptr);
+  ASSERT_EQ(val_list->length(), 1U);
+
+  const CSSImageSetValue& image_set_value =
+      To<CSSImageSetValue>(val_list->Last());
+  EXPECT_EQ("image-set(url(\"\") 1x)", image_set_value.CustomCSSText());
+}
+
+TEST(CSSPropertyParserTest, ImageSetMissingUrl) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage, "image-set(1x)",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  ASSERT_EQ(value, nullptr);
 }
 
 TEST(CSSPropertyParserTest, InternalLightDarkAuthor) {

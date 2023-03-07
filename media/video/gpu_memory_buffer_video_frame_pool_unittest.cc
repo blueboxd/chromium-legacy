@@ -5,11 +5,11 @@
 #include <stdint.h>
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/media_switches.h"
@@ -250,7 +250,7 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> media_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> copy_task_runner_;
   // GpuMemoryBufferVideoFramePool uses BindToCurrentLoop(), which requires
-  // ThreadTaskRunnerHandle initialization.
+  // SingleThreadTaskRunner::CurrentDefaultHandle initialization.
   std::unique_ptr<base::SingleThreadTaskRunner::CurrentDefaultHandle>
       media_task_runner_handle_;
   std::unique_ptr<viz::TestSharedImageInterface> sii_;
@@ -774,13 +774,13 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareP010Frame) {
 
   EXPECT_NE(software_frame.get(), frame.get());
   EXPECT_EQ(PIXEL_FORMAT_P016LE, frame->format());
-#if BUILDFLAG(IS_MAC)
-  EXPECT_EQ(2u, frame->NumTextures());
-  EXPECT_EQ(2u, sii_->shared_image_count());
-#else
-  EXPECT_EQ(1u, frame->NumTextures());
-  EXPECT_EQ(1u, sii_->shared_image_count());
-#endif
+  if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
+    EXPECT_EQ(2u, frame->NumTextures());
+    EXPECT_EQ(2u, sii_->shared_image_count());
+  } else {
+    EXPECT_EQ(1u, frame->NumTextures());
+    EXPECT_EQ(1u, sii_->shared_image_count());
+  }
   EXPECT_TRUE(frame->metadata().read_lock_fences_enabled);
 
   EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
@@ -814,13 +814,13 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest,
       gfx::IsOddHeightMultiPlanarBuffersAllowed()) {
     EXPECT_NE(software_frame.get(), frame.get());
     EXPECT_EQ(PIXEL_FORMAT_P016LE, frame->format());
-#if BUILDFLAG(IS_MAC)
-    EXPECT_EQ(2u, frame->NumTextures());
-    EXPECT_EQ(2u, sii_->shared_image_count());
-#else
-    EXPECT_EQ(1u, frame->NumTextures());
-    EXPECT_EQ(1u, sii_->shared_image_count());
-#endif
+    if (GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled()) {
+      EXPECT_EQ(2u, frame->NumTextures());
+      EXPECT_EQ(2u, sii_->shared_image_count());
+    } else {
+      EXPECT_EQ(1u, frame->NumTextures());
+      EXPECT_EQ(1u, sii_->shared_image_count());
+    }
     EXPECT_TRUE(frame->metadata().read_lock_fences_enabled);
 
     EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());

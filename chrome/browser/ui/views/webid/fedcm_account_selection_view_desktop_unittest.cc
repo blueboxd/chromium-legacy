@@ -45,9 +45,9 @@ class TestBubbleView : public AccountSelectionBubbleViewInterface {
       account_ids_.push_back(account.id);
   }
 
-  void ShowVerifyingSheet(
-      const content::IdentityRequestAccount& account,
-      const IdentityProviderDisplayData& idp_data) override {
+  void ShowVerifyingSheet(const content::IdentityRequestAccount& account,
+                          const IdentityProviderDisplayData& idp_data,
+                          const std::u16string& title) override {
     show_verifying_sheet_ = true;
     account_ids_ = {account.id};
   }
@@ -84,10 +84,10 @@ class TestFedCmAccountSelectionView : public FedCmAccountSelectionView {
       const TestFedCmAccountSelectionView&) = delete;
 
  protected:
-  views::Widget* CreateBubble(
-      Browser* browser,
-      const std::u16string& rp_etld_plus_one,
-      const absl::optional<std::u16string>& idp_title) override {
+  views::Widget* CreateBubble(Browser* browser,
+                              const std::u16string& rp_etld_plus_one,
+                              const absl::optional<std::u16string>& idp_title,
+                              blink::mojom::RpContext rp_context) override {
     return widget_;
   }
 
@@ -153,14 +153,16 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
   }
 
   std::unique_ptr<TestFedCmAccountSelectionView> CreateAndShow(
-      const std::vector<content::IdentityRequestAccount>& accounts) {
+      const std::vector<content::IdentityRequestAccount>& accounts,
+      SignInMode mode) {
     auto controller = std::make_unique<TestFedCmAccountSelectionView>(
         delegate_.get(), widget_.get(), bubble_view_.get());
     controller->Show(
         kRpEtldPlusOne,
         {{kIdpEtldPlusOne, accounts, content::IdentityProviderMetadata(),
-          content::ClientMetadata(GURL(), GURL())}},
-        SignInMode::kExplicit);
+          content::ClientMetadata(GURL(), GURL()),
+          blink::mojom::RpContext::kSignIn}},
+        mode);
     return controller;
   }
 
@@ -182,7 +184,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, SingleAccountFlow) {
       CreateIdentityProviderDisplayData({{kAccountId, LoginState::kSignUp}});
   const std::vector<Account>& accounts = idp_data.accounts_;
   std::unique_ptr<TestFedCmAccountSelectionView> controller =
-      CreateAndShow(accounts);
+      CreateAndShow(accounts, SignInMode::kExplicit);
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
@@ -190,7 +192,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, SingleAccountFlow) {
   EXPECT_FALSE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId));
 
-  observer->OnAccountSelected(accounts[0], idp_data);
+  observer->OnAccountSelected(accounts[0], idp_data, /*auto_signin=*/false);
   EXPECT_TRUE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId));
 }
@@ -202,7 +204,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, MultipleAccountFlowReturning) {
       {{kAccountId1, LoginState::kSignIn}, {kAccountId2, LoginState::kSignIn}});
   const std::vector<Account>& accounts = idp_data.accounts_;
   std::unique_ptr<TestFedCmAccountSelectionView> controller =
-      CreateAndShow(accounts);
+      CreateAndShow(accounts, SignInMode::kExplicit);
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
@@ -211,7 +213,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, MultipleAccountFlowReturning) {
   EXPECT_THAT(bubble_view_->account_ids_,
               testing::ElementsAre(kAccountId1, kAccountId2));
 
-  observer->OnAccountSelected(accounts[0], idp_data);
+  observer->OnAccountSelected(accounts[0], idp_data, /*auto_signin=*/false);
   EXPECT_TRUE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId1));
 }
@@ -225,7 +227,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, MultipleAccountFlowBack) {
   });
   const std::vector<Account>& accounts = idp_data.accounts_;
   std::unique_ptr<TestFedCmAccountSelectionView> controller =
-      CreateAndShow(accounts);
+      CreateAndShow(accounts, SignInMode::kExplicit);
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
@@ -234,7 +236,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, MultipleAccountFlowBack) {
   EXPECT_THAT(bubble_view_->account_ids_,
               testing::ElementsAre(kAccountId1, kAccountId2));
 
-  observer->OnAccountSelected(accounts[0], idp_data);
+  observer->OnAccountSelected(accounts[0], idp_data, /*auto_signin=*/false);
   EXPECT_TRUE(bubble_view_->show_back_button_);
   EXPECT_FALSE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId1));
@@ -245,14 +247,42 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, MultipleAccountFlowBack) {
   EXPECT_THAT(bubble_view_->account_ids_,
               testing::ElementsAre(kAccountId1, kAccountId2));
 
-  observer->OnAccountSelected(accounts[1], idp_data);
+  observer->OnAccountSelected(accounts[1], idp_data, /*auto_signin=*/false);
   EXPECT_TRUE(bubble_view_->show_back_button_);
   EXPECT_FALSE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId2));
 
-  observer->OnAccountSelected(accounts[1], idp_data);
+  observer->OnAccountSelected(accounts[1], idp_data, /*auto_signin=*/false);
   EXPECT_TRUE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId2));
+}
+
+TEST_F(FedCmAccountSelectionViewDesktopTest, AutoSigninSingleAccountFlow) {
+  const char kAccountId[] = "account_id";
+  IdentityProviderDisplayData idp_data =
+      CreateIdentityProviderDisplayData({{kAccountId, LoginState::kSignIn}});
+  const std::vector<Account>& accounts = idp_data.accounts_;
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShow(accounts, SignInMode::kAuto);
+
+  EXPECT_FALSE(bubble_view_->show_back_button_);
+  EXPECT_TRUE(bubble_view_->show_verifying_sheet_);
+  EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId));
+}
+
+TEST_F(FedCmAccountSelectionViewDesktopTest,
+       AutoSigninMultipleAccountsOneReturning) {
+  const char kAccountId1[] = "account_id1";
+  const char kAccountId2[] = "account_id2";
+  IdentityProviderDisplayData idp_data = CreateIdentityProviderDisplayData(
+      {{kAccountId1, LoginState::kSignIn}, {kAccountId2, LoginState::kSignUp}});
+  const std::vector<Account>& accounts = idp_data.accounts_;
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShow(accounts, SignInMode::kAuto);
+
+  EXPECT_FALSE(bubble_view_->show_back_button_);
+  EXPECT_TRUE(bubble_view_->show_verifying_sheet_);
+  EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId1));
 }
 
 namespace {
@@ -302,12 +332,12 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, AccountSelectedDeletesView) {
   AccountSelectionBubbleView::Observer* observer = nullptr;
   {
     std::unique_ptr<TestFedCmAccountSelectionView> controller =
-        CreateAndShow(accounts);
+        CreateAndShow(accounts, SignInMode::kExplicit);
     observer =
         static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
     view_deleting_delegate->SetView(std::move(controller));
   }
 
   // Destroys FedCmAccountSelectionView. Should not cause crash.
-  observer->OnAccountSelected(accounts[0], idp_data);
+  observer->OnAccountSelected(accounts[0], idp_data, /*auto_signin=*/false);
 }

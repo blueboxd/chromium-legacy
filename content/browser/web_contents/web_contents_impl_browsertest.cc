@@ -7,13 +7,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/buildflags.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -23,6 +23,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -415,13 +416,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Let B finish and wait for another load stop.  A will still be loading due
   // to D.
   LoadFinishedWaiter load_waiter_b(web_contents, url_b);
-  delayer_b.WaitForNavigationFinished();
+  ASSERT_TRUE(delayer_b.WaitForNavigationFinished());
   load_waiter_b.Wait();
   EXPECT_TRUE(web_contents->IsLoading());
 
   // Let D finish.  We should get a load stop in the main frame.
   LoadFinishedWaiter load_waiter_d(web_contents, url_d);
-  delayer_d.WaitForNavigationFinished();
+  ASSERT_TRUE(delayer_d.WaitForNavigationFinished());
   load_waiter_d.Wait();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_FALSE(web_contents->IsLoading());
@@ -1465,7 +1466,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Have the cross-site navigation commit. The main RenderFrameHost should
   // still be loading after that.
-  cross_site_delayer.WaitForNavigationFinished();
+  ASSERT_TRUE(cross_site_delayer.WaitForNavigationFinished());
   EXPECT_TRUE(shell()->web_contents()->IsLoading());
 }
 
@@ -3463,8 +3464,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, TitleUpdateOnRestore) {
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
-              false, std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), /* initiator_origin= */ absl::nullopt,
+              /* initiator_base_url= */ absl::nullopt,
+              ui::PAGE_TRANSITION_RELOAD, false, std::string(),
+              controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   std::unique_ptr<NavigationEntryRestoreContextImpl> context =
       std::make_unique<NavigationEntryRestoreContextImpl>();
@@ -5827,7 +5830,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
     test_recorder_.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
 
 namespace {
 
@@ -5866,7 +5869,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanBrowserTest,
   EXPECT_TRUE(partition_alloc::internal::PCScan::IsEnabled());
 
   // Wait for navigation to finish and check that PCScan is disabled.
-  navigation_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(navigation_manager.WaitForNavigationFinished());
   EXPECT_FALSE(partition_alloc::internal::PCScan::IsEnabled());
 
   // Complete load and check that PCScan is enabled again.
@@ -5952,6 +5955,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanPrerenderBrowserTest,
   EXPECT_TRUE(partition_alloc::internal::PCScan::IsEnabled());
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
 
 }  // namespace content

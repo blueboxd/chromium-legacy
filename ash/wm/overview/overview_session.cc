@@ -50,8 +50,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -809,7 +809,7 @@ void OverviewSession::OnWindowActivating(
   }
 
   // Activating or deactivating one of the confirmation dialogs associated with
-  // desks templates should not end overview.
+  // saved desk should not end overview.
   if (gained_active && saved_desk_util::IsSavedDesksEnabled()) {
     if (ShouldKeepOverviewOpenForSavedDeskDialog(gained_active, lost_active))
       return;
@@ -1268,7 +1268,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       is_key_press && key_code == ui::VKEY_TAB;
   for (auto& grid : grid_list_) {
     if (grid->IsDeskNameBeingModified() ||
-        grid->IsTemplateNameBeingModified()) {
+        grid->IsSavedDeskNameBeingModified()) {
       if (!should_commit_name_changes)
         return;
 

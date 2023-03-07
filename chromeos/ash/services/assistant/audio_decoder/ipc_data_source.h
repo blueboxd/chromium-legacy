@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/ash/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "media/base/data_source.h"
@@ -62,10 +63,5 @@ class IPCDataSource : public media::DataSource {
 };
 
 }  // namespace ash::assistant
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::assistant {
-using ::ash::assistant::IPCDataSource;
-}
 
 #endif  // CHROMEOS_ASH_SERVICES_ASSISTANT_AUDIO_DECODER_IPC_DATA_SOURCE_H_

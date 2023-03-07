@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -266,7 +266,12 @@ class AuctionV8Helper::ScriptTimeoutHelper {
 };
 
 constexpr base::TimeDelta AuctionV8Helper::kScriptTimeout =
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(THREAD_SANITIZER)
+    base::Milliseconds(500);
+#else
     base::Milliseconds(50);
+#endif
 
 AuctionV8Helper::FullIsolateScope::FullIsolateScope(AuctionV8Helper* v8_helper)
     : isolate_scope_(v8_helper->isolate()),

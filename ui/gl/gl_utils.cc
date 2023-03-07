@@ -89,7 +89,7 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
     switch_value = command_line->GetSwitchValueASCII(switches::kUseCmdDecoder);
   }
 
-#if defined(PASSTHROUGH_COMMAND_DECODER_LAUNCHED)
+#if !BUILDFLAG(ENABLE_VALIDATING_COMMAND_DECODER)
   if (switch_value == kCmdDecoderValidatingName) {
     LOG(WARNING) << "Ignoring request for the validating command decoder. It "
                     "is not supported on this platform.";
@@ -104,7 +104,7 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
     // Unrecognized or missing switch, use the default.
     return features::UsePassthroughCommandDecoder();
   }
-#endif  // defined(PASSTHROUGH_COMMAND_DECODER_LAUNCHED)
+#endif  // !BUILDFLAG(ENABLE_VALIDATING_COMMAND_DECODER)
 }
 
 bool PassthroughCommandDecoderSupported() {
@@ -198,21 +198,19 @@ void SetGpuPreferenceEGL(GpuPreference preference, uint64_t system_device_id) {
                                                        system_device_id);
 }
 
+void RemoveGpuPreferenceEGL(GpuPreference preference) {
+  GLDisplayManagerEGL::GetInstance()->RemoveGpuPreference(preference);
+}
+
 GLDisplayEGL* GetDefaultDisplayEGL() {
   return GLDisplayManagerEGL::GetInstance()->GetDisplay(
       GpuPreference::kDefault);
 }
 
-GLDisplayEGL* GetDisplayEGL(uint64_t system_device_id) {
-  return GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
+GLDisplayEGL* GetDisplayEGL(GpuPreference gpu_preference) {
+  return GLDisplayManagerEGL::GetInstance()->GetDisplay(gpu_preference);
 }
 #endif  // USE_EGL
-
-#if defined(USE_GLX)
-GLDisplayX11* GetDisplayX11(uint64_t system_device_id) {
-  return GLDisplayManagerX11::GetInstance()->GetDisplay(system_device_id);
-}
-#endif  // USE_GLX
 
 #if BUILDFLAG(IS_MAC)
 

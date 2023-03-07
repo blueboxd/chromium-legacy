@@ -30,7 +30,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -53,7 +52,6 @@
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_download_manager.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager_waiter.h"
@@ -105,12 +103,15 @@ using testing::Contains;
 using testing::DoAll;
 using testing::Each;
 using testing::ElementsAre;
+using testing::Field;
 using testing::HasSubstr;
+using testing::Matcher;
 using testing::NiceMock;
 using testing::Not;
 using testing::Return;
 using testing::SaveArg;
 using testing::UnorderedElementsAre;
+using testing::VariantWith;
 
 namespace autofill {
 
@@ -149,13 +150,18 @@ class MockAutofillClient : public TestAutofillClient {
               (const override));
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason reason), (override));
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
+  MOCK_METHOD(void, HideFastCheckout, (bool), (override));
 };
 
-class MockAutofillDownloadManager : public TestAutofillDownloadManager {
+class MockAutofillDownloadManager : public AutofillDownloadManager {
  public:
-  MockAutofillDownloadManager(AutofillDriver* driver,
-                              AutofillDownloadManager::Observer* observer)
-      : TestAutofillDownloadManager(driver, observer) {}
+  explicit MockAutofillDownloadManager(AutofillClient* client)
+      : AutofillDownloadManager(
+            client,
+            /*api_key=*/"",
+            AutofillDownloadManager::IsRawMetadataUploadingEnabled(false),
+            /*log_manager=*/nullptr) {}
+
   MockAutofillDownloadManager(const MockAutofillDownloadManager&) = delete;
   MockAutofillDownloadManager& operator=(const MockAutofillDownloadManager&) =
       delete;
@@ -167,8 +173,28 @@ class MockAutofillDownloadManager : public TestAutofillDownloadManager {
                const ServerFieldTypeSet&,
                const std::string&,
                bool,
-               PrefService*),
+               PrefService*,
+               base::WeakPtr<Observer>),
               (override));
+
+  bool StartQueryRequest(const std::vector<FormStructure*>& forms,
+                         net::IsolationInfo isolation_info,
+                         base::WeakPtr<Observer> observer) override {
+    last_queried_forms_ = forms;
+    return true;
+  }
+
+  // Verify that the last queried forms equal |expected_forms|.
+  void VerifyLastQueriedForms(const std::vector<FormData>& expected_forms) {
+    ASSERT_EQ(expected_forms.size(), last_queried_forms_.size());
+    for (size_t i = 0; i < expected_forms.size(); ++i) {
+      EXPECT_EQ(last_queried_forms_[i]->global_id().renderer_id,
+                expected_forms[i].global_id().renderer_id);
+    }
+  }
+
+ private:
+  std::vector<FormStructure*> last_queried_forms_;
 };
 
 class MockTouchToFillDelegateImpl : public TouchToFillDelegateImpl {
@@ -186,24 +212,6 @@ class MockTouchToFillDelegateImpl : public TouchToFillDelegateImpl {
               (override));
   MOCK_METHOD(bool, IsShowingTouchToFill, (), (override));
   MOCK_METHOD(void, HideTouchToFill, (), (override));
-};
-
-class MockFastCheckoutDelegate : public FastCheckoutDelegate {
- public:
-  MockFastCheckoutDelegate() = default;
-  MockFastCheckoutDelegate(const MockFastCheckoutDelegate&) = delete;
-  MockFastCheckoutDelegate& operator=(const MockFastCheckoutDelegate&) = delete;
-  ~MockFastCheckoutDelegate() override = default;
-
-  MOCK_METHOD(bool,
-              TryToShowFastCheckout,
-              (const FormData& form, const FormFieldData& field),
-              (override));
-  MOCK_METHOD(bool, IsShowingFastCheckoutUI, (), (const, override));
-  MOCK_METHOD(void, HideFastCheckoutUI, (), (override));
-  MOCK_METHOD(void, OnFastCheckoutUIHidden, (), (override));
-  MOCK_METHOD(AutofillDriver*, GetDriver, (), (override));
-  MOCK_METHOD(void, Reset, (), (override));
 };
 
 void ExpectFilledField(const char* expected_label,
@@ -374,6 +382,9 @@ class MockAutofillDriver : public TestAutofillDriver {
               SendFieldsEligibleForManualFillingToRenderer,
               (const std::vector<FieldGlobalId>& fields),
               (override));
+  MOCK_METHOD(void, SetShouldSuppressKeyboard, (bool), ());
+  MOCK_METHOD(bool, CanShowAutofillUi, (), (const));
+  MOCK_METHOD(void, TriggerReparseInAllFrames, (), ());
 };
 
 }  // namespace
@@ -414,7 +425,7 @@ class BrowserAutofillManagerTest : public testing::Test {
 
     autofill_driver_ = std::make_unique<NiceMock<MockAutofillDriver>>();
     auto payments_client = std::make_unique<payments::TestPaymentsClient>(
-        autofill_driver_->GetURLLoaderFactory(),
+        autofill_client_.GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data());
     payments_client_ = payments_client.get();
     autofill_client_.set_test_payments_client(std::move(payments_client));
@@ -447,8 +458,8 @@ class BrowserAutofillManagerTest : public testing::Test {
     browser_autofill_manager_->set_single_field_form_fill_router_for_test(
         std::move(single_field_form_fill_router));
 
-    auto download_manager = std::make_unique<MockAutofillDownloadManager>(
-        autofill_driver_.get(), browser_autofill_manager_.get());
+    auto download_manager =
+        std::make_unique<MockAutofillDownloadManager>(&autofill_client_);
     download_manager_ = download_manager.get();
     browser_autofill_manager_->set_download_manager_for_test(
         std::move(download_manager));
@@ -467,11 +478,6 @@ class BrowserAutofillManagerTest : public testing::Test {
     touch_to_fill_delegate_ = touch_to_fill_delegate.get();
     browser_autofill_manager_->SetTouchToFillDelegateImplForTest(
         std::move(touch_to_fill_delegate));
-
-    auto fast_checkout_delegate = std::make_unique<MockFastCheckoutDelegate>();
-    fast_checkout_delegate_ = fast_checkout_delegate.get();
-    browser_autofill_manager_->SetFastCheckoutDelegateForTest(
-        std::move(fast_checkout_delegate));
 
     auto test_strike_database = std::make_unique<TestStrikeDatabase>();
     strike_database_ = test_strike_database.get();
@@ -782,6 +788,114 @@ class BrowserAutofillManagerTest : public testing::Test {
         std::move(single_field_form_fill_router));
   }
 
+  // Matches a AskForValuesToFillFieldLogEvent by equality of fields.
+  auto Equal(const AskForValuesToFillFieldLogEvent& expected) {
+    return VariantWith<AskForValuesToFillFieldLogEvent>(
+        AllOf(Field("has_suggestion",
+                    &AskForValuesToFillFieldLogEvent::has_suggestion,
+                    expected.has_suggestion),
+              Field("suggestion_is_shown",
+                    &AskForValuesToFillFieldLogEvent::suggestion_is_shown,
+                    expected.suggestion_is_shown)));
+  }
+
+  // Matches a TriggerFillFieldLogEvent by equality of fields.
+  auto Equal(const TriggerFillFieldLogEvent& expected) {
+    return VariantWith<TriggerFillFieldLogEvent>(
+        AllOf(Field("fill_event_id", &TriggerFillFieldLogEvent::fill_event_id,
+                    expected.fill_event_id)));
+  }
+
+  // Matches a FillFieldLogEvent by equality of fields. Use FillEventId(-1) if
+  // you want to ignore the fill_event_id.
+  auto Equal(const FillFieldLogEvent& expected) {
+    return VariantWith<FillFieldLogEvent>(
+        AllOf(testing::Conditional(
+                  expected.fill_event_id == FillEventId(-1), _,
+                  Field("fill_event_id", &FillFieldLogEvent::fill_event_id,
+                        expected.fill_event_id)),
+              Field("had_value_before_filling",
+                    &FillFieldLogEvent::had_value_before_filling,
+                    expected.had_value_before_filling),
+              Field("autofill_skipped_status",
+                    &FillFieldLogEvent::autofill_skipped_status,
+                    expected.autofill_skipped_status),
+              Field("was_autofilled", &FillFieldLogEvent::was_autofilled,
+                    expected.was_autofilled),
+              Field("had_value_after_filling",
+                    &FillFieldLogEvent::had_value_after_filling,
+                    expected.had_value_after_filling)));
+  }
+
+  // Matches a TypingFieldLogEvent by equality of fields.
+  auto Equal(const TypingFieldLogEvent& expected) {
+    return VariantWith<TypingFieldLogEvent>(Field(
+        "has_value_after_typing", &TypingFieldLogEvent::has_value_after_typing,
+        expected.has_value_after_typing));
+  }
+
+  // Matches a HeuristicPredictionFieldLogEvent by equality of fields.
+  auto Equal(const HeuristicPredictionFieldLogEvent& expected) {
+    return VariantWith<HeuristicPredictionFieldLogEvent>(AllOf(
+        Field("field_type", &HeuristicPredictionFieldLogEvent::field_type,
+              expected.field_type),
+        Field("pattern_source",
+              &HeuristicPredictionFieldLogEvent::pattern_source,
+              expected.pattern_source),
+        Field("is_active_pattern_source",
+              &HeuristicPredictionFieldLogEvent::is_active_pattern_source,
+              expected.is_active_pattern_source),
+        Field("rank_in_field_signature_group",
+              &HeuristicPredictionFieldLogEvent::rank_in_field_signature_group,
+              expected.rank_in_field_signature_group)));
+  }
+
+  // Matches a AutocompleteAttributeFieldLogEvent by equality of fields.
+  auto Equal(const AutocompleteAttributeFieldLogEvent& expected) {
+    return VariantWith<AutocompleteAttributeFieldLogEvent>(AllOf(
+        Field("html_type", &AutocompleteAttributeFieldLogEvent::html_type,
+              expected.html_type),
+        Field("html_mode", &AutocompleteAttributeFieldLogEvent::html_mode,
+              expected.html_mode),
+        Field(
+            "rank_in_field_signature_group",
+            &AutocompleteAttributeFieldLogEvent::rank_in_field_signature_group,
+            expected.rank_in_field_signature_group)));
+  }
+
+  // Matches a vector of FieldLogEventType objects by equality of fields of each
+  // log event type.
+  auto ArrayEquals(
+      const std::vector<AutofillField::FieldLogEventType>& expected) {
+    static_assert(
+        absl::variant_size<AutofillField::FieldLogEventType>() == 7,
+        "If you add a new field event type, you need to update this function");
+    std::vector<Matcher<AutofillField::FieldLogEventType>> matchers;
+    for (const auto& event : expected) {
+      if (absl::holds_alternative<AskForValuesToFillFieldLogEvent>(event)) {
+        matchers.push_back(
+            Equal(absl::get<AskForValuesToFillFieldLogEvent>(event)));
+      } else if (absl::holds_alternative<TriggerFillFieldLogEvent>(event)) {
+        matchers.push_back(Equal(absl::get<TriggerFillFieldLogEvent>(event)));
+      } else if (absl::holds_alternative<FillFieldLogEvent>(event)) {
+        matchers.push_back(Equal(absl::get<FillFieldLogEvent>(event)));
+      } else if (absl::holds_alternative<TypingFieldLogEvent>(event)) {
+        matchers.push_back(Equal(absl::get<TypingFieldLogEvent>(event)));
+      } else if (absl::holds_alternative<HeuristicPredictionFieldLogEvent>(
+                     event)) {
+        matchers.push_back(
+            Equal(absl::get<HeuristicPredictionFieldLogEvent>(event)));
+      } else if (absl::holds_alternative<AutocompleteAttributeFieldLogEvent>(
+                     event)) {
+        matchers.push_back(
+            Equal(absl::get<AutocompleteAttributeFieldLogEvent>(event)));
+      } else {
+        NOTREACHED();
+      }
+    }
+    return ElementsAreArray(matchers);
+  }
+
  protected:
   TestPersonalDataManager& personal_data() {
     return *autofill_client_.GetPersonalDataManager();
@@ -793,7 +907,6 @@ class BrowserAutofillManagerTest : public testing::Test {
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
   raw_ptr<TestAutofillExternalDelegate> external_delegate_;
-  raw_ptr<MockFastCheckoutDelegate> fast_checkout_delegate_;
   raw_ptr<MockTouchToFillDelegateImpl> touch_to_fill_delegate_;
   scoped_refptr<AutofillWebDataService> database_;
   raw_ptr<MockAutofillDownloadManager> download_manager_;
@@ -4039,7 +4152,8 @@ TEST_F(BrowserAutofillManagerTest, PreviewCreditCardForm_VirtualCard) {
   // Virtual card number using obfuscated dots only: Virtual card Mastercard
   // ••••4444
   std::u16string expected_card_number =
-      u"Virtual card Mastercard  " + virtual_card.ObfuscatedLastFourDigits();
+      u"Virtual card Mastercard  " +
+      virtual_card.ObfuscatedNumberWithVisibleLastFourDigits();
   // Virtual card expiration month using obfuscated dots: ••
   std::u16string expected_exp_month = CreditCard::GetMidlineEllipsisDots(2);
   // Virtual card expiration year using obfuscated dots: ••••
@@ -5257,6 +5371,580 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedSaveData) {
   EXPECT_EQ(1, personal_data().num_times_save_imported_profile_called());
 }
 
+// Test the field log events at the form submission.
+class BrowserAutofillManagerWithLogEventsTest
+    : public BrowserAutofillManagerTest {
+ protected:
+  BrowserAutofillManagerWithLogEventsTest() {
+    scoped_features_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillLogUKMEventsWithSampleRate,
+                              features::kAutofillParsingPatternProvider},
+        /*disabled_features=*/{});
+  }
+
+  std::vector<AutofillField::FieldLogEventType> ToHeuristicFieldTypeEvents(
+      ServerFieldType heuristic_type) {
+    std::vector<AutofillField::FieldLogEventType> expected_events;
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
+    // Default pattern.
+    expected_events.push_back(HeuristicPredictionFieldLogEvent{
+        .field_type = heuristic_type,
+        .pattern_source = PatternSource::kDefault,
+        .is_active_pattern_source = true,
+        .rank_in_field_signature_group = 1,
+    });
+    // Legacy pattern.
+    expected_events.push_back(HeuristicPredictionFieldLogEvent{
+        .field_type = heuristic_type,
+        .pattern_source = PatternSource::kLegacy,
+        .is_active_pattern_source = false,
+        .rank_in_field_signature_group = 1,
+    });
+    // Experimental pattern.
+    expected_events.push_back(HeuristicPredictionFieldLogEvent{
+        .field_type = heuristic_type,
+        .pattern_source = PatternSource::kExperimental,
+        .is_active_pattern_source = false,
+        .rank_in_field_signature_group = 1,
+    });
+    // Nextgen pattern.
+    expected_events.push_back(HeuristicPredictionFieldLogEvent{
+        .field_type = heuristic_type,
+        .pattern_source = PatternSource::kNextGen,
+        .is_active_pattern_source = false,
+        .rank_in_field_signature_group = 1,
+    });
+#else
+    // Legacy pattern.
+    expected_events.push_back(HeuristicPredictionFieldLogEvent{
+        .field_type = heuristic_type,
+        .pattern_source = PatternSource::kLegacy,
+        .is_active_pattern_source = true,
+        .rank_in_field_signature_group = 1,
+    });
+#endif
+    return expected_events;
+  }
+
+  // n = 1 means the first instance.
+  template <class T>
+  const T* FindNthEventOfType(
+      const std::vector<AutofillField::FieldLogEventType>& events,
+      size_t n) {
+    // |count| represents the number of events of type T having been seen so
+    // far.
+    size_t count = 0;
+    for (const auto& event : events) {
+      if (const T* log_event = absl::get_if<T>(&event)) {
+        ++count;
+        if (count == n) {
+          return log_event;
+        }
+      }
+    }
+    return nullptr;
+  }
+
+  template <class T>
+  const T* FindFirstEventOfType(
+      const std::vector<AutofillField::FieldLogEventType>& events) {
+    return FindNthEventOfType<T>(events, 1);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+// Test that we record TriggerFillFieldLogEvent for the field we click to show
+// the autofill suggestion and FillFieldLogEvent for every field in the form.
+TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtFormSubmitted) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  FormsSeen({form});
+
+  // Fill the form.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(form, form.fields[0],
+                                     MakeFrontendId({.profile_id = guid}),
+                                     &response_data);
+  ExpectFilledAddressFormElvis(response_data, false);
+
+  // Simulate form submission.
+  FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data().num_times_save_imported_profile_called());
+
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  ASSERT_TRUE(form_structure);
+
+  const std::vector<AutofillField::FieldLogEventType>& focus_field_log_events =
+      autofill_field->field_log_events();
+  ASSERT_EQ(u"First Name", autofill_field->parseable_label());
+  const TriggerFillFieldLogEvent* trigger_fill_field_log_event =
+      FindFirstEventOfType<TriggerFillFieldLogEvent>(focus_field_log_events);
+  ASSERT_TRUE(trigger_fill_field_log_event);
+
+  for (const auto& autofill_field_ptr : *form_structure) {
+    SCOPED_TRACE(autofill_field_ptr->parseable_label());
+    std::vector<AutofillField::FieldLogEventType> expected_events =
+        ToHeuristicFieldTypeEvents(autofill_field_ptr->heuristic_type());
+
+    if (autofill_field_ptr->parseable_label() == u"First Name") {
+      // The "First Name" field is the trigger field, so it contains the
+      // TriggerFillFieldLogEvent followed by a FillFieldLogEvent.
+      expected_events.push_back(TriggerFillFieldLogEvent{
+          .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+      });
+    }
+    // All filled fields share the same expected FillFieldLogEvent.
+    // The first TriggerFillFieldLogEvent determines the fill_event_id for
+    // all following FillFieldLogEvents.
+    expected_events.push_back(FillFieldLogEvent{
+        .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+        .had_value_before_filling = OptionalBoolean::kFalse,
+        .autofill_skipped_status = SkipStatus::kNotSkipped,
+        .was_autofilled = OptionalBoolean::kTrue,
+        .had_value_after_filling = OptionalBoolean::kTrue,
+    });
+    EXPECT_THAT(autofill_field_ptr->field_log_events(),
+                ArrayEquals(expected_events));
+  }
+}
+
+// Test that we record FillFieldLogEvents correctly after autofill when the
+// field has nothing to fill or the field contains a user typed value already.
+TEST_F(BrowserAutofillManagerWithLogEventsTest,
+       LogEventsFillPartlyManuallyFilledForm) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  FormsSeen({form});
+
+  // Michael will be overridden with Elvis because Autofill is triggered from
+  // the first field.
+  form.fields[0].value = u"Michael";
+  form.fields[0].properties_mask |= kUserTyped;
+
+  // Jackson will be preserved, only override the first field.
+  form.fields[2].value = u"Jackson";
+  form.fields[2].properties_mask |= kUserTyped;
+
+  // Fill the address data.
+  AutofillProfile profile1;
+  const char guid[] = "00000000-0000-0000-0000-000000000100";
+  profile1.set_guid(guid);
+  test::SetProfileInfo(&profile1, "Buddy", "Aaron", "Holly", "", "RCA",
+                       "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                       "Tennessee", "38116", "US", "");
+  personal_data().AddProfile(profile1);
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(form, *form.fields.begin(),
+                                     MakeFrontendId({.profile_id = guid}),
+                                     &response_data);
+
+  ExpectFilledForm(response_data, "Buddy", "Aaron", "Jackson",
+                   "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                   "Tennessee", "38116", "United States", "", "", "", "", "",
+                   "", true, false, false);
+
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  ASSERT_TRUE(form_structure);
+
+  const std::vector<AutofillField::FieldLogEventType>& focus_field_log_events =
+      autofill_field->field_log_events();
+  ASSERT_EQ(u"First Name", autofill_field->parseable_label());
+  const TriggerFillFieldLogEvent* trigger_fill_field_log_event =
+      FindFirstEventOfType<TriggerFillFieldLogEvent>(focus_field_log_events);
+  ASSERT_TRUE(trigger_fill_field_log_event);
+
+  // The first TriggerFillFieldLogEvent determines the fill_event_id for
+  // all following FillFieldLogEvents.
+  FillEventId fill_event_id = trigger_fill_field_log_event->fill_event_id;
+  for (const auto& autofill_field_ptr : *form_structure) {
+    SCOPED_TRACE(autofill_field_ptr->parseable_label());
+    std::vector<AutofillField::FieldLogEventType> expected_events =
+        ToHeuristicFieldTypeEvents(autofill_field_ptr->heuristic_type());
+
+    if (autofill_field_ptr->parseable_label() == u"First Name") {
+      // The "First Name" field is the trigger field, so it contains the
+      // TriggerFillFieldLogEvent followed by a FillFieldLogEvent.
+      expected_events.push_back(TriggerFillFieldLogEvent{
+          .fill_event_id = fill_event_id,
+      });
+      expected_events.push_back(FillFieldLogEvent{
+          .fill_event_id = fill_event_id,
+          .had_value_before_filling = OptionalBoolean::kTrue,
+          .autofill_skipped_status = SkipStatus::kNotSkipped,
+          .was_autofilled = OptionalBoolean::kTrue,
+          .had_value_after_filling = OptionalBoolean::kTrue,
+      });
+    } else if (autofill_field_ptr->parseable_label() == u"Phone Number" ||
+               autofill_field_ptr->parseable_label() == u"Email") {
+      // Not filled because the address profile contained no data to fill.
+      expected_events.push_back(FillFieldLogEvent{
+          .fill_event_id = fill_event_id,
+          .had_value_before_filling = OptionalBoolean::kFalse,
+          .autofill_skipped_status = SkipStatus::kNotSkipped,
+          .was_autofilled = OptionalBoolean::kFalse,
+          .had_value_after_filling = OptionalBoolean::kFalse,
+      });
+    } else if (autofill_field_ptr->parseable_label() == u"Last Name") {
+      // Not filled because the field contained a user typed value already.
+      expected_events.push_back(FillFieldLogEvent{
+          .fill_event_id = fill_event_id,
+          .had_value_before_filling = OptionalBoolean::kTrue,
+          .autofill_skipped_status = SkipStatus::kUserFilledFields,
+          .was_autofilled = OptionalBoolean::kFalse,
+          .had_value_after_filling = OptionalBoolean::kTrue,
+      });
+    } else {
+      expected_events.push_back(FillFieldLogEvent{
+          .fill_event_id = fill_event_id,
+          .had_value_before_filling = OptionalBoolean::kFalse,
+          .autofill_skipped_status = SkipStatus::kNotSkipped,
+          .was_autofilled = OptionalBoolean::kTrue,
+          .had_value_after_filling = OptionalBoolean::kTrue,
+      });
+    }
+    EXPECT_THAT(autofill_field_ptr->field_log_events(),
+                ArrayEquals(expected_events));
+  }
+}
+
+// Test that we record FillFieldLogEvents after filling a form twice, the first
+// time some field values are missing when autofilling.
+TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtRefillForm) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // First fill the address data which does not have email and phone number.
+  AutofillProfile profile1;
+  const char guid[] = "00000000-0000-0000-0000-000000000100";
+  profile1.set_guid(guid);
+  test::SetProfileInfo(&profile1, "Buddy", "Aaron", "Holly", "", "RCA",
+                       "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                       "Tennessee", "38116", "US", "");
+  personal_data().AddProfile(profile1);
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(form, *form.fields.begin(),
+                                     MakeFrontendId({.profile_id = guid}),
+                                     &response_data);
+
+  ExpectFilledForm(response_data, "Buddy", "Aaron", "Holly",
+                   "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                   "Tennessee", "38116", "United States", "", "", "", "", "",
+                   "", true, false, false);
+
+  // Refill the address data with all the field values.
+  const char guid2[] = "00000000-0000-0000-0000-000000000001";
+  FillAutofillFormDataAndSaveResults(
+      response_data, *response_data.fields.begin(),
+      MakeFrontendId({.profile_id = guid2}), &response_data);
+
+  ExpectFilledForm(response_data, "Elvis", "Aaron", "Holly",
+                   "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                   "Tennessee", "38116", "United States", "12345678901",
+                   "theking@gmail.com", "", "", "", "", true, false, false);
+
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  ASSERT_TRUE(form_structure);
+
+  const std::vector<AutofillField::FieldLogEventType>& focus_field_log_events =
+      autofill_field->field_log_events();
+  ASSERT_EQ(u"First Name", autofill_field->parseable_label());
+  const TriggerFillFieldLogEvent* trigger_fill_field_log_event1 =
+      FindNthEventOfType<TriggerFillFieldLogEvent>(focus_field_log_events, 1);
+  ASSERT_TRUE(trigger_fill_field_log_event1);
+  const TriggerFillFieldLogEvent* trigger_fill_field_log_event2 =
+      FindNthEventOfType<TriggerFillFieldLogEvent>(focus_field_log_events, 2);
+  ASSERT_TRUE(trigger_fill_field_log_event2);
+
+  // All filled fields share the same expected FillFieldLogEvent.
+  // The first TriggerFillFieldLogEvent determines the fill_event_id for
+  // all following FillFieldLogEvents.
+  FillFieldLogEvent expected_fill_field_log_event1{
+      .fill_event_id = trigger_fill_field_log_event1->fill_event_id,
+      .had_value_before_filling = OptionalBoolean::kFalse,
+      .autofill_skipped_status = SkipStatus::kNotSkipped,
+      .was_autofilled = OptionalBoolean::kTrue,
+      .had_value_after_filling = OptionalBoolean::kTrue,
+  };
+  FillFieldLogEvent expected_fill_field_log_event2{
+      .fill_event_id = trigger_fill_field_log_event2->fill_event_id,
+      .had_value_before_filling = OptionalBoolean::kTrue,
+      .autofill_skipped_status = SkipStatus::kNotSkipped,
+      .was_autofilled = OptionalBoolean::kTrue,
+      .had_value_after_filling = OptionalBoolean::kTrue,
+  };
+
+  for (const auto& autofill_field_ptr : *form_structure) {
+    SCOPED_TRACE(autofill_field_ptr->parseable_label());
+    std::vector<AutofillField::FieldLogEventType> expected_events =
+        ToHeuristicFieldTypeEvents(autofill_field_ptr->heuristic_type());
+
+    if (autofill_field_ptr->parseable_label() == u"First Name") {
+      // The "First Name" field is the trigger field, so it contains the
+      // TriggerFillFieldLogEvent followed by a FillFieldLogEvent.
+      expected_events.push_back(TriggerFillFieldLogEvent{
+          .fill_event_id = trigger_fill_field_log_event1->fill_event_id,
+      });
+      expected_events.push_back(expected_fill_field_log_event1);
+      expected_events.push_back(TriggerFillFieldLogEvent{
+          .fill_event_id = trigger_fill_field_log_event2->fill_event_id,
+      });
+      expected_events.push_back(expected_fill_field_log_event2);
+    } else if (autofill_field_ptr->parseable_label() == u"Phone Number" ||
+               autofill_field_ptr->parseable_label() == u"Email") {
+      FillFieldLogEvent expected_event = expected_fill_field_log_event1;
+      expected_event.was_autofilled = OptionalBoolean::kFalse;
+      expected_event.had_value_after_filling = OptionalBoolean::kFalse;
+      expected_events.push_back(expected_event);
+
+      FillFieldLogEvent expected_event2 = expected_fill_field_log_event2;
+      expected_event2.had_value_before_filling = OptionalBoolean::kFalse;
+      expected_events.push_back(expected_event2);
+    } else {
+      expected_events.push_back(expected_fill_field_log_event1);
+
+      FillFieldLogEvent expected_event2 = expected_fill_field_log_event2;
+      expected_event2.autofill_skipped_status =
+          SkipStatus::kAutofilledFieldsNotRefill;
+      expected_event2.was_autofilled = OptionalBoolean::kFalse;
+      expected_events.push_back(expected_event2);
+    }
+    EXPECT_THAT(autofill_field_ptr->field_log_events(),
+                ArrayEquals(expected_events));
+  }
+}
+
+// Test that we record user typing log event correctly after autofill.
+TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtUserTypingInField) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(form, form.fields[0],
+                                     MakeFrontendId({.profile_id = guid}),
+                                     &response_data);
+  ExpectFilledAddressFormElvis(response_data, false);
+
+  ExpectFilledForm(response_data, "Elvis", "Aaron", "Presley",
+                   "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                   "Tennessee", "38116", "United States", "12345678901",
+                   "theking@gmail.com", "", "", "", "", true, false, false);
+
+  FormFieldData field = form.fields[0];
+  // Simulate editing the first field.
+  field.value = u"Michael";
+  browser_autofill_manager_->OnTextFieldDidChange(
+      form, field, gfx::RectF(), AutofillTickClock::NowTicks());
+
+  // Simulate form submission.
+  FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data().num_times_save_imported_profile_called());
+
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  ASSERT_TRUE(form_structure);
+
+  const std::vector<AutofillField::FieldLogEventType>& focus_field_log_events =
+      autofill_field->field_log_events();
+  ASSERT_EQ(u"First Name", autofill_field->parseable_label());
+  const TriggerFillFieldLogEvent* trigger_fill_field_log_event =
+      FindFirstEventOfType<TriggerFillFieldLogEvent>(focus_field_log_events);
+  ASSERT_TRUE(trigger_fill_field_log_event);
+
+  // All filled fields share the same expected FillFieldLogEvent.
+  // The first TriggerFillFieldLogEvent determines the fill_event_id for
+  // all following FillFieldLogEvents.
+  FillFieldLogEvent expected_fill_field_log_event{
+      .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+      .had_value_before_filling = OptionalBoolean::kFalse,
+      .autofill_skipped_status = SkipStatus::kNotSkipped,
+      .was_autofilled = OptionalBoolean::kTrue,
+      .had_value_after_filling = OptionalBoolean::kTrue,
+  };
+
+  for (const auto& autofill_field_ptr : *form_structure) {
+    SCOPED_TRACE(autofill_field_ptr->parseable_label());
+    std::vector<AutofillField::FieldLogEventType> expected_events =
+        ToHeuristicFieldTypeEvents(autofill_field_ptr->heuristic_type());
+
+    if (autofill_field_ptr->parseable_label() == u"First Name") {
+      // The "First Name" field is the trigger field, so it contains the
+      // TriggerFillFieldLogEvent followed by a FillFieldLogEvent.
+      expected_events.push_back(TriggerFillFieldLogEvent{
+          .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+      });
+      expected_events.push_back(expected_fill_field_log_event);
+      expected_events.push_back(TypingFieldLogEvent{
+          .has_value_after_typing = OptionalBoolean::kTrue,
+      });
+    } else {
+      expected_events.push_back(expected_fill_field_log_event);
+    }
+    EXPECT_THAT(autofill_field_ptr->field_log_events(),
+                ArrayEquals(expected_events));
+  }
+}
+
+// Test that we record field log events correctly when the user touches to fill
+// and fills the credit card form with a suggestion.
+TEST_F(BrowserAutofillManagerWithLogEventsTest,
+       LogEventsAutofillSuggestionsOrTouchToFill) {
+  FormData form;
+  CreateTestCreditCardFormData(&form, /*is_https=*/true,
+                               /*use_month_type=*/false);
+  FormsSeen({form});
+  const FormFieldData& field = form.fields[0];
+
+  // Touch the field of "Name on Card" and autofill suggestion is shown.
+  EXPECT_CALL(*touch_to_fill_delegate_, TryToShowTouchToFill(_, _))
+      .WillOnce(Return(false));
+  TryToShowTouchToFill(form, field, FormElementWasClicked(true));
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+
+  // Fill the form by triggering the suggestion from "Name on Card" field.
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(form, *form.fields.begin(),
+                                     MakeFrontendId({.credit_card_id = guid}),
+                                     &response_data);
+  ExpectFilledCreditCardFormElvis(response_data, false);
+
+  // Simulate form submission.
+  FormSubmitted(response_data);
+
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  ASSERT_TRUE(form_structure);
+
+  const std::vector<AutofillField::FieldLogEventType>& focus_field_log_events =
+      autofill_field->field_log_events();
+  ASSERT_EQ(u"Name on Card", autofill_field->parseable_label());
+  const TriggerFillFieldLogEvent* trigger_fill_field_log_event =
+      FindFirstEventOfType<TriggerFillFieldLogEvent>(focus_field_log_events);
+  ASSERT_TRUE(trigger_fill_field_log_event);
+
+  // All filled fields share the same expected FillFieldLogEvent.
+  // The first TriggerFillFieldLogEvent determines the fill_event_id for
+  // all following FillFieldLogEvents.
+  FillFieldLogEvent expected_fill_field_log_event{
+      .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+      .had_value_before_filling = OptionalBoolean::kFalse,
+      .autofill_skipped_status = SkipStatus::kNotSkipped,
+      .was_autofilled = OptionalBoolean::kTrue,
+      .had_value_after_filling = OptionalBoolean::kTrue,
+  };
+
+  for (const auto& autofill_field_ptr : *form_structure) {
+    SCOPED_TRACE(autofill_field_ptr->parseable_label());
+    std::vector<AutofillField::FieldLogEventType> expected_events =
+        ToHeuristicFieldTypeEvents(autofill_field_ptr->heuristic_type());
+
+    if (autofill_field_ptr->parseable_label() == u"Name on Card") {
+      // The "Name on Card" field gets focus and shows a suggestion so it
+      // contains the AskForValuesToFillFieldLogEvent.
+      expected_events.push_back(AskForValuesToFillFieldLogEvent{
+          .has_suggestion = OptionalBoolean::kTrue,
+          .suggestion_is_shown = OptionalBoolean::kTrue,
+      });
+      expected_events.push_back(TriggerFillFieldLogEvent{
+          .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+      });
+      // The "Name on Card" field is the trigger field, so it contains the
+      // TriggerFillFieldLogEvent followed by a FillFieldLogEvent.
+      expected_events.push_back(expected_fill_field_log_event);
+    } else if (autofill_field_ptr->parseable_label() == u"CVC") {
+      // CVC field is not autofilled.
+      expected_events.push_back(FillFieldLogEvent{
+          .fill_event_id = trigger_fill_field_log_event->fill_event_id,
+          .had_value_before_filling = OptionalBoolean::kFalse,
+          .autofill_skipped_status = SkipStatus::kNotSkipped,
+          .was_autofilled = OptionalBoolean::kFalse,
+          .had_value_after_filling = OptionalBoolean::kFalse,
+      });
+    } else {
+      expected_events.push_back(expected_fill_field_log_event);
+    }
+    EXPECT_THAT(autofill_field_ptr->field_log_events(),
+                ArrayEquals(expected_events));
+  }
+}
+
+// Test that we record AutocompleteAttributeFieldLogEvent for the fields with
+// autocomplete attributes in the form.
+TEST_F(BrowserAutofillManagerWithLogEventsTest,
+       LogEventsOnAutocompleteAttributeField) {
+  // Set up our form data.
+  FormData form;
+  form.name = u"MyForm";
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", "given-name",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", "family-name",
+                            &field);
+  form.fields.push_back(field);
+  // Set no autocomplete attribute for the middle name.
+  test::CreateTestFormField("Middle name", "middle", "", "text", "", &field);
+  form.fields.push_back(field);
+  // Set an unrecognized autocomplete attribute for the last name.
+  test::CreateTestFormField("Email", "email", "", "text", "unrecognized",
+                            &field);
+  form.fields.push_back(field);
+
+  // Simulate having seen this form on page load.
+  auto form_structure_instance = std::make_unique<FormStructure>(form);
+  FormStructure* form_structure = form_structure_instance.get();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  browser_autofill_manager_->AddSeenFormStructure(
+      std::move(form_structure_instance));
+
+  // Simulate form submission.
+  FormSubmitted(form);
+
+  for (const auto& autofill_field_ptr : *form_structure) {
+    SCOPED_TRACE(autofill_field_ptr->parseable_label());
+    std::vector<AutofillField::FieldLogEventType> expected_events =
+        ToHeuristicFieldTypeEvents(autofill_field_ptr->heuristic_type());
+    if (autofill_field_ptr->parseable_label() != u"Middle name") {
+      expected_events.insert(expected_events.begin(),
+                             AutocompleteAttributeFieldLogEvent{
+                                 .html_type = autofill_field_ptr->html_type(),
+                                 .html_mode = HtmlFieldMode::kNone,
+                                 .rank_in_field_signature_group = 1,
+                             });
+    }
+    EXPECT_THAT(autofill_field_ptr->field_log_events(),
+                ArrayEquals(expected_events));
+  }
+}
+
 // Test that when Autocomplete is enabled and Autofill is disabled, form
 // submissions are still received by the SingleFieldFormFillRouter.
 TEST_F(BrowserAutofillManagerTest, FormSubmittedAutocompleteEnabled) {
@@ -5876,7 +6564,8 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"RCA", {COMPANY_NAME}},
     {"3734 Elvis Presley Blvd.", {ADDRESS_HOME_LINE1}},
     {"3734", {ADDRESS_HOME_HOUSE_NUMBER}},
-    {"Elvis Presley Blvd.", {ADDRESS_HOME_STREET_NAME}},
+    {"Elvis Presley Blvd.",
+     {ADDRESS_HOME_STREET_NAME, ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME}},
     {"Apt. 10", {ADDRESS_HOME_LINE2, ADDRESS_HOME_SUBPREMISE}},
     {"Memphis", {ADDRESS_HOME_CITY}},
     {"Tennessee", {ADDRESS_HOME_STATE}},
@@ -7564,12 +8253,12 @@ TEST_F(BrowserAutofillManagerTest, ShouldUploadForm) {
   EXPECT_TRUE(browser_autofill_manager_->ShouldUploadForm(FormStructure(form)));
 
   // Is off the record.
-  autofill_driver_->SetIsIncognito(true);
+  autofill_client_.set_is_off_the_record(true);
   EXPECT_FALSE(
       browser_autofill_manager_->ShouldUploadForm(FormStructure(form)));
 
   // Make sure it's reset for the next test case.
-  autofill_driver_->SetIsIncognito(false);
+  autofill_client_.set_is_off_the_record(false);
   EXPECT_TRUE(browser_autofill_manager_->ShouldUploadForm(FormStructure(form)));
 
   // Has one field which is appears to be a password field.
@@ -8591,7 +9280,7 @@ TEST_F(BrowserAutofillManagerTest, ImportDataWhenValueDetected) {
 TEST_F(BrowserAutofillManagerTest, DontImportUpiIdWhenIncognito) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
-  autofill_driver_->SetIsIncognito(true);
+  autofill_client_.set_is_off_the_record(true);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   EXPECT_CALL(autofill_client_, ConfirmSaveUpiIdLocally(_, _)).Times(0);
@@ -9111,7 +9800,8 @@ TEST_F(BrowserAutofillManagerTest, HideAutofillPopupAndOtherPopups) {
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kRendererEvent));
   EXPECT_CALL(*touch_to_fill_delegate_, HideTouchToFill);
-  EXPECT_CALL(*fast_checkout_delegate_, HideFastCheckoutUI);
+  EXPECT_CALL(autofill_client_, HideFastCheckout(/*allow_further_runs=*/false));
+  EXPECT_CALL(autofill_client_, HideFastCheckout(/*allow_further_runs=*/true));
   browser_autofill_manager_->OnHidePopup();
 }
 
@@ -9120,7 +9810,9 @@ TEST_F(BrowserAutofillManagerTest, OnDidEndTextFieldEditing) {
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kEndEditing));
   EXPECT_CALL(*touch_to_fill_delegate_, HideTouchToFill).Times(0);
-  EXPECT_CALL(*fast_checkout_delegate_, HideFastCheckoutUI).Times(0);
+  EXPECT_CALL(autofill_client_, HideFastCheckout(/*allow_further_runs=*/false))
+      .Times(0);
+  EXPECT_CALL(autofill_client_, HideFastCheckout(/*allow_further_runs=*/true));
   browser_autofill_manager_->OnDidEndTextFieldEditing();
 }
 
@@ -9164,6 +9856,21 @@ TEST_F(BrowserAutofillManagerTest, ShowNothingIfTouchToFillAlreadyShown) {
   EXPECT_CALL(*touch_to_fill_delegate_, TryToShowTouchToFill(_, _)).Times(0);
   TryToShowTouchToFill(form, field, FormElementWasClicked(true));
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+TEST_F(BrowserAutofillManagerTest, SetShouldSuppressKeyboard) {
+  EXPECT_CALL(*autofill_driver_, SetShouldSuppressKeyboard(true));
+  browser_autofill_manager_->SetShouldSuppressKeyboard(true);
+}
+
+TEST_F(BrowserAutofillManagerTest, CanShowAutofillUi) {
+  EXPECT_CALL(*autofill_driver_, CanShowAutofillUi).WillOnce(Return(true));
+  EXPECT_TRUE(browser_autofill_manager_->CanShowAutofillUi());
+}
+
+TEST_F(BrowserAutofillManagerTest, TriggerReparseInAllFrames) {
+  EXPECT_CALL(*autofill_driver_, TriggerReparseInAllFrames);
+  browser_autofill_manager_->TriggerReparseInAllFrames();
 }
 
 // Desktop only tests.
@@ -9979,7 +10686,7 @@ class BrowserAutofillManagerVotingTest
     BrowserAutofillManagerTest::SetUp();
 
     // All uploads should be expected explicitly.
-    EXPECT_CALL(*download_manager_, StartUploadRequest(_, _, _, _, _, _))
+    EXPECT_CALL(*download_manager_, StartUploadRequest(_, _, _, _, _, _, _))
         .Times(0);
 
     form_.name = u"MyForm";
@@ -10025,7 +10732,7 @@ TEST_P(BrowserAutofillManagerVotingTest, Submission) {
       *download_manager_,
       StartUploadRequest(AllOf(SignatureIs(CalculateFormSignature(form_)),
                                UploadedAutofillTypesAre(expected_vote_types)),
-                         _, _, _, /*observed_submission=*/true, _))
+                         _, _, _, /*observed_submission=*/true, _, _))
       .Times(1);
   FormSubmitted(form_);
 }
@@ -10052,7 +10759,7 @@ TEST_P(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
         *download_manager_,
         StartUploadRequest(AllOf(SignatureIs(first_form_signature),
                                  UploadedAutofillTypesAre(expected_vote_types)),
-                           _, _, _, /*observed_submission=*/false, _))
+                           _, _, _, /*observed_submission=*/false, _, _))
         .Times(1);
   }
   browser_autofill_manager_->OnFocusNoLongerOnForm(true);
@@ -10075,7 +10782,7 @@ TEST_P(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
       *download_manager_,
       StartUploadRequest(AllOf(SignatureIs(first_form_signature),
                                UploadedAutofillTypesAre(expected_vote_types)),
-                         _, _, _, /*observed_submission=*/false, _))
+                         _, _, _, /*observed_submission=*/false, _, _))
       .Times(1);
   browser_autofill_manager_->OnFocusNoLongerOnForm(true);
 
@@ -10103,7 +10810,7 @@ TEST_P(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
       StartUploadRequest(AllOf(SignatureIs(second_form_signature),
                                UploadedAutofillTypesAre(expected_vote_types)),
                          _, _, _,
-                         /*observed_submission=*/true, _))
+                         /*observed_submission=*/true, _, _))
       .Times(1);
   FormSubmitted(form_);
 }
@@ -10122,7 +10829,7 @@ TEST_P(BrowserAutofillManagerVotingTest, BlurVoteOnNavigation) {
       *download_manager_,
       StartUploadRequest(AllOf(SignatureIs(CalculateFormSignature(form_)),
                                UploadedAutofillTypesAre(expected_vote_types)),
-                         _, _, _, /*observed_submission=*/false, _))
+                         _, _, _, /*observed_submission=*/false, _, _))
       .Times(1);
   browser_autofill_manager_->OnFocusNoLongerOnForm(true);
 
@@ -10150,7 +10857,7 @@ TEST_P(BrowserAutofillManagerVotingTest, NoBlurVoteOnSubmission) {
         *download_manager_,
         StartUploadRequest(AllOf(SignatureIs(CalculateFormSignature(form_)),
                                  UploadedAutofillTypesAre(expected_vote_types)),
-                           _, _, _, /*observed_submission=*/false, _))
+                           _, _, _, /*observed_submission=*/false, _, _))
         .Times(1);
   } else {
     // If kAutofillDelayBlurVotes is enabled, the blur vote will be ignored and
@@ -10162,7 +10869,7 @@ TEST_P(BrowserAutofillManagerVotingTest, NoBlurVoteOnSubmission) {
       *download_manager_,
       StartUploadRequest(AllOf(SignatureIs(CalculateFormSignature(form_)),
                                UploadedAutofillTypesAre(expected_vote_types)),
-                         _, _, _, /*observed_submission=*/true, _))
+                         _, _, _, /*observed_submission=*/true, _, _))
       .Times(1);
   FormSubmitted(form_);
 }

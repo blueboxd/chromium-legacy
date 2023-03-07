@@ -22,6 +22,7 @@
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/top_level_storage_access_api/top_level_storage_access_permission_context.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -131,6 +132,9 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   // WebLayer yet.
   permission_contexts[ContentSettingsType::STORAGE_ACCESS] =
       std::make_unique<StorageAccessGrantPermissionContext>(profile);
+
+  permission_contexts[ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS] =
+      std::make_unique<TopLevelStorageAccessPermissionContext>(profile);
 
   // TODO(crbug.com/897300): Still in development for Android so we don't
   // support it on WebLayer yet.

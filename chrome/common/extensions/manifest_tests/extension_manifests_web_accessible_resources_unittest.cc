@@ -5,7 +5,6 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/test/values_test_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,10 +23,8 @@ class WebAccessibleResourcesManifestTest : public ChromeManifestTest {
             "manifest_version": %d,
             "web_accessible_resources": %s
         })";
-    base::Value manifest_value = base::test::ParseJson(base::StringPrintf(
+    return ManifestData::FromJSON(base::StringPrintf(
         kManifestStub, manifest_version, web_accessible_resources.c_str()));
-    EXPECT_EQ(base::Value::Type::DICTIONARY, manifest_value.type());
-    return ManifestData(std::move(manifest_value), "test");
   }
 };
 
@@ -322,10 +319,8 @@ TEST_F(WebAccessibleResourcesManifestTest,
                 }
               ]
           })";
-    base::Value manifest_value = base::test::ParseJson(
+    return ManifestData::FromJSON(
         base::StringPrintf(kManifestStub, extension_id.c_str()));
-    EXPECT_EQ(base::Value::Type::DICTIONARY, manifest_value.type());
-    return ManifestData(std::move(manifest_value), "test");
   };
   scoped_refptr<const Extension> extension_callee =
       LoadAndExpectSuccess(get_manifest_data());
@@ -478,10 +473,8 @@ TEST_F(WebAccessibleResourcesManifestTest, ShouldUseDynamicUrl) {
         "version": "1.0",
         "manifest_version": 3
     })";
-  base::Value manifest_value = base::test::ParseJson(kManifestStub);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, manifest_value.type());
-  auto manifest_data = ManifestData(std::move(manifest_value), "test");
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess(manifest_data));
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess(ManifestData::FromJSON(kManifestStub));
   EXPECT_EQ(false, WebAccessibleResourcesInfo::ShouldUseDynamicUrl(
                        extension.get(), "resource.html"));
 }

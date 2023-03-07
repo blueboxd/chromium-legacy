@@ -26,14 +26,26 @@ FINDER_ENABLE_COMMENT_BASE = 'finder:enable'
 FINDER_COMMENT_SUFFIX_GENERAL = '-general'
 FINDER_COMMENT_SUFFIX_STALE = '-stale'
 FINDER_COMMENT_SUFFIX_UNUSED = '-unused'
+FINDER_COMMENT_SUFFIX_NARROWING = '-narrowing'
 
 FINDER_GROUP_COMMENT_START = 'finder:group-start'
 FINDER_GROUP_COMMENT_END = 'finder:group-end'
+
+ALL_FINDER_START_ANNOTATION_BASES = frozenset([
+    FINDER_DISABLE_COMMENT_BASE,
+    FINDER_GROUP_COMMENT_START,
+])
+
+ALL_FINDER_END_ANNOTATION_BASES = frozenset([
+    FINDER_ENABLE_COMMENT_BASE,
+    FINDER_GROUP_COMMENT_END,
+])
 
 ALL_FINDER_DISABLE_SUFFIXES = frozenset([
     FINDER_COMMENT_SUFFIX_GENERAL,
     FINDER_COMMENT_SUFFIX_STALE,
     FINDER_COMMENT_SUFFIX_UNUSED,
+    FINDER_COMMENT_SUFFIX_NARROWING,
 ])
 
 FINDER_DISABLE_COMMENT_GENERAL = (FINDER_DISABLE_COMMENT_BASE +
@@ -42,22 +54,36 @@ FINDER_DISABLE_COMMENT_STALE = (FINDER_DISABLE_COMMENT_BASE +
                                 FINDER_COMMENT_SUFFIX_STALE)
 FINDER_DISABLE_COMMENT_UNUSED = (FINDER_DISABLE_COMMENT_BASE +
                                  FINDER_COMMENT_SUFFIX_UNUSED)
+FINDER_DISABLE_COMMENT_NARROWING = (FINDER_DISABLE_COMMENT_BASE +
+                                    FINDER_COMMENT_SUFFIX_NARROWING)
 FINDER_ENABLE_COMMENT_GENERAL = (FINDER_ENABLE_COMMENT_BASE +
                                  FINDER_COMMENT_SUFFIX_GENERAL)
 FINDER_ENABLE_COMMENT_STALE = (FINDER_ENABLE_COMMENT_BASE +
                                FINDER_COMMENT_SUFFIX_STALE)
 FINDER_ENABLE_COMMENT_UNUSED = (FINDER_ENABLE_COMMENT_BASE +
                                 FINDER_COMMENT_SUFFIX_UNUSED)
+FINDER_ENABLE_COMMENT_NARROWING = (FINDER_ENABLE_COMMENT_BASE +
+                                   FINDER_COMMENT_SUFFIX_NARROWING)
 
 FINDER_DISABLE_COMMENTS = frozenset([
-    FINDER_DISABLE_COMMENT_GENERAL, FINDER_DISABLE_COMMENT_STALE,
-    FINDER_DISABLE_COMMENT_UNUSED
+    FINDER_DISABLE_COMMENT_GENERAL,
+    FINDER_DISABLE_COMMENT_STALE,
+    FINDER_DISABLE_COMMENT_UNUSED,
+    FINDER_DISABLE_COMMENT_NARROWING,
 ])
 
 FINDER_ENABLE_COMMENTS = frozenset([
     FINDER_ENABLE_COMMENT_GENERAL,
     FINDER_ENABLE_COMMENT_STALE,
     FINDER_ENABLE_COMMENT_UNUSED,
+    FINDER_ENABLE_COMMENT_NARROWING,
+])
+
+FINDER_ENABLE_DISABLE_PAIRS = frozenset([
+    (FINDER_DISABLE_COMMENT_GENERAL, FINDER_ENABLE_COMMENT_GENERAL),
+    (FINDER_DISABLE_COMMENT_STALE, FINDER_ENABLE_COMMENT_STALE),
+    (FINDER_DISABLE_COMMENT_UNUSED, FINDER_ENABLE_COMMENT_UNUSED),
+    (FINDER_DISABLE_COMMENT_NARROWING, FINDER_ENABLE_COMMENT_NARROWING),
 ])
 
 FINDER_GROUP_COMMENTS = frozenset([
@@ -72,13 +98,33 @@ ALL_FINDER_COMMENTS = frozenset(FINDER_DISABLE_COMMENTS
 GIT_BLAME_REGEX = re.compile(
     r'^[\w\s]+\(.+(?P<date>\d\d\d\d-\d\d-\d\d)[^\)]+\)(?P<content>.*)$',
     re.DOTALL)
-EXPECTATION_LINE_REGEX = re.compile(r'^.*\[ .* \] .* \[ \w* \].*$', re.DOTALL)
 TAG_GROUP_REGEX = re.compile(r'# tags: \[([^\]]*)\]', re.MULTILINE | re.DOTALL)
+
+# Annotation comment start (with optional leading whitespace) pattern.
+ANNOTATION_COMMENT_START_PATTERN = r' *# '
+# Pattern for matching optional description text after an annotation.
+ANNOTATION_OPTIONAL_TRAILING_TEXT_PATTERN = r'[^\n]*\n'
+# Pattern for matching required description text after an annotation.
+ANNOTATION_REQUIRED_TRAILING_TEXT_PATTERN = r'[^\n]+\n'
+# Pattern for matching blank or comment lines.
+BLANK_OR_COMMENT_LINES_PATTERN = r'(?:\s*| *#[^\n]*\n)*'
 # Looks for cases of the group start and end comments with nothing but optional
 # whitespace between them.
-STALE_GROUP_COMMENT_REGEX = re.compile(
-    r'# ' + FINDER_GROUP_COMMENT_START + r'[^\n]+\s*# ' +
-    FINDER_GROUP_COMMENT_END + r'\n', re.MULTILINE | re.DOTALL)
+ALL_STALE_COMMENT_REGEXES = set()
+for start_comment, end_comment in FINDER_ENABLE_DISABLE_PAIRS:
+  ALL_STALE_COMMENT_REGEXES.add(
+      re.compile(
+          ANNOTATION_COMMENT_START_PATTERN + start_comment +
+          ANNOTATION_OPTIONAL_TRAILING_TEXT_PATTERN +
+          BLANK_OR_COMMENT_LINES_PATTERN + ANNOTATION_COMMENT_START_PATTERN +
+          end_comment + r'\n', re.MULTILINE | re.DOTALL))
+ALL_STALE_COMMENT_REGEXES.add(
+    re.compile(
+        ANNOTATION_COMMENT_START_PATTERN + FINDER_GROUP_COMMENT_START +
+        ANNOTATION_REQUIRED_TRAILING_TEXT_PATTERN +
+        BLANK_OR_COMMENT_LINES_PATTERN + ANNOTATION_COMMENT_START_PATTERN +
+        FINDER_GROUP_COMMENT_END + r'\n', re.MULTILINE | re.DOTALL))
+ALL_STALE_COMMENT_REGEXES = frozenset(ALL_STALE_COMMENT_REGEXES)
 
 # pylint: disable=useless-object-inheritance
 
@@ -104,6 +150,7 @@ def ClearInstance() -> None:
 class RemovalType(object):
   STALE = FINDER_COMMENT_SUFFIX_STALE
   UNUSED = FINDER_COMMENT_SUFFIX_UNUSED
+  NARROWING = FINDER_COMMENT_SUFFIX_NARROWING
 
 
 class Expectations(object):
@@ -207,7 +254,12 @@ class Expectations(object):
       assert match
       date = match.groupdict()['date']
       line_content = match.groupdict()['content']
-      if EXPECTATION_LINE_REGEX.match(line):
+      stripped_line_content = line_content.strip()
+      # Auto-add comments and blank space, otherwise only add if the grace
+      # period has expired.
+      if not stripped_line_content or stripped_line_content.startswith('#'):
+        content += line_content
+      else:
         if six.PY2:
           date_parts = date.split('-')
           date = datetime.date(year=int(date_parts[0]),
@@ -221,8 +273,6 @@ class Expectations(object):
         else:
           logging.debug('Omitting expectation %s because it is too new',
                         line_content.rstrip())
-      else:
-        content += line_content
     return content
 
   def RemoveExpectationsFromFile(self,
@@ -252,36 +302,18 @@ class Expectations(object):
     group_to_expectations, expectation_to_group = (
         self._GetExpectationGroupsFromFileContent(expectation_file,
                                                   input_contents))
+    disable_annotated_expectations = (
+        self._GetDisableAnnotatedExpectationsFromFile(expectation_file,
+                                                      input_contents))
 
     output_contents = ''
-    in_disable_block = False
-    disable_block_reason = ''
-    disable_block_suffix = ''
     removed_urls = set()
-    for line in input_contents.splitlines(True):
+    removed_lines = set()
+    for line_number, line in enumerate(input_contents.splitlines(True)):
       # Auto-add any comments or empty lines
       stripped_line = line.strip()
       if _IsCommentOrBlankLine(stripped_line):
         output_contents += line
-        # Only allow one enable/disable per line.
-        assert len([c for c in ALL_FINDER_COMMENTS if c in line]) <= 1
-        # Handle disable/enable block comments.
-        if _LineContainsDisableComment(line):
-          if in_disable_block:
-            raise RuntimeError(
-                'Invalid expectation file %s - contains a disable comment "%s" '
-                'that is in another disable block.' %
-                (expectation_file, stripped_line))
-          in_disable_block = True
-          disable_block_reason = _GetDisableReasonFromComment(line)
-          disable_block_suffix = _GetFinderCommentSuffix(line)
-        if _LineContainsEnableComment(line):
-          if not in_disable_block:
-            raise RuntimeError(
-                'Invalid expectation file %s - contains an enable comment "%s" '
-                'that is outside of a disable block.' %
-                (expectation_file, stripped_line))
-          in_disable_block = False
         continue
 
       current_expectation = self._CreateExpectationFromExpectationFileLine(
@@ -292,18 +324,16 @@ class Expectations(object):
       if any(e for e in expectations if e == current_expectation):
         # Skip any expectations that match if we're in a disable block or there
         # is an inline disable comment.
-        if in_disable_block and _DisableSuffixIsRelevant(
+        disable_block_suffix, disable_block_reason = (
+            disable_annotated_expectations.get(current_expectation,
+                                               (None, None)))
+        if disable_block_suffix and _DisableSuffixIsRelevant(
             disable_block_suffix, removal_type):
           output_contents += line
           logging.info(
-              'Would have removed expectation %s, but inside a disable block '
-              'with reason %s', stripped_line, disable_block_reason)
-        elif _LineContainsRelevantDisableComment(line, removal_type):
-          output_contents += line
-          logging.info(
-              'Would have removed expectation %s, but it has an inline disable '
-              'comment with reason %s',
-              stripped_line.split('#')[0], _GetDisableReasonFromComment(line))
+              'Would have removed expectation %s, but it is inside a disable '
+              'block or has an inline disable with reason %s', stripped_line,
+              disable_block_reason)
         elif _ExpectationPartOfNonRemovableGroup(current_expectation,
                                                  group_to_expectations,
                                                  expectation_to_group,
@@ -319,15 +349,81 @@ class Expectations(object):
             # It's possible to have multiple whitespace-separated bugs per
             # expectation, so treat each one separately.
             removed_urls |= set(bug.split())
+          # Record that we've removed this line. By subtracting the number of
+          # lines we've already removed, we keep the line numbers relative to
+          # the content we're outputting rather than relative to the input
+          # content. This also has the effect of automatically compressing
+          # contiguous blocks of removal into a single line number.
+          removed_lines.add(line_number - len(removed_lines))
       else:
         output_contents += line
 
-    output_contents = _RemoveStaleComments(output_contents)
+    header_length = len(
+        self._GetExpectationFileTagHeader(expectation_file).splitlines(True))
+    output_contents = _RemoveStaleComments(output_contents, removed_lines,
+                                           header_length)
 
     with open(expectation_file, 'w') as f:
       f.write(output_contents)
 
     return removed_urls
+
+  def _GetDisableAnnotatedExpectationsFromFile(
+      self, expectation_file: str,
+      content: str) -> Dict[data_types.Expectation, Tuple[str, str]]:
+    """Extracts expectations which are affected by disable annotations.
+
+    Args:
+      expectation_file: A filepath pointing to an expectation file.
+      content: A string containing the contents of |expectation_file|.
+
+    Returns:
+      A dict mapping data_types.Expectation to (disable_suffix, disable_reason).
+      If an expectation is present in this dict, it is affected by a disable
+      annotation of some sort. |disable_suffix| is a string specifying which
+      type of annotation is applicable, while |disable_reason| is a string
+      containing the comment/reason why the disable annotation is present.
+    """
+    in_disable_block = False
+    disable_block_reason = ''
+    disable_block_suffix = ''
+    disable_annotated_expectations = {}
+    for line in content.splitlines(True):
+      stripped_line = line.strip()
+      # Look for cases of disable/enable blocks.
+      if _IsCommentOrBlankLine(stripped_line):
+        # Only allow one enable/disable per line.
+        assert len([c for c in ALL_FINDER_COMMENTS if c in line]) <= 1
+        if _LineContainsDisableComment(line):
+          if in_disable_block:
+            raise RuntimeError(
+                'Invalid expectation file %s - contains a disable comment "%s" '
+                'that is in another disable block.' %
+                (expectation_file, stripped_line))
+          in_disable_block = True
+          disable_block_reason = _GetDisableReasonFromComment(line)
+          disable_block_suffix = _GetFinderCommentSuffix(line)
+        elif _LineContainsEnableComment(line):
+          if not in_disable_block:
+            raise RuntimeError(
+                'Invalid expectation file %s - contains an enable comment "%s" '
+                'that is outside of a disable block.' %
+                (expectation_file, stripped_line))
+          in_disable_block = False
+        continue
+
+      current_expectation = self._CreateExpectationFromExpectationFileLine(
+          line, expectation_file)
+
+      if in_disable_block:
+        disable_annotated_expectations[current_expectation] = (
+            disable_block_suffix, disable_block_reason)
+      elif _LineContainsDisableComment(line):
+        disable_block_reason = _GetDisableReasonFromComment(line)
+        disable_block_suffix = _GetFinderCommentSuffix(line)
+        disable_annotated_expectations[current_expectation] = (
+            disable_block_suffix, disable_block_reason)
+    return disable_annotated_expectations
 
   def _GetExpectationGroupsFromFileContent(
       self, expectation_file: str, content: str
@@ -466,7 +562,7 @@ class Expectations(object):
         contents = infile.read()
       tag_groups = []
       for match in TAG_GROUP_REGEX.findall(contents):
-        tag_groups.append(match.strip().replace('#', '').split())
+        tag_groups.append(match.lower().strip().replace('#', '').split())
       self._cached_tag_groups[expectation_file] = tag_groups
     tag_groups = self._cached_tag_groups[expectation_file]
 
@@ -482,8 +578,8 @@ class Expectations(object):
       all_tags = set()
       for group in tag_groups:
         all_tags |= set(group)
-      raise RuntimeError('Found tags not in expectation file: %s' %
-                         ' '.join(set(typ_tags) - all_tags))
+      raise RuntimeError('Found tags not in expectation file %s: %s' %
+                         (expectation_file, ' '.join(set(typ_tags) - all_tags)))
 
     filtered_tags = set()
     for index, tags in tags_in_same_group.items():
@@ -508,75 +604,6 @@ class Expectations(object):
     """
     return typ_tags
 
-  def ModifySemiStaleExpectations(
-      self, stale_expectation_map: data_types.TestExpectationMap) -> Set[str]:
-    """Modifies lines from |stale_expectation_map| in |expectation_file|.
-
-    Prompts the user for each modification and provides debug information since
-    semi-stale expectations cannot be blindly removed like fully stale ones.
-
-    Args:
-      stale_expectation_map: A data_types.TestExpectationMap containing
-          semi-stale expectations.
-
-    Returns:
-      A set of strings containing URLs of bugs associated with the modified
-      (manually modified by the user or removed by the script) expectations.
-    """
-    expectations_to_remove = []
-    expectations_to_modify = []
-    modified_urls = set()
-    for expectation_file, e, builder_map in (
-        stale_expectation_map.IterBuilderStepMaps()):
-      with open(expectation_file) as infile:
-        file_contents = infile.read()
-      line, line_number = self._GetExpectationLine(e, file_contents,
-                                                   expectation_file)
-      expectation_str = None
-      if not line:
-        logging.error(
-            'Could not find line corresponding to semi-stale expectation for '
-            '%s with tags %s and expected results %s', e.test, e.tags,
-            e.expected_results)
-        expectation_str = '[ %s ] %s [ %s ]' % (' '.join(
-            e.tags), e.test, ' '.join(e.expected_results))
-      else:
-        expectation_str = '%s (approx. line %d)' % (line, line_number)
-
-      str_dict = result_output.ConvertBuilderMapToPassOrderedStringDict(
-          builder_map)
-      print('\nSemi-stale expectation:\n%s' % expectation_str)
-      result_output.RecursivePrintToFile(str_dict, 1, sys.stdout)
-
-      response = _WaitForUserInputOnModification()
-      if response == 'r':
-        expectations_to_remove.append(e)
-      elif response == 'm':
-        expectations_to_modify.append(e)
-
-      # It's possible that the user will introduce a typo while manually
-      # modifying an expectation, which will cause a parser error. Catch that
-      # now and give them chances to fix it so that they don't lose all of their
-      # work due to an early exit.
-      while True:
-        try:
-          with open(expectation_file) as infile:
-            file_contents = infile.read()
-          _ = expectations_parser.TaggedTestListParser(file_contents)
-          break
-        except expectations_parser.ParseError as error:
-          logging.error('Got parser error: %s', error)
-          logging.error(
-              'This probably means you introduced a typo, please fix it.')
-          _WaitForAnyUserInput()
-
-      modified_urls |= self.RemoveExpectationsFromFile(expectations_to_remove,
-                                                       expectation_file,
-                                                       RemovalType.STALE)
-    for e in expectations_to_modify:
-      modified_urls |= set(e.bug.split())
-    return modified_urls
-
   def NarrowSemiStaleExpectationScope(
       self, stale_expectation_map: data_types.TestExpectationMap) -> Set[str]:
     """Narrows the scope of expectations in |stale_expectation_map|.
@@ -596,8 +623,27 @@ class Expectations(object):
       expectations.
     """
     modified_urls = set()
+    cached_disable_annotated_expectations = {}
     for expectation_file, e, builder_map in (
         stale_expectation_map.IterBuilderStepMaps()):
+      # Check if the current annotation has scope narrowing disabled.
+      if expectation_file not in cached_disable_annotated_expectations:
+        with open(expectation_file) as infile:
+          disable_annotated_expectations = (
+              self._GetDisableAnnotatedExpectationsFromFile(
+                  expectation_file, infile.read()))
+          cached_disable_annotated_expectations[
+              expectation_file] = disable_annotated_expectations
+      disable_block_suffix, disable_block_reason = (
+          cached_disable_annotated_expectations[expectation_file].get(
+              e, ('', '')))
+      if _DisableSuffixIsRelevant(disable_block_suffix, RemovalType.NARROWING):
+        logging.info(
+            'Skipping semi-stale narrowing check for expectation %s since it '
+            'has a narrowing disable annotation with reason %s',
+            e.AsExpectationFileString(), disable_block_reason)
+        continue
+
       skip_to_next_expectation = False
 
       pass_tag_sets = set()
@@ -623,6 +669,21 @@ class Expectations(object):
       if skip_to_next_expectation:
         continue
 
+      # Remove all instances of tags that are shared between all sets other than
+      # the tags that were used by the expectation, as they are redundant.
+      common_tags = set()
+      for ts in pass_tag_sets:
+        common_tags |= ts
+        # We only need one initial tag set, but sets do not have a way of
+        # retrieving a single element other than pop(), which removes the
+        # element, which we don't want.
+        break
+      for ts in pass_tag_sets | fail_tag_sets:
+        common_tags &= ts
+      common_tags -= e.tags
+      pass_tag_sets = {ts - common_tags for ts in pass_tag_sets}
+      fail_tag_sets = {ts - common_tags for ts in fail_tag_sets}
+
       # Calculate new tag sets that should be functionally equivalent to the
       # single, more broad tag set that we are replacing. This is done by
       # checking if the intersection between any pairs of fail tag sets are
@@ -630,7 +691,7 @@ class Expectations(object):
       # fail tag sets is still a valid fail tag set. If so, the original sets
       # are replaced by the intersection.
       new_tag_sets = set()
-      used_fail_tag_sets = set()
+      covered_fail_tag_sets = set()
       for fail_tags in fail_tag_sets:
         if any(fail_tags <= pt for pt in pass_tag_sets):
           logging.warning(
@@ -638,20 +699,28 @@ class Expectations(object):
               'not narrowing expectation scope.', e.AsExpectationFileString())
           skip_to_next_expectation = True
           break
-        if fail_tags in used_fail_tag_sets:
+        if fail_tags in covered_fail_tag_sets:
           continue
-        used_fail_tag_sets.add(fail_tags)
         tag_set_to_add = fail_tags
         for ft in fail_tag_sets:
-          if ft in used_fail_tag_sets:
+          if ft in covered_fail_tag_sets:
             continue
           intersection = tag_set_to_add & ft
-          if not any(intersection <= pt for pt in pass_tag_sets):
-            # Intersection would still only cover known failure cases, so use
-            # it instead of the tag sets that the intersection came from.
-            tag_set_to_add = intersection
-            used_fail_tag_sets.add(ft)
+          if any(intersection <= pt for pt in pass_tag_sets):
+            # Intersection is too small, as it also covers a passing tag set.
+            continue
+          if any(intersection <= cft for cft in covered_fail_tag_sets):
+            # Both the intersection and some tag set from new_tag_sets
+            # apply to the same original failing tag set,
+            # which means if we add the intersection to new_tag_sets,
+            # they will conflict on the bot from the original failing tag set.
+            # The above check works because new_tag_sets and
+            # covered_fail_tag_sets are updated together below.
+            continue
+          tag_set_to_add = intersection
         new_tag_sets.add(tag_set_to_add)
+        covered_fail_tag_sets.update(cft for cft in fail_tag_sets
+                                     if tag_set_to_add <= cft)
       if skip_to_next_expectation:
         continue
 
@@ -753,33 +822,6 @@ class Expectations(object):
       expectation file.
     """
     raise NotImplementedError()
-
-
-def _WaitForAnyUserInput() -> None:
-  """Waits for any user input.
-
-  Split out for testing purposes.
-  """
-  _get_input('Press any key to continue')
-
-
-def _WaitForUserInputOnModification() -> str:
-  """Waits for user input on how to modify a semi-stale expectation.
-
-  Returns:
-    One of the following string values:
-      i - Expectation should be ignored and left alone.
-      m - Expectation will be manually modified by the user.
-      r - Expectation should be removed by the script.
-  """
-  valid_inputs = ['i', 'm', 'r']
-  prompt = ('How should this expectation be handled? (i)gnore/(m)anually '
-            'modify/(r)emove: ')
-  response = _get_input(prompt).lower()
-  while response not in valid_inputs:
-    print('Invalid input, valid inputs are %s' % (', '.join(valid_inputs)))
-    response = _get_input(prompt).lower()
-  return response
 
 
 def _LineContainsGroupStartComment(line: str) -> bool:
@@ -905,23 +947,77 @@ def _ExpectationPartOfNonRemovableGroup(
   return not (all_expectations_in_group <= removable_expectations)
 
 
-def _RemoveStaleComments(content: str) -> str:
+def _RemoveStaleComments(content: str, removed_lines: Set[int],
+                         header_length: int) -> str:
   """Attempts to remove stale contents from the given expectation file content.
 
   Args:
     content: A string containing the contents of an expectation file.
+    removed_lines: A set of ints denoting which line numbers were removed in
+        the process of creating |content|.
+    header_length: An int denoting how many lines long the tag header is.
 
   Returns:
     A copy of |content| with various stale comments removed, e.g. group blocks
     if the group has been removed.
   """
-  for match in STALE_GROUP_COMMENT_REGEX.findall(content):
-    content = content.replace(match, '')
+  # Look for the case where we've removed an entire block of expectations that
+  # were preceded by a comment, which we should remove.
+  comment_line_numbers_to_remove = []
+  split_content = content.splitlines(True)
+  for rl in removed_lines:
+    found_trailing_annotation = False
+    found_starting_annotation = False
+    # Check for the end of the file, a blank line, or a comment after the block
+    # we've removed.
+    if rl < len(split_content):
+      stripped_line = split_content[rl].strip()
+      if stripped_line and not stripped_line.startswith('#'):
+        # We found an expectation, so the entire expectation block wasn't
+        # removed.
+        continue
+      if any(annotation in stripped_line
+             for annotation in ALL_FINDER_END_ANNOTATION_BASES):
+        found_trailing_annotation = True
+    # Look for a comment block immediately preceding the block we removed.
+    comment_line_number = rl - 1
+    while comment_line_number != header_length - 1:
+      stripped_line = split_content[comment_line_number].strip()
+      if stripped_line.startswith('#'):
+        # If we find what should be a trailing annotation, stop immediately so
+        # we don't accidentally remove it and create an orphan earlier in the
+        # file.
+        if any(annotation in stripped_line
+               for annotation in ALL_FINDER_END_ANNOTATION_BASES):
+          break
+        if any(annotation in stripped_line
+               for annotation in ALL_FINDER_START_ANNOTATION_BASES):
+          found_starting_annotation = True
+          # If we found a starting annotation but not a trailing annotation, we
+          # shouldn't remove the starting one, as that would cause the trailing
+          # one that is later in the file to be orphaned. We also don't want to
+          # continue and remove comments above that since it is assumedly still
+          # valid.
+          if found_starting_annotation and not found_trailing_annotation:
+            break
+        comment_line_numbers_to_remove.append(comment_line_number)
+        comment_line_number -= 1
+      else:
+        break
+    # In the event that we found both a start and trailing annotation, we need
+    # to also remove the trailing one.
+    if found_trailing_annotation and found_starting_annotation:
+      comment_line_numbers_to_remove.append(rl)
+
+  # Actually remove the comments we found above.
+  for i in comment_line_numbers_to_remove:
+    split_content[i] = ''
+  if comment_line_numbers_to_remove:
+    content = ''.join(split_content)
+
+  # Remove any lingering cases of stale annotations that we can easily detect.
+  for regex in ALL_STALE_COMMENT_REGEXES:
+    for match in regex.findall(content):
+      content = content.replace(match, '')
 
   return content
-
-
-def _get_input(prompt: str) -> str:
-  if sys.version_info[0] == 2:
-    return raw_input(prompt)
-  return input(prompt)

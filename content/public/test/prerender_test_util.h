@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_PRERENDER_TEST_UTIL_H_
 #define CONTENT_PUBLIC_TEST_PRERENDER_TEST_UTIL_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -210,7 +210,8 @@ class ScopedPrerenderWebContentsDelegate : public WebContentsDelegate {
   ~ScopedPrerenderWebContentsDelegate() override;
 
   // WebContentsDelegate override.
-  bool IsPrerender2Supported(content::WebContents& web_contents) override;
+  PreloadingEligibility IsPrerender2Supported(
+      WebContents& web_contents) override;
 
  private:
   base::WeakPtr<WebContents> web_contents_;

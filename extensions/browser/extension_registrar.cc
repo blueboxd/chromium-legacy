@@ -4,18 +4,16 @@
 
 #include "extensions/browser/extension_registrar.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -69,10 +67,6 @@ void ExtensionRegistrar::AddExtension(
     // Other than for unpacked extensions, we should not be downgrading.
     if (!Manifest::IsUnpackedLocation(extension->location()) &&
         version_compare_result < 0) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.AttemptedToDowngradeVersionLocation",
-          extension->location());
-
       // TODO(https://crbug.com/810799): It would be awfully nice to CHECK this,
       // but that's caused problems. There are apparently times when this
       // happens that we aren't accounting for. We should track those down and
@@ -129,15 +123,6 @@ void ExtensionRegistrar::AddNewExtension(
   } else if (extension_prefs_->IsExtensionDisabled(extension->id())) {
     registry_->AddDisabled(extension);
   } else {  // Extension should be enabled.
-    // All apps that are displayed in the launcher are ordered by their ordinals
-    // so we must ensure they have valid ordinals.
-    if (extension->RequiresSortOrdinal()) {
-      AppSorting* app_sorting = extension_system_->app_sorting();
-      app_sorting->SetExtensionVisible(extension->id(),
-                                       extension->ShouldDisplayInNewTabPage());
-      app_sorting->EnsureValidOrdinals(extension->id(),
-                                       syncer::StringOrdinal());
-    }
     registry_->AddEnabled(extension);
     ActivateExtension(extension.get(), true);
   }

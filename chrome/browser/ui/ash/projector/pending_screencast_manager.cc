@@ -10,12 +10,12 @@
 #include "ash/constants/ash_features.h"
 #include "ash/projector/projector_metrics.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
@@ -185,14 +185,13 @@ const std::string BuildRequestBody(
     return std::string();
 
   // Builds request body:
-  base::DictionaryValue root;
+  base::Value::Dict root;
   base::Value::Dict contentHints;
   contentHints.Set(kDriveRequestIndexableTextKey, indexable_text);
-  root.SetKey(kDriveRequestContentHintsKey,
-              base::Value(std::move(contentHints)));
+  root.Set(kDriveRequestContentHintsKey, std::move(contentHints));
 
   std::string request_body;
-  base::JSONWriter::Write(root, &request_body);
+  base::JSONWriter::Write(std::move(root), &request_body);
 
   return request_body;
 }

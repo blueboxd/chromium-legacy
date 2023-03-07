@@ -7,9 +7,9 @@
 #include <limits>
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
@@ -803,6 +803,13 @@ H264Decoder::H264Accelerator::Status H264Decoder::StartNewFrame(
       frame_num != (prev_ref_frame_num_ + 1) % max_frame_num_) {
     if (!HandleFrameNumGap(frame_num))
       return H264Accelerator::Status::kFail;
+  }
+
+  if (recovery_frame_cnt_ && *recovery_frame_cnt_ >= max_frame_num_) {
+    DVLOG(1) << "Invalid recovery_frame_cnt=" << *recovery_frame_cnt_
+             << " (it must be less or equal to max_frame_num-1=" << max_frame_num_ - 1
+             << ")";
+    return H264Accelerator::Status::kFail;
   }
 
   if (!InitCurrPicture(slice_hdr))
@@ -1656,12 +1663,11 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
               if (state_ == State::kAfterReset && !recovery_frame_cnt_ &&
                   !recovery_frame_num_) {
                 recovery_frame_cnt_ = sei_msg.recovery_point.recovery_frame_cnt;
-                if (0 > *recovery_frame_cnt_ ||
-                    *recovery_frame_cnt_ >= max_frame_num_) {
+
+                if (0 > *recovery_frame_cnt_) {
                   DVLOG(1) << "Invalid recovery_frame_cnt="
                            << *recovery_frame_cnt_
-                           << " (it must be [0, max_frame_num_-1="
-                           << max_frame_num_ - 1 << "])";
+                           << " (it must not be less then 0)";
                   SET_ERROR_AND_RETURN();
                 }
                 DVLOG(3) << "Recovery point SEI is found, recovery_frame_cnt_="

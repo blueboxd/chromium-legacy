@@ -7,28 +7,31 @@
 
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // Please keep features in alphabetical order.
-
-// When enabled, stops canceling navigation when another navigation commits or
-// starts. This supports the same goal as kQueueNavigationsWhileWaitingForCommit
-// but for the non-queueing parts, and is enabled by default.
-// See https://crbug.com/838348 and https://crbug.com/1220337.
-BASE_DECLARE_FEATURE(kAvoidUnnecessaryNavigationCancellations);
 
 #if BUILDFLAG(IS_ANDROID)
 // Unifies RenderWidgetHostViewAndroid with the other platforms in their usage
 // of OnShowWithPageVisibility. Disabling will revert the refactor and use the
 // direct ShowInternal path.
 BASE_DECLARE_FEATURE(kOnShowWithPageVisibility);
+// Enables skipping of calls to hideSoftInputFromWindow when there is not a
+// keyboard currently visible.
+BASE_DECLARE_FEATURE(kOptimizeImmHideCalls);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // When enabled, queues navigations instead of cancelling the previous
 // navigation if the previous navigation is already waiting for commit.
 // See https://crbug.com/838348 and https://crbug.com/1220337.
 BASE_DECLARE_FEATURE(kQueueNavigationsWhileWaitingForCommit);
+
+// When enabled, CanAccessDataForOrigin can only be called from the UI thread.
+// This is related to Citadel desktop protections. See
+// https://crbug.com/1286501.
+BASE_DECLARE_FEATURE(kRestrictCanAccessDataForOriginToUIThread);
 
 // (crbug/1377753): Speculatively start service worker before BeforeUnload runs.
 BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerStartup);

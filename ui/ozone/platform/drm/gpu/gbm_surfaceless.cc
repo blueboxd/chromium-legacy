@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
@@ -63,12 +63,6 @@ bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
   return true;
 }
 
-gfx::SwapResult GbmSurfaceless::SwapBuffers(PresentationCallback callback,
-                                            gl::FrameData data) {
-  NOTREACHED();
-  return gfx::SwapResult::SWAP_FAILED;
-}
-
 bool GbmSurfaceless::ScheduleOverlayPlane(
     gl::OverlayImage image,
     std::unique_ptr<gfx::GpuFence> gpu_fence,
@@ -88,38 +82,14 @@ bool GbmSurfaceless::Resize(const gfx::Size& size,
   return SurfacelessEGL::Resize(size, scale_factor, color_space, has_alpha);
 }
 
-bool GbmSurfaceless::IsOffscreen() {
-  return false;
-}
-
-bool GbmSurfaceless::SupportsAsyncSwap() {
-  return true;
-}
-
-bool GbmSurfaceless::SupportsPostSubBuffer() {
-  return true;
-}
-
 bool GbmSurfaceless::SupportsPlaneGpuFences() const {
   return supports_plane_gpu_fences_;
 }
 
-gfx::SwapResult GbmSurfaceless::PostSubBuffer(int x,
-                                              int y,
-                                              int width,
-                                              int height,
-                                              PresentationCallback callback,
-                                              gl::FrameData data) {
-  // The actual sub buffer handling is handled at higher layers.
-  NOTREACHED();
-  return gfx::SwapResult::SWAP_FAILED;
-}
-
-void GbmSurfaceless::SwapBuffersAsync(
-    SwapCompletionCallback completion_callback,
-    PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  TRACE_EVENT0("drm", "GbmSurfaceless::SwapBuffersAsync");
+void GbmSurfaceless::Present(SwapCompletionCallback completion_callback,
+                             PresentationCallback presentation_callback,
+                             gfx::FrameData data) {
+  TRACE_EVENT0("drm", "GbmSurfaceless::Present");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
     std::move(completion_callback)
@@ -129,7 +99,7 @@ void GbmSurfaceless::SwapBuffersAsync(
     return;
   }
 
-  if (!supports_plane_gpu_fences_ || requires_gl_flush_on_swap_buffers_) {
+  if (!supports_plane_gpu_fences_) {
     glFlush();
   }
 
@@ -175,19 +145,6 @@ void GbmSurfaceless::SwapBuffersAsync(
       std::move(fence_wait_task), std::move(fence_retired_callback));
 }
 
-void GbmSurfaceless::PostSubBufferAsync(
-    int x,
-    int y,
-    int width,
-    int height,
-    SwapCompletionCallback completion_callback,
-    PresentationCallback presentation_callback,
-    gl::FrameData data) {
-  // The actual sub buffer handling is handled at higher layers.
-  SwapBuffersAsync(std::move(completion_callback),
-                   std::move(presentation_callback), data);
-}
-
 EGLConfig GbmSurfaceless::GetConfig() {
   if (!config_) {
     EGLint config_attribs[] = {EGL_BUFFER_SIZE,
@@ -212,14 +169,6 @@ EGLConfig GbmSurfaceless::GetConfig() {
 
 void GbmSurfaceless::SetRelyOnImplicitSync() {
   use_egl_fence_sync_ = false;
-}
-
-void GbmSurfaceless::SetForceGlFlushOnSwapBuffers() {
-  requires_gl_flush_on_swap_buffers_ = true;
-}
-
-gfx::SurfaceOrigin GbmSurfaceless::GetOrigin() const {
-  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 GbmSurfaceless::~GbmSurfaceless() {

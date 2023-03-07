@@ -6,6 +6,9 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './input_key.html.js';
@@ -58,12 +61,15 @@ export const keyToIconNameMap: {[key: string]: string} = {
  * 'input-key' is a component wrapper for a single input key. Responsible for
  * handling dynamic styling of a single key.
  */
-export class InputKeyElement extends PolymerElement {
-  static get is() {
+
+const InputKeyElementBase = I18nMixin(PolymerElement);
+
+export class InputKeyElement extends InputKeyElementBase {
+  static get is(): string {
     return 'input-key';
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       key: {
         type: String,
@@ -81,7 +87,7 @@ export class InputKeyElement extends PolymerElement {
   key: string;
   keyState: KeyInputState;
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
@@ -91,6 +97,25 @@ export class InputKeyElement extends PolymerElement {
       return `shortcut-customization-keys:${iconName}`;
     }
     return null;
+  }
+
+  /**
+   * Returns the GRD string ID for the given key. This function is public and
+   * static so that it can be used by the test for this element.
+   *
+   * @param key The KeyboardEvent.code of a key, e.g. ArrowUp or PrintScreen.
+   */
+  static getAriaLabelStringId(key: string): string {
+    return `iconLabel${key}`;  // e.g. iconLabelArrowUp
+  }
+
+  private getAriaLabelForIcon(): string {
+    const ariaLabelStringId = InputKeyElement.getAriaLabelStringId(this.key);
+    assert(
+        this.i18nExists(ariaLabelStringId),
+        `String ID ${ariaLabelStringId} should exist, but it doesn't.`);
+
+    return this.i18n(ariaLabelStringId);
   }
 }
 

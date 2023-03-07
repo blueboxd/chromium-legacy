@@ -9,8 +9,8 @@
 #include <sstream>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/i18n/message_formatter.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -323,8 +323,20 @@ Status DevToolsClientImpl::StartBidiServer(std::string bidi_mapper_script,
   {
     base::Value::Dict params;
     params.Set("expression", std::move(bidi_mapper_script));
+    base::Value::Dict result;
     status =
-        SendCommandAndIgnoreResponse("Runtime.evaluate", std::move(params));
+        SendCommandAndGetResult("Runtime.evaluate", std::move(params), &result);
+
+    if (result.contains("exceptionDetails")) {
+      std::string description = "unknown";
+      if (const std::string* maybe_description =
+              result.FindStringByDottedPath("result.description")) {
+        description = *maybe_description;
+      }
+      return Status(kUnknownError,
+                    "Failed to initialize BiDi Mapper: " + description);
+    }
+
     if (status.IsError()) {
       return status;
     }

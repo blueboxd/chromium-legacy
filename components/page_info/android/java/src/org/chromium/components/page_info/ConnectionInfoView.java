@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -57,7 +58,6 @@ public class ConnectionInfoView implements OnClickListener {
     private ViewGroup mDescriptionLayout;
     private Button mResetCertDecisionsButton;
     private String mLinkUrl;
-    private VrHandler mVrHandler;
 
     /**
      * Delegate that embeds the ConnectionInfoView. Must call ConnectionInfoView::onDismiss when
@@ -75,12 +75,11 @@ public class ConnectionInfoView implements OnClickListener {
         void dismiss(int actionOnContent);
     }
 
-    private ConnectionInfoView(Context context, WebContents webContents,
-            ConnectionInfoDelegate delegate, VrHandler vrHandler) {
+    private ConnectionInfoView(
+            Context context, WebContents webContents, ConnectionInfoDelegate delegate) {
         mContext = context;
         mDelegate = delegate;
         mWebContents = webContents;
-        mVrHandler = vrHandler;
 
         mCertificateViewer = new CertificateViewer(mContext);
 
@@ -127,7 +126,7 @@ public class ConnectionInfoView implements OnClickListener {
         View section = LayoutInflater.from(mContext).inflate(R.layout.connection_info, null);
         ImageView i = section.findViewById(R.id.connection_info_icon);
         i.setImageResource(iconId);
-        ApiCompatibilityUtils.setImageTintList(
+        ImageViewCompat.setImageTintList(
                 i, AppCompatResources.getColorStateList(mContext, iconColorId));
 
         TextView d = section.findViewById(R.id.connection_info_description);
@@ -195,19 +194,8 @@ public class ConnectionInfoView implements OnClickListener {
                 // ignore this request.
                 return;
             }
-            if (mVrHandler != null && mVrHandler.isInVr()) {
-                mVrHandler.exitVrAndRun(() -> {
-                    mCertificateViewer.showCertificateChain(certChain);
-                }, VrHandler.UiType.CERTIFICATE_INFO);
-                return;
-            }
             mCertificateViewer.showCertificateChain(certChain);
         } else if (mMoreInfoLink == v) {
-            if (mVrHandler != null && mVrHandler.isInVr()) {
-                mVrHandler.exitVrAndRun(this::showConnectionSecurityInfo,
-                        VrHandler.UiType.CONNECTION_SECURITY_INFO);
-                return;
-            }
             showConnectionSecurityInfo();
         }
     }
@@ -311,15 +299,15 @@ public class ConnectionInfoView implements OnClickListener {
      * @param context Context which is used for launching a dialog.
      * @param webContents The WebContents for which to show website information
      */
-    public static void show(Context context, WebContents webContents,
-            ModalDialogManager modalDialogManager, VrHandler vrHandler) {
+    public static void show(
+            Context context, WebContents webContents, ModalDialogManager modalDialogManager) {
         new ConnectionInfoView(context, webContents,
-                new ConnectionInfoDialogDelegate(modalDialogManager, webContents), vrHandler);
+                new ConnectionInfoDialogDelegate(modalDialogManager, webContents));
     }
 
-    public static ConnectionInfoView create(Context context, WebContents webContents,
-            ConnectionInfoDelegate delegate, VrHandler vrHandler) {
-        return new ConnectionInfoView(context, webContents, delegate, vrHandler);
+    public static ConnectionInfoView create(
+            Context context, WebContents webContents, ConnectionInfoDelegate delegate) {
+        return new ConnectionInfoView(context, webContents, delegate);
     }
 
     @NativeMethods

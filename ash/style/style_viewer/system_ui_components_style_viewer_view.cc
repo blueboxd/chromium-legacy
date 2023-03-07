@@ -11,8 +11,8 @@
 #include "ash/style/style_viewer/system_ui_components_grid_view.h"
 #include "ash/style/style_viewer/system_ui_components_grid_view_factories.h"
 #include "ash/wm/desks/desks_util.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -165,6 +165,13 @@ void SystemUIComponentsStyleViewerView::CreateAndShowWidget() {
   viewer_view->AddComponent(
       u"RadioButtonGroup",
       base::BindRepeating(&CreateRadioButtonGroupInstancesGridView));
+  viewer_view->AddComponent(
+      u"KnobSwitch", base::BindRepeating(&CreateKnobSwitchInstancesGridView));
+  viewer_view->AddComponent(
+      u"TabSlider", base::BindRepeating(&CreateTabSliderInstancesGridView));
+  viewer_view->AddComponent(
+      u"System Textfield",
+      base::BindRepeating(&CreateSystemTextfieldInstancesGridView));
 
   // Show PillButton on start.
   viewer_view->ShowComponentInstances(u"PillButton");

@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_CAST_STREAMING_RENDERER_FRAME_INJECTING_DEMUXER_H_
 #define COMPONENTS_CAST_STREAMING_RENDERER_FRAME_INJECTING_DEMUXER_H_
 
+#include "base/task/sequenced_task_runner.h"
 #include "components/cast_streaming/public/mojom/demuxer_connector.mojom.h"
 #include "media/base/demuxer.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cast_streaming {
@@ -55,6 +54,7 @@ class FrameInjectingDemuxer final : public media::Demuxer {
   void CancelPendingSeek(base::TimeDelta seek_time) override;
   void Seek(base::TimeDelta time,
             media::PipelineStatusCallback status_cb) override;
+  bool IsSeekable() const override;
   void Stop() override;
   base::TimeDelta GetStartTime() const override;
   base::Time GetTimelineOffset() const override;

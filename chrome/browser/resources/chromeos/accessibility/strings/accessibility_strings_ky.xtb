@@ -54,7 +54,7 @@
 <translation id="1246424317317450637">Жоон</translation>
 <translation id="1251750620252348585">Кийинки 6-деңгээлдеги баш аты.</translation>
 <translation id="1268366246392928616">Мурунку математикалык туюнтма жок</translation>
-<translation id="1273314450961659276">Кеп синтезаторунун параметрлери</translation>
+<translation id="1273314450961659276">Кеп синтезаторунун жөндөөлөрү</translation>
 <translation id="1275718070701477396">Тандалган</translation>
 <translation id="1284576163386164372">Менюларды төрт манжаңыз менен таптап, үйрөткүчтөрдү каалаган убакта көрө аласыз. Андан соң, “ChromeVox” бөлүмүндөгү үйрөткүчтү иштетиңиз.</translation>
 <translation id="1291286136605998134">Күйгүзүү/өчүрүү баскычы</translation>
@@ -115,7 +115,7 @@
 <translation id="1653266918374749391">Мурунку 3-деңгээлдеги баш ат</translation>
 <translation id="1657616855184033958">Иш-чаралардын агымынын чыпкасын көрсөтүү</translation>
 <translation id="1659072772017912254">Белгиленген эмес</translation>
-<translation id="1666326070478924810">"Басып туруп угуу" кызматынын параметрлери</translation>
+<translation id="1666326070478924810">"Басып туруп угуу" кызматынын жөндөөлөрү</translation>
 <translation id="1674262202423278359">ChromeVox чабыттоо</translation>
 <translation id="16777221443363124">Меню тилкеси</translation>
 <translation id="1680732992526857724"><ph name="NAME" />, күйгүзүү</translation>
@@ -291,6 +291,7 @@
 <translation id="2909584066358367921">Кийинки баскыч жок</translation>
 <translation id="2911433807131383493">ChromeVox үйрөткүчү ачылсын</translation>
 <translation id="2912405967290226587">Үч манжаңыз менен экранды оңго сүрүңүз</translation>
+<translation id="2919107550468490321">Smart sticky mode күйүк</translation>
 <translation id="2937799153569150791">Кийинки 3-деңгээлдин башкы аталышы жок</translation>
 <translation id="2942710183375260152">Күңүрт бозуш көк</translation>
 <translation id="2943596527105977722">Күңүрт кызыл алтын түстүү сары</translation>
@@ -305,6 +306,7 @@
 <translation id="2999559350546931576">Тонду төмөндөтүү</translation>
 <translation id="3009352964623081324">Search + O, анан S. Орнотуп, башкарып, үндөрдү жекелештирүү үчүн колдонуңуз</translation>
 <translation id="3014130421870723208">@ талаасын өзг 8чек</translation>
+<translation id="3018210433491759145">ChromeVox жүктөлүүдө</translation>
 <translation id="3030432017085518523">Менюдагы радио баскычы</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}other{# апостроф}}</translation>
 <translation id="3040901448410802366">Иштин канчасы аткарылды</translation>
@@ -439,6 +441,7 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3813387282697781382">Мала маржан түстүү</translation>
 <translation id="3816633764618089385">Кийинки медиа</translation>
+<translation id="3821689185319271077">Курсордун анкери жок</translation>
 <translation id="3840823741487267909">Кыскартма</translation>
 <translation id="3841319830220785495">Кадимки адамдын үнү</translation>
 <translation id="385383972552776628">Параметрлер бетин ачуу</translation>
@@ -544,6 +547,7 @@
 <translation id="4597532268155981612">форма</translation>
 <translation id="4601367666219428522"><ph name="TABLENAME" /> тбл <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Кийинки баскычтын басылышын этибарга албоо</translation>
+<translation id="4617384941327705512">Smart sticky mode өчүк</translation>
 <translation id="4623097797855662355">Чыгуу маалыматы</translation>
 <translation id="4624970070706497034">TalkBack Chromebook түзмөктөрүндө жекелештирүүнү колдоого албай калган. Аны пайдалана бересиз, бирок TalkBack функциясынын демейки ыкчам баскычтарын колдонуңуз. Жеткиликтүү ыкчам баскычтарды көрүү үчүн Search+A, андан кийин K баскычын басыңыз. TalkBack функциясын дагы эле колдонгуңуз келсе, буйрукту кайрадан басыңыз.</translation>
 <translation id="463135993322337640">Жаңы функциялар жөнүндө билүү үчүн ChromeVox o, n баскычтарын басыңыз</translation>
@@ -700,7 +704,7 @@
 <translation id="5655682562155942719">Секирүү буйруктары</translation>
 <translation id="56637627897541303">Текст аймагы</translation>
 <translation id="5669637233317991674">Бул сабактагы нерселерге өтүү үчүн Издөө + Оңго жебе же Издөө + Солго жебени басыңыз</translation>
-<translation id="5677240841070992068">Учурда турган жер</translation>
+<translation id="5677240841070992068">Учурдагы жайгашкан жер</translation>
 <translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">Белгиленген жерлер</translation>
@@ -733,7 +737,7 @@
 <translation id="5876817486144482042">Үндүн катуулугун акырындатуу</translation>
 <translation id="5878206664863390311">Темаларды карап чыгуу үчүн Издөө + Оңго жебе же Издөө + Солго жебени басыңыз</translation>
 <translation id="5878908838135392163">Ач көгүш түс</translation>
-<translation id="588108970619830498">Кеп синтезаторунун параметрлерин демейки мааниге кайтаруу</translation>
+<translation id="588108970619830498">Кеп синтезаторунун жөндөөлөрүн демейки мааниге кайтаруу</translation>
 <translation id="5891934789323004067">Жадыбал</translation>
 <translation id="5899860758576822363">ChromeVox сүйлөп жатканда аудионун үнү акырындатылсын</translation>
 <translation id="5901630391730855834">Сары</translation>
@@ -915,7 +919,7 @@
 <translation id="7244947685630430863">Мурунку графика жок</translation>
 <translation id="7248671827512403053">Колдонмо</translation>
 <translation id="725969808843520477">Кийинки радио баскычы</translation>
-<translation id="7261612856573623172">Кеп синтезаторунун үн параметрлери</translation>
+<translation id="7261612856573623172">Кеп синтезаторунун үн жөндөөлөрү</translation>
 <translation id="7269119382257320590">Тыныш белгилери жок</translation>
 <translation id="7271278495464744706">Дайын-даректүү сүрөттөмөлөрдү иштетүү</translation>
 <translation id="7273174640290488576">Бош</translation>
@@ -974,7 +978,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{саат}other{саат}}</translation>
 <translation id="7674576868851035240">Кийинки шилтеме</translation>
 <translation id="7674768236845044097">mark</translation>
-<translation id="7676847077928500578">Кеп синтезаторунун параметрлерин баштапкы абалга келтирүү</translation>
+<translation id="7676847077928500578">Кеп синтезаторунун жөндөөлөрүн баштапкы абалга келтирүү</translation>
 <translation id="7684431668231950609">Киргизилген текстти, URL дарегин түзөтүү</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Мурунку радио баскычы</translation>
@@ -1073,7 +1077,7 @@
 <translation id="831207808878314375">Аныктама</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8316881042119029234">Ач саргыл кызгылтым түс</translation>
-<translation id="8324974933005349667">Кеп синтезаторунун параметрлерин жекечелештирүү</translation>
+<translation id="8324974933005349667">Кеп синтезаторунун жөндөөлөрүн жекечелештирүү</translation>
 <translation id="8326783648485765113">Ач жашыл</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{фунт}other{# фунт белгилери}}</translation>
 <translation id="8378855320830505539">Аймак</translation>

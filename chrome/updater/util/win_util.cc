@@ -18,13 +18,13 @@
 #include <vector>
 
 #include "base/base_paths_win.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
@@ -365,6 +365,25 @@ std::wstring GetRegistryKeyClientStateUpdater() {
   return GetAppClientStateKey(kUpdaterAppId);
 }
 
+bool SetRegistryKey(HKEY root,
+                    const std::wstring& key,
+                    const std::wstring& name,
+                    const std::wstring& value) {
+  base::win::RegKey rkey;
+  LONG result = rkey.Create(root, key.c_str(), Wow6432(KEY_WRITE));
+  if (result != ERROR_SUCCESS) {
+    VLOG(1) << "Failed to open (" << root << ") " << key << ": " << result;
+    return false;
+  }
+  result = rkey.WriteValue(name.c_str(), value.c_str());
+  if (result != ERROR_SUCCESS) {
+    VLOG(1) << "Failed to write (" << root << ") " << key << " @ " << name
+            << ": " << result;
+    return false;
+  }
+  return result == ERROR_SUCCESS;
+}
+
 int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
   if (downloaded_bytes == -1 || total_bytes == -1 || total_bytes == 0)
     return -1;
@@ -699,11 +718,13 @@ std::wstring BuildMsiCommandLine(
                  {L" ",
                   base::UTF8ToWide(base::ToUpperASCII(kInstallerDataSwitch)),
                   L"=",
-                  QuoteForCommandLineToArgvW(installer_data_file->value())})
+                  base::CommandLine::QuoteForCommandLineToArgvW(
+                      installer_data_file->value())})
            : L"",
        L" REBOOT=ReallySuppress /qn /i ",
-       QuoteForCommandLineToArgvW(msi_installer.value()), L" /log ",
-       QuoteForCommandLineToArgvW(
+       base::CommandLine::QuoteForCommandLineToArgvW(msi_installer.value()),
+       L" /log ",
+       base::CommandLine::QuoteForCommandLineToArgvW(
            msi_installer.AddExtension(L".log").value())});
 }
 
@@ -716,8 +737,8 @@ std::wstring BuildExeCommandLine(
   }
 
   return base::StrCat(
-      {QuoteForCommandLineToArgvW(exe_installer.value()), L" ", arguments,
-       [&installer_data_file]() {
+      {base::CommandLine::QuoteForCommandLineToArgvW(exe_installer.value()),
+       L" ", arguments, [&installer_data_file]() {
          if (!installer_data_file)
            return std::wstring();
 
@@ -976,49 +997,6 @@ absl::optional<base::FilePath> GetBaseInstallDirectory(UpdaterScope scope) {
 
 base::FilePath GetExecutableRelativePath() {
   return base::FilePath::FromASCII(kExecutableName);
-}
-
-// TODO(crbug.com/1369674): Merge with `base::CommandLine`.
-std::wstring QuoteForCommandLineToArgvW(const std::wstring& input) {
-  if (input.empty())
-    return L"\"\"";
-
-  constexpr wchar_t kCharactersThatMayNeedEncoding[] = L" \t\\\"";
-  if (input.find_first_of(kCharactersThatMayNeedEncoding) == std::wstring::npos)
-    return input;
-
-  constexpr wchar_t kWhitespaceCharacters[] = L" \t";
-  const bool input_needs_quoting =
-      input.find_first_of(kWhitespaceCharacters) != std::wstring::npos;
-
-  std::wstring output;
-  if (input_needs_quoting)
-    output.push_back(L'"');
-
-  for (size_t i = 0; i < input.size(); ++i) {
-    if (input[i] == L'\\') {
-      size_t end = i + 1;
-      while (end < input.size() && input[end] == L'\\')
-        ++end;
-
-      // Before a quote, output 2n backslashes.
-      output.append(std::wstring(
-          (end - i) * (1 + ((end == input.size() && input_needs_quoting) ||
-                            input[end] == L'"')),
-          L'\\'));
-
-      i = end - 1;
-    } else if (input[i] == L'"') {
-      output.append(L"\\\"");
-    } else {
-      output.push_back(input[i]);
-    }
-  }
-
-  if (input_needs_quoting)
-    output.push_back(L'"');
-
-  return output;
 }
 
 }  // namespace updater

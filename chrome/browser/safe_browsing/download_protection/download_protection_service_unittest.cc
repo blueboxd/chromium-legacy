@@ -13,15 +13,15 @@
 #include <utility>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -35,7 +35,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -762,21 +761,7 @@ class DownloadProtectionServiceTestBase
 
 using DownloadProtectionServiceTest = DownloadProtectionServiceTestBase;
 
-class DeepScanningDownloadTest : public DownloadProtectionServiceTestBase,
-                                 public ::testing::WithParamInterface<bool> {
- public:
-  DeepScanningDownloadTest() {
-    // Enable the feature early to prevent race condition trying to access
-    // the enabled features set.  This happens for example when the history
-    // service is started below.
-    if (flag_enabled())
-      EnableFeatures({enterprise_connectors::kEnterpriseConnectorsEnabled});
-    else
-      DisableFeatures({enterprise_connectors::kEnterpriseConnectorsEnabled});
-  }
-
-  bool flag_enabled() const { return GetParam(); }
-};
+using DeepScanningDownloadTest = DownloadProtectionServiceTestBase;
 
 // A test with the appropriate feature flags enabled to test the behavior for
 // Enhanced Protection users.
@@ -3349,10 +3334,7 @@ TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
-TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
-  if (!flag_enabled())
-    return;
-
+TEST_F(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
   base::FilePath test_zip;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
   test_zip = test_zip.AppendASCII("safe_browsing")
@@ -3427,10 +3409,7 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
   }
 }
 
-TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
-  if (!flag_enabled())
-    return;
-
+TEST_F(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
   base::FilePath test_zip;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
   test_zip = test_zip.AppendASCII("safe_browsing")
@@ -3507,10 +3486,7 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
   }
 }
 
-TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
-  if (!flag_enabled())
-    return;
-
+TEST_F(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
   base::FilePath test_file;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("safe_browsing")
@@ -4332,7 +4308,7 @@ TEST_F(DownloadProtectionServiceTest,
   testing_profile_manager_.DeleteTestingProfile("profile 2");
 }
 
-TEST_P(DeepScanningDownloadTest, PolicyEnabled) {
+TEST_F(DeepScanningDownloadTest, PolicyEnabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",              // referrer
@@ -4377,19 +4353,13 @@ TEST_P(DeepScanningDownloadTest, PolicyEnabled) {
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
-    if (flag_enabled()) {
       EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
       EXPECT_TRUE(HasClientDownloadRequest());
       EXPECT_TRUE(test_upload_service->was_called());
-    } else {
-      EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-      EXPECT_TRUE(HasClientDownloadRequest());
-      EXPECT_FALSE(test_upload_service->was_called());
-    }
   }
 }
 
-TEST_P(DeepScanningDownloadTest, PolicyDisabled) {
+TEST_F(DeepScanningDownloadTest, PolicyDisabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",              // referrer
@@ -4426,7 +4396,7 @@ TEST_P(DeepScanningDownloadTest, PolicyDisabled) {
   }
 }
 
-TEST_P(DeepScanningDownloadTest, SafeVerdictPrecedence) {
+TEST_F(DeepScanningDownloadTest, SafeVerdictPrecedence) {
   // These responses have precedence over safe deep scanning results.
   std::vector<std::pair<ClientDownloadResponse::Verdict, DownloadCheckResult>>
       responses = {
@@ -4489,13 +4459,10 @@ TEST_P(DeepScanningDownloadTest, SafeVerdictPrecedence) {
         response.first == ClientDownloadResponse::DANGEROUS ||
         response.first == ClientDownloadResponse::DANGEROUS_HOST ||
         response.first == ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE;
-    EXPECT_EQ(test_upload_service->was_called(),
-              flag_enabled() && !dangerous_response);
+    EXPECT_EQ(test_upload_service->was_called(), !dangerous_response);
     test_upload_service->ClearWasCalled();
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(, DeepScanningDownloadTest, testing::Bool());
 
 TEST_F(DownloadProtectionServiceTest, AdvancedProtectionRequestScan) {
   PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,

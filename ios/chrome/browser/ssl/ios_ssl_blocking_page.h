@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #include "net/ssl/ssl_info.h"
@@ -53,10 +53,7 @@ class IOSSSLBlockingPage
 
  private:
   void HandleCommand(
-      security_interstitials::SecurityInterstitialCommand command,
-      const GURL& origin_url,
-      bool user_is_interacting,
-      web::WebFrame* sender_frame) override;
+      security_interstitials::SecurityInterstitialCommand command) override;
 
   // Returns true if `options_mask` refers to a soft-overridable SSL error.
   static bool IsOverridable(int options_mask);

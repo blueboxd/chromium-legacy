@@ -4,7 +4,7 @@
 
 #include "chromeos/ash/components/sync_wifi/synced_network_updater_impl.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
@@ -19,7 +19,6 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace ash::network_config {
 namespace mojom = ::chromeos::network_config::mojom;
 }

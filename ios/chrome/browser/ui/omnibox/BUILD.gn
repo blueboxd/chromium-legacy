@@ -6,9 +6,10 @@ source_set("omnibox") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
-    "location_bar_delegate.h",
-    "web_omnibox_edit_controller.cc",
-    "web_omnibox_edit_controller.h",
+    "omnibox_controller_delegate.h",
+    "omnibox_focus_delegate.h",
+    "web_omnibox_edit_model_delegate.cc",
+    "web_omnibox_edit_model_delegate.h",
   ]
   deps = [
     "//base",
@@ -135,8 +136,8 @@ source_set("omnibox_internal") {
     "omnibox_view_controller.mm",
     "omnibox_view_ios.h",
     "omnibox_view_ios.mm",
-    "web_omnibox_edit_controller_impl.h",
-    "web_omnibox_edit_controller_impl.mm",
+    "web_omnibox_edit_model_delegate_impl.h",
+    "web_omnibox_edit_model_delegate_impl.mm",
     "zero_suggest_prefetch_helper.h",
     "zero_suggest_prefetch_helper.mm",
   ]
@@ -149,6 +150,7 @@ source_set("omnibox_internal") {
     "resources:omnibox_clear_icon",
     "//base",
     "//components/favicon/ios",
+    "//components/feature_engagement/public",
     "//components/open_from_clipboard:",
     "//components/resources",
     "//components/search_engines",
@@ -161,6 +163,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/https_upgrades",
     "//ios/chrome/browser/main:public",
@@ -196,7 +199,6 @@ source_set("omnibox_internal") {
     "//ios/chrome/common/ui/util",
     "//ios/chrome/common/ui/util:dynamic_type_util",
     "//ios/components/security_interstitials/https_only_mode",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
     "//ios/public/provider/chrome/browser/lens:lens_api",
     "//ios/web",
@@ -270,6 +272,7 @@ source_set("eg2_tests") {
   deps = [
     ":eg_test_support+eg2",
     ":features",
+    "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",

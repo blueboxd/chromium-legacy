@@ -121,6 +121,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void ReadLargeBlob(const std::vector<LargeBlobKey>& large_blob_keys,
                      absl::optional<pin::TokenResponse> pin_uv_auth_token,
                      LargeBlobReadCallback callback) override;
+  void GarbageCollectLargeBlob(
+      const pin::TokenResponse& pin_uv_auth_token,
+      base::OnceCallback<void(CtapDeviceResponseCode)> callback) override;
 
   absl::optional<base::span<const int32_t>> GetAlgorithms() override;
   bool DiscoverableCredentialStorageFull() const override;
@@ -134,11 +137,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   bool SupportsEnterpriseAttestation() const override;
   bool SupportsCredBlobOfSize(size_t num_bytes) const override;
   bool SupportsDevicePublicKey() const override;
+  bool SupportsLargeBlobs() const override;
   const absl::optional<AuthenticatorSupportedOptions>& Options() const override;
   absl::optional<FidoTransportProtocol> AuthenticatorTransport() const override;
-  bool IsInPairingMode() const override;
-  bool IsPaired() const override;
-  bool RequiresBlePairingPin() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
   FidoDevice* device() { return device_.get(); }
@@ -215,6 +216,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       base::OnceCallback<void(CtapDeviceResponseCode)> callback,
       CtapDeviceResponseCode status,
       absl::optional<LargeBlobsResponse> response);
+  void OnCredentialsEnumeratedForGarbageCollect(
+      const pin::TokenResponse& pin_uv_auth_token,
+      base::OnceCallback<void(CtapDeviceResponseCode)> callback,
+      CtapDeviceResponseCode status,
+      absl::optional<std::vector<AggregatedEnumerateCredentialsResponse>>
+          credentials);
   void OnHaveLargeBlobArrayForWrite(
       LargeBlob large_blob,
       const LargeBlobKey& large_blob_key,
@@ -225,6 +232,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void OnHaveLargeBlobArrayForRead(
       const std::vector<LargeBlobKey>& large_blob_keys,
       LargeBlobReadCallback callback,
+      CtapDeviceResponseCode status,
+      absl::optional<LargeBlobArrayReader> large_blob_array_reader);
+  void OnHaveLargeBlobArrayForGarbageCollect(
+      std::vector<AggregatedEnumerateCredentialsResponse> credentials,
+      const pin::TokenResponse& pin_uv_auth_token,
+      base::OnceCallback<void(CtapDeviceResponseCode)> callback,
       CtapDeviceResponseCode status,
       absl::optional<LargeBlobArrayReader> large_blob_array_reader);
 

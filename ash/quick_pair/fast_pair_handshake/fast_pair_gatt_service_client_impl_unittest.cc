@@ -7,18 +7,18 @@
 #include <stddef.h>
 
 #include "ash/quick_pair/common/constants.h"
+#include "ash/quick_pair/common/fake_bluetooth_adapter.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/fast_pair_handshake/fake_fast_pair_data_encryptor.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_data_encryptor.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_data_encryptor_impl.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -61,8 +61,18 @@ const char kWriteAccountKeyCharacteristicGattError[] =
 const char kWriteAccountKeyTimeMetric[] =
     "Bluetooth.ChromeOS.FastPair.AccountKey.Write.TotalTime";
 const char kFastPairGattConnectionStep[] = "FastPair.GattConnection";
+const char kFastPairGattRetryFailureReason[] =
+    "Bluetooth.ChromeOS.FastPair.GattConnection.RetryFailureReason";
 
 constexpr base::TimeDelta kConnectingTestTimeout = base::Seconds(15);
+constexpr base::TimeDelta kSimulateStackFrameHangSeconds = base::Seconds(90);
+constexpr base::TimeDelta kCoolOffPeriodBeforeGattConnectionAfterDisconnect =
+    base::Seconds(2);
+
+// 51 seconds is from 2 seconds for a cooloff period before GATT connection
+// attempts * 3 GATT attempts + 15 seconds GATT connecting timeout * 3 GATT
+// attempts.
+constexpr base::TimeDelta kAllGattRetriesPeriod = base::Seconds(51);
 
 // Below constants are used to construct MockBluetoothDevice for testing.
 constexpr char kTestBleDeviceAddress[] = "11:12:13:14:15:16";
@@ -86,7 +96,6 @@ const uint8_t kMessageType = 0x00;
 const uint8_t kFlags = 0x00;
 const std::string kProviderAddress = "abcde";
 const std::string kSeekersAddress = "abcde";
-const std::vector<uint8_t>& kTestWriteResponse{0x01, 0x03, 0x02, 0x01, 0x02};
 const uint8_t kSeekerPasskey = 0x02;
 const uint32_t kPasskey = 13;
 const std::array<uint8_t, 16> kAccountKey = {0x04, 0x01, 0x01, 0x01, 0x01, 0x01,
@@ -110,42 +119,11 @@ const device::BluetoothRemoteGattCharacteristic::Permissions kPermissions =
     device::BluetoothRemoteGattCharacteristic::PERMISSION_READ_ENCRYPTED |
     device::BluetoothRemoteGattCharacteristic::PERMISSION_WRITE_ENCRYPTED;
 
-class FakeBluetoothAdapter
-    : public testing::NiceMock<device::MockBluetoothAdapter> {
- public:
-  FakeBluetoothAdapter() = default;
-
-  // Move-only class
-  FakeBluetoothAdapter(const FakeBluetoothAdapter&) = delete;
-  FakeBluetoothAdapter& operator=(const FakeBluetoothAdapter&) = delete;
-
-  device::BluetoothDevice* GetDevice(const std::string& address) override {
-    for (const auto& it : mock_devices_) {
-      if (it->GetAddress() == address)
-        return it.get();
-    }
-    return nullptr;
-  }
-
-  void NotifyGattDiscoveryCompleteForService(
-      device::BluetoothRemoteGattService* service) {
-    device::BluetoothAdapter::NotifyGattDiscoveryComplete(service);
-  }
-
-  void NotifyGattCharacteristicValueChanged(
-      device::BluetoothRemoteGattCharacteristic* characteristic) {
-    device::BluetoothAdapter::NotifyGattCharacteristicValueChanged(
-        characteristic, kTestWriteResponse);
-  }
-
- protected:
-  ~FakeBluetoothAdapter() override = default;
-};
-
 class FakeBluetoothDevice
     : public testing::NiceMock<device::MockBluetoothDevice> {
  public:
-  FakeBluetoothDevice(FakeBluetoothAdapter* adapter, const std::string& address)
+  FakeBluetoothDevice(ash::quick_pair::FakeBluetoothAdapter* adapter,
+                      const std::string& address)
       : testing::NiceMock<device::MockBluetoothDevice>(adapter,
                                                        /*bluetooth_class=*/0u,
                                                        /*name=*/"Test Device",
@@ -158,6 +136,13 @@ class FakeBluetoothDevice
       device::BluetoothDevice::GattConnectionCallback callback,
       absl::optional<device::BluetoothUUID> service_uuid =
           absl::nullopt) override {
+    if (has_gatt_connection_hang_) {
+      // Fast forward time to simulate this stack frame not finishing until
+      // after the timer has fired.
+      task_environment_->FastForwardBy(kSimulateStackFrameHangSeconds);
+      return;
+    }
+
     gatt_connection_ = std::make_unique<
         testing::NiceMock<device::MockBluetoothGattConnection>>(
         fake_adapter_, kTestBleDeviceAddress);
@@ -173,8 +158,30 @@ class FakeBluetoothDevice
     }
   }
 
+  void Disconnect(base::OnceClosure callback,
+                  base::OnceClosure error_callback) override {
+    was_disconnect_called_ = true;
+    if (has_disconnect_error_) {
+      std::move(error_callback).Run();
+      return;
+    }
+    std::move(callback).Run();
+  }
+
+  void SetDisconnectError(bool has_disconnect_error) {
+    has_disconnect_error_ = has_disconnect_error;
+  }
+
+  bool WasDisconnectCalled() { return was_disconnect_called_; }
+
   void SetError(bool has_gatt_connection_error) {
     has_gatt_connection_error_ = has_gatt_connection_error;
+  }
+
+  void SetHang(bool has_gatt_connection_hang,
+               base::test::TaskEnvironment* task_environment) {
+    has_gatt_connection_hang_ = has_gatt_connection_hang;
+    task_environment_ = task_environment;
   }
 
   // Move-only class
@@ -182,10 +189,14 @@ class FakeBluetoothDevice
   FakeBluetoothDevice& operator=(const FakeBluetoothDevice&) = delete;
 
  protected:
+  bool was_disconnect_called_ = false;
   std::unique_ptr<testing::NiceMock<device::MockBluetoothGattConnection>>
       gatt_connection_;
   bool has_gatt_connection_error_ = false;
-  FakeBluetoothAdapter* fake_adapter_;
+  bool has_gatt_connection_hang_ = false;
+  bool has_disconnect_error_ = false;
+  base::test::TaskEnvironment* task_environment_ = nullptr;
+  ash::quick_pair::FakeBluetoothAdapter* fake_adapter_ = nullptr;
 };
 
 class FakeBluetoothGattCharacteristic
@@ -272,7 +283,7 @@ class FakeBluetoothGattCharacteristic
 };
 
 std::unique_ptr<FakeBluetoothDevice> CreateTestBluetoothDevice(
-    FakeBluetoothAdapter* adapter,
+    ash::quick_pair::FakeBluetoothAdapter* adapter,
     device::BluetoothUUID uuid) {
   auto mock_device = std::make_unique<FakeBluetoothDevice>(
       /*adapter=*/adapter, kTestBleDeviceAddress);
@@ -292,9 +303,10 @@ class FastPairGattServiceClientTest : public testing::Test {
 
   void SuccessfulGattConnectionSetUp() {
     adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
-    device_ = CreateTestBluetoothDevice(
+    unique_fake_bt_device_ = CreateTestBluetoothDevice(
         adapter_.get(), ash::quick_pair::kFastPairBluetoothUuid);
-    adapter_->AddMockDevice(std::move(device_));
+    raw_fake_bt_device_ = unique_fake_bt_device_.get();
+    adapter_->AddMockDevice(std::move(unique_fake_bt_device_));
     gatt_service_client_ = FastPairGattServiceClientImpl::Factory::Create(
         adapter_->GetDevice(kTestBleDeviceAddress), adapter_.get(),
         base::BindRepeating(&::ash::quick_pair::FastPairGattServiceClientTest::
@@ -304,10 +316,39 @@ class FastPairGattServiceClientTest : public testing::Test {
 
   void FailedGattConnectionSetUp() {
     adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
-    device_ = CreateTestBluetoothDevice(
+    unique_fake_bt_device_ = CreateTestBluetoothDevice(
         adapter_.get(), ash::quick_pair::kFastPairBluetoothUuid);
-    device_->SetError(true);
-    adapter_->AddMockDevice(std::move(device_));
+    unique_fake_bt_device_->SetError(true);
+    raw_fake_bt_device_ = unique_fake_bt_device_.get();
+    adapter_->AddMockDevice(std::move(unique_fake_bt_device_));
+    gatt_service_client_ = FastPairGattServiceClientImpl::Factory::Create(
+        adapter_->GetDevice(kTestBleDeviceAddress), adapter_.get(),
+        base::BindRepeating(&::ash::quick_pair::FastPairGattServiceClientTest::
+                                InitializedTestCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void HungGattConnectionSetUp() {
+    adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
+    unique_fake_bt_device_ = CreateTestBluetoothDevice(
+        adapter_.get(), ash::quick_pair::kFastPairBluetoothUuid);
+    unique_fake_bt_device_->SetHang(true, &task_environment_);
+    raw_fake_bt_device_ = unique_fake_bt_device_.get();
+    adapter_->AddMockDevice(std::move(unique_fake_bt_device_));
+    gatt_service_client_ = FastPairGattServiceClientImpl::Factory::Create(
+        adapter_->GetDevice(kTestBleDeviceAddress), adapter_.get(),
+        base::BindRepeating(&::ash::quick_pair::FastPairGattServiceClientTest::
+                                InitializedTestCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void DisconectFailGattSetup() {
+    adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
+    unique_fake_bt_device_ = CreateTestBluetoothDevice(
+        adapter_.get(), ash::quick_pair::kFastPairBluetoothUuid);
+    unique_fake_bt_device_->SetDisconnectError(true);
+    raw_fake_bt_device_ = unique_fake_bt_device_.get();
+    adapter_->AddMockDevice(std::move(unique_fake_bt_device_));
     gatt_service_client_ = FastPairGattServiceClientImpl::Factory::Create(
         adapter_->GetDevice(kTestBleDeviceAddress), adapter_.get(),
         base::BindRepeating(&::ash::quick_pair::FastPairGattServiceClientTest::
@@ -317,8 +358,10 @@ class FastPairGattServiceClientTest : public testing::Test {
 
   void NonFastPairServiceDataSetUp() {
     adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
-    device_ = CreateTestBluetoothDevice(adapter_.get(), kNonFastPairUuid);
-    adapter_->AddMockDevice(std::move(device_));
+    unique_fake_bt_device_ =
+        CreateTestBluetoothDevice(adapter_.get(), kNonFastPairUuid);
+    raw_fake_bt_device_ = unique_fake_bt_device_.get();
+    adapter_->AddMockDevice(std::move(unique_fake_bt_device_));
     gatt_service_client_ = FastPairGattServiceClientImpl::Factory::Create(
         adapter_->GetDevice(kTestBleDeviceAddress), adapter_.get(),
         base::BindRepeating(&::ash::quick_pair::FastPairGattServiceClientTest::
@@ -486,6 +529,15 @@ class FastPairGattServiceClientTest : public testing::Test {
     task_environment_.FastForwardBy(kConnectingTestTimeout);
   }
 
+  void FastForwardTimeByGattDisconnectCoolOff() {
+    task_environment_.FastForwardBy(
+        kCoolOffPeriodBeforeGattConnectionAfterDisconnect);
+  }
+
+  void FastForwardTimeByAllGattRetries() {
+    task_environment_.FastForwardBy(kAllGattRetriesPeriod);
+  }
+
   void WriteRequestToKeyBased() {
     gatt_service_client_->WriteRequestAsync(
         kMessageType, kFlags, kProviderAddress, kSeekersAddress,
@@ -536,6 +588,8 @@ class FastPairGattServiceClientTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::HistogramTester histogram_tester_;
   std::unique_ptr<FastPairGattServiceClient> gatt_service_client_;
+  FakeBluetoothDevice* raw_fake_bt_device_;
+  scoped_refptr<FakeBluetoothAdapter> adapter_;
 
  private:
   // We need temporary pointers to use for write/ready requests because we
@@ -559,8 +613,7 @@ class FastPairGattServiceClientTest : public testing::Test {
 
   absl::optional<PairFailure> initalized_failure_;
   absl::optional<PairFailure> write_failure_;
-  scoped_refptr<FakeBluetoothAdapter> adapter_;
-  std::unique_ptr<FakeBluetoothDevice> device_;
+  std::unique_ptr<FakeBluetoothDevice> unique_fake_bt_device_;
   std::unique_ptr<FakeBluetoothGattCharacteristic>
       fake_key_based_characteristic_;
   std::unique_ptr<FakeFastPairDataEncryptor> fast_pair_data_encryptor_ =
@@ -570,34 +623,6 @@ class FastPairGattServiceClientTest : public testing::Test {
       gatt_service_;
   base::WeakPtrFactory<FastPairGattServiceClientTest> weak_ptr_factory_{this};
 };
-
-TEST_F(FastPairGattServiceClientTest, GattServiceDiscoveryTimeout) {
-  histogram_tester().ExpectTotalCount(kTotalGattConnectionTime, 0);
-  histogram_tester().ExpectTotalCount(kGattConnectionResult, 0);
-  histogram_tester().ExpectTotalCount(kGattConnectionEffectiveSuccessRate, 0);
-  histogram_tester().ExpectTotalCount(kGattConnectionAttemptCount, 0);
-  histogram_tester().ExpectTotalCount(kWriteKeyBasedCharacteristicGattError, 0);
-  histogram_tester().ExpectTotalCount(kWritePasskeyCharacteristicGattError, 0);
-  histogram_tester().ExpectTotalCount(kNotifyKeyBasedCharacteristicTime, 0);
-  histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
-  histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
-  SuccessfulGattConnectionSetUp();
-  FastForwardTimeByConnectingTimeout();
-  NotifyGattDiscoveryCompleteForService(
-      ash::quick_pair::kFastPairBluetoothUuid);
-  EXPECT_EQ(GetInitializedCallbackResult(),
-            PairFailure::kGattServiceDiscoveryTimeout);
-  EXPECT_FALSE(ServiceIsSet());
-  histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 1);
-  histogram_tester().ExpectTotalCount(kTotalGattConnectionTime, 1);
-  histogram_tester().ExpectTotalCount(kGattConnectionResult, 1);
-  histogram_tester().ExpectTotalCount(kGattConnectionEffectiveSuccessRate, 1);
-  histogram_tester().ExpectTotalCount(kGattConnectionAttemptCount, 1);
-  histogram_tester().ExpectTotalCount(kWriteKeyBasedCharacteristicGattError, 0);
-  histogram_tester().ExpectTotalCount(kNotifyKeyBasedCharacteristicTime, 0);
-  histogram_tester().ExpectTotalCount(kWritePasskeyCharacteristicGattError, 0);
-  histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
-}
 
 TEST_F(FastPairGattServiceClientTest, FailedGattConnection) {
   histogram_tester().ExpectTotalCount(kTotalGattConnectionTime, 0);
@@ -611,6 +636,10 @@ TEST_F(FastPairGattServiceClientTest, FailedGattConnection) {
   histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
   FailedGattConnectionSetUp();
+  FastForwardTimeByAllGattRetries();
+  histogram_tester_.ExpectBucketCount(
+      kFastPairGattRetryFailureReason,
+      PairFailure::kBluetoothDeviceFailureCreatingGattConnection, 3);
   EXPECT_EQ(GetInitializedCallbackResult(), PairFailure::kCreateGattConnection);
   EXPECT_FALSE(ServiceIsSet());
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 1);
@@ -638,6 +667,7 @@ TEST_F(FastPairGattServiceClientTest, GattConnectionSuccess) {
   histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_TRUE(gatt_service_client_->IsConnected());
@@ -655,6 +685,7 @@ TEST_F(FastPairGattServiceClientTest, GattConnectionSuccess) {
 
 TEST_F(FastPairGattServiceClientTest, IgnoreNonFastPairServices) {
   NonFastPairServiceDataSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
   EXPECT_FALSE(ServiceIsSet());
 }
@@ -664,6 +695,7 @@ TEST_F(FastPairGattServiceClientTest, FailedKeyBasedCharacteristics) {
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
   SetKeybasedCharacteristicError(true);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(),
@@ -676,6 +708,7 @@ TEST_F(FastPairGattServiceClientTest, FailedKeyBasedCharacteristics) {
 TEST_F(FastPairGattServiceClientTest, FailedPasskeyCharacteristics) {
   SetPasskeyCharacteristicError(true);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(),
@@ -689,6 +722,7 @@ TEST_F(FastPairGattServiceClientTest, SuccessfulCharacteristicsStartNotify) {
   SetKeybasedCharacteristicError(false);
   SetPasskeyCharacteristicError(false);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   WriteRequestToPasskey();
@@ -701,6 +735,7 @@ TEST_F(FastPairGattServiceClientTest, SuccessfulCharacteristicsStartNotify) {
 TEST_F(FastPairGattServiceClientTest, StartNotifyPasskeyFailure) {
   histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   SetPasskeyNotifySessionError(true);
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
@@ -715,6 +750,7 @@ TEST_F(FastPairGattServiceClientTest, StartNotifyKeybasedFailure) {
   histogram_tester().ExpectTotalCount(kNotifyKeyBasedCharacteristicTime, 0);
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   SetKeybasedNotifySessionError(true);
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
@@ -730,6 +766,7 @@ TEST_F(FastPairGattServiceClientTest, PasskeyStartNotifyTimeout) {
   histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
   SetPasskeyNotifySessionTimeout(true);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   WriteRequestToPasskey();
@@ -744,6 +781,7 @@ TEST_F(FastPairGattServiceClientTest, KeyBasedStartNotifyTimeout) {
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
   SetKeybasedNotifySessionTimeout(true);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   WriteRequestToKeyBased();
@@ -758,6 +796,7 @@ TEST_F(FastPairGattServiceClientTest, WriteKeyBasedRequest) {
   histogram_tester().ExpectTotalCount(kNotifyKeyBasedCharacteristicTime, 0);
   histogram_tester().ExpectTotalCount(kFastPairGattConnectionStep, 0);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -774,6 +813,7 @@ TEST_F(FastPairGattServiceClientTest, WriteKeyBasedRequestError) {
   histogram_tester().ExpectTotalCount(kWriteKeyBasedCharacteristicGattError, 0);
   SetKeyBasedWriteError();
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -788,6 +828,7 @@ TEST_F(FastPairGattServiceClientTest, WriteKeyBasedRequestError) {
 TEST_F(FastPairGattServiceClientTest, WriteKeyBasedRequestTimeout) {
   SetWriteRequestTimeout();
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -802,6 +843,7 @@ TEST_F(FastPairGattServiceClientTest, WritePasskeyRequest) {
   histogram_tester().ExpectTotalCount(kWritePasskeyCharacteristicGattError, 0);
   histogram_tester().ExpectTotalCount(kNotifyPasskeyCharacteristicTime, 0);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -817,6 +859,7 @@ TEST_F(FastPairGattServiceClientTest, WritePasskeyRequestError) {
   histogram_tester().ExpectTotalCount(kWritePasskeyCharacteristicGattError, 0);
   SetPasskeyWriteError();
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -832,6 +875,7 @@ TEST_F(FastPairGattServiceClientTest, WritePasskeyRequestTimeout) {
   histogram_tester().ExpectTotalCount(kWritePasskeyCharacteristicGattError, 0);
   SetWritePasskeyTimeout();
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -847,6 +891,7 @@ TEST_F(FastPairGattServiceClientTest, WriteAccountKey) {
                                       0);
   histogram_tester().ExpectTotalCount(kWriteAccountKeyTimeMetric, 0);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -867,6 +912,7 @@ TEST_F(FastPairGattServiceClientTest, WriteAccountKeyFailure) {
   histogram_tester().ExpectTotalCount(kWriteAccountKeyTimeMetric, 0);
   SetAccountKeyCharacteristicWriteError(true);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -887,6 +933,7 @@ TEST_F(FastPairGattServiceClientTest, WriteAccountKeyTimeout) {
   histogram_tester().ExpectTotalCount(kWriteAccountKeyTimeMetric, 0);
   SetWriteAccountKeyTimeout(true);
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
   NotifyGattDiscoveryCompleteForService(
       ash::quick_pair::kFastPairBluetoothUuid);
   EXPECT_EQ(GetInitializedCallbackResult(), absl::nullopt);
@@ -901,10 +948,56 @@ TEST_F(FastPairGattServiceClientTest, WriteAccountKeyTimeout) {
 
 TEST_F(FastPairGattServiceClientTest, TimeoutOnNonFastPairServiceDiscovery) {
   SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
+
   NotifyGattDiscoveryCompleteForService(kNonFastPairUuid);
-  FastForwardTimeByConnectingTimeout();
+
+  // Simulate all the GATT retries timing out following
+  // `NotifyGattCompleteForService` on an invalid UUID because the timeout have
+  // fired (not stopped because invalid UUID), which cause us to retry.
+  FastForwardTimeByAllGattRetries();
+
+  histogram_tester_.ExpectBucketCount(kFastPairGattRetryFailureReason,
+                                      PairFailure::kGattServiceDiscoveryTimeout,
+                                      3);
+  EXPECT_EQ(GetInitializedCallbackResult(), PairFailure::kCreateGattConnection);
+}
+
+TEST_F(FastPairGattServiceClientTest, HungGattConnectionTimesOut) {
+  HungGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
+  histogram_tester_.ExpectBucketCount(kFastPairGattRetryFailureReason,
+                                      PairFailure::kGattServiceDiscoveryTimeout,
+                                      3);
+  EXPECT_EQ(GetInitializedCallbackResult(), PairFailure::kCreateGattConnection);
+  EXPECT_FALSE(ServiceIsSet());
+}
+
+TEST_F(FastPairGattServiceClientTest, FailedToDisconnectGattResultsInError) {
+  DisconectFailGattSetup();
+  FastForwardTimeByGattDisconnectCoolOff();
   EXPECT_EQ(GetInitializedCallbackResult(),
-            PairFailure::kGattServiceDiscoveryTimeout);
+            PairFailure::kFailureToDisconnectGattBetweenRetries);
+  EXPECT_FALSE(ServiceIsSet());
+  EXPECT_TRUE(raw_fake_bt_device_->WasDisconnectCalled());
+}
+
+TEST_F(FastPairGattServiceClientTest, SuccessfulGattConnectionDisconnects) {
+  SuccessfulGattConnectionSetUp();
+  FastForwardTimeByGattDisconnectCoolOff();
+  NotifyGattDiscoveryCompleteForService(
+      ash::quick_pair::kFastPairBluetoothUuid);
+  EXPECT_TRUE(gatt_service_client_->IsConnected());
+  EXPECT_TRUE(raw_fake_bt_device_->WasDisconnectCalled());
+}
+
+TEST_F(FastPairGattServiceClientTest, PairingDeviceLostBetweenRetries) {
+  FailedGattConnectionSetUp();
+  adapter_->RemoveMockDevice(kTestBleDeviceAddress);
+  FastForwardTimeByGattDisconnectCoolOff();
+  EXPECT_EQ(GetInitializedCallbackResult(),
+            PairFailure::kPairingDeviceLostBetweenGattConnectionAttempts);
+  EXPECT_FALSE(ServiceIsSet());
 }
 
 }  // namespace quick_pair

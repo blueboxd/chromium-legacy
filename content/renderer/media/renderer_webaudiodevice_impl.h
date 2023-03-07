@@ -19,7 +19,6 @@
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/public/platform/web_audio_sink_descriptor.h"
-#include "third_party/blink/public/platform/web_vector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -48,8 +47,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       media::ChannelLayout layout,
       int number_of_output_channels,
       const blink::WebAudioLatencyHint& latency_hint,
-      blink::WebAudioDevice::RenderCallback* callback,
-      const base::UnguessableToken& session_id);
+      media::AudioRendererSink::RenderCallback* callback);
 
   // blink::WebAudioDevice implementation.
   void Start() override;
@@ -82,7 +80,6 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   // Callback to get output device params (for tests).
   using OutputDeviceParamsCallback = base::OnceCallback<media::AudioParameters(
       const blink::LocalFrameToken& frame_token,
-      const base::UnguessableToken& session_id,
       const std::string& device_id)>;
 
   using CreateSilentSinkCallback =
@@ -94,8 +91,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       media::ChannelLayout layout,
       int number_of_output_channels,
       const blink::WebAudioLatencyHint& latency_hint,
-      blink::WebAudioDevice::RenderCallback* callback,
-      const base::UnguessableToken& session_id,
+      media::AudioRendererSink::RenderCallback* callback,
       OutputDeviceParamsCallback device_params_cb,
       CreateSilentSinkCallback create_silent_sink_cb);
 
@@ -112,10 +108,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   const blink::WebAudioLatencyHint latency_hint_;
 
   // Weak reference to the callback into WebKit code.
-  blink::WebAudioDevice::RenderCallback* const client_callback_;
-
-  // Used to wrap AudioBus to be passed into |client_callback_|.
-  blink::WebVector<float*> web_audio_dest_data_;
+  media::AudioRendererSink::RenderCallback* const client_callback_;
 
   // To avoid the need for locking, ensure the control methods of the
   // blink::WebAudioDevice implementation are called on the same thread.
@@ -123,9 +116,6 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
 
   // When non-NULL, we are started.  When NULL, we are stopped.
   scoped_refptr<media::AudioRendererSink> sink_;
-
-  // ID to allow browser to select the correct input device for unified IO.
-  const base::UnguessableToken session_id_;
 
   // Used to suspend |sink_| usage when silence has been detected for too long.
   std::unique_ptr<media::SilentSinkSuspender> silent_sink_suspender_;

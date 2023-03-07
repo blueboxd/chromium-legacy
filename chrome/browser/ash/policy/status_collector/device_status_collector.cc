@@ -21,12 +21,12 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -1552,7 +1552,7 @@ SampledData::~SampledData() = default;
 
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* pref_service,
-    chromeos::system::StatisticsProvider* provider,
+    ash::system::StatisticsProvider* provider,
     ManagedSessionService* managed_session_service,
     const VolumeInfoFetcher& volume_info_fetcher,
     const CPUStatisticsFetcher& cpu_statistics_fetcher,
@@ -1724,7 +1724,7 @@ DeviceStatusCollector::DeviceStatusCollector(
 
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* pref_service,
-    chromeos::system::StatisticsProvider* provider,
+    ash::system::StatisticsProvider* provider,
     ManagedSessionService* managed_session_service)
     : DeviceStatusCollector(
           pref_service,
@@ -2286,16 +2286,16 @@ bool DeviceStatusCollector::GetWriteProtectSwitch(
     em::DeviceStatusReportRequest* status) {
   const absl::optional<base::StringPiece> firmware_write_protect =
       statistics_provider_->GetMachineStatistic(
-          chromeos::system::kFirmwareWriteProtectCurrentKey);
+          ash::system::kFirmwareWriteProtectCurrentKey);
   if (!firmware_write_protect) {
     return false;
   }
 
   if (firmware_write_protect ==
-      chromeos::system::kFirmwareWriteProtectCurrentValueOff) {
+      ash::system::kFirmwareWriteProtectCurrentValueOff) {
     status->set_write_protect_switch(false);
   } else if (firmware_write_protect ==
-             chromeos::system::kFirmwareWriteProtectCurrentValueOn) {
+             ash::system::kFirmwareWriteProtectCurrentValueOn) {
     status->set_write_protect_switch(true);
   } else {
     return false;
@@ -2524,8 +2524,12 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   if (!platform_version.IsValid())
     return false;
 
-  const std::string required_platform_version_string =
-      ash::KioskAppManager::Get()->GetAutoLaunchAppRequiredPlatformVersion();
+  std::string required_platform_version_string;
+  // Can be uninitialized in tests.
+  if (ash::KioskAppManager::IsInitialized()) {
+    required_platform_version_string =
+        ash::KioskAppManager::Get()->GetAutoLaunchAppRequiredPlatformVersion();
+  }
   em::OsUpdateStatus* os_update_status = status->mutable_os_update_status();
 
   const update_engine::StatusResult update_engine_status =

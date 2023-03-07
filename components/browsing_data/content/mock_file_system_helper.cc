@@ -4,8 +4,8 @@
 
 #include "components/browsing_data/content/mock_file_system_helper.h"
 
-#include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback.h"
 #include "components/browsing_data/content/file_system_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -18,9 +18,7 @@ MockFileSystemHelper::MockFileSystemHelper(
     content::BrowserContext* browser_context)
     : FileSystemHelper(
           browser_context->GetDefaultStoragePartition()->GetFileSystemContext(),
-          {},
-          browser_context->GetDefaultStoragePartition()->GetNativeIOContext()) {
-}
+          {}) {}
 
 MockFileSystemHelper::~MockFileSystemHelper() {}
 

@@ -10,19 +10,21 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/web_applications/externally_managed_app_install_task.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/external_app_registration_waiter.h"
 #include "chrome/browser/web_applications/test/fake_install_finalizer.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
@@ -31,7 +33,6 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -59,7 +60,8 @@ ExternalInstallOptions GetInstallOptions(
     const GURL& url,
     absl::optional<bool> override_previous_user_uninstall =
         absl::optional<bool>()) {
-  ExternalInstallOptions options(std::move(url), UserDisplayMode::kBrowser,
+  ExternalInstallOptions options(std::move(url),
+                                 mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
 
   if (override_previous_user_uninstall.has_value())
@@ -82,7 +84,7 @@ ExternalInstallOptions GetInstallOptionsWithWebAppInfo(
     const GURL& url,
     absl::optional<bool> override_previous_user_uninstall =
         absl::optional<bool>()) {
-  ExternalInstallOptions options(url, UserDisplayMode::kBrowser,
+  ExternalInstallOptions options(url, mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.only_use_app_info_factory = true;
   // Static to ensure re-use across multiple function calls for
@@ -281,7 +283,6 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
         : ExternallyManagedAppInstallTask(
               profile,
               test_url_loader,
-              externally_managed_app_manager_impl->registrar(),
               externally_managed_app_manager_impl->ui_manager(),
               externally_managed_app_manager_impl->finalizer(),
               externally_managed_app_manager_impl->command_scheduler(),
@@ -312,11 +313,11 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
           auto web_app =
               test::CreateWebApp(install_url, WebAppManagement::kPolicy);
           {
-            ScopedRegistryUpdate update(&provider().sync_bridge());
+            ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
             update->CreateApp(std::move(web_app));
           }
           test::AddInstallUrlAndPlaceholderData(
-              profile_->GetPrefs(), &provider().sync_bridge(), *app_id,
+              profile_->GetPrefs(), &provider().sync_bridge_unsafe(), *app_id,
               install_url, install_source, result.did_install_placeholder);
         }
       }
@@ -466,7 +467,7 @@ class ExternallyManagedAppManagerImplTest
   }
 
   void TearDown() override {
-    command_scheduler().Shutdown();
+    provider().Shutdown();
     WebAppTest::TearDown();
   }
 
@@ -510,7 +511,6 @@ class ExternallyManagedAppManagerImplTest
               barrier_closure.Run();
             }));
     run_loop.Run();
-
     return results;
   }
 
@@ -582,7 +582,7 @@ class ExternallyManagedAppManagerImplTest
 
   WebAppRegistrar& registrar() { return provider().registrar_unsafe(); }
 
-  WebAppSyncBridge& sync_bridge() { return provider().sync_bridge(); }
+  WebAppSyncBridge& sync_bridge() { return provider().sync_bridge_unsafe(); }
 
   FakeWebAppProvider& provider() { return *provider_; }
 
@@ -1078,7 +1078,8 @@ TEST_P(ExternallyManagedAppManagerImplTest, Install_AlwaysUpdate) {
       kFooWebAppUrl, webapps::UninstallResultCode::kSuccess);
 
   auto get_force_reinstall_info = [kFooWebAppUrl]() {
-    ExternalInstallOptions options(kFooWebAppUrl, UserDisplayMode::kStandalone,
+    ExternalInstallOptions options(kFooWebAppUrl,
+                                   mojom::UserDisplayMode::kStandalone,
                                    ExternalInstallSource::kExternalPolicy);
     options.force_reinstall = true;
     return options;
@@ -1737,7 +1738,7 @@ TEST_P(ExternallyManagedAppManagerImplTest,
     externally_managed_app_manager_impl().SetNextInstallationLaunchURL(
         install_url);
     ExternalInstallOptions install_option(
-        install_url, UserDisplayMode::kStandalone,
+        install_url, mojom::UserDisplayMode::kStandalone,
         ExternalInstallSource::kSystemInstalled);
     const auto& url_and_result =
         InstallAndWait(&externally_managed_app_manager_impl(), install_option);

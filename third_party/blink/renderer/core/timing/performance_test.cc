@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_init.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/timing/back_forward_cache_restoration.h"
@@ -33,6 +34,8 @@ constexpr int kEvent2PageshowStart = 654;
 constexpr int kEvent2PageshowEnd = 987;
 }  // namespace
 
+class LocalDOMWindow;
+
 class TestPerformance : public Performance {
  public:
   explicit TestPerformance(ScriptState* script_state)
@@ -47,6 +50,7 @@ class TestPerformance : public Performance {
   ExecutionContext* GetExecutionContext() const override {
     return execution_context_.Get();
   }
+  uint64_t interactionCount() const override { return 0; }
 
   int NumActiveObservers() { return active_observers_.size(); }
 
@@ -231,8 +235,9 @@ TEST_F(PerformanceTest, InsertEntryOnEmptyBuffer) {
 
   PerformanceEntryVector test_buffer_;
 
-  PerformanceEventTiming* test_entry =
-      PerformanceEventTiming::Create("event", 0.0, 0.0, 0.0, false, nullptr, 0);
+  PerformanceEventTiming* test_entry = PerformanceEventTiming::Create(
+      "event", 0.0, 0.0, 0.0, false, nullptr,
+      LocalDOMWindow::From(scope.GetScriptState()));
 
   base_->InsertEntryIntoSortedBuffer(test_buffer_, *test_entry,
                                      Performance::kDoNotRecordSwaps);
@@ -254,12 +259,14 @@ TEST_F(PerformanceTest, InsertEntryOnExistingBuffer) {
   for (int i = 0; i < 3; i++) {
     double tmp = 1.0;
     PerformanceEventTiming* entry = PerformanceEventTiming::Create(
-        "event", tmp * i, 0.0, 0.0, false, nullptr, 0);
+        "event", tmp * i, 0.0, 0.0, false, nullptr,
+        LocalDOMWindow::From(scope.GetScriptState()));
     test_buffer_.push_back(*entry);
   }
 
-  PerformanceEventTiming* test_entry =
-      PerformanceEventTiming::Create("event", 1.0, 0.0, 0.0, false, nullptr, 0);
+  PerformanceEventTiming* test_entry = PerformanceEventTiming::Create(
+      "event", 1.0, 0.0, 0.0, false, nullptr,
+      LocalDOMWindow::From(scope.GetScriptState()));
 
   // Create copy of the test_buffer_.
   PerformanceEntryVector sorted_buffer_ = test_buffer_;
@@ -285,12 +292,14 @@ TEST_F(PerformanceTest, InsertEntryToFrontOfBuffer) {
   for (int i = 0; i < 3; i++) {
     double tmp = 1.0;
     PerformanceEventTiming* entry = PerformanceEventTiming::Create(
-        "event", tmp * i, 0.0, 0.0, false, nullptr, 0);
+        "event", tmp * i, 0.0, 0.0, false, nullptr,
+        LocalDOMWindow::From(scope.GetScriptState()));
     test_buffer_.push_back(*entry);
   }
 
-  PerformanceEventTiming* test_entry =
-      PerformanceEventTiming::Create("event", 0.0, 0.0, 0.0, false, nullptr, 0);
+  PerformanceEventTiming* test_entry = PerformanceEventTiming::Create(
+      "event", 0.0, 0.0, 0.0, false, nullptr,
+      LocalDOMWindow::From(scope.GetScriptState()));
 
   // Create copy of the test_buffer_.
   PerformanceEntryVector sorted_buffer_ = test_buffer_;
@@ -306,6 +315,9 @@ TEST_F(PerformanceTest, InsertEntryToFrontOfBuffer) {
 }
 
 TEST_F(PerformanceTest, MergePerformanceEntryVectorsTest) {
+  V8TestingScope scope;
+  Initialize(scope.GetScriptState());
+
   PerformanceEntryVector first_vector;
   PerformanceEntryVector second_vector;
 
@@ -314,7 +326,8 @@ TEST_F(PerformanceTest, MergePerformanceEntryVectorsTest) {
   for (int i = 0; i < 6; i += 2) {
     double tmp = 1.0;
     PerformanceEventTiming* entry = PerformanceEventTiming::Create(
-        "event", tmp * i, 0.0, 0.0, false, nullptr, 0);
+        "event", tmp * i, 0.0, 0.0, false, nullptr,
+        LocalDOMWindow::From(scope.GetScriptState()));
     first_vector.push_back(*entry);
     test_vector.push_back(*entry);
   }
@@ -322,14 +335,17 @@ TEST_F(PerformanceTest, MergePerformanceEntryVectorsTest) {
   for (int i = 1; i < 6; i += 2) {
     double tmp = 1.0;
     PerformanceEventTiming* entry = PerformanceEventTiming::Create(
-        "event", tmp * i, 0.0, 0.0, false, nullptr, 0);
+        "event", tmp * i, 0.0, 0.0, false, nullptr,
+        LocalDOMWindow::From(scope.GetScriptState()));
     second_vector.push_back(*entry);
     test_vector.push_back(*entry);
   }
 
   PerformanceEntryVector all_entries;
-  all_entries = MergePerformanceEntryVectors(all_entries, first_vector);
-  all_entries = MergePerformanceEntryVectors(all_entries, second_vector);
+  all_entries =
+      MergePerformanceEntryVectors(all_entries, first_vector, g_null_atom);
+  all_entries =
+      MergePerformanceEntryVectors(all_entries, second_vector, g_null_atom);
 
   std::sort(test_vector.begin(), test_vector.end(),
             PerformanceEntry::StartTimeCompareLessThan);

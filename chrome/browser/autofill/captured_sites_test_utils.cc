@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -125,6 +126,30 @@ and then write commands into it:
 )";
   LOG(INFO) << base::StringPrintf(msg,
                                   command_file_path.AsUTF8Unsafe().c_str());
+}
+
+absl::optional<autofill::ServerFieldType> StringToFieldType(
+    const std::string& str) {
+  static auto map = []() {
+    std::map<std::string, autofill::ServerFieldType> map;
+    for (size_t i = autofill::NO_SERVER_DATA;
+         i < autofill::MAX_VALID_FIELD_TYPE; ++i) {
+      auto field_type = static_cast<autofill::ServerFieldType>(i);
+      map[autofill::AutofillType(field_type).ToString()] = field_type;
+    }
+    for (size_t i = static_cast<size_t>(autofill::HtmlFieldType::kUnspecified);
+         i <= static_cast<size_t>(autofill::HtmlFieldType::kMaxValue); ++i) {
+      autofill::AutofillType field_type(static_cast<autofill::HtmlFieldType>(i),
+                                        autofill::HtmlFieldMode::kNone);
+      map[field_type.ToString()] = field_type.GetStorableType();
+    }
+    return map;
+  }();
+  auto it = map.find(str);
+  if (it == map.end()) {
+    return absl::nullopt;
+  }
+  return it->second;
 }
 
 // Command types to control and debug execution.
@@ -801,6 +826,9 @@ bool ProfileDataController::AddAutofillProfileInfo(
                        base::CompareCase::INSENSITIVE_ASCII) ||
       base::StartsWith(field_type, "CREDIT_CARD_",
                        base::CompareCase::INSENSITIVE_ASCII)) {
+    if (type == autofill::CREDIT_CARD_VERIFICATION_CODE) {
+      cvc_ = base::UTF8ToUTF16(field_value);
+    }
     if (type == autofill::CREDIT_CARD_NAME_FIRST ||
         type == autofill::CREDIT_CARD_NAME_LAST) {
       card_.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL, u"");
@@ -811,15 +839,6 @@ bool ProfileDataController::AddAutofillProfileInfo(
   }
 
   return true;
-}
-
-absl::optional<autofill::ServerFieldType>
-ProfileDataController::StringToFieldType(const std::string& str) const {
-  auto it = string_to_field_type_map_.find(str);
-  if (it == string_to_field_type_map_.end()) {
-    return absl::nullopt;
-  }
-  return it->second;
 }
 
 // TestRecipeReplayer ---------------------------------------------------------
@@ -1268,9 +1287,21 @@ bool TestRecipeReplayer::ExecuteAutofillAction(base::Value::Dict action) {
     return false;
   }
 
+  std::string autofill_triggered_field_type;
+  if (GetElementProperty(frame, xpath,
+                         "return target.getAttribute('autofill-prediction');",
+                         &autofill_triggered_field_type)) {
+    VLOG(1) << "The field's Chrome Autofill annotation: "
+            << autofill_triggered_field_type << " during autofill form step.";
+  } else {
+    VLOG(1) << "Failed to obtain the field's Chrome Autofill annotation during "
+               "autofill form step!";
+  }
   if (!feature_action_executor()->AutofillForm(
-          xpath, frame_path, kAutofillActionNumRetries, frame))
+          xpath, frame_path, kAutofillActionNumRetries, frame,
+          StringToFieldType(autofill_triggered_field_type))) {
     return false;
+  }
   WaitTillPageIsIdle(kAutofillActionWaitForVisualUpdateTimeout);
   return true;
 }
@@ -2365,7 +2396,8 @@ bool TestRecipeReplayChromeFeatureActionExecutor::AutofillForm(
     const std::string& focus_element_css_selector,
     const std::vector<std::string>& iframe_path,
     const int attempts,
-    content::RenderFrameHost* frame) {
+    content::RenderFrameHost* frame,
+    absl::optional<autofill::ServerFieldType> triggered_field_type) {
   ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::AutofillForm "
                    "is not implemented!";
   return false;

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
@@ -141,9 +141,7 @@ void HistoryClustersServiceTaskGetMostRecentClusters::
         ")");
     weak_history_clusters_service_->NotifyDebugMessage(
         "  continuation_time = " +
-        (continuation_params.continuation_time.is_null()
-             ? "null (i.e. exhausted history)"
-             : base::TimeToISO8601(continuation_params.continuation_time)));
+        GetDebugTime(continuation_params.continuation_time));
     weak_history_clusters_service_->NotifyDebugMessage(
         base::StringPrintf("GET MOST RECENT CLUSTERS TASK - VISITS %zu:",
                            annotated_visits.size()));
@@ -165,7 +163,7 @@ void HistoryClustersServiceTaskGetMostRecentClusters::
         base::BindOnce(&HistoryClustersServiceTaskGetMostRecentClusters::
                            OnGotModelClusters,
                        weak_ptr_factory_.GetWeakPtr(), continuation_params),
-        std::move(annotated_visits));
+        std::move(annotated_visits), /*requires_ui_and_triggerability=*/true);
   }
 }
 
@@ -209,7 +207,7 @@ void HistoryClustersServiceTaskGetMostRecentClusters::
         base::BindOnce(&HistoryClustersServiceTaskGetMostRecentClusters::
                            OnGotMostRecentPersistedClusters,
                        weak_ptr_factory_.GetWeakPtr()),
-        &task_tracker_);
+        /*include_keywords_and_duplicates=*/true, &task_tracker_);
   } else {
     OnGotMostRecentPersistedClusters({});
   }

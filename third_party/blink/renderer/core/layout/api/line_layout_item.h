@@ -26,8 +26,8 @@ class LineLayoutItem {
       : layout_object_(layout_object) {}
 
   explicit LineLayoutItem(WTF::HashTableDeletedValueType) {
-    WTF::HashTraits<decltype(layout_object_)>::ConstructDeletedValue(
-        layout_object_, false);
+    WTF::ConstructHashTraitsDeletedValue<HashTraits<decltype(layout_object_)>>(
+        layout_object_);
   }
 
   LineLayoutItem(std::nullptr_t) : layout_object_(nullptr) {}
@@ -266,7 +266,7 @@ class LineLayoutItem {
   }
 
   bool IsHashTableDeletedValue() const {
-    return WTF::HashTraits<decltype(layout_object_)>::IsDeletedValue(
+    return WTF::IsHashTraitsDeletedValue<HashTraits<decltype(layout_object_)>>(
         layout_object_);
   }
 
@@ -284,17 +284,7 @@ class LineLayoutItem {
 
   bool EverHadLayout() const { return layout_object_->EverHadLayout(); }
 
-  struct LineLayoutItemHash {
-    STATIC_ONLY(LineLayoutItemHash);
-    static unsigned GetHash(const LineLayoutItem& key) {
-      return WTF::PtrHash<LayoutObject>::GetHash(key.layout_object_);
-    }
-    static bool Equal(const LineLayoutItem& a, const LineLayoutItem& b) {
-      return WTF::PtrHash<LayoutObject>::Equal(a.layout_object_,
-                                               b.layout_object_);
-    }
-    static const bool safe_to_compare_to_empty_or_deleted = true;
-  };
+  unsigned GetHash() const { return WTF::GetHash(layout_object_); }
 
 #if DCHECK_IS_ON()
 
@@ -326,10 +316,6 @@ class LineLayoutItem {
 }  // namespace blink
 
 namespace WTF {
-
-template <>
-struct DefaultHash<blink::LineLayoutItem>
-    : blink::LineLayoutItem::LineLayoutItemHash {};
 
 template <>
 struct HashTraits<blink::LineLayoutItem>

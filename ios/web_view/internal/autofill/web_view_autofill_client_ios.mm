@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "components/autofill/core/browser/form_data_importer.h"
@@ -97,6 +97,16 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
+}
+
+bool WebViewAutofillClientIOS::IsOffTheRecord() {
+  return web_state_->GetBrowserState()->IsOffTheRecord();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+WebViewAutofillClientIOS::GetURLLoaderFactory() {
+  return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+      web_state_->GetBrowserState()->GetURLLoaderFactory());
 }
 
 PersonalDataManager* WebViewAutofillClientIOS::GetPersonalDataManager() {
@@ -261,20 +271,16 @@ bool WebViewAutofillClientIOS::IsFastCheckoutSupported() {
   return false;
 }
 
-bool WebViewAutofillClientIOS::IsFastCheckoutTriggerForm(
-    const FormData& form,
-    const FormFieldData& field) {
+bool WebViewAutofillClientIOS::TryToShowFastCheckout(const FormData& form,
+                                                     const FormFieldData& field,
+                                                     AutofillDriver* driver) {
   return false;
 }
 
-bool WebViewAutofillClientIOS::ShowFastCheckout(
-    base::WeakPtr<FastCheckoutDelegate> delegate) {
-  NOTREACHED();
-  return false;
-}
+void WebViewAutofillClientIOS::HideFastCheckout(bool allow_further_runs) {}
 
-void WebViewAutofillClientIOS::HideFastCheckout() {
-  NOTREACHED();
+bool WebViewAutofillClientIOS::IsShowingFastCheckoutUI() {
+  return false;
 }
 
 bool WebViewAutofillClientIOS::IsTouchToFillCreditCardSupported() {
@@ -359,10 +365,6 @@ bool WebViewAutofillClientIOS::IsContextSecure() const {
 
 bool WebViewAutofillClientIOS::ShouldShowSigninPromo() {
   return false;
-}
-
-bool WebViewAutofillClientIOS::AreServerCardsSupported() const {
-  return true;
 }
 
 void WebViewAutofillClientIOS::ExecuteCommand(int id) {

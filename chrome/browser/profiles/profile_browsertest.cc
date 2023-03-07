@@ -9,13 +9,13 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -25,6 +25,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -530,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
 }
 
 // The EndSession IO synchronization is only critical on Windows, but also
-// happens under the USE_OZONE define. See BrowserProcessImpl::EndSession.
+// happens under Ozone. See BrowserProcessImpl::EndSession.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_OZONE)
 
 namespace {

@@ -137,6 +137,10 @@ InterestGroupManager* TestStoragePartition::GetInterestGroupManager() {
   return nullptr;
 }
 
+AttributionDataModel* TestStoragePartition::GetAttributionDataModel() {
+  return nullptr;
+}
+
 BrowsingTopicsSiteDataManager*
 TestStoragePartition::GetBrowsingTopicsSiteDataManager() {
   return browsing_topics_site_data_manager_;
@@ -149,10 +153,6 @@ TestStoragePartition::GetDevToolsBackgroundServicesContext() {
 
 ContentIndexContext* TestStoragePartition::GetContentIndexContext() {
   return content_index_context_;
-}
-
-NativeIOContext* TestStoragePartition::GetNativeIOContext() {
-  return native_io_context_;
 }
 
 leveldb_proto::ProtoDatabaseProvider*

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -55,7 +55,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   LayerTreeImplTestBase impl;
 
   auto resource = viz::TransferableResource::MakeGpu(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D,
+      gpu::Mailbox::GenerateForSharedImage(), GL_LINEAR, GL_TEXTURE_2D,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
       layer_size, viz::RGBA_8888, false /* is_overlay_candidate */);

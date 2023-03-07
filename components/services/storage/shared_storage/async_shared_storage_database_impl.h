@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
@@ -114,9 +114,9 @@ class AsyncSharedStorageDatabaseImpl : public AsyncSharedStorageDatabase {
                             base::OnceCallback<void(OperationResult)> callback,
                             bool perform_storage_cleanup = false) override;
   void PurgeStale(base::OnceCallback<void(OperationResult)> callback) override;
-  void FetchOrigins(base::OnceCallback<
-                        void(std::vector<mojom::StorageUsageInfoPtr>)> callback,
-                    bool exclude_empty_origins = true) override;
+  void FetchOrigins(
+      base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
+          callback) override;
   void MakeBudgetWithdrawal(
       url::Origin context_origin,
       double bits_debit,
@@ -131,6 +131,9 @@ class AsyncSharedStorageDatabaseImpl : public AsyncSharedStorageDatabase {
   void GetEntriesForDevTools(
       url::Origin context_origin,
       base::OnceCallback<void(EntriesResult)> callback) override;
+  void ResetBudgetForDevTools(
+      url::Origin context_origin,
+      base::OnceCallback<void(OperationResult)> callback) override;
 
   // Gets the underlying database for tests.
   base::SequenceBound<SharedStorageDatabase>*

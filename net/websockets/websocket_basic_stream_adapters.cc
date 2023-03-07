@@ -8,13 +8,15 @@
 #include <cstring>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket.h"
 #include "net/spdy/spdy_buffer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/spdy_utils.h"
+#include "net/websockets/websocket_quic_spdy_stream.h"
 
 namespace net {
 
@@ -73,9 +75,11 @@ int WebSocketSpdyStreamAdapter::Read(IOBuffer* buf,
   DCHECK(!read_callback_);
   DCHECK_LT(0, buf_len);
 
+  DCHECK(!read_buffer_);
   read_buffer_ = buf;
   // |read_length_| is size_t and |buf_len| is a non-negative int, therefore
   // conversion is always valid.
+  DCHECK(!read_length_);
   read_length_ = buf_len;
 
   if (!read_data_.IsEmpty())
@@ -208,7 +212,11 @@ NetLogSource WebSocketSpdyStreamAdapter::source_dependency() const {
 }
 
 int WebSocketSpdyStreamAdapter::CopySavedReadDataIntoBuffer() {
+  DCHECK(read_buffer_);
+  DCHECK(read_length_);
   int rv = read_data_.Dequeue(read_buffer_->data(), read_length_);
+  read_buffer_ = nullptr;
+  read_length_ = 0u;
 
   // Stream has been destroyed earlier but delegate_->OnClose() call was
   // delayed until all buffered data are read.  PostTask so that Read() can
@@ -226,6 +234,82 @@ int WebSocketSpdyStreamAdapter::CopySavedReadDataIntoBuffer() {
 void WebSocketSpdyStreamAdapter::CallDelegateOnClose() {
   if (delegate_)
     delegate_->OnClose(stream_error_);
+}
+
+WebSocketQuicStreamAdapter::WebSocketQuicStreamAdapter(
+    WebSocketQuicSpdyStream* websocket_quic_spdy_stream,
+    Delegate* delegate)
+    : websocket_quic_spdy_stream_(websocket_quic_spdy_stream),
+      delegate_(delegate) {
+  websocket_quic_spdy_stream_->set_delegate(this);
+}
+
+WebSocketQuicStreamAdapter::~WebSocketQuicStreamAdapter() {
+  if (websocket_quic_spdy_stream_) {
+    websocket_quic_spdy_stream_->set_delegate(nullptr);
+  }
+}
+
+size_t WebSocketQuicStreamAdapter::WriteHeaders(
+    spdy::Http2HeaderBlock header_block,
+    bool fin) {
+  return websocket_quic_spdy_stream_->WriteHeaders(std::move(header_block), fin,
+                                                   nullptr);
+}
+
+// WebSocketBasicStream::Adapter methods.
+int WebSocketQuicStreamAdapter::Read(IOBuffer* buf,
+                                     int buf_len,
+                                     CompletionOnceCallback callback) {
+  // TODO(momoka): Write implementation.
+  return OK;
+}
+
+int WebSocketQuicStreamAdapter::Write(
+    IOBuffer* buf,
+    int buf_len,
+    CompletionOnceCallback callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  // TODO(momoka): Write implementation.
+  return OK;
+}
+
+void WebSocketQuicStreamAdapter::Disconnect() {
+  if (websocket_quic_spdy_stream_) {
+    websocket_quic_spdy_stream_->Reset(quic::QUIC_STREAM_CANCELLED);
+  }
+}
+
+bool WebSocketQuicStreamAdapter::is_initialized() const {
+  return true;
+}
+
+// WebSocketQuicSpdyStream::Delegate methods.
+
+void WebSocketQuicStreamAdapter::OnInitialHeadersComplete(
+    bool fin,
+    size_t frame_len,
+    const quic::QuicHeaderList& quic_header_list) {
+  spdy::Http2HeaderBlock response_headers;
+  if (!quic::SpdyUtils::CopyAndValidateHeaders(quic_header_list, nullptr,
+                                               &response_headers)) {
+    DLOG(ERROR) << "Failed to parse header list: "
+                << quic_header_list.DebugString();
+    websocket_quic_spdy_stream_->ConsumeHeaderList();
+    websocket_quic_spdy_stream_->Reset(quic::QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+  delegate_->OnHeadersReceived(response_headers);
+}
+
+void WebSocketQuicStreamAdapter::OnBodyAvailable() {
+  // TODO(momoka): implement this.
+}
+
+void WebSocketQuicStreamAdapter::ClearStream() {
+  if (websocket_quic_spdy_stream_) {
+    websocket_quic_spdy_stream_ = nullptr;
+  }
 }
 
 }  // namespace net

@@ -15,10 +15,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/base/cursor/platform_cursor.h"
 #include "ui/display/types/display_constants.h"
@@ -95,6 +95,14 @@ FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
   root_transform_id_ = flatland_.NextTransformId();
   flatland_.flatland()->CreateTransform(root_transform_id_);
 
+  // Create the infinite hit region that will cover the surface. Do not set clip
+  // boundaries on this transform, so that the hit region retains maximal size.
+  shield_transform_id_ = flatland_.NextTransformId();
+  flatland_.flatland()->CreateTransform(shield_transform_id_);
+  flatland_.flatland()->SetInfiniteHitRegion(
+      shield_transform_id_,
+      fuchsia::ui::composition::HitTestInteraction::DEFAULT);
+
   platform_window_delegate_->OnAcceleratedWidgetAvailable(window_id_);
 
   if (properties.enable_keyboard) {
@@ -116,6 +124,20 @@ FlatlandWindow::~FlatlandWindow() {
   manager_->RemoveWindow(window_id_, this);
 }
 
+void FlatlandWindow::ResetSurfaceContent() {
+  if (!surface_content_id_.value) {
+    return;
+  }
+  flatland_.flatland()->RemoveChild(root_transform_id_, surface_transform_id_);
+  flatland_.flatland()->RemoveChild(root_transform_id_, shield_transform_id_);
+
+  flatland_.flatland()->ReleaseViewport(surface_content_id_, [](auto) {});
+  flatland_.flatland()->ReleaseTransform(surface_transform_id_);
+
+  surface_content_id_ = {};
+  surface_transform_id_ = {};
+}
+
 void FlatlandWindow::AttachSurfaceContent(
     fuchsia::ui::views::ViewportCreationToken token) {
   // 0x0 is not a valid Viewport size for Flatland. Sending these commands will
@@ -128,14 +150,16 @@ void FlatlandWindow::AttachSurfaceContent(
     return;
   }
 
-  if (surface_content_id_.value) {
-    flatland_.flatland()->ReleaseViewport(surface_content_id_, [](auto) {});
-    flatland_.flatland()->ReleaseTransform(surface_transform_id_);
-  }
+  ResetSurfaceContent();
 
   surface_transform_id_ = flatland_.NextTransformId();
   flatland_.flatland()->CreateTransform(surface_transform_id_);
+  // Hit-testing starts from the last child transform added, and propagates
+  // forward to the first. Adding the shield transform last therefore allows it
+  // to consume all hit-tests, preventing the surface from handling them to
+  // capture input.
   flatland_.flatland()->AddChild(root_transform_id_, surface_transform_id_);
+  flatland_.flatland()->AddChild(root_transform_id_, shield_transform_id_);
 
   fuchsia::ui::composition::ViewportProperties properties;
   properties.set_logical_size({static_cast<uint32_t>(logical_size_->width()),
@@ -148,12 +172,6 @@ void FlatlandWindow::AttachSurfaceContent(
                                        content_link.NewRequest());
   flatland_.flatland()->SetContent(surface_transform_id_, surface_content_id_);
   flatland_.Present();
-
-  // TODO(crbug.com/1371497): Remove the call here and rely on
-  // ParentViewportStatus signals instead.
-  // View is actually not attached yet, but without this we don't get
-  // OutputPresenter updates.
-  OnViewAttachedChanged(true);
 }
 
 fuchsia::ui::views::ViewRef FlatlandWindow::CloneViewRef() {
@@ -350,6 +368,21 @@ void FlatlandWindow::OnGetStatus(
     case fuchsia::ui::composition::ParentViewportStatus::
         DISCONNECTED_FROM_DISPLAY:
       OnViewAttachedChanged(false);
+
+      // Detach the surface view. This is necessary to ensure that the
+      // current content doesn't become visible when the view is attached
+      // again.
+      ResetSurfaceContent();
+      flatland_.Present();
+      pending_attach_surface_content_closure_.Reset();
+
+      // Destroy and recreate AcceleratedWidget. This will force the
+      // compositor drop the current LayerTreeFrameSink together with the
+      // corresponding ScenicSurface. They will be created again only after
+      // the window becomes visible again.
+      platform_window_delegate_->OnAcceleratedWidgetDestroyed();
+      platform_window_delegate_->OnAcceleratedWidgetAvailable(window_id_);
+
       break;
     default:
       NOTIMPLEMENTED();

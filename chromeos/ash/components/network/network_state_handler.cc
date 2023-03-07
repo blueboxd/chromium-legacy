@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -2152,10 +2152,12 @@ void NetworkStateHandler::UpdatePortalStateAndNotify(
 void NetworkStateHandler::SendPortalHistogramTimes(base::TimeDelta elapsed) {
   switch (default_network_portal_state_) {
     case NetworkState::PortalState::kPortal:
-      base::UmaHistogramTimes("Network.RedirectFoundToOnlineTime", elapsed);
+      base::UmaHistogramMediumTimes("Network.RedirectFoundToOnlineTime",
+                                    elapsed);
       break;
     case NetworkState::PortalState::kPortalSuspected:
-      base::UmaHistogramTimes("Network.PortalSuspectedToOnlineTime", elapsed);
+      base::UmaHistogramMediumTimes("Network.PortalSuspectedToOnlineTime",
+                                    elapsed);
       break;
     default:
       // Previous state was not portalled, no times to report.

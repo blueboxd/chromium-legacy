@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
@@ -86,9 +86,7 @@ class TouchEmulatorTest : public testing::Test,
     }
   }
 
-  void SetCursor(const WebCursor& cursor) override {
-    cursor_ = cursor;
-  }
+  void SetCursor(const ui::Cursor& cursor) override { cursor_ = cursor; }
 
   void ShowContextMenuAtPoint(const gfx::Point& point,
                               const ui::MenuSourceType source_type,
@@ -253,7 +251,7 @@ class TouchEmulatorTest : public testing::Test,
 
   void DisableSynchronousTouchAck() { ack_touches_synchronously_ = false; }
 
-  float GetCursorScaleFactor() { return cursor_.cursor().image_scale_factor(); }
+  float GetCursorScaleFactor() { return cursor_.image_scale_factor(); }
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -267,7 +265,7 @@ class TouchEmulatorTest : public testing::Test,
   int last_mouse_x_;
   int last_mouse_y_;
   std::vector<WebTouchEvent> touch_events_to_ack_;
-  WebCursor cursor_;
+  ui::Cursor cursor_;
 };
 
 

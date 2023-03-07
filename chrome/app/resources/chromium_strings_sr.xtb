@@ -253,6 +253,7 @@
 <translation id="6598877126913850652">Иди на подешавања обавештења за Chromium</translation>
 <translation id="6613594504749178791">Промене ће ступити на снагу када следећи пут поново покренете Chromium.</translation>
 <translation id="665732753414869868">Chromium-у треба дозвола за камеру да би направио 3D мапу окружења</translation>
+<translation id="6663852025006259149">Сајтови ће вероватно радити на очекивани начин, али вас неће запамтити када затворите све Chromium прозоре</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="668175097507315160">Chromium ОС не може да синхронизује податке због грешке при пријављивању.</translation>
 <translation id="6709350901466051922">Chromium-у треба дозвола за микрофон за овај сајт</translation>
@@ -285,7 +286,6 @@
 <translation id="718435575166326686">Chromium-у треба дозвола за камеру за овај сајт</translation>
 <translation id="7196312274710523067">Није могуће покренути Chromium. Покушајте поново.</translation>
 <translation id="7197677400338048821">Chromium не може да вам проверава лозинке. Пробајте поново за 24 сата.</translation>
-<translation id="7218568399872925918">Сајтови које посећујете памте ваше информације док не затворите Chromium</translation>
 <translation id="7223968959479464213">Менаџер задатака – Chromium</translation>
 <translation id="7246575524853130370">Ваша интересовања према процени Chromium-а</translation>
 <translation id="7309928523159922338">Мерење огласа омогућава сајтовима које посећујете да од Chromium-а затраже информације које сајту помажу да мери учинак огласа. Мерење огласа ограничава праћење на више сајтова тако што преноси што мање информација између сајтова.</translation>
@@ -357,8 +357,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8621669128220841554">Инсталација није успела због неодређене грешке. Преузмите Chromium поново.</translation>
 <translation id="8697124171261953979">Контролише и страницу која се приказује када покренете Chromium или претражујете из омнибокса.</translation>
 <translation id="8704119203788522458">Ово је ваш Chromium</translation>
-<translation id="8713679423359107094">Када затворите све Chromium прозоре, подаци о колачићима и сајтовима се аутоматски бришу</translation>
-<translation id="8796443464227412154">Бићете <ph name="BEGIN_BOLD" />одјављени са већине сајтова<ph name="END_BOLD" /> када затворите Chromium. Ако је синхронизација искључена, такође ћете бити <ph name="BEGIN_BOLD" />одјављени из Google услуга и Chromium-а<ph name="END_BOLD" />.</translation>
 <translation id="8796602469536043152">Chromium тражи дозволу да приступи камери и микрофону за овај сајт</translation>
 <translation id="8833697763442816810">Систем Chromium ОС</translation>
 <translation id="8846118132221683440"><ph name="BEGIN_BOLD" />Који подаци се користе:<ph name="END_BOLD" /> Историја прегледања, евиденција сајтова које сте посетили помоћу Chromium-а на овом уређају.</translation>
@@ -386,5 +384,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="945990405696787151">Да бисте добијали будућа Chromium ажурирања, треба вам macOS 10.13 или новија верзија. Овај рачунар користи ОС X 10.11.</translation>
 <translation id="965162752251293939">Ко користи Chromium?</translation>
 <translation id="967427899662692980">Набавите најјачу Chromium заштиту</translation>
+<translation id="9792300276217204">Увек обришите податке о сајтовима са уређаја када затворите Chromium</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

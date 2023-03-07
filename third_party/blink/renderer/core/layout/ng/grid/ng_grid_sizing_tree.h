@@ -20,13 +20,37 @@ struct NGGridSizingData {
   wtf_size_t subtree_size{1};
 };
 
-class CORE_EXPORT NGGridSizingTree {
+class NGGridItemSizingData {
   STACK_ALLOCATED();
+
+ public:
+  NGGridItemSizingData(const GridItemData& item_data_in_parent,
+                       const NGGridLayoutData& parent_layout_data);
+
+  std::unique_ptr<NGGridLayoutTrackCollection> CreateSubgridCollection(
+      GridTrackSizingDirection track_direction) const;
+
+ private:
+  const GridItemData* item_data_in_parent;
+  const NGGridLayoutData* parent_layout_data;
+};
+
+using NGSubgridSizingData = absl::optional<NGGridItemSizingData>;
+
+class CORE_EXPORT NGGridSizingTree {
+  DISALLOW_NEW();
 
  public:
   using GridSizingDataVector = Vector<std::unique_ptr<NGGridSizingData>, 16>;
 
-  wtf_size_t Size() const { return sizing_data_.size(); }
+  NGGridSizingTree(NGGridSizingTree&&) = default;
+  NGGridSizingTree(const NGGridSizingTree&) = delete;
+  NGGridSizingTree& operator=(NGGridSizingTree&&) = default;
+  NGGridSizingTree& operator=(const NGGridSizingTree&) = delete;
+
+  explicit NGGridSizingTree(wtf_size_t tree_size = 1) {
+    sizing_data_.ReserveInitialCapacity(tree_size);
+  }
 
   NGGridSizingData& CreateSizingData() {
     return *sizing_data_.emplace_back(std::make_unique<NGGridSizingData>());
@@ -36,6 +60,9 @@ class CORE_EXPORT NGGridSizingTree {
     DCHECK_LT(index, sizing_data_.size());
     return *sizing_data_[index];
   }
+
+  NGGridSizingTree CopySubtree(wtf_size_t subtree_root) const;
+  wtf_size_t Size() const { return sizing_data_.size(); }
 
  private:
   GridSizingDataVector sizing_data_;

@@ -13,7 +13,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -169,6 +169,16 @@ using base::UserMetricsAction;
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+  // BVC prevents KeyCommandsProvider from providing key commands when it has
+  // `presentedViewController` set. But there is an interval between presenting
+  // a view controller and having `presentedViewController` set. In that window,
+  // KeyCommandsProvider can register key commands while it shouldn't.
+  // To prevent actions from executing, check again if there is a
+  // `presentedViewController`.
+  if (_viewController.presentedViewController) {
+    return NO;
+  }
+
   if (sel_isEqual(action, @selector(keyCommand_back))) {
     BOOL canPerformBack =
         self.tabsCount > 0 && self.navigationAgent->CanGoBack();
@@ -207,7 +217,9 @@ using base::UserMetricsAction;
       sel_isEqual(action, @selector(keyCommand_select6)) ||
       sel_isEqual(action, @selector(keyCommand_select7)) ||
       sel_isEqual(action, @selector(keyCommand_select8)) ||
-      sel_isEqual(action, @selector(keyCommand_select9))) {
+      sel_isEqual(action, @selector(keyCommand_select9)) ||
+      sel_isEqual(action, @selector(keyCommand_showNextTab)) ||
+      sel_isEqual(action, @selector(keyCommand_showPreviousTab))) {
     return self.tabsCount > 0;
   }
   if (sel_isEqual(action, @selector(keyCommand_find))) {
@@ -216,13 +228,6 @@ using base::UserMetricsAction;
   if (sel_isEqual(action, @selector(keyCommand_findNext)) ||
       sel_isEqual(action, @selector(keyCommand_findPrevious))) {
     return [self isFindInPageActive];
-  }
-  if (sel_isEqual(action, @selector(keyCommand_showNextTab)) ||
-      sel_isEqual(action, @selector(keyCommand_showPreviousTab))) {
-    WebStateList* webStateList = self.browser->GetWebStateList();
-    return webStateList &&
-           webStateList->active_index() != WebStateList::kInvalidIndex &&
-           self.tabsCount > 1;
   }
   if (sel_isEqual(action, @selector(keyCommand_addToBookmarks)) ||
       sel_isEqual(action, @selector(keyCommand_addToReadingList))) {
@@ -547,7 +552,7 @@ using base::UserMetricsAction;
     return NO;
   }
 
-  FindTabHelper* helper = FindTabHelper::FromWebState(currentWebState);
+  auto* helper = GetConcreteFindTabHelperFromWebState(currentWebState);
   return (helper && helper->CurrentPageSupportsFindInPage());
 }
 
@@ -558,7 +563,7 @@ using base::UserMetricsAction;
     return NO;
   }
 
-  FindTabHelper* helper = FindTabHelper::FromWebState(currentWebState);
+  auto* helper = GetConcreteFindTabHelperFromWebState(currentWebState);
   return (helper && helper->IsFindUIActive());
 }
 

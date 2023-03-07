@@ -6,7 +6,6 @@
 #define CHROMEOS_ASH_COMPONENTS_AUDIO_CROS_AUDIO_CONFIG_IMPL_H_
 
 #include "base/component_export.h"
-#include "base/memory/raw_ptr.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/audio/cros_audio_config.h"
 
@@ -22,17 +21,29 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrosAudioConfigImpl
  private:
   // CrosAudioConfig:
   uint8_t GetOutputVolumePercent() const override;
+  uint8_t GetInputGainPercent() const override;
   mojom::MuteState GetOutputMuteState() const override;
   void GetAudioDevices(
-      std::vector<mojom::AudioDevicePtr>* output_devices_out) const override;
+      std::vector<mojom::AudioDevicePtr>* output_devices_out,
+      std::vector<mojom::AudioDevicePtr>* input_devices_out) const override;
+  mojom::MuteState GetInputMuteState() const override;
+  void SetOutputMuted(bool muted) override;
   void SetOutputVolumePercent(int8_t volume) override;
+  void SetInputGainPercent(uint8_t gain) override;
+  void SetActiveDevice(uint64_t device_id) override;
+  void SetInputMuted(bool muted) override;
 
   // CrasAudioHandler::AudioObserver:
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
+  void OnInputNodeGainChanged(uint64_t node_id, int gain) override;
   void OnOutputMuteChanged(bool mute_on) override;
   void OnAudioNodesChanged() override;
-
-  base::raw_ptr<CrasAudioHandler> audio_handler_;
+  void OnActiveOutputNodeChanged() override;
+  void OnActiveInputNodeChanged() override;
+  void OnInputMuteChanged(
+      bool mute_on,
+      CrasAudioHandler::InputMuteChangeMethod method) override;
+  void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted) override;
 };
 
 }  // namespace ash::audio_config

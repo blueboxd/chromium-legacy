@@ -7,22 +7,6 @@
 
 namespace apps_util {
 
-bool IsInstalled(apps::mojom::Readiness readiness) {
-  switch (readiness) {
-    case apps::mojom::Readiness::kReady:
-    case apps::mojom::Readiness::kDisabledByBlocklist:
-    case apps::mojom::Readiness::kDisabledByPolicy:
-    case apps::mojom::Readiness::kDisabledByUser:
-    case apps::mojom::Readiness::kTerminated:
-      return true;
-    case apps::mojom::Readiness::kUninstalledByUser:
-    case apps::mojom::Readiness::kUninstalledByMigration:
-    case apps::mojom::Readiness::kRemoved:
-    case apps::mojom::Readiness::kUnknown:
-      return false;
-  }
-}
-
 bool IsInstalled(apps::Readiness readiness) {
   switch (readiness) {
     case apps::Readiness::kReady:
@@ -96,6 +80,7 @@ bool AppTypeUsesWebContents(apps::AppType app_type) {
     case apps::AppType::kStandaloneBrowser:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
     case apps::AppType::kStandaloneBrowserChromeApp:
     case apps::AppType::kStandaloneBrowserExtension:
       return false;

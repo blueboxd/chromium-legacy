@@ -9,17 +9,21 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/profile_prepared_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
+#include "chromeos/ash/components/cryptohome/system_salt_getter.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
@@ -135,6 +139,39 @@ void LoginManagerTest::AddUser(const AccountId& account_id) {
   const UserContext user_context = CreateUserContext(account_id, kPassword);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(AddUserToSession(user_context));
+}
+
+void LoginManagerTest::LoginUserWithDbusClient(const AccountId& account_id,
+                                               const std::string& password) {
+  const UserContext user_context = CreateUserContext(account_id, password);
+  EXPECT_TRUE(TryToLogin(user_context));
+}
+
+void LoginManagerTest::AddUserWithDbusClient(const AccountId& account_id,
+                                             const std::string& password) {
+  const UserContext user_context = CreateUserContext(account_id, password);
+  EXPECT_TRUE(AddUserToSession(user_context));
+}
+
+void LoginManagerTest::SetExpectedCredentialsWithDbusClient(
+    const AccountId& account_id,
+    const std::string& password) {
+  auto* test_api = FakeUserDataAuthClient::TestApi::Get();
+  test_api->set_enable_auth_check(true);
+
+  const auto cryptohome_id =
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id);
+  ash::Key key{password};
+  key.Transform(ash::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                ash::SystemSaltGetter::ConvertRawSaltToHexString(
+                    ash::FakeCryptohomeMiscClient::GetStubSystemSalt()));
+
+  cryptohome::Key cryptohome_key;
+  cryptohome_key.mutable_data()->set_label(ash::kCryptohomeGaiaKeyLabel);
+  cryptohome_key.set_secret(key.GetSecret());
+
+  test_api->AddExistingUser(cryptohome_id);
+  test_api->AddKey(cryptohome_id, cryptohome_key);
 }
 
 }  // namespace ash

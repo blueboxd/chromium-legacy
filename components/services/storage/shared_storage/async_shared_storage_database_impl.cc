@@ -13,6 +13,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "components/services/storage/shared_storage/shared_storage_options.h"
@@ -178,12 +179,11 @@ void AsyncSharedStorageDatabaseImpl::PurgeStale(
 }
 
 void AsyncSharedStorageDatabaseImpl::FetchOrigins(
-    base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)> callback,
-    bool exclude_empty_origins) {
+    base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
+        callback) {
   DCHECK(callback);
   DCHECK(database_);
   database_.AsyncCall(&SharedStorageDatabase::FetchOrigins)
-      .WithArgs(exclude_empty_origins)
       .Then(std::move(callback));
 }
 
@@ -234,6 +234,16 @@ void AsyncSharedStorageDatabaseImpl::GetEntriesForDevTools(
   DCHECK(callback);
   DCHECK(database_);
   database_.AsyncCall(&SharedStorageDatabase::GetEntriesForDevTools)
+      .WithArgs(std::move(context_origin))
+      .Then(std::move(callback));
+}
+
+void AsyncSharedStorageDatabaseImpl::ResetBudgetForDevTools(
+    url::Origin context_origin,
+    base::OnceCallback<void(OperationResult)> callback) {
+  DCHECK(callback);
+  DCHECK(database_);
+  database_.AsyncCall(&SharedStorageDatabase::ResetBudgetForDevTools)
       .WithArgs(std::move(context_origin))
       .Then(std::move(callback));
 }

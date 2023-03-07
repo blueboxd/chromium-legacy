@@ -12,13 +12,13 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
@@ -143,11 +143,6 @@ bool HasLeadingOrTrailingWhitespaces(const std::string& str) {
 absl::optional<SyncTrustedVaultKeys> GetSyncTrustedVaultKeysForUserContext(
     const base::Value::Dict& js_object,
     const std::string& gaia_id) {
-  if (!base::FeatureList::IsEnabled(
-          ::syncer::kSyncTrustedVaultPassphraseRecovery)) {
-    return absl::nullopt;
-  }
-
   SyncTrustedVaultKeys parsed_keys = SyncTrustedVaultKeys::FromJs(js_object);
   if (parsed_keys.gaia_id() != gaia_id) {
     return absl::nullopt;
@@ -194,6 +189,10 @@ GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email) {
         user_manager::UserManager::Get()->FindUser(known_user.GetAccountId(
             email, std::string() /* id */, AccountType::UNKNOWN));
 
+    // TODO(b/259675128): we shouldn't rely on `user->using_saml()` when
+    // deciding which IdP page to show because this flag can be outdated. Admin
+    // could have changed the IdP to GAIA since last authentication and we
+    // wouldn't know about it.
     if (user && user->using_saml())
       return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
   }
@@ -309,33 +308,6 @@ base::Value::Dict MakeSecurityTokenPinDialogParameters(
                              attempts_left, true));
   }
   return params;
-}
-
-bool ShouldPrepareForRecovery(const AccountId& account_id) {
-  // Always return `true` if the testing switch is set. It will allow to test
-  // the recovery without triggering the real recovery conditions which may be
-  // difficult as of now.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceCryptohomeRecoveryForTesting))
-    return true;
-
-  if (!account_id.is_valid())
-    return false;
-  // Cryptohome recovery is probably needed when password is entered incorrectly
-  // for many times or password changed.
-  // TODO(b/197615068): Add metric to record the number of times we prepared for
-  // recovery and the number of times recovery is actually required.
-  static constexpr int kPossibleReasons[] = {
-      static_cast<int>(ReauthReason::kIncorrectPasswordEntered),
-      static_cast<int>(ReauthReason::kInvalidTokenHandle),
-      static_cast<int>(ReauthReason::kSyncFailed),
-      static_cast<int>(ReauthReason::kPasswordUpdateSkipped),
-      static_cast<int>(ReauthReason::kForgotPassword),
-  };
-  user_manager::KnownUser known_user(g_browser_process->local_state());
-  absl::optional<int> reauth_reason = known_user.FindReauthReason(account_id);
-  return reauth_reason.has_value() &&
-         base::Contains(kPossibleReasons, reauth_reason.value());
 }
 
 }  // namespace
@@ -559,8 +531,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     }
   }
 
-  if (features::IsCryptohomeRecoveryFlowEnabled() &&
-      !gaia_reauth_request_token_.empty()) {
+  if (is_reauth && !gaia_reauth_request_token_.empty()) {
     params.Set("rart", gaia_reauth_request_token_);
   }
 
@@ -1156,6 +1127,9 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool is_third_party_idp,
 }
 
 void GaiaScreenHandler::Show() {
+  // Start network observation.
+  signin_screen_handler_->StartNetworkObservation();
+
   base::Value::Dict data;
   if (LoginDisplayHost::default_host())
     data.Set("hasUserPods", LoginDisplayHost::default_host()->HasUserPods());
@@ -1165,6 +1139,7 @@ void GaiaScreenHandler::Show() {
 }
 
 void GaiaScreenHandler::Hide() {
+  signin_screen_handler_->StopNetworkObservation();
   hidden_ = true;
 }
 
@@ -1346,6 +1321,11 @@ void GaiaScreenHandler::ReloadGaiaAuthenticator() {
   CallExternalAPI("doReload");
 }
 
+void GaiaScreenHandler::SetReauthRequestToken(
+    const std::string& reauth_request_token) {
+  gaia_reauth_request_token_ = reauth_request_token;
+}
+
 void GaiaScreenHandler::LoadAuthExtension(bool force) {
   VLOG(1) << "LoadAuthExtension, force: " << force;
   if (frame_state_ == FRAME_STATE_LOADING && !force) {
@@ -1358,8 +1338,8 @@ void GaiaScreenHandler::LoadAuthExtension(bool force) {
   context.force_reload = force;
   context.email = populated_account_id_.GetUserEmail();
 
-  user_manager::KnownUser known_user(g_browser_process->local_state());
   if (!context.email.empty()) {
+    user_manager::KnownUser known_user(g_browser_process->local_state());
     if (const std::string* gaia_id =
             known_user.FindGaiaID(AccountId::FromUserEmail(context.email))) {
       context.gaia_id = *gaia_id;
@@ -1369,35 +1349,13 @@ void GaiaScreenHandler::LoadAuthExtension(bool force) {
         AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
   }
 
-  if (features::IsCryptohomeRecoveryFlowEnabled() &&
-      ShouldPrepareForRecovery(populated_account_id_)) {
-    populated_account_id_.clear();
-    auto callback = base::BindOnce(&GaiaScreenHandler::OnGaiaReauthTokenFetched,
-                                   weak_factory_.GetWeakPtr(), context);
-    gaia_reauth_token_fetcher_ =
-        std::make_unique<GaiaReauthTokenFetcher>(std::move(callback));
-    gaia_reauth_token_fetcher_->Fetch();
-    return;
-  }
-
   populated_account_id_.clear();
-  gaia_reauth_token_fetcher_.reset();
-  gaia_reauth_request_token_.clear();
-
   LoadGaia(context);
 }
 
 void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
   if (signin_screen_handler_ && !hidden_)
     signin_screen_handler_->UpdateState(reason);
-}
-
-void GaiaScreenHandler::OnGaiaReauthTokenFetched(
-    const login::GaiaContext& context,
-    const std::string& token) {
-  gaia_reauth_request_token_ = token;
-  gaia_reauth_token_fetcher_.reset();
-  LoadGaia(context);
 }
 
 void GaiaScreenHandler::SAMLConfirmPassword(

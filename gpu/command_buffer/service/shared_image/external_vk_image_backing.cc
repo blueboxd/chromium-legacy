@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr_exclusion.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -103,7 +104,9 @@ class ScopedDedicatedMemoryObject {
   GLuint id() const { return id_; }
 
  private:
-  gl::GLApi* const api_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION gl::GLApi* const api_;
   GLuint id_;
 };
 
@@ -112,8 +115,9 @@ bool UseSeparateGLTexture(SharedContextState* context_state,
   if (!context_state->support_vulkan_external_object())
     return true;
 
-  if (format.resource_format() != viz::ResourceFormat::BGRA_8888)
+  if (format != viz::SinglePlaneFormat::kBGRA_8888) {
     return false;
+  }
 
   auto* gl_context = context_state->real_context();
   const auto* version_info = gl_context->GetVersionInfo();
@@ -507,7 +511,11 @@ void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
 }
 
-bool ExternalVkImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
+bool ExternalVkImageBacking::UploadFromMemory(
+    const std::vector<SkPixmap>& pixmaps) {
+  DCHECK_EQ(pixmaps.size(), 1u);
+  auto& pixmap = pixmaps[0];
+
   if (!UploadToVkImage(pixmap))
     return false;
 

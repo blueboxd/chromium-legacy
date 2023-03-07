@@ -10,8 +10,8 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -478,7 +478,7 @@ SessionStore::SessionStore(
   // the header.
   for (const SyncedSession* session :
        session_tracker_.LookupAllForeignSessions(SyncedSessionTracker::RAW)) {
-    session_tracker_.CleanupSession(session->session_tag);
+    session_tracker_.CleanupSession(session->GetSessionTag());
   }
 }
 

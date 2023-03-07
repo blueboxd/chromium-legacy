@@ -426,7 +426,7 @@ TEST_F(PersonalDataManagerCleanerTest,
   std::vector<AutofillProfile*> profiles =
       personal_data_->GetProfilesToSuggest();
   std::vector<CreditCard*> credit_cards =
-      personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true);
+      personal_data_->GetCreditCardsToSuggest();
 
   // |profile1| should have been merged into |profile2| which should then have
   // been merged into |profile3|. |profile4| should have been merged into
@@ -544,11 +544,11 @@ TEST_F(PersonalDataManagerCleanerTest,
 
   // Create a verified profile with a higher ranking score.
   AutofillProfile profile1(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(
-      &profile1, "Homer", "Jay", "Simpson", "homer.simpson@abc.com", "",
-      "742 Evergreen Terrace", "", "Springfield", "IL", "91601", "",
-      "12345678910", /*finalize=*/true,
-      /*status=*/structured_address::VerificationStatus::kUserVerified);
+  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910",
+                       /*finalize=*/true,
+                       /*status=*/VerificationStatus::kUserVerified);
   profile1.set_use_count(7);
   profile1.set_use_date(kMuchLaterTime);
 
@@ -596,9 +596,9 @@ TEST_F(PersonalDataManagerCleanerTest,
   // Although the profile was verified, the structure of the  street address
   // still evolved with future observations. In this case, the "." was added
   // from a later observation.
-  profile1.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_STREET_NAME, u"Evergreen Terrace",
-      structured_address::VerificationStatus::kParsed);
+  profile1.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_NAME,
+                                            u"Evergreen Terrace",
+                                            VerificationStatus::kParsed);
   //
   // Only the verified |profile1| with its original data should have been kept.
   EXPECT_EQ(profile1.guid(), profiles[0]->guid());
@@ -633,11 +633,11 @@ TEST_F(PersonalDataManagerCleanerTest,
 
   // Create a similar verified profile with a lower ranking score.
   AutofillProfile profile3(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(
-      &profile3, "Homer", "Jay", "Simpson", "homer.simpson@abc.com", "",
-      "742 Evergreen Terrace", "", "Springfield", "IL", "91601", "",
-      "12345678910", /*finalize=*/true,
-      /*status=*/structured_address::VerificationStatus::kUserVerified);
+  test::SetProfileInfo(&profile3, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910",
+                       /*finalize=*/true,
+                       /*status=*/VerificationStatus::kUserVerified);
   profile3.set_use_count(3);
   profile3.set_use_date(kArbitraryTime);
 
@@ -690,22 +690,22 @@ TEST_F(PersonalDataManagerCleanerTest,
 
   // Create a similar verified profile with a medium ranking score.
   AutofillProfile profile2(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(
-      &profile2, "Homer", "J", "Simpson", "homer.simpson@abc.com", "Fox",
-      "742 Evergreen Terrace.", "", "Springfield", "IL", "91601", "", "",
-      /*finalize=*/true,
-      /*status=*/structured_address::VerificationStatus::kUserVerified);
+  test::SetProfileInfo(&profile2, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "",
+                       /*finalize=*/true,
+                       /*status=*/VerificationStatus::kUserVerified);
 
   profile2.set_use_count(5);
   profile2.set_use_date(kSomeLaterTime);
 
   // Create a similar verified profile with a lower ranking score.
   AutofillProfile profile3(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(
-      &profile3, "Homer", "Jay", "Simpson", "homer.simpson@abc.com", "",
-      "742 Evergreen Terrace", "", "Springfield", "IL", "91601", "",
-      "12345678910", /*finalize=*/true,
-      /*status*/ structured_address::VerificationStatus::kUserVerified);
+  test::SetProfileInfo(&profile3, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910",
+                       /*finalize=*/true,
+                       /*status*/ VerificationStatus::kUserVerified);
   profile3.set_use_count(3);
   profile3.set_use_date(kArbitraryTime);
 
@@ -728,9 +728,9 @@ TEST_F(PersonalDataManagerCleanerTest,
   // Although the profile was verified, the structure of the  street address
   // still evolved with future observations. In this case, the "." was removed
   // from a later observation.
-  profile2.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_STREET_NAME, u"Evergreen Terrace",
-      structured_address::VerificationStatus::kParsed);
+  profile2.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_NAME,
+                                            u"Evergreen Terrace",
+                                            VerificationStatus::kParsed);
 
   // |profile1| should have been discarded because the saved profile with the
   // highest ranking score is verified (|profile2|). Therefore, |profile1|'s
@@ -1275,14 +1275,11 @@ TEST_F(PersonalDataManagerCleanerTest, ClearCreditCardNonSettingsOrigins) {
 
   // The first three profiles' origin should be cleared and the fourth one still
   // be the settings origin.
-  EXPECT_TRUE(
-      personal_data_->GetCreditCardsToSuggest(false)[0]->origin().empty());
-  EXPECT_TRUE(
-      personal_data_->GetCreditCardsToSuggest(false)[1]->origin().empty());
-  EXPECT_TRUE(
-      personal_data_->GetCreditCardsToSuggest(false)[2]->origin().empty());
+  EXPECT_TRUE(personal_data_->GetCreditCardsToSuggest()[0]->origin().empty());
+  EXPECT_TRUE(personal_data_->GetCreditCardsToSuggest()[1]->origin().empty());
+  EXPECT_TRUE(personal_data_->GetCreditCardsToSuggest()[2]->origin().empty());
   EXPECT_EQ(kSettingsOrigin,
-            personal_data_->GetCreditCardsToSuggest(false)[3]->origin());
+            personal_data_->GetCreditCardsToSuggest()[3]->origin());
 }
 
 }  // namespace autofill

@@ -577,4 +577,55 @@ suite('SiteEntry', function() {
             '#fpsOverflowMenuButton');
     assertEquals('More actions for foo.com', moreActionsButton!.ariaLabel);
   });
+
+  test(
+      'first party set more actions menu removed when filtered by fps owner',
+      function() {
+        // Set site group with first party set information.
+        const fooSiteGroup = JSON.parse(JSON.stringify(TEST_SINGLE_SITE_GROUP));
+        fooSiteGroup.fpsOwner = 'foo.com';
+        fooSiteGroup.fpsNumMembers = 1;
+        fooSiteGroup.fpsEnterpriseManaged = false;
+        testElement.siteGroup = fooSiteGroup;
+        testElement.isFpsFiltered = false;
+        flush();
+
+        // Assert more actions button is visible and remove site button is
+        // hidden at the beginning of the test when no filter is applied.
+        assertTrue(isChildVisible(testElement, '#fpsOverflowMenuButton'));
+        assertFalse(isChildVisible(testElement, '#removeSiteButton'));
+
+        // Change `isFpsFiltered` state to true to test icon change.
+        testElement.isFpsFiltered = true;
+        flush();
+
+        // Assert more actions button hidden and replaced with remove site
+        // button.
+        assertFalse(isChildVisible(testElement, '#fpsOverflowMenuButton'));
+        assertTrue(isChildVisible(testElement, '#removeSiteButton'));
+      });
+
+  test('extension site group is shown correctly', async function() {
+    const extensionSiteGroup =
+        JSON.parse(JSON.stringify(TEST_SINGLE_SITE_GROUP));
+    extensionSiteGroup.origins[0].origin =
+        'chrome-extension://mhabknllooicelmdboebjilbohdbihln';
+    testElement.siteGroup = extensionSiteGroup;
+    flush();
+
+    const arg = await browserProxy.whenCalled('getExtensionName');
+    assertEquals(arg, 'mhabknllooicelmdboebjilbohdbihln');
+
+    // Check if the extension name shown correctly.
+    assertEquals(
+        testElement.$.collapseParent.querySelector('.url-directionality')!
+            .textContent!.trim(),
+        'Test Extension mhabknllooicelmdboebjilbohdbihln');
+
+    // Check if the extension id is shown correctly.
+    assertFalse(testElement.$.extensionIdDescription.hidden);
+    assertEquals(
+        testElement.$.extensionIdDescription.textContent!.trim(),
+        '· ID: mhabknllooicelmdboebjilbohdbihln');
+  });
 });

@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_LICENSE_STORAGE_HOST_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_LICENSE_STORAGE_HOST_H_
 
-#include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "base/types/pass_key.h"
@@ -35,6 +35,24 @@ class CONTENT_EXPORT MediaLicenseStorageHost : public media::mojom::CdmStorage {
       base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>;
   using WriteFileCallback = base::OnceCallback<void(bool)>;
   using DeleteFileCallback = base::OnceCallback<void(bool)>;
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class MediaLicenseStorageHostOpenError {
+    kOk = -1,
+    kInvalidBucket = 0,      // The database's path could not be determined
+                             // because the default storage bucket for the
+                             // StorageKey could not be retrieved.
+    kNoFileSpecified = 1,    // No file was specified.
+    kInvalidFileName = 2,    // File name specified was invalid.
+    kDatabaseOpenError = 3,  // Error occurred at the Database level.
+    kBucketNotFound = 4,     // If the default Storage Bucket for the StorageKey
+                             // is not found.
+    kDatabaseRazeError = 5,  // The database was in an invalid state and failed
+                             // to be razed.
+    kSQLExecutionError = 6,  // Error executing the SQL statement.
+    kMaxValue = kSQLExecutionError
+  };
 
   MediaLicenseStorageHost(MediaLicenseManager* manager,
                           const storage::BucketLocator& bucket_locator);
@@ -86,8 +104,10 @@ class CONTENT_EXPORT MediaLicenseStorageHost : public media::mojom::CdmStorage {
   void DidOpenFile(const std::string& file_name,
                    BindingContext binding_context,
                    OpenCallback callback,
-                   bool success);
+                   MediaLicenseStorageHostOpenError error);
   void DidWriteFile(WriteFileCallback callback, bool success);
+
+  void ReportDatabaseOpenError(MediaLicenseStorageHostOpenError error);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

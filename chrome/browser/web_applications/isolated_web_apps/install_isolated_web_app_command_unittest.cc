@@ -12,10 +12,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
@@ -121,7 +121,8 @@ GURL CreateDefaultManifestURL(const GURL& application_url) {
 
 auto ReturnManifest(const blink::mojom::ManifestPtr& manifest,
                     const GURL& manifest_url,
-                    bool is_installable = true) {
+                    webapps::InstallableStatusCode error_code =
+                        webapps::InstallableStatusCode::NO_ERROR_DETECTED) {
   constexpr int kCallbackArgumentIndex = 2;
 
   return DoAll(
@@ -132,8 +133,7 @@ auto ReturnManifest(const blink::mojom::ManifestPtr& manifest,
       RunOnceCallback<kCallbackArgumentIndex>(
           /*manifest=*/manifest.Clone(),
           /*manifest_url=*/manifest_url,
-          /*valid_manifest_for_web_app=*/true,
-          /*is_installable=*/is_installable));
+          /*valid_manifest_for_web_app=*/true, error_code));
 }
 
 std::unique_ptr<MockDataRetriever> CreateDefaultDataRetriever(
@@ -488,7 +488,7 @@ TEST_F(InstallIsolatedWebAppCommandTest,
       .WillByDefault(
           ReturnManifest(blink::mojom::Manifest::New(),
                          GURL{"http://test-url-example.com/manifest.json"},
-                         /*is_installable=*/false));
+                         webapps::InstallableStatusCode::NO_MANIFEST));
 
   EXPECT_THAT(ExecuteCommand(
                   Parameters{
@@ -761,16 +761,8 @@ TEST_F(InstallIsolatedWebAppCommandManifestTest,
                                Eq("other test short name"))));
 }
 
-// TODO(kuragin): Add verification for presence of application name. It should
-// be title or short name in the manifest.
-//
-// The test crashes because |SetWebAppManifestFields| from
-// web_app_install_utils.cc has DCHECK which verifies the title is not empty.
-//
-// After discussion with Alan Cutter, the decision is to add an additional
-// valiation for app name presence inside of the command and
 TEST_F(InstallIsolatedWebAppCommandManifestTest,
-       DISABLED_UntranslatedNameIsEmptyWhenNameAndShortNameAreNotPresent) {
+       UntranslatedNameIsEmptyWhenNameAndShortNameAreNotPresent) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   blink::mojom::ManifestPtr manifest =
       CreateDefaultManifest(url_info.origin().GetURL());
@@ -778,11 +770,8 @@ TEST_F(InstallIsolatedWebAppCommandManifestTest,
   manifest->short_name = absl::nullopt;
 
   EXPECT_THAT(ExecuteCommandWithManifest(url_info, manifest.Clone()),
-              IsInstallationOk());
-
-  EXPECT_THAT(web_app_registrar().GetAppById(url_info.app_id()),
-              Pointee(Property("untranslated_name", &WebApp::untranslated_name,
-                               IsEmpty())));
+              IsInstallationError(HasSubstr(
+                  "App manifest must have either 'name' or 'short_name'")));
 }
 
 class InstallIsolatedWebAppCommandManifestIconsTest
@@ -1054,7 +1043,7 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest,
       .WillByDefault(
           ReturnManifest(blink::mojom::Manifest::New(),
                          GURL{"http://test-url-example.com/manifest.json"},
-                         /*is_installable=*/false));
+                         webapps::InstallableStatusCode::NO_MANIFEST));
 
   base::HistogramTester histogram_tester;
 
@@ -1080,7 +1069,7 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest,
       .WillByDefault(ReturnManifest(
           /*manifest=*/nullptr,
           CreateDefaultManifestURL(url_info.origin().GetURL()),
-          /*is_installable=*/false));
+          webapps::InstallableStatusCode::NO_MANIFEST));
 
   base::HistogramTester histogram_tester;
 

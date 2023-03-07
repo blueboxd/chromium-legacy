@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -81,8 +81,7 @@ struct RateLimitRow {
   SourceBuilder NewSourceBuilder() const {
     // Ensure that operations involving attributions use the trigger time, not
     // the source time.
-    auto source_time = scope == RateLimitScope::kSource ? time : base::Time();
-    auto builder = SourceBuilder(source_time);
+    auto builder = SourceBuilder(time);
 
     builder.SetSourceOrigin(*SuitableOrigin::Deserialize(source_origin));
     builder.SetDestinationOrigin(

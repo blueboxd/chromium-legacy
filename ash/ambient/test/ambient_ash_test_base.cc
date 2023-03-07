@@ -14,9 +14,12 @@
 #include "ash/ambient/ambient_photo_cache.h"
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/test/ambient_ash_test_helper.h"
+#include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_container_view.h"
+#include "ash/ambient/ui/ambient_info_view.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
+#include "ash/ambient/ui/jitter_calculator.h"
 #include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
@@ -26,8 +29,9 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "ash/test/ash_test_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -37,6 +41,7 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -87,10 +92,10 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   void DecodePhoto(
       const std::string& data,
       base::OnceCallback<void(const gfx::ImageSkia&)> callback) override {
-    gfx::ImageSkia image =
-        decoded_image_ ? *decoded_image_
-                       : gfx::test::CreateImageSkia(decoded_size_.width(),
-                                                    decoded_size_.height());
+    gfx::ImageSkia image = decoded_image_ ? *decoded_image_
+                                          : CreateSolidColorTestImage(
+                                                decoded_size_, decoded_color_);
+
     // Only use once.
     decoded_image_.reset();
 
@@ -136,6 +141,8 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
     decoded_size_.set_height(height);
   }
 
+  void SetDecodedPhotoColor(SkColor color) { decoded_color_ = color; }
+
   void SetDecodedPhoto(const gfx::ImageSkia& image) { decoded_image_ = image; }
 
   void SetPhotoDownloadDelay(base::TimeDelta delay) {
@@ -160,6 +167,8 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   // If not null, will return this data when downloading.
   std::unique_ptr<std::string> download_data_;
 
+  // Color of the test images.
+  SkColor decoded_color_ = SK_ColorGREEN;
   // Width and height of test images.
   gfx::Size decoded_size_{10, 20};
   // If set, will replay this image.
@@ -171,7 +180,9 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
 };
 
 AmbientAshTestBase::AmbientAshTestBase()
-    : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+    : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+  recorder_ = AuthMetricsRecorder::CreateForTesting();
+}
 
 AmbientAshTestBase::~AmbientAshTestBase() = default;
 
@@ -208,6 +219,21 @@ void AmbientAshTestBase::SetAmbientModeEnabled(bool enabled) {
 void AmbientAshTestBase::SetAmbientAnimationTheme(AmbientAnimationTheme theme) {
   Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
       ambient::prefs::kAmbientAnimationTheme, static_cast<int>(theme));
+}
+
+void AmbientAshTestBase::DisableJitter() {
+  JitterCalculator::Config kZeroJitterConfig = {/*step_size=*/0};
+  auto* photo_view = GetPhotoView();
+  if (photo_view != nullptr) {
+    photo_view->GetJitterCalculatorForTesting()->SetConfigForTesting(
+        kZeroJitterConfig);
+  }
+
+  auto* ambient_animation_view = GetAmbientAnimationView();
+  if (ambient_animation_view != nullptr) {
+    ambient_animation_view->GetJitterCalculatorForTesting()
+        ->SetConfigForTesting(kZeroJitterConfig);
+  }
 }
 
 void AmbientAshTestBase::ShowAmbientScreen() {
@@ -336,6 +362,13 @@ void AmbientAshTestBase::SetDecodedPhotoSize(int width, int height) {
   photo_cache->SetDecodedPhotoSize(width, height);
 }
 
+void AmbientAshTestBase::SetDecodedPhotoColor(SkColor color) {
+  auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
+      photo_controller()->get_photo_cache_for_testing());
+
+  photo_cache->SetDecodedPhotoColor(color);
+}
+
 void AmbientAshTestBase::SetPhotoOrientation(bool portrait) {
   backend_controller()->SetPhotoOrientation(portrait);
 }
@@ -374,6 +407,21 @@ std::vector<MediaStringView*> AmbientAshTestBase::GetMediaStringViews() {
 MediaStringView* AmbientAshTestBase::GetMediaStringView() {
   return static_cast<MediaStringView*>(
       GetContainerView()->GetViewByID(kAmbientMediaStringView));
+}
+
+PhotoView* AmbientAshTestBase::GetPhotoView() {
+  return static_cast<PhotoView*>(
+      GetContainerView()->GetViewByID(kAmbientPhotoView));
+}
+
+AmbientInfoView* AmbientAshTestBase::GetAmbientInfoView() {
+  return static_cast<AmbientInfoView*>(
+      GetContainerView()->GetViewByID(kAmbientInfoView));
+}
+
+AmbientAnimationView* AmbientAshTestBase::GetAmbientAnimationView() {
+  return static_cast<AmbientAnimationView*>(
+      GetContainerView()->GetViewByID(kAmbientAnimationView));
 }
 
 void AmbientAshTestBase::FastForwardToLockScreenTimeout() {

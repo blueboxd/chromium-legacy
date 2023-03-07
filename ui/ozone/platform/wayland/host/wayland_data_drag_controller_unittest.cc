@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -479,7 +479,7 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDragPixelSurface) {
     });
   }
 
-  EXPECT_EQ(window_->window_scale(), kTripleScale);
+  EXPECT_EQ(window_->applied_state().window_scale, kTripleScale);
 
   gfx::Point center_point{400, 300};
   {

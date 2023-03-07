@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
@@ -726,8 +726,16 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
   TRACE_EVENT_ASYNC_BEGIN0("media", GetDemuxerReadTraceString<StreamType>(),
                            this);
   pending_demuxer_read_ = true;
-  stream_->Read(base::BindOnce(&DecoderStream<StreamType>::OnBufferReady,
-                               weak_factory_.GetWeakPtr()));
+  stream_->Read(1, base::BindOnce(&DecoderStream<StreamType>::OnBuffersRead,
+                                  weak_factory_.GetWeakPtr()));
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::OnBuffersRead(
+    DemuxerStream::Status status,
+    DemuxerStream::DecoderBufferVector buffers) {
+  DCHECK_LE(buffers.size(), 1u) << "DecoderStream only reads a single-buffer.";
+  OnBufferReady(status, buffers.empty() ? nullptr : std::move(buffers[0]));
 }
 
 template <DemuxerStream::Type StreamType>

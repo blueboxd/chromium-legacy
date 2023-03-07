@@ -16,6 +16,7 @@
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "media/mojo/mojom/android_overlay.mojom.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/android/view_android_observer.h"
 #include "ui/android/window_android.h"
 
@@ -32,9 +33,14 @@ static jlong JNI_DialogOverlayImpl_Init(JNIEnv* env,
                                         jboolean power_efficient) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  absl::optional<base::UnguessableToken> token =
+      base::UnguessableToken::Deserialize2(high, low);
+  if (!token.has_value()) {
+    return 0;
+  }
+
   RenderFrameHostImpl* rfhi =
-      content::RenderFrameHostImpl::FromOverlayRoutingToken(
-          base::UnguessableToken::Deserialize(high, low));
+      content::RenderFrameHostImpl::FromOverlayRoutingToken(token.value());
 
   if (!rfhi)
     return 0;
@@ -43,13 +49,6 @@ static jlong JNI_DialogOverlayImpl_Init(JNIEnv* env,
   // out: not only is there nothing to do, the `RenderFrameDeleted()`
   // notification to clean up the overlay would never be called.
   if (!rfhi->IsRenderFrameLive())
-    return 0;
-
-  // TODO(http://crbug.com/673886): Support overlay surfaces in VR using GVR
-  // reprojection video surface.
-  RenderWidgetHostViewBase* rwhvb =
-      static_cast<RenderWidgetHostViewBase*>(rfhi->GetView());
-  if (!rwhvb || rwhvb->IsInVR())
     return 0;
 
   WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
@@ -343,10 +342,13 @@ JNI_DialogOverlayImpl_LookupSurfaceForTesting(
     JNIEnv* env,
     jint surfaceId) {
   bool can_be_used_with_surface_control = false;
-  gl::ScopedJavaSurface surface =
-      gpu::GpuSurfaceTracker::Get()->AcquireJavaSurface(
-          surfaceId, &can_be_used_with_surface_control);
-  return ScopedJavaLocalRef<jobject>(surface.j_surface());
+  auto surface_variant = gpu::GpuSurfaceTracker::Get()->AcquireJavaSurface(
+      surfaceId, &can_be_used_with_surface_control);
+  if (!absl::holds_alternative<gl::ScopedJavaSurface>(surface_variant)) {
+    return nullptr;
+  }
+  return ScopedJavaLocalRef<jobject>(
+      absl::get<gl::ScopedJavaSurface>(surface_variant).j_surface());
 }
 
 }  // namespace content

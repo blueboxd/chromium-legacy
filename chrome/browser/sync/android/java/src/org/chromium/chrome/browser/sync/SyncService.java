@@ -307,10 +307,8 @@ public abstract class SyncService {
 
     /**
      * @return Whether sync is enabled to sync urls with a non custom passphrase.
-     * TODO(crbug.com/1396310): Rename method to reflect that it returns true with TrustedVault
-     * passphrase.
      */
-    public abstract boolean isSyncingUrlsWithKeystorePassphrase();
+    public abstract boolean isSyncingUnencryptedUrls();
 
     /**
      * Returns the time when the last sync cycle was completed.

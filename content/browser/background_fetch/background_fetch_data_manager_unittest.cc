@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -450,8 +450,6 @@ class BackgroundFetchDataManagerTest
                      const std::string& value) {
     std::vector<std::string> data;
 
-    // TODO(crbug.com/1199077): Update this when BackgroundFetchTestBase
-    // implements StorageKey.
     base::RunLoop run_loop;
     embedded_worker_test_helper()->context_wrapper()->StoreRegistrationUserData(
         service_worker_registration_id, storage_key(), {{key, value}},

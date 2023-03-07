@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
@@ -34,12 +34,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
@@ -1166,6 +1166,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         CreateEventDetails(*request, extra_info_spec));
     event_details->SetRequestBody(request);
 
+    request_time_tracker_->LogBeforeRequestDispatchTime(request->id,
+                                                        base::TimeTicks::Now());
+
     initialize_blocked_requests |= DispatchEvent(
         browser_context, request, listeners, std::move(event_details));
   }
@@ -1181,50 +1184,76 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   // currently only depend on the request url, initiator and resource type,
   // which should stay the same during the diffierent network request stages. A
   // redirect should cause another OnBeforeRequest call.
-  const std::vector<DNRRequestAction>& actions =
+  declarative_net_request::RulesetManager* ruleset_manager =
       declarative_net_request::RulesMonitorService::Get(browser_context)
-          ->ruleset_manager()
-          ->EvaluateRequest(*request, is_incognito_context);
-  for (const auto& action : actions) {
-    switch (action.type) {
-      case DNRRequestAction::Type::BLOCK:
-        ClearPendingCallbacks(*request);
-        DCHECK_EQ(1u, actions.size());
-        OnDNRActionMatched(browser_context, *request, action);
-        RecordNetworkRequestBlocked(request->ukm_source_id,
-                                    action.extension_id);
-        return net::ERR_BLOCKED_BY_CLIENT;
-      case DNRRequestAction::Type::COLLAPSE:
-        ClearPendingCallbacks(*request);
-        DCHECK_EQ(1u, actions.size());
-        OnDNRActionMatched(browser_context, *request, action);
-        *should_collapse_initiator = true;
-        RecordNetworkRequestBlocked(request->ukm_source_id,
-                                    action.extension_id);
-        return net::ERR_BLOCKED_BY_CLIENT;
-      case DNRRequestAction::Type::ALLOW:
-      case DNRRequestAction::Type::ALLOW_ALL_REQUESTS:
-        DCHECK_EQ(1u, actions.size());
-        OnDNRActionMatched(browser_context, *request, action);
-        break;
-      case DNRRequestAction::Type::REDIRECT:
-      case DNRRequestAction::Type::UPGRADE:
-        ClearPendingCallbacks(*request);
-        DCHECK_EQ(1u, actions.size());
-        DCHECK(action.redirect_url);
-        OnDNRActionMatched(browser_context, *request, action);
-        *new_url = action.redirect_url.value();
-        return net::OK;
-      case DNRRequestAction::Type::MODIFY_HEADERS:
-        // Unlike other actions, allow web request extensions to intercept the
-        // request here. The headers will be modified during subsequent request
-        // stages.
-        DCHECK(
-            base::ranges::all_of(*request->dnr_actions, [](const auto& action) {
-              return action.type == DNRRequestAction::Type::MODIFY_HEADERS;
-            }));
-        break;
+          ->ruleset_manager();
+
+  if (ruleset_manager->has_rulesets()) {
+    request_time_tracker_->LogBeforeRequestDNRStartTime(request->id,
+                                                        base::TimeTicks::Now());
+
+    auto record_completion_time = [](ExtensionWebRequestTimeTracker* tracker,
+                                     int64_t request_id) {
+      tracker->LogBeforeRequestDNRCompletionTime(request_id,
+                                                 base::TimeTicks::Now());
+    };
+
+    const std::vector<DNRRequestAction>& actions =
+        ruleset_manager->EvaluateRequest(*request, is_incognito_context);
+    base::ScopedClosureRunner scoped_timer;
+    if (!actions.empty()) {
+      // We only record completion time if there's at least one relevant rule.
+      // Otherwise, we'd record evaluation for every request even if the user
+      // only had a single rule added.
+      scoped_timer = base::ScopedClosureRunner(base::BindOnce(
+          record_completion_time, request_time_tracker_.get(), request->id));
     }
+
+    for (const auto& action : actions) {
+      switch (action.type) {
+        case DNRRequestAction::Type::BLOCK:
+          ClearPendingCallbacks(*request);
+          DCHECK_EQ(1u, actions.size());
+          OnDNRActionMatched(browser_context, *request, action);
+          RecordNetworkRequestBlocked(request->ukm_source_id,
+                                      action.extension_id);
+          return net::ERR_BLOCKED_BY_CLIENT;
+        case DNRRequestAction::Type::COLLAPSE:
+          ClearPendingCallbacks(*request);
+          DCHECK_EQ(1u, actions.size());
+          OnDNRActionMatched(browser_context, *request, action);
+          *should_collapse_initiator = true;
+          RecordNetworkRequestBlocked(request->ukm_source_id,
+                                      action.extension_id);
+          return net::ERR_BLOCKED_BY_CLIENT;
+        case DNRRequestAction::Type::ALLOW:
+        case DNRRequestAction::Type::ALLOW_ALL_REQUESTS:
+          DCHECK_EQ(1u, actions.size());
+          OnDNRActionMatched(browser_context, *request, action);
+          break;
+        case DNRRequestAction::Type::REDIRECT:
+        case DNRRequestAction::Type::UPGRADE:
+          ClearPendingCallbacks(*request);
+          DCHECK_EQ(1u, actions.size());
+          DCHECK(action.redirect_url);
+          OnDNRActionMatched(browser_context, *request, action);
+          *new_url = action.redirect_url.value();
+          return net::OK;
+        case DNRRequestAction::Type::MODIFY_HEADERS:
+          // Unlike other actions, allow web request extensions to intercept
+          // the request here. The headers will be modified during subsequent
+          // request stages.
+          DCHECK(base::ranges::all_of(
+              *request->dnr_actions, [](const auto& action) {
+                return action.type == DNRRequestAction::Type::MODIFY_HEADERS;
+              }));
+          break;
+      }
+    }
+  } else {
+    // Later methods require `dnr_actions` to be populated; give it an empty
+    // set.
+    request->dnr_actions = std::vector<DNRRequestAction>();
   }
 
   if (!initialize_blocked_requests)
@@ -1606,7 +1635,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   }
 
   DispatchEventToListeners(browser_context, std::move(listeners_to_dispatch),
-                           std::move(event_details));
+                           request->id, std::move(event_details));
 
   if (num_handlers_blocking > 0) {
     BlockedRequest& blocked_request = blocked_requests_[request->id];
@@ -1623,6 +1652,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     content::BrowserContext* browser_context,
     std::unique_ptr<ListenerIDs> listener_ids,
+    uint64_t request_id,
     std::unique_ptr<WebRequestEventDetails> event_details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!listener_ids->empty());
@@ -1707,6 +1737,17 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
       std::unique_ptr<Event> event =
           std::make_unique<Event>(listener->histogram_value, id.sub_event_name,
                                   std::move(args_filtered));
+      // Add a callback to the event in case we find we cannot dispatch to the
+      // extension listener (as can happen if the extension fails to re-register
+      // the event listener synchronously). If this happens, we treat the event
+      // as handled so as to not block indefinitely.
+      // The below base::Unretained is safe because this object is leaked.
+      event->cannot_dispatch_callback = base::BindRepeating(
+          &ExtensionWebRequestEventRouter::OnEventHandled,
+          base::Unretained(this), id.browser_context, id.extension_id,
+          event_name, id.sub_event_name, request_id, id.render_process_id,
+          id.web_view_instance_id, id.worker_thread_id,
+          id.service_worker_version_id, nullptr);
       EventRouter::Get(id.browser_context)
           ->DispatchEventToExtension(id.extension_id, std::move(event));
     }
@@ -1724,16 +1765,32 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     int worker_thread_id,
     int64_t service_worker_version_id,
     EventResponse* response) {
-  Listeners& listeners =
-      data_[GetBrowserContextID(browser_context)].active_listeners[event_name];
+  BrowserContextData& context_data =
+      data_[GetBrowserContextID(browser_context)];
   EventListener::ID id(browser_context, extension_id, sub_event_name,
                        render_process_id, web_view_instance_id,
                        worker_thread_id, service_worker_version_id);
-  EventListener* listener = FindEventListenerInContainer(id, listeners);
+  EventListener* listener = nullptr;
+
+  // Check if the "handled" event was for an inactive listener (indicated by
+  // having neither a render process nor service worker version). This happens
+  // when we fail to dispatch an event to a lazy service worker listener.
+  // In this case, we still treat the event as handled, because otherwise the
+  // request will hang indefinitely.
+  if (render_process_id == -1 &&
+      service_worker_version_id ==
+          blink::mojom::kInvalidServiceWorkerVersionId) {
+    listener = FindEventListenerInContainer(
+        id, context_data.inactive_listeners[event_name]);
+  } else {
+    listener = FindEventListenerInContainer(
+        id, context_data.active_listeners[event_name]);
+  }
 
   // This might happen, for example, if the extension has been unloaded.
-  if (!listener)
+  if (!listener) {
     return;
+  }
 
   listener->blocked_requests.erase(request_id);
   DecrementBlockCount(browser_context, extension_id, event_name, request_id,
@@ -2461,6 +2518,8 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
 
   // Ensure that the response is for the event we are blocked on.
   DCHECK_EQ(blocked_request.event, GetEventTypeFromEventName(event_name));
+  // Cache the event type; we use it below.
+  EventTypes request_event = blocked_request.event;
 
   int num_handlers_blocking = --blocked_request.num_handlers_blocking;
   CHECK_GE(num_handlers_blocking, 0);
@@ -2477,8 +2536,16 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     blocked_request.response_deltas.push_back(std::move(delta));
   }
 
-  if (num_handlers_blocking == 0)
+  if (num_handlers_blocking == 0) {
     ExecuteDeltas(browser_context, blocked_request.request, true);
+    // Note: `blocked_request` can be deleted here, depending on the outcome
+    // of ExecuteDeltas(). Use the cached `request_event` and `request_id`
+    // instead of using `blocked_request`.
+    if (request_event == kOnBeforeRequest) {
+      request_time_tracker_->LogBeforeRequestCompletionTime(
+          request_id, base::TimeTicks::Now());
+    }
+  }
 }
 
 void ExtensionWebRequestEventRouter::SendMessages(

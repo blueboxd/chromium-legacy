@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,6 +30,7 @@
 #include "components/commerce/core/shopping_power_bookmark_data_provider.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/commerce/core/subscriptions/subscriptions_manager.h"
+#include "components/commerce/core/subscriptions/subscriptions_observer.h"
 #include "components/commerce/core/web_wrapper.h"
 #include "components/grit/components_resources.h"
 #include "components/optimization_guide/core/new_optimization_guide_decider.h"
@@ -272,9 +273,6 @@ const ProductInfo* ShoppingService::GetFromProductInfoCache(const GURL& url) {
 }
 
 void ShoppingService::UpdateProductInfoCacheForRemoval(const GURL& url) {
-  if (!IsProductInfoApiEnabled())
-    return;
-
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check if the previously navigated URL cache needs to be cleared. If more
@@ -383,11 +381,24 @@ void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
 }
 
 bool ShoppingService::IsProductInfoApiEnabled() {
-  return base::FeatureList::IsEnabled(kShoppingList);
+  bool flag_enabled = base::FeatureList::IsEnabled(kShoppingList) ||
+                      commerce::kAddToCartProductImage.Get();
+  bool region_launched =
+      base::FeatureList::IsEnabled(kShoppingListRegionLaunched) &&
+      IsEnabledForCountryAndLocale(kShoppingListRegionLaunched,
+                                   country_on_startup_, locale_on_startup_);
+
+  return flag_enabled || region_launched;
 }
 
 bool ShoppingService::IsPDPMetricsRecordingEnabled() {
-  return base::FeatureList::IsEnabled(commerce::kShoppingPDPMetrics);
+  bool flag_enabled = base::FeatureList::IsEnabled(kShoppingPDPMetrics);
+  bool region_launched =
+      base::FeatureList::IsEnabled(kShoppingPDPMetricsRegionLaunched) &&
+      IsEnabledForCountryAndLocale(kShoppingPDPMetricsRegionLaunched,
+                                   country_on_startup_, locale_on_startup_);
+
+  return flag_enabled || region_launched;
 }
 
 bool ShoppingService::IsMerchantInfoApiEnabled() {
@@ -399,9 +410,6 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
     ProductInfoCallback callback,
     optimization_guide::OptimizationGuideDecision decision,
     const optimization_guide::OptimizationMetadata& metadata) {
-  if (!IsProductInfoApiEnabled())
-    return;
-
   // If optimization guide returns negative, return a negative signal with an
   // empty data object.
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue) {
@@ -693,6 +701,20 @@ void ShoppingService::Unsubscribe(
   }
 }
 
+void ShoppingService::AddSubscriptionsObserver(
+    SubscriptionsObserver* observer) {
+  if (subscriptions_manager_) {
+    subscriptions_manager_->AddObserver(observer);
+  }
+}
+
+void ShoppingService::RemoveSubscriptionsObserver(
+    SubscriptionsObserver* observer) {
+  if (subscriptions_manager_) {
+    subscriptions_manager_->RemoveObserver(observer);
+  }
+}
+
 void ShoppingService::FetchPriceEmailPref() {
   if (account_checker_) {
     account_checker_->FetchPriceEmailPref();
@@ -704,13 +726,23 @@ void ShoppingService::ScheduleSavedProductUpdate() {
 }
 
 bool ShoppingService::IsShoppingListEligible() {
-  return IsShoppingListEligible(account_checker_.get(), pref_service_);
+  return IsShoppingListEligible(account_checker_.get(), pref_service_,
+                                country_on_startup_, locale_on_startup_);
 }
 
 bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
-                                             PrefService* prefs) {
-  if (!base::FeatureList::IsEnabled(kShoppingList))
+                                             PrefService* prefs,
+                                             const std::string& country_code,
+                                             const std::string& locale) {
+  bool flag_enabled = base::FeatureList::IsEnabled(kShoppingList);
+  bool region_launched =
+      base::FeatureList::IsEnabled(kShoppingListRegionLaunched) &&
+      IsEnabledForCountryAndLocale(kShoppingListRegionLaunched, country_code,
+                                   locale);
+
+  if (!flag_enabled && !region_launched) {
     return false;
+  }
 
   if (!prefs || !IsShoppingListAllowedForEnterprise(prefs))
     return false;

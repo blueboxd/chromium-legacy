@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
@@ -63,6 +63,7 @@
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<OverlayPresenterObserverBridge> _overlayObserver;
+  BOOL _inBatchOperation;
 }
 
 - (instancetype)init {
@@ -154,13 +155,17 @@
   _webState = nullptr;
 }
 
-#pragma mark - WebStateListObserver
+#pragma mark - WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
               atIndex:(int)index
            activating:(BOOL)activating {
   DCHECK_EQ(_webStateList, webStateList);
+  if (_inBatchOperation) {
+    return;
+  }
+
   [self.consumer setTabCount:_webStateList->count()
            addedInBackground:!activating];
 }
@@ -169,6 +174,10 @@
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index {
   DCHECK_EQ(_webStateList, webStateList);
+  if (_inBatchOperation) {
+    return;
+  }
+
   [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 
@@ -179,6 +188,19 @@
                      reason:(ActiveWebStateChangeReason)reason {
   DCHECK_EQ(_webStateList, webStateList);
   self.webState = newWebState;
+}
+
+- (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
+  DCHECK_EQ(_webStateList, webStateList);
+  DCHECK(!_inBatchOperation);
+  _inBatchOperation = YES;
+}
+
+- (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
+  DCHECK_EQ(_webStateList, webStateList);
+  DCHECK(_inBatchOperation);
+  _inBatchOperation = NO;
+  [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 
 #pragma mark - AdaptiveToolbarMenusProvider

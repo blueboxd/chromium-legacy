@@ -6,11 +6,12 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/values_util.h"
+#include "components/commerce/core/account_checker.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/commerce/core/subscriptions/subscriptions_server_proxy.h"
@@ -23,13 +24,6 @@
 namespace {
 
 // For creating endpoint fetcher.
-const char kOAuthScope[] = "https://www.googleapis.com/auth/chromememex";
-const char kOAuthName[] = "subscriptions_svc";
-const char kGetHttpMethod[] = "GET";
-const char kPostHttpMethod[] = "POST";
-const char kContentType[] = "application/json; charset=UTF-8";
-const char kEmptyPostData[] = "";
-
 const int kDefaultTimeoutMs = 5000;
 const char kTimeoutParam[] = "subscriptions_server_request_timeout";
 constexpr base::FeatureParam<int> kTimeoutMs{&commerce::kShoppingList,
@@ -293,8 +287,8 @@ void SubscriptionsServerProxy::OnManageSubscriptionsJsonParsed(
     ManageSubscriptionsFetcherCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
   if (result.has_value() && result->is_dict()) {
-    if (auto* status_value = result->FindKey(kStatusKey)) {
-      if (auto status_code = status_value->FindIntKey(kStatusCodeKey)) {
+    if (auto* status_value = result->GetDict().FindDict(kStatusKey)) {
+      if (auto status_code = status_value->FindInt(kStatusCodeKey)) {
         std::move(callback).Run(
             *status_code == kBackendCanonicalCodeSuccess
                 ? SubscriptionsRequestStatus::kSuccess
@@ -380,7 +374,7 @@ absl::optional<CommerceSubscription> SubscriptionsServerProxy::Deserialize(
     auto* id = value.FindStringKey(kSubscriptionIdKey);
     auto* management_type = value.FindStringKey(kSubscriptionManagementTypeKey);
     auto timestamp =
-        base::ValueToInt64(value.FindKey(kSubscriptionTimestampKey));
+        base::ValueToInt64(value.GetDict().Find(kSubscriptionTimestampKey));
     if (type && id_type && id && management_type && timestamp) {
       return absl::make_optional<CommerceSubscription>(
           StringToSubscriptionType(*type), StringToSubscriptionIdType(*id_type),

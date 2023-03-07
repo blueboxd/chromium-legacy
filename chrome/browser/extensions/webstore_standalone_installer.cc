@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -170,7 +170,6 @@ WebstoreStandaloneInstaller::CreateApproval() const {
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
           profile_, id_, manifest_->Clone(), true));
   approval->skip_post_install_ui = !ShouldShowPostInstallUI();
-  approval->use_app_installed_bubble = ShouldShowAppInstalledBubble();
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
   return approval;
 }

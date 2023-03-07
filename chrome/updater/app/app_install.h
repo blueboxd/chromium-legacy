@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "chrome/updater/app/app.h"
@@ -66,8 +66,6 @@ class AppInstall : public App {
   void InstallCandidateDone(bool valid_version, int result);
 
   void WakeCandidate();
-
-  void WakeCandidateDone();
 
   void FetchPolicies();
 

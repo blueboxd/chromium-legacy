@@ -10,7 +10,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.content_public.browser.BrowserContextHandle;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,21 +41,22 @@ public class OriginVerificationScheduler {
     }
 
     @VisibleForTesting
-    public Set<Origin> addPendingOriginForTesting() {
+    public Set<Origin> getPendingOriginsForTesting() {
         return mPendingOrigins;
     }
 
     // Use this function only for testing.
     @VisibleForTesting
-    public void addPendingOrigin(Origin origin) {
+    public void addPendingOriginForTesting(Origin origin) {
         mPendingOrigins.add(origin);
     }
 
-    public void verify(
-            String url, BrowserContextHandle browserContextHandle, Callback<Boolean> callback) {
-        ThreadUtils.assertOnUiThread();
+    public void verify(String url, Callback<Boolean> callback) {
+        verify(Origin.create(url), callback);
+    }
 
-        Origin origin = Origin.create(url);
+    public void verify(Origin origin, Callback<Boolean> callback) {
+        ThreadUtils.assertOnUiThread();
         if (origin == null) {
             callback.onResult(false);
             return;
@@ -72,9 +72,23 @@ public class OriginVerificationScheduler {
                 mPendingOrigins.remove(origin);
 
                 callback.onResult(verified);
-            }, browserContextHandle, origin);
+            }, origin);
             return;
         }
         callback.onResult(mOriginVerifier.wasPreviouslyVerified(origin));
+    }
+
+    public void scheduleAllPendingVerifications(@Nullable Callback<Boolean> callback) {
+        ThreadUtils.assertOnUiThread();
+        if (callback == null) {
+            callback = (res) -> {};
+        }
+        for (Origin origin : mPendingOrigins) {
+            verify(origin, callback);
+        }
+    }
+
+    public OriginVerifier getOriginVerifier() {
+        return mOriginVerifier;
     }
 }

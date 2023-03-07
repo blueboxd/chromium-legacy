@@ -5,13 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 
-#include "base/bind.h"
+#include <memory>
+
+#include "base/functional/bind.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
 #include "cc/paint/record_paint_canvas.h"
+#include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_color_cache.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_image_source_util.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
@@ -25,6 +30,7 @@
 
 namespace blink {
 
+class CanvasColorCache;
 class CanvasImageSource;
 class Color;
 class Image;
@@ -254,8 +260,9 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
 
   virtual RespectImageOrientationEnum RespectImageOrientation() const = 0;
 
-  virtual bool ParseColorOrCurrentColor(Color&,
-                                        const String& color_string) const = 0;
+  // Returns the color to use as the current color for operations that identify
+  // the current color.
+  virtual Color GetCurrentColor() const = 0;
 
   virtual cc::PaintCanvas* GetOrCreatePaintCanvas() = 0;
   virtual cc::PaintCanvas* GetPaintCanvas() const = 0;
@@ -497,11 +504,27 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   void WillOverwriteCanvas(OverdrawOp);
   virtual void WillOverwriteCanvas() = 0;
 
+  void SetColorScheme(mojom::blink::ColorScheme color_scheme) {
+    if (color_scheme == color_scheme_) {
+      return;
+    }
+
+    if (color_cache_) {
+      color_cache_->Clear();
+    }
+    color_scheme_ = color_scheme;
+  }
+
   bool context_restorable_{true};
   CanvasRenderingContext::LostContextMode context_lost_mode_{
       CanvasRenderingContext::kNotLostContext};
 
  private:
+  // Returns the color from `v8_style`. This may return a cached value as well
+  // as updating the cache (if possible).
+  bool ExtractColorFromV8ValueAndUpdateCache(const V8CanvasStyle& v8_style,
+                                             Color& color);
+
   // Pops from the top of the state stack, inverts transform, restores the
   // PaintCanvas, and validates the state stack. Helper for Restore and
   // EndLayer.
@@ -648,10 +671,16 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
       const V8CanvasStyle& v8_style,
       CanvasOps op);
 
+  // Parses the string as a color and returns the result of parsing.
+  ColorParseResult ParseColorOrCurrentColor(const String& color_string,
+                                            Color& color) const;
+
   bool origin_tainted_by_content_;
   UsePaintCache path2d_use_paint_cache_;
   int num_readbacks_performed_ = 0;
   unsigned read_count_ = 0;
+  std::unique_ptr<CanvasColorCache> color_cache_;
+  mojom::blink::ColorScheme color_scheme_ = mojom::blink::ColorScheme::kLight;
 };
 
 ALWAYS_INLINE void BaseRenderingContext2D::CheckOverdraw(
@@ -817,18 +846,18 @@ void BaseRenderingContext2D::CompositedDraw(
           canvas_filter));
       // Resetting the alpha of the shadow layer, to avoid the alpha being
       // applied twice.
-      shadow_flags.setAlpha(255);
+      shadow_flags.setAlphaf(1.0f);
       // Saving the shadow layer before setting the matrix, so the shadow offset
       // does not get modified by the transformation matrix
       shadow_flags.setBlendMode(state.GlobalComposite());
-      c->saveLayer(nullptr, &shadow_flags);
+      c->saveLayer(shadow_flags);
       foreground_flags.setBlendMode(SkBlendMode::kSrcOver);
       c->setMatrix(ctm);
       draw_func(c, &foreground_flags);
     } else {
       DCHECK(IsFullCanvasCompositeMode(state.GlobalComposite()) ||
              BlendModeRequiresCompositedDraw(state.GlobalComposite()));
-      c->saveLayer(nullptr, &composite_flags);
+      c->saveLayer(composite_flags);
       shadow_flags.setBlendMode(SkBlendMode::kSrcOver);
       c->setMatrix(ctm);
       draw_func(c, &shadow_flags);
@@ -837,7 +866,7 @@ void BaseRenderingContext2D::CompositedDraw(
   }
 
   composite_flags.setImageFilter(std::move(canvas_filter));
-  c->saveLayer(nullptr, &composite_flags);
+  c->saveLayer(composite_flags);
   cc::PaintFlags foreground_flags =
       *state.GetFlags(paint_type, kDrawForegroundOnly, image_type);
   foreground_flags.setBlendMode(SkBlendMode::kSrcOver);
@@ -905,7 +934,7 @@ ALWAYS_INLINE bool BaseRenderingContext2D::ComputeDirtyRect(
   const CanvasRenderingContext2DState& state = GetState();
   gfx::RectF canvas_rect = state.GetTransform().MapRect(local_rect);
 
-  if (UNLIKELY(SkColorGetA(state.ShadowColor()))) {
+  if (UNLIKELY(!state.ShadowColor().IsTransparent())) {
     gfx::RectF shadow_rect(canvas_rect);
     shadow_rect.Offset(state.ShadowOffset());
     shadow_rect.Outset(ClampTo<float>(state.ShadowBlur()));

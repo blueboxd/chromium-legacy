@@ -13,8 +13,8 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -620,7 +620,7 @@ void RootWindowDeskSwitchAnimator::OnScreenshotLayerCreated() {
 
   // If there is an existing transform, continue animating from there.
   gfx::Transform current_transform = animation_layer->transform();
-  DCHECK(current_transform.IsIdentityOr2DTranslation());
+  DCHECK(current_transform.IsIdentityOr2dTranslation());
   if (!current_transform.IsIdentity()) {
     // If the new layer is located on the left of the prior created layers,
     // shift the animation layer transform so that the content shown to users

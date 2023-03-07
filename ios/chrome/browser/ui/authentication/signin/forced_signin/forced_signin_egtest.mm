@@ -13,10 +13,13 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/test_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
+#import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
@@ -32,7 +35,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -73,21 +75,20 @@ id<GREYMatcher> GetContinueButtonWithIdentityMatcher(
 // Returns a matcher for the whole forced sign-in screen.
 id<GREYMatcher> GetForcedSigninScreenMatcher() {
   return grey_accessibilityID(
-      first_run::kFirstRunLegacySignInScreenAccessibilityIdentifier);
+      first_run::kFirstRunSignInScreenAccessibilityIdentifier);
 }
 
 // Checks that the forced sign-in prompt is fully dismissed by making sure
 // that there isn't any forced sign-in screen displayed.
 void VerifyForcedSigninFullyDismissed() {
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(
-              first_run::kFirstRunLegacySignInScreenAccessibilityIdentifier)]
-      assertWithMatcher:grey_nil()];
-
   [[EarlGrey selectElementWithMatcher:
                  grey_accessibilityID(
-                     first_run::kFirstRunSyncScreenAccessibilityIdentifier)]
+                     first_run::kFirstRunSignInScreenAccessibilityIdentifier)]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kTangibleSyncViewAccessibilityIdentifier)]
       assertWithMatcher:grey_nil()];
 }
 
@@ -220,7 +221,6 @@ void OpenGoogleServicesSettings() {
                                    kGoogleServicesSettingsViewIdentifier)]
       assertWithMatcher:grey_notNil()];
 }
-
 }  // namespace
 
 // Test the forced sign-in screens.
@@ -232,8 +232,6 @@ void OpenGoogleServicesSettings() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
-
   // Configure the policy to force sign-in.
   config.additional_args.push_back(
       "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
@@ -242,6 +240,11 @@ void OpenGoogleServicesSettings() {
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
 
   return config;
+}
+
+- (void)setUp {
+  [[self class] testForStartup];
+  [super setUp];
 }
 
 - (void)tearDown {
@@ -261,21 +264,20 @@ void OpenGoogleServicesSettings() {
 #pragma mark - Tests
 
 // Tests the sign-in screen with accounts that are already available.
-// TODO(crbug.com/1328822): flaky.
-- (void)DISABLED_testSignInScreenWithAccount {
+- (void)testSignInScreenWithAccount {
   // Add an identity to sign-in to enable the "Continue as ..." button in the
   // sign-in screen.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Validate the Title text of the forced sign-in screen.
-  id<GREYMatcher> title =
-      grey_text(l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE));
+  id<GREYMatcher> title = grey_text(
+      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE_SIGNIN_FORCED));
   ScrollToElementAndAssertVisibility(title);
 
   // Validate the Subtitle text of the forced sign-in screen.
   id<GREYMatcher> subtitle = grey_text(
-      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_MANAGED));
+      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_SIGNIN_FORCED));
   ScrollToElementAndAssertVisibility(subtitle);
 
   // Scroll to the "Continue as ..." button to go to the bottom of the screen.
@@ -298,8 +300,7 @@ void OpenGoogleServicesSettings() {
 
 // Tests the sign-in screen without accounts where an account has to be added
 // before signing in.
-// TODO(crbug.com/1328822): flaky.
-- (void)DISABLED_testSignInScreenWithoutAccount {
+- (void)testSignInScreenWithoutAccount {
   // Tap on the "Sign in" button.
   [[EarlGrey
       selectElementWithMatcher:grey_text(l10n_util::GetNSString(
@@ -308,7 +309,7 @@ void OpenGoogleServicesSettings() {
 
   // Check for the fake SSO screen.
   [ChromeEarlGrey
-      waitForMatcher:grey_accessibilityID(kFakeAddAccountViewIdentifier)];
+      waitForMatcher:grey_accessibilityID(kFakeAuthActivityViewIdentifier)];
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
       grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
@@ -601,7 +602,6 @@ void OpenGoogleServicesSettings() {
 - (void)testSignInScreenOnModal {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -629,7 +629,6 @@ void OpenGoogleServicesSettings() {
 - (void)testSignInScreenOnTabSwitcher {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -656,7 +655,6 @@ void OpenGoogleServicesSettings() {
 - (void)testSignInScreenOnIncognito {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -683,7 +681,6 @@ void OpenGoogleServicesSettings() {
 - (void)testSignInScreenDuringRegularSigninPrompt {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -720,7 +717,6 @@ void OpenGoogleServicesSettings() {
 - (void)testNoSignInScreenWhenSigninFromRegularSigninPrompt {
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -799,7 +795,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -856,7 +851,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -914,7 +908,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1054,7 +1047,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1099,7 +1091,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1151,7 +1142,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1205,7 +1195,6 @@ void OpenGoogleServicesSettings() {
 
   // Restart the app to reset the policies.
   AppLaunchConfiguration config;
-  config.features_disabled.push_back(signin::kNewMobileIdentityConsistencyFRE);
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 

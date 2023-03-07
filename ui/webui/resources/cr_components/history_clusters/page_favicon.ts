@@ -5,11 +5,10 @@
 import './shared_vars.css.js';
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {getFaviconForPageURL} from '../../js/icon.js';
-import {loadTimeData} from '../../js/load_time_data.js';
 
 import {getTemplate} from './page_favicon.html.js';
 
@@ -67,6 +66,12 @@ class PageFavicon extends PolymerElement {
        * this defined, in which case we fallback to the favicon.
        */
       imageUrl: Object,
+
+      /**
+       * Whether this visit is known to sync already. Used for the purpose of
+       * fetching higher quality favicons in that case.
+       */
+      isKnownToSync: Boolean,
     };
   }
 
@@ -76,6 +81,7 @@ class PageFavicon extends PolymerElement {
 
   url: Url;
   imageUrl: Url;
+  isKnownToSync: boolean;
 
   //============================================================================
   // Helper methods
@@ -92,7 +98,7 @@ class PageFavicon extends PolymerElement {
     }
     return `background-image:${
         getFaviconForPageURL(
-            this.url.url, false, '', /** --favicon-size */ 16)}`;
+            this.url.url, this.isKnownToSync, '', /** --favicon-size */ 16)}`;
   }
 }
 

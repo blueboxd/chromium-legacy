@@ -4,12 +4,13 @@
 
 #include "third_party/blink/renderer/modules/direct_sockets/udp_readable_stream_wrapper.h"
 
-#include "base/callback_helpers.h"
 #include "base/containers/span.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
-#include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom-blink.h"
+#include "services/network/public/mojom/restricted_udp_socket.mojom-blink.h"
+#include "services/network/public/mojom/udp_socket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -26,13 +27,15 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
 namespace {
 
-class FakeDirectUDPSocket : public blink::mojom::blink::DirectUDPSocket {
+class FakeRestrictedUDPSocket
+    : public network::mojom::blink::RestrictedUDPSocket {
  public:
   void Send(base::span<const uint8_t> data, SendCallback callback) override {
     NOTIMPLEMENTED();
@@ -42,20 +45,27 @@ class FakeDirectUDPSocket : public blink::mojom::blink::DirectUDPSocket {
     num_requested_datagrams += num_additional_datagrams;
   }
 
-  void Close() override { NOTIMPLEMENTED(); }
-
-  void ProvideRequestedDatagrams(UDPReadableStreamWrapper* stream) {
+  void ProvideRequestedDatagrams() {
+    DCHECK(remote_.is_bound());
     while (num_requested_datagrams > 0) {
-      stream->Push(datagram_.Span8(),
-                   net::IPEndPoint{net::IPAddress::IPv4Localhost(), 0U});
+      remote_->OnReceived(net::OK,
+                          net::IPEndPoint{net::IPAddress::IPv4Localhost(), 0U},
+                          datagram_.Span8());
       num_requested_datagrams--;
     }
+  }
+
+  void Bind(mojo::PendingRemote<network::mojom::blink::UDPSocketListener>
+                pending_remote) {
+    remote_.Bind(std::move(pending_remote));
   }
 
   const String& GetTestingDatagram() const { return datagram_; }
   void SetTestingDatagram(String datagram) { datagram_ = std::move(datagram); }
 
  private:
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
+  mojo::Remote<network::mojom::blink::UDPSocketListener> remote_;
   uint32_t num_requested_datagrams = 0;
   String datagram_{"abcde"};
 };
@@ -73,20 +83,24 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
         receiver_.BindNewPipeAndPassRemote(),
         scope.GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
 
+    mojo::PendingReceiver<network::mojom::blink::UDPSocketListener> receiver;
+    fake_udp_socket_.Bind(receiver.InitWithNewPipeAndPassRemote());
+
     auto* script_state = scope.GetScriptState();
     stream_wrapper_ = MakeGarbageCollected<UDPReadableStreamWrapper>(
-        script_state, base::DoNothing(), udp_socket);
+        script_state, base::DoNothing(), udp_socket, std::move(receiver));
     return stream_wrapper_;
   }
 
   void Trace(Visitor* visitor) const { visitor->Trace(stream_wrapper_); }
 
-  FakeDirectUDPSocket& fake_udp_socket() { return fake_udp_socket_; }
+  FakeRestrictedUDPSocket& fake_udp_socket() { return fake_udp_socket_; }
 
  private:
-  mojo::Receiver<blink::mojom::blink::DirectUDPSocket> receiver_;
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
+  mojo::Receiver<network::mojom::blink::RestrictedUDPSocket> receiver_;
 
-  FakeDirectUDPSocket fake_udp_socket_;
+  FakeRestrictedUDPSocket fake_udp_socket_;
   Member<UDPReadableStreamWrapper> stream_wrapper_;
 };
 
@@ -138,7 +152,7 @@ TEST(UDPReadableStreamWrapperTest, ReadUdpMessage) {
   // fake_udp_socket.ProvideRequestedDiagrams().
   test::RunPendingTasks();
 
-  fake_udp_socket.ProvideRequestedDatagrams(udp_readable_stream_wrapper);
+  fake_udp_socket.ProvideRequestedDatagrams();
 
   auto* script_state = scope.GetScriptState();
   auto* reader =
@@ -177,7 +191,7 @@ TEST(UDPReadableStreamWrapperTest, ReadDelayedUdpMessage) {
   ScriptPromiseTester tester(script_state,
                              reader->read(script_state, ASSERT_NO_EXCEPTION));
 
-  fake_udp_socket.ProvideRequestedDatagrams(udp_readable_stream_wrapper);
+  fake_udp_socket.ProvideRequestedDatagrams();
 
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
@@ -203,7 +217,7 @@ TEST(UDPReadableStreamWrapperTest, ReadEmptyUdpMessage) {
 
   // Send empty datagrams.
   fake_udp_socket.SetTestingDatagram({});
-  fake_udp_socket.ProvideRequestedDatagrams(udp_readable_stream_wrapper);
+  fake_udp_socket.ProvideRequestedDatagrams();
 
   auto* script_state = scope.GetScriptState();
   auto* reader =

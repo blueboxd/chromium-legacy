@@ -6,8 +6,8 @@
 
 The templated `base::{Once, Repeating}Callback<>` classes are generalized
 function objects. Together with the `base::Bind{Once, Repeating}()` functions in
-base/bind.h, they provide a type-safe method for performing partial application
-of functions.
+base/functional/bind.h, they provide a type-safe method for performing partial
+application of functions.
 
 Partial application is the process of binding a subset of a function's arguments
 to produce another function that takes fewer arguments. This can be used to pass
@@ -201,7 +201,7 @@ base::OnceCallback<int()> compute_result_cb = base::BindOnce(&ComputeResult);
 
 // Task runner for the current thread.
 scoped_refptr<base::SequencedTaskRunner> current_task_runner =
-    base::SequencedTaskRunnerHandle::Get();
+    base::SequencedTaskRunner::GetCurrentDefault();
 
 // A function to accept the result, except it can only be run safely from the
 // current thread.
@@ -605,7 +605,7 @@ Then use `base::WeakPtrFactory<T>::GetWeakPtr()` as the receiver when
 binding a callback:
 
 ```cpp
-base::SequencedTaskRunnerHandle::Get()->PostTask(
+base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
     FROM_HERE,
     base::BindOnce(&MyClass::Foo, weak_factory_.GetWeakPtr());
 ```
@@ -916,7 +916,7 @@ references. (Binding to non-const references is forbidden, see bind.h.)
 To change this behavior, we introduce a set of argument wrappers (e.g.,
 `base::Unretained()`).  These are simple container templates that are passed by
 value, and wrap a pointer to argument.  Each helper has a comment describing it
-in base/bind.h.
+in base/functional/bind.h.
 
 These types are passed to the `Unwrap()` functions to modify the behavior of
 `base::Bind{Once, Repeating}()`.  The `Unwrap()` functions change behavior by doing partial
@@ -940,5 +940,6 @@ void Foo(int x, bool y);
 base::BindOnce(&Foo, _1, false); // _1 is a placeholder.
 ```
 
-If you are thinking of forward declaring `base::{Once, Repeating}Callback` in your own header
-file, please include "base/callback_forward.h" instead.
+If you are thinking of forward declaring `base::{Once, Repeating}Callback` in
+your own header file, please include "base/functional/callback_forward.h"
+instead.

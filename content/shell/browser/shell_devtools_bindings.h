@@ -8,9 +8,9 @@
 #include <memory>
 #include <set>
 
-#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -74,7 +74,7 @@ class ShellDevToolsBindings : public WebContentsObserver,
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
-  void SendMessageAck(int request_id, const base::Value arg);
+  void SendMessageAck(int request_id, const base::Value::Dict arg);
   void AttachInternal();
 
   raw_ptr<WebContents> inspected_contents_;
@@ -90,7 +90,7 @@ class ShellDevToolsBindings : public WebContentsObserver,
   std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator>
       loaders_;
 
-  base::DictionaryValue preferences_;
+  base::Value::Dict preferences_;
 
   using ExtensionsAPIs = std::map<std::string, std::string>;
   ExtensionsAPIs extensions_api_;

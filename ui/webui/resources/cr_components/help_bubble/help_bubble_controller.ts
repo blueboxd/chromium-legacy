@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {InsetsF} from 'chrome://resources/mojo/ui/gfx/geometry/mojom/geometry.mojom-webui.js';
 
 import {HelpBubbleElement} from './help_bubble.js';
 import {HelpBubbleParams} from './help_bubble.mojom-webui.js';
 
-export type Trackable = string|HTMLElement;
+type Root = HTMLElement|ShadowRoot&{shadowRoot?: ShadowRoot};
+
+export type Trackable = string|string[]|HTMLElement;
 
 /**
  * HelpBubble controller class
@@ -21,6 +24,7 @@ export class HelpBubbleController {
   private anchor_: HTMLElement|null = null;
   private showing_: boolean = false;
   private bubble_: HelpBubbleElement|null = null;
+  private padding_: InsetsF = new InsetsF();
 
   constructor(nativeId: string, root: ShadowRoot) {
     assert(nativeId && root);
@@ -49,12 +53,18 @@ export class HelpBubbleController {
     return this.nativeId_;
   }
 
-  track(trackable: Trackable): boolean {
+  getPadding() {
+    return this.padding_;
+  }
+
+  track(trackable: Trackable, padding: InsetsF): boolean {
     assert(!this.anchor_);
 
     let anchor: HTMLElement|null = null;
     if (typeof trackable === 'string') {
       anchor = this.root_.querySelector<HTMLElement>(trackable);
+    } else if (Array.isArray(trackable)) {
+      anchor = this.deepQuery(trackable);
     } else if (trackable instanceof HTMLElement) {
       anchor = trackable;
     } else {
@@ -67,7 +77,24 @@ export class HelpBubbleController {
 
     anchor.dataset['nativeId'] = this.nativeId_;
     this.anchor_ = anchor;
+    this.padding_ = padding;
     return true;
+  }
+
+  deepQuery(selectors: string[]): HTMLElement|null {
+    let cur: Root = this.root_;
+    for (const selector of selectors) {
+      if (cur.shadowRoot) {
+        cur = cur.shadowRoot;
+      }
+      const el: HTMLElement|null = cur.querySelector(selector);
+      if (!el) {
+        return null;
+      } else {
+        cur = el;
+      }
+    }
+    return cur as HTMLElement;
   }
 
   hasElement() {
@@ -111,6 +138,7 @@ export class HelpBubbleController {
     this.bubble_.titleText = params.titleText || '';
     this.bubble_.progress = params.progress || null;
     this.bubble_.buttons = params.buttons;
+    this.bubble_.padding = this.padding_;
 
     if (params.timeout) {
       this.bubble_.timeoutMs = Number(params.timeout!.microseconds / 1000n);
@@ -121,10 +149,8 @@ export class HelpBubbleController {
         !this.bubble_.progress ||
         this.bubble_.progress.total >= this.bubble_.progress.current);
 
-    // insert after anchor - if nextSibling is null, bubble will
-    // be added as the last child of parentNode
-    this.anchor_!.parentNode!.insertBefore(
-        this.bubble_, this.anchor_!.nextSibling);
+    assert(this.root_);
+    this.root_.appendChild(this.bubble_);
 
     return this.bubble_;
   }

@@ -275,13 +275,16 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   const network::mojom::ContentSecurityPolicy* csp_attribute() const {
     return attributes_->parsed_csp_attribute.get();
   }
-  bool credentialless() const { return attributes_->credentialless; }
-  const std::string& html_id() const { return attributes_->id; }
+  const absl::optional<std::string> html_id() const { return attributes_->id; }
   // This tracks iframe's 'name' attribute instead of window.name, which is
   // tracked in FrameReplicationState. See the comment for frame_name() for
   // more details.
-  const std::string& html_name() const { return attributes_->name; }
-  const std::string& html_src() const { return attributes_->src; }
+  const absl::optional<std::string> html_name() const {
+    return attributes_->name;
+  }
+  const absl::optional<std::string> html_src() const {
+    return attributes_->src;
+  }
 
   void SetAttributes(blink::mojom::IframeAttributesPtr attributes);
 
@@ -574,6 +577,16 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // it can't get on its own.
   bool AncestorOrSelfHasCSPEE() const;
 
+  // Reset every navigation in this frame, and its descendants. This is called
+  // after the <iframe> element has been removed, or after the document owning
+  // this frame has been navigated away.
+  //
+  // This takes into account:
+  // - Non-pending commit NavigationRequest owned by the FrameTreeNode
+  // - Pending commit NavigationRequest owned by the current RenderFrameHost
+  // - Speculative RenderFrameHost and its pending commit NavigationRequests.
+  void ResetAllNavigationsForFrameDetach();
+
   // RenderFrameHostOwner implementation:
   void DidStartLoading(bool should_show_loading_ui,
                        bool was_previously_loading) override;
@@ -583,6 +596,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   bool Reload() override;
   Navigator& GetCurrentNavigator() override;
   RenderFrameHostManager& GetRenderFrameHostManager() override;
+  FrameTreeNode* GetOpener() const override;
   void SetFocusedFrame(SiteInstanceGroup* source) override;
   void DidChangeReferrerPolicy(
       network::mojom::ReferrerPolicy referrer_policy) override;
@@ -605,6 +619,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
       bool is_same_document,
       const GURL& url,
       const url::Origin& origin,
+      const absl::optional<GURL>& initiator_base_url,
       const net::IsolationInfo& isolation_info_for_subresources,
       blink::mojom::ReferrerPtr referrer,
       const ui::PageTransition& transition,
@@ -620,6 +635,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
           subresource_web_bundle_navigation_info,
       int http_response_code) override;
   void CancelNavigation() override;
+  bool Credentialless() const override;
 
  private:
   friend class CSPEmbeddedEnforcementUnitTest;

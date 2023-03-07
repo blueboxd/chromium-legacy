@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/overlays/infobar_banner/passwords/password_infobar_banner_overlay_mediator.h"
 
-#import "base/feature_list.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_support.h"
@@ -17,14 +16,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// The name of the icon image for the passwords banner.
-NSString* const kLegacyIconImageName = @"legacy_password_key";
-NSString* const kIconImageName = @"password_key";
-
-}  // namespace
 
 @interface PasswordInfobarBannerOverlayMediator ()
 // The password banner config from the request.
@@ -56,14 +47,16 @@ NSString* const kIconImageName = @"password_key";
     (PasswordInfobarBannerOverlayRequestConfig*)config {
   UIImage* image;
   if (UseSymbols()) {
-    image = CustomSymbolWithPointSize(kPasswordSymbol, kInfobarSymbolPointSize);
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kIOSShowPasswordStorageInSaveInfobar)) {
+      image = MakeSymbolMulticolor(CustomSymbolWithPointSize(
+          kMulticolorPasswordSymbol, kInfobarSymbolPointSize));
+    } else {
+      image =
+          CustomSymbolWithPointSize(kPasswordSymbol, kInfobarSymbolPointSize);
+    }
   } else {
-    NSString* icon_image_name =
-        base::FeatureList::IsEnabled(
-            password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)
-            ? kIconImageName
-            : kLegacyIconImageName;
-    image = [UIImage imageNamed:icon_image_name];
+    image = [UIImage imageNamed:@"password_key"];
   }
   return image;
 }
@@ -77,22 +70,21 @@ NSString* const kIconImageName = @"password_key";
   if (!self.consumer || !config)
     return;
 
-  NSString* title = config->message();
-  NSString* username = config->username();
-  NSString* password = [@"" stringByPaddingToLength:config->password_length()
-                                         withString:@"•"
-                                    startingAtIndex:0];
-  NSString* bannerAccessibilityLabel =
-      [NSString stringWithFormat:@"%@,%@, %@", title, username,
-                                 l10n_util::GetNSString(
-                                     IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL)];
-  [self.consumer setBannerAccessibilityLabel:bannerAccessibilityLabel];
+  NSString* title = config->title();
+  NSString* subtitle = config->subtitle();
+  NSString* bannerAccessibilityLabel = config->customAccessibilityLabel();
+  if (bannerAccessibilityLabel) {
+    [self.consumer setBannerAccessibilityLabel:bannerAccessibilityLabel];
+  }
   [self.consumer setButtonText:config->button_text()];
   [self.consumer setIconImage:[self iconImageWithConfig:config]];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kIOSShowPasswordStorageInSaveInfobar)) {
+    [self.consumer setUseIconBackgroundTint:NO];
+  }
   [self.consumer setPresentsModal:YES];
   [self.consumer setTitleText:title];
-  [self.consumer
-      setSubtitleText:[NSString stringWithFormat:@"%@ %@", username, password]];
+  [self.consumer setSubtitleText:subtitle];
 }
 
 @end

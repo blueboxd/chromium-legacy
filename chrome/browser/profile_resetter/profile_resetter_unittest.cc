@@ -12,8 +12,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -355,7 +355,7 @@ scoped_refptr<Extension> CreateExtension(const std::u16string& name,
   manifest.Set(extensions::manifest_keys::kManifestVersion, 2);
   switch (type) {
     case extensions::Manifest::TYPE_THEME:
-      manifest.Set(extensions::manifest_keys::kTheme, base::DictionaryValue());
+      manifest.Set(extensions::manifest_keys::kTheme, base::Value::Dict());
       break;
     case extensions::Manifest::TYPE_HOSTED_APP:
       manifest.SetByDottedPath(extensions::manifest_keys::kLaunchWebURL,

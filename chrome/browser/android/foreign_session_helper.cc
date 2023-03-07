@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/android/jni_string.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chrome/android/chrome_jni_headers/ForeignSessionHelper_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -227,15 +227,15 @@ jboolean ForeignSessionHelper::GetForeignSessions(
       continue;
 
     const bool is_collapsed =
-        (collapsed_sessions.Find(session.session_tag) != nullptr);
+        (collapsed_sessions.Find(session.GetSessionTag()) != nullptr);
 
     if (is_collapsed)
-      pref_collapsed_sessions.Set(session.session_tag, true);
+      pref_collapsed_sessions.Set(session.GetSessionTag(), true);
 
     last_pushed_session.Reset(Java_ForeignSessionHelper_pushSession(
-        env, result, ConvertUTF8ToJavaString(env, session.session_tag),
-        ConvertUTF8ToJavaString(env, session.session_name),
-        session.modified_time.ToJavaTime()));
+        env, result, ConvertUTF8ToJavaString(env, session.GetSessionTag()),
+        ConvertUTF8ToJavaString(env, session.GetSessionName()),
+        session.GetModifiedTime().ToJavaTime()));
 
     // Push the full session, with tabs ordered by visual position.
     JNI_ForeignSessionHelper_CopySessionToJava(env, session,

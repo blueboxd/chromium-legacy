@@ -46,22 +46,22 @@ class [[clang::lto_visibility_public]] AppContainer {
   // See ::GetNamedSecurityInfo for more information about how the enumeration
   // is used and what format object_name needs to be.
   virtual bool AccessCheck(const wchar_t* object_name,
-                           SecurityObjectType object_type,
+                           base::win::SecurityObjectType object_type,
                            DWORD desired_access,
                            DWORD* granted_access,
                            BOOL* access_status) = 0;
 
   // Adds a capability by name to this profile.
-  virtual bool AddCapability(const wchar_t* capability_name) = 0;
+  virtual void AddCapability(const wchar_t* capability_name) = 0;
   // Adds a capability from a known list.
-  virtual bool AddCapability(base::win::WellKnownCapability capability) = 0;
+  virtual void AddCapability(base::win::WellKnownCapability capability) = 0;
   // Adds a capability from a SID
   virtual bool AddCapabilitySddl(const wchar_t* sddl_sid) = 0;
 
   // Adds an impersonation capability by name to this profile.
-  virtual bool AddImpersonationCapability(const wchar_t* capability_name) = 0;
+  virtual void AddImpersonationCapability(const wchar_t* capability_name) = 0;
   // Adds an impersonation capability from a known list.
-  virtual bool AddImpersonationCapability(
+  virtual void AddImpersonationCapability(
       base::win::WellKnownCapability capability) = 0;
   // Adds an impersonation capability from a SID
   virtual bool AddImpersonationCapabilitySddl(const wchar_t* sddl_sid) = 0;

@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -15,6 +15,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -35,8 +36,8 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
-#include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_edit_model_delegate.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -595,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmnibox) {
   // _intermediate_ state.
 
   // Wait for the navigation to finish and verify final, steady state.
-  nav_manager.WaitForNavigationFinished();
+  ASSERT_TRUE(nav_manager.WaitForNavigationFinished());
   EXPECT_TRUE(nav_manager.was_successful());
   EXPECT_EQ(url, web_contents->GetLastCommittedURL());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
@@ -617,15 +618,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   // Focus the omnibox.
   chrome::FocusLocationBar(browser());
 
-  OmniboxEditController* controller = browser()
-                                          ->window()
-                                          ->GetLocationBar()
-                                          ->GetOmniboxView()
-                                          ->model()
-                                          ->controller();
+  OmniboxEditModelDelegate* edit_model_delegate = browser()
+                                                      ->window()
+                                                      ->GetLocationBar()
+                                                      ->GetOmniboxView()
+                                                      ->model()
+                                                      ->delegate();
 
   // Simulate an alt-enter.
-  controller->OnAutocompleteAccept(
+  edit_model_delegate->OnAutocompleteAccept(
       url2, nullptr, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::URL_WHAT_YOU_TYPED,
       base::TimeTicks(), false, std::u16string(), AutocompleteMatch(),

@@ -41,7 +41,8 @@ bookmarks::BookmarkModel* OmniboxClient::GetBookmarkModel() {
   return nullptr;
 }
 
-OmniboxControllerEmitter* OmniboxClient::GetOmniboxControllerEmitter() {
+AutocompleteControllerEmitter*
+OmniboxClient::GetAutocompleteControllerEmitter() {
   return nullptr;
 }
 
@@ -85,6 +86,8 @@ bool OmniboxClient::ProcessExtensionKeyword(const std::u16string& text,
                                             WindowOpenDisposition disposition) {
   return false;
 }
+
+void OmniboxClient::OnUserPastedInOmniboxResultingInValidURL() {}
 
 gfx::Image OmniboxClient::GetFaviconForPageUrl(
     const GURL& page_url,

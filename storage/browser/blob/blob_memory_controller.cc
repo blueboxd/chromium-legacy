@@ -8,13 +8,13 @@
 #include <memory>
 #include <numeric>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/small_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -170,7 +170,11 @@ EmptyFilesResult CreateEmptyFiles(
   for (const base::FilePath& file_path : file_paths) {
     FileCreationInfo creation_info;
     // Try to open our file.
-    File file(file_path, File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE);
+    uint32_t flags = File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE;
+
+    // This File may be passed to an untrusted process.
+    flags = base::File::AddFlagsForPassingToUntrustedProcess(flags);
+    File file(file_path, flags);
     creation_info.path = std::move(file_path);
     creation_info.file_deletion_runner = file_task_runner;
     creation_info.error = file.error_details();
@@ -219,7 +223,12 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
           : free_disk_space - static_cast<int64_t>(total_size_bytes);
 
   // Create the page file.
-  File file(file_path, File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE);
+  uint32_t flags = File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE;
+
+  // This File may be passed to an untrusted process.
+  flags = base::File::AddFlagsForPassingToUntrustedProcess(flags);
+
+  File file(file_path, flags);
   creation_info.path = file_path;
   creation_info.error = file.error_details();
   if (creation_info.error != File::FILE_OK)

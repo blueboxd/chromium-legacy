@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
@@ -31,7 +31,6 @@
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,9 +117,6 @@ void PrintUsage() {
       "  --test-launcher-shard-index=N\n"
       "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n"
       "\n"
-      "  --dont-use-job-objects\n"
-      "    Avoids using job objects in Windows.\n"
-      "\n"
       "  --test-launcher-print-temp-leaks\n"
       "    Prints information about leaked files and/or directories in\n"
       "    child process's temporary directories (Windows and macOS).\n");
@@ -206,10 +202,6 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
 #if BUILDFLAG(IS_POSIX)
   FileDescriptorWatcher file_descriptor_watcher(executor.task_runner());
 #endif
-  use_job_objects =
-      use_job_objects &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(kDontUseJobObjectFlag);
-
   DefaultUnitTestPlatformDelegate platform_delegate;
   UnitTestLauncherDelegate delegate(&platform_delegate, batch_limit,
                                     use_job_objects, timeout_callback);
@@ -235,9 +227,6 @@ void InitGoogleTestWChar(int* argc, wchar_t** argv) {
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
-
-// Flag to avoid using job objects
-const char kDontUseJobObjectFlag[] = "dont-use-job-objects";
 
 MergeTestFilterSwitchHandler::~MergeTestFilterSwitchHandler() = default;
 void MergeTestFilterSwitchHandler::ResolveDuplicate(

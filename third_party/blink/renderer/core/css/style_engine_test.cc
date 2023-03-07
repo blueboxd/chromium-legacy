@@ -161,11 +161,7 @@ class StyleEngineTest : public PageTestBase {
   }
 };
 
-class StyleEngineContainerQueryTest : public StyleEngineTest,
-                                      private ScopedLayoutNGForTest {
- public:
-  StyleEngineContainerQueryTest() : ScopedLayoutNGForTest(true) {}
-};
+class StyleEngineContainerQueryTest : public StyleEngineTest {};
 
 StyleEngineTest::RuleSetInvalidation
 StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
@@ -179,8 +175,9 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
       sheet->EnsureRuleSet(MediaQueryEvaluator(GetDocument().GetFrame()),
                            kRuleHasDocumentSecurityOrigin);
   rule_set.CompactRulesIfNeeded();
-  if (rule_set.NeedsFullRecalcForRuleSetInvalidation())
+  if (rule_set.NeedsFullRecalcForRuleSetInvalidation()) {
     return kRuleSetInvalidationFullRecalc;
+  }
   rule_sets.insert(&rule_set);
   GetStyleEngine().ScheduleInvalidationsForRuleSets(tree_scope, rule_sets);
   return kRuleSetInvalidationsScheduled;
@@ -5350,7 +5347,7 @@ TEST_F(StyleEngineTest, HasPseudoClassInvalidationIgnoreVisitedPseudoInHas) {
   UpdateAllLifecyclePhases();
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
-  ASSERT_EQ(1U, element_count);
+  ASSERT_EQ(2U, element_count);
 
   start_count = GetStyleEngine().StyleForElementCount();
   GetDocument().getElementById("div1")->RemoveChild(
@@ -5618,139 +5615,6 @@ TEST_F(StyleEngineSimTest, ResizeWithBlockingSheetTransition) {
   EXPECT_EQ(
       trans->ComputedStyleRef().VisitedDependentColor(GetCSSPropertyColor()),
       Color::FromRGB(0, 128, 0));
-}
-
-namespace {
-
-const String CQLegacyWarningText() {
-  return String(
-      "Using container queries or units with printing, or in combination with "
-      "tables inside multicol will not work correctly.");
-}
-
-}  // namespace
-
-TEST_F(StyleEngineSimTest, ContainerQueryLegacyNoWarning) {
-  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
-
-  SimRequest main_resource("https://example.com/", "text/html");
-
-  LoadURL("https://example.com/");
-
-  main_resource.Complete(R"HTML(
-    <div style="container-type:size">
-      <div style="columns:1">
-        <table></table>
-      </div>
-    </div>
-    <div style="columns:1">
-      <table></table>
-    </div>
-  )HTML");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
-}
-
-TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddContainer) {
-  // For the ng-disabled bots:
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
-  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
-
-  SimRequest main_resource("https://example.com/", "text/html");
-
-  LoadURL("https://example.com/");
-
-  main_resource.Complete(R"HTML(
-    <div style="columns:1">
-      <table>
-        <div id="container"></div>
-      </table>
-    </div>
-  )HTML");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
-
-  Element* container = GetDocument().getElementById("container");
-  container->SetInlineStyleProperty(CSSPropertyID::kContainerType, "size");
-
-  test::RunPendingTasks();
-  Compositor().BeginFrame();
-
-  EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
-}
-
-TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddTable) {
-  // For the ng-disabled bots:
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
-  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
-
-  SimRequest main_resource("https://example.com/", "text/html");
-
-  LoadURL("https://example.com/");
-
-  main_resource.Complete(R"HTML(
-    <div style="columns:1">
-      <div style="container-type:size">
-        <div id="table"></div>
-      </div>
-    </div>
-  )HTML");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
-
-  Element* table = GetDocument().getElementById("table");
-  table->SetInlineStyleProperty(CSSPropertyID::kDisplay, "table");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
-}
-
-TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddColumns) {
-  // For the ng-disabled bots:
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
-  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
-
-  SimRequest main_resource("https://example.com/", "text/html");
-
-  LoadURL("https://example.com/");
-
-  main_resource.Complete(R"HTML(
-    <div id="columns">
-      <div style="container-type:size">
-        <table></table>
-      </div>
-    </div>
-  )HTML");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
-
-  Element* columns = GetDocument().getElementById("columns");
-  columns->SetInlineStyleProperty(CSSPropertyID::kColumns, "1");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
 }
 
 TEST_F(StyleEngineSimTest,

@@ -5,12 +5,15 @@
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/extensions/api/identity/web_auth_flow_info_bar_delegate.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -25,6 +28,8 @@
 
 namespace extensions {
 
+const char kExtensionName[] = "extension_name";
+
 class MockWebAuthFlowDelegate : public WebAuthFlow::Delegate {
  public:
   MOCK_METHOD(void, OnAuthFlowURLChange, (const GURL&), (override));
@@ -37,12 +42,25 @@ class WebAuthFlowBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Delete the flow early if OnAuthFlowFailure is called. Simulates real
+    // usages.
+    ON_CALL(mock(), OnAuthFlowFailure(testing::_))
+        .WillByDefault(
+            [this](WebAuthFlow::Failure failure) { DeleteWebAuthFlow(); });
   }
 
-  void TearDownOnMainThread() override {
+  void DeleteWebAuthFlow() {
+    DCHECK(web_auth_flow_);
     // Delete the web auth flow (uses DeleteSoon).
     web_auth_flow_.release()->DetachDelegateAndDelete();
     base::RunLoop().RunUntilIdle();
+  }
+
+  void TearDownOnMainThread() override {
+    if (web_auth_flow_) {
+      DeleteWebAuthFlow();
+    }
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
@@ -54,15 +72,18 @@ class WebAuthFlowBrowserTest : public InProcessBrowserTest {
     if (!profile)
       profile = browser()->profile();
 
-    web_auth_flow_ = std::make_unique<WebAuthFlow>(
-        &mock_web_auth_flow_delegate_, profile, url, mode, partition);
+    web_auth_flow_ =
+        std::make_unique<WebAuthFlow>(&mock_web_auth_flow_delegate_, profile,
+                                      url, mode, partition, kExtensionName);
     web_auth_flow_->Start();
   }
 
   WebAuthFlow* web_auth_flow() { return web_auth_flow_.get(); }
 
   content::WebContents* web_contents() {
-    DCHECK(web_auth_flow_);
+    if (!web_auth_flow_) {
+      return nullptr;
+    }
     return web_auth_flow_->web_contents();
   }
 
@@ -78,8 +99,8 @@ class WebAuthFlowInBrowserTabParamBrowserTest
       public testing::WithParamInterface<bool> {
  public:
   WebAuthFlowInBrowserTabParamBrowserTest() {
-    scoped_feature_list_.InitWithFeatureState(kWebAuthFlowInBrowserTab,
-                                              use_tab_feature_enabled());
+    scoped_feature_list_.InitWithFeatureState(
+        features::kWebAuthFlowInBrowserTab, use_tab_feature_enabled());
   }
 
   bool use_tab_feature_enabled() { return GetParam(); }
@@ -146,7 +167,7 @@ class WebAuthFlowGuestPartitionParamTest
     // Explicitly disable the `kWebAuthFlowInBrowserTab` feature as it is
     // incompatible with the Guest Partition tests and
     // `kPersistentStorageForWebAuthFlow`.
-    disabled_features.push_back(kWebAuthFlowInBrowserTab);
+    disabled_features.push_back(features::kWebAuthFlowInBrowserTab);
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
@@ -318,7 +339,8 @@ INSTANTIATE_TEST_SUITE_P(,
 class WebAuthFlowWithBrowserTabBrowserTest : public WebAuthFlowBrowserTest {
  public:
   WebAuthFlowWithBrowserTabBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(kWebAuthFlowInBrowserTab);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebAuthFlowInBrowserTab);
   }
 
  private:
@@ -351,6 +373,16 @@ IN_PROC_BROWSER_TEST_F(WebAuthFlowWithBrowserTabBrowserTest,
   EXPECT_EQ(tabs->count(), initial_tab_count + 1);
   EXPECT_EQ(tabs->GetActiveWebContents()->GetLastCommittedURL(), auth_url);
 
+  // Check info bar exists and displays proper message with extension name.
+  base::WeakPtr<WebAuthFlowInfoBarDelegate> infobar_delegate =
+      web_auth_flow()->GetInfoBarDelegateForTesting();
+  EXPECT_TRUE(infobar_delegate);
+  EXPECT_EQ(
+      infobar_delegate->GetIdentifier(),
+      infobars::InfoBarDelegate::EXTENSIONS_WEB_AUTH_FLOW_INFOBAR_DELEGATE);
+  EXPECT_TRUE(infobar_delegate->GetMessageText().find(
+      base::UTF8ToUTF16(std::string(kExtensionName))));
+
   //---------------------------------------------------------------------
   // Part of the test that closes the tab, simulating declining the consent.
   //---------------------------------------------------------------------
@@ -380,6 +412,10 @@ IN_PROC_BROWSER_TEST_F(
   //---------------------------------------------------------------------
   testing::Mock::VerifyAndClearExpectations(&mock());
 
+  // Keeping a reference to the info bar delegate to check later.
+  base::WeakPtr<WebAuthFlowInfoBarDelegate> auth_info_bar =
+      web_auth_flow()->GetInfoBarDelegateForTesting();
+
   GURL new_url = embedded_test_server()->GetURL("a.com", "/new.html");
   EXPECT_CALL(mock(),
               OnAuthFlowFailure(WebAuthFlow::Failure::USER_NAVIGATED_AWAY));
@@ -390,11 +426,13 @@ IN_PROC_BROWSER_TEST_F(
   web_contents()->GetController().LoadURLWithParams(load_params);
   web_contents_observer.Wait();
 
-  // New tab is not execpted to be closed, it is now used for navigation and not
+  // New tab is not expected to be closed, it is now used for navigation and not
   // part of the flow anymore.
   EXPECT_EQ(web_contents(), nullptr);
   EXPECT_EQ(tabs->count(), initial_tab_count + 1);
   EXPECT_EQ(tabs->GetActiveWebContents()->GetLastCommittedURL(), new_url);
+  // Infobar should be closed on navigation.
+  EXPECT_FALSE(auth_info_bar);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthFlowWithBrowserTabBrowserTest,

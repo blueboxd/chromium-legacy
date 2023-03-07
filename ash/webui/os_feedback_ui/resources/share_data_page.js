@@ -47,7 +47,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
         type: FeedbackContext,
         readOnly: false,
         notify: true,
-        observer: 'onFeedbackContextChanged_',
+        observer: ShareDataPageElement.prototype.onFeedbackContextChanged_,
       },
 
       screenshotUrl: {type: String, readOnly: false, notify: true},
@@ -142,6 +142,20 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
    */
   hasEmail_() {
     return (this.feedbackContext !== null && !!this.feedbackContext.email);
+  }
+
+  /**
+   * If feedback app has been requested from settings search, we do not need to
+   * collect system info and metrics data by default.
+   *
+   * @return {boolean}
+   * @protected
+   */
+  checkSysInfoAndMetrics_() {
+    if (!this.feedbackContext) {
+      return true;
+    }
+    return !this.feedbackContext.fromSettingsSearch;
   }
 
   /**

@@ -23,9 +23,10 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -277,8 +278,9 @@ std::unique_ptr<views::View> CreateClipboardShortcutView() {
       views::BoxLayout::Orientation::kHorizontal));
 
   const std::u16string shortcut_key = l10n_util::GetStringUTF16(
-      ui::DeviceUsesKeyboardLayout2() ? IDS_ASH_SHORTCUT_MODIFIER_LAUNCHER
-                                      : IDS_ASH_SHORTCUT_MODIFIER_SEARCH);
+      Shell::Get()->keyboard_capability()->HasLauncherButton()
+          ? IDS_ASH_SHORTCUT_MODIFIER_LAUNCHER
+          : IDS_ASH_SHORTCUT_MODIFIER_SEARCH);
 
   const std::u16string label_text = l10n_util::GetStringFUTF16(
       IDS_ASH_MULTIPASTE_SCREENSHOT_NOTIFICATION_NUDGE, shortcut_key);
@@ -522,6 +524,13 @@ bool IsEventTargetedOnWidget(const ui::LocatedEvent& event,
                              views::Widget* widget) {
   auto* target = static_cast<aura::Window*>(event.target());
   return widget && widget->GetNativeWindow()->Contains(target);
+}
+
+gfx::Rect CalculateHighlightLayerBounds(const gfx::PointF& center_point,
+                                        int highlight_layer_radius) {
+  return gfx::Rect(center_point.x() - highlight_layer_radius,
+                   center_point.y() - highlight_layer_radius,
+                   highlight_layer_radius * 2, highlight_layer_radius * 2);
 }
 
 }  // namespace ash::capture_mode_util

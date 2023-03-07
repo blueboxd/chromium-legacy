@@ -56,12 +56,12 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/callback_list.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -219,7 +219,9 @@ aura::Window* GetTopVisibleWindow() {
     // Floated windows can be tucked offscreen in tablet mode. Their target
     // visibility is true but the app list is fully visible under them.
     if (chromeos::wm::features::IsFloatWindowEnabled() &&
-        WindowState::Get(window)->IsFloated()) {
+        WindowState::Get(window)->IsFloated() &&
+        Shell::Get()->float_controller()->IsFloatedWindowTuckedForTablet(
+            window)) {
       continue;
     }
 
@@ -849,15 +851,6 @@ void AppListControllerImpl::OnTabletModeEnded() {
   DismissAppList();
 }
 
-void AppListControllerImpl::OnWallpaperColorsChanged() {
-  // Clamshell doesn't use wallpaper prominent color.
-  if (IsVisible(last_visible_display_id_) && IsTabletMode()) {
-    AppListView* app_list_view = fullscreen_presenter_->GetView();
-    DCHECK(app_list_view);
-    app_list_view->OnWallpaperColorsChanged();
-  }
-}
-
 void AppListControllerImpl::OnWallpaperPreviewStarted() {
   in_wallpaper_preview_ = true;
   UpdateHomeScreenVisibility();
@@ -1193,10 +1186,6 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
       break;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultOpenDisplayType",
-                            result->display_type(),
-                            SearchResultDisplayType::kLast);
-
   // Suggestion chips are not represented to the user as search results, so do
   // not record search result metrics for them.
   if (launched_from != AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
@@ -1217,13 +1206,6 @@ void AppListControllerImpl::InvokeSearchResultAction(
     SearchResultActionType action) {
   if (client_)
     client_->InvokeSearchResultAction(result_id, action);
-}
-
-void AppListControllerImpl::GetSearchResultContextMenuModel(
-    const std::string& result_id,
-    GetContextMenuModelCallback callback) {
-  if (client_)
-    client_->GetSearchResultContextMenuModel(result_id, std::move(callback));
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
@@ -1486,10 +1468,6 @@ int AppListControllerImpl::GetShelfSize() {
 
 bool AppListControllerImpl::IsInTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
-AppListColorProviderImpl* AppListControllerImpl::GetColorProvider() {
-  return &color_provider_;
 }
 
 void AppListControllerImpl::RecordAppLaunched(

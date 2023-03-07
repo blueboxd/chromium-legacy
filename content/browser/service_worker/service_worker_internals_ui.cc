@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -29,13 +29,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/console_message.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -405,9 +405,9 @@ void ServiceWorkerInternalsHandler::RegisterMessages() {
 void ServiceWorkerInternalsHandler::OnJavascriptDisallowed() {
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
-  // Safe to use base::Unretained(this) because ForEachStoragePartition is
+  // Safe to use base::Unretained(this) because ForEachLoadedStoragePartition is
   // synchronous.
-  browser_context->ForEachStoragePartition(base::BindRepeating(
+  browser_context->ForEachLoadedStoragePartition(base::BindRepeating(
       &ServiceWorkerInternalsHandler::RemoveObserverFromStoragePartition,
       base::Unretained(this)));
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -506,8 +506,8 @@ void ServiceWorkerInternalsHandler::HandleGetAllRegistrations(
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
   // Safe to use base::Unretained(this) because
-  // ForEachStoragePartition is synchronous.
-  browser_context->ForEachStoragePartition(base::BindRepeating(
+  // ForEachLoadedStoragePartition is synchronous.
+  browser_context->ForEachLoadedStoragePartition(base::BindRepeating(
       &ServiceWorkerInternalsHandler::AddContextFromStoragePartition,
       base::Unretained(this)));
 }
@@ -567,7 +567,7 @@ bool ServiceWorkerInternalsHandler::GetServiceWorkerContext(
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
   StoragePartition* result_partition(nullptr);
-  browser_context->ForEachStoragePartition(base::BindRepeating(
+  browser_context->ForEachLoadedStoragePartition(base::BindRepeating(
       &ServiceWorkerInternalsHandler::FindStoragePartitionById,
       base::Unretained(this), partition_id, &result_partition));
   if (!result_partition)
@@ -726,8 +726,6 @@ void ServiceWorkerInternalsHandler::UnregisterWithScope(
 
   // ServiceWorkerContextWrapper::UnregisterServiceWorker doesn't work here
   // because that reduces a status code to boolean.
-  // TODO(crbug.com/1199077): Update this when ServiceWorkerInternalsHandler
-  // implements StorageKey.
   context->context()->UnregisterServiceWorker(scope, storage_key,
                                               /*is_immediate=*/false,
                                               std::move(callback));

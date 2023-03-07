@@ -20,6 +20,7 @@ namespace web_app {
 class AppLock;
 class AppLockDescription;
 class LockDescription;
+enum class ApiApprovalState;
 
 // Updates the approved or disallowed protocol list for the given app. If
 // necessary, it also updates the protocol registration with the OS.
@@ -28,14 +29,14 @@ class UpdateProtocolHandlerApprovalCommand
  public:
   UpdateProtocolHandlerApprovalCommand(const AppId& app_id,
                                        const std::string& protocol_scheme,
-                                       bool allowed,
+                                       ApiApprovalState approval_state,
                                        base::OnceClosure callback);
 
   ~UpdateProtocolHandlerApprovalCommand() override;
 
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
 
-  LockDescription& lock_description() const override;
+  const LockDescription& lock_description() const override;
 
   base::Value ToDebugValue() const override;
 
@@ -54,7 +55,7 @@ class UpdateProtocolHandlerApprovalCommand
 
   const AppId app_id_;
   std::string protocol_scheme_;
-  bool allowed_;
+  const ApiApprovalState approval_state_;
   base::OnceClosure callback_;
 
   base::Value::Dict debug_info_;

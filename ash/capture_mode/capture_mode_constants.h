@@ -91,10 +91,28 @@ constexpr gfx::Size kSettingsIconSize{20, 20};
 // Border value used for each section of the settings menu.
 constexpr auto kSettingsMenuBorderSize = gfx::Insets::VH(8, 16);
 
+// The distance between the bottom of the key combo viewer and the bottom of the
+// confined bounds.
+constexpr int kKeyWidgetDistanceFromBottom = 24;
+
+// Border value applied between the right edge of the key combo viewer when it's
+// approaching the right edge of the recording area.
+constexpr int kKeyWidgetBorderPadding = 16;
+
 // The duration to continue showing the key combo view on key up of the
-// non-modifier key.
-constexpr base::TimeDelta kDelayToHideKeyComboDuration =
+// non-modifier key with no modifier keys pressed or on key up of the last
+// modifier key up with no non-modifier key that can be displayed independently
+// pressed.
+constexpr base::TimeDelta kRefreshKeyComboWidgetLongDelay =
     base::Milliseconds(1500);
+
+// The duration to hold on the update of the key combo view on key up.
+constexpr base::TimeDelta kRefreshKeyComboWidgetShortDelay =
+    base::Milliseconds(100);
+
+// The radius of the highlight layer generated on mouse or touch event when the
+// demo tools feature is enabled.
+constexpr int kHighlightLayerRadius = 36;
 
 }  // namespace ash::capture_mode
 

@@ -4,7 +4,7 @@
 
 #include "components/password_manager/core/browser/password_store_backend_migration_decorator.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/built_in_backend_to_android_backend_migrator.h"
 #include "components/password_manager/core/browser/field_info_table.h"
@@ -138,14 +138,7 @@ void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
     return;
   }
 
-  // TODO(crbug.com/1156584): The condition below could be simplified, as long
-  // as the handling of transient auth errors is unimportant, once the feature
-  // toggle syncer::kSyncPauseUponAnyPersistentAuthError is cleaned up.
-  // Alternatively IsPasswordSyncActive() could be removed entirely in favor of
-  // password_manager_util::GetPasswordSyncState().
-  if (sync_util::IsPasswordSyncActive(sync) &&
-      (sync->GetAuthError() ==
-       GoogleServiceAuthError(GoogleServiceAuthError::NONE))) {
+  if (sync_util::IsPasswordSyncActive(sync)) {
     int reenrollment_attempts = prefs_->GetInteger(
         prefs::kTimesAttemptedToReenrollToGoogleMobileServices);
     prefs_->SetInteger(prefs::kTimesAttemptedToReenrollToGoogleMobileServices,

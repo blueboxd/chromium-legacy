@@ -4,8 +4,8 @@
 
 #include "extensions/browser/api/declarative/declarative_rule.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/test/values_test_util.h"
@@ -30,7 +30,7 @@ base::Value::Dict SimpleManifest() {
       .Set("name", "extension")
       .Set("manifest_version", 2)
       .Set("version", "1.0")
-      .BuildDict();
+      .Build();
 }
 
 }  // namespace
@@ -217,11 +217,9 @@ class SummingAction : public base::RefCounted<SummingAction> {
   static scoped_refptr<const SummingAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      const base::Value& action,
+      const base::Value::Dict& dict,
       std::string* error,
       bool* bad_message) {
-    EXPECT_TRUE(action.is_dict());
-    const base::Value::Dict& dict = action.GetDict();
     if (const base::Value* value = dict.Find("error")) {
       EXPECT_TRUE(value->is_string());
       *error = value->GetString();

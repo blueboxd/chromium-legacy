@@ -59,7 +59,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 
 std::string GetId(const std::string& network_type,
                   const std::string& network_id) {
-  std::string result = chrome::kChromeUIIntenetConfigDialogURL + network_type;
+  std::string result = chrome::kChromeUIInternetConfigDialogURL + network_type;
   if (!network_id.empty()) {
     result += ".";
     result += network_id;
@@ -111,7 +111,7 @@ void InternetConfigDialog::ShowDialogForNetworkType(
 InternetConfigDialog::InternetConfigDialog(const std::string& dialog_id,
                                            const std::string& network_type,
                                            const std::string& network_id)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetConfigDialogURL),
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIInternetConfigDialogURL),
                               std::u16string() /* title */),
       dialog_id_(dialog_id),
       network_type_(network_type),
@@ -163,22 +163,19 @@ std::string InternetConfigDialog::GetDialogArgs() const {
 
 InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUIInternetConfigDialogHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUIInternetConfigDialogHost);
 
   source->DisableTrustedTypesCSP();
 
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);
-  source->UseStringsJs();
 
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kInternetConfigDialogResources,
                       kInternetConfigDialogResourcesSize),
       IDR_INTERNET_CONFIG_DIALOG_INTERNET_CONFIG_DIALOG_CONTAINER_HTML);
-
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 InternetConfigDialogUI::~InternetConfigDialogUI() {}

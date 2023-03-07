@@ -19,6 +19,9 @@ BASE_DECLARE_FEATURE(kSegmentationStructuredMetricsFeature);
 // Feature flag for enabling UKM based engine.
 BASE_DECLARE_FEATURE(kSegmentationPlatformUkmEngine);
 
+// Feature flag for enabling adaptive toolbar v2 multi-output model.
+BASE_DECLARE_FEATURE(kSegmentationPlatformAdaptiveToolbarV2Feature);
+
 // Feature flag for enabling low engagement segmentation key.
 BASE_DECLARE_FEATURE(kSegmentationPlatformLowEngagementFeature);
 
@@ -46,6 +49,9 @@ BASE_DECLARE_FEATURE(kContextualPageActionPriceTracking);
 
 // Feature flag for enabling reader mode action feature.
 BASE_DECLARE_FEATURE(kContextualPageActionReaderMode);
+
+// Feature flag for enabling reader mode action feature.
+BASE_DECLARE_FEATURE(kContextualPageActionShareModel);
 
 // Feature flag for enabling shopping user segment feature.
 BASE_DECLARE_FEATURE(kShoppingUserSegmentFeature);

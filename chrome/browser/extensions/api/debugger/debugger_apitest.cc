@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -154,9 +155,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
     EXPECT_TRUE(target_value.is_dict());
     absl::optional<int> id = target_value.FindIntKey("tabId");
     if (id == tab_id) {
-      const base::DictionaryValue& target_dict =
-          base::Value::AsDictionaryValue(target_value);
-      const std::string* id_str = target_dict.GetDict().FindString("id");
+      const std::string* id_str = target_value.GetDict().FindString("id");
       EXPECT_TRUE(id_str);
       debugger_target_id = *id_str;
       break;
@@ -762,8 +761,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {
   content::TestNavigationManager navigation_manager_iframe(tab, iframe_url);
   tab->GetController().LoadURL(url, content::Referrer(),
                                ui::PAGE_TRANSITION_LINK, std::string());
-  navigation_manager.WaitForNavigationFinished();
-  navigation_manager_iframe.WaitForNavigationFinished();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
+  ASSERT_TRUE(navigation_manager_iframe.WaitForNavigationFinished());
   EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ASSERT_TRUE(RunExtensionTest("debugger",

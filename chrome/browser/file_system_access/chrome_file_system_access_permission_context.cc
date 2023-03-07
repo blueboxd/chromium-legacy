@@ -62,16 +62,14 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "base/win/shlwapi.h"
+#endif
+
 namespace features {
 BASE_FEATURE(kFileSystemAccessPersistentPermissions,
              "kFileSystemAccessPersistentPermissions",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_WIN)
-BASE_FEATURE(kFileSystemAccessLocalUNCPathBlock,
-             "kFileSystemAccessLocalUNCPathBlock",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 }  // namespace features
 
 namespace {
@@ -173,51 +171,6 @@ void ShowFileSystemAccessDangerousFileDialogOnUIThread(
                                           web_contents);
 }
 
-#if BUILDFLAG(IS_WIN)
-bool ContainsInvalidDNSCharacter(base::FilePath::StringType hostname) {
-  for (base::FilePath::CharType c : hostname) {
-    if (!((c >= L'A' && c <= L'Z') || (c >= L'a' && c <= L'z') ||
-          (c >= L'0' && c <= L'9') || (c == L'.') || (c == L'-'))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool MaybeIsLocalUNCPath(const base::FilePath& path) {
-  if (!path.IsNetwork()) {
-    return false;
-  }
-
-  const std::vector<base::FilePath::StringType> components =
-      path.GetComponents();
-
-  // Check for server name that could represent a local system. We only
-  // check for a very short list, as it is impossible to cover all different
-  // variants on Windows.
-  if (components.size() >= 2 &&
-      (base::FilePath::CompareEqualIgnoreCase(components[1],
-                                              FILE_PATH_LITERAL("localhost")) ||
-       components[1] == FILE_PATH_LITERAL("127.0.0.1") ||
-       components[1] == FILE_PATH_LITERAL(".") ||
-       components[1] == FILE_PATH_LITERAL("?") ||
-       ContainsInvalidDNSCharacter(components[1]))) {
-    return true;
-  }
-
-  // In case we missed the server name check above, we also check for shares
-  // ending with '$' as they represent pre-defined shares, including the local
-  // drives.
-  for (size_t i = 2; i < components.size(); ++i) {
-    if (components[i].back() == L'$') {
-      return true;
-    }
-  }
-
-  return false;
-}
-#endif
-
 // Sentinel used to indicate that no PathService key is specified for a path in
 // the struct below.
 constexpr const int kNoBasePathKey = -1;
@@ -295,11 +248,18 @@ const struct {
     // Similar Mac specific blocks.
     {base::DIR_APP_DATA, nullptr, kBlockAllChildren},
     {base::DIR_HOME, FILE_PATH_LITERAL("Library"), kBlockAllChildren},
-    // Allow access to iCloud files.
-    {base::DIR_HOME, FILE_PATH_LITERAL("Library/Mobile Documents"),
-     kDontBlockChildren},
     // Allow access to other cloud files, such as Google Drive.
     {base::DIR_HOME, FILE_PATH_LITERAL("Library/CloudStorage"),
+     kDontBlockChildren},
+    // Allow the site to interact with data from its corresponding natively
+    // installed (sandboxed) application. It would be nice to limit a site to
+    // access only _its_ corresponding natively installed application,
+    // but unfortunately there's no straightforward way to do that. See
+    // https://crbug.com/984641#c22.
+    {base::DIR_HOME, FILE_PATH_LITERAL("Library/Containers"),
+     kDontBlockChildren},
+    // Allow access to iCloud files.
+    {base::DIR_HOME, FILE_PATH_LITERAL("Library/Mobile Documents"),
      kDontBlockChildren},
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -328,13 +288,9 @@ bool ShouldBlockAccessToPath(const base::FilePath& check_path,
   DCHECK(check_path.IsAbsolute());
 
 #if BUILDFLAG(IS_WIN)
-  // On Windows, local UNC paths are rejected, as UNC path can be written in a
-  // way that can bypass the blocklist.
-  if (base::FeatureList::IsEnabled(
-          features::kFileSystemAccessLocalUNCPathBlock) &&
-      MaybeIsLocalUNCPath(check_path)) {
+  // On Windows, UNC paths are rejected to avoid bypassing the block list.
+  if (PathIsUNC(check_path.value().c_str()))
     return true;
-  }
 #endif
 
   base::FilePath nearest_ancestor;
@@ -1155,7 +1111,7 @@ ChromeFileSystemAccessPermissionContext::GetGrantedObjects(
            &has_extended_permissions](const std::unique_ptr<Object>& object) {
             auto last_activity_time =
                 base::ValueToTime(
-                    object->value.FindKey(kPermissionLastUsedTimeKey))
+                    object->value.GetDict().Find(kPermissionLastUsedTimeKey))
                     .value_or(base::Time::Min());
             return this->PersistentPermissionIsExpired(
                 last_activity_time, has_extended_permissions);
@@ -1192,8 +1148,8 @@ ChromeFileSystemAccessPermissionContext::GetAllGrantedObjects() {
                             OriginHasExtendedPermissions(origin);
                       }
                       auto last_activity_time =
-                          base::ValueToTime(
-                              object->value.FindKey(kPermissionLastUsedTimeKey))
+                          base::ValueToTime(object->value.GetDict().Find(
+                                                kPermissionLastUsedTimeKey))
                               .value_or(base::Time::Min());
                       return this->PersistentPermissionIsExpired(
                           last_activity_time, has_extended_permissions);
@@ -1207,7 +1163,7 @@ std::string ChromeFileSystemAccessPermissionContext::GetKeyForObject(
     const base::Value& object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto optional_path =
-      base::ValueToFilePath(object.FindKey(kPermissionPathKey));
+      base::ValueToFilePath(object.GetDict().Find(kPermissionPathKey));
   DCHECK(optional_path);
   return std::string(PathAsPermissionKey(optional_path.value()));
 }
@@ -1215,15 +1171,28 @@ std::string ChromeFileSystemAccessPermissionContext::GetKeyForObject(
 bool ChromeFileSystemAccessPermissionContext::IsValidObject(
     const base::Value& object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // At least one of the readable/writable keys needs to be set.
-  if (!object.is_dict() || (object.DictSize() != 4 && object.DictSize() != 5) ||
-      !object.FindKey(kPermissionPathKey) ||
-      !object.FindBoolKey(kPermissionIsDirectoryKey) ||
-      (!object.FindBoolKey(kPermissionWritableKey) &&
-       !object.FindBoolKey(kPermissionReadableKey)) ||
-      !object.FindKey(kPermissionLastUsedTimeKey)) {
+
+  if (!object.is_dict()) {
     return false;
   }
+
+  const base::Value::Dict& dict = object.GetDict();
+  if (dict.size() != 4 && dict.size() != 5) {
+    return false;
+  }
+
+  // At least one of the readable/writable keys needs to be set.
+  if (!dict.FindBool(kPermissionWritableKey) &&
+      !dict.FindBool(kPermissionReadableKey)) {
+    return false;
+  }
+
+  if (!dict.contains(kPermissionPathKey) ||
+      !dict.FindBool(kPermissionIsDirectoryKey) ||
+      !dict.contains(kPermissionLastUsedTimeKey)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -1231,7 +1200,7 @@ std::u16string ChromeFileSystemAccessPermissionContext::GetObjectDisplayName(
     const base::Value& object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto optional_path =
-      base::ValueToFilePath(object.FindKey(kPermissionPathKey));
+      base::ValueToFilePath(object.GetDict().Find(kPermissionPathKey));
   DCHECK(optional_path);
   return optional_path->LossyDisplayName();
 }
@@ -1385,7 +1354,7 @@ void ChromeFileSystemAccessPermissionContext::MaybeEvictEntries(
 
   std::vector<std::pair<base::Time, std::string>> entries;
   entries.reserve(value.DictSize());
-  for (auto entry : value.DictItems()) {
+  for (auto entry : value.GetDict()) {
     // Don't evict the default ID.
     if (entry.first == kDefaultLastPickedDirectoryKey)
       continue;
@@ -1393,7 +1362,7 @@ void ChromeFileSystemAccessPermissionContext::MaybeEvictEntries(
     // dict, it should be first in line for eviction.
     auto timestamp = base::Time::Min();
     if (entry.second.is_dict()) {
-      timestamp = base::ValueToTime(entry.second.FindKey(kTimestampKey))
+      timestamp = base::ValueToTime(entry.second.GetDict().Find(kTimestampKey))
                       .value_or(base::Time::Min());
     }
     entries.emplace_back(timestamp, entry.first);
@@ -1461,7 +1430,7 @@ ChromeFileSystemAccessPermissionContext::GetLastPickedDirectory(
   path_info.type = type_int == static_cast<int>(PathType::kExternal)
                        ? PathType::kExternal
                        : PathType::kLocal;
-  path_info.path = base::ValueToFilePath(entry->FindKey(kPathKey))
+  path_info.path = base::ValueToFilePath(entry->GetDict().Find(kPathKey))
                        .value_or(base::FilePath());
   return path_info;
 }
@@ -1576,7 +1545,7 @@ ChromeFileSystemAccessPermissionContext::GetPermissionGrants(
     for (auto& persisted_grant_object : persisted_grant_objects) {
       const base::FilePath persisted_path =
           base::ValueToFilePath(
-              persisted_grant_object->value.FindKey(kPermissionPathKey))
+              persisted_grant_object->value.GetDict().Find(kPermissionPathKey))
               .value();
       HandleType handle_type =
           persisted_grant_object->value.FindBoolKey(kPermissionIsDirectoryKey)
@@ -1887,7 +1856,7 @@ void ChromeFileSystemAccessPermissionContext::
   bool found = false;
   if (it != origins_.end()) {
     base::FilePath path =
-        base::ValueToFilePath(value.FindKey(kPermissionPathKey)).value();
+        base::ValueToFilePath(value.GetDict().Find(kPermissionPathKey)).value();
     HandleType handle_type =
         value.FindBoolKey(kPermissionIsDirectoryKey).value()
             ? HandleType::kDirectory
@@ -1916,7 +1885,7 @@ void ChromeFileSystemAccessPermissionContext::
     GrantObjectPermission(origin, std::move(value));
   } else {
     auto last_activity_time =
-        base::ValueToTime(value.FindKey(kPermissionLastUsedTimeKey))
+        base::ValueToTime(value.GetDict().Find(kPermissionLastUsedTimeKey))
             .value_or(base::Time::Min());
     // Allow a grace period before revoking permissions to allow for better
     // metrics regarding permission timeouts.
@@ -1996,7 +1965,8 @@ bool ChromeFileSystemAccessPermissionContext::HasPersistedPermission(
 
   auto has_extended_permissions = OriginHasExtendedPermissions(origin);
   auto last_activity_time =
-      base::ValueToTime(grant->FindKey(kPermissionLastUsedTimeKey)).value();
+      base::ValueToTime(grant->GetDict().Find(kPermissionLastUsedTimeKey))
+          .value();
 
   if (options == MetricsOptions::kRecord) {
     base::UmaHistogramCustomTimes(

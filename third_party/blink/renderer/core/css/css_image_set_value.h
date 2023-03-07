@@ -37,7 +37,7 @@ namespace blink {
 class Document;
 class StyleImage;
 
-class CSSImageSetValue : public CSSValueList {
+class CORE_EXPORT CSSImageSetValue : public CSSValueList {
  public:
   explicit CSSImageSetValue();
   ~CSSImageSetValue();
@@ -57,8 +57,6 @@ class CSSImageSetValue : public CSSValueList {
   bool HasFailedOrCanceledSubresources() const;
 
   void TraceAfterDispatch(blink::Visitor*) const;
-
-  void MarkWebkitPrefixed() { is_webkit_prefixed_ = true; }
 
  protected:
   struct ImageWithScale {
@@ -80,8 +78,6 @@ class CSSImageSetValue : public CSSValueList {
   float cached_scale_factor_;
 
   Vector<ImageWithScale> images_in_set_;
-
-  bool is_webkit_prefixed_ = false;
 };
 
 template <>

@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -87,6 +87,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       UpdateVSyncParametersCallback callback) override;
   void SetGpuVSyncEnabled(bool enabled) override;
   void SetGpuVSyncCallback(GpuVSyncCallback callback) override;
+  void SetVSyncDisplayID(int64_t display_id) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
   gfx::OverlayTransform GetDisplayTransform() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
@@ -217,6 +218,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
     kWaitForTasksFinished = 2,
   };
   void FlushGpuTasks(SyncMode sync_mode);
+  // When flushing the final task to destroy |impl_on_gpu_| we need to pass in a
+  // copy of that pointer for any tasks that were already enqueued and will run
+  // before the destructor.
+  void FlushGpuTasksWithImpl(SyncMode sync_mode,
+                             SkiaOutputSurfaceImplOnGpu* impl_on_gpu);
   GrBackendFormat GetGrBackendFormatForTexture(
       SharedImageFormat si_format,
       int plane_index,
@@ -248,6 +254,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gfx::BufferFormat format_;
   int sample_count_ = 1;
   SkSurfaceCharacterization characterization_;
+  bool reset_recorder_on_swap_ = false;
   absl::optional<SkDeferredDisplayListRecorder> root_recorder_;
 
   class ScopedPaint {

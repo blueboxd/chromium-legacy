@@ -30,7 +30,6 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/test/fake_sync_change_processor.h"
-#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_utils.h"
@@ -111,7 +110,6 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     // finish cleanly).
     // So ensure we let pending extension installations finish.
     WaitForPendingStandaloneExtensionsInstalled();
-    ash::KioskAppManager::Shutdown();
     ExtensionServiceTestBase::TearDown();
   }
 
@@ -147,7 +145,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
  private:
   std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   ash::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
 };
@@ -277,8 +275,7 @@ TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
       ->GetSyncableService(syncer::OS_PRIORITY_PREFERENCES)
       ->MergeDataAndStartSyncing(
           syncer::OS_PRIORITY_PREFERENCES, syncer::SyncDataList(),
-          std::make_unique<syncer::FakeSyncChangeProcessor>(),
-          std::make_unique<syncer::SyncErrorFactoryMock>());
+          std::make_unique<syncer::FakeSyncChangeProcessor>());
 
   // App sync will wait for priority sync to complete.
   service_->CheckForExternalUpdates();

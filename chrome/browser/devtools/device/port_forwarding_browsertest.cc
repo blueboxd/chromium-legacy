@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -100,10 +100,9 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(prefs::kDevToolsPortForwardingEnabled, true);
 
-  base::DictionaryValue config;
-  config.SetStringKey(forwarding_port,
-                      original_url.host() + ":" + original_url.port());
-  prefs->Set(prefs::kDevToolsPortForwardingConfig, config);
+  base::Value::Dict config;
+  config.Set(forwarding_port, original_url.host() + ":" + original_url.port());
+  prefs->SetDict(prefs::kDevToolsPortForwardingConfig, std::move(config));
 
   Listener wait_for_port_forwarding(profile);
   content::RunMessageLoop();
@@ -162,10 +161,9 @@ IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
   PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(prefs::kDevToolsPortForwardingEnabled, true);
 
-  base::DictionaryValue config;
-  config.SetStringKey(forwarding_port,
-                      original_url.host() + ":" + original_url.port());
-  prefs->Set(prefs::kDevToolsPortForwardingConfig, config);
+  base::Value::Dict config;
+  config.Set(forwarding_port, original_url.host() + ":" + original_url.port());
+  prefs->SetDict(prefs::kDevToolsPortForwardingConfig, std::move(config));
 
   std::unique_ptr<Listener> wait_for_port_forwarding(new Listener(profile));
   content::RunMessageLoop();

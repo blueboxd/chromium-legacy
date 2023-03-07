@@ -40,11 +40,11 @@ scoped_refptr<const Extension> CreateExtensionImportingModules(
   if (!import_ids.empty()) {
     ListBuilder import_list;
     for (const std::string& import_id : import_ids)
-      import_list.Append(DictionaryBuilder().Set("id", import_id).BuildDict());
-    builder.Set("import", import_list.BuildList());
+      import_list.Append(DictionaryBuilder().Set("id", import_id).Build());
+    builder.Set("import", import_list.Build());
   }
   return ExtensionBuilder()
-      .SetManifest(builder.BuildDict())
+      .SetManifest(builder.Build())
       .AddFlags(Extension::FROM_WEBSTORE)
       .SetID(id)
       .Build();
@@ -59,9 +59,9 @@ scoped_refptr<const Extension> CreateSharedModule(
           .Set("manifest_version", 2)
           .Set("export",
                DictionaryBuilder()
-                   .Set("resources", ListBuilder().Append("foo.js").BuildList())
-                   .BuildDict())
-          .BuildDict();
+                   .Set("resources", ListBuilder().Append("foo.js").Build())
+                   .Build())
+          .Build();
 
   return ExtensionBuilder()
       .SetManifest(std::move(manifest))
@@ -185,9 +185,9 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .Set("manifest_version", 2)
           .Set("export",
                DictionaryBuilder()
-                   .Set("resources", ListBuilder().Append("foo.js").BuildList())
-                   .BuildDict())
-          .BuildDict();
+                   .Set("resources", ListBuilder().Append("foo.js").Build())
+                   .Build())
+          .Build();
   scoped_refptr<const Extension> shared_module_2 =
       CreateSharedModule("shared_module_2");
   EXPECT_TRUE(InstallExtension(shared_module_2.get(), false));
@@ -245,10 +245,10 @@ TEST_F(SharedModuleServiceUnitTest, AllowlistedImports) {
           .Set("export",
                DictionaryBuilder()
                    .Set("allowlist",
-                        ListBuilder().Append(allowlisted_id).BuildList())
-                   .Set("resources", ListBuilder().Append("*").BuildList())
-                   .BuildDict())
-          .BuildDict();
+                        ListBuilder().Append(allowlisted_id).Build())
+                   .Set("resources", ListBuilder().Append("*").Build())
+                   .Build())
+          .Build();
   scoped_refptr<const Extension> shared_module =
       ExtensionBuilder()
           .SetManifest(std::move(manifest))

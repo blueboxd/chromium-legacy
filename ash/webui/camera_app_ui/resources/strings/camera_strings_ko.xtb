@@ -35,7 +35,7 @@
 <translation id="1995951722691075581">기기 저장공간이 부족하여 녹화가 중단되었습니다. 동영상을 더 녹화하려면 기기에서 여유 공간을 확보해야 합니다.</translation>
 <translation id="2022953316617983419">QR 코드</translation>
 <translation id="2036868001356139588">타이머 시간</translation>
-<translation id="2050339315714019657">세로 방향</translation>
+<translation id="2050339315714019657">인물</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> 사용 중</translation>
 <translation id="2134029355740465625">동영상 설정</translation>
 <translation id="2144806332417375165">맞춤 동영상 매개변수</translation>
@@ -100,6 +100,7 @@
 <translation id="4649291346448517080">파일을 저장할 수 없습니다.</translation>
 <translation id="4695379108709712600">상단으로 이동</translation>
 <translation id="4705093842003735294">최대 해상도</translation>
+<translation id="4864143361253542638">스캔 페이지 목록</translation>
 <translation id="4890010094662541459">3x3</translation>
 <translation id="491895758387112773">멀티스트림 동영상 녹화</translation>
 <translation id="4984613436295737187">QHD(1440p)</translation>

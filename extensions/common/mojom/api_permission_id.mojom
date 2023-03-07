@@ -188,7 +188,7 @@ enum APIPermissionID {
   kWebrtcDesktopCapturePrivate = 161,
   kWebrtcLoggingPrivate = 162,
   kWebstorePrivate = 163,
-  kWebstoreWidgetPrivate = 164,
+  kDeleted_WebstoreWidgetPrivate = 164,
   kWebView = 165,
   kWindowShape = 166,
   kDeleted_ScreenlockPrivate = 167,
@@ -269,6 +269,9 @@ enum APIPermissionID {
   kDownloadsUi = 242,
   kWebRequestAuthProvider = 243,
   kChromeOSTelemetryNetworkInformation = 244,
+  kPdfViewerPrivate = 245,
+  kSystemLog = 246,
+  kSmartCardProviderPrivate = 247,
 
   // Add new entries at the end of the enum and be sure to update the
   // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml

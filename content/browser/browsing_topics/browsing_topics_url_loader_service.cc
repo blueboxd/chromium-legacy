@@ -4,7 +4,7 @@
 
 #include "content/browser/browsing_topics/browsing_topics_url_loader_service.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "content/browser/browsing_topics/browsing_topics_url_loader.h"
 #include "content/public/browser/content_browser_client.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -61,6 +61,14 @@ void BrowsingTopicsURLLoaderService::CreateLoaderAndStart(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!resource_request.browsing_topics) {
+    loader_factory_receivers_.ReportBadMessage(
+        "Unexpected `resource_request` in "
+        "BrowsingTopicsURLLoaderService::CreateLoaderAndStart(): no "
+        "resource_request.browsing_topics");
+    return;
+  }
 
   const std::unique_ptr<BindContext>& current_context =
       loader_factory_receivers_.current_context();

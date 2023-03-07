@@ -116,6 +116,8 @@ CONSOLE: service-workers/service-worker/navigation-redirect.https.html
 CONSOLE: service-workers/service-worker/resources/clients-get-other-origin.html
 CONSOLE: webrtc/tools/*
 CONSOLE: webaudio/resources/audit.js:41
+CONSOLE: resource-timing/resources/resource-loaders.js
+CONSOLE: resource-timing/resources/entry-invariants.js
 
 # use of console in a public library - annotation-model ensures
 # it is not actually used
@@ -140,6 +142,7 @@ SET TIMEOUT: apng/animated-png-timeout.html
 SET TIMEOUT: avif/animated-avif-timeout.html
 SET TIMEOUT: cookies/resources/testharness-helpers.js
 SET TIMEOUT: common/reftest-wait.js
+SET TIMEOUT: compute-pressure/resources/support-iframe.html
 SET TIMEOUT: conformance-checkers/*
 SET TIMEOUT: content-security-policy/*
 SET TIMEOUT: css/compositing/opacity-and-transform-animation-crash.html
@@ -151,6 +154,10 @@ SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-002.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-003.html
 SET TIMEOUT: css/selectors/selector-read-write-type-change-002.html
 SET TIMEOUT: css/selectors/selector-required-type-change-002.html
+SET TIMEOUT: css/selectors/invalidation/dir-pseudo-class-in-has.html
+SET TIMEOUT: css/selectors/invalidation/lang-pseudo-class-in-has-document-element.html
+SET TIMEOUT: css/selectors/invalidation/lang-pseudo-class-in-has-xhtml.xhtml
+SET TIMEOUT: css/selectors/invalidation/lang-pseudo-class-in-has.html
 SET TIMEOUT: encrypted-media/polyfill/chrome-polyfill.js
 SET TIMEOUT: encrypted-media/polyfill/clearkey-polyfill.js
 SET TIMEOUT: encrypted-media/scripts/playback-temporary-events.js

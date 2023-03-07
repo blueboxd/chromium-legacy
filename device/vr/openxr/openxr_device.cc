@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "device/base/features.h"
@@ -63,10 +63,9 @@ OpenXrDevice::OpenXrDevice(
     device_features.emplace_back(mojom::XRSessionFeature::LAYERS);
 
   // Only support hit test if the feature flag is enabled.
-  if (base::FeatureList::IsEnabled(features::kWebXrHitTest) &&
-      base::FeatureList::IsEnabled(
-                  features::kOpenXrExtendedFeatureSupport))
+  if (base::FeatureList::IsEnabled(features::kOpenXrExtendedFeatureSupport)) {
     device_features.emplace_back(mojom::XRSessionFeature::HIT_TEST);
+  }
 
   if (extension_helper_.ExtensionEnumeration()->ExtensionSupported(
           XR_MSFT_SECONDARY_VIEW_CONFIGURATION_EXTENSION_NAME)) {

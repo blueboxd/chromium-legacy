@@ -88,55 +88,6 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
   return work_area_in_parent;
 }
 
-// Returns the maximized/full screen and/or centered bounds of a window.
-gfx::Rect GetBoundsInTabletMode(WindowState* state_object,
-                                absl::optional<float> snap_ratio) {
-  aura::Window* window = state_object->window();
-
-  if (state_object->IsFullscreen() || state_object->IsPinned())
-    return screen_util::GetFullscreenWindowBoundsInParent(window);
-
-  if (state_object->GetStateType() == WindowStateType::kPrimarySnapped) {
-    return SplitViewController::Get(Shell::GetPrimaryRootWindow())
-        ->GetSnappedWindowBoundsInParent(
-            SplitViewController::SnapPosition::kPrimary, window,
-            snap_ratio ? *snap_ratio : kDefaultSnapRatio);
-  }
-
-  if (state_object->GetStateType() == WindowStateType::kSecondarySnapped) {
-    return SplitViewController::Get(Shell::GetPrimaryRootWindow())
-        ->GetSnappedWindowBoundsInParent(
-            SplitViewController::SnapPosition::kSecondary, window,
-            snap_ratio ? *snap_ratio : kDefaultSnapRatio);
-  }
-
-  if (chromeos::wm::features::IsFloatWindowEnabled() &&
-      state_object->IsFloated()) {
-    return Shell::Get()
-        ->float_controller()
-        ->GetPreferredFloatWindowTabletBounds(window);
-  }
-
-  gfx::Rect bounds_in_parent;
-  // Make the window as big as possible.
-
-  // Do no maximize the transient children, which should be stacked
-  // above the transient parent.
-  if ((state_object->CanMaximize() || state_object->CanResize()) &&
-      ::wm::GetTransientParent(state_object->window()) == nullptr) {
-    bounds_in_parent.set_size(GetMaximumSizeOfWindow(state_object));
-  } else {
-    // We prefer the user given window dimensions over the current windows
-    // dimensions since they are likely to be the result from some other state
-    // object logic.
-    if (state_object->HasRestoreBounds())
-      bounds_in_parent = state_object->GetRestoreBoundsInParent();
-    else
-      bounds_in_parent = state_object->window()->bounds();
-  }
-  return GetCenteredBounds(bounds_in_parent, state_object);
-}
-
 gfx::Rect GetRestoreBounds(WindowState* window_state) {
   if (window_state->IsMinimized() || window_state->IsMaximized() ||
       window_state->IsFullscreen()) {
@@ -256,8 +207,7 @@ TabletModeWindowState::~TabletModeWindowState() {
 void TabletModeWindowState::UpdateWindowPosition(
     WindowState* window_state,
     WindowState::BoundsChangeAnimationType animation_type) {
-  const gfx::Rect bounds_in_parent =
-      GetBoundsInTabletMode(window_state, window_state->snap_ratio());
+  const gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
   if (bounds_in_parent == window_state->window()->GetTargetBounds())
     return;
 
@@ -275,6 +225,53 @@ void TabletModeWindowState::UpdateWindowPosition(
       NOTREACHED();
       break;
   }
+}
+
+// static
+gfx::Rect TabletModeWindowState::GetBoundsInTabletMode(
+    WindowState* state_object) {
+  aura::Window* window = state_object->window();
+
+  if (state_object->IsFullscreen() || state_object->IsPinned())
+    return screen_util::GetFullscreenWindowBoundsInParent(window);
+
+  if (state_object->GetStateType() == WindowStateType::kPrimarySnapped) {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow())
+        ->GetSnappedWindowBoundsInParent(
+            SplitViewController::SnapPosition::kPrimary, window,
+            state_object->snap_ratio().value_or(kDefaultSnapRatio));
+  }
+
+  if (state_object->GetStateType() == WindowStateType::kSecondarySnapped) {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow())
+        ->GetSnappedWindowBoundsInParent(
+            SplitViewController::SnapPosition::kSecondary, window,
+            state_object->snap_ratio().value_or(kDefaultSnapRatio));
+  }
+
+  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+      state_object->IsFloated()) {
+    return FloatController::GetPreferredFloatWindowTabletBounds(window);
+  }
+
+  gfx::Rect bounds_in_parent;
+  // Make the window as big as possible.
+
+  // Do no maximize the transient children, which should be stacked
+  // above the transient parent.
+  if ((state_object->CanMaximize() || state_object->CanResize()) &&
+      ::wm::GetTransientParent(state_object->window()) == nullptr) {
+    bounds_in_parent.set_size(GetMaximumSizeOfWindow(state_object));
+  } else {
+    // We prefer the user given window dimensions over the current windows
+    // dimensions since they are likely to be the result from some other state
+    // object logic.
+    if (state_object->HasRestoreBounds())
+      bounds_in_parent = state_object->GetRestoreBoundsInParent();
+    else
+      bounds_in_parent = state_object->window()->bounds();
+  }
+  return GetCenteredBounds(bounds_in_parent, state_object);
 }
 
 void TabletModeWindowState::LeaveTabletMode(WindowState* window_state,
@@ -313,24 +310,23 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       break;
     case WM_EVENT_FULLSCREEN:
       UpdateWindow(window_state, WindowStateType::kFullscreen,
-                   /*animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                   /*animate=*/true);
       break;
     case WM_EVENT_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned()) {
         UpdateWindow(window_state, WindowStateType::kPinned,
-                     /*animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                     /*animate=*/true);
       }
       break;
     case WM_EVENT_PIP:
       if (!window_state->IsPip()) {
-        UpdateWindow(window_state, WindowStateType::kPip, /*animate=*/true,
-                     /*new_snap_ratio=*/absl::nullopt);
+        UpdateWindow(window_state, WindowStateType::kPip, /*animate=*/true);
       }
       break;
     case WM_EVENT_TRUSTED_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned()) {
         UpdateWindow(window_state, WindowStateType::kTrustedPinned,
-                     /*animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                     /*animate=*/true);
       }
       break;
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
@@ -341,7 +337,7 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
     case WM_EVENT_MAXIMIZE:
       UpdateWindow(window_state,
                    window_state->GetMaximizedOrCenteredWindowType(),
-                   /*animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                   /*animate=*/true);
       return;
     case WM_EVENT_NORMAL: {
       // `WM_EVENT_NORMAL` may be restoring state from minimized.
@@ -350,7 +346,7 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       } else {
         UpdateWindow(window_state,
                      window_state->GetMaximizedOrCenteredWindowType(),
-                     /*animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                     /*animate=*/true);
       }
       return;
     }
@@ -365,13 +361,11 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
         return;
 
       UpdateWindow(window_state, WindowStateType::kFloated,
-                   /*=animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                   /*=animate=*/true);
       break;
     case WM_EVENT_SNAP_PRIMARY:
     case WM_EVENT_SNAP_SECONDARY:
-      // TODO(b/259302867): Remove `window_state->snap_ratio()` since it can be
-      // gotten from `window_state`.
-      DoTabletSnap(window_state, event->type(), window_state->snap_ratio());
+      DoTabletSnap(window_state, event->type());
       return;
     case WM_EVENT_CYCLE_SNAP_PRIMARY:
       CycleTabletSnap(window_state,
@@ -383,7 +377,7 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       return;
     case WM_EVENT_MINIMIZE:
       UpdateWindow(window_state, WindowStateType::kMinimized,
-                   /*=animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                   /*=animate=*/true);
       return;
     case WM_EVENT_SHOW_INACTIVE:
     case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
@@ -439,20 +433,17 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
             IsSnapped(current_state_type_)
                 ? window_state->GetStateType()
                 : window_state->GetMaximizedOrCenteredWindowType();
-        UpdateWindow(window_state, new_state, /*animate=*/true,
-                     /*new_snap_ratio=*/window_state->snap_ratio());
+        UpdateWindow(window_state, new_state, /*animate=*/true);
       }
       break;
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
       if (current_state_type_ != WindowStateType::kMinimized)
-        UpdateBounds(window_state, /*animate=*/true,
-                     /*new_snap_ratio=*/window_state->snap_ratio());
+        UpdateBounds(window_state, /*animate=*/true);
       break;
     case WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       // Don't animate on a screen rotation - just snap to new size.
       if (current_state_type_ != WindowStateType::kMinimized)
-        UpdateBounds(window_state, /*animate=*/false,
-                     /*new_snap_ratio=*/window_state->snap_ratio());
+        UpdateBounds(window_state, /*animate=*/false);
       break;
   }
 }
@@ -482,8 +473,8 @@ void TabletModeWindowState::AttachState(WindowState* window_state,
       current_state_type_ != WindowStateType::kFloated &&
       current_state_type_ != WindowStateType::kPinned &&
       current_state_type_ != WindowStateType::kTrustedPinned) {
-    UpdateWindow(window_state, state_type_on_attach_, animate_bounds_on_attach_,
-                 window_state->snap_ratio());
+    UpdateWindow(window_state, state_type_on_attach_,
+                 animate_bounds_on_attach_);
   }
 }
 
@@ -495,8 +486,7 @@ void TabletModeWindowState::DetachState(WindowState* window_state) {
 
 void TabletModeWindowState::UpdateWindow(WindowState* window_state,
                                          WindowStateType target_state,
-                                         bool animated,
-                                         absl::optional<float> new_snap_ratio) {
+                                         bool animated) {
   aura::Window* window = window_state->window();
 
   DCHECK(target_state == WindowStateType::kMinimized ||
@@ -514,7 +504,7 @@ void TabletModeWindowState::UpdateWindow(WindowState* window_state,
     if (target_state == WindowStateType::kMinimized)
       return;
     // If the state type did not change, update it accordingly.
-    UpdateBounds(window_state, animated, new_snap_ratio);
+    UpdateBounds(window_state, animated);
     return;
   }
 
@@ -537,7 +527,7 @@ void TabletModeWindowState::UpdateWindow(WindowState* window_state,
     if (window_state->IsActive())
       window_state->Deactivate();
   } else {
-    UpdateBounds(window_state, animated, new_snap_ratio);
+    UpdateBounds(window_state, animated);
   }
 
   if ((window->layer()->GetTargetVisibility() ||
@@ -567,8 +557,7 @@ WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
 }
 
 void TabletModeWindowState::UpdateBounds(WindowState* window_state,
-                                         bool animated,
-                                         absl::optional<float> new_snap_ratio) {
+                                         bool animated) {
   // Do not update window's bounds if it's in tab-dragging process. The bounds
   // will be updated later when the drag ends.
   if (window_util::IsDraggingTabs(window_state->window()))
@@ -578,8 +567,7 @@ void TabletModeWindowState::UpdateBounds(WindowState* window_state,
   if (current_state_type_ == WindowStateType::kMinimized)
     return;
 
-  gfx::Rect bounds_in_parent =
-      GetBoundsInTabletMode(window_state, new_snap_ratio);
+  gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
   // If we have a target bounds rectangle, we center it and set it
   // accordingly.
   if (!bounds_in_parent.IsEmpty() &&
@@ -614,7 +602,7 @@ void TabletModeWindowState::CycleTabletSnap(
   // If |window| is already snapped in |snap_position|, then unsnap |window|.
   if (window == split_view_controller->GetSnappedWindow(snap_position)) {
     UpdateWindow(window_state, window_state->GetMaximizedOrCenteredWindowType(),
-                 /*animate=*/true, /*new_snap_ratio=*/absl::nullopt);
+                 /*animate=*/true);
     window_state->ReadOutWindowCycleSnapAction(
         IDS_WM_RESTORE_SNAPPED_WINDOW_ON_SHORTCUT);
     return;
@@ -633,8 +621,7 @@ void TabletModeWindowState::CycleTabletSnap(
 }
 
 void TabletModeWindowState::DoTabletSnap(WindowState* window_state,
-                                         WMEventType snap_event_type,
-                                         absl::optional<float> new_snap_ratio) {
+                                         WMEventType snap_event_type) {
   DCHECK(snap_event_type == WM_EVENT_SNAP_PRIMARY ||
          snap_event_type == WM_EVENT_SNAP_SECONDARY);
 
@@ -654,10 +641,10 @@ void TabletModeWindowState::DoTabletSnap(WindowState* window_state,
       window_state->GetStateType(), new_state_type);
 
   // A snap WMEvent will put the window in tablet split view.
-  split_view_controller->OnWindowSnapWMEvent(window, snap_event_type);
+  split_view_controller->OnWMEvent(window, snap_event_type);
 
   // Change window state and bounds to the snapped window state and bounds.
-  UpdateWindow(window_state, new_state_type, /*animate=*/false, new_snap_ratio);
+  UpdateWindow(window_state, new_state_type, /*animate=*/false);
 }
 
 void TabletModeWindowState::DoRestore(WindowState* window_state) {
@@ -665,16 +652,13 @@ void TabletModeWindowState::DoRestore(WindowState* window_state) {
   if (chromeos::IsSnappedWindowStateType(restore_state)) {
     window_state->set_snap_action_source(
         WindowSnapActionSource::kSnapByWindowStateRestore);
-    DoTabletSnap(window_state,
-                 restore_state == WindowStateType::kPrimarySnapped
-                     ? WM_EVENT_SNAP_PRIMARY
-                     : WM_EVENT_SNAP_SECONDARY,
-                 window_state->snap_ratio());
+    DoTabletSnap(window_state, restore_state == WindowStateType::kPrimarySnapped
+                                   ? WM_EVENT_SNAP_PRIMARY
+                                   : WM_EVENT_SNAP_SECONDARY);
     return;
   }
 
-  UpdateWindow(window_state, restore_state, /*animate=*/true,
-               /*new_snap_ratio=*/absl::nullopt);
+  UpdateWindow(window_state, restore_state, /*animate=*/true);
 }
 
 }  // namespace ash

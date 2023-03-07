@@ -124,7 +124,7 @@ class PermissionMessagesUnittest : public testing::Test {
 // other (the 'history' permission has superset permissions).
 TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("tabs").Append("history").BuildList(),
+      ListBuilder().Append("tabs").Append("history").Build(),
       base::Value::List());
 
   ASSERT_EQ(1U, required_permissions().size());
@@ -139,8 +139,8 @@ TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {
 // permission, only the new coalesced message is displayed.
 TEST_F(PermissionMessagesUnittest, MixedPermissionMessagesCoalesceOnceGranted) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("tabs").BuildList(),
-      ListBuilder().Append("history").BuildList());
+      ListBuilder().Append("tabs").Build(),
+      ListBuilder().Append("history").Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -178,8 +178,8 @@ TEST_F(PermissionMessagesUnittest, MixedPermissionMessagesCoalesceOnceGranted) {
 TEST_F(PermissionMessagesUnittest,
        AntiTest_PromptCanRequestSubsetOfAlreadyGrantedPermissions) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("history").BuildList(),
-      ListBuilder().Append("tabs").BuildList());
+      ListBuilder().Append("history").Build(),
+      ListBuilder().Append("tabs").Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -219,8 +219,8 @@ TEST_F(PermissionMessagesUnittest,
 TEST_F(PermissionMessagesUnittest,
        AntiTest_PromptCanBeEmptyButCausesChangeInPermissions) {
   CreateAndInstallExtensionWithPermissions(
-      ListBuilder().Append("tabs").BuildList(),
-      ListBuilder().Append("sessions").BuildList());
+      ListBuilder().Append("tabs").Build(),
+      ListBuilder().Append("sessions").Build());
 
   ASSERT_EQ(1U, required_permissions().size());
   EXPECT_EQ(
@@ -265,13 +265,14 @@ TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
     const char16_t kMessage[] =
         u"Access any PVR Mass Storage from HUMAX Co., Ltd. via USB";
 
-    std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
-    permission_list->Append(base::Value::FromUniquePtrValue(
+    base::Value::List permission_list;
+    permission_list.Append(base::Value::FromUniquePtrValue(
         UsbDevicePermissionData(0x02ad, 0x138c, -1, -1).ToValue()));
+    base::Value permission_value = base::Value(std::move(permission_list));
 
     UsbDevicePermission permission(
         PermissionsInfo::GetInstance()->GetByID(APIPermissionID::kUsbDevice));
-    ASSERT_TRUE(permission.FromValue(permission_list.get(), nullptr, nullptr));
+    ASSERT_TRUE(permission.FromValue(&permission_value, nullptr, nullptr));
 
     PermissionMessages messages = GetMessages(permission.GetPermissions());
     ASSERT_EQ(1U, messages.size());
@@ -280,13 +281,14 @@ TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
   {
     const char16_t kMessage[] = u"Access USB devices from HUMAX Co., Ltd.";
 
-    std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
-    permission_list->Append(base::Value::FromUniquePtrValue(
+    base::Value::List permission_list;
+    permission_list.Append(base::Value::FromUniquePtrValue(
         UsbDevicePermissionData(0x02ad, 0x138d, -1, -1).ToValue()));
+    base::Value permission_value = base::Value(std::move(permission_list));
 
     UsbDevicePermission permission(
         PermissionsInfo::GetInstance()->GetByID(APIPermissionID::kUsbDevice));
-    ASSERT_TRUE(permission.FromValue(permission_list.get(), nullptr, nullptr));
+    ASSERT_TRUE(permission.FromValue(&permission_value, nullptr, nullptr));
 
     PermissionMessages messages = GetMessages(permission.GetPermissions());
     ASSERT_EQ(1U, messages.size());
@@ -295,13 +297,14 @@ TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
   {
     const char16_t kMessage[] = u"Access USB devices from an unknown vendor";
 
-    std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
-    permission_list->Append(base::Value::FromUniquePtrValue(
+    base::Value::List permission_list;
+    permission_list.Append(base::Value::FromUniquePtrValue(
         UsbDevicePermissionData(0x02ae, 0x138d, -1, -1).ToValue()));
+    base::Value permission_value = base::Value(std::move(permission_list));
 
     UsbDevicePermission permission(
         PermissionsInfo::GetInstance()->GetByID(APIPermissionID::kUsbDevice));
-    ASSERT_TRUE(permission.FromValue(permission_list.get(), nullptr, nullptr));
+    ASSERT_TRUE(permission.FromValue(&permission_value, nullptr, nullptr));
 
     PermissionMessages messages = GetMessages(permission.GetPermissions());
     ASSERT_EQ(1U, messages.size());
@@ -318,25 +321,27 @@ TEST_F(USBDevicePermissionMessagesTest, MultipleDevice) {
   };
 
   // Prepare data set
-  std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
-  permission_list->Append(base::Value::FromUniquePtrValue(
+  base::Value::List permission_list;
+  permission_list.Append(base::Value::FromUniquePtrValue(
       UsbDevicePermissionData(0x02ad, 0x138c, -1, -1).ToValue()));
   // This device's product ID is not in Chrome's database.
-  permission_list->Append(base::Value::FromUniquePtrValue(
+  permission_list.Append(base::Value::FromUniquePtrValue(
       UsbDevicePermissionData(0x02ad, 0x138d, -1, -1).ToValue()));
   // This additional unknown product will be collapsed into the entry above.
-  permission_list->Append(base::Value::FromUniquePtrValue(
+  permission_list.Append(base::Value::FromUniquePtrValue(
       UsbDevicePermissionData(0x02ad, 0x138e, -1, -1).ToValue()));
   // This device's vendor ID is not in Chrome's database.
-  permission_list->Append(base::Value::FromUniquePtrValue(
+  permission_list.Append(base::Value::FromUniquePtrValue(
       UsbDevicePermissionData(0x02ae, 0x138d, -1, -1).ToValue()));
   // This additional unknown vendor will be collapsed into the entry above.
-  permission_list->Append(base::Value::FromUniquePtrValue(
+  permission_list.Append(base::Value::FromUniquePtrValue(
       UsbDevicePermissionData(0x02af, 0x138d, -1, -1).ToValue()));
+
+  base::Value permission_value = base::Value(std::move(permission_list));
 
   UsbDevicePermission permission(
       PermissionsInfo::GetInstance()->GetByID(APIPermissionID::kUsbDevice));
-  ASSERT_TRUE(permission.FromValue(permission_list.get(), nullptr, nullptr));
+  ASSERT_TRUE(permission.FromValue(&permission_value, nullptr, nullptr));
 
   PermissionMessages messages = GetMessages(permission.GetPermissions());
   ASSERT_EQ(1U, messages.size());

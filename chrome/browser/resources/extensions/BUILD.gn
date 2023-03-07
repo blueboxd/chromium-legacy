@@ -95,12 +95,12 @@ build_webui("build") {
   ts_deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/managed_footnote:build_ts",
   ]
 
   optimize = optimize_webui
   if (optimize) {
     optimize_webui_host = "extensions"
-    optimize_webui_out_files = [ "extensions.rollup.js" ]
     optimize_webui_in_files = [ "extensions.js" ]
     optimize_webui_excludes = [ "chrome://resources/js/cr.js" ]
     optimize_webui_resource_paths_rewrites =

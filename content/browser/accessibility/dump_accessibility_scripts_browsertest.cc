@@ -17,6 +17,10 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace content {
 
 using ui::AXPropertyFilter;
@@ -28,6 +32,7 @@ using ui::AXTreeFormatter;
 constexpr const char kMacAction[]{"mac/action"};
 constexpr const char kMacAttributedString[]{"mac/attributed-string"};
 constexpr const char kMacAttributes[]{"mac/attributes"};
+constexpr const char kMacDescription[]{"mac/description"};
 constexpr const char kMacSelection[]{"mac/selection"};
 constexpr const char kMacTextMarker[]{"mac/textmarker"};
 constexpr const char kMacMethods[]{"mac/methods"};
@@ -41,6 +46,8 @@ constexpr const char kMacParameterizedAttributes[]{
 constexpr const char kIAccessible[]{"win/ia2/iaccessible"};
 constexpr const char kIAccessible2[]{"win/ia2/iaccessible2"};
 constexpr const char kIAccessibleTable[]{"win/ia2/iaccessibletable"};
+constexpr const char kIAccessibleTextSelectionContainer[]{
+    "win/ia2/iaccessibletextselectioncontainer"};
 
 #endif
 
@@ -452,6 +459,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, ChromeAXNodeId) {
   RunTypedTest<kMacAttributes>("chrome-ax-node-id.html");
 }
 
+// Before macOS 11 aria-description must be exposed in AXHelp, and since macOS
+// 11, it should only be exposed in AXCustomContent.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AriaDescription) {
+  if (base::mac::IsAtLeastOS11())
+    RunTypedTest<kMacDescription>("aria-description-in-axcustomcontent.html");
+  else
+    RunTypedTest<kMacDescription>("aria-description-in-axhelp.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, SelectAllTextarea) {
   RunTypedTest<kMacSelection>("selectall-textarea.html");
 }
@@ -591,6 +607,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, IAccessible2Role) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
                        IAccessibleTableSelectedColumns) {
   RunTypedTest<kIAccessibleTable>(L"iaccessibletable-selected-columns.html");
+}
+
+// IAccessibleTextSelectionContainer
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       IAccessibleTextSelectionContainerSelections) {
+  RunTypedTest<kIAccessibleTextSelectionContainer>(
+      L"iaccessibletextselectioncontainer-selections.html");
 }
 
 #endif

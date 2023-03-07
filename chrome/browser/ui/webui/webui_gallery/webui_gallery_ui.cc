@@ -11,13 +11,14 @@
 #include "chrome/grit/webui_gallery_resources_map.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {
 
-content::WebUIDataSource* CreateWebuiGalleryUIHtmlSource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIWebuiGalleryHost);
+void CreateAndAddWebuiGalleryUIHtmlSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIWebuiGalleryHost);
 
   webui::SetupWebUIDataSource(
       source,
@@ -30,16 +31,16 @@ content::WebUIDataSource* CreateWebuiGalleryUIHtmlSource(Profile* profile) {
       network::mojom::CSPDirectiveName::FrameAncestors,
       "frame-ancestors 'self';");
 
-  return source;
+  source->AddString(
+      "chromeRefresh2023Attribute",
+      features::IsChromeRefresh2023() ? "chrome-refresh-2023" : "");
 }
 
 }  // namespace
 
 WebuiGalleryUI::WebuiGalleryUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  content::WebUIDataSource* source =
-      CreateWebuiGalleryUIHtmlSource(Profile::FromWebUI(web_ui));
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  CreateAndAddWebuiGalleryUIHtmlSource(Profile::FromWebUI(web_ui));
 }
 
 WebuiGalleryUI::~WebuiGalleryUI() = default;

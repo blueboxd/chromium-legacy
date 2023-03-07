@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/date_helper.h"
@@ -21,13 +22,18 @@
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
@@ -41,6 +47,10 @@ const char kGoogleDriveBuyStorageUrl[] =
 // Location of the page to manage Google Drive storage.
 const char kGoogleDriveManageStorageUrl[] =
     "https://drive.google.com/drive/u/0/quota";
+
+// Location of the page to manage enterprise Google Drive storage.
+const char kGoogleDriveEnterpriseManageStorageUrl[] =
+    "https://drive.google.com/corp/drive/quota";
 
 // Location of the overview page about Google Drive.
 const char kGoogleDriveOverviewUrl[] =
@@ -152,6 +162,8 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DRIVE_OFFLINE_COLLECTION_LABEL);
   SET_STRING("DRIVE_OUT_OF_SPACE_HEADER",
              IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_HEADER);
+  SET_STRING("SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE",
+             IDS_FILE_BROWSER_SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE);
   SET_STRING("DRIVE_OUT_OF_SPACE_MESSAGE",
              IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_MESSAGE);
   SET_STRING("DRIVE_RECENT_COLLECTION_LABEL",
@@ -370,12 +382,19 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_CANT_RESTORE_TRASHED_SOME_ITEMS);
   SET_STRING("CONFLICT_DIALOG_MESSAGE",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE);
+  SET_STRING("CONFLICT_DIALOG_FOLDER_MESSAGE",
+             IDS_FILE_BROWSER_CONFLICT_DIALOG_FOLDER_MESSAGE);
   SET_STRING("CONFLICT_DIALOG_APPLY_TO_ALL",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_APPLY_TO_ALL);
   SET_STRING("CONFLICT_DIALOG_KEEP_BOTH",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_BOTH);
   SET_STRING("CONFLICT_DIALOG_REPLACE",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE);
+  SET_STRING("CONFLICT_DIALOG_KEEP_ALL",
+             IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_ALL);
+  SET_STRING("CONFLICT_DIALOG_REPLACE_ALL",
+             IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE_ALL);
+
   SET_STRING("COPY_BUTTON_LABEL", IDS_FILE_BROWSER_COPY_BUTTON_LABEL);
   SET_STRING("COPY_FILESYSTEM_ERROR", IDS_FILE_BROWSER_COPY_FILESYSTEM_ERROR);
   SET_STRING("EMPTY_TRASH_UNEXPECTED_ERROR",
@@ -1020,9 +1039,50 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("DLP_COMPONENT_PLAY", IDS_FILE_BROWSER_DLP_COMPONENT_PLAY);
   SET_STRING("DLP_COMPONENT_LINUX", IDS_FILE_BROWSER_DLP_COMPONENT_LINUX);
   SET_STRING("DLP_COMPONENT_VM", IDS_FILE_BROWSER_DLP_COMPONENT_VM);
-}
+}  // NOLINT(readability/fn_size): Structure of AddStringsGeneric function
+   // should be easy to manage.
 
 #undef SET_STRING
+
+bool IsEligibleAndEnabledGoogleOneOfferFilesBanner() {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager) {
+    return false;
+  }
+
+  user_manager::User* user = user_manager->GetActiveUser();
+  if (!user) {
+    return false;
+  }
+
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile) {
+    return false;
+  }
+
+  // `GetUserCloudPolicyManagerAsh` returns non-nullptr if a profile is a
+  // managed account, e.g. enterprise account, child account.
+  // This approach is taken in
+  // `UserTypeByDeviceTypeMetricsProvider::GetUserSegment`.
+  if (profile->GetUserCloudPolicyManagerAsh()) {
+    return false;
+  }
+
+  ash::InstallAttributes* install_attributes = ash::InstallAttributes::Get();
+  if (!install_attributes) {
+    return false;
+  }
+
+  // Google One offer is for a device. Do not show a banner if a device is not
+  // `policy::DeviceMode::DEVICE_MODE_CONSUMER`.
+  if (install_attributes->GetMode() !=
+      policy::DeviceMode::DEVICE_MODE_CONSUMER) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(
+      ash::features::kGoogleOneOfferFilesBanner);
+}
 
 }  // namespace
 
@@ -1048,6 +1108,8 @@ base::Value::Dict GetFileManagerStrings() {
 
   dict.Set("GOOGLE_DRIVE_BUY_STORAGE_URL", kGoogleDriveBuyStorageUrl);
   dict.Set("GOOGLE_DRIVE_MANAGE_STORAGE_URL", kGoogleDriveManageStorageUrl);
+  dict.Set("GOOGLE_DRIVE_ENTERPRISE_MANAGE_STORAGE_URL",
+           kGoogleDriveEnterpriseManageStorageUrl);
   dict.Set("GOOGLE_DRIVE_ERROR_HELP_URL",
            base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
   dict.Set("GOOGLE_DRIVE_HELP_URL", kGoogleDriveHelpUrl);
@@ -1097,22 +1159,19 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("HIDE_SPACE_INFO", ash::DemoSession::IsDeviceInDemoMode());
   dict->Set("ARC_USB_STORAGE_UI_ENABLED",
             base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
-  dict->Set("ARC_ENABLE_VIRTIO_BLK_FOR_DATA",
-            base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData));
+  dict->Set("ARC_VM_ENABLED", arc::IsArcVmEnabled());
   dict->Set("FILES_SEARCH_V2",
             base::FeatureList::IsEnabled(ash::features::kFilesSearchV2));
   dict->Set("FILES_TRASH_ENABLED",
             base::FeatureList::IsEnabled(ash::features::kFilesTrash));
-  dict->Set("DRIVE_DSS_PIN_ENABLED",
-            base::FeatureList::IsEnabled(
-                ash::features::kDriveFsBidirectionalNativeMessaging));
-  dict->Set("FILTERS_IN_RECENTS_V2_ENABLED",
-            base::FeatureList::IsEnabled(ash::features::kFiltersInRecentsV2));
   dict->Set(
       "FILES_SINGLE_PARTITION_FORMAT_ENABLED",
       base::FeatureList::IsEnabled(ash::features::kFilesSinglePartitionFormat));
   dict->Set("FILES_APP_EXPERIMENTAL",
             base::FeatureList::IsEnabled(ash::features::kFilesAppExperimental));
+
+  dict->Set("FILES_CONFLICT_DIALOG",
+            base::FeatureList::IsEnabled(ash::features::kFilesConflictDialog));
 
   dict->Set("FUSEBOX_DEBUG",
             base::FeatureList::IsEnabled(ash::features::kFuseBoxDebug));
@@ -1136,8 +1195,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
     dict->Set("DLP_ENABLED", false);
   }
 
-  dict->Set("UI_LOCALE", locale);
-  dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());
   base::Value::List vms;
   auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
   if (share_path) {
@@ -1149,4 +1206,13 @@ void AddFileManagerFeatureStrings(const std::string& locale,
     }
   }
   dict->Set("VMS_FOR_SHARING", std::move(vms));
+
+  // Lastly, set UI_LOCALE and locale-dependent settings.
+  dict->Set("UI_LOCALE", locale);
+  dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());
+
+  // ELIGIBLE_AND_ENABLED_GOOGLE_ONE_OFFER_FILES_BANNER does additional checks
+  // in addition to a feature flag check.
+  dict->Set("ELIGIBLE_AND_ENABLED_GOOGLE_ONE_OFFER_FILES_BANNER",
+            IsEligibleAndEnabledGoogleOneOfferFilesBanner());
 }

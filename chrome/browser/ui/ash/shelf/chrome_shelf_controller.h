@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/ash/shelf/settings_window_observer.h"
@@ -411,6 +412,12 @@ class ChromeShelfController
 
   // sync_preferences::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
+
+  // Initializes local shelf prefs if OS prefs started syncing (which implies
+  // that initial synced prefs values have been set).
+  // Shelf prefs are tracked both as local and synced prefs. Synced pref is used
+  // only to initialize local prefs when the user logs in for the first time.
+  void InitLocalShelfPrefsIfOsPrefsAreSyncing();
 
   // An internal helper to unpin a shelf item; this does not update app sync.
   void UnpinShelfItemInternal(const ash::ShelfID& id);

@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/expected.h"
@@ -41,23 +41,21 @@
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "url/scheme_host_port.h"
 
 using content::BrowserThread;
 
 namespace {
 
-content::WebUIDataSource* CreateNetInternalsHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
+void CreateAndAddNetInternalsHTMLSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUINetInternalsHost);
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kNetInternalsResources, kNetInternalsResourcesSize),
       IDR_NET_INTERNALS_INDEX_HTML);
   webui::EnableTrustedTypesCSP(source);
-
-  return source;
 }
 
 void IgnoreBoolCallback(bool result) {}
@@ -430,8 +428,7 @@ NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
       std::make_unique<NetInternalsMessageHandler>(web_ui));
 
   // Set up the chrome://net-internals/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateNetInternalsHTMLSource());
+  CreateAndAddNetInternalsHTMLSource(Profile::FromWebUI(web_ui));
 }
 
 // static

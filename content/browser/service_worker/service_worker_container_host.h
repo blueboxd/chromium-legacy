@@ -20,8 +20,8 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/service_worker_client_info.h"
-#include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -389,6 +389,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // details.
   const blink::StorageKey& key() const { return key_; }
 
+  // This function returns the correct StorageKey depending on the state of the
+  // "disable-web-security" flag.
+  //
+  // If web security is disabled then it's possible for the `url` to be
+  // cross-origin from `this`'s origin. In that case we need to make a new key
+  // with the `url`'s origin, otherwise we might access the wrong storage
+  // partition.
+  blink::StorageKey GetCorrectStorageKeyForWebSecurityState(
+      const GURL& url) const;
+
   // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
   // settings allows service workers to run at |scope|. If this container is for
   // a window client, the check involves the topmost frame url as well as
@@ -428,10 +438,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   base::TimeTicks create_time() const { return create_time_; }
 
   // For service worker window clients. The RFH ID is set only after navigation
-  // commit. Prefer to use GetRenderFrameHostId() over
-  // GetFrameTreeNodeIdForOngoingNavigation() when possible, since the client
-  // can change to another FrameTreeNode over its lifetime while its RFH ID
-  // never changes. See also comments for RenderFrameHost::GetFrameTreeNodeId()
+  // commit. See also comments for RenderFrameHost::GetFrameTreeNodeId()
   // for more details.
   GlobalRenderFrameHostId GetRenderFrameHostId() const;
 
@@ -439,14 +446,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // after navigation commit.
   int GetProcessId() const;
 
-  // For service worker window clients. Returns the frame tree node ID before
-  // the navigation commit starts and kNoFrameTreeNodeId after the navigation
-  // commit. Prefer to use GetRenderFrameHostId() over
-  // GetFrameTreeNodeIdForOngoingNavigation() when possible, since the client
-  // can change to another FrameTreeNode over its lifetime while its RFH ID
-  // never changes. See also comments for RenderFrameHost::GetFrameTreeNodeId()
-  // for more details.
-  int GetFrameTreeNodeIdForOngoingNavigation(
+  // For service worker window clients.
+  // Returns the ongoing navigation request before the navigation commit starts.
+  // Returns a nullptr if the clients was discarded, e.g., the WebContents was
+  // closed.
+  // Never call this function if `GetRenderFrameHostId` can return a valid
+  // value, since the client can change to another FrameTreeNode(FTN) over its
+  // lifetime while its RFH ID never changes, and and function uses the FTN ID
+  // to find the NavigationRequest. See also comments for
+  // RenderFrameHost::GetFrameTreeNodeId() for more details.
+  NavigationRequest* GetOngoingNavigationRequestBeforeCommit(
       base::PassKey<StoragePartitionImpl>) const;
 
   // For service worker clients.
@@ -597,16 +606,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
                                     const GURL& script_url,
                                     const char* error_prefix,
                                     Args... args);
-
-  // This function returns the correct StorageKey depending on the state of the
-  // "disable-web-security" flag.
-  //
-  // If web security is disabled then it's possible for the `url` to be
-  // cross-origin from `this`'s origin. In that case we need to make a new key
-  // with the `url`'s origin, otherwise we might access the wrong storage
-  // partition.
-  blink::StorageKey GetCorrectStorageKeyForWebSecurityState(
-      const GURL& url) const;
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
 

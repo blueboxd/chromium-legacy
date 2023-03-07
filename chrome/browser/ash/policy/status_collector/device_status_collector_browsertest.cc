@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -344,7 +344,7 @@ class TestingDeviceStatusCollector : public DeviceStatusCollector {
   // production logic with fake tpm manager and attestation clients.
   TestingDeviceStatusCollector(
       PrefService* pref_service,
-      chromeos::system::StatisticsProvider* provider,
+      ash::system::StatisticsProvider* provider,
       ManagedSessionService* managed_session_service,
       std::unique_ptr<TestingDeviceStatusCollectorOptions> options,
       base::SimpleTestClock* clock)
@@ -914,6 +914,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   ~DeviceStatusCollectorTest() override {
     ash::SeneschalClient::Shutdown();
+    kiosk_app_manager_.reset();
     // |testing_profile_| must be destroyed while ConciergeClient is alive.
     testing_profile_.reset();
     ash::ConciergeClient::Shutdown();
@@ -925,7 +926,6 @@ class DeviceStatusCollectorTest : public testing::Test {
     ash::UserDataAuthClient::Shutdown();
     ash::CrasAudioHandler::Shutdown();
     ash::UpdateEngineClient::Shutdown();
-    ash::KioskAppManager::Shutdown();
     ash::cros_healthd::FakeCrosHealthd::Shutdown();
     ash::FakeSpacedClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
@@ -1107,13 +1107,15 @@ class DeviceStatusCollectorTest : public testing::Test {
   void MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       const DeviceLocalAccount& auto_launch_app_account,
       const std::string& required_platform_version) {
-    ash::KioskAppManager* manager = ash::KioskAppManager::Get();
-    manager->AddAppForTest(
+    if (!kiosk_app_manager_) {
+      kiosk_app_manager_ = std::make_unique<ash::KioskAppManager>();
+    }
+    kiosk_app_manager_->AddAppForTest(
         auto_launch_app_account.kiosk_app_id,
         AccountId::FromUserEmail(auto_launch_app_account.user_id),
         GURL("http://cws/"),  // Dummy URL to avoid setup ExtensionsClient.
         required_platform_version);
-    manager->SetEnableAutoLaunch(true);
+    kiosk_app_manager_->SetEnableAutoLaunch(true);
 
     std::vector<DeviceLocalAccount> accounts;
     accounts.push_back(auto_launch_app_account);
@@ -1126,7 +1128,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(required_platform_version,
-              manager->GetAutoLaunchAppRequiredPlatformVersion());
+              kiosk_app_manager_->GetAutoLaunchAppRequiredPlatformVersion());
   }
 
   void MockAutoLaunchArcKioskApp(
@@ -1178,7 +1180,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   ChromeContentClient content_client_;
   ChromeContentBrowserClient browser_content_client_;
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPoints mount_point_map_;
   ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
@@ -1192,6 +1194,9 @@ class DeviceStatusCollectorTest : public testing::Test {
   std::unique_ptr<ash::ArcKioskAppManager> arc_kiosk_app_manager_;
   // Only set after MockAutoLaunchWebKioskApp was called.
   std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
+  // Only set after MockAutoLaunchKioskAppWithRequiredPlatformVersion was
+  // called.
+  std::unique_ptr<ash::KioskAppManager> kiosk_app_manager_;
   ash::MockUserManager* const user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   em::DeviceStatusReportRequest device_status_;
@@ -1653,8 +1658,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityWithNotAffiliatedUser) {
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   // Test that boot mode data is reported by default.
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kDevSwitchBootKey,
-      chromeos::system::kDevSwitchBootValueVerified);
+      ash::system::kDevSwitchBootKey, ash::system::kDevSwitchBootValueVerified);
   GetStatus();
   EXPECT_EQ("Verified", device_status_.boot_mode());
 
@@ -1670,25 +1674,23 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceBootMode, true);
 
-  fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kDevSwitchBootKey, "(error)");
+  fake_statistics_provider_.SetMachineStatistic(ash::system::kDevSwitchBootKey,
+                                                "(error)");
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_boot_mode());
+
+  fake_statistics_provider_.SetMachineStatistic(ash::system::kDevSwitchBootKey,
+                                                " ");
   GetStatus();
   EXPECT_FALSE(device_status_.has_boot_mode());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kDevSwitchBootKey, " ");
-  GetStatus();
-  EXPECT_FALSE(device_status_.has_boot_mode());
-
-  fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kDevSwitchBootKey,
-      chromeos::system::kDevSwitchBootValueVerified);
+      ash::system::kDevSwitchBootKey, ash::system::kDevSwitchBootValueVerified);
   GetStatus();
   EXPECT_EQ("Verified", device_status_.boot_mode());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kDevSwitchBootKey,
-      chromeos::system::kDevSwitchBootValueDev);
+      ash::system::kDevSwitchBootKey, ash::system::kDevSwitchBootValueDev);
   GetStatus();
   EXPECT_EQ("Dev", device_status_.boot_mode());
 }
@@ -1698,30 +1700,30 @@ TEST_F(DeviceStatusCollectorTest, WriteProtectSwitch) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceSystemInfo, true);
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectCurrentKey,
-      chromeos::system::kFirmwareWriteProtectCurrentValueOn);
+      ash::system::kFirmwareWriteProtectCurrentKey,
+      ash::system::kFirmwareWriteProtectCurrentValueOn);
   GetStatus();
   EXPECT_TRUE(device_status_.write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectCurrentKey, "(error)");
+      ash::system::kFirmwareWriteProtectCurrentKey, "(error)");
   GetStatus();
   EXPECT_FALSE(device_status_.has_write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectCurrentKey, " ");
+      ash::system::kFirmwareWriteProtectCurrentKey, " ");
   GetStatus();
   EXPECT_FALSE(device_status_.has_write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectCurrentKey,
-      chromeos::system::kFirmwareWriteProtectCurrentValueOn);
+      ash::system::kFirmwareWriteProtectCurrentKey,
+      ash::system::kFirmwareWriteProtectCurrentValueOn);
   GetStatus();
   EXPECT_TRUE(device_status_.write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectCurrentKey,
-      chromeos::system::kFirmwareWriteProtectCurrentValueOff);
+      ash::system::kFirmwareWriteProtectCurrentKey,
+      ash::system::kFirmwareWriteProtectCurrentValueOff);
   GetStatus();
   EXPECT_FALSE(device_status_.write_protect_switch());
 }
@@ -3939,13 +3941,12 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
                                          base::Value(kShillFakeProfilePath));
       if (strlen(fake_network.address) > 0) {
         // Set the IP config.
-        base::DictionaryValue ip_config_properties;
-        ip_config_properties.SetKey(shill::kAddressProperty,
-                                    base::Value(fake_network.address));
-        ip_config_properties.SetKey(shill::kGatewayProperty,
-                                    base::Value(fake_network.gateway));
+        base::Value::Dict ip_config_properties;
+        ip_config_properties.Set(shill::kAddressProperty, fake_network.address);
+        ip_config_properties.Set(shill::kGatewayProperty, fake_network.gateway);
         const std::string kIPConfigPath = "test_ip_config";
-        ip_config_client->AddIPConfig(kIPConfigPath, ip_config_properties);
+        ip_config_client->AddIPConfig(kIPConfigPath,
+                                      std::move(ip_config_properties));
         service_client->SetServiceProperty(fake_network.name,
                                            shill::kIPConfigProperty,
                                            base::Value(kIPConfigPath));

@@ -192,6 +192,11 @@ struct IconKey {
   // chrome/browser/apps/app_service/app_icon/app_icon_factory.h and will remain
   // stable.
   uint32 icon_effects;
+
+  // True when the raw icon is updated. After an icon update, a new IconKey can
+  // be broadcast by a Publisher. Then the AppService icon directory should be
+  // removed to fetch the new raw icon from the app.
+  [MinVersion=22] bool raw_icon_updated;
 };
 
 // The intent filter matching condition types.
@@ -292,13 +297,18 @@ enum IconType {
 [Stable]
 struct IconValue {
   // The icon format and whether it uses Chrome OS mask.
-  IconType icon_type;
+  IconType icon_type@0;
   // The uncompressed icon data in gfx::ImageSkia format.
-  gfx.mojom.ImageSkia? uncompressed;
+  gfx.mojom.ImageSkia? uncompressed@1;
   // The compressed icon data in PNG format.
-  array<uint8>? compressed;
+  array<uint8>? compressed@2;
   // Whether this icon data is a placeholder icon.
-  bool is_placeholder_icon;
+  bool is_placeholder_icon@3;
+  // Whether this icon is a maskable icon. Per
+  // https://www.w3.org/TR/appmanifest/#icon-masks, we apply a white background
+  // for the maskable icon in its safe zone, and clear the standard icon effect,
+  // apply the mask to the icon without shrinking it.
+  [MinVersion=21] bool is_maskable_icon@4;
 };
 
 // MenuItems are used to populate context menus.

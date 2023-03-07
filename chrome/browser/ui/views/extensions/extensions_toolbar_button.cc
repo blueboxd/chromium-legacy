@@ -128,12 +128,11 @@ void ExtensionsToolbarButton::ToggleExtensionsMenu() {
   views::Widget* menu;
   if (base::FeatureList::IsEnabled(
           extensions_features::kExtensionsMenuAccessControl)) {
-    extensions_menu_coordinator_->Show(this);
+    extensions_menu_coordinator_->Show(this, extensions_container_);
     menu = extensions_menu_coordinator_->GetExtensionsMenuWidget();
   } else {
-    menu = ExtensionsMenuView::ShowBubble(
-        this, browser_, extensions_container_,
-        extensions_container_->CanShowIconInToolbar());
+    menu =
+        ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_);
   }
   menu->AddObserver(this);
 }

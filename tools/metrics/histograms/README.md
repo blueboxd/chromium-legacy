@@ -89,7 +89,7 @@ names, use the functions in histogram_functions.h instead of the macros.
 If you must use the histogram name in multiple places, use a compile-time
 constant of appropriate scope that can be referenced everywhere. Using inline
 strings in multiple places can lead to errors if you ever need to revise the
-name and you update one one location and forget another.
+name and you update one location and forget another.
 
 ### Efficiency
 
@@ -511,12 +511,16 @@ the values emitted to are correct. Finally, for count histograms, make sure
 that buckets capture enough precision for your needs over the range.
 
 Pro tip: You can filter the set of histograms shown on `chrome://histograms` by
-specifying a prefix. For example, `chrome://histograms/Extensions.Load` shows
-only histograms whose names match the pattern "Extensions.Load*".
+appending to the URL. For example, `chrome://histograms/UserActions` shows
+only histograms whose names contain "UserActions", such as
+"UMA.UserActionsCount".
 
 In addition to testing interactively, you can have unit tests examine the
 values emitted to histograms. See [histogram_tester.h](https://cs.chromium.org/chromium/src/base/test/metrics/histogram_tester.h)
 for details.
+
+See also `chrome://metrics-internals` ([docs](https://chromium.googlesource.com/chromium/src/+/master/components/metrics/debug/README.md))
+for more thorough manual testing if needed.
 
 ## Interpreting the Resulting Data
 
@@ -682,8 +686,11 @@ entry in the histograms.xml file.
   * `<enum>` blocks from enums.xml that are no longer used.
   * Suffix entries in histogram_suffixes_list.xml.
 * Please remove these artifacts if you find them.
-  * **Exception**: please mark `<int value=...>` blocks as obsolete rather than
-    deleting them, if the surrounding `<enum>` block is not being deleted.
+  * **Exception**: please update the label of `<int value=... label=... />` with
+    the `(Obsolete) ` prefix, e.g.
+    `<int value="1" label="(Obsolete) Navigation failed. Removed in 2023/01."/>`
+    rather than deleting them, if the surrounding `<enum>` block is not being
+    deleted.
 * A histogram entry can be removed after an obsoletion message was added, but
   please check that at least a day has passed since the change landed. This
   ensures that the message will be recorded by internal tools.

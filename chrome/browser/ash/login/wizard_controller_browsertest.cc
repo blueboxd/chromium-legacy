@@ -7,9 +7,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -1380,8 +1380,8 @@ class WizardControllerDeviceStateExplicitRequirementTest
  protected:
   WizardControllerDeviceStateExplicitRequirementTest() {
     if (IsFREExplicitlyRequired()) {
-      fake_statistics_provider_.SetMachineStatistic(
-          chromeos::system::kCheckEnrollmentKey, "1");
+      fake_statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey,
+                                                    "1");
     }
   }
 
@@ -3216,8 +3216,7 @@ class WizardControllerThemeSelectionDefaultSettingsTest
   WizardControllerThemeSelectionDefaultSettingsTest() {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
-        /*disabled_features=*/{features::kEnableOobeThemeSelection,
-                               chromeos::features::kDarkLightMode});
+        /*disabled_features=*/{chromeos::features::kDarkLightMode});
   }
 
  protected:
@@ -3246,8 +3245,7 @@ class WizardControllerThemeSelectionEnabledTest
  public:
   WizardControllerThemeSelectionEnabledTest() {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kEnableOobeThemeSelection,
-                              chromeos::features::kDarkLightMode},
+        /*enabled_features=*/{chromeos::features::kDarkLightMode},
         /*disabled_features=*/{});
   }
 

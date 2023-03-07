@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestWithParam, MatchVectorIcons) {
       // Pedals are not supported in the NTP Realbox.
       EXPECT_TRUE(svg_name.empty());
     } else if (is_bookmark) {
-      EXPECT_EQ("chrome://resources/images/icon_bookmark.svg", svg_name);
+      EXPECT_EQ("//resources/images/icon_bookmark.svg", svg_name);
     } else {
       EXPECT_FALSE(svg_name.empty());
     }
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestWithParam, AnswerVectorIcons) {
     const std::string& svg_name =
         RealboxHandler::AutocompleteMatchVectorIconToResourceName(vector_icon);
     if (is_bookmark) {
-      EXPECT_EQ("chrome://resources/images/icon_bookmark.svg", svg_name);
+      EXPECT_EQ("//resources/images/icon_bookmark.svg", svg_name);
     } else {
       EXPECT_FALSE(svg_name.empty());
       EXPECT_NE("search.svg", svg_name);
@@ -148,8 +148,11 @@ class RealboxSearchPreloadBrowserTest : public SearchPrefetchBaseBrowserTest {
 class RealboxSearchBrowserTestPage : public omnibox::mojom::Page {
  public:
   // omnibox::mojom::Page
+  void OmniboxAutocompleteResultChanged(
+      omnibox::mojom::AutocompleteResultPtr result) override {}
   void AutocompleteResultChanged(
       omnibox::mojom::AutocompleteResultPtr result) override {}
+  void SelectMatchAtLine(uint8_t line) override {}
   mojo::PendingRemote<omnibox::mojom::Page> GetRemotePage() {
     return receiver_.BindNewPipeAndPassRemote();
   }
@@ -181,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(RealboxSearchPreloadBrowserTest, SearchPreloadSuccess) {
   remote_page_handler.FlushForTesting();
 
   // Prerender and Prefetch should be triggered.
-  WaitUntilStatusChangesTo(base::ASCIIToUTF16(search_terms),
+  WaitUntilStatusChangesTo(GetCanonicalSearchURL(prerender_url),
                            SearchPrefetchStatus::kComplete);
   registry_observer.WaitForTrigger(prerender_url);
 }

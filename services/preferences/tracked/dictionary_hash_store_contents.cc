@@ -6,8 +6,8 @@
 
 #include <ostream>
 
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
 #include "base/notreached.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -19,7 +19,7 @@ const char kSuperMACPref[] = "protection.super_mac";
 }
 
 DictionaryHashStoreContents::DictionaryHashStoreContents(
-    base::Value::Dict* storage)
+    base::Value::Dict& storage)
     : storage_(storage) {}
 
 // static

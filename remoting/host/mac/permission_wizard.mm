@@ -5,11 +5,12 @@
 #include "remoting/host/mac/permission_wizard.h"
 
 #include "base/memory/raw_ptr.h"
+#import "base/task/single_thread_task_runner.h"
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -133,8 +134,9 @@ void PermissionWizard::Impl::CheckScreenRecordingPermission(
 }
 
 void PermissionWizard::Impl::NotifyCompletion(bool result) {
-  if (completion_callback_)
+  if (completion_callback_) {
     std::move(completion_callback_).Run(result);
+  }
 }
 
 void PermissionWizard::Impl::CheckAccessibilityPermissionNow() {
@@ -505,8 +507,9 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
 }
 
 - (void)onPermissionCheckResult:(bool)result {
-  if (_cancelled)
+  if (_cancelled) {
     return;
+  }
 
   _hasPermission = result;
 

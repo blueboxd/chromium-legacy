@@ -39,14 +39,17 @@ void TabHandleLayer::SetProperties(
     float width,
     float height,
     float content_offset_x,
+    float content_offset_y,
     float divider_offset_x,
     float bottom_offset_y,
+    float close_button_padding,
     float close_button_alpha,
     float divider_alpha,
     bool is_loading,
     float spinner_rotation,
     float brightness,
-    float opacity) {
+    float opacity,
+    bool is_tab_strip_redesign_enabled) {
   if (brightness != brightness_ || foreground != foreground_ ||
       opacity != opacity_) {
     brightness_ = brightness;
@@ -58,7 +61,7 @@ void TabHandleLayer::SetProperties(
     // rather than adding a brightness filter. We can't swap to simply setting
     // the opacity when TSR is disabled, because then, the tab containers can
     // be seen overlapping. (See https://crbug.com/1373632).
-    if (base::FeatureList::IsEnabled(chrome::android::kTabStripRedesign)) {
+    if (is_tab_strip_redesign_enabled) {
       tab_->SetOpacity(brightness_);
     } else {
       cc::FilterOperations filters;
@@ -67,6 +70,7 @@ void TabHandleLayer::SetProperties(
             cc::FilterOperation::CreateBrightnessFilter(brightness_));
       }
       layer_->SetFilters(filters);
+      tab_outline_->SetIsDrawable(true);
     }
   }
 
@@ -175,8 +179,15 @@ void TabHandleLayer::SetProperties(
   }
 
   if (title_layer) {
-    int title_y = tab_handle_resource->padding().y() / 2 + height / 2 -
-                  title_layer->size().height() / 2;
+    int title_y;
+    if (is_tab_strip_redesign_enabled) {
+      // 8dp top padding for folio and 10 dp for detached.
+      title_y = content_offset_y;
+    } else {
+      title_y = tab_handle_resource->padding().y() / 2 + height / 2 -
+                title_layer->size().height() / 2;
+    }
+
     int title_x = is_rtl ? padding_left + close_width : padding_left;
     title_x += is_rtl ? 0 : content_offset_x;
     title_layer->setBounds(gfx::Size(
@@ -200,10 +211,17 @@ void TabHandleLayer::SetProperties(
   } else {
     close_button_->SetIsDrawable(true);
     const float close_max_width = close_button_->bounds().width();
-    int close_y = (tab_handle_resource->padding().y() + height) / 2 -
-                  close_button_->bounds().height() / 2;
-    int close_x = is_rtl ? padding_left - close_max_width + close_width
-                         : width - padding_right - close_width;
+    int close_y;
+    if (is_tab_strip_redesign_enabled) {
+      close_y = content_offset_y;
+    } else {
+      close_y = (tab_handle_resource->padding().y() + height) / 2 -
+                close_button_->bounds().height() / 2;
+    }
+    int close_x =
+        is_rtl ? padding_left - close_max_width + close_width -
+                     close_button_padding
+               : width - padding_right - close_width + close_button_padding;
     if (foreground_) {
       close_y += original_y;
       close_x += original_x;
@@ -229,10 +247,6 @@ TabHandleLayer::TabHandleLayer(LayerTitleCache* layer_title_cache)
       brightness_(1.0f),
       foreground_(false) {
   decoration_tab_->SetIsDrawable(true);
-  // Show tab outline when TabStripRedesign is NOT enabled
-  if (!base::FeatureList::IsEnabled(chrome::android::kTabStripRedesign)) {
-    tab_outline_->SetIsDrawable(true);
-  }
 
   tab_->AddChild(decoration_tab_);
   tab_->AddChild(tab_outline_);

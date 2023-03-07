@@ -13,8 +13,11 @@ import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {Banner} from '../../externs/banner.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
+import {State} from '../../externs/ts/state.js';
+import {Store} from '../../externs/ts/store.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
+import {getStore} from '../../state/store.js';
 
 import {constants} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
@@ -24,6 +27,7 @@ import {TAG_NAME as DriveOfflinePinningBannerTagName} from './ui/banners/drive_o
 import {TAG_NAME as DriveOutOfIndividualSpaceBanner} from './ui/banners/drive_out_of_individual_space_banner.js';
 import {TAG_NAME as DriveOutOfOrganizationSpaceBanner} from './ui/banners/drive_out_of_organization_space_banner.js';
 import {TAG_NAME as DriveWelcomeBannerTagName} from './ui/banners/drive_welcome_banner.js';
+import {TAG_NAME as GoogleOneOfferBannerTagName} from './ui/banners/google_one_offer_banner.js';
 import {TAG_NAME as HoldingSpaceWelcomeBannerTagName} from './ui/banners/holding_space_welcome_banner.js';
 import {TAG_NAME as InvalidUSBFileSystemBanner} from './ui/banners/invalid_usb_filesystem_banner.js';
 import {TAG_NAME as LocalDiskLowSpaceBannerTagName} from './ui/banners/local_disk_low_space_banner.js';
@@ -237,6 +241,19 @@ export class BannerController extends EventTarget {
     this.customBannerFilters_ = {};
 
     /**
+     * @private {!Store}
+     */
+    this.store_ = getStore();
+    this.store_.subscribe(this);
+
+    /**
+     * Cached value of `this.store_.currentDirectory.hasDisabledFiles`, to avoid
+     * unnecessary reconciling.
+     * @private {boolean}
+     */
+    this.hasDlpDisabledFiles_ = false;
+
+    /**
      * The volumeId that is pending a volume size update, updateVolumeSizeStats_
      * will remove the volumeId once updated. This is cleared when the debounced
      * version of updateVolumeSizeStats_ executes.
@@ -270,6 +287,16 @@ export class BannerController extends EventTarget {
     }
   }
 
+  /** @param {!State} state latest state from the store. */
+  onStateChanged(state) {
+    const changedHasDlpDisabledFiles =
+        !!state.currentDirectory?.hasDlpDisabledFiles;
+    if (this.hasDlpDisabledFiles_ !== changedHasDlpDisabledFiles) {
+      this.hasDlpDisabledFiles_ = changedHasDlpDisabledFiles;
+      this.reconcile();
+    }
+  }
+
   /**
    * Ensure all banners are in priority order and any existing local storage
    * values are retrieved.
@@ -285,12 +312,16 @@ export class BannerController extends EventTarget {
         DriveOutOfIndividualSpaceBanner,
         DriveLowIndividualSpaceBanner,
       ]);
-      this.setEducationalBannersInOrder([
-        DriveWelcomeBannerTagName,
-        HoldingSpaceWelcomeBannerTagName,
-        DriveOfflinePinningBannerTagName,
-        PhotosWelcomeBannerTagName,
-      ]);
+
+      const educationalBanners =
+          util.isGoogleOneOfferFilesBannerEligibleAndEnabled() ?
+          [GoogleOneOfferBannerTagName] :
+          [DriveWelcomeBannerTagName];
+      educationalBanners.push(
+          HoldingSpaceWelcomeBannerTagName, DriveOfflinePinningBannerTagName,
+          PhotosWelcomeBannerTagName);
+      this.setEducationalBannersInOrder(educationalBanners);
+
       this.setStateBannersInOrder([
         DlpRestrictedBannerName,
         InvalidUSBFileSystemBanner,
@@ -357,8 +388,9 @@ export class BannerController extends EventTarget {
       // Register a custom filter that checks if DLP restricted banner should
       // be shown.
       this.registerCustomBannerFilter_(DlpRestrictedBannerName, {
-        // TODO(crbug.com/1358062): Correctly handle file open dialogs.
-        shouldShow: () => (this.volumeManager_.hasDisabledVolumes()),
+        shouldShow: () =>
+            (this.volumeManager_.hasDisabledVolumes() ||
+             this.hasDlpDisabledFiles_),
         context: () => ({type: this.dialogType_}),
       });
     }
@@ -419,6 +451,10 @@ export class BannerController extends EventTarget {
         this.volumeSizeObservers_[this.currentVolume_.volumeType]) {
       this.pendingVolumeSizeUpdates_.add(this.currentVolume_);
       this.updateVolumeSizeStatsDebounced_.runImmediately();
+
+      // updateVolumeSizeStats will call reconcile at its end. Return here to
+      // avoid calling showBanner_ twice for a banner.
+      return;
     }
 
     /** @type {?Banner} */
@@ -546,7 +582,7 @@ export class BannerController extends EventTarget {
 
   /**
    * Check if the banner exists (add to DOM if not) and ensure it's visible.
-   * @param {!Banner} banner The banner to hide.
+   * @param {!Banner} banner The banner to show.
    * @private
    */
   async showBanner_(banner) {

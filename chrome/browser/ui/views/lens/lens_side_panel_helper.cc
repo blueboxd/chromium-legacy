@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/lens/lens_region_search_instructions_view.h"
-#include "chrome/browser/ui/views/lens/lens_side_panel_controller.h"
 #include "chrome/browser/ui/views/lens/lens_static_page_controller.h"
 #include "chrome/browser/ui/views/side_panel/lens/lens_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
@@ -56,17 +55,8 @@ GURL CreateURLForNewTab(const GURL& original_url) {
 
 void OpenLensSidePanel(Browser* browser,
                        const content::OpenURLParams& url_params) {
-  if (base::FeatureList::IsEnabled(::features::kUnifiedSidePanel)) {
-    LensSidePanelCoordinator::GetOrCreateForBrowser(browser)
-        ->RegisterEntryAndShow(url_params);
-  } else {
-    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-
-    if (!browser_view->lens_side_panel_controller())
-      browser_view->CreateLensSidePanelController();
-
-    browser_view->lens_side_panel_controller()->OpenWithURL(url_params);
-  }
+  LensSidePanelCoordinator::GetOrCreateForBrowser(browser)
+      ->RegisterEntryAndShow(url_params);
 }
 
 views::Widget* OpenLensRegionSearchInstructions(
@@ -80,18 +70,6 @@ views::Widget* OpenLensRegionSearchInstructions(
   return views::BubbleDialogDelegateView::CreateBubble(
       std::make_unique<LensRegionSearchInstructionsView>(
           anchor, std::move(close_callback), std::move(escape_callback)));
-}
-
-void CreateLensSidePanelControllerForTesting(Browser* browser) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  browser_view->CreateLensSidePanelController();
-  DCHECK(browser_view->lens_side_panel_controller());
-}
-
-content::WebContents* GetLensSidePanelWebContentsForTesting(Browser* browser) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  DCHECK(browser_view->lens_side_panel_controller());
-  return browser_view->lens_side_panel_controller()->web_contents();
 }
 
 void CreateLensUnifiedSidePanelEntryForTesting(Browser* browser) {

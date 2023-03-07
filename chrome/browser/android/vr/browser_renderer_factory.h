@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/vr/ui_initial_state.h"
 #include "chrome/browser/vr/vr_export.h"
@@ -34,8 +34,6 @@ class VR_EXPORT BrowserRendererFactory {
            const UiInitialState& ui_initial_state,
            bool reprojected_rendering,
            bool cardboard_gamepad,
-           bool pause_content,
-           bool low_density,
            base::WaitableEvent* gl_surface_created_event,
            base::OnceCallback<gfx::AcceleratedWidget()> surface_callback);
     ~Params();
@@ -43,8 +41,6 @@ class VR_EXPORT BrowserRendererFactory {
     UiInitialState ui_initial_state;
     bool reprojected_rendering;
     bool cardboard_gamepad;
-    bool pause_content;
-    bool low_density;
     raw_ptr<base::WaitableEvent> gl_surface_created_event;
     base::OnceCallback<gfx::AcceleratedWidget()> surface_callback;
   };

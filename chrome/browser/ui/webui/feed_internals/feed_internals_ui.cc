@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/feed/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
@@ -26,15 +26,13 @@
 
 FeedInternalsUI::FeedInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui), profile_(Profile::FromWebUI(web_ui)) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile_, chrome::kChromeUISnippetsInternalsHost);
 
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kFeedInternalsResources, kFeedInternalsResourcesSize),
       IDR_FEED_INTERNALS_FEED_INTERNALS_HTML);
-
-  content::WebUIDataSource::Add(profile_, source);
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(FeedInternalsUI)

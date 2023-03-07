@@ -15,7 +15,7 @@
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ash/app_list/app_list_sync_model_sanitizer.h"
@@ -531,15 +531,6 @@ bool ChromeAppListModelUpdater::FindItemIndexForTest(const std::string& id,
 
 bool ChromeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_engine_is_google_;
-}
-
-void ChromeAppListModelUpdater::GetIdToAppListIndexMap(
-    GetIdToAppListIndexMapCallback callback) {
-  base::flat_map<std::string, uint16_t> id_to_app_list_index;
-  for (size_t i = 0; i < model_.top_level_item_list()->item_count(); ++i) {
-    id_to_app_list_index[model_.top_level_item_list()->item_at(i)->id()] = i;
-  }
-  std::move(callback).Run(id_to_app_list_index);
 }
 
 size_t ChromeAppListModelUpdater::BadgedItemCount() {

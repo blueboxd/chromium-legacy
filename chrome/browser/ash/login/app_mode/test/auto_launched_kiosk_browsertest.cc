@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
-#include "ash/constants/ash_features.h"
 #include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_tags.h"
 #include "base/values.h"
 #include "chrome/browser/ash/app_mode/fake_cws.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
@@ -83,18 +83,17 @@ constexpr char kTestManagementApiSecondaryApp[] =
 
 }  // namespace
 
-class AutoLaunchedKioskTestBase : public OobeBaseTest {
+class AutoLaunchedKioskTest : public OobeBaseTest {
  public:
-  AutoLaunchedKioskTestBase()
+  AutoLaunchedKioskTest()
       : verifier_format_override_(crx_file::VerifierFormat::CRX3) {
     device_state_.set_domain("domain.com");
   }
 
-  AutoLaunchedKioskTestBase(const AutoLaunchedKioskTestBase&) = delete;
-  AutoLaunchedKioskTestBase& operator=(const AutoLaunchedKioskTestBase&) =
-      delete;
+  AutoLaunchedKioskTest(const AutoLaunchedKioskTest&) = delete;
+  AutoLaunchedKioskTest& operator=(const AutoLaunchedKioskTest&) = delete;
 
-  ~AutoLaunchedKioskTestBase() override = default;
+  ~AutoLaunchedKioskTest() override = default;
 
   virtual std::string GetTestAppId() const {
     return KioskAppsMixin::kKioskAppId;
@@ -243,22 +242,7 @@ class AutoLaunchedKioskTestBase : public OobeBaseTest {
   LoginManagerMixin login_manager_{&mixin_host_, {}};
 };
 
-class AutoLaunchedKioskTest : public AutoLaunchedKioskTestBase,
-                              public ::testing::WithParamInterface<bool> {
- public:
-  AutoLaunchedKioskTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
-    } else {
-      feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(AutoLaunchedKioskTest, PRE_CrashRestore) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, PRE_CrashRestore) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_TRUE(termination_subscription_);
@@ -274,7 +258,10 @@ IN_PROC_BROWSER_TEST_P(AutoLaunchedKioskTest, PRE_CrashRestore) {
   ASSERT_TRUE(CloseAppWindow(KioskAppsMixin::kKioskAppId));
 }
 
-IN_PROC_BROWSER_TEST_P(AutoLaunchedKioskTest, CrashRestore) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, CrashRestore) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-6ac07cf6-6fe6-49d7-9398-769574c032ba");
+
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_TRUE(termination_subscription_);
@@ -324,7 +311,7 @@ class AutoLaunchedKioskEphemeralUsersTest : public AutoLaunchedKioskTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_P(AutoLaunchedKioskEphemeralUsersTest, Launches) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskEphemeralUsersTest, Launches) {
   // Check that policy flags have not been lost.
   ExpectCommandLineHasDefaultPolicySwitches(
       *base::CommandLine::ForCurrentProcess());
@@ -349,7 +336,7 @@ class AutoLaunchedNonKioskEnabledAppTest : public AutoLaunchedKioskTest {
   std::string GetTestAppId() const override { return kTestNonKioskEnabledApp; }
 };
 
-IN_PROC_BROWSER_TEST_P(AutoLaunchedNonKioskEnabledAppTest, NotLaunched) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedNonKioskEnabledAppTest, NotLaunched) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_TRUE(termination_subscription_);
@@ -370,7 +357,7 @@ IN_PROC_BROWSER_TEST_P(AutoLaunchedNonKioskEnabledAppTest, NotLaunched) {
 }
 
 // Used to test management API availability in kiosk sessions.
-class ManagementApiKioskTest : public AutoLaunchedKioskTestBase {
+class ManagementApiKioskTest : public AutoLaunchedKioskTest {
  public:
   ManagementApiKioskTest() {}
 
@@ -397,13 +384,4 @@ IN_PROC_BROWSER_TEST_F(ManagementApiKioskTest, ManagementApi) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-INSTANTIATE_TEST_SUITE_P(All, AutoLaunchedKioskTest, testing::Bool());
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         AutoLaunchedKioskEphemeralUsersTest,
-                         testing::Bool());
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         AutoLaunchedNonKioskEnabledAppTest,
-                         testing::Bool());
 }  // namespace ash

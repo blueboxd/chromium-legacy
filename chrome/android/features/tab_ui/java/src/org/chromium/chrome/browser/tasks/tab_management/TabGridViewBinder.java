@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.Card
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.text.TextUtils;
 import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +22,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.widget.ImageViewCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
@@ -228,25 +227,6 @@ class TabGridViewBinder {
                             }
                         });
             }, false);
-        } else if (TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER == propertyKey) {
-            StoreHoursCardView storeHoursCardView =
-                    (StoreHoursCardView) view.fastFindViewById(R.id.store_hours_box_outer);
-            if (model.get(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER) != null) {
-                model.get(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER)
-                        .fetch((storePersistedTabData) -> {
-                            if (storePersistedTabData == null
-                                    || TextUtils.isEmpty(
-                                            storePersistedTabData.getStoreHoursString())) {
-                                storeHoursCardView.setVisibility(View.GONE);
-                            } else {
-                                storeHoursCardView.setStoreHours(
-                                        storePersistedTabData.getStoreHoursString());
-                                storeHoursCardView.setVisibility(View.VISIBLE);
-                            }
-                        });
-            } else {
-                storeHoursCardView.setVisibility(View.GONE);
-            }
         } else if (TabProperties.SHOULD_SHOW_PRICE_DROP_TOOLTIP == propertyKey) {
             if (model.get(TabProperties.SHOULD_SHOW_PRICE_DROP_TOOLTIP)) {
                 PriceCardView priceCardView =
@@ -453,7 +433,7 @@ class TabGridViewBinder {
     private static void updateColorForActionButton(
             ViewLookupCachingFrameLayout rootView, boolean isIncognito, boolean isSelected) {
         ImageView actionButton = (ImageView) rootView.fastFindViewById(R.id.action_button);
-        ApiCompatibilityUtils.setImageTintList(actionButton,
+        ImageViewCompat.setImageTintList(actionButton,
                 TabUiThemeProvider.getActionButtonTintList(
                         actionButton.getContext(), isIncognito, isSelected));
     }
@@ -473,7 +453,7 @@ class TabGridViewBinder {
 
         // The check should be invisible if not selected.
         actionButton.getDrawable().setAlpha(isSelected ? 255 : 0);
-        ApiCompatibilityUtils.setImageTintList(actionButton,
+        ImageViewCompat.setImageTintList(actionButton,
                 isSelected ? TabUiThemeProvider.getToggleActionButtonCheckedDrawableTintList(
                         rootView.getContext(), isIncognito)
                            : null);

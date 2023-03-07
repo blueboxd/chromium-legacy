@@ -4,9 +4,9 @@
 
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
@@ -291,7 +291,7 @@ void CastMediaSinkServiceImpl::RecordDeviceCounts() {
                                       known_ip_endpoints_.size());
 }
 
-void CastMediaSinkServiceImpl::OnUserGesture() {
+void CastMediaSinkServiceImpl::DiscoverSinksNow() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!dial_media_sink_service_)
     return;
@@ -432,10 +432,9 @@ void CastMediaSinkServiceImpl::OnNetworksChanged(
 
   auto cache_entry = sink_cache_.find(network_id);
   // Check if we have any cached sinks for this network ID.
-  if (cache_entry == sink_cache_.end())
+  if (cache_entry == sink_cache_.end()) {
     return;
-
-  metrics_.RecordCachedSinksAvailableCount(cache_entry->second.size());
+  }
   OpenChannelsWithRandomizedDelay(cache_entry->second,
                                   SinkSource::kNetworkCache);
 }
@@ -477,6 +476,17 @@ void CastMediaSinkServiceImpl::OpenChannel(
 
   const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
   if (!allow_all_ips_ && ip_endpoint.address().IsPubliclyRoutable()) {
+    LoggerList::GetInstance()->Log(
+        LoggerImpl::Severity::kWarning, mojom::LogCategory::kDiscovery,
+        kLoggerComponent,
+        base::StrCat({"Did not open a channel to the IP endpoint: ",
+                      ip_endpoint.ToString(),
+                      " because it is publicly "
+                      "routable."}),
+        cast_sink.sink().id(), "", "");
+    if (callback) {
+      std::move(callback).Run(false);
+    }
     return;
   }
 
@@ -495,12 +505,19 @@ void CastMediaSinkServiceImpl::OpenChannel(
     // DIAL-discovered
     // sinks contain incomplete information which should not be used for
     // updates.
-    if (sink_source != SinkSource::kMdns)
+    if (sink_source != SinkSource::kMdns) {
+      if (callback) {
+        std::move(callback).Run(true);
+      }
       return;
+    }
 
     if (existing_sink->sink().name() == cast_sink.sink().name() &&
         existing_sink->cast_data().capabilities ==
             cast_sink.cast_data().capabilities) {
+      if (callback) {
+        std::move(callback).Run(true);
+      }
       return;
     }
 
@@ -508,10 +525,16 @@ void CastMediaSinkServiceImpl::OpenChannel(
     MediaSinkInternal existing_sink_copy = *existing_sink;
     UpdateCastSink(cast_sink, &existing_sink_copy);
     AddOrUpdateSink(existing_sink_copy);
+    if (callback) {
+      std::move(callback).Run(true);
+    }
     return;
   }
 
   if (!pending_for_open_ip_endpoints_.insert(ip_endpoint).second) {
+    if (callback) {
+      std::move(callback).Run(false);
+    }
     return;
   }
 

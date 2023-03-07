@@ -48,15 +48,14 @@ var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
       enabled: [
         'ash::features::kAudioSettingsPage',
         'ash::features::kInputDeviceSettingsSplit',
-        'features::kAllowDisableTouchpadHapticFeedback',
-        'features::kAllowTouchpadHapticClickSettings',
       ],
     };
   }
 };
 
+// TODO(crbug.com/1403981): Test is flaky on chromeos dbg builds.
 TEST_F(
-    'OSSettingsDevicePageV3Test', 'All',
+    'OSSettingsDevicePageV3Test', 'DISABLED_All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
 // TODO(crbug.com/1347746): move this to the generic test lists below after the
@@ -281,46 +280,6 @@ TEST_F('OSSettingsInternetPageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
-// TODO(b/239477916) Move this test back into the list of tests below once
-// hotspot is launched.
-var OSSettingsHotspotSubpageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/hotspot_subpage_tests.js&host=test';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['ash::features::kHotspot'])
-    };
-  }
-};
-
-TEST_F('OSSettingsHotspotSubpageV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// TODO(b/239477916) Move this test back into the list of tests below once
-// hotspot is launched.
-var OSSettingsHotspotSummaryItemV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/hotspot_summary_item_tests.js&host=test';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['ash::features::kHotspot'])
-    };
-  }
-};
-
-TEST_F('OSSettingsHotspotSummaryItemV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
 function crostiniTestGenPreamble() {
   GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
   GEN('fake_crostini_features.SetAll(true);');
@@ -426,12 +385,28 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
  ['FakeCrosAudioConfig', 'fake_cros_audio_config_test.js'],
+ ['FakeInputDeviceSettings', 'fake_input_device_settings_provider_test.js'],
  ['FilesPage', 'os_files_page_test.js'],
  ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
  ['FindShortcutBehaviorTest', 'find_shortcut_behavior_test.js'],
  ['GoogleAssistantPage', 'google_assistant_page_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
+ [
+   'HotspotConfigDialog',
+   'hotspot_config_dialog_tests.js',
+   {enabled: ['ash::features::kHotspot']},
+ ],
+ [
+   'HotspotSubpage',
+   'hotspot_subpage_tests.js',
+   {enabled: ['ash::features::kHotspot']},
+ ],
+ [
+   'HotspotSummaryItem',
+   'hotspot_summary_item_tests.js',
+   {enabled: ['ash::features::kHotspot']},
+ ],
  ['InputMethodOptionPage', 'input_method_options_page_test.js'],
  ['InputPage', 'input_page_test.js'],
  ['InternetConfig', 'internet_config_test.js'],
@@ -482,6 +457,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['NetworkProxySection', 'network_proxy_section_test.js'],
  ['NetworkSummary', 'network_summary_test.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.js'],
+ ['OfficeFilesPage', 'office_page_test.js'],
  ['OncMojoTest', 'onc_mojo_test.js'],
  ['OsBluetoothPage', 'os_bluetooth_page_tests.js'],
  ['OsBluetoothPairingDialog', 'os_bluetooth_pairing_dialog_tests.js'],

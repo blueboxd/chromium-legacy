@@ -30,6 +30,7 @@ class MockPerformance : public Performance {
   ~MockPerformance() override = default;
 
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
+  uint64_t interactionCount() const override { return 0; }
 };
 
 class PerformanceObserverTest : public testing::Test {
@@ -79,7 +80,7 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
   // add a layout-shift to performance so getEntries() returns it
   auto* entry =
       LayoutShift::Create(0.0, 1234, true, 5678, LayoutShift::AttributionList(),
-                          /*navigation_id=*/1);
+                          LocalDOMWindow::From(scope.GetScriptState()));
   base_->AddLayoutShiftBuffer(*entry);
 
   // call observe with the buffered flag

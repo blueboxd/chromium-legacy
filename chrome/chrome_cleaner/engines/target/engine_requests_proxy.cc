@@ -8,8 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "mojo/public/cpp/system/platform_handle.h"

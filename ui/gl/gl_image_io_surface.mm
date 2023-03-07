@@ -6,8 +6,8 @@
 
 #include <map>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -110,7 +110,7 @@ bool GLImageIOSurface::InitializeWithCVPixelBuffer(
 
   cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
   disable_in_use_by_window_server_ = true;
-  GLImage::SetColorSpace(color_space);
+  color_space_ = color_space;
   return true;
 }
 
@@ -118,25 +118,11 @@ gfx::Size GLImageIOSurface::GetSize() {
   return size_;
 }
 
-unsigned GLImageIOSurface::GetInternalFormat() {
-  return BufferFormatToGLInternalFormat(format_);
-}
-
-unsigned GLImageIOSurface::GetDataType() {
-  return BufferFormatToGLDataType(format_);
-}
-
-GLImage::BindOrCopy GLImageIOSurface::ShouldBindOrCopy() {
-  return BIND;
-}
-
 bool GLImageIOSurface::BindTexImage(unsigned target) {
   LOG(ERROR) << "GLImageIOSurface::BindTexImage should not be reached.";
   NOTREACHED();
   return false;
 }
-
-void GLImageIOSurface::ReleaseTexImage(unsigned target) {}
 
 void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                     uint64_t process_tracing_id,
@@ -187,14 +173,10 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
   }
 }
 
-GLImage::Type GLImageIOSurface::GetType() const {
-  return Type::IOSURFACE;
-}
-
 void GLImageIOSurface::SetColorSpace(const gfx::ColorSpace& color_space) {
   if (color_space_ == color_space)
     return;
-  GLImage::SetColorSpace(color_space);
+  color_space_ = color_space;
 
   // Prefer to use data from DisplayICCProfiles, which will give a byte-for-byte
   // match for color spaces of the system displays. Note that DisplayICCProfiles

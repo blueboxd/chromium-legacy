@@ -55,7 +55,7 @@ class PrefetchDocumentManagerTest : public RenderViewHostTestHarness {
  public:
   PrefetchDocumentManagerTest() {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::features::kPrefetchUseContentRefactor,
+        features::kPrefetchUseContentRefactor,
         {{"proxy_host", "https://testproxyhost.com"}});
   }
 
@@ -95,8 +95,8 @@ class PrefetchDocumentManagerTest : public RenderViewHostTestHarness {
 
   void NavigateMainframeRendererTo(const GURL& url) {
     std::unique_ptr<NavigationSimulator> simulator =
-        content::NavigationSimulator::CreateRendererInitiated(
-            url, &GetPrimaryMainFrame());
+        NavigationSimulator::CreateRendererInitiated(url,
+                                                     &GetPrimaryMainFrame());
     simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
     simulator->Start();
   }
@@ -310,7 +310,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessSpeculationCandidates) {
   candidate6->requires_anonymous_client_ip_when_cross_origin = true;
   candidate6->url = GetCrossOriginUrl("/candidate6.html");
   candidate6->referrer = blink::mojom::Referrer::New();
-  candidate6->eagerness = blink::mojom::SpeculationEagerness::kDefault;
+  candidate6->eagerness = blink::mojom::SpeculationEagerness::kConservative;
   candidates.push_back(std::move(candidate6));
 
   // Process the candidates with the |PrefetchDocumentManager| for the current
@@ -344,7 +344,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessSpeculationCandidates) {
   EXPECT_EQ(prefetch_urls[3]->GetPrefetchType(),
             PrefetchType(/*use_isolated_network_context=*/true,
                          /*use_prefetch_proxy=*/true,
-                         blink::mojom::SpeculationEagerness::kDefault));
+                         blink::mojom::SpeculationEagerness::kConservative));
 
   // Check that the only remaining entries in candidates are those that
   // shouldn't be prefetched by |PrefetchService|.

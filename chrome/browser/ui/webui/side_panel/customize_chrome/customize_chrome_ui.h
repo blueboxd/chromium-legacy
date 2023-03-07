@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -19,6 +20,7 @@ class WebContents;
 }  // namespace content
 
 class CustomizeChromePageHandler;
+class CartHandler;
 class Profile;
 
 // WebUI controller for chrome://customize-chrome-side-panel.top-chrome
@@ -39,6 +41,11 @@ class CustomizeChromeUI
       mojo::PendingReceiver<
           side_panel::mojom::CustomizeChromePageHandlerFactory> receiver);
 
+  // Instantiates the implementor of the chrome_cart::mojom::CartHandler
+  // mojo interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<chrome_cart::mojom::CartHandler> pending_receiver);
+
  private:
   // side_panel::mojom::CustomizeChromePageHandlerFactory
   void CreatePageHandler(
@@ -47,8 +54,10 @@ class CustomizeChromeUI
           pending_page_handler) override;
 
   std::unique_ptr<CustomizeChromePageHandler> customize_chrome_page_handler_;
+  std::unique_ptr<CartHandler> cart_handler_;
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
+  const std::vector<std::pair<const std::string, int>> module_id_names_;
   mojo::Receiver<side_panel::mojom::CustomizeChromePageHandlerFactory>
       page_factory_receiver_;
 

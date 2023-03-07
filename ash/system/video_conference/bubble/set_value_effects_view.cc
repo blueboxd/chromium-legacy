@@ -4,14 +4,12 @@
 
 #include "ash/system/video_conference/bubble/set_value_effects_view.h"
 
+#include "ash/style/tab_slider.h"
+#include "ash/style/tab_slider_button.h"
 #include "ash/system/video_conference/bubble/bubble_view_ids.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
-#include "ui/views/background.h"
-#include "ui/views/border.h"
-#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/layout/flex_layout.h"
 
 namespace ash::video_conference {
@@ -24,37 +22,38 @@ namespace {
 class ValueButtonContainer : public views::View {
  public:
   explicit ValueButtonContainer(const VcHostedEffect* effect) {
+    SetID(BubbleViewID::kSingleSetValueEffectView);
     views::FlexLayout* layout =
         SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical);
     layout->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
-    layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+    layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
     if (!effect->label_text().empty()) {
       AddChildView(std::make_unique<views::Label>(effect->label_text()));
     }
 
-    // Add a button for each state.
+    // `effect` is expected to provide the current state of the effect, and
+    // a `current_state` with no value means it couldn't be obtained.
+    absl::optional<int> current_state = effect->get_state_callback().Run();
+    DCHECK(current_state.has_value());
+
+    auto tab_slider = std::make_unique<TabSlider>();
     for (int i = 0; i < effect->GetNumStates(); ++i) {
       const VcEffectState* state = effect->GetState(/*index=*/i);
-      std::unique_ptr<views::RadioButton> state_button =
-          std::make_unique<views::RadioButton>(state->label_text(),
-                                               /*group_id=*/effect->id());
-      state_button->SetCallback(state->button_callback());
+      auto* slider_button =
+          tab_slider->AddButton(std::make_unique<LabelSliderButton>(
+              state->button_callback(), state->label_text()));
+      slider_button->SetSelected(state->state().value() == current_state);
 
       // See comments above `kSetValueButton*` in `BubbleViewID` for details
       // on how the IDs of these buttons are set.
-      state_button->SetID(i <= BubbleViewID::kSetValueButtonMax -
-                                      BubbleViewID::kSetValueButtonMin
-                              ? BubbleViewID::kSetValueButtonMin + i
-                              : BubbleViewID::kSetValueButtonMax);
-
-      AddChildView(std::move(state_button));
+      slider_button->SetID(i <= BubbleViewID::kSetValueButtonMax -
+                                       BubbleViewID::kSetValueButtonMin
+                               ? BubbleViewID::kSetValueButtonMin + i
+                               : BubbleViewID::kSetValueButtonMax);
     }
-
-    SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(10, 10)));
-    SetBackground(views::CreateRoundedRectBackground(gfx::kGoogleGreen800,
-                                                     /*radius=*/10));
+    AddChildView(std::move(tab_slider));
   }
 
   ValueButtonContainer(const ValueButtonContainer&) = delete;
@@ -77,6 +76,14 @@ SetValueEffectsView::SetValueEffectsView(
 
   if (controller->effects_manager().HasSetValueEffects()) {
     for (auto* effect : controller->effects_manager().GetSetValueEffects()) {
+      // If the current state of `effect` has no value, it means the state of
+      // the effect cannot be obtained. This can happen if the
+      // `VcEffectsDelegate` hosting `effect` has encountered an error or is
+      // in some bad state. In this case its controls are not presented.
+      if (!effect->get_state_callback().Run().has_value()) {
+        continue;
+      }
+
       AddChildView(std::make_unique<ValueButtonContainer>(effect));
     }
   }

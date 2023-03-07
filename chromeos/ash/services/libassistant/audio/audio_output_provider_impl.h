@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/ash/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
@@ -119,10 +120,5 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
 };
 
 }  // namespace ash::libassistant
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::libassistant {
-using ::ash::libassistant::AudioOutputProviderImpl;
-}
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_AUDIO_AUDIO_OUTPUT_PROVIDER_IMPL_H_

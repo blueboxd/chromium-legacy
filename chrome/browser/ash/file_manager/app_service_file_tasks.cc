@@ -11,10 +11,10 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/webui/file_manager/url_constants.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -102,6 +102,7 @@ TaskType GetTaskType(apps::AppType app_type) {
     case apps::AppType::kStandaloneBrowser:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
       return TASK_TYPE_UNKNOWN;
   }
 }
@@ -183,6 +184,7 @@ bool IsSystemAppIdWithFileHandlers(base::StringPiece id) {
 void FindAppServiceTasks(Profile* profile,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
+                         const std::vector<std::string>& dlp_source_urls,
                          std::vector<FullTaskDescriptor>* result_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(entries.size(), file_urls.size());
@@ -224,6 +226,7 @@ void FindAppServiceTasks(Profile* profile,
     auto file = std::make_unique<apps::IntentFile>(file_urls.at(i));
     file->mime_type = entries[i].mime_type;
     file->is_directory = entries[i].is_directory;
+    file->dlp_source_url = dlp_source_urls[i];
     intent_files.push_back(std::move(file));
   }
   std::vector<apps::IntentLaunchInfo> intent_launch_info =
@@ -236,8 +239,10 @@ void FindAppServiceTasks(Profile* profile,
       apps::AppType::kExtension,
       apps::AppType::kStandaloneBrowserChromeApp,
       apps::AppType::kStandaloneBrowserExtension};
-  if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
+  if (ash::features::ShouldArcFileTasksUseAppService()) {
     supported_app_types.push_back(apps::AppType::kArc);
+  }
+  if (ash::features::ShouldGuestOsFileTasksUseAppService()) {
     supported_app_types.push_back(apps::AppType::kCrostini);
     supported_app_types.push_back(apps::AppType::kPluginVm);
   }
@@ -295,8 +300,9 @@ void FindAppServiceTasks(Profile* profile,
         /* is_default=*/false,
         // TODO(petermarshall): Handle the rest of the logic from FindWebTasks()
         // e.g. prioritise non-generic handlers.
-        /* is_generic=*/launch_entry.is_generic_file_handler,
-        /* is_file_extension_match=*/launch_entry.is_file_extension_match));
+        /* is_generic_file_handler=*/launch_entry.is_generic_file_handler,
+        /* is_file_extension_match=*/launch_entry.is_file_extension_match,
+        /* is_dlp_blocked=*/launch_entry.is_dlp_blocked));
   }
 }
 
@@ -334,16 +340,14 @@ void ExecuteAppServiceTask(
     intent_files.push_back(std::move(file));
   }
 
-  if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
-    DCHECK(task.task_type == TASK_TYPE_ARC_APP ||
-           task.task_type == TASK_TYPE_WEB_APP ||
-           task.task_type == TASK_TYPE_FILE_HANDLER ||
-           task.task_type == TASK_TYPE_CROSTINI_APP ||
-           task.task_type == TASK_TYPE_PLUGIN_VM_APP);
-  } else {
-    DCHECK(task.task_type == TASK_TYPE_WEB_APP ||
-           task.task_type == TASK_TYPE_FILE_HANDLER);
-  }
+  DCHECK(task.task_type == TASK_TYPE_WEB_APP ||
+         task.task_type == TASK_TYPE_FILE_HANDLER ||
+         (ash::features::ShouldArcFileTasksUseAppService() &&
+          task.task_type == TASK_TYPE_ARC_APP) ||
+         (ash::features::ShouldGuestOsFileTasksUseAppService() &&
+          (task.task_type == TASK_TYPE_CROSTINI_APP ||
+           task.task_type == TASK_TYPE_PLUGIN_VM_APP)));
+
   apps::IntentPtr intent = std::make_unique<apps::Intent>(
       apps_util::kIntentActionView, std::move(intent_files));
   intent->activity_name = task.action_id;

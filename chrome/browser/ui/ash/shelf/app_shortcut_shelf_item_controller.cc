@@ -9,8 +9,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -563,7 +563,7 @@ bool AppShortcutShelfItemController::IsWindowedWebApp() {
     web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
     if (registrar.IsLocallyInstalled(app_id())) {
       return registrar.GetAppUserDisplayMode(app_id()) !=
-             web_app::UserDisplayMode::kBrowser;
+             web_app::mojom::UserDisplayMode::kBrowser;
     }
   }
   return false;

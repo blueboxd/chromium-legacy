@@ -31,7 +31,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
                         const AtomicString& container_src,
                         const AtomicString& container_id,
                         const AtomicString& container_name,
-                        const uint32_t navigation_id);
+                        DOMWindow* source);
   ~TaskAttributionTiming() override;
 
  private:

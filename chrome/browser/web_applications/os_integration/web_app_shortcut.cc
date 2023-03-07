@@ -9,32 +9,26 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
-#include "base/containers/span.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/web_applications/os_integration/web_app_file_handler_registration.h"
+#include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
@@ -125,180 +119,51 @@ void DeleteMultiProfileShortcutsForAppAndPostCallback(const std::string& app_id,
       FROM_HERE, base::BindOnce(std::move(callback), Result::kOk));
 }
 
-struct ShortcutOverrideForTestingState {
-  base::Lock lock;
-  raw_ptr<ShortcutOverrideForTesting> global_shortcut_override
-      GUARDED_BY(lock) = nullptr;
-};
-
-ShortcutOverrideForTestingState& GetMutableShortcutOverrideStateForTesting() {
-  static base::NoDestructor<ShortcutOverrideForTestingState>
-      g_shortcut_override;
-  return *g_shortcut_override.get();
-}
-
-std::string GetAllFilesInDir(const base::FilePath& file_path) {
-  std::vector<std::string> files_as_strs;
-  base::FileEnumerator files(file_path, true, base::FileEnumerator::FILES);
-  for (base::FilePath current = files.Next(); !current.empty();
-       current = files.Next()) {
-    files_as_strs.push_back(current.AsUTF8Unsafe());
-  }
-  return base::JoinString(base::make_span(files_as_strs), "\n  ");
-}
-
 }  // namespace
-
-ShortcutOverrideForTesting::BlockingRegistration::BlockingRegistration() =
-    default;
-ShortcutOverrideForTesting::BlockingRegistration::~BlockingRegistration() {
-  base::ScopedAllowBlockingForTesting blocking;
-  base::RunLoop wait_until_destruction_loop;
-  // Lock the global state.
-  {
-    auto& global_state = GetMutableShortcutOverrideStateForTesting();
-    base::AutoLock state_lock(global_state.lock);
-    DCHECK_EQ(global_state.global_shortcut_override, shortcut_override.get());
-
-    // Set the destruction closure for the scoped override object.
-    DCHECK(!shortcut_override->on_destruction)
-        << "Cannot have multiple registrations at the same time.";
-    shortcut_override->on_destruction.ReplaceClosure(
-        wait_until_destruction_loop.QuitClosure());
-
-    // Unregister the override so new handles cannot be acquired.
-    global_state.global_shortcut_override = nullptr;
-  }
-
-  // Release the override & wait until all references are released.
-  // Note: The `shortcut_override` MUST be released before waiting on the run
-  // loop, as then it will hang forever.
-  shortcut_override.reset();
-  wait_until_destruction_loop.Run();
-}
-
-// static
-std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
-ShortcutOverrideForTesting::OverrideForTesting(
-    const base::FilePath& base_path) {
-  auto& state = GetMutableShortcutOverrideStateForTesting();
-  base::AutoLock state_lock(state.lock);
-  DCHECK(!state.global_shortcut_override)
-      << "Cannot have multiple registrations at the same time.";
-  auto shortcut_override =
-      base::WrapRefCounted(new ShortcutOverrideForTesting(base_path));
-  state.global_shortcut_override = shortcut_override.get();
-
-  std::unique_ptr<BlockingRegistration> registration =
-      std::make_unique<BlockingRegistration>();
-  registration->shortcut_override = shortcut_override;
-  return registration;
-}
-
-ShortcutOverrideForTesting::ShortcutOverrideForTesting(
-    const base::FilePath& base_path) {
-  // Initialize all directories used. The success & the DCHECK are separated to
-  // ensure that these function calls occur on release builds.
-  if (!base_path.empty()) {
-#if BUILDFLAG(IS_WIN)
-    bool success = desktop.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-    success = application_menu.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-    success = quick_launch.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-    success = startup.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-#elif BUILDFLAG(IS_MAC)
-    bool success = chrome_apps_folder.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-#elif BUILDFLAG(IS_LINUX)
-    bool success = desktop.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-    success = startup.CreateUniqueTempDirUnderPath(base_path);
-    DCHECK(success);
-#endif
-  } else {
-#if BUILDFLAG(IS_WIN)
-    bool success = desktop.CreateUniqueTempDir();
-    DCHECK(success);
-    success = application_menu.CreateUniqueTempDir();
-    DCHECK(success);
-    success = quick_launch.CreateUniqueTempDir();
-    DCHECK(success);
-    success = startup.CreateUniqueTempDir();
-    DCHECK(success);
-#elif BUILDFLAG(IS_MAC)
-    bool success = chrome_apps_folder.CreateUniqueTempDir();
-    DCHECK(success);
-#elif BUILDFLAG(IS_LINUX)
-    bool success = desktop.CreateUniqueTempDir();
-    DCHECK(success);
-    success = startup.CreateUniqueTempDir();
-    DCHECK(success);
-#endif
-  }
-
-#if BUILDFLAG(IS_LINUX)
-  auto callback =
-      base::BindRepeating([](base::FilePath filename, std::string xdg_command,
-                             std::string file_contents) {
-        auto shortcut_override = GetShortcutOverrideForTesting();
-        DCHECK(shortcut_override);
-        LinuxFileRegistration file_registration = LinuxFileRegistration();
-        file_registration.xdg_command = xdg_command;
-        file_registration.file_contents = file_contents;
-        shortcut_override->linux_file_registration.push_back(file_registration);
-        return true;
-      });
-  SetUpdateMimeInfoDatabaseOnLinuxCallbackForTesting(std::move(callback));
-#endif
-}
-
-ShortcutOverrideForTesting::~ShortcutOverrideForTesting() {
-  std::vector<base::ScopedTempDir*> directories;
-#if BUILDFLAG(IS_WIN)
-  directories = {&desktop, &application_menu, &quick_launch, &startup};
-#elif BUILDFLAG(IS_MAC)
-  directories = {&chrome_apps_folder};
-  // Checks and cleans up possible hidden files in directories.
-  std::vector<std::string> hidden_files{"Icon\r", ".localized"};
-  for (base::ScopedTempDir* dir : directories) {
-    if (dir->IsValid()) {
-      for (auto& f : hidden_files) {
-        base::FilePath path = dir->GetPath().Append(f);
-        if (base::PathExists(path))
-          base::DeletePathRecursively(path);
-      }
-    }
-  }
-#elif BUILDFLAG(IS_LINUX)
-  // Reset the file handling callback.
-  SetUpdateMimeInfoDatabaseOnLinuxCallbackForTesting(
-      UpdateMimeInfoDatabaseOnLinuxCallback());
-  directories = {&desktop};
-#endif
-  for (base::ScopedTempDir* dir : directories) {
-    if (!dir->IsValid())
-      continue;
-    DCHECK(base::IsDirectoryEmpty(dir->GetPath()))
-        << "Directory not empty: " << dir->GetPath().AsUTF8Unsafe()
-        << ". Please uninstall all webapps that have been installed while "
-           "shortcuts were overriden. Contents:\n"
-        << GetAllFilesInDir(dir->GetPath());
-  }
-}
-
-scoped_refptr<ShortcutOverrideForTesting> GetShortcutOverrideForTesting() {
-  auto& state = GetMutableShortcutOverrideStateForTesting();
-  base::AutoLock state_lock(state.lock);
-  return base::WrapRefCounted(state.global_shortcut_override.get());
-}
 
 ShortcutInfo::ShortcutInfo() = default;
 
 ShortcutInfo::~ShortcutInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+std::unique_ptr<ShortcutInfo> BuildShortcutInfoWithoutFavicon(
+    const AppId& app_id,
+    const GURL& start_url,
+    const base::FilePath& profile_path,
+    const std::string& profile_name,
+    const proto::WebAppOsIntegrationState& state) {
+  auto shortcut_info = std::make_unique<ShortcutInfo>();
+
+  shortcut_info->extension_id = app_id;
+  shortcut_info->url = start_url;
+  DCHECK(state.has_shortcut());
+  const proto::ShortcutDescription& shortcut_state = state.shortcut();
+  DCHECK(shortcut_state.has_title());
+  shortcut_info->title = base::UTF8ToUTF16(shortcut_state.title());
+  DCHECK(shortcut_state.has_description());
+  shortcut_info->description = base::UTF8ToUTF16(shortcut_state.description());
+  shortcut_info->profile_path = profile_path;
+  shortcut_info->profile_name = profile_name;
+  shortcut_info->is_multi_profile = true;
+
+  // TODO(https://crbug.com/1295044): Add file handlers.
+
+  if (state.has_protocols_handled()) {
+    for (const auto& protocol_handler : state.protocols_handled().protocols()) {
+      DCHECK(protocol_handler.has_protocol());
+      if (protocol_handler.has_protocol() &&
+          !protocol_handler.protocol().empty()) {
+        shortcut_info->protocol_handlers.emplace(protocol_handler.protocol());
+      }
+    }
+  }
+
+  // TODO(https://crbug.com/1295044): Add shortcut menu infos.
+
+  // TODO(https://crbug.com/1295044): Add mac's file handlers per profile.
+
+  return shortcut_info;
 }
 
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
@@ -316,8 +181,9 @@ base::FilePath GetOsIntegrationResourcesDirectoryForApp(
   DCHECK(!profile_path.empty());
   base::FilePath app_data_dir(profile_path.Append(chrome::kWebAppDirname));
 
-  if (!app_id.empty())
+  if (!app_id.empty()) {
     return app_data_dir.AppendASCII(GenerateApplicationNameFromAppId(app_id));
+  }
 
   std::string host(url.host());
   std::string scheme(url.has_scheme() ? url.scheme() : "http");
@@ -431,7 +297,7 @@ void PostShortcutIOTaskAndReplyWithResult(
                      std::move(reply)));
 }
 
-scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner() {
+scoped_refptr<base::SequencedTaskRunner> GetShortcutIOTaskRunner() {
   return g_shortcuts_task_runner.Get();
 }
 
@@ -449,5 +315,4 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
 #endif
 
 }  // namespace internals
-
 }  // namespace web_app

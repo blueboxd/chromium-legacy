@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/types/pass_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -132,6 +132,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
 
     Builder& SetTitle(std::u16string title) {
       model_->title_ = std::move(title);
+      return *this;
+    }
+
+    Builder& SetAccessibleTitle(std::u16string accessible_title) {
+      model_->accessible_title_ = std::move(accessible_title);
       return *this;
     }
 
@@ -386,6 +391,10 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     return title_;
   }
 
+  const std::u16string& accessible_title(base::PassKey<DialogModelHost>) const {
+    return accessible_title_;
+  }
+
   const std::u16string& subtitle(base::PassKey<DialogModelHost>) const {
     return subtitle_;
   }
@@ -465,6 +474,7 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   bool close_on_deactivate_ = true;
   std::string internal_name_;
   std::u16string title_;
+  std::u16string accessible_title_;
   std::u16string subtitle_;
   ImageModel icon_;
   ImageModel dark_mode_icon_;

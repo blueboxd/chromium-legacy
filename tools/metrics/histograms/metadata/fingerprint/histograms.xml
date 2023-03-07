@@ -36,7 +36,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.Auth.ScanResult" enum="FingerprintScanResult"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>emaamari@google.com</owner>
   <owner>tomhughes@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -64,8 +64,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Fingerprint.Enroll.NumCaptures" units="captures"
+    expires_after="2024-01-10">
+  <owner>agrandi@google.com</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>
+    Count the number of fingerprint sensor captures (i.e. touches) performed
+    during the enrollment session of a new fingerprint. This includes all
+    enrollment captures, including those resulting in errors, such as
+    &quot;partial&quot;, &quot;immobile&quot;, etc.
+  </summary>
+</histogram>
+
 <histogram name="Fingerprint.Enroll.ScanResult" enum="FingerprintScanResult"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>emaamari@google.com</owner>
   <owner>tomhughes@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -78,7 +90,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.FingerprintPowerButtonRace" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <owner>chromeos-fingerprint@google.com</owner>
@@ -91,7 +103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.FingerprintScanDone" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <owner>chromeos-fingerprint@google.com</owner>
@@ -139,6 +151,30 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts the number of times an error in SPI communication is reported. This
     metric is reported in biod during the sensor initialization phase.
+  </summary>
+</histogram>
+
+<histogram name="Fingerprint.Session.RetrievePrimarySessionDuration" units="ms"
+    expires_after="2023-04-17">
+  <owner>patrykd@google.com</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>
+    Measures the time it took SessionManager to respond to
+    RetrievePrimarySession DBus method call.
+  </summary>
+</histogram>
+
+<histogram name="Fingerprint.Session.RetrievePrimarySessionResult"
+    enum="FingerprintRetrievePrimarySessionResult" expires_after="2023-04-17">
+  <owner>patrykd@google.com</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>
+    The result of retrieving primary session when Biometrics Daemon starts or
+    user logs in.
+
+    Retrieving primary session is successful when Session Manager responds to
+    RetrievePrimarySession DBus method call and the response was successfully
+    parsed. It means that success is reported also when user is not logged in.
   </summary>
 </histogram>
 
@@ -283,7 +319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Fingerprint.Unlock.Result" enum="FingerprintUnlockResult"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>emaamari@google.com</owner>
   <owner>tomhughes@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>

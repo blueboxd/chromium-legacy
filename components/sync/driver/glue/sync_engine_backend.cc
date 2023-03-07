@@ -6,13 +6,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/sync/base/features.h"
@@ -360,7 +359,7 @@ void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge) {
     // We are using USS implementation of Nigori and someone asked us to purge
     // it's data. For regular datatypes it's controlled DataTypeManager, but
     // for Nigori we need to do it here.
-    // TODO(crbug.com/922900): try to find better way to implement this logic,
+    // TODO(crbug.com/1142771): try to find better way to implement this logic,
     // it's likely happen only due to BackendMigrator.
     // TODO(crbug.com/1142771): Evaluate whether this logic is necessary at all.
     // There's no "purging" logic for any other data type, so likely it's not
@@ -450,8 +449,7 @@ void SyncEngineBackend::DoOnStandaloneInvalidationReceived(
     const std::string& payload,
     const ModelTypeSet& interested_data_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(kSyncSendInterestedDataTypes) &&
-         base::FeatureList::IsEnabled(kUseSyncInvalidations));
+  DCHECK(base::FeatureList::IsEnabled(kUseSyncInvalidations));
   const IncomingInvalidationStatus status =
       DoOnStandaloneInvalidationReceivedImpl(payload, interested_data_types);
   RecordIncomingInvalidationStatus(status);
@@ -521,13 +519,13 @@ void SyncEngineBackend::LoadAndConnectNigoriController() {
   ConfigureContext configure_context;
   configure_context.authenticated_account_id = authenticated_account_id_;
   configure_context.cache_guid = sync_manager_->cache_guid();
-  // TODO(crbug.com/922900): investigate whether we want to use
-  // kTransportOnly in Butter mode.
+  // Always use kFull mode: it is actually not relevant for Nigori and switching
+  // modes harder to detect on this level / can make first sync setup more
+  // complicated.
   configure_context.sync_mode = SyncMode::kFull;
   configure_context.configuration_start_time = base::Time::Now();
   nigori_controller_->LoadModels(configure_context, base::DoNothing());
   DCHECK_EQ(nigori_controller_->state(), DataTypeController::MODEL_LOADED);
-  // TODO(crbug.com/922900): Do we need to call RegisterDataType() for Nigori?
   sync_manager_->GetModelTypeConnector()->ConnectDataType(
       NIGORI, nigori_controller_->Connect());
 }

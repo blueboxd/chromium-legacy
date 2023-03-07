@@ -55,7 +55,6 @@ source_set("constants_impl") {
   public_deps = [
     "//base",
     "//build:chromeos_buildflags",
-    "//components/services/app_service/public/mojom",
     "//extensions/common:export_impl",
   ]
 
@@ -89,6 +88,7 @@ mojom("mojom") {
     "mojom/manifest.mojom",
     "mojom/permission_set.mojom",
     "mojom/renderer.mojom",
+    "mojom/renderer_host.mojom",
     "mojom/run_location.mojom",
     "mojom/stack_frame.mojom",
     "mojom/url_pattern_set.mojom",
@@ -334,6 +334,8 @@ static_library("common") {
     "manifest_handler.h",
     "manifest_handler_helpers.cc",
     "manifest_handler_helpers.h",
+    "manifest_handlers/app_display_info.cc",
+    "manifest_handlers/app_display_info.h",
     "manifest_handlers/app_isolation_info.cc",
     "manifest_handlers/app_isolation_info.h",
     "manifest_handlers/automation.cc",
@@ -443,6 +445,8 @@ static_library("common") {
     "utils/base_string.h",
     "utils/content_script_utils.cc",
     "utils/content_script_utils.h",
+    "utils/extension_types_utils.cc",
+    "utils/extension_types_utils.h",
     "value_builder.cc",
     "value_builder.h",
     "value_counter.cc",

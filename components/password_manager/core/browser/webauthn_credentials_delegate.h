@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -19,9 +19,6 @@ namespace password_manager {
 class WebAuthnCredentialsDelegate {
  public:
   virtual ~WebAuthnCredentialsDelegate() = default;
-
-  // Returns true if integration between WebAuthn and Autofill is enabled.
-  virtual bool IsWebAuthnAutofillEnabled() const = 0;
 
   // Launches the normal WebAuthn flow that lets users use their phones or
   // security keys to sign-in.

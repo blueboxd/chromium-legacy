@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/side_panel/history_clusters/history_clusters_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/reading_list/reading_list_side_panel_coordinator.h"
+#include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/user_note/user_note_ui_coordinator.h"
@@ -29,7 +30,13 @@
 #include "components/user_notes/user_notes_features.h"
 #include "ui/accessibility/accessibility_features.h"
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_manager.h"
+#include "extensions/common/extension_features.h"
+#endif
+
 namespace {
+
 std::string GetHistogramNameForId(SidePanelEntry::Id id) {
   static constexpr auto id_to_histogram_name_map =
       // Note: once provided the histogram name should not be changed since it
@@ -47,11 +54,13 @@ std::string GetHistogramNameForId(SidePanelEntry::Id id) {
            {SidePanelEntry::Id::kAboutThisSite, "AboutThisSite"},
            {SidePanelEntry::Id::kCustomizeChrome, "CustomizeChrome"},
            {SidePanelEntry::Id::kWebView, "WebView"},
+           {SidePanelEntry::Id::kSearchCompanion, "SearchCompanion"},
            {SidePanelEntry::Id::kExtension, "Extension"}});
   auto* i = id_to_histogram_name_map.find(id);
   DCHECK(i != id_to_histogram_name_map.cend());
   return {i->second};
 }
+
 }  // namespace
 
 // static
@@ -66,13 +75,7 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
       ->CreateAndRegisterEntry(global_registry);
 
   // Add history clusters.
-  auto* history_clusters_service =
-      HistoryClustersServiceFactory::GetForBrowserContext(browser->profile());
-  if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) &&
-      history_clusters_service &&
-      history_clusters_service->IsJourneysEnabled() &&
-      !browser->profile()->IsIncognitoProfile() &&
-      !browser->profile()->IsGuestSession()) {
+  if (HistoryClustersSidePanelCoordinator::IsSupported(browser->profile())) {
     auto* history_clusters_side_panel_coordinator =
         HistoryClustersSidePanelCoordinator::GetOrCreateForBrowser(browser);
     if (browser->profile()->GetPrefs()->GetBoolean(
@@ -85,6 +88,12 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
   // Add read anything.
   if (features::IsReadAnythingEnabled()) {
     ReadAnythingCoordinator::GetOrCreateForBrowser(browser)
+        ->CreateAndRegisterEntry(global_registry);
+  }
+
+  // Add Search Companion.
+  if (base::FeatureList::IsEnabled(features::kSidePanelSearchCompanion)) {
+    SearchCompanionSidePanelCoordinator::GetOrCreateForBrowser(browser)
         ->CreateAndRegisterEntry(global_registry);
   }
 
@@ -104,6 +113,14 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
     WebViewSidePanelCoordinator::GetOrCreateForBrowser(browser)
         ->CreateAndRegisterEntry(global_registry);
   }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kExtensionSidePanelIntegration)) {
+    extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser)
+        ->RegisterExtensionEntries(global_registry);
+  }
+#endif
 
   return;
 }

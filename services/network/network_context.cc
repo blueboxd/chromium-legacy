@@ -11,13 +11,13 @@
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/build_time.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -531,12 +531,10 @@ NetworkContext::NetworkContext(
     SetCTPolicy(std::move(params_->ct_policy));
 
   base::FilePath sct_auditing_path;
-  if (base::FeatureList::IsEnabled(features::kSCTAuditingPersistReports)) {
-    GetFullDataFilePath(params_->file_paths,
-                        &network::mojom::NetworkContextFilePaths::
-                            sct_auditing_pending_reports_file_name,
-                        sct_auditing_path);
-  }
+  GetFullDataFilePath(params_->file_paths,
+                      &network::mojom::NetworkContextFilePaths::
+                          sct_auditing_pending_reports_file_name,
+                      sct_auditing_path);
   sct_auditing_handler_ =
       std::make_unique<SCTAuditingHandler>(this, sct_auditing_path);
   sct_auditing_handler()->SetMode(params_->sct_auditing_mode);
@@ -1342,8 +1340,7 @@ void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
 int NetworkContext::CheckCTComplianceForSignedExchange(
     net::CertVerifyResult& cert_verify_result,
     const net::X509Certificate& certificate,
-    const net::HostPortPair& host_port_pair,
-    const net::NetworkAnonymizationKey& network_anonymization_key) {
+    const net::HostPortPair& host_port_pair) {
   net::X509Certificate* verified_cert = cert_verify_result.verified_cert.get();
 
   net::ct::SCTList verified_scts;
@@ -1373,8 +1370,7 @@ int NetworkContext::CheckCTComplianceForSignedExchange(
       url_request_context_->transport_security_state()->CheckCTRequirements(
           host_port_pair, cert_verify_result.is_issued_by_known_root,
           cert_verify_result.public_key_hashes, verified_cert, &certificate,
-          cert_verify_result.scts, cert_verify_result.policy_compliance,
-          network_anonymization_key);
+          cert_verify_result.scts, cert_verify_result.policy_compliance);
 
   if (url_request_context_->sct_auditing_delegate()) {
     url_request_context_->sct_auditing_delegate()->MaybeEnqueueReport(
@@ -1468,6 +1464,19 @@ void NetworkContext::CreateUDPSocket(
     mojo::PendingReceiver<mojom::UDPSocket> receiver,
     mojo::PendingRemote<mojom::UDPSocketListener> listener) {
   socket_factory_->CreateUDPSocket(std::move(receiver), std::move(listener));
+}
+
+void NetworkContext::CreateRestrictedUDPSocket(
+    const net::IPEndPoint& addr,
+    mojom::RestrictedUDPSocketMode mode,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    mojom::UDPSocketOptionsPtr options,
+    mojo::PendingReceiver<mojom::RestrictedUDPSocket> receiver,
+    mojo::PendingRemote<mojom::UDPSocketListener> listener,
+    CreateRestrictedUDPSocketCallback callback) {
+  socket_factory_->CreateRestrictedUDPSocket(
+      addr, mode, traffic_annotation, std::move(options), std::move(receiver),
+      std::move(listener), std::move(callback));
 }
 
 void NetworkContext::CreateTCPServerSocket(
@@ -2696,8 +2705,7 @@ void NetworkContext::OnVerifyCertForSignedExchangeComplete(
 #if BUILDFLAG(IS_CT_SUPPORTED)
     int ct_result = CheckCTComplianceForSignedExchange(
         *pending_cert_verify->result, *pending_cert_verify->certificate,
-        net::HostPortPair::FromURL(pending_cert_verify->url),
-        pending_cert_verify->network_anonymization_key);
+        net::HostPortPair::FromURL(pending_cert_verify->url));
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
     net::TransportSecurityState::PKPStatus pin_validity =
         url_request_context_->transport_security_state()->CheckPublicKeyPins(

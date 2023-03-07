@@ -5,7 +5,6 @@
 import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/polymer/css_to_wrapper.gni")
 import("//tools/polymer/html_to_wrapper.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
@@ -34,20 +33,6 @@ preprocess_if_expr("preprocess_html") {
   in_files = html_files
 }
 
-preprocess_if_expr("preprocess_css") {
-  defines = [ "is_official_build=$is_official_build" ]
-  out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = css_files
-}
-
-css_to_wrapper("css_wrapper_files") {
-  deps = [ ":preprocess_css" ]
-  in_folder = "$target_gen_dir/$preprocess_folder"
-  out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = css_files
-  minify = optimize_webui
-}
-
 html_to_wrapper("html_wrapper_files") {
   deps = [ ":preprocess_html" ]
   in_folder = "$target_gen_dir/$preprocess_folder"
@@ -66,7 +51,6 @@ copy("copy_mojom") {
     "//chrome/browser/new_tab_page/modules/photos:mojo_bindings_ts__generator",
     "//chrome/browser/new_tab_page/modules/recipes:mojo_bindings_ts__generator",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_ts__generator",
-    "//components/omnibox/browser:mojo_bindings_ts__generator",
   ]
   sources = [
     "$root_gen_dir/chrome/browser/cart/chrome_cart.mojom-webui.ts",
@@ -75,7 +59,6 @@ copy("copy_mojom") {
     "$root_gen_dir/chrome/browser/new_tab_page/modules/photos/photos.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/new_tab_page/modules/recipes/recipes.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom-webui.ts",
-    "$root_gen_dir/components/omnibox/browser/omnibox.mojom-webui.ts",
   ]
 
   if (!is_official_build) {
@@ -127,14 +110,11 @@ if (optimize_webui) {
       "lazy_load.js",
     ]
     out_manifest = "$target_gen_dir/$build_manifest"
-    js_out_files = [
-      "new_tab_page.rollup.js",
-      "lazy_load.rollup.js",
-      "shared.rollup.js",
-    ]
     excludes = [
+                 "chrome://resources/cr_components/color_change_listener/color_change_listener.mojom-webui.js",
                  "chrome://resources/cr_components/customize_themes/customize_themes.mojom-webui.js",
                  "chrome://resources/cr_components/most_visited/most_visited.mojom-webui.js",
+                 "chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js",
                  "chrome://resources/js/browser_command/browser_command.mojom-webui.js",
                  "chrome://resources/js/cr.js",
                  "chrome://resources/js/metrics_reporter/metrics_reporter.mojom-webui.js",
@@ -157,7 +137,7 @@ ts_library_sourcemaps("build_ts") {
   } else {
     tsconfig_base = "tsconfig_base.json"
   }
-  in_files = ts_files + html_wrapper_files + mojo_ts_files + css_wrapper_files
+  in_files = ts_files + html_wrapper_files + mojo_ts_files
 
   deps = [
     "//third_party/polymer/v3_0:library",
@@ -165,6 +145,7 @@ ts_library_sourcemaps("build_ts") {
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/customize_themes:build_ts",
     "//ui/webui/resources/cr_components/most_visited:build_ts",
+    "//ui/webui/resources/cr_components/omnibox:build_ts",
     "//ui/webui/resources/js/browser_command:build_ts",
     "//ui/webui/resources/js/metrics_reporter:build_ts",
   ]
@@ -176,7 +157,6 @@ ts_library_sourcemaps("build_ts") {
 
   extra_deps = [
     ":copy_mojom",
-    ":css_wrapper_files",
     ":html_wrapper_files",
     ":preprocess",
   ]
@@ -204,7 +184,6 @@ generate_grd("build_grd") {
     "$target_gen_dir/modules/photos/icons/resources.grdp",
     "$target_gen_dir/modules/photos/images/resources.grdp",
     "$target_gen_dir/modules/recipes_v2/icons/resources.grdp",
-    "$target_gen_dir/realbox/icons/resources.grdp",
   ]
 
   deps = [
@@ -214,7 +193,6 @@ generate_grd("build_grd") {
     "modules/photos/icons:build_grdp",
     "modules/photos/images:build_grdp",
     "modules/recipes_v2/icons:build_grdp",
-    "realbox/icons:build_grdp",
   ]
 
   if (optimize_webui) {

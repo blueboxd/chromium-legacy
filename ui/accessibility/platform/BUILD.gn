@@ -42,6 +42,9 @@ component("platform") {
     "ax_platform_node.h",
     "ax_platform_node_delegate.cc",
     "ax_platform_node_delegate.h",
+    "child_iterator.h",
+    "child_iterator_base.cc",
+    "child_iterator_base.h",
 
     # Used by browser_accessibility_manager.cc.
     "ax_platform_tree_manager.h",
@@ -61,8 +64,6 @@ component("platform") {
     # Used by //ui/views/views/ax_virtual_view.h.
     "ax_platform_node_base.cc",
     "ax_platform_node_base.h",
-    "ax_platform_node_delegate_base.cc",
-    "ax_platform_node_delegate_base.h",
 
     # Used by //chrome/test/browser_tests/browser_view_browsertest.cc
     "ax_platform_node_test_helper.cc",
@@ -245,6 +246,9 @@ component("platform") {
         "AppKit.framework",
         "Foundation.framework",
       ]
+      weak_frameworks = [
+        "Accessibility.framework",  # macOS 11
+      ]
     }
 
     if (use_atk) {
@@ -277,6 +281,9 @@ component("platform") {
 
       if (use_glib) {
         configs += [ "//build/config/linux:glib" ]
+      }
+      if (use_gio) {
+        configs += [ "//build/linux:gio_config" ]
       }
     }
   }

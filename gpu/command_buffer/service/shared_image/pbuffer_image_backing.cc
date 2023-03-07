@@ -29,16 +29,15 @@ PbufferImageBacking::PbufferImageBacking(
     SkAlphaType alpha_type,
     uint32_t usage,
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture)
-    : ClearTrackingSharedImageBacking(
-          mailbox,
-          format,
-          size,
-          color_space,
-          surface_origin,
-          alpha_type,
-          usage,
-          viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format),
-          false /* is_thread_safe */),
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      surface_origin,
+                                      alpha_type,
+                                      usage,
+                                      format.EstimatedSizeInBytes(size),
+                                      false /* is_thread_safe */),
       on_destruction_closure_runner_(std::move(on_destruction_closure)),
       passthrough_texture_(std::move(passthrough_texture)) {
   DCHECK(!!passthrough_texture_);
@@ -77,8 +76,10 @@ std::unique_ptr<GLTexturePassthroughImageRepresentation>
 PbufferImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
                                                  MemoryTypeTracker* tracker) {
   DCHECK(passthrough_texture_);
+  std::vector<scoped_refptr<gles2::TexturePassthrough>> gl_textures = {
+      passthrough_texture_};
   return std::make_unique<GLTexturePassthroughGLCommonRepresentation>(
-      manager, this, this, tracker, passthrough_texture_);
+      manager, this, this, tracker, std::move(gl_textures));
 }
 
 std::unique_ptr<OverlayImageRepresentation> PbufferImageBacking::ProduceOverlay(
@@ -129,9 +130,12 @@ std::unique_ptr<SkiaImageRepresentation> PbufferImageBacking::ProduceSkia(
         context_state->gr_context()->threadSafeProxy(), &backend_texture);
     cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
   }
+
+  std::vector<sk_sp<SkPromiseImageTexture>> promise_textures = {
+      cached_promise_texture_};
   return std::make_unique<SkiaGLCommonRepresentation>(
       manager, this, gl_client, std::move(context_state),
-      cached_promise_texture_, tracker);
+      std::move(promise_textures), tracker);
 }
 
 bool PbufferImageBacking::GLTextureImageRepresentationBeginAccess(
@@ -141,12 +145,6 @@ bool PbufferImageBacking::GLTextureImageRepresentationBeginAccess(
 }
 
 void PbufferImageBacking::GLTextureImageRepresentationEndAccess(bool readonly) {
-}
-
-void PbufferImageBacking::GLTextureImageRepresentationRelease(
-    bool has_context) {
-  // No action needed: This class retains the passed-in texture for its
-  // lifetime, and releases it in its destructor.
 }
 
 }  // namespace gpu

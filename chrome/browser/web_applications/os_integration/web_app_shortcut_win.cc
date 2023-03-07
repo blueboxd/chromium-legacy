@@ -12,13 +12,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/md5.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/notreached.h"
@@ -30,7 +30,7 @@
 #include "base/win/shortcut.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu_win.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -424,7 +424,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
 
   // Calling UnpinShortcuts in unit-tests currently crashes the test, so skip it
   // for now using the shortcut override mechanism.
-  if (web_app::GetShortcutOverrideForTesting()) {
+  if (web_app::GetOsIntegrationTestOverride()) {
     DeleteShortcuts(all_shortcuts, std::move(result_callback));
     return;
   }
@@ -567,8 +567,8 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
 
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in `GetShortcutPaths()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
 
   // Shortcut paths under which to create shortcuts.
   std::vector<base::FilePath> shortcut_paths =
@@ -579,7 +579,7 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
   // crashes, so use the shortcut override for testing to not pin to taskbar.
   // TODO(crbug.com/1400425): Figure out how to make this call not crash &
   // incorporate unpin / pin methods in unit-tests.
-  if (!shortcut_override) {
+  if (!test_override) {
     pin_to_taskbar =
         creation_locations.in_quick_launch_bar && CanPinShortcutToTaskbar();
   }
@@ -622,8 +622,8 @@ Result UpdatePlatformShortcuts(const base::FilePath& web_app_path,
                                                 base::BlockingType::MAY_BLOCK);
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in `GetShortcutPaths()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
 
   // Update the icon if necessary.
   const base::FilePath icon_file =
@@ -656,8 +656,8 @@ ShortcutLocations GetAppExistingShortCutLocationImpl(
                                                 base::BlockingType::MAY_BLOCK);
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in `GetShortcutPaths()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   ShortcutLocations result;
   ShortcutLocations desktop;
   desktop.on_desktop = true;
@@ -732,8 +732,8 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
                              DeleteShortcutsCallback callback) {
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in `GetShortcutPaths()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   GetShortcutLocationsAndDeleteShortcuts(
       web_app_path, shortcut_info.profile_path, shortcut_info.title,
       base::BindOnce(&FinishDeletingPlatformShortcuts, web_app_path,
@@ -756,8 +756,8 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
                                                 base::BlockingType::MAY_BLOCK);
   // If this is set, then keeping this as a local variable ensures it is not
   // destroyed while we use state from it (retrieved in `GetShortcutPaths()`).
-  scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
-      web_app::GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> test_override =
+      web_app::GetOsIntegrationTestOverride();
   GetShortcutLocationsAndDeleteShortcuts(
       base::FilePath(), profile_path, std::u16string(),
       base::BindOnce(&FinishDeletingAllShortcutsForProfile));
@@ -768,8 +768,8 @@ std::vector<base::FilePath> GetShortcutPaths(
   // Shortcut paths under which to create shortcuts.
   std::vector<base::FilePath> shortcut_paths;
   // if there is no ShortcutOverrirdeForTesting, set it to empty.
-  scoped_refptr<ShortcutOverrideForTesting> testing_shortcuts =
-      GetShortcutOverrideForTesting();
+  scoped_refptr<OsIntegrationTestOverride> testing_shortcuts =
+      GetOsIntegrationTestOverride();
   // Locations to add to shortcut_paths.
   struct {
     bool use_this_location;
@@ -777,22 +777,20 @@ std::vector<base::FilePath> GetShortcutPaths(
     base::FilePath test_path;
   } locations[] = {
       {creation_locations.on_desktop, ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-       testing_shortcuts ? testing_shortcuts->desktop.GetPath()
-                         : base::FilePath()},
+       testing_shortcuts ? testing_shortcuts->desktop() : base::FilePath()},
       {creation_locations.applications_menu_location ==
            APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
-       testing_shortcuts ? testing_shortcuts->application_menu.GetPath()
+       testing_shortcuts ? testing_shortcuts->application_menu()
                          : base::FilePath()},
       {// For some versions of Windows, `in_quick_launch_bar` indicates that we
        // are pinning to taskbar. This needs to be handled by callers.
        creation_locations.in_quick_launch_bar && CanPinShortcutToTaskbar(),
        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
-       testing_shortcuts ? testing_shortcuts->quick_launch.GetPath()
+       testing_shortcuts ? testing_shortcuts->quick_launch()
                          : base::FilePath()},
       {creation_locations.in_startup, ShellUtil::SHORTCUT_LOCATION_STARTUP,
-       testing_shortcuts ? testing_shortcuts->startup.GetPath()
-                         : base::FilePath()}};
+       testing_shortcuts ? testing_shortcuts->startup() : base::FilePath()}};
 
   // Populate shortcut_paths.
   for (auto location : locations) {

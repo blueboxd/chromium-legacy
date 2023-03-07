@@ -9,9 +9,10 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "components/commerce/core/account_checker.h"
@@ -26,14 +27,19 @@ class SharedURLLoaderFactory;
 
 namespace commerce {
 
+class SubscriptionsObserver;
 class SubscriptionsServerProxy;
 class SubscriptionsStorage;
 enum class SubscriptionType;
 struct CommerceSubscription;
 
+extern const char kTrackResultHistogramName[];
+extern const char kUntrackResultHistogramName[];
+
 // Possible result status of a product (un)tracking request. This enum needs to
 // match the values in enums.xml.
 enum class SubscriptionsRequestStatus {
+  // Subscriptions successfully added or removed on server.
   kSuccess = 0,
   // Server failed to parse the request.
   kServerParseError = 1,
@@ -49,9 +55,12 @@ enum class SubscriptionsRequestStatus {
   // for monitoring purpose only and should never happen if the subscriptions
   // work correctly.
   kLost = 6,
+  // No action taken because the product is already tracked/untracked on the
+  // server.
+  kNoOp = 7,
 
   // This enum must be last and is only used for histograms.
-  kMaxValue = kLost
+  kMaxValue = kNoOp
 };
 
 using SubscriptionsRequestCallback =
@@ -95,6 +104,9 @@ class SubscriptionsManager : public signin::IdentityManager::Observer {
   void IsSubscribed(CommerceSubscription subscription,
                     base::OnceCallback<void(bool)> callback);
 
+  void AddObserver(SubscriptionsObserver* observer);
+  void RemoveObserver(SubscriptionsObserver* observer);
+
   // For tests only, return last_sync_succeeded_.
   bool GetLastSyncSucceededForTesting();
 
@@ -114,27 +126,18 @@ class SubscriptionsManager : public signin::IdentityManager::Observer {
   };
 
   struct Request {
-    Request(SubscriptionType type,
-            AsyncOperation operation,
-            SubscriptionsRequestCallback callback);
-    Request(SubscriptionType type,
-            AsyncOperation operation,
-            std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
-            SubscriptionsRequestCallback callback);
+    Request(AsyncOperation operation, base::OnceCallback<void()> callback);
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
     Request(Request&&);
     Request& operator=(Request&&) = default;
     ~Request();
 
-    SubscriptionType type;
     AsyncOperation operation;
-    std::unique_ptr<std::vector<CommerceSubscription>> subscriptions;
-    SubscriptionsRequestCallback callback;
+    base::OnceCallback<void()> callback;
   };
 
-  // Fetch all backend subscriptions and sync with local storage. This should
-  // only be called on manager instantiation and user primary account changed.
+  // Fetch all backend subscriptions and sync with local storage.
   void SyncSubscriptions();
 
   // Check if there is any request running. If not, process the next request in
@@ -145,11 +148,37 @@ class SubscriptionsManager : public signin::IdentityManager::Observer {
   // request. This is chained to the main callback when Request object is built.
   void OnRequestCompletion();
 
-  void ProcessSubscribeRequest(Request request);
+  void HandleSync();
 
-  void ProcessUnsubscribeRequest(Request request);
+  void OnSyncStatusFetched(SubscriptionsRequestStatus result);
 
-  void ProcessSyncRequest(Request request);
+  void HandleSubscribe(
+      std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
+      base::OnceCallback<void(bool)> callback);
+
+  void OnSubscribeStatusFetched(
+      std::vector<CommerceSubscription> notified_subscriptions,
+      base::OnceCallback<void(bool)> callback,
+      SubscriptionsRequestStatus result);
+
+  void OnIncomingSubscriptionsFilteredForSubscribe(
+      SubscriptionType type,
+      SubscriptionsRequestCallback callback,
+      std::unique_ptr<std::vector<CommerceSubscription>> unique_subscriptions);
+
+  void HandleUnsubscribe(
+      std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
+      base::OnceCallback<void(bool)> callback);
+
+  void OnUnsubscribeStatusFetched(
+      std::vector<CommerceSubscription> notified_subscriptions,
+      base::OnceCallback<void(bool)> callback,
+      SubscriptionsRequestStatus result);
+
+  void OnIncomingSubscriptionsFilteredForUnsubscribe(
+      SubscriptionType type,
+      SubscriptionsRequestCallback callback,
+      std::unique_ptr<std::vector<CommerceSubscription>> unique_subscriptions);
 
   void GetRemoteSubscriptionsAndUpdateStorage(
       SubscriptionType type,
@@ -197,6 +226,8 @@ class SubscriptionsManager : public signin::IdentityManager::Observer {
   std::unique_ptr<SubscriptionsStorage> storage_;
 
   raw_ptr<AccountChecker> account_checker_;
+
+  base::ObserverList<SubscriptionsObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<SubscriptionsManager> weak_ptr_factory_;
 };

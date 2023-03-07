@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -28,7 +28,6 @@
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace apps {
 
@@ -57,13 +56,6 @@ StandaloneBrowserExtensionApps::StandaloneBrowserExtensionApps(
     AppServiceProxy* proxy,
     AppType app_type)
     : apps::AppPublisher(proxy), app_type_(app_type) {
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy->AppService();
-  if (!base::FeatureList::IsEnabled(kStopMojomAppService) &&
-      !app_service.is_bound()) {
-    return;
-  }
-  PublisherBase::Initialize(app_service,
-                            apps::ConvertAppTypeToMojomAppType(app_type_));
   login_observation_.Observe(ash::LoginState::Get());
   // Check now in case login has already happened.
   LoggedInStateChanged();
@@ -125,6 +117,22 @@ void StandaloneBrowserExtensionApps::LoadIcon(const std::string& app_id,
       base::BindOnce(&StandaloneBrowserExtensionApps::OnLoadIcon,
                      weak_factory_.GetWeakPtr(), icon_effects, size_hint_in_dip,
                      std::move(callback)));
+}
+
+void StandaloneBrowserExtensionApps::GetCompressedIconData(
+    const std::string& app_id,
+    int32_t size_in_dip,
+    ui::ResourceScaleFactor scale_factor,
+    LoadIconCallback callback) {
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound()) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+    return;
+  }
+
+  controller_->GetCompressedIcon(app_id, size_in_dip, scale_factor,
+                                 std::move(callback));
 }
 
 void StandaloneBrowserExtensionApps::Launch(const std::string& app_id,
@@ -311,24 +319,6 @@ void StandaloneBrowserExtensionApps::SetWindowMode(const std::string& app_id,
   controller_->SetWindowMode(app_id, window_mode);
 }
 
-void StandaloneBrowserExtensionApps::Connect(
-    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
-    apps::mojom::ConnectOptionsPtr opts) {
-  mojo::Remote<apps::mojom::Subscriber> subscriber(
-      std::move(subscriber_remote));
-
-  mojo::RemoteSetElementId id = subscribers_.Add(std::move(subscriber));
-
-  std::vector<apps::mojom::AppPtr> apps;
-  for (auto& it : app_mojom_cache_) {
-    apps.push_back(it.second.Clone());
-  }
-
-  subscribers_.Get(id)->OnApps(std::move(apps),
-                               apps::ConvertAppTypeToMojomAppType(app_type_),
-                               true /* should_notify_initialized */);
-}
-
 void StandaloneBrowserExtensionApps::StopApp(const std::string& app_id) {
   // It is possible that Lacros is briefly unavailable, for example if it shuts
   // down for an update.
@@ -354,11 +344,6 @@ void StandaloneBrowserExtensionApps::OnApps(std::vector<AppPtr> deltas) {
   }
 
   if (controller_.is_bound()) {
-    for (const AppPtr& delta : deltas) {
-      app_mojom_cache_[delta->app_id] = ConvertAppToMojomApp(delta);
-      PublisherBase::Publish(ConvertAppToMojomApp(delta), subscribers_);
-    }
-
     apps::AppPublisher::Publish(std::move(deltas), app_type_,
                                 should_notify_initialized_);
     should_notify_initialized_ = false;
@@ -390,8 +375,6 @@ void StandaloneBrowserExtensionApps::RegisterAppController(
   } else {
     std::vector<AppPtr> deltas;
     for (auto& it : app_cache_) {
-      app_mojom_cache_[it.first] = ConvertAppToMojomApp(it.second);
-      PublisherBase::Publish(ConvertAppToMojomApp(it.second), subscribers_);
       deltas.push_back(std::move(it.second));
     }
     app_cache_.clear();

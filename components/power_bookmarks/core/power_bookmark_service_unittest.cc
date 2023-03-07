@@ -15,12 +15,13 @@
 #include "base/test/task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/power_bookmarks/common/power.h"
+#include "components/power_bookmarks/common/power_bookmark_observer.h"
+#include "components/power_bookmarks/common/power_overview.h"
+#include "components/power_bookmarks/common/search_params.h"
 #include "components/power_bookmarks/core/power_bookmark_data_provider.h"
 #include "components/power_bookmarks/core/power_bookmark_features.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
-#include "components/power_bookmarks/core/powers/power.h"
-#include "components/power_bookmarks/core/powers/power_overview.h"
-#include "components/power_bookmarks/core/powers/search_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,7 +70,8 @@ class PowerBookmarkServiceTest : public testing::Test {
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
     service_ = std::make_unique<PowerBookmarkService>(
-        model_.get(), temp_directory_.GetPath(), backend_task_runner_);
+        model_.get(), temp_directory_.GetPath(),
+        task_environment_.GetMainThreadTaskRunner(), backend_task_runner_);
     RunUntilIdle();
   }
 
@@ -91,6 +93,7 @@ class PowerBookmarkServiceTest : public testing::Test {
   base::HistogramTester* histogram() { return &histogram_; }
 
  private:
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList test_features_;
 
   std::unique_ptr<PowerBookmarkService> service_;
@@ -98,7 +101,6 @@ class PowerBookmarkServiceTest : public testing::Test {
 
   base::ScopedTempDir temp_directory_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_;
 };
 
@@ -109,7 +111,7 @@ class MockDataProvider : public PowerBookmarkDataProvider {
                     PowerBookmarkMeta* meta));
 };
 
-class MockObserver : public PowerBookmarkService::Observer {
+class MockObserver : public PowerBookmarkObserver {
  public:
   MOCK_METHOD0(OnPowersChanged, void());
 };
@@ -201,7 +203,7 @@ TEST_F(PowerBookmarkServiceTest, GetPowerOverviewsForType) {
   RunUntilIdle();
 }
 
-TEST_F(PowerBookmarkServiceTest, Search) {
+TEST_F(PowerBookmarkServiceTest, SearchPowers) {
   base::MockCallback<SuccessCallback> success_cb;
   EXPECT_CALL(success_cb, Run(IsTrue())).Times(3);
 
@@ -223,11 +225,11 @@ TEST_F(PowerBookmarkServiceTest, Search) {
   EXPECT_CALL(powers_cb, Run(SizeIs(2)));
 
   SearchParams search_params{.query = "/a"};
-  service()->Search(search_params, powers_cb.Get());
+  service()->SearchPowers(search_params, powers_cb.Get());
   RunUntilIdle();
 }
 
-TEST_F(PowerBookmarkServiceTest, SearchNoteText) {
+TEST_F(PowerBookmarkServiceTest, SearchPowersNoteText) {
   base::MockCallback<SuccessCallback> success_cb;
   EXPECT_CALL(success_cb, Run(IsTrue())).Times(2);
 
@@ -257,7 +259,33 @@ TEST_F(PowerBookmarkServiceTest, SearchNoteText) {
   EXPECT_CALL(powers_cb, Run(SizeIs(1)));
 
   SearchParams search_params{.query = "lorem"};
-  service()->Search(search_params, powers_cb.Get());
+  service()->SearchPowers(search_params, powers_cb.Get());
+  RunUntilIdle();
+}
+
+TEST_F(PowerBookmarkServiceTest, SearchPowerOverviews) {
+  base::MockCallback<SuccessCallback> success_cb;
+  EXPECT_CALL(success_cb, Run(IsTrue())).Times(3);
+
+  service()->CreatePower(
+      MakePower(GURL("https://example.com/a1.html"),
+                sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK),
+      success_cb.Get());
+  service()->CreatePower(
+      MakePower(GURL("https://example.com/b1.html"),
+                sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK),
+      success_cb.Get());
+  service()->CreatePower(
+      MakePower(GURL("https://example.com/a1.html"),
+                sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK),
+      success_cb.Get());
+  RunUntilIdle();
+
+  base::MockCallback<PowerOverviewsCallback> result_cb;
+  EXPECT_CALL(result_cb, Run(SizeIs(1)));
+
+  SearchParams search_params{.query = "/a"};
+  service()->SearchPowerOverviews(search_params, result_cb.Get());
   RunUntilIdle();
 }
 

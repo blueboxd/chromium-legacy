@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "ash/constants/ash_paths.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -575,7 +575,7 @@ void BrowserPolicyConnectorAsh::RestartDeviceCloudPolicyInitializer() {
           state_keys_broker_.get(),
           device_cloud_policy_manager_->device_store(),
           device_cloud_policy_manager_,
-          chromeos::system::StatisticsProvider::GetInstance());
+          ash::system::StatisticsProvider::GetInstance());
   device_cloud_policy_initializer_->Init();
 }
 

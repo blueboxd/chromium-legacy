@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/display_item_list.h"
@@ -73,16 +73,22 @@ int SkiaPaintCanvas::save() {
   return canvas_->save();
 }
 
-int SkiaPaintCanvas::saveLayer(const SkRect* bounds, const PaintFlags* flags) {
-  if (!flags)
-    return canvas_->saveLayer(bounds, nullptr);
-
-  SkPaint paint = flags->ToSkPaint();
-  return canvas_->saveLayer(bounds, &paint);
+int SkiaPaintCanvas::saveLayer(const PaintFlags& flags) {
+  SkPaint paint = flags.ToSkPaint();
+  return canvas_->saveLayer(nullptr, &paint);
 }
 
-int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds, uint8_t alpha) {
-  return canvas_->saveLayerAlpha(bounds, alpha);
+int SkiaPaintCanvas::saveLayer(const SkRect& bounds, const PaintFlags& flags) {
+  SkPaint paint = flags.ToSkPaint();
+  return canvas_->saveLayer(&bounds, &paint);
+}
+
+int SkiaPaintCanvas::saveLayerAlphaf(float alpha) {
+  return canvas_->saveLayerAlphaf(nullptr, alpha);
+}
+
+int SkiaPaintCanvas::saveLayerAlphaf(const SkRect& bounds, float alpha) {
+  return canvas_->saveLayerAlphaf(&bounds, alpha);
 }
 
 void SkiaPaintCanvas::restore() {
@@ -117,14 +123,6 @@ void SkiaPaintCanvas::concat(const SkM44& matrix) {
   canvas_->concat(matrix);
 }
 
-void SkiaPaintCanvas::concat(const SkMatrix& matrix) {
-  canvas_->concat(matrix);
-}
-
-void SkiaPaintCanvas::setMatrix(const SkMatrix& matrix) {
-  canvas_->setMatrix(matrix);
-}
-
 void SkiaPaintCanvas::clipRect(const SkRect& rect,
                                SkClipOp op,
                                bool do_anti_alias) {
@@ -144,16 +142,8 @@ void SkiaPaintCanvas::clipPath(const SkPath& path,
   canvas_->clipPath(path, op, do_anti_alias);
 }
 
-SkRect SkiaPaintCanvas::getLocalClipBounds() const {
-  return canvas_->getLocalClipBounds();
-}
-
 bool SkiaPaintCanvas::getLocalClipBounds(SkRect* bounds) const {
   return canvas_->getLocalClipBounds(bounds);
-}
-
-SkIRect SkiaPaintCanvas::getDeviceClipBounds() const {
-  return canvas_->getDeviceClipBounds();
 }
 
 bool SkiaPaintCanvas::getDeviceClipBounds(SkIRect* bounds) const {
@@ -369,16 +359,8 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
     SkPDF::SetNodeId(canvas_, 0);
 }
 
-void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
+void SkiaPaintCanvas::drawPicture(PaintRecord record) {
   drawPicture(record, PlaybackParams::CustomDataRasterCallback());
-}
-
-bool SkiaPaintCanvas::isClipEmpty() const {
-  return canvas_->isClipEmpty();
-}
-
-SkMatrix SkiaPaintCanvas::getTotalMatrix() const {
-  return canvas_->getTotalMatrix();
 }
 
 SkM44 SkiaPaintCanvas::getLocalToDevice() const {
@@ -408,7 +390,7 @@ void SkiaPaintCanvas::setNodeId(int node_id) {
 }
 
 void SkiaPaintCanvas::drawPicture(
-    sk_sp<const PaintRecord> record,
+    PaintRecord record,
     PlaybackParams::CustomDataRasterCallback custom_raster_callback) {
   auto did_draw_op_cb =
       context_flushes_.enable
@@ -417,7 +399,7 @@ void SkiaPaintCanvas::drawPicture(
           : PlaybackParams::DidDrawOpCallback();
   PlaybackParams params(image_provider_, canvas_->getLocalToDevice(),
                         custom_raster_callback, did_draw_op_cb);
-  record->Playback(canvas_, params);
+  record.Playback(canvas_, params);
 }
 
 void SkiaPaintCanvas::FlushAfterDrawIfNeeded() {

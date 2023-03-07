@@ -10,7 +10,6 @@ import android.app.job.JobScheduler;
 import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Build;
 import android.os.PersistableBundle;
 
 import androidx.annotation.VisibleForTesting;
@@ -18,11 +17,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.variations.VariationsServiceMetricsHelper;
 import org.chromium.android_webview.common.variations.VariationsUtils;
-import org.chromium.android_webview.services.ServicesStatsHelper.NonembeddedService;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -84,16 +81,8 @@ public class AwVariationsSeedFetcher extends JobService {
         }
     }
 
-    // Use JobScheduler.getPendingJob() if it's available. Otherwise, fall back to iterating over
-    // all jobs to find the one we want.
     private static JobInfo getPendingJob(JobScheduler scheduler, int jobId) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            for (JobInfo info : scheduler.getAllPendingJobs()) {
-                if (info.getId() == jobId) return info;
-            }
-            return null;
-        }
-        return ApiHelperForN.getPendingJob(scheduler, jobId);
+        return scheduler.getPendingJob(jobId);
     }
 
     private static JobScheduler getScheduler() {
@@ -224,11 +213,6 @@ public class AwVariationsSeedFetcher extends JobService {
                 Log.e(TAG, "Failed to write variations SharedPreferences to disk");
             }
         }
-    }
-
-    @Override
-    public void onCreate() {
-        ServicesStatsHelper.recordServiceLaunch(NonembeddedService.AW_VARIATIONS_SEED_FETCHER);
     }
 
     @Override

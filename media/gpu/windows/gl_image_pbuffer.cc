@@ -16,37 +16,15 @@ GLImagePbuffer::GLImagePbuffer(const gfx::Size& size, EGLSurface surface)
 gfx::Size GLImagePbuffer::GetSize() {
   return size_;
 }
-unsigned GLImagePbuffer::GetInternalFormat() {
-  return GL_BGRA_EXT;
-}
-unsigned GLImagePbuffer::GetDataType() {
-  return GL_UNSIGNED_BYTE;
-}
 gl::GLImage::Type GLImagePbuffer::GetType() const {
   return gl::GLImage::Type::PBUFFER;
-}
-gl::GLImage::BindOrCopy GLImagePbuffer::ShouldBindOrCopy() {
-  return gl::GLImage::BindOrCopy::BIND;
 }
 // PbufferPictureBuffer::CopySurfaceComplete does the actual binding, so
 // this doesn't do anything and always succeeds.
 bool GLImagePbuffer::BindTexImage(unsigned target) {
   return true;
 }
-void ReleaseTexImage(unsigned target) {}
-bool GLImagePbuffer::CopyTexImage(unsigned target) {
-  NOTREACHED();
-  return false;
-}
-bool GLImagePbuffer::CopyTexSubImage(unsigned target,
-                                     const gfx::Point& offset,
-                                     const gfx::Rect& rect) {
-  return false;
-}
 void SetColorSpace(const gfx::ColorSpace& color_space) {}
-void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                  uint64_t process_tracing_id,
-                  const std::string& dump_name) {}
 
 GLImagePbuffer::~GLImagePbuffer() {
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay();

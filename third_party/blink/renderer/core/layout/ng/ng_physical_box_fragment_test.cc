@@ -6,15 +6,13 @@
 
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class NGPhysicalBoxFragmentTest : public NGLayoutTest {
+class NGPhysicalBoxFragmentTest : public RenderingTest {
  public:
-  NGPhysicalBoxFragmentTest() : NGLayoutTest() {}
-
   const NGPhysicalBoxFragment& GetBodyFragment() const {
     return *To<LayoutBlockFlow>(GetDocument().body()->GetLayoutObject())
                 ->GetPhysicalFragment(0);
@@ -190,7 +188,6 @@ TEST_F(NGPhysicalBoxFragmentTest, ReplacedBlock) {
 }
 
 TEST_F(NGPhysicalBoxFragmentTest, IsFragmentationContextRoot) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
   SetBodyInnerHTML(R"HTML(
     <div id="multicol" style="columns:3;">
       <div id="child"></div>
@@ -211,7 +208,6 @@ TEST_F(NGPhysicalBoxFragmentTest, IsFragmentationContextRoot) {
 }
 
 TEST_F(NGPhysicalBoxFragmentTest, IsFragmentationContextRootNested) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
   SetBodyInnerHTML(R"HTML(
     <div id="outer" style="columns:3;">
       <div id="foo">
@@ -246,7 +242,6 @@ TEST_F(NGPhysicalBoxFragmentTest, IsFragmentationContextRootNested) {
 }
 
 TEST_F(NGPhysicalBoxFragmentTest, IsFragmentationContextRootFieldset) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
   SetBodyInnerHTML(R"HTML(
     <fieldset id="fieldset" style="columns:3;">
       <legend id="legend"></legend>
@@ -295,7 +290,6 @@ TEST_F(NGPhysicalBoxFragmentTest, MayHaveDescendantAboveBlockStart) {
 
 TEST_F(NGPhysicalBoxFragmentTest,
        MayHaveDescendantAboveBlockStartBlockInInline) {
-  ScopedLayoutNGBlockInInlineForTest block_in_inline(true);
   SetBodyInnerHTML(R"HTML(
     <div id="container2">
       <div id="container">
@@ -313,8 +307,6 @@ TEST_F(NGPhysicalBoxFragmentTest,
 }
 
 TEST_F(NGPhysicalBoxFragmentTest, OverflowClipMarginVisualBox) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       body {

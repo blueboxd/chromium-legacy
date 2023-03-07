@@ -939,14 +939,14 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         ApiHelperForO.setColorMode(window, colorMode);
     }
 
-    @SuppressLint("NewApi") // This should only be called if Display.Mode is available.
     private void recomputeSupportedRefreshRates() {
         Display.Mode currentMode = mDisplayAndroid.getCurrentMode();
-        assert currentMode != null;
-
         List<Display.Mode> supportedModes = mDisplayAndroid.getSupportedModes();
-        assert supportedModes != null;
-        assert supportedModes.size() > 0;
+        // Note: getCurrentMode() and getSupportedModes() can return null in some situations - see
+        // crbug.com/1401514.
+        if (currentMode == null || supportedModes == null || supportedModes.size() == 0) {
+            return;
+        }
 
         List<Display.Mode> supportedRefreshRateModes = new ArrayList<Display.Mode>();
         for (int i = 0; i < supportedModes.size(); ++i) {

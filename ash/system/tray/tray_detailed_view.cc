@@ -19,9 +19,9 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
+#include "base/functional/bind.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -381,14 +381,16 @@ void TrayDetailedView::OverrideProgressBarAccessibleName(
   progress_bar_accessible_name_ = name;
 }
 
-void TrayDetailedView::CreateTitleRow(int string_id) {
+void TrayDetailedView::CreateTitleRow(int string_id, bool create_back_button) {
   DCHECK(!tri_view_);
 
   tri_view_ = AddChildViewAt(CreateTitleTriView(string_id), 0);
-
-  back_button_ = delegate_->CreateBackButton(base::BindRepeating(
-      &TrayDetailedView::TransitionToMainView, base::Unretained(this)));
-  tri_view_->AddView(TriView::Container::START, back_button_);
+  if (create_back_button) {
+    back_button_ = delegate_->CreateBackButton(base::BindRepeating(
+        &TrayDetailedView::TransitionToMainView, base::Unretained(this)));
+    back_button_->SetID(VIEW_ID_QS_DETAILED_VIEW_BACK_BUTTON);
+    tri_view_->AddView(TriView::Container::START, back_button_);
+  }
 
   // If this view doesn't have a separator, adds an empty view as a placeholder
   // so that the views below won't move up when the `progress_bar_` becomes
@@ -418,9 +420,12 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
   int start_width = start_view->GetPreferredSize().width();
   int end_width = end_view->GetPreferredSize().width();
   if (start_width < end_width) {
+    DCHECK(start_view->GetVisible());
     start_view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, 0, 0, end_width - start_width)));
   } else {
+    // Ensure the end container is visible, even if it has no buttons.
+    tri_view_->SetContainerVisible(TriView::Container::END, true);
     end_view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, start_width - end_width, 0, 0)));
   }

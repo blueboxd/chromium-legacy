@@ -51,7 +51,7 @@ namespace media {
 
 // Called by VideoCaptureManager to open, close and start, stop Mac video
 // capture devices.
-class VideoCaptureDeviceMac
+class CAPTURE_EXPORT VideoCaptureDeviceMac
     : public VideoCaptureDevice,
       public VideoCaptureDeviceAVFoundationFrameReceiver {
  public:
@@ -96,9 +96,13 @@ class VideoCaptureDeviceMac
   void ReceiveError(VideoCaptureError error,
                     const base::Location& from_here,
                     const std::string& reason) override;
+  void ReceiveCaptureConfigurationChanged() override;
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().
   void LogMessage(const std::string& message);
+
+  void SetIsPortraitEffectSupportedForTesting(bool isPortraitEffectSupported);
+  void SetIsPortraitEffectActiveForTesting(bool isPortraitEffectActive);
 
   static std::string GetDeviceModelId(const std::string& device_id,
                                       VideoCaptureApi capture_api,
@@ -112,6 +116,7 @@ class VideoCaptureDeviceMac
                      const base::Location& from_here,
                      const std::string& reason);
   bool UpdateCaptureResolution();
+  void OnCaptureConfigurationChanged();
 
   // Flag indicating the internal state.
   enum InternalState { kNotInitialized, kIdle, kCapturing, kError };

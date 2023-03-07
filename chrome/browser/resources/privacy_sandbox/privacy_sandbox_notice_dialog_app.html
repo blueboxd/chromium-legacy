@@ -4,7 +4,7 @@
   <div class="content-area custom-scrollbar" scrollable tabindex="-1">
     <div class="header">
       <img class="logo" alt="">
-      <h2>$i18n{m1NoticeRowTitle}</h2>
+      <h1>$i18n{m1NoticeRowTitle}</h1>
     </div>
     <div class="section cr-secondary-text">
       $i18n{m1NoticeRowDescription1}
@@ -13,7 +13,7 @@
       $i18n{m1NoticeRowDescription2}
     </div>
     <div class="banner">
-      <img alt="$i18n{m1NoticeRowBannerImageA11yDescription}">
+      <img class="topics-banner" alt="">
     </div>
     <div class="section cr-secondary-text">
       $i18n{m1NoticeRowDescription3}
@@ -22,15 +22,9 @@
         expanded="{{expanded_}}"
         title="$i18n{m1NoticeRowLearnMoreExpandLabel}">
       <div class="paragraph">
-        <div><b>$i18n{m1NoticeRowLearnMoreHeading1}</b></div>
-          <div class="cr-secondary-text">
-          $i18n{m1NoticeRowLearnMoreDescription1}
-        </div>
-      </div>
-      <div class="paragraph">
-        <div><b>$i18n{m1NoticeRowLearnMoreHeading2}</b></div>
+        <h2>$i18n{m1NoticeRowLearnMoreHeading1}</h2>
         <div class="cr-secondary-text">
-          $i18n{m1NoticeRowLearnMoreDescription2}
+          $i18n{m1NoticeRowLearnMoreDescription1}
         </div>
         <ul class="cr-secondary-text">
           <li>$i18n{m1NoticeRowLearnMoreBullet1}</li>
@@ -38,31 +32,39 @@
         </ul>
       </div>
       <div class="paragraph cr-secondary-text">
-        $i18n{m1NoticeRowLearnMoreDescription3}
+        $i18n{m1NoticeRowLearnMoreDescription2}
       </div>
       <div class="paragraph cr-secondary-text">
-        $i18n{m1NoticeRowLearnMoreDescription4}
+        $i18n{m1NoticeRowLearnMoreDescription3}
       </div>
       <div class="paragraph">
-        <div><b>$i18n{m1NoticeRowLearnMoreHeading3}</b></div>
+        <h2>$i18n{m1NoticeRowLearnMoreHeading2}</h2>
         <div class="cr-secondary-text">
-          $i18n{m1NoticeRowLearnMoreDescription5}
-        </div>
-        <div class="cr-secondary-text">
-          $i18n{m1NoticeRowLearnMoreDescription6}
+          $i18n{m1NoticeRowLearnMoreDescription4}
         </div>
       </div>
+      <div class="paragraph cr-secondary-text">
+        $i18n{m1NoticeRowLearnMoreDescription5}
+      </div>
     </privacy-sandbox-dialog-learn-more>
-    <div class="section cr-secondary-text">
+    <div class="section cr-secondary-text" id="lastTextElement">
       $i18n{m1NoticeRowDescription4}
     </div>
+    <div class="buttons-container">
+      <cr-button id="settingsButton" on-click="onNoticeOpenSettings">
+        $i18n{m1NoticeRowSettingsButton}
+      </cr-button>
+      <cr-button id="ackButton" class="action-button"
+          on-click="onNoticeAcknowledge">
+        $i18n{m1NoticeRowAckButton}
+      </cr-button>
+    </div>
   </div>
-  <div class="buttons-container">
-    <cr-button id="settingsButton" on-click="onNoticeOpenSettings">
-      $i18n{m1NoticeRowSettingsButton}
-    </cr-button>
-    <cr-button id="ackButton" on-click="onNoticeAcknowledge">
-      $i18n{m1NoticeRowAckButton}
+  <div id="showMoreOverlay" hidden="[[wasScrolledToBottom]]">
+    <cr-button id="moreButton" on-click="onNoticeMoreClicked"
+        class="action-button" aria-hidden="true" tabindex="-1">
+      $i18n{m1DialogMoreButton}
+      <iron-icon icon="cr:expand-more"></iron-icon>
     </cr-button>
   </div>
 </div>

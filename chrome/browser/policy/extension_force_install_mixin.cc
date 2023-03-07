@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
@@ -51,6 +51,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/mojom/view_type.mojom.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -72,6 +73,9 @@ namespace {
 // Name of the directory whose contents are served by the embedded test
 // server.
 constexpr char kServedDirName[] = "served";
+// Hardcoded string value expected from the extension after extension is
+// installed and it started executing.
+constexpr char kReadyMessage[] = "ready";
 // Template for the file name of a served CRX file.
 constexpr char kCrxFileNameTemplate[] = "%s-%s.crx";
 // Template for the file name of a served update manifest file.
@@ -167,6 +171,7 @@ class ForceInstallWaiter final {
   std::unique_ptr<extensions::TestExtensionRegistryObserver> registry_observer_;
   std::unique_ptr<extensions::ExtensionHostTestHelper>
       background_page_first_load_observer_;
+  std::unique_ptr<ExtensionTestMessageListener> extension_message_listener_;
 };
 
 ForceInstallWaiter::ForceInstallWaiter(
@@ -198,6 +203,11 @@ ForceInstallWaiter::ForceInstallWaiter(
       background_page_first_load_observer_->RestrictToType(
           extensions::mojom::ViewType::kExtensionBackgroundPage);
       break;
+    case ExtensionForceInstallMixin::WaitMode::kReadyMessageReceived:
+      extension_message_listener_ =
+          std::make_unique<ExtensionTestMessageListener>(kReadyMessage);
+      extension_message_listener_->set_extension_id(extension_id_);
+      break;
   }
 }
 
@@ -228,6 +238,10 @@ void ForceInstallWaiter::WaitImpl(bool* success) {
       ASSERT_NO_FATAL_FAILURE(background_page_first_load_observer_
                                   ->WaitForHostCompletedFirstLoad());
       *success = true;
+      break;
+    case ExtensionForceInstallMixin::WaitMode::kReadyMessageReceived:
+      ASSERT_NO_FATAL_FAILURE(*success = extension_message_listener_
+                                             ->WaitUntilSatisfied());
       break;
   }
 }
@@ -340,14 +354,17 @@ void UpdatePolicyViaMockPolicyProvider(
       policy_map.GetMutable(policy::key::kExtensionInstallForcelist);
   if (existing_entry && existing_entry->value(base::Value::Type::LIST)) {
     // Append to the existing policy.
-    existing_entry->value(base::Value::Type::LIST)->Append(policy_item_value);
+    existing_entry->value(base::Value::Type::LIST)
+        ->GetList()
+        .Append(policy_item_value);
   } else {
     // Set the new policy value.
-    base::Value policy_value(base::Value::Type::LIST);
+    base::Value::List policy_value;
     policy_value.Append(policy_item_value);
     policy_map.Set(policy::key::kExtensionInstallForcelist,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD, std::move(policy_value),
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::Value(std::move(policy_value)),
                    /*external_data_fetcher=*/nullptr);
   }
   mock_policy_provider->UpdateChromePolicy(policy_map);

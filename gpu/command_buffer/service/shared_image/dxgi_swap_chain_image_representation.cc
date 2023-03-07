@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/scoped_restore_texture.h"
 
 namespace gpu {
@@ -28,10 +27,10 @@ DXGISwapChainOverlayImageRepresentation::
 DXGISwapChainOverlayImageRepresentation::
     ~DXGISwapChainOverlayImageRepresentation() = default;
 
-OverlayImageRepresentation::DCompLayerContent
-DXGISwapChainOverlayImageRepresentation::GetDCompLayerContent() const {
+absl::optional<gl::DCLayerOverlayImage>
+DXGISwapChainOverlayImageRepresentation::GetDCLayerOverlayImage() {
   return static_cast<DXGISwapChainImageBacking*>(backing())
-      ->GetDCompLayerContent();
+      ->GetDCLayerOverlayImage();
 }
 
 bool DXGISwapChainOverlayImageRepresentation::BeginReadAccess(
@@ -47,11 +46,6 @@ bool DXGISwapChainOverlayImageRepresentation::BeginReadAccess(
 
 void DXGISwapChainOverlayImageRepresentation::EndReadAccess(
     gfx::GpuFenceHandle release_fence) {}
-
-gl::GLImage* DXGISwapChainOverlayImageRepresentation::GetGLImage() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
 
 GLTexturePassthroughDXGISwapChainBufferRepresentation::
     GLTexturePassthroughDXGISwapChainBufferRepresentation(

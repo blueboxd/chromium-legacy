@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/component/cpp/fidl.h>
+#include <fuchsia/element/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
-#include <fuchsia/ui/policy/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fdio/directory.h>
+#include <lib/fidl/cpp/interface_ptr.h>
+#include <lib/sys/component/cpp/testing/realm_builder.h>
 #include <lib/sys/cpp/component_context.h>
-#include <lib/ui/scenic/cpp/view_token_pair.h>
-#include <lib/vfs/cpp/pseudo_file.h>
+#include <lib/sys/cpp/service_directory.h>
+
 #include <iostream>
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/file_utils.h"
@@ -22,14 +26,17 @@
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/fuchsia_component_support/annotations_manager.h"
 #include "fuchsia_web/common/init_logging.h"
+#include "fuchsia_web/shell/present_frame.h"
 #include "fuchsia_web/shell/remote_debugging_port.h"
-#include "fuchsia_web/webinstance_host/web_instance_host_v1.h"
+#include "fuchsia_web/webinstance_host/web_instance_host.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "url/gurl.h"
 
@@ -41,6 +48,7 @@ constexpr char kHeadlessSwitch[] = "headless";
 constexpr char kEnableProtectedMediaIdentifier[] =
     "enable-protected-media-identifier";
 constexpr char kWebEnginePackageName[] = "web-engine-package-name";
+constexpr char kFromLauncher[] = "from-launcher";
 constexpr char kUseWebInstance[] = "use-web-instance";
 constexpr char kEnableWebInstanceTmp[] = "enable-web-instance-tmp";
 
@@ -110,17 +118,87 @@ fuchsia::web::ContextProviderPtr ConnectToContextProvider(
   return web_engine_service_dir.Connect<fuchsia::web::ContextProvider>();
 }
 
+// Appends the arguments of `command_line` (ignoring the program name at
+// position zero) to the command line for the realm.
+void AppendCommandLineArguments(component_testing::RealmBuilder& realm_builder,
+                                const base::CommandLine& command_line) {
+  auto decl = realm_builder.GetRealmDecl();
+
+  // Find the "args" list in the program declaration.
+  fuchsia::data::DictionaryEntry* args_entry = nullptr;
+  auto* entries = decl.mutable_program()->mutable_info()->mutable_entries();
+  for (auto& entry : *entries) {
+    if (entry.key == "args") {
+      DCHECK(entry.value->is_str_vec());
+      args_entry = &entry;
+      break;
+    }
+  }
+  if (!args_entry) {
+    // Create a new "args" list and insert it at the proper location in the
+    // program's entries.
+    auto lower_bound = base::ranges::lower_bound(
+        *entries, "args", /*comp=*/{},
+        [](const fuchsia::data::DictionaryEntry& entry) { return entry.key; });
+    auto it = entries->emplace(lower_bound);
+    it->key = "args";
+    it->value = fuchsia::data::DictionaryValue::New();
+    it->value->set_str_vec({});
+    args_entry = &*it;
+  }
+
+  // Append all args following the program name in `command_line` to the
+  // program's args.
+  args_entry->value->str_vec().insert(args_entry->value->str_vec().end(),
+                                      command_line.argv().begin() + 1,
+                                      command_line.argv().end());
+  realm_builder.ReplaceRealmDecl(std::move(decl));
+}
+
+// web_engine_shell needs to provide capabilities to children it launches (via
+// WebInstanceHost, for example). Test components are not able to do this, so
+// use RealmBuilder to relaunch web_engine_shell via
+// `web_engine_shell_for_web_instance_host_component` (which includes
+// `--from-launcher` on its command line) with the contents of this process's
+// command line.
+int RelaunchForWebInstanceHost(const base::CommandLine& command_line) {
+  auto realm_builder = component_testing::RealmBuilder::CreateFromRelativeUrl(
+      "#meta/web_engine_shell_for_web_instance_host.cm");
+  AppendCommandLineArguments(realm_builder, command_line);
+
+  auto realm = realm_builder.Build();
+
+  fuchsia::component::BinderPtr binder_proxy =
+      realm.Connect<fuchsia::component::Binder>();
+
+  // Wait for binder_proxy to be closed.
+  base::RunLoop run_loop;
+  binder_proxy.set_error_handler(
+      [quit_closure = run_loop.QuitClosure()](zx_status_t status) {
+        std::move(quit_closure).Run();
+      });
+  run_loop.Run();
+
+  // Nothing depends on the process exit code of web_engine_shell today, so
+  // simply return success in all cases.
+  return 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
+  base::CommandLine::Init(argc, argv);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  CHECK(InitLoggingFromCommandLine(*command_line));
+
   base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
 
-  // Parse the command line arguments and set up logging.
-  CHECK(base::CommandLine::Init(argc, argv));
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  CHECK(InitLoggingFromCommandLineDefaultingToStderrForTest(  // IN-TEST
-      command_line));
+  const bool is_run_from_launcher = command_line->HasSwitch(kFromLauncher);
+  const bool use_context_provider = !command_line->HasSwitch(kUseWebInstance);
+  if (!is_run_from_launcher && !use_context_provider) {
+    return RelaunchForWebInstanceHost(*command_line);
+  }
 
   absl::optional<uint16_t> remote_debugging_port =
       GetRemoteDebuggingPort(*command_line);
@@ -132,7 +210,6 @@ int main(int argc, char** argv) {
   const bool is_headless = command_line->HasSwitch(kHeadlessSwitch);
   const bool enable_protected_media_identifier_access =
       command_line->HasSwitch(kEnableProtectedMediaIdentifier);
-  const bool use_context_provider = !command_line->HasSwitch(kUseWebInstance);
   const bool enable_web_instance_tmp =
       command_line->HasSwitch(kEnableWebInstanceTmp);
 
@@ -183,10 +260,11 @@ int main(int argc, char** argv) {
 #if BUILDFLAG(ENABLE_WIDEVINE)
   features |= fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
 #endif
-  if (is_headless)
+  if (is_headless) {
     features |= fuchsia::web::ContextFeatureFlags::HEADLESS;
-  else
+  } else {
     features |= fuchsia::web::ContextFeatureFlags::VULKAN;
+  }
 
   create_context_params.set_features(features);
   create_context_params.set_remote_debugging_port(*remote_debugging_port);
@@ -203,12 +281,9 @@ int main(int argc, char** argv) {
 
   base::RunLoop run_loop;
 
-  // Create the browser |context|.
-  fuchsia::web::ContextPtr context;
-
-  // Keep alive in run_loop scope.
   fuchsia::web::ContextProviderPtr web_context_provider;
-  std::unique_ptr<WebInstanceHostV1> web_instance_host;
+  std::unique_ptr<WebInstanceHost> web_instance_host;
+  fuchsia::web::ContextPtr context;
   fuchsia::io::DirectoryHandle tmp_directory;
 
   if (use_context_provider) {
@@ -218,7 +293,7 @@ int main(int argc, char** argv) {
     web_context_provider->Create(std::move(create_context_params),
                                  context.NewRequest());
   } else {
-    web_instance_host = std::make_unique<WebInstanceHostV1>();
+    web_instance_host = std::make_unique<WebInstanceHost>();
     if (enable_web_instance_tmp) {
       const zx_status_t status = fdio_open(
           "/tmp",
@@ -304,20 +379,25 @@ int main(int argc, char** argv) {
                               fuchsia::web::PermissionState::GRANTED);
   }
 
+  // The underlying PresentView call expects an AnnotationController and will
+  // return PresentViewError.INVALID_ARGS without one. The AnnotationController
+  // should serve WatchAnnotations, but it doesn't need to do anything.
+  // TODO(b/264899156): Remove this when AnnotationController becomes
+  // optional.
+  auto annotations_manager =
+      std::make_unique<fuchsia_component_support::AnnotationsManager>();
+  fuchsia::element::AnnotationControllerPtr annotation_controller;
+  annotations_manager->Connect(annotation_controller.NewRequest());
+
   if (is_headless) {
     frame->EnableHeadlessRendering();
   } else {
-    // Present a fullscreen view of |frame|.
-    auto view_tokens = scenic::ViewTokenPair::New();
-    frame->CreateView(std::move(view_tokens.view_token));
-    auto presenter = base::ComponentContextForProcess()
-                         ->svc()
-                         ->Connect<fuchsia::ui::policy::Presenter>();
-    presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),
-                                    nullptr);
+    PresentFrame(frame.get(), std::move(annotation_controller));
   }
 
   LOG(INFO) << "Launched browser at URL " << url.spec();
+
+  base::ComponentContextForProcess()->outgoing()->ServeFromStartupInfo();
 
   // Run until the process is killed with CTRL-C or the connections to Web
   // Engine interfaces are dropped.

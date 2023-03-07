@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -115,24 +116,24 @@ class NetworkingAttributesAshTest : public testing::Test {
     network_handler_test_helper_.device_test()->ClearDevices();
     network_handler_test_helper_.service_test()->ClearServices();
 
-    base::DictionaryValue ipconfig_v4_dictionary;
-    ipconfig_v4_dictionary.SetKey(shill::kAddressProperty,
-                                  base::Value(kIpv4Address));
-    ipconfig_v4_dictionary.SetKey(shill::kMethodProperty,
-                                  base::Value(shill::kTypeIPv4));
+    base::Value::Dict ipconfig_v4_dictionary;
+    ipconfig_v4_dictionary.Set(shill::kAddressProperty,
+                               base::Value(kIpv4Address));
+    ipconfig_v4_dictionary.Set(shill::kMethodProperty,
+                               base::Value(shill::kTypeIPv4));
 
-    base::DictionaryValue ipconfig_v6_dictionary;
-    ipconfig_v6_dictionary.SetKey(shill::kAddressProperty,
-                                  base::Value(kIpv6Address));
-    ipconfig_v6_dictionary.SetKey(shill::kMethodProperty,
-                                  base::Value(shill::kTypeIPv6));
+    base::Value::Dict ipconfig_v6_dictionary;
+    ipconfig_v6_dictionary.Set(shill::kAddressProperty,
+                               base::Value(kIpv6Address));
+    ipconfig_v6_dictionary.Set(shill::kMethodProperty,
+                               base::Value(shill::kTypeIPv6));
 
     network_handler_test_helper_.ip_config_test()->AddIPConfig(
-        kWifiIPConfigV4Path, ipconfig_v4_dictionary);
+        kWifiIPConfigV4Path, std::move(ipconfig_v4_dictionary));
     network_handler_test_helper_.ip_config_test()->AddIPConfig(
-        kWifiIPConfigV6Path, ipconfig_v6_dictionary);
+        kWifiIPConfigV6Path, std::move(ipconfig_v6_dictionary));
 
-    base::ListValue ip_configs;
+    base::Value::List ip_configs;
     ip_configs.Append(kWifiIPConfigV4Path);
     ip_configs.Append(kWifiIPConfigV6Path);
 
@@ -157,7 +158,8 @@ class NetworkingAttributesAshTest : public testing::Test {
     base::RunLoop device_client_ip_config_run_loop;
     shill_device_client->SetProperty(
         dbus::ObjectPath(kWifiDevicePath), shill::kIPConfigsProperty,
-        ip_configs, device_client_ip_config_run_loop.QuitClosure(),
+        base::Value(std::move(ip_configs)),
+        device_client_ip_config_run_loop.QuitClosure(),
         base::BindOnce(&ShillErrorCallbackFunction));
     device_client_ip_config_run_loop.Run();
 

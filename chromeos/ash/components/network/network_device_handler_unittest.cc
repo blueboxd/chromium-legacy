@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -71,10 +71,11 @@ class NetworkDeviceHandlerTest : public testing::Test {
                            "cellular1");
     device_test->AddDevice(kDefaultWifiDevicePath, shill::kTypeWifi, "wifi1");
 
-    base::Value test_ip_configs(base::Value::Type::LIST);
+    base::Value::List test_ip_configs;
     test_ip_configs.Append("ip_config1");
     device_test->SetDeviceProperty(kDefaultWifiDevicePath,
-                                   shill::kIPConfigsProperty, test_ip_configs,
+                                   shill::kIPConfigsProperty,
+                                   base::Value(std::move(test_ip_configs)),
                                    /*notify_changed=*/true);
 
     base::RunLoop().RunUntilIdle();

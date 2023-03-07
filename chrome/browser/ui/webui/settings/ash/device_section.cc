@@ -47,6 +47,9 @@ using ::chromeos::settings::mojom::kDisplaySubpagePath;
 using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceMouseSubpagePath;
+using ::chromeos::settings::mojom::kPerDevicePointingStickSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceTouchpadSubpagePath;
 using ::chromeos::settings::mojom::kPointersSubpagePath;
 using ::chromeos::settings::mojom::kPowerSubpagePath;
 using ::chromeos::settings::mojom::kStorageSubpagePath;
@@ -345,6 +348,22 @@ const std::vector<SearchConcept>& GetStylusSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kStylus}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAudioSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS,
+       mojom::kAudioSubpagePath,
+       mojom::SearchResultIcon::kAudio,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAudio},
+       {IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT1,
+        IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT2,
+        IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT3,
+        IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS_ALT4, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -845,6 +864,10 @@ DeviceSection::DeviceSection(Profile* profile,
   if (ShouldShowExternalStorageSettings(profile))
     updater.AddSearchTags(GetExternalStorageSearchConcepts());
 
+  if (ash::features::IsAudioSettingsPageEnabled()) {
+    updater.AddSearchTags(GetAudioSearchConcepts());
+  }
+
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   if (power_manager_client) {
@@ -1000,13 +1023,34 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   RegisterNestedSettingBulk(mojom::Subpage::kPointers, kPointersSettings,
                             generator);
 
-  // Per-device Keyboard.
   if (base::FeatureList::IsEnabled(ash::features::kInputDeviceSettingsSplit)) {
+    // Per-device Keyboard.
     generator->RegisterTopLevelSubpage(IDS_SETTINGS_PER_DEVICE_KEYBOARD_TITLE,
                                        mojom::Subpage::kPerDeviceKeyboard,
                                        mojom::SearchResultIcon::kKeyboard,
                                        mojom::SearchResultDefaultRank::kMedium,
                                        mojom::kPerDeviceKeyboardSubpagePath);
+    // Per-device Mouse.
+    generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_TITLE,
+                                       mojom::Subpage::kPerDeviceMouse,
+                                       mojom::SearchResultIcon::kMouse,
+                                       mojom::SearchResultDefaultRank::kMedium,
+                                       mojom::kPerDeviceMouseSubpagePath);
+
+    // Per-device Touchpad.
+    generator->RegisterTopLevelSubpage(IDS_SETTINGS_TOUCHPAD_TITLE,
+                                       mojom::Subpage::kPerDeviceTouchpad,
+                                       mojom::SearchResultIcon::kDisplay,
+                                       mojom::SearchResultDefaultRank::kMedium,
+                                       mojom::kPerDeviceTouchpadSubpagePath);
+
+    // Per-device Pointing stick.
+    generator->RegisterTopLevelSubpage(
+        IDS_SETTINGS_POINTING_STICK_TITLE,
+        mojom::Subpage::kPerDevicePointingStick,
+        mojom::SearchResultIcon::kDisplay,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kPerDevicePointingStickSubpagePath);
   }
 
   // Keyboard.
@@ -1111,14 +1155,8 @@ void DeviceSection::HapticTouchpadExists(bool exists) {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          ::features::kAllowDisableTouchpadHapticFeedback)) {
-    updater.AddSearchTags(GetTouchpadHapticFeedback());
-  }
-  if (base::FeatureList::IsEnabled(
-          ::features::kAllowTouchpadHapticClickSettings)) {
-    updater.AddSearchTags(GetTouchpadHapticClickSensitivity());
-  }
+  updater.AddSearchTags(GetTouchpadHapticFeedback());
+  updater.AddSearchTags(GetTouchpadHapticClickSensitivity());
 }
 
 void DeviceSection::MouseExists(bool exists) {
@@ -1330,12 +1368,7 @@ void DeviceSection::AddDevicePointersStrings(
                          GetHelpUrlWithBoard(chrome::kHapticFeedbackHelpURL));
 
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
-  html_source->AddBoolean("allowTouchpadHapticFeedback",
-                          base::FeatureList::IsEnabled(
-                              ::features::kAllowDisableTouchpadHapticFeedback));
-  html_source->AddBoolean("allowTouchpadHapticClickSettings",
-                          base::FeatureList::IsEnabled(
-                              ::features::kAllowTouchpadHapticClickSettings));
+
   html_source->AddBoolean(
       "enableAudioSettingsPage",
       base::FeatureList::IsEnabled(ash::features::kAudioSettingsPage));

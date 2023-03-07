@@ -291,8 +291,20 @@ export function renderHeader_(table) {
   const icon = document.createElement('cr-icon-button');
   const iconName = sortOrder === 'desc' ? 'up' : 'down';
   icon.setAttribute('iron-icon', `files16:arrow_${iconName}_small`);
-  icon.setAttribute('tabindex', '-1');
-  icon.setAttribute('aria-hidden', 'true');
+  // If we're the sorting column make the icon a tab target.
+  if (isSorted) {
+    icon.id = 'sort-direction-button';
+    icon.setAttribute('tabindex', '0');
+    icon.setAttribute('aria-hidden', 'false');
+    if (sortOrder === 'asc') {
+      icon.setAttribute('aria-label', str('COLUMN_ASC_SORT_MESSAGE'));
+    } else {
+      icon.setAttribute('aria-label', str('COLUMN_DESC_SORT_MESSAGE'));
+    }
+  } else {
+    icon.setAttribute('tabindex', '-1');
+    icon.setAttribute('aria-hidden', 'true');
+  }
   icon.classList.add('sort-icon', 'no-overlap');
 
   container.classList.toggle('not-sorted', !isSorted);
@@ -456,8 +468,9 @@ export class FileTable extends Table {
     nameColumn.renderFunction = self.renderName_.bind(self);
     nameColumn.headerRenderFunction = renderHeader_;
 
-    const sizeColumn =
-        new TableColumn('size', str('SIZE_COLUMN_LABEL'), 110, true);
+    const sizeColumn = new TableColumn(
+        'size', str('SIZE_COLUMN_LABEL'), 110,
+        util.isJellyEnabled() ? false : true);
     sizeColumn.renderFunction = self.renderSize_.bind(self);
     sizeColumn.defaultOrder = 'desc';
     sizeColumn.headerRenderFunction = renderHeader_;
@@ -816,7 +829,7 @@ export class FileTable extends Table {
     label.appendChild(
         filelist.renderFileNameLabel(this.ownerDocument, entry, locationInfo));
     if (locationInfo && locationInfo.isDriveBased) {
-      label.appendChild(filelist.renderPinned(this.ownerDocument));
+      label.appendChild(filelist.renderInlineStatus(this.ownerDocument));
     }
     const isDlpRestricted = !!metadata.isDlpRestricted;
     if (isDlpRestricted) {
@@ -998,6 +1011,7 @@ export class FileTable extends Table {
                   'hosted',
                   'pinned',
                   'syncStatus',
+                  'progress',
                 ])[0],
             util.isTeamDriveRoot(entry));
         listItem.toggleAttribute(

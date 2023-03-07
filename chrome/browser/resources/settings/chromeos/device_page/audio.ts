@@ -18,7 +18,7 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AudioDevice, AudioSystemPropertiesObserverReceiver, MuteState} from '../../mojom-webui/audio/cros_audio_config.mojom-webui.js';
+import {AudioSystemPropertiesObserverReceiver, MuteState} from '../../mojom-webui/audio/cros_audio_config.mojom-webui.js';
 import {routes} from '../os_route.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
@@ -27,9 +27,17 @@ import {getTemplate} from './audio.html.js';
 import {CrosAudioConfigInterface, getCrosAudioConfig} from './cros_audio_config.js';
 // TODO(b/260277007): Update import to get `AudioSystemProperties` from
 // `cros_audio_config.mojom-webui.js` once mojo updated to handle audio input.
-import {AudioSystemProperties, FakeCrosAudioConfig} from './fake_cros_audio_config.js';
+import {AudioDevice, AudioEffectState, AudioSystemProperties, FakeCrosAudioConfig} from './fake_cros_audio_config.js';
+
+/** Utility for keeping percent in inclusive range of [0,100].  */
+function clampPercent(percent: number): number {
+  return Math.max(0, Math.min(percent, 100));
+}
 
 const SettingsAudioElementBase = RouteObserverMixin(I18nMixin(PolymerElement));
+const VOLUME_ICON_OFF_LEVEL = 0;
+const VOLUME_ICON_LOUD_LEVEL = 30;
+const SETTINGS_20PX_ICON_PREFIX = 'settings20:';
 
 class SettingsAudioElement extends SettingsAudioElementBase {
   static get is() {
@@ -54,6 +62,25 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         type: Boolean,
         reflectToAttribute: true,
       },
+
+      isInputMuted_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
+      isNoiseCancellationEnabled_: {
+        type: Boolean,
+        observer:
+            SettingsAudioElement.prototype.onNoiseCancellationEnabledChanged,
+      },
+
+      isNoiseCancellationSupported_: {
+        type: Boolean,
+      },
+
+      outputVolume_: {
+        type: Number,
+      },
     };
   }
 
@@ -63,6 +90,9 @@ class SettingsAudioElement extends SettingsAudioElementBase {
   private crosAudioConfig_: CrosAudioConfigInterface;
   private isOutputMuted_: boolean;
   private isInputMuted_: boolean;
+  private isNoiseCancellationEnabled_: boolean;
+  private isNoiseCancellationSupported_: boolean;
+  private outputVolume_: number;
 
   constructor() {
     super();
@@ -90,6 +120,15 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         this.audioSystemProperties_.outputMuteState !== MuteState.kNotMuted;
     this.isInputMuted_ =
         this.audioSystemProperties_.inputMuteState !== MuteState.kNotMuted;
+    const activeInputDevice = this.audioSystemProperties_.inputDevices.find(
+        (device: AudioDevice) => device.isActive);
+    this.isNoiseCancellationEnabled_ =
+        (activeInputDevice?.noiseCancellationState ===
+         AudioEffectState.ENABLED);
+    this.isNoiseCancellationSupported_ =
+        !(activeInputDevice?.noiseCancellationState ===
+          AudioEffectState.NOT_SUPPORTED);
+    this.outputVolume_ = this.audioSystemProperties_.outputVolumePercent;
   }
 
   getIsOutputMutedForTest(): boolean {
@@ -137,10 +176,29 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     const inputDeviceSelect = this.shadowRoot!.querySelector<HTMLSelectElement>(
         '#audioInputDeviceDropdown');
     assert(!!inputDeviceSelect);
-    const nextActiveDevice = this.audioSystemProperties_.inputDevices.find(
-        (device: AudioDevice) => device.id === BigInt(inputDeviceSelect.value));
-    assert(!!nextActiveDevice);
-    this.crosAudioConfig_.setActiveDevice(nextActiveDevice);
+    this.crosAudioConfig_.setActiveDevice(BigInt(inputDeviceSelect.value));
+  }
+
+  /** Handles updates to noise cancellation state. */
+  protected onNoiseCancellationEnabledChanged(
+      enabled: SettingsAudioElement['isNoiseCancellationEnabled_']): void {
+    // TODO(b/260277007): Remove condition when setActiveDevice added to mojo
+    // definition.
+    if (!this.crosAudioConfig_.setNoiseCancellationEnabled) {
+      return;
+    }
+
+    this.crosAudioConfig_.setNoiseCancellationEnabled(enabled);
+  }
+
+  /**
+   * Handles the event where the input volume slider is being changed.
+   */
+  protected onInputVolumeSliderChanged(): void {
+    const sliderValue = this.shadowRoot!
+                            .querySelector<CrSliderElement>(
+                                '#audioInputGainVolumeSlider')!.value;
+    this.crosAudioConfig_.setInputGainPercent(clampPercent(sliderValue));
   }
 
   /**
@@ -150,7 +208,7 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     const sliderValue =
         this.shadowRoot!.querySelector<CrSliderElement>(
                             '#outputVolumeSlider')!.value;
-    this.crosAudioConfig_.setOutputVolumePercent(sliderValue);
+    this.crosAudioConfig_.setOutputVolumePercent(clampPercent(sliderValue));
   }
 
   /** Handles updating active output device. */
@@ -164,11 +222,7 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         this.shadowRoot!.querySelector<HTMLSelectElement>(
             '#audioOutputDeviceDropdown');
     assert(!!outputDeviceSelect);
-    const nextActiveDevice = this.audioSystemProperties_.outputDevices.find(
-        (device: AudioDevice) =>
-            device.id === BigInt(outputDeviceSelect.value));
-    assert(!!nextActiveDevice);
-    this.crosAudioConfig_.setActiveDevice(nextActiveDevice);
+    this.crosAudioConfig_.setActiveDevice(BigInt(outputDeviceSelect.value));
   }
 
   /** Handles updating outputMuteState. */
@@ -183,10 +237,51 @@ class SettingsAudioElement extends SettingsAudioElementBase {
 
   override currentRouteChanged(route: Route) {
     // Does not apply to this page.
-    // TODO(crbug.com/1092970): Add DeepLinkingBehavior and attempt deep link.
+    // TODO(crbug.com/1092970): Add DeepLinkingMixin and attempt deep link.
     if (route !== routes.AUDIO) {
       return;
     }
+  }
+
+  /** Handles updating the mic icon depending on the input mute state. */
+  protected getInputIcon_(): string {
+    return this.isInputMuted_ ? 'settings:mic-off' : 'cr:mic';
+  }
+
+  /**
+   * Handles updating the output icon depending on the output mute state and
+   * volume.
+   */
+  protected getOutputIcon_(): string {
+    if (this.isOutputMuted_) {
+      return SETTINGS_20PX_ICON_PREFIX + 'volume-up-off';
+    }
+
+    if (this.outputVolume_ === VOLUME_ICON_OFF_LEVEL) {
+      return SETTINGS_20PX_ICON_PREFIX + 'volume-zero';
+    }
+
+    if (this.outputVolume_ < VOLUME_ICON_LOUD_LEVEL) {
+      return SETTINGS_20PX_ICON_PREFIX + 'volume-down';
+    }
+
+    return SETTINGS_20PX_ICON_PREFIX + 'volume-up';
+  }
+
+  /**
+   * Handles the case when there are no output devices. The output section
+   * should be hidden in this case.
+   */
+  protected getOutputHidden_(): boolean {
+    return this.audioSystemProperties_.outputDevices.length === 0;
+  }
+
+  /**
+   * Handles the case when there are no input devices. The input section should
+   * be hidden in this case.
+   */
+  protected getInputHidden_(): boolean {
+    return this.audioSystemProperties_.inputDevices.length === 0;
   }
 }
 

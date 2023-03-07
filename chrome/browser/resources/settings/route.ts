@@ -26,7 +26,8 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   r.COOKIES = r.PRIVACY.createChild('/cookies');
   r.SECURITY = r.PRIVACY.createChild('/security');
 
-  if (loadTimeData.getBoolean('isPrivacySandboxSettings4')) {
+  if (loadTimeData.getBoolean('isPrivacySandboxSettings4') &&
+      !loadTimeData.getBoolean('isPrivacySandboxRestricted')) {
     r.PRIVACY_SANDBOX = r.PRIVACY.createChild('/adPrivacy');
     r.PRIVACY_SANDBOX_TOPICS =
         r.PRIVACY_SANDBOX.createChild('/adPrivacy/interests');
@@ -48,6 +49,10 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   } else {
     r.SECURITY_KEYS_PHONES = r.SECURITY.createChild('/securityKeys/phones');
     // </if>
+  }
+
+  if (loadTimeData.getBoolean('showPreloadingSubPage')) {
+    r.PRELOADING = r.COOKIES.createChild('/preloading');
   }
 
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');

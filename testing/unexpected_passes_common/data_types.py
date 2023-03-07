@@ -84,7 +84,7 @@ class BaseExpectation():
     # We're going to be making a lot of comparisons, and fnmatch is *much*
     # slower (~40x from rough testing) than a straight comparison, so only use
     # it if necessary.
-    if '*' in test:
+    if self._IsWildcard():
       self._comp = self._CompareWildcard
     else:
       self._comp = self._CompareNonWildcard
@@ -100,6 +100,10 @@ class BaseExpectation():
 
   def __hash__(self) -> int:
     return hash((self.test, self.tags, self.expected_results, self.bug))
+
+  def _IsWildcard(self) -> bool:
+    # This logic is the same as typ's expectation parser.
+    return not self.test.endswith('\\*') and self.test.endswith('*')
 
   def _CompareWildcard(self, result_test_name: str) -> bool:
     return fnmatch.fnmatch(result_test_name, self.test)
@@ -144,9 +148,27 @@ class BaseExpectation():
     typ_expectation = expectations_parser.Expectation(
         reason=self.bug,
         test=self.test,
-        raw_tags=list(self.tags),
-        raw_results=list(self.expected_results))
+        raw_tags=self._ProcessTagsForFileUse(),
+        raw_results=list(self.expected_results),
+        # This logic is normally handled by typ when parsing a file, but since
+        # we're manually creating an expectation, we have to specify the
+        # glob-ness manually.
+        is_glob=self._IsWildcard())
     return typ_expectation.to_string()
+
+  def _ProcessTagsForFileUse(self) -> List[str]:
+    """Process tags to be suitable for use in expectation files.
+
+    The tags we store should always be valid, but may not adhere to the style
+    actually used by the expectation files. For example, tags are stored
+    internally in lower case, but the expectation files may use capitalized
+    tags.
+
+    Returns:
+      A list of strings containing the contents of |self.tags|, but potentially
+      formatted a certain way.
+    """
+    return list(self.tags)
 
 
 class BaseResult():

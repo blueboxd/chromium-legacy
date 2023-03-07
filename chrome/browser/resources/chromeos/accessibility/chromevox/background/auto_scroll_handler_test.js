@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 /**
  * Test fixture for AutoScrollHandler.
  */
-ChromeVoxAutoScrollHandlerTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxAutoScrollHandlerTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
@@ -20,7 +20,8 @@ ChromeVoxAutoScrollHandlerTest = class extends ChromeVoxNextE2ETest {
         'ChromeVoxState', '/chromevox/background/chromevox_state.js');
     await importModule('CursorRange', '/common/cursors/range.js');
 
-    window.EventType = chrome.automation.EventType;
+    globalThis.EventType = chrome.automation.EventType;
+    globalThis.RoleType = chrome.automation.RoleType;
     this.forceContextualLastOutput();
   }
 

@@ -19,12 +19,9 @@
 #include "chrome/browser/web_applications/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
-
-namespace webapps {
-enum class InstallResultCode;
-}  // namespace webapps
 
 namespace content {
 class WebContents;
@@ -132,10 +129,15 @@ IconDiff HaveIconBitmapsChanged(
 //  - Require user confirmation for changes to the app name.
 class ManifestUpdateDataFetchCommand : public WebAppCommandTemplate<AppLock> {
  public:
-  using ManifestFetchCallback =
-      base::OnceCallback<void(absl::optional<ManifestUpdateResult> result,
-                              absl::optional<WebAppInstallInfo> install_info_,
-                              bool app_identity_update_allowed)>;
+  // If no `early_exit_result` is provided then the manifest should be updated
+  // with `install_info`.
+  // TODO(crbug.com/1409710): Merge ManifestUpdateDataFetchCommand and
+  // ManifestUpdateFinalizeCommand into one so we don't have to return optional
+  // early exit results to the caller.
+  using ManifestFetchCallback = base::OnceCallback<void(
+      absl::optional<ManifestUpdateResult> early_exit_result,
+      absl::optional<WebAppInstallInfo> install_info,
+      bool app_identity_update_allowed)>;
 
   ManifestUpdateDataFetchCommand(
       const GURL& url,
@@ -146,7 +148,7 @@ class ManifestUpdateDataFetchCommand : public WebAppCommandTemplate<AppLock> {
 
   ~ManifestUpdateDataFetchCommand() override;
 
-  LockDescription& lock_description() const override;
+  const LockDescription& lock_description() const override;
   void OnSyncSourceRemoved() override {}
   void OnShutdown() override;
   base::Value ToDebugValue() const override;
@@ -161,7 +163,7 @@ class ManifestUpdateDataFetchCommand : public WebAppCommandTemplate<AppLock> {
   void OnDidGetInstallableData(blink::mojom::ManifestPtr opt_manifest,
                                const GURL& manifest_url,
                                bool valid_manifest_for_web_app,
-                               bool is_installable);
+                               webapps::InstallableStatusCode error_code);
   void LoadAndCheckIconContents();
   void OnIconsDownloaded(IconsDownloadedResult result,
                          IconsMap icons_map,
@@ -176,18 +178,9 @@ class ManifestUpdateDataFetchCommand : public WebAppCommandTemplate<AppLock> {
       ShortcutsMenuIconBitmaps disk_shortcuts_menu_icons);
   bool IsUpdateNeededForShortcutsMenuIconsContents(
       const ShortcutsMenuIconBitmaps& disk_shortcuts_menu_icons) const;
-  bool IsUpdateNeededForWebAppOriginAssociations() const;
   void NoManifestUpdateRequired();
-  void OnWebAppOriginAssociationsUpdated(bool success);
   void OnExistingIconsRead(IconBitmaps icon_bitmaps);
-  // Having an absl::nullopt as a result means that the data fetch
-  // was successful and no error results were thrown, apart from
-  // kAppAssociationsUpdated which is meant to be treated as a success.
-  // The manifest update process however is still not over, and would
-  // require the ManifestUpdateManager to wait till the app windows
-  // are closed to actually finalize the update and write the values
-  // to the DB.
-  void CompleteCommand(absl::optional<ManifestUpdateResult> result);
+  void CompleteCommand(absl::optional<ManifestUpdateResult> early_exit_result);
 
   std::unique_ptr<AppLockDescription> lock_description_;
   std::unique_ptr<AppLock> lock_;

@@ -94,12 +94,33 @@ const double kBudgetAllowed = 5.0;
 
 const int kStalenessThresholdDays = 1;
 
+const int kMaxSelectURLCalls = 2;
+
+const int kReportEventBitBudget = 6;
+
 const char kSelectFrom8URLsScript[] = R"(
     let urls = [];
     for (let i = 0; i < 8; ++i) {
       urls.push({url: '/fenced_frames/title' + i.toString() + '.html',
                  reportingMetadata: {
-                   'click': '/fenced_frames/report' + i.toString() + '.html'
+                   'click': '/fenced_frames/report' + i.toString() + '.html',
+                   'mouse interaction':
+                   '/fenced_frames/report' + (i + 1).toString() + '.html'
+                 }});
+    }
+
+    sharedStorage.selectURL(
+        'test-url-selection-operation', urls, {data: {'mockResult': 1}});
+  )";
+
+const char kSelectFrom4URLsScript[] = R"(
+    let urls = [];
+    for (let i = 0; i < 4; ++i) {
+      urls.push({url: '/fenced_frames/title' + i.toString() + '.html',
+                 reportingMetadata: {
+                   'click': '/fenced_frames/report' + i.toString() + '.html',
+                   'mouse interaction':
+                   '/fenced_frames/report' + (i + 1).toString() + '.html'
                  }});
     }
 
@@ -111,6 +132,20 @@ const char kRemainingBudgetPrefix[] = "remaining budget: ";
 
 std::string TimeDeltaToString(base::TimeDelta delta) {
   return base::StrCat({base::NumberToString(delta.InMilliseconds()), "ms"});
+}
+
+// With `WebContentsConsoleObserver`, we can only wait for the last message in a
+// group.
+base::RepeatingCallback<
+    bool(const content::WebContentsConsoleObserver::Message& message)>
+MakeFilter(std::vector<std::string> possible_last_messages) {
+  return base::BindRepeating(
+      [](std::vector<std::string> possible_last_messages,
+         const content::WebContentsConsoleObserver::Message& message) {
+        return base::Contains(possible_last_messages,
+                              base::UTF16ToUTF8(message.message));
+      },
+      std::move(possible_last_messages));
 }
 
 void WaitForHistogram(const std::string& histogram_name) {
@@ -3041,7 +3076,10 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
   EXPECT_THAT(GetSharedStorageReportingMap(GURL(urn_uuid)),
               UnorderedElementsAre(
                   Pair("click", https_server()->GetURL(
-                                    "a.test", "/fenced_frames/report0.html"))));
+                                    "a.test", "/fenced_frames/report0.html")),
+                  Pair("mouse interaction",
+                       https_server()->GetURL("a.test",
+                                              "/fenced_frames/report1.html"))));
 
   EXPECT_EQ(
       https_server()->GetURL("a.test", "/fenced_frames/title0.html"),
@@ -4152,6 +4190,770 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
   EXPECT_TRUE(console_observer.messages().empty());
 
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
+                       PrivateAggregationPermissionsPolicyNone) {
+  GURL url = https_server()->GetURL(
+      "a.test",
+      "/shared_storage/private_aggregation_permissions_policy_none.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  EXPECT_CALL(browser_client(),
+              LogWebFeatureForCurrentPage(
+                  shell()->web_contents()->GetPrimaryMainFrame(),
+                  blink::mojom::WebFeature::kPrivateAggregationApiAll));
+  EXPECT_CALL(
+      browser_client(),
+      LogWebFeatureForCurrentPage(
+          shell()->web_contents()->GetPrimaryMainFrame(),
+          blink::mojom::WebFeature::kPrivateAggregationApiSharedStorage));
+  ON_CALL(browser_client(), IsPrivateAggregationAllowed)
+      .WillByDefault(testing::Return(true));
+
+  GURL out_script_url;
+  ExecuteScriptInWorklet(shell(), R"(
+      privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
+    )",
+                         &out_script_url);
+
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ(
+      "TypeError: The \"private-aggregation\" Permissions Policy denied the "
+      "method on privateAggregation",
+      base::UTF16ToUTF8(console_observer.messages()[0].message));
+}
+
+class SharedStorageSelectURLLimitBrowserTest
+    : public SharedStorageBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SharedStorageSelectURLLimitBrowserTest() {
+    if (GetParam()) {
+      feature_list_
+          .InitWithFeaturesAndParameters(/*enabled_features=*/
+                                         {{blink::features::
+                                               kSharedStorageSelectURLLimit,
+                                           {{"SharedStorageMaxAllowedSelectURLC"
+                                             "al"
+                                             "lsPerOriginPerPageLoad",
+                                             base::NumberToString(
+                                                 kMaxSelectURLCalls)}}}},
+                                         /*disabled_features=*/{});
+    } else {
+      feature_list_.InitWithFeaturesAndParameters(
+          /*enabled_features=*/{},
+          /*disabled_features=*/
+          {blink::features::kSharedStorageSelectURLLimit});
+    }
+  }
+
+  // Precondition: `addModule('shared_storage/simple_module.js')` has been
+  // called in the main frame.
+  void RunSuccessfulSelectURLInMainFrame(
+      std::string host_str,
+      WebContentsConsoleObserver* console_observer) {
+    std::string urn_uuid = EvalJs(shell(), R"(
+      sharedStorage.selectURL(
+          'test-url-selection-operation',
+          [{url: "fenced_frames/title0.html"}],
+          {data: {'mockResult':0}});
+    )")
+                               .ExtractString();
+
+    EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
+
+    // There is 1 "worklet operation": `selectURL()`.
+    test_worklet_host_manager()
+        .GetAttachedWorkletHost()
+        ->WaitForWorkletResponsesCount(1);
+
+    SharedStorageBudgetMetadata* metadata =
+        GetSharedStorageBudgetMetadata(GURL(urn_uuid));
+    EXPECT_TRUE(metadata);
+    EXPECT_EQ(metadata->origin, https_server()->GetOrigin(host_str));
+    EXPECT_DOUBLE_EQ(metadata->budget_to_charge, 0.0);
+
+    EXPECT_EQ("Finish executing 'test-url-selection-operation'",
+              base::UTF16ToUTF8(console_observer->messages().back().message));
+  }
+
+  void RunSuccessfulSelectURLInIframe(
+      std::string host_str,
+      FrameTreeNode* iframe_node,
+      WebContentsConsoleObserver* console_observer) {
+    EXPECT_TRUE(ExecJs(iframe_node, R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+    std::string urn_uuid = EvalJs(iframe_node, R"(
+      sharedStorage.selectURL(
+          'test-url-selection-operation',
+          [{url: "fenced_frames/title0.html"}],
+          {data: {'mockResult':0}});
+    )")
+                               .ExtractString();
+
+    EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
+
+    // There are 2 "worklet operations": `addModule()` and  `selectURL()`.
+    test_worklet_host_manager()
+        .GetAttachedWorkletHostForFrame(iframe_node->current_frame_host())
+        ->WaitForWorkletResponsesCount(2);
+
+    SharedStorageBudgetMetadata* metadata =
+        GetSharedStorageBudgetMetadata(GURL(urn_uuid));
+    EXPECT_TRUE(metadata);
+    EXPECT_EQ(metadata->origin, https_server()->GetOrigin(host_str));
+    EXPECT_DOUBLE_EQ(metadata->budget_to_charge, 0.0);
+
+    EXPECT_EQ("Finish executing 'test-url-selection-operation'",
+              base::UTF16ToUTF8(console_observer->messages().back().message));
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SharedStorageSelectURLLimitBrowserTest,
+                         testing::Bool(),
+                         [](const auto& info) {
+                           if (info.param) {
+                             return "SelectURLLimit";
+                           } else {
+                             return "NoSelectURLLimit";
+                           }
+                         });
+
+IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
+                       SelectURL_Simple_LimitReached) {
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+  // There is 1 "worklet operation": `addModule()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  for (int i = 0; i < kMaxSelectURLCalls; i++) {
+    RunSuccessfulSelectURLInMainFrame("a.test", &console_observer);
+  }
+
+  if (GetParam()) {
+    // The limit for `selectURL()` has now been reached for "a.test". Make one
+    // more call, which will be blocked.
+    EvalJsResult result = EvalJs(shell(), R"(
+      sharedStorage.selectURL(
+          'test-url-selection-operation',
+          [{url: "fenced_frames/title0.html"}],
+          {data: {'mockResult':0}});
+    )");
+
+    EXPECT_EQ(
+        result.error,
+        base::StrCat({"a JavaScript error: \"Error: ",
+                      kSharedStorageSelectURLLimitReachedMessage, "\"\n"}));
+  } else {
+    // The `selectURL()` limit is disabled. The call will run successfully.
+    RunSuccessfulSelectURLInMainFrame("a.test", &console_observer);
+  }
+
+  WaitForHistograms({kTimingSelectUrlExecutedInWorkletHistogram});
+
+  int expected_success_count =
+      GetParam() ? kMaxSelectURLCalls : kMaxSelectURLCalls + 1;
+  histogram_tester_.ExpectTotalCount(kTimingSelectUrlExecutedInWorkletHistogram,
+                                     expected_success_count);
+
+  std::string origin_str = url::Origin::Create(main_url).Serialize();
+  std::vector<TestSharedStorageObserver::Access> expected_accesses(
+      {{AccessType::kDocumentAddModule, MainFrameId(), origin_str,
+        SharedStorageEventParams::CreateForAddModule(https_server()->GetURL(
+            "a.test", "/shared_storage/simple_module.js"))}});
+  for (int i = 0; i < expected_success_count; i++) {
+    expected_accesses.emplace_back(
+        AccessType::kDocumentSelectURL, MainFrameId(), origin_str,
+        SharedStorageEventParams::CreateForSelectURL(
+            "test-url-selection-operation", std::vector<uint8_t>(),
+            std::vector<SharedStorageUrlSpecWithMetadata>(
+                {{https_server()->GetURL("a.test",
+                                         "/fenced_frames/title0.html"),
+                  {}}})));
+  }
+  ExpectAccessObserved(expected_accesses);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
+                       SelectURL_IframesSharingCommonOrigin_LimitReached) {
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  GURL iframe_url = https_server()->GetURL("b.test", kSimplePagePath);
+
+  for (int i = 0; i < kMaxSelectURLCalls; i++) {
+    // Create a new iframe.
+    FrameTreeNode* iframe_node =
+        CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
+
+    RunSuccessfulSelectURLInIframe("b.test", iframe_node, &console_observer);
+  }
+
+  // Create a new iframe.
+  FrameTreeNode* iframe_node =
+      CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
+
+  if (GetParam()) {
+    EXPECT_TRUE(ExecJs(iframe_node, R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+    // There is 1 "worklet operation": `addModule()`.
+    test_worklet_host_manager()
+        .GetAttachedWorkletHostForFrame(iframe_node->current_frame_host())
+        ->WaitForWorkletResponsesCount(1);
+
+    // The limit for `selectURL()` has now been reached for "b.test". Make one
+    // more call, which will be blocked.
+    EvalJsResult result = EvalJs(iframe_node, R"(
+      sharedStorage.selectURL(
+          'test-url-selection-operation',
+          [{url: "fenced_frames/title0.html"}],
+          {data: {'mockResult':0}});
+    )");
+
+    EXPECT_EQ(
+        result.error,
+        base::StrCat({"a JavaScript error: \"Error: ",
+                      kSharedStorageSelectURLLimitReachedMessage, "\"\n"}));
+  } else {
+    // The `selectURL()` limit is disabled. The call will run successfully.
+    RunSuccessfulSelectURLInIframe("b.test", iframe_node, &console_observer);
+  }
+
+  WaitForHistograms({kTimingSelectUrlExecutedInWorkletHistogram});
+
+  int expected_success_count =
+      GetParam() ? kMaxSelectURLCalls : kMaxSelectURLCalls + 1;
+  histogram_tester_.ExpectTotalCount(kTimingSelectUrlExecutedInWorkletHistogram,
+                                     expected_success_count);
+
+  std::string origin_str = url::Origin::Create(iframe_url).Serialize();
+  std::vector<TestSharedStorageObserver::Access> expected_accesses;
+  for (int i = 0; i <= kMaxSelectURLCalls; i++) {
+    expected_accesses.emplace_back(
+        AccessType::kDocumentAddModule, MainFrameId(), origin_str,
+        SharedStorageEventParams::CreateForAddModule(https_server()->GetURL(
+            "b.test", "/shared_storage/simple_module.js")));
+    if (GetParam() && i == kMaxSelectURLCalls) {
+      break;
+    }
+    expected_accesses.emplace_back(
+        AccessType::kDocumentSelectURL, MainFrameId(), origin_str,
+        SharedStorageEventParams::CreateForSelectURL(
+            "test-url-selection-operation", std::vector<uint8_t>(),
+            std::vector<SharedStorageUrlSpecWithMetadata>(
+                {{https_server()->GetURL("b.test",
+                                         "/fenced_frames/title0.html"),
+                  {}}})));
+  }
+
+  ExpectAccessObserved(expected_accesses);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageSelectURLLimitBrowserTest,
+    SelectURL_IframesDifferentOrigin_LimitNotReachedForLast) {
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  GURL iframe_url1 = https_server()->GetURL("b.test", kSimplePagePath);
+
+  for (int i = 0; i < kMaxSelectURLCalls; i++) {
+    // Create a new iframe.
+    FrameTreeNode* iframe_node =
+        CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url1);
+
+    RunSuccessfulSelectURLInIframe("b.test", iframe_node, &console_observer);
+  }
+
+  // Create a new iframe with a different origin.
+  GURL iframe_url2 = https_server()->GetURL("c.test", kSimplePagePath);
+  FrameTreeNode* iframe_node =
+      CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url2);
+
+  // If enabled, the limit for `selectURL()` has now been reached for "b.test",
+  // but not for "c.test". Make one more call, which will not be blocked.
+  RunSuccessfulSelectURLInIframe("c.test", iframe_node, &console_observer);
+
+  WaitForHistograms({kTimingSelectUrlExecutedInWorkletHistogram});
+  histogram_tester_.ExpectTotalCount(kTimingSelectUrlExecutedInWorkletHistogram,
+                                     kMaxSelectURLCalls + 1);
+
+  std::string origin1_str = url::Origin::Create(iframe_url1).Serialize();
+  std::string origin2_str = url::Origin::Create(iframe_url2).Serialize();
+  std::vector<TestSharedStorageObserver::Access> expected_accesses;
+  for (int i = 0; i < kMaxSelectURLCalls; i++) {
+    expected_accesses.emplace_back(
+        AccessType::kDocumentAddModule, MainFrameId(), origin1_str,
+        SharedStorageEventParams::CreateForAddModule(https_server()->GetURL(
+            "b.test", "/shared_storage/simple_module.js")));
+    expected_accesses.emplace_back(
+        AccessType::kDocumentSelectURL, MainFrameId(), origin1_str,
+        SharedStorageEventParams::CreateForSelectURL(
+            "test-url-selection-operation", std::vector<uint8_t>(),
+            std::vector<SharedStorageUrlSpecWithMetadata>(
+                {{https_server()->GetURL("b.test",
+                                         "/fenced_frames/title0.html"),
+                  {}}})));
+  }
+  expected_accesses.emplace_back(
+      AccessType::kDocumentAddModule, MainFrameId(), origin2_str,
+      SharedStorageEventParams::CreateForAddModule(https_server()->GetURL(
+          "c.test", "/shared_storage/simple_module.js")));
+  expected_accesses.emplace_back(
+      AccessType::kDocumentSelectURL, MainFrameId(), origin2_str,
+      SharedStorageEventParams::CreateForSelectURL(
+          "test-url-selection-operation", std::vector<uint8_t>(),
+          std::vector<SharedStorageUrlSpecWithMetadata>(
+              {{https_server()->GetURL("c.test", "/fenced_frames/title0.html"),
+                {}}})));
+
+  ExpectAccessObserved(expected_accesses);
+}
+
+class SharedStorageReportEventLimitBrowserTest
+    : public SharedStorageReportEventBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SharedStorageReportEventLimitBrowserTest() {
+    if (GetParam()) {
+      feature_list_
+          .InitWithFeaturesAndParameters(/*enabled_features=*/
+                                         {{blink::features::
+                                               kSharedStorageReportEventLimit,
+                                           {{"SharedStorageReportEventBitBudget"
+                                             "PerPageLoad",
+                                             base::NumberToString(
+                                                 kReportEventBitBudget)}}}},
+                                         /*disabled_features=*/{});
+    } else {
+      feature_list_.InitWithFeaturesAndParameters(
+          /*enabled_features=*/{},
+          /*disabled_features=*/
+          {blink::features::kSharedStorageReportEventLimit});
+    }
+  }
+
+  // Precondition: `addModule('shared_storage/simple_module.js')` and
+  // `selectURL()` have been called in the main frame.
+  void RunSuccessfulReportEvents(
+      FrameTreeNode* fenced_frame_root_node,
+      net::test_server::ControllableHttpResponse* response1,
+      net::test_server::ControllableHttpResponse* response2) {
+    std::string click_event_data = "this is a click";
+    EXPECT_TRUE(
+        ExecJs(fenced_frame_root_node,
+               JsReplace("window.fence.reportEvent({"
+                         "  eventType: 'click',"
+                         "  eventData: $1,"
+                         "  destination: ['shared-storage-select-url']});",
+                         click_event_data)));
+
+    response1->WaitForRequest();
+    EXPECT_EQ(response1->http_request()->content, click_event_data);
+
+    std::string mouse_event_data = "this is a mouse interaction";
+    EXPECT_TRUE(
+        ExecJs(fenced_frame_root_node,
+               JsReplace("window.fence.reportEvent({"
+                         "  eventType: 'mouse interaction',"
+                         "  eventData: $1,"
+                         "  destination: ['shared-storage-select-url']});",
+                         mouse_event_data)));
+
+    response2->WaitForRequest();
+    EXPECT_EQ(response2->http_request()->content, mouse_event_data);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SharedStorageReportEventLimitBrowserTest,
+                         testing::Bool(),
+                         [](const auto& info) {
+                           if (info.param) {
+                             return "ReportEventLimit";
+                           } else {
+                             return "NoReportEventLimit";
+                           }
+                         });
+
+IN_PROC_BROWSER_TEST_P(SharedStorageReportEventLimitBrowserTest,
+                       ReportEvent_SameEntropyCalls_LimitReached) {
+  // Here each call to `selectURL()` will have 8 input URLs, and hence
+  // 3 = log2(8) bits of entropy.
+  size_t call_limit = kReportEventBitBudget / 3;
+
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+  for (size_t i = 0; i <= call_limit; ++i) {
+    responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server(), "/fenced_frames/report1.html"));
+    responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server(), "/fenced_frames/report2.html"));
+  }
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetFilter(
+      MakeFilter({"The call to fence.reportEvent was blocked due to "
+                  "insufficient budget."}));
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+  // There is one "worklet operation": `addModule()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  std::vector<GURL> urns;
+  for (size_t i = 0; i <= call_limit; ++i) {
+    urns.emplace_back(EvalJs(shell(), kSelectFrom8URLsScript).ExtractString());
+  }
+
+  // There are `call_limit + 1` "worklet operations": `selectURL()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(call_limit + 1);
+
+  for (size_t i = 0; i < call_limit; ++i) {
+    FrameTreeNode* fenced_frame_root_node = CreateFencedFrame(urns[i]);
+
+    RunSuccessfulReportEvents(fenced_frame_root_node, responses[2 * i].get(),
+                              responses[2 * i + 1].get());
+  }
+
+  FrameTreeNode* fenced_frame_root_node = CreateFencedFrame(urns[call_limit]);
+
+  if (GetParam()) {
+    // The limit for `reportEvent()` has now been reached for this page. Make
+    // one more call, which will be blocked.
+    std::string click_event_data = "this is a click";
+    EXPECT_TRUE(
+        ExecJs(fenced_frame_root_node,
+               JsReplace("window.fence.reportEvent({"
+                         "  eventType: 'click',"
+                         "  eventData: $1,"
+                         "  destination: ['shared-storage-select-url']});",
+                         click_event_data)));
+
+    EXPECT_TRUE(console_observer.Wait());
+    ASSERT_LE(1u, console_observer.messages().size());
+    EXPECT_EQ(
+        "The call to fence.reportEvent was blocked due to insufficient budget.",
+        base::UTF16ToUTF8(console_observer.messages().back().message));
+  } else {
+    // The `reportEvent()` limit is disabled. The calls will run successfully.
+    RunSuccessfulReportEvents(fenced_frame_root_node,
+                              responses[2 * call_limit].get(),
+                              responses[2 * call_limit + 1].get());
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageReportEventLimitBrowserTest,
+                       ReportEvent_DifferentEntropyCalls_LimitReached) {
+  // Here the first call to `selectURL()` will have 8 input URLs, and hence
+  // 3 = log2(8) bits of entropy, and the subsequent calls will each have 4
+  // input URLs, and hence 2 = log2(4) bits of entropy.
+  size_t input4_call_limit = (kReportEventBitBudget - 3) / 2;
+
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+  for (size_t i = 0; i < input4_call_limit + 2; ++i) {
+    responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server(), "/fenced_frames/report1.html"));
+    responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server(), "/fenced_frames/report2.html"));
+  }
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetFilter(
+      MakeFilter({"The call to fence.reportEvent was blocked due to "
+                  "insufficient budget."}));
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+  // There is one "worklet operation": `addModule()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  std::vector<GURL> urns;
+  urns.emplace_back(EvalJs(shell(), kSelectFrom8URLsScript).ExtractString());
+
+  for (size_t i = 0; i <= input4_call_limit; ++i) {
+    urns.emplace_back(EvalJs(shell(), kSelectFrom4URLsScript).ExtractString());
+  }
+
+  // There are `input4_call_limit + 2` "worklet operations": `selectURL()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(input4_call_limit + 2);
+
+  // The first pair of `reportEvent()` calls will deduct 3 bits from the budget.
+  FrameTreeNode* fenced_frame_root_node0 = CreateFencedFrame(urns[0]);
+
+  RunSuccessfulReportEvents(fenced_frame_root_node0, responses[0].get(),
+                            responses[1].get());
+
+  for (size_t i = 1; i <= input4_call_limit; ++i) {
+    // Subsequent pairs of calls to `reportEvent()` will deduct 2 bits from the
+    // budget.
+    FrameTreeNode* fenced_frame_root_node1 = CreateFencedFrame(urns[i]);
+
+    RunSuccessfulReportEvents(fenced_frame_root_node1, responses[2 * i].get(),
+                              responses[2 * i + 1].get());
+  }
+
+  FrameTreeNode* fenced_frame_root_node2 =
+      CreateFencedFrame(urns[input4_call_limit + 1]);
+
+  size_t current_response_index = 2 * (input4_call_limit + 1);
+
+  if (GetParam()) {
+    // The limit for `reportEvent()` has now been reached for this page. Make
+    // one more call, which will be blocked.
+    std::string click_event_data = "this is a click";
+    EXPECT_TRUE(
+        ExecJs(fenced_frame_root_node2,
+               JsReplace("window.fence.reportEvent({"
+                         "  eventType: 'click',"
+                         "  eventData: $1,"
+                         "  destination: ['shared-storage-select-url']});",
+                         click_event_data)));
+
+    EXPECT_TRUE(console_observer.Wait());
+    ASSERT_LE(1u, console_observer.messages().size());
+    EXPECT_EQ(
+        "The call to fence.reportEvent was blocked due to insufficient budget.",
+        base::UTF16ToUTF8(console_observer.messages().back().message));
+
+    // Running the first pair of calls again will not cause any errors.
+    RunSuccessfulReportEvents(fenced_frame_root_node0,
+                              responses[current_response_index].get(),
+                              responses[current_response_index + 1].get());
+  } else {
+    // The `reportEvent()` limit is disabled. The calls will run successfully.
+    RunSuccessfulReportEvents(fenced_frame_root_node2,
+                              responses[current_response_index].get(),
+                              responses[current_response_index + 1].get());
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageReportEventLimitBrowserTest,
+                       ReportEventThenPopup) {
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+  responses.emplace_back(
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/fenced_frames/report1.html"));
+  responses.emplace_back(
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/fenced_frames/report2.html"));
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  url::Origin shared_storage_origin = url::Origin::Create(main_url);
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+  // There is one "worklet operation": `addModule()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  GURL urn = GURL(EvalJs(shell(), kSelectFrom8URLsScript).ExtractString());
+
+  // There is one "worklet operation": `selectURL()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  FrameTreeNode* fenced_frame_root_node = CreateFencedFrame(urn);
+
+  RunSuccessfulReportEvents(fenced_frame_root_node, responses[0].get(),
+                            responses[1].get());
+
+  // The origin's entropy budget is untouched.
+  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin), kBudgetAllowed);
+  EXPECT_DOUBLE_EQ(RemainingBudgetViaJSForFrame(PrimaryFrameTreeNodeRoot()),
+                   kBudgetAllowed);
+
+  OpenPopup(fenced_frame_root_node,
+            https_server()->GetURL("b.test", kSimplePagePath), /*name=*/"");
+
+  // After the popup, log(8)=3 bits should have been withdrawn from the
+  // original shared storage origin without any error.
+  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin),
+                   kBudgetAllowed - 3);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageReportEventLimitBrowserTest,
+                       PopupThenReportEvent) {
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+  responses.emplace_back(
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/fenced_frames/report1.html"));
+  responses.emplace_back(
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/fenced_frames/report2.html"));
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  url::Origin shared_storage_origin = url::Origin::Create(main_url);
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+  // There is one "worklet operation": `addModule()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  GURL urn = GURL(EvalJs(shell(), kSelectFrom8URLsScript).ExtractString());
+
+  // There is one "worklet operation": `selectURL()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponsesCount(1);
+
+  FrameTreeNode* fenced_frame_root_node = CreateFencedFrame(urn);
+
+  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin), kBudgetAllowed);
+  EXPECT_DOUBLE_EQ(RemainingBudgetViaJSForFrame(PrimaryFrameTreeNodeRoot()),
+                   kBudgetAllowed);
+
+  OpenPopup(fenced_frame_root_node,
+            https_server()->GetURL("b.test", kSimplePagePath), /*name=*/"");
+
+  // After the popup, log(8)=3 bits should have been withdrawn from the
+  // original shared storage origin.
+  EXPECT_DOUBLE_EQ(GetRemainingBudget(shared_storage_origin),
+                   kBudgetAllowed - 3);
+
+  // the calls to `reportEvent()` should still succeed after the popup.
+  RunSuccessfulReportEvents(fenced_frame_root_node, responses[0].get(),
+                            responses[1].get());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageReportEventLimitBrowserTest,
+                       ReportEvent_NestedFencedFrames_LimitReached) {
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+  for (size_t i = 0; i < 2; ++i) {
+    responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server(), "/fenced_frames/report1.html"));
+    responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            https_server(), "/fenced_frames/report2.html"));
+  }
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetFilter(
+      MakeFilter({"The call to fence.reportEvent was blocked due to "
+                  "insufficient budget."}));
+
+  url::Origin shared_storage_origin1 =
+      url::Origin::Create(https_server()->GetURL("b.test", kSimplePagePath));
+
+  // This call to `selectURL()` will have 8 input URLs, and hence
+  // 3 = log2(8) bits of entropy.
+  GURL urn_uuid1 = SelectFrom8URLsInContext(shared_storage_origin1);
+  FrameTreeNode* outer_fenced_frame_root_node = CreateFencedFrame(urn_uuid1);
+
+  url::Origin shared_storage_origin2 =
+      url::Origin::Create(https_server()->GetURL("c.test", kSimplePagePath));
+
+  // This call to `selectURL()` will have 8 input URLs, and hence
+  // 3 = log2(8) bits of entropy.
+  GURL urn_uuid2 = SelectFrom8URLsInContext(shared_storage_origin2,
+                                            outer_fenced_frame_root_node);
+
+  FrameTreeNode* inner_fenced_frame_root_node =
+      CreateFencedFrame(outer_fenced_frame_root_node, urn_uuid2);
+
+  RunSuccessfulReportEvents(inner_fenced_frame_root_node, responses[0].get(),
+                            responses[1].get());
+
+  // This call to `selectURL()` will have 8 input URLs, and hence
+  // 3 = log2(8) bits of entropy.
+  GURL extra_urn = SelectFrom8URLsInContext(shared_storage_origin1);
+
+  FrameTreeNode* extra_fenced_frame_root_node = CreateFencedFrame(extra_urn);
+
+  if (GetParam()) {
+    // The limit for `reportEvent()` has now been reached for this page. Make
+    // one more call, which will be blocked.
+    std::string click_event_data = "this is a click";
+    EXPECT_TRUE(
+        ExecJs(extra_fenced_frame_root_node,
+               JsReplace("window.fence.reportEvent({"
+                         "  eventType: 'click',"
+                         "  eventData: $1,"
+                         "  destination: ['shared-storage-select-url']});",
+                         click_event_data)));
+
+    EXPECT_TRUE(console_observer.Wait());
+    ASSERT_LE(1u, console_observer.messages().size());
+    EXPECT_EQ(
+        "The call to fence.reportEvent was blocked due to insufficient budget.",
+        base::UTF16ToUTF8(console_observer.messages().back().message));
+  } else {
+    // The `reportEvent()` limit is disabled. The calls will run successfully.
+    RunSuccessfulReportEvents(extra_fenced_frame_root_node, responses[2].get(),
+                              responses[3].get());
+  }
 }
 
 }  // namespace content

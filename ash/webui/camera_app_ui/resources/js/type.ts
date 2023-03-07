@@ -132,7 +132,6 @@ export enum Facing {
 
 export enum ViewName {
   CAMERA = 'view-camera',
-  CROP_DOCUMENT = 'view-crop-document',
   DOCUMENT_MODE_DIALOG = 'view-document-mode-dialog',
   DOCUMENT_REVIEW = 'view-document-review',
   EXPERT_SETTINGS = 'view-expert-settings',
@@ -457,6 +456,16 @@ export class NoFrameError extends Error {
  */
 export class PortraitModeProcessError extends Error {
   constructor(message = 'No human face detected in the scene') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when the camera is suspended while reprocess effects are ongoing.
+ */
+export class CameraSuspendError extends Error {
+  constructor(message = 'camera suspended') {
     super(message);
     this.name = this.constructor.name;
   }

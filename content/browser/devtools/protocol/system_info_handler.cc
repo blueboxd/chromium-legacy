@@ -8,8 +8,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -336,9 +336,9 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
   base::WeakPtrFactory<SystemInfoHandlerGpuObserver> weak_factory_{this};
 };
 
-SystemInfoHandler::SystemInfoHandler()
-    : DevToolsDomainHandler(SystemInfo::Metainfo::domainName) {
-}
+SystemInfoHandler::SystemInfoHandler(bool is_browser_session)
+    : DevToolsDomainHandler(SystemInfo::Metainfo::domainName),
+      is_browser_session_(is_browser_session) {}
 
 SystemInfoHandler::~SystemInfoHandler() = default;
 
@@ -347,6 +347,12 @@ void SystemInfoHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 void SystemInfoHandler::GetInfo(std::unique_ptr<GetInfoCallback> callback) {
+  if (!is_browser_session_) {
+    callback->sendFailure(Response::ServerError(
+        "SystemInfo.getInfo is only supported on the browser target"));
+    return;
+  }
+
   // We will be able to get more information from the GpuDataManager.
   // Register a transient observer with it to call us back when the
   // information is available.
@@ -419,6 +425,12 @@ void AddChildProcessInfo(
 
 void SystemInfoHandler::GetProcessInfo(
     std::unique_ptr<GetProcessInfoCallback> callback) {
+  if (!is_browser_session_) {
+    callback->sendFailure(Response::ServerError(
+        "SystemInfo.getProcessInfo is only supported on the browser target"));
+    return;
+  }
+
   auto process_info =
       std::make_unique<protocol::Array<SystemInfo::ProcessInfo>>();
 
@@ -432,9 +444,16 @@ Response SystemInfoHandler::GetFeatureState(const String& in_featureState,
                                             bool* featureEnabled) {
   if (in_featureState == "PrerenderHoldback") {
     *featureEnabled =
-        std::move(base::FeatureList::IsEnabled(features::kPrerender2Holdback));
+        base::FeatureList::IsEnabled(features::kPrerender2Holdback);
     return Response::Success();
   }
+
+  if (in_featureState == "PreloadingHoldback") {
+    *featureEnabled =
+        base::FeatureList::IsEnabled(features::kPreloadingHoldback);
+    return Response::Success();
+  }
+
   return Response::InvalidParams("Unknown feature");
 }
 

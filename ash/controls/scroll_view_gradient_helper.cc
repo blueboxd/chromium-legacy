@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/animation_builder.h"
@@ -111,7 +111,7 @@ void ScrollViewGradientHelper::AnimateMaskLayer(
 }
 
 void ScrollViewGradientHelper::RemoveMaskLayer() {
-  if (scroll_view_->layer()->gradient_mask().IsEmpty())
+  if (!scroll_view_->layer()->HasGradientMask())
     return;
 
   DVLOG(1) << "Removing gradient mask";

@@ -31,6 +31,7 @@ namespace ash {
 
 namespace video_conference {
 class BubbleViewTest;
+class ReturnToAppPanelTest;
 }  // namespace video_conference
 
 class Shelf;
@@ -79,6 +80,7 @@ class ASH_EXPORT VideoConferenceTray
 
   VideoConferenceTrayButton* audio_icon() { return audio_icon_; }
   VideoConferenceTrayButton* camera_icon() { return camera_icon_; }
+  VideoConferenceTrayButton* screen_share_icon() { return screen_share_icon_; }
 
   // TrayBackgroundView:
   void CloseBubble() override;
@@ -88,11 +90,14 @@ class ASH_EXPORT VideoConferenceTray
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   void HandleLocaleChange() override;
-  void UpdateAfterLoginStatusChange() override;
 
   // VideoConferenceTrayController::Observer:
+  void OnHasMediaAppStateChange(bool has_media_app) override;
+  void OnCameraPermissionStateChange(bool has_permission) override;
+  void OnMicrophonePermissionStateChange(bool has_permission) override;
   void OnCameraCapturingStateChange(bool is_capturing) override;
   void OnMicrophoneCapturingStateChange(bool is_capturing) override;
+  void OnScreenSharingStateChange(bool is_capturing_screen) override;
 
   // The expand indicator of the toggle bubble button needs to rotate according
   // to shelf alignment and whether the bubble is opened. This function will
@@ -101,6 +106,7 @@ class ASH_EXPORT VideoConferenceTray
 
  private:
   friend class video_conference::BubbleViewTest;
+  friend class video_conference::ReturnToAppPanelTest;
   friend class VideoConferenceTrayTest;
 
   // Callback function for `toggle_bubble_button_`.

@@ -67,8 +67,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"  // nogncheck
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
+#include "components/supervised_user/core/browser/supervised_user_error_page.h"  // nogncheck
 #endif
 
 using security_interstitials::TestSafeBrowsingBlockingPageQuiet;
@@ -253,7 +253,8 @@ std::unique_ptr<LookalikeUrlBlockingPage> CreateLookalikeInterstitialPage(
   }
   return std::make_unique<LookalikeUrlBlockingPage>(
       web_contents, safe_url, request_url, ukm::kInvalidSourceId,
-      LookalikeUrlMatchType::kNone, false, /*triggered_by_initial_url=*/false,
+      lookalikes::LookalikeUrlMatchType::kNone, false,
+      /*triggered_by_initial_url=*/false,
       std::make_unique<LookalikeUrlControllerClient>(web_contents, request_url,
                                                      safe_url));
 }

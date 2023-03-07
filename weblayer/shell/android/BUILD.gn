@@ -15,7 +15,7 @@ import("//weblayer/variables.gni")
 generate_wrapper("run_webengine_shell") {
   testonly = true
   wrapper_script = "$root_out_dir/bin/run_webengine_shell"
-  executable = "//weblayer/tools/run_weblayer_shell.py"
+  executable = "//weblayer/tools/run_webengine_shell.py"
   executable_args = [
     "--shell-apk-path",
     "@WrappedPath(apks/WEShellSandbox.apk)",
@@ -35,7 +35,7 @@ generate_wrapper("run_webengine_shell") {
 generate_wrapper("run_webengine_shell_local") {
   testonly = true
   wrapper_script = "$root_out_dir/bin/run_webengine_shell_local"
-  executable = "//weblayer/tools/run_weblayer_shell.py"
+  executable = "//weblayer/tools/run_webengine_shell.py"
   executable_args = [
     "--shell-apk-path",
     "@WrappedPath(apks/WEShellLocal.apk)",
@@ -118,12 +118,23 @@ android_apk("weblayer_support_apk") {
   shared_libraries = [ "//weblayer:libweblayer_test" ]
 }
 
+webengine_shell_strings =
+    "$target_gen_dir/webengine_shell_apk/res/values/strings.xml"
+
+jinja_template("webengine_shell_strings") {
+  input = "webengine_shell_apk/res_template/values/strings.xml"
+  output = webengine_shell_strings
+}
+
 android_resources("webengine_shell_resources") {
   sources = [
     "webengine_shell_apk/res/layout/main.xml",
-    "webengine_shell_apk/res/values/strings.xml",
+    "webengine_shell_apk/res/layout/navigation_test.xml",
+    "webengine_shell_apk/res/layout/state_test.xml",
     "webengine_shell_apk/res/values/styles.xml",
+    webengine_shell_strings,
   ]
+  deps = [ ":webengine_shell_strings" ]
 }
 
 android_library("webengine_shell_java") {
@@ -131,8 +142,11 @@ android_library("webengine_shell_java") {
   resources_package = "org.chromium.webengine.shell"
 
   sources = [
+    "webengine_shell_apk/src/org/chromium/webengine/shell/DefaultObservers.java",
     "webengine_shell_apk/src/org/chromium/webengine/shell/InstrumentationActivity.java",
+    "webengine_shell_apk/src/org/chromium/webengine/shell/WebEngineNavigationTestActivity.java",
     "webengine_shell_apk/src/org/chromium/webengine/shell/WebEngineShellActivity.java",
+    "webengine_shell_apk/src/org/chromium/webengine/shell/WebEngineStateTestActivity.java",
   ]
 
   deps = [
@@ -141,6 +155,7 @@ android_library("webengine_shell_java") {
     "//base:base_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
     "//third_party/android_deps:guava_android_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
     "//weblayer/public/java:service_provider_java",

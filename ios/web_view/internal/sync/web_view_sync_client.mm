@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -138,6 +138,10 @@ favicon::FaviconService* WebViewSyncClient::GetFaviconService() {
 }
 
 history::HistoryService* WebViewSyncClient::GetHistoryService() {
+  return nullptr;
+}
+
+ReadingListModel* WebViewSyncClient::GetReadingListModel() {
   return nullptr;
 }
 

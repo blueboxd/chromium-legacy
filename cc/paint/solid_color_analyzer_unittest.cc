@@ -23,17 +23,15 @@ class SolidColorAnalyzerTest : public testing::Test {
 
   bool IsSolidColor(int max_ops_to_analyze = 1,
                     const gfx::Rect& rect = gfx::Rect(0, 0, 100, 100)) {
-    sk_sp<PaintRecord> record = canvas_.ReleaseAsRecord();
     auto color = SolidColorAnalyzer::DetermineIfSolidColor(
-        record.get(), rect, max_ops_to_analyze, nullptr);
+        canvas_.ReleaseAsRecord().buffer(), rect, max_ops_to_analyze, nullptr);
     return !!color;
   }
 
   SkColor4f GetColor(int max_ops_to_analyze = 1,
                      const gfx::Rect rect = gfx::Rect(0, 0, 100, 100)) {
-    sk_sp<PaintRecord> record = canvas_.ReleaseAsRecord();
     auto color = SolidColorAnalyzer::DetermineIfSolidColor(
-        record.get(), rect, max_ops_to_analyze, nullptr);
+        canvas_.ReleaseAsRecord().buffer(), rect, max_ops_to_analyze, nullptr);
     EXPECT_TRUE(color);
     return color ? *color : SkColors::kTransparent;
   }
@@ -303,9 +301,7 @@ TEST_F(SolidColorAnalyzerTest, SaveLayer) {
   PaintFlags flags;
   SkColor4f color = SkColor4f::FromColor(SkColorSetARGB(255, 11, 22, 33));
   flags.setColor(color);
-
-  SkRect rect = SkRect::MakeWH(200, 200);
-  canvas_.saveLayer(&rect, &flags);
+  canvas_.saveLayer(SkRect::MakeWH(200, 200), flags);
   EXPECT_FALSE(IsSolidColor());
 }
 

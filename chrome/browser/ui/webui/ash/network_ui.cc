@@ -14,7 +14,7 @@
 #include "ash/webui/network_ui/network_diagnostics_resource_provider.h"
 #include "ash/webui/network_ui/network_health_resource_provider.h"
 #include "ash/webui/network_ui/traffic_counters_resource_provider.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -64,21 +64,6 @@
 #include "ui/chromeos/strings/network/network_element_localized_strings_provider.h"
 
 namespace ash {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace network_config {
-namespace mojom = ::chromeos::network_config::mojom;
-}
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace network_health {
-namespace mojom = ::chromeos::network_health::mojom;
-}
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace network_diagnostics {
-namespace mojom = ::chromeos::network_diagnostics::mojom;
-}
 
 namespace {
 
@@ -641,7 +626,7 @@ class HotspotConfigMessageHandler : public content::WebUIMessageHandler {
     ShillManagerClient::Get()->SetTetheringEnabled(
         enabled,
         base::BindOnce(&HotspotConfigMessageHandler::RespondStringResult,
-                       weak_ptr_factory_.GetWeakPtr(), callback_id, "success"),
+                       weak_ptr_factory_.GetWeakPtr(), callback_id),
         base::BindOnce(&HotspotConfigMessageHandler::RespondError,
                        weak_ptr_factory_.GetWeakPtr(), callback_id,
                        kSetTetheringEnabled));
@@ -973,8 +958,9 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   base::Value::Dict localized_strings = GetLocalizedStrings();
 
-  content::WebUIDataSource* html =
-      content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
+  content::WebUIDataSource* html = content::WebUIDataSource::CreateAndAdd(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      chrome::kChromeUINetworkHost);
 
   html->DisableTrustedTypesCSP();
 
@@ -990,25 +976,22 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   ui::network_element::AddLocalizedStrings(html);
   ui::network_element::AddOncLocalizedStrings(html);
   traffic_counters::AddResources(html);
-  html->UseStringsJs();
 
   webui::SetupWebUIDataSource(
       html, base::make_span(kNetworkUiResources, kNetworkUiResourcesSize),
       IDR_NETWORK_UI_NETWORK_HTML);
-
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                html);
 }
 
 NetworkUI::~NetworkUI() = default;
 
 void NetworkUI::BindInterface(
-    mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
   GetNetworkConfigService(std::move(receiver));
 }
 
 void NetworkUI::BindInterface(
-    mojo::PendingReceiver<network_health::mojom::NetworkHealthService>
+    mojo::PendingReceiver<chromeos::network_health::mojom::NetworkHealthService>
         receiver) {
   network_health::NetworkHealthManager::GetInstance()->BindHealthReceiver(
       std::move(receiver));
@@ -1016,7 +999,8 @@ void NetworkUI::BindInterface(
 
 void NetworkUI::BindInterface(
     mojo::PendingReceiver<
-        network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
+        chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
+        receiver) {
   network_health::NetworkHealthManager::GetInstance()->BindDiagnosticsReceiver(
       std::move(receiver));
 }

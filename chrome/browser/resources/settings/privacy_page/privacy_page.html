@@ -20,12 +20,6 @@
       settings-collapse-radio-button:not(:first-of-type) {
         --settings-collapse-separator-line: var(--cr-separator-line);
       }
-
-      settings-privacy-guide-page {
-        background-color: var(--cr-card-background-color);
-        border-radius: var(--cr-card-border-radius);
-        box-shadow: var(--cr-card-shadow);
-      }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -54,11 +48,24 @@
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
-        <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
-            class="hr" label="$i18n{cookiePageTitle}"
-            sub-label="[[cookieSettingDescription_]]"
-            on-click="onCookiesClick_"
-            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+        <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+          <cr-link-row id="thirdPartyCookiesLinkRow"
+              start-icon="settings:cookie"
+              class="hr" label="$i18n{thirdPartyCookiesLinkRowLabel}"
+              sub-label="[[computeThirdPartyCookiesSublabel_(
+                  prefs.profile.cookie_controls_mode.*)]]"
+              on-click="onCookiesClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
+        <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+          <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
+              class="hr" label="$i18n{cookiePageTitle}"
+              sub-label="[[cookieSettingDescription_]]"
+              on-click="onCookiesClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
         <template is="dom-if" if=
             "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
           <cr-link-row id="privacySandboxLinkRow"
@@ -89,6 +96,7 @@
               sub-label="[[computePrivacySandboxSublabel_(
                   prefs.privacy_sandbox.*)]]"
               on-click="onPrivacySandboxClick_"
+              button-aria-description="$i18n{opensInNewTab}"
               external
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
@@ -149,44 +157,40 @@
       <template is="dom-if" if=
           "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
         <template is="dom-if" route-path="/adPrivacy">
-          <!-- TODO(b/254413940): Add learn-more-url. -->
           <settings-subpage id="privacy-sandbox"
               page-title="$i18n{adPrivacyPageTitle}"
               associated-control="[[$$('#privacySandboxLinkRow')]]"
-              learn-more-url="">
+              learn-more-url="$i18n{adPrivacyLearnMoreURL}">
             <settings-privacy-sandbox-page prefs="{{prefs}}">
             </settings-privacy-sandbox-page>
           </settings-subpage>
         </template>
 
         <template is="dom-if" route-path="/adPrivacy/interests">
-          <!-- TODO(b/254413439): Add learn-more-url. -->
           <settings-subpage id="privacy-sandbox-topics"
               page-title="$i18n{topicsPageTitle}"
               associated-control="[[$$('#privacySandboxLinkRow')]]"
-              learn-more-url="">
+              learn-more-url="$i18n{adPrivacyLearnMoreURL}">
             <settings-privacy-sandbox-topics-subpage prefs="{{prefs}}">
             </settings-privacy-sandbox-topics-subpage>
           </settings-subpage>
         </template>
 
         <template is="dom-if" route-path="/adPrivacy/sites">
-          <!-- TODO(b/254411472): Add learn-more-url. -->
           <settings-subpage id="privacy-sandbox-fledge"
               page-title="$i18n{fledgePageTitle}"
               associated-control="[[$$('#privacySandboxLinkRow')]]"
-              learn-more-url="">
+              learn-more-url="$i18n{adPrivacyLearnMoreURL}">
             <settings-privacy-sandbox-fledge-subpage prefs="{{prefs}}">
             </settings-privacy-sandbox-fledge-subpage>
           </settings-subpage>
         </template>
 
         <template is="dom-if" route-path="/adPrivacy/measurement">
-          <!-- TODO(b/254412702): Add learn-more-url. -->
           <settings-subpage id="privacy-sandbox-ad-measurement"
               page-title="$i18n{adMeasurementPageTitle}"
               associated-control="[[$$('#privacySandboxLinkRow')]]"
-              learn-more-url="">
+              learn-more-url="$i18n{adPrivacyLearnMoreURL}">
             <settings-privacy-sandbox-ad-measurement-subpage prefs="{{prefs}}">
             </settings-privacy-sandbox-ad-measurement-subpage>
           </settings-subpage>
@@ -281,28 +285,40 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enablePrivacyGuidePage_]]">
-        <template is="dom-if" route-path="/privacy/guide">
-          <settings-subpage id="privacy-guide"
-              class="multi-card"
-              page-title="$i18n{privacyGuideLabel}"
-              associated-control="[[$$('#privacyGuideLinkRow')]]">
-            <settings-privacy-guide-page id="privacyGuidePage" prefs="{{prefs}}"
-                focus-config="[[focusConfig_]]">
-            </settings-privacy-guide-page>
+      <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+        <template is="dom-if" route-path="/cookies">
+          <settings-subpage id="cookies"
+              page-title="$i18n{thirdPartyCookiesPageTitle}"
+              learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}"
+              associated-control="[[$$('#thirdPartyCookiesLinkRow')]]">
+            <settings-cookies-page prefs="{{prefs}}"
+                focus-config="[[focusConfig_]]"
+                search-term="[[searchFilter_]]">
+            </settings-cookies-page>
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" route-path="/cookies">
-        <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
-            learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
-            search-label="$i18n{siteSettingsAllSitesSearch}"
-            search-term="{{searchFilter_}}"
-            associated-control="[[$$('#cookiesLinkRow')]]">
-          <settings-cookies-page prefs="{{prefs}}"
-              focus-config="[[focusConfig_]]"
-              search-term="[[searchFilter_]]">
-          </settings-cookies-page>
+      <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+        <template is="dom-if" route-path="/cookies">
+          <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
+              learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}"
+              associated-control="[[$$('#cookiesLinkRow')]]">
+            <settings-cookies-page prefs="{{prefs}}"
+                focus-config="[[focusConfig_]]"
+                search-term="[[searchFilter_]]">
+            </settings-cookies-page>
+          </settings-subpage>
+        </template>
+      </template>
+      <template is="dom-if" route-path="/preloading" no-search>
+        <settings-subpage id="preloading"
+            page-title="$i18n{preloadingPageTitle}">
+          <settings-preloading-page prefs="{{prefs}}">
+          </settings-preloading-page>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/images" no-search>
@@ -382,9 +398,8 @@
       </template>
       <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
         <template is="dom-if" route-path="/content/siteData" no-search>
-          <!-- TODO(crbug/1378703): Update site data strings. -->
-          <settings-subpage page-title="$i18n{privacyPageTitle}"
-                search-label="$i18n{privacyPageTitle}"
+          <settings-subpage page-title="$i18n{siteDataPageTitle}"
+                search-label="$i18n{siteSettingsAllSitesSearch}"
                 search-term="{{searchFilter_}}">
             <settings-site-data prefs="{{prefs}}"
                 search-term="[[searchFilter_]]">
@@ -944,17 +959,24 @@
           <settings-subpage page-title="$i18n{siteSettingsBluetoothScanning}"
               search-label="$i18n{siteSettingsAllSitesSearch}"
               search-term="{{searchFilter_}}">
-            <category-default-setting
-                toggle-off-label="$i18n{siteSettingsBluetoothScanningBlock}"
-                toggle-on-label=
-                    "$i18n{siteSettingsBluetoothScanningAskRecommended}"
-                category="[[contentSettingsTypesEnum_.BLUETOOTH_SCANNING]]">
-            </category-default-setting>
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsBluetoothScanningDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.BLUETOOTH_SCANNING]]"
+                allow-option-label=
+                    "$i18n{siteSettingsBluetoothScanningAsk}"
+                allow-option-icon="settings:bluetooth-scanning"
+                block-option-label="$i18n{siteSettingsBluetoothScanningBlock}"
+                block-option-icon="settings:bluetooth-off">
+            </settings-category-default-radio-group>
             <category-setting-exceptions
                 category="[[contentSettingsTypesEnum_.BLUETOOTH_SCANNING]]"
                 read-only-list
-                block-header="$i18n{siteSettingsBlock}"
-                allow-header="$i18n{siteSettingsAllow}"
+                block-header=
+                    "$i18n{siteSettingsBluetoothScanningBlockedExceptions}"
+                allow-header=
+                    "$i18n{siteSettingsBluetoothScanningAllowedExceptions}"
                 search-filter="[[searchFilter_]]">
             </category-setting-exceptions>
           </settings-subpage>

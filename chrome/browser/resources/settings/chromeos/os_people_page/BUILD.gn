@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/html_to_js.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
@@ -95,7 +94,6 @@ js_library("lock_screen") {
     "..:os_route",
     "..:route_observer_behavior",
     "..:router",
-    "../multidevice_page:multidevice_smartlock_item",
     "//ash/webui/common/resources:assert",
     "//ash/webui/common/resources:focus_without_ink_js",
     "//ash/webui/common/resources:i18n_behavior",
@@ -242,23 +240,5 @@ js_library("users_page") {
     "//ash/webui/common/resources:assert",
     "//ash/webui/common/resources:focus_without_ink_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-html_to_js("web_components") {
-  js_files = [
-    "account_manager.js",
-    "fingerprint_list.js",
-    "local_data_recovery_dialog.js",
-    "lock_screen.js",
-    "lock_screen_password_prompt_dialog.js",
-    "os_people_page.js",
-    "os_sync_controls.js",
-    "setup_fingerprint_dialog.js",
-    "pin_autosubmit_dialog.js",
-    "setup_pin_dialog.js",
-    "user_list.js",
-    "users_add_user_dialog.js",
-    "users_page.js",
   ]
 }

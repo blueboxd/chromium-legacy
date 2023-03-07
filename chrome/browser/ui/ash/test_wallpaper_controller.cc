@@ -126,12 +126,6 @@ bool TestWallpaperController::GetDailyGooglePhotosWallpaperIdCache(
   return true;
 }
 
-void TestWallpaperController::SetOnlineWallpaperIfExists(
-    const ash::OnlineWallpaperParams& params,
-    SetWallpaperCallback callback) {
-  NOTIMPLEMENTED();
-}
-
 void TestWallpaperController::SetDefaultWallpaper(
     const AccountId& account_id,
     bool show_wallpaper,
@@ -222,11 +216,6 @@ void TestWallpaperController::RemoveUserWallpaper(const AccountId& account_id) {
 
 void TestWallpaperController::RemovePolicyWallpaper(
     const AccountId& account_id) {
-  NOTIMPLEMENTED();
-}
-
-void TestWallpaperController::GetOfflineWallpaperList(
-    GetOfflineWallpaperListCallback callback) {
   NOTIMPLEMENTED();
 }
 

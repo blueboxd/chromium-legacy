@@ -10,6 +10,7 @@
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
@@ -80,7 +81,8 @@ void SetKioskLaunchStateCrashKey(KioskLaunchState state);
 // NetworkUI state.
 class KioskLaunchController : public KioskProfileLoader::Delegate,
                               public AppLaunchSplashScreenView::Delegate,
-                              public KioskAppLauncher::Delegate {
+                              public KioskAppLauncher::NetworkDelegate,
+                              public KioskAppLauncher::Observer {
  public:
   class KioskProfileLoadFailedObserver : public base::CheckedObserver {
    public:
@@ -103,6 +105,7 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   SetNetworkWaitForTesting(base::TimeDelta wait_time);
   [[nodiscard]] static std::unique_ptr<base::AutoReset<bool>>
   BlockAppLaunchForTesting();
+  [[nodiscard]] static base::AutoReset<bool> BlockExitOnFailureForTesting();
   static void SetNetworkTimeoutCallbackForTesting(base::OnceClosure* callback);
   static void SetCanConfigureNetworkCallbackForTesting(
       ReturnBoolCallback* callback);
@@ -155,7 +158,7 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   void OnCancelAppLaunch();
   void OnNetworkConfigRequested();
 
-  // AppLaunchSplashScreenView::Delegate:
+  // `AppLaunchSplashScreenView::Delegate`
   void OnConfigureNetwork() override;
   void OnDeletingSplashScreenView() override;
   void OnNetworkConfigFinished() override;
@@ -163,10 +166,12 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   KioskAppManagerBase::App GetAppData() override;
   bool IsNetworkRequired() override;
 
-  // KioskAppLauncher::Delegate:
+  // `KioskAppLauncher::NetworkDelegate`
   void InitializeNetwork() override;
   bool IsNetworkReady() const override;
   bool IsShowingNetworkConfigScreen() const override;
+
+  // `KioskAppLauncher::Observer`
   void OnLaunchFailed(KioskAppLaunchError::Error error) override;
   void OnAppInstalling() override;
   void OnAppPrepared() override;
@@ -174,7 +179,7 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   void OnAppDataUpdated() override;
   void OnAppWindowCreated() override;
 
-  // KioskProfileLoader::Delegate:
+  // `KioskProfileLoader::Delegate`
   void OnProfileLoaded(Profile* profile) override;
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
   void OnOldEncryptionDetected(
@@ -249,6 +254,8 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   base::ObserverList<KioskProfileLoadFailedObserver>
       profile_load_failed_observers_;
 
+  base::ScopedObservation<KioskAppLauncher, KioskAppLauncher::Observer>
+      app_launcher_observation_{this};
   base::WeakPtrFactory<KioskLaunchController> weak_ptr_factory_{this};
 };
 

@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
+#include "chrome/browser/extensions/error_console/error_console_test_observer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -63,7 +64,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -1347,9 +1347,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
                                   .Set("launch", DictionaryBuilder()
                                                      .Set("web_url",
                                                           hosted_app_url.spec())
-                                                     .BuildDict())
-                                  .BuildDict())
-                  .BuildDict())
+                                                     .Build())
+                                  .Build())
+                  .Build())
           .Build();
   extension_service()->AddExtension(hosted_app.get());
 
@@ -6016,42 +6016,181 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest, TestOnAuthRequired) {
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 }
 
-namespace {
+// Tests the behavior of an extension that registers an event listener
+// asynchronously.
+// Regression test for https://crbug.com/1397879.
+IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest, AsyncListenerRegistration) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  static constexpr char kManifest[] =
+      R"({
+           "name": "MV3 WebRequest",
+           "version": "0.1",
+           "manifest_version": 3,
+           "permissions": ["webRequest", "webRequestBlocking"],
+           "host_permissions": [
+             "http://example.com/*"
+           ],
+           "background": {"service_worker": "background.js"}
+         })";
+  // A background context that *conditionally* registers a blocking listener.
+  // We send a "will_register" message and register the listener once we receive
+  // the response from that message. If we never receive a response, we never
+  // register the event listener.
+  static constexpr char kBackgroundJs[] =
+      R"(chrome.test.sendMessage('will_register').then(() => {
+           chrome.webRequest.onBeforeRequest.addListener(
+               (details) => {
+                 if (details.url.includes('example.com')) {
+                   return {cancel: true}
+                 }
+                 return {};
+               },
+               {urls: ['<all_urls>'], types: ['main_frame']},
+               ['blocking']);
+           chrome.test.sendMessage('registered');
+         });
+         chrome.test.sendMessage('ready');)";
 
-// A helper to wait for an error to be added for an extension.
-// TODO(devlin): Pull this into a central test util file.
-class ErrorObserver : public ErrorConsole::Observer {
- public:
-  ErrorObserver(size_t errors_expected, ErrorConsole* error_console)
-      : errors_expected_(errors_expected), error_console_(error_console) {
-    observation_.Observe(error_console_.get());
+  // Load the extension and tell it to register the listener.
+  ExtensionTestMessageListener will_register_listener(
+      "will_register", ReplyBehavior::kWillReply);
+  ExtensionTestMessageListener registered_listener("registered");
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+  const Extension* extension = LoadPolicyExtension(test_dir);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(will_register_listener.WaitUntilSatisfied());
+  EXPECT_FALSE(registered_listener.was_satisfied());
+  will_register_listener.Reply("Go for it!");
+  ASSERT_TRUE(registered_listener.WaitUntilSatisfied());
+
+  // A single webRequest listener should be registered.
+  EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(0u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  const GURL url =
+      embedded_test_server()->GetURL("example.com", "/simple.html");
+
+  // Navigate to example.com to check our setup; the request should be blocked.
+  {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver nav_observer(web_contents);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
   }
 
-  // ErrorConsole::Observer implementation.
-  void OnErrorAdded(const ExtensionError* error) override {
-    ++errors_observed_;
-    if (errors_observed_ >= errors_expected_) {
-      run_loop_.Quit();
-    }
+  // Stop the service worker.
+  browsertest_util::StopServiceWorkerForExtensionGlobalScope(profile(),
+                                                             extension->id());
+  // Note: the task to remove listeners from ExtensionWebRequestEventRouter
+  // is async; run to flush the posted task.
+  base::RunLoop().RunUntilIdle();
+
+  // The listener should still be registered, but should be counted as an
+  // inactive listener.
+  EXPECT_EQ(0u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+  EXPECT_EQ(1u, web_request_router()->GetInactiveListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  // Reset the "will register" listener. However, we'll never reply this time,
+  // which means the extension will never register the listener again.
+  will_register_listener.Reset();
+
+  // Now, navigate to example.com again. This will wake up the extension service
+  // worker, but we'll fail to dispatch the event to the extension because the
+  // listener isn't registered. The request should be allowed to continue.
+  {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver nav_observer(web_contents);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(net::OK, nav_observer.last_net_error_code());
   }
 
-  // Spin until the appropriate number of errors have been observed.
-  void WaitForErrors() {
-    if (errors_observed_ < errors_expected_) {
-      run_loop_.Run();
-    }
-  }
+  // Clean up: ExtensionTestMessageListener requires a reply (or else will
+  // DCHECK). Wait for it to receive the message (it probably already did, but
+  // theoretically can race), and send a response.
+  EXPECT_TRUE(will_register_listener.WaitUntilSatisfied());
+  will_register_listener.Reply("unused");
+}
 
- private:
-  size_t errors_expected_;
-  raw_ptr<ErrorConsole, DanglingUntriaged> error_console_;
-  size_t errors_observed_ = 0;
-  base::ScopedObservation<ErrorConsole, ErrorConsole::Observer> observation_{
-      this};
-  base::RunLoop run_loop_;
-};
+// Tests behavior when a service worker is stopped while processing an event.
+IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
+                       ServiceWorkerGoesAwayWhileHandlingRequest) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  static constexpr char kManifest[] =
+      R"({
+           "name": "MV3 WebRequest",
+           "version": "0.1",
+           "manifest_version": 3,
+           "permissions": ["webRequest", "webRequestBlocking"],
+           "host_permissions": [
+             "http://example.com/*"
+           ],
+           "background": {"service_worker": "background.js"}
+         })";
+  // An extension with a listener that will spin forever on example.com
+  // requests.
+  static constexpr char kBackgroundJs[] =
+      R"(chrome.webRequest.onBeforeRequest.addListener(
+             (details) => {
+               if (details.url.includes('example.com')) {
+                 chrome.test.sendMessage('received');
+                 // Spin FOREVER.
+                 while (true) { }
+               }
+               return {};
+             },
+             {urls: ['<all_urls>'], types: ['main_frame']},
+             ['blocking']);
+         chrome.test.sendMessage('ready');)";
 
-}  // namespace
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+  const Extension* extension = LoadPolicyExtension(test_dir);
+  ASSERT_TRUE(extension);
+
+  // A single webRequest listener should be registered.
+  EXPECT_EQ(1u, web_request_router()->GetListenerCountForTesting(
+                    profile(), "webRequest.onBeforeRequest"));
+
+  // Navigate to example.com; the extension will receive the event and spin
+  // indefinitely.
+  // We navigate in a new tab to have a better signal of "request started".
+  // We can't wait for the request to finish, since the extension's listener
+  // never returns, which blocks the request.
+  const GURL url =
+      embedded_test_server()->GetURL("example.com", "/simple.html");
+  content::TestNavigationObserver nav_observer(url);
+  nav_observer.StartWatchingNewWebContents();
+  ExtensionTestMessageListener test_listener("received");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(test_listener.WaitUntilSatisfied());
+  // The web contents should still be loading, and should have no last
+  // committed URL since the extension is blocking the request.
+  EXPECT_TRUE(web_contents->IsLoading());
+  EXPECT_EQ(GURL(), web_contents->GetLastCommittedURL());
+
+  // Stop the extension service worker.
+  browsertest_util::StopServiceWorkerForExtensionGlobalScope(profile(),
+                                                             extension->id());
+
+  // The request should be unblocked.
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+}
 
 // Tests that a MV3 extension that doesn't have the `webRequestAuthProvider`
 // permission cannot use blocking listeners for `onAuthRequired`.
@@ -6080,11 +6219,9 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
              ['asyncBlocking']);)";
 
   // Since we can't catch the error in the extension's JS, we instead listen to
-  // the error come into the error console. This also requires setting the user
-  // in developer mode.
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
-  ErrorObserver error_observer(1u, error_console);
+  // the error come into the error console.
+  ErrorConsoleTestObserver error_observer(1u, profile());
+  error_observer.EnableErrorCollection();
 
   // Load the extension and wait for the error to come.
   TestExtensionDir test_dir;
@@ -6096,7 +6233,7 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
   error_observer.WaitForErrors();
 
   const ErrorList& errors =
-      error_console->GetErrorsForExtension(extension->id());
+      ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(1u, errors.size());
   EXPECT_TRUE(
       base::StartsWith(errors[0]->message(),

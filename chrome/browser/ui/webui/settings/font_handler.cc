@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -45,7 +45,9 @@ void FontHandler::RegisterMessages() {
 
 void FontHandler::OnJavascriptAllowed() {}
 
-void FontHandler::OnJavascriptDisallowed() {}
+void FontHandler::OnJavascriptDisallowed() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
 
 void FontHandler::HandleFetchFontsData(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());

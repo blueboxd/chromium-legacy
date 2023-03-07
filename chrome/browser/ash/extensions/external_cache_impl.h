@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/extension_id.h"
+#include "net/base/backoff_entry.h"
 
 namespace extensions {
 class ExtensionDownloader;
@@ -83,6 +84,8 @@ class ExternalCacheImpl : public ExternalCache,
                             const base::FilePath& crx_file_path,
                             const std::string& version,
                             PutExternalExtensionCallback callback) override;
+  void SetBackoffPolicy(
+      absl::optional<net::BackoffEntry::Policy> backoff_policy) override;
 
   // Implementation of content::NotificationObserver:
   void Observe(int type,
@@ -170,6 +173,9 @@ class ExternalCacheImpl : public ExternalCache,
   // Used to download the extensions and to check for updates.
   std::unique_ptr<extensions::ExtensionDownloader> downloader_;
 
+  // Backoff policy of extension downloader.
+  absl::optional<net::BackoffEntry::Policy> backoff_policy_;
+
   // Observes failures to install CRX files.
   content::NotificationRegistrar notification_registrar_;
 
@@ -184,11 +190,5 @@ class ExternalCacheImpl : public ExternalCache,
 };
 
 }  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::ExternalCacheImpl;
-}
 
 #endif  // CHROME_BROWSER_ASH_EXTENSIONS_EXTERNAL_CACHE_IMPL_H_

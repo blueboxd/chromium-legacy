@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/direct_sockets/tcp_readable_stream_wrapper.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/mock_callback.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
@@ -334,9 +334,9 @@ TEST_P(TCPReadableStreamWrapperCloseTest, ResetCancelError) {
 
   stream_creator->ResetPipe();
 
+  // cancel() always has priority.
   ASSERT_EQ(tcp_readable_stream_wrapper->GetState(),
-            graceful ? StreamWrapper::State::kClosed
-                     : StreamWrapper::State::kAborted);
+            StreamWrapper::State::kClosed);
 }
 
 }  // namespace

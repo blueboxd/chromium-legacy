@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -71,6 +71,8 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
     GetInterface(remote->BindNewEndpointAndPassReceiver(task_runner_));
   }
 
+  // If there is an override for `name`, passing in a null `binder` removes the
+  // override.
   void OverrideBinderForTesting(
       const std::string& name,
       const base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>&

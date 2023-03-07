@@ -34,6 +34,7 @@ BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardMetadata);
 BASE_DECLARE_FEATURE(kAutofillEnforceDelaysInStrikeDatabase);
 BASE_DECLARE_FEATURE(kAutofillFillIbanFields);
 BASE_DECLARE_FEATURE(kAutofillFillMerchantPromoCodeFields);
+BASE_DECLARE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour);
 BASE_DECLARE_FEATURE(kAutofillParseIBANFields);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
 BASE_DECLARE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles);
@@ -43,6 +44,7 @@ BASE_DECLARE_FEATURE(kAutofillSaveCardUiExperiment);
 extern const base::FeatureParam<int>
     kAutofillSaveCardUiExperimentSelectorInNumber;
 BASE_DECLARE_FEATURE(kAutofillShowUnmaskedCachedCardInManualFillingView);
+BASE_DECLARE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard);
 BASE_DECLARE_FEATURE(kAutofillUpstream);
 BASE_DECLARE_FEATURE(kAutofillUpstreamAllowAdditionalEmailDomains);
 BASE_DECLARE_FEATURE(kAutofillUpstreamAllowAllEmailDomains);

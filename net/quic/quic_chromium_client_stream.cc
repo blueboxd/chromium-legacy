@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -299,11 +299,10 @@ void QuicChromiumClientStream::Handle::
 }
 
 void QuicChromiumClientStream::Handle::SetPriority(
-    const spdy::SpdyStreamPrecedence& precedence) {
-  if (stream_)
-    stream_->SetPriority(quic::QuicStreamPriority{
-        precedence.spdy3_priority(),
-        quic::QuicStreamPriority::kDefaultIncremental});
+    const quic::QuicStreamPriority& priority) {
+  if (stream_) {
+    stream_->SetPriority(priority);
+  }
 }
 
 void QuicChromiumClientStream::Handle::Reset(
@@ -618,7 +617,7 @@ size_t QuicChromiumClientStream::WriteHeaders(
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
       [&](NetLogCaptureMode capture_mode) {
-        return QuicRequestNetLogParams(id(), &header_block, priority().urgency,
+        return QuicRequestNetLogParams(id(), &header_block, priority(),
                                        capture_mode);
       });
   size_t len = quic::QuicSpdyStream::WriteHeaders(std::move(header_block), fin,

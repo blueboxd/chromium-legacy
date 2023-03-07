@@ -31,13 +31,13 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/menu",
-    "//ios/chrome/browser/ui/menu:context_menu_delegate",
+    "//ios/chrome/browser/ui/menu:tab_context_menu_delegate",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/sharing",
+    "//ios/chrome/browser/ui/sharing/activity_services",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web_state_list",
@@ -65,8 +65,6 @@ source_set("recent_tabs_ui") {
     "recent_tabs_table_view_controller.mm",
     "recent_tabs_table_view_controller_delegate.h",
     "recent_tabs_table_view_controller_ui_delegate.h",
-    "recent_tabs_transitioning_delegate.h",
-    "recent_tabs_transitioning_delegate.mm",
     "sessions_sync_user_state.h",
   ]
   deps = [
@@ -115,7 +113,6 @@ source_set("recent_tabs_ui") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/table_view:cells_constants",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/modals:modals_api",
     "//ui/base",
   ]

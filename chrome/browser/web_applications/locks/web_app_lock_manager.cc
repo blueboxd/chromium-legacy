@@ -5,7 +5,6 @@
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
 #include <memory>
 
-#include "base/bind.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
@@ -113,7 +112,7 @@ bool WebAppLockManager::IsSharedWebContentsLockFree() {
 
 void WebAppLockManager::AcquireLock(
     base::WeakPtr<content::PartitionedLockHolder> holder,
-    LockDescription& lock_description,
+    const LockDescription& lock_description,
     base::OnceClosure on_lock_acquired) {
   std::vector<content::PartitionedLockManager::PartitionedLockRequest>
       requests = GetLockRequestsForLock(lock_description);
@@ -125,7 +124,7 @@ void WebAppLockManager::AcquireLock(
 
 template <>
 void WebAppLockManager::AcquireLock(
-    LockDescription& lock_description,
+    const LockDescription& lock_description,
     base::OnceCallback<void(std::unique_ptr<NoopLock>)> on_lock_acquired) {
   CHECK(lock_description.type() == LockDescription::Type::kNoOp);
 
@@ -139,7 +138,7 @@ void WebAppLockManager::AcquireLock(
 
 template <>
 void WebAppLockManager::AcquireLock(
-    LockDescription& lock_description,
+    const LockDescription& lock_description,
     base::OnceCallback<void(std::unique_ptr<SharedWebContentsLock>)>
         on_lock_acquired) {
   CHECK(lock_description.type() ==
@@ -157,13 +156,13 @@ void WebAppLockManager::AcquireLock(
 
 template <>
 void WebAppLockManager::AcquireLock(
-    LockDescription& lock_description,
+    const LockDescription& lock_description,
     base::OnceCallback<void(std::unique_ptr<AppLock>)> on_lock_acquired) {
   CHECK(lock_description.type() == LockDescription::Type::kApp);
 
   auto lock = std::make_unique<AppLock>(
       std::make_unique<content::PartitionedLockHolder>(),
-      provider_->registrar_unsafe(), provider_->sync_bridge(),
+      provider_->registrar_unsafe(), provider_->sync_bridge_unsafe(),
       provider_->install_finalizer(), provider_->os_integration_manager(),
       provider_->install_manager(), provider_->icon_manager(),
       provider_->translation_manager(), provider_->ui_manager());
@@ -176,7 +175,7 @@ void WebAppLockManager::AcquireLock(
 
 template <>
 void WebAppLockManager::AcquireLock(
-    LockDescription& lock_description,
+    const LockDescription& lock_description,
     base::OnceCallback<void(std::unique_ptr<SharedWebContentsWithAppLock>)>
         on_lock_acquired) {
   CHECK(lock_description.type() == LockDescription::Type::kAppAndWebContents);
@@ -184,7 +183,7 @@ void WebAppLockManager::AcquireLock(
   auto lock = std::make_unique<SharedWebContentsWithAppLock>(
       std::make_unique<content::PartitionedLockHolder>(),
       *provider_->command_manager().EnsureWebContentsCreated(PassKey()),
-      provider_->registrar_unsafe(), provider_->sync_bridge(),
+      provider_->registrar_unsafe(), provider_->sync_bridge_unsafe(),
       provider_->install_finalizer(), provider_->os_integration_manager(),
       provider_->install_manager(), provider_->icon_manager(),
       provider_->translation_manager(), provider_->ui_manager());
@@ -197,14 +196,14 @@ void WebAppLockManager::AcquireLock(
 
 template <>
 void WebAppLockManager::AcquireLock(
-    LockDescription& lock_description,
+    const LockDescription& lock_description,
     base::OnceCallback<void(std::unique_ptr<FullSystemLock>)>
         on_lock_acquired) {
   CHECK(lock_description.type() == LockDescription::Type::kFullSystem);
 
   auto lock = std::make_unique<FullSystemLock>(
       std::make_unique<content::PartitionedLockHolder>(),
-      provider_->registrar_unsafe(), provider_->sync_bridge(),
+      provider_->registrar_unsafe(), provider_->sync_bridge_unsafe(),
       provider_->install_finalizer(), provider_->os_integration_manager(),
       provider_->install_manager(), provider_->icon_manager(),
       provider_->translation_manager(), provider_->ui_manager());
@@ -226,7 +225,7 @@ WebAppLockManager::UpgradeAndAcquireLock(
   auto result_lock = std::make_unique<SharedWebContentsWithAppLock>(
       std::move(lock->holder_),
       *provider_->command_manager().EnsureWebContentsCreated(PassKey()),
-      provider_->registrar_unsafe(), provider_->sync_bridge(),
+      provider_->registrar_unsafe(), provider_->sync_bridge_unsafe(),
       provider_->install_finalizer(), provider_->os_integration_manager(),
       provider_->install_manager(), provider_->icon_manager(),
       provider_->translation_manager(), provider_->ui_manager());
@@ -252,7 +251,7 @@ std::unique_ptr<AppLockDescription> WebAppLockManager::UpgradeAndAcquireLock(
 
   auto result_lock = std::make_unique<AppLock>(
       std::move(lock->holder_), provider_->registrar_unsafe(),
-      provider_->sync_bridge(), provider_->install_finalizer(),
+      provider_->sync_bridge_unsafe(), provider_->install_finalizer(),
       provider_->os_integration_manager(), provider_->install_manager(),
       provider_->icon_manager(), provider_->translation_manager(),
       provider_->ui_manager());

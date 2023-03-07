@@ -14,6 +14,7 @@ import './strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './cpu_card.html.js';
@@ -30,33 +31,31 @@ import {RoutineType} from './system_routine_controller.mojom-webui.js';
 const CpuCardElementBase = I18nMixin(PolymerElement);
 
 export class CpuCardElement extends CpuCardElementBase {
-  static get is() {
+  static get is(): string {
     return 'cpu-card';
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
-      routines_: {
+      routines: {
         type: Array,
-        value: () => {
-          return [
-            RoutineType.kCpuStress,
-            RoutineType.kCpuCache,
-            RoutineType.kCpuFloatingPoint,
-            RoutineType.kCpuPrime,
-          ];
-        },
+        value: () =>
+            [RoutineType.kCpuStress,
+             RoutineType.kCpuCache,
+             RoutineType.kCpuFloatingPoint,
+             RoutineType.kCpuPrime,
+    ],
       },
 
-      cpuUsage_: {
+      cpuUsage: {
         type: Object,
       },
 
-      cpuChipInfo_: {
+      cpuChipInfo: {
         type: String,
         value: '',
       },
@@ -76,85 +75,85 @@ export class CpuCardElement extends CpuCardElementBase {
 
   testSuiteStatus: TestSuiteStatus;
   isActive: boolean;
-  private routines_: RoutineType[];
-  private cpuUsage_: CpuUsage;
-  private cpuChipInfo_: string;
-  private systemDataProvider_: SystemDataProviderInterface =
+  private routines: RoutineType[];
+  private cpuUsage: CpuUsage;
+  private cpuChipInfo: string;
+  private systemDataProvider: SystemDataProviderInterface =
       getSystemDataProvider();
-  private cpuUsageObserverReceiver_: CpuUsageObserverReceiver|null = null;
+  private cpuUsageObserverReceiver: CpuUsageObserverReceiver|null = null;
 
   constructor() {
     super();
-    this.observeCpuUsage_();
-    this.fetchSystemInfo_();
+    this.observeCpuUsage();
+    this.fetchSystemInfo();
   }
 
-  override disconnectedCallback() {
+  override disconnectedCallback(): void {
     super.disconnectedCallback();
 
-    if (this.cpuUsageObserverReceiver_) {
-      this.cpuUsageObserverReceiver_.$.close();
+    if (this.cpuUsageObserverReceiver) {
+      this.cpuUsageObserverReceiver.$.close();
     }
   }
 
   /** @private */
-  private observeCpuUsage_(): void {
-    this.cpuUsageObserverReceiver_ = new CpuUsageObserverReceiver(this);
+  private observeCpuUsage(): void {
+    this.cpuUsageObserverReceiver = new CpuUsageObserverReceiver(this);
 
-    this.systemDataProvider_.observeCpuUsage(
-        this.cpuUsageObserverReceiver_.$.bindNewPipeAndPassRemote());
+    this.systemDataProvider.observeCpuUsage(
+        this.cpuUsageObserverReceiver.$.bindNewPipeAndPassRemote());
   }
 
   /**
    * Implements CpuUsageObserver.onCpuUsageUpdated.
    */
   onCpuUsageUpdated(cpuUsage: CpuUsage): void {
-    this.cpuUsage_ = cpuUsage;
+    this.cpuUsage = cpuUsage;
   }
 
-  protected getCurrentlyUsing_(): string {
+  protected getCurrentlyUsing(): string {
     const MAX_PERCENTAGE = 100;
     const usagePercentage = Math.min(
-        (this.cpuUsage_.percentUsageSystem + this.cpuUsage_.percentUsageUser),
+        (this.cpuUsage.percentUsageSystem + this.cpuUsage.percentUsageUser),
         MAX_PERCENTAGE);
     return loadTimeData.getStringF('cpuUsageText', usagePercentage);
   }
 
-  private fetchSystemInfo_(): void {
-    this.systemDataProvider_.getSystemInfo().then(
+  private fetchSystemInfo(): void {
+    this.systemDataProvider.getSystemInfo().then(
         (result: {systemInfo: SystemInfo}) => {
-          this.onSystemInfoReceived_(result.systemInfo);
+          this.onSystemInfoReceived(result.systemInfo);
         });
   }
 
-  private onSystemInfoReceived_(systemInfo: SystemInfo): void {
-    this.cpuChipInfo_ = loadTimeData.getStringF(
+  private onSystemInfoReceived(systemInfo: SystemInfo): void {
+    this.cpuChipInfo = loadTimeData.getStringF(
         'cpuChipText', systemInfo.cpuModelName, systemInfo.cpuThreadsCount,
-        this.convertKhzToGhz_(systemInfo.cpuMaxClockSpeedKhz));
+        this.convertKhzToGhz(systemInfo.cpuMaxClockSpeedKhz));
   }
 
-  protected getCpuTemp_(): string {
+  protected getCpuTemp(): string {
     return loadTimeData.getStringF(
-        'cpuTempText', this.cpuUsage_.averageCpuTempCelsius);
+        'cpuTempText', this.cpuUsage.averageCpuTempCelsius);
   }
 
-  protected getCpuUsageTooltipText_(): string {
+  protected getCpuUsageTooltipText(): string {
     return loadTimeData.getString('cpuUsageTooltipText');
   }
 
-  private convertKhzToGhz_(num: number): string {
+  private convertKhzToGhz(num: number): string {
     return (num / 1000000).toFixed(2);
   }
 
-  protected getCurrentCpuSpeed_(): string {
+  protected getCurrentCpuSpeed(): string {
     return loadTimeData.getStringF(
         'currentCpuSpeedText',
-        this.convertKhzToGhz_(this.cpuUsage_.scalingCurrentFrequencyKhz));
+        this.convertKhzToGhz(this.cpuUsage.scalingCurrentFrequencyKhz));
   }
 
-  protected getEstimateRuntimeInMinutes_(): number {
+  protected getEstimateRuntimeInMinutes(): number {
     // Each routine runs for a minute
-    return this.routines_.length;
+    return this.routines.length;
   }
 }
 

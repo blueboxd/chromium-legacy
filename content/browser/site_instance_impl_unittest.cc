@@ -443,7 +443,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
 
   NavigationEntryImpl* e1 = new NavigationEntryImpl(
-      instance, url, Referrer(), absl::nullopt, std::u16string(),
+      instance, url, Referrer(), /* initiator_origin= */ absl::nullopt,
+      /* initiator_base_url= */ absl::nullopt, std::u16string(),
       ui::PAGE_TRANSITION_LINK, false, nullptr /* blob_url_loader_factory */,
       false /* is_initial_entry */);
 
@@ -454,7 +455,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 
   // Add a second reference
   NavigationEntryImpl* e2 = new NavigationEntryImpl(
-      instance, url, Referrer(), absl::nullopt, std::u16string(),
+      instance, url, Referrer(), /* initiator_origin= */ absl::nullopt,
+      /* initiator_base_url= */ absl::nullopt, std::u16string(),
       ui::PAGE_TRANSITION_LINK, false, nullptr /* blob_url_loader_factory */,
       false /* is_initial_entry */);
 
@@ -1808,7 +1810,14 @@ TEST_F(SiteInstanceTest, CreateForGuest) {
     EXPECT_EQ(kGuestSiteUrl, instance2->GetSiteURL());
 }
 
-TEST_F(SiteInstanceTest, DoesSiteRequireDedicatedProcess) {
+// TODO(https://crbug.com/1377466): Test is flaky for android builders.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_DoesSiteRequireDedicatedProcess \
+  DISABLED_DoesSiteRequireDedicatedProcess
+#else
+#define MAYBE_DoesSiteRequireDedicatedProcess DoesSiteRequireDedicatedProcess
+#endif
+TEST_F(SiteInstanceTest, MAYBE_DoesSiteRequireDedicatedProcess) {
   class CustomBrowserClient : public EffectiveURLContentBrowserClient {
    public:
     CustomBrowserClient(const GURL& url_to_modify,

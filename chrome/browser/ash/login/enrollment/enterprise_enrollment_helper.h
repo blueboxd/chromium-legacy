@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 class GoogleServiceAuthError;
@@ -117,6 +117,9 @@ class EnterpriseEnrollmentHelper {
   // Does not revoke the additional token if enrollment finished successfully.
   // Calls `callback` on completion.
   virtual void ClearAuth(base::OnceClosure callback) = 0;
+
+  // Returns true if enrollment is in progress.
+  virtual bool InProgress() const = 0;
 
  protected:
   // The user of this class is responsible for clearing auth data in some cases

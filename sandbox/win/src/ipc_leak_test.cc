@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ntstatus.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <winternl.h>
 
 #include <memory>
 
@@ -22,10 +24,6 @@
 #include "sandbox/win/src/sharedmem_ipc_client.h"
 #include "sandbox/win/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#define BINDNTDLL(name)                                   \
-  name##Function name = reinterpret_cast<name##Function>( \
-      ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), #name));
 
 namespace sandbox {
 
@@ -94,7 +92,6 @@ void TestNtCreateFile() {
   OBJECT_ATTRIBUTES attr;
   IO_STATUS_BLOCK iosb;
   HANDLE handle = INVALID_HANDLE_VALUE;
-  BINDNTDLL(RtlInitUnicodeString);
   RtlInitUnicodeString(&path_str, L"\\??\\leak");
   InitializeObjectAttributes(&attr, &path_str, OBJ_CASE_INSENSITIVE, nullptr,
                              nullptr);
@@ -122,7 +119,6 @@ void TestNtOpenFile() {
   OBJECT_ATTRIBUTES attr;
   IO_STATUS_BLOCK iosb;
   HANDLE handle = INVALID_HANDLE_VALUE;
-  BINDNTDLL(RtlInitUnicodeString);
   RtlInitUnicodeString(&path_str, L"\\??\\leak");
   InitializeObjectAttributes(&attr, &path_str, OBJ_CASE_INSENSITIVE, nullptr,
                              nullptr);

@@ -5,8 +5,8 @@
 #include <map>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -62,12 +62,11 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
       /*user_display_mode=*/absl::nullopt,
       ExternalInstallSource::kInternalDefault);
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode> future;
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options, future.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options, future.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& app_id = future.Get<0>();
   webapps::InstallResultCode result_code = future.Get<1>();
@@ -83,21 +82,20 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_TRUE(NavigateAndAwaitInstallabilityCheck(browser(), kWebAppUrl));
 
   ExternalInstallOptions install_options(
-      kWebAppUrl, UserDisplayMode::kStandalone,
+      kWebAppUrl, mojom::UserDisplayMode::kStandalone,
       ExternalInstallSource::kExternalDefault);
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode> future;
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options, future.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options, future.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& app_id = future.Get<0>();
   webapps::InstallResultCode result_code = future.Get<1>();
   EXPECT_EQ(result_code, webapps::InstallResultCode::kSuccessNewInstall);
   EXPECT_TRUE(provider().registrar_unsafe().IsLocallyInstalled(app_id));
   EXPECT_EQ(
-      UserDisplayMode::kStandalone,
+      mojom::UserDisplayMode::kStandalone,
       provider().registrar_unsafe().GetAppUserDisplayMode(app_id).value());
 }
 
@@ -109,23 +107,22 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_TRUE(NavigateAndAwaitInstallabilityCheck(browser(), kWebAppUrl));
 
   ExternalInstallOptions install_options(
-      kWebAppUrl, UserDisplayMode::kBrowser,
+      kWebAppUrl, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kInternalDefault);
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode> future;
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
+  provider().scheduler().InstallExternallyManagedApp(
 
-          install_options, future.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+      install_options, future.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& app_id = future.Get<0>();
   webapps::InstallResultCode result_code = future.Get<1>();
   EXPECT_EQ(result_code, webapps::InstallResultCode::kSuccessNewInstall);
   EXPECT_TRUE(provider().registrar_unsafe().IsLocallyInstalled(app_id));
   EXPECT_EQ(
-      UserDisplayMode::kBrowser,
+      mojom::UserDisplayMode::kBrowser,
       provider().registrar_unsafe().GetAppUserDisplayMode(app_id).value());
 }
 
@@ -137,15 +134,14 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_TRUE(NavigateAndAwaitInstallabilityCheck(browser(), kWebAppUrl));
 
   ExternalInstallOptions install_options(
-      kWebAppUrl, UserDisplayMode::kBrowser,
+      kWebAppUrl, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kExternalPolicy);
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode> future;
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
 
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options, future.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options, future.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& app_id = future.Get<0>();
   webapps::InstallResultCode result_code = future.Get<1>();
@@ -160,16 +156,15 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   const GURL kWebAppUrl("https://external_app.com");
   EXPECT_FALSE(NavigateAndAwaitInstallabilityCheck(browser(), kWebAppUrl));
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode> future;
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
   ExternalInstallOptions install_options(
-      kWebAppUrl, UserDisplayMode::kBrowser,
+      kWebAppUrl, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kExternalPolicy);
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options, future.GetCallback(), web_contents->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options, future.GetCallback(), web_contents->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   // Create a new tab to ensure that the browser isn't destroyed with the web
   // contents closing.
@@ -186,19 +181,18 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   const GURL kWebAppUrl("https://external_app.com");
   EXPECT_FALSE(NavigateAndAwaitInstallabilityCheck(browser(), kWebAppUrl));
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode> future;
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
   ExternalInstallOptions install_options(
-      kWebAppUrl, UserDisplayMode::kBrowser,
+      kWebAppUrl, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kExternalPolicy);
   // This should force the install_params to have a valid manifest, otherwise
   // install will not happen.
   install_options.require_manifest = true;
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options, future.GetCallback(), web_contents->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options, future.GetCallback(), web_contents->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& app_id = future.Get<0>();
   webapps::InstallResultCode result_code = future.Get<1>();
@@ -214,26 +208,26 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
       "manifest_test_page.html");
   EXPECT_TRUE(NavigateAndAwaitInstallabilityCheck(browser(), kWebAppUrl));
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode>
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool>
       future_first_install;
   ExternalInstallOptions install_options(
-      kWebAppUrl, UserDisplayMode::kBrowser,
+      kWebAppUrl, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kInternalDefault);
 
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options, future_first_install.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options, future_first_install.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& first_app_id = future_first_install.Get<0>();
   webapps::InstallResultCode first_install_code = future_first_install.Get<1>();
   EXPECT_EQ(first_install_code, webapps::InstallResultCode::kSuccessNewInstall);
   EXPECT_TRUE(provider().registrar_unsafe().IsLocallyInstalled(first_app_id));
-  EXPECT_EQ(UserDisplayMode::kBrowser, provider()
-                                           .registrar_unsafe()
-                                           .GetAppUserDisplayMode(first_app_id)
-                                           .value());
+  EXPECT_EQ(mojom::UserDisplayMode::kBrowser,
+            provider()
+                .registrar_unsafe()
+                .GetAppUserDisplayMode(first_app_id)
+                .value());
 
   // Now install the same web_app with a different manifest (with updated file
   // handler information) and a different install_url.
@@ -243,17 +237,16 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_TRUE(
       ui_test_utils::NavigateToURL(browser(), kWebAppUrlDifferentManifest));
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode>
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool>
       future_second_install;
   ExternalInstallOptions install_options_policy(
-      kWebAppUrlDifferentManifest, UserDisplayMode::kBrowser,
+      kWebAppUrlDifferentManifest, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kExternalPolicy);
 
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options_policy, future_second_install.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options_policy, future_second_install.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& second_app_id = future_second_install.Get<0>();
   webapps::InstallResultCode second_install_code =
@@ -262,10 +255,11 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_EQ(second_install_code,
             webapps::InstallResultCode::kSuccessNewInstall);
   EXPECT_TRUE(provider().registrar_unsafe().IsLocallyInstalled(second_app_id));
-  EXPECT_EQ(UserDisplayMode::kBrowser, provider()
-                                           .registrar_unsafe()
-                                           .GetAppUserDisplayMode(second_app_id)
-                                           .value());
+  EXPECT_EQ(mojom::UserDisplayMode::kBrowser,
+            provider()
+                .registrar_unsafe()
+                .GetAppUserDisplayMode(second_app_id)
+                .value());
 
   // Verify that the file handlers are correctly updated after a
   // second installation. The file handlers should match the ones in
@@ -318,17 +312,16 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_TRUE(
       ui_test_utils::NavigateToURL(browser(), kWebAppUrlDifferentManifest));
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode>
+  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool>
       future_second_install;
   ExternalInstallOptions install_options_policy(
-      kWebAppUrlDifferentManifest, UserDisplayMode::kBrowser,
+      kWebAppUrlDifferentManifest, mojom::UserDisplayMode::kBrowser,
       ExternalInstallSource::kExternalPolicy);
 
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options_policy, future_second_install.GetCallback(),
-          browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-          std::make_unique<WebAppDataRetriever>()));
+  provider().scheduler().InstallExternallyManagedApp(
+      install_options_policy, future_second_install.GetCallback(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+      std::make_unique<WebAppDataRetriever>());
 
   const AppId& second_app_id = future_second_install.Get<0>();
   webapps::InstallResultCode second_install_code =
@@ -337,10 +330,11 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedInstallCommandBrowserTest,
   EXPECT_EQ(second_install_code,
             webapps::InstallResultCode::kSuccessNewInstall);
   EXPECT_TRUE(provider().registrar_unsafe().IsLocallyInstalled(second_app_id));
-  EXPECT_EQ(UserDisplayMode::kBrowser, provider()
-                                           .registrar_unsafe()
-                                           .GetAppUserDisplayMode(second_app_id)
-                                           .value());
+  EXPECT_EQ(mojom::UserDisplayMode::kBrowser,
+            provider()
+                .registrar_unsafe()
+                .GetAppUserDisplayMode(second_app_id)
+                .value());
 
   // Verify that the file handlers are correctly updated after a
   // second installation. The file handlers should match the ones in

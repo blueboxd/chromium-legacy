@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
 
-#include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -80,7 +81,7 @@ class PLATFORM_EXPORT RTCStats {
 
   String Id() const;
   String GetType() const;
-  double Timestamp() const;
+  double TimestampMs() const;
 
   size_t MembersCount() const;
   std::unique_ptr<RTCStatsMember> GetMember(size_t i) const;
@@ -91,7 +92,8 @@ class PLATFORM_EXPORT RTCStats {
   // Pointer to a stats object that is owned by |stats_owner_|.
   const webrtc::RTCStats* const stats_;
   // Members of the |stats_| object, equivalent to |stats_->Members()|.
-  const std::vector<const webrtc::RTCStatsMemberInterface*> stats_members_;
+  const std::vector<const webrtc::RTCStatsMemberInterface*> stats_members_
+      ALLOW_DISCOURAGED_TYPE("Matches webrtc::RTCStats::Members()");
 };
 
 class PLATFORM_EXPORT RTCStatsMember {

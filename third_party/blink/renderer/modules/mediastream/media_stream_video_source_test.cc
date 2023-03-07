@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
@@ -100,10 +101,11 @@ class MediaStreamVideoSourceTest : public testing::Test {
                        absl::optional<bool>(), false, 0.0);
   }
 
-  WebMediaStreamTrack CreateTrackAndStartSource(int width,
-                                                int height,
-                                                double frame_rate,
-                                                bool detect_rotation = false) {
+  WebMediaStreamTrack CreateTrackAndStartSource(
+      int width,
+      int height,
+      absl::optional<double> frame_rate,
+      bool detect_rotation = false) {
     WebMediaStreamTrack track = CreateTrack(
         "123", VideoTrackAdapterSettings(gfx::Size(width, height), frame_rate),
         absl::optional<bool>(), false, 0.0);
@@ -154,6 +156,13 @@ class MediaStreamVideoSourceTest : public testing::Test {
     sink.DisconnectFromTrack();
   }
 
+  void DeliverVideoFrame(int width, int height, base::TimeDelta timestamp) {
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+    frame->set_timestamp(timestamp);
+    mock_source()->DeliverVideoFrame(frame);
+  }
+
   void DeliverVideoFrameAndWaitForRenderer(int width,
                                            int height,
                                            MockMediaStreamVideoSink* sink) {
@@ -164,6 +173,22 @@ class MediaStreamVideoSourceTest : public testing::Test {
     });
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+    mock_source()->DeliverVideoFrame(frame);
+    run_loop.Run();
+  }
+
+  void DeliverVideoFrameAndWaitForRenderer(int width,
+                                           int height,
+                                           base::TimeDelta timestamp,
+                                           MockMediaStreamVideoSink* sink) {
+    base::RunLoop run_loop;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*sink, OnVideoFrame).WillOnce([&](base::TimeTicks) {
+      std::move(quit_closure).Run();
+    });
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+    frame->set_timestamp(timestamp);
     mock_source()->DeliverVideoFrame(frame);
     run_loop.Run();
   }
@@ -318,7 +343,8 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
-  WebMediaStreamTrack track = CreateTrackAndStartSource(800, 700, 0.0);
+  WebMediaStreamTrack track =
+      CreateTrackAndStartSource(800, 700, absl::nullopt);
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
@@ -352,7 +378,8 @@ TEST_F(MediaStreamVideoSourceTest, RotatedSourceDetectionDisabled) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
-  WebMediaStreamTrack track = CreateTrackAndStartSource(1280, 720, 0.0, true);
+  WebMediaStreamTrack track =
+      CreateTrackAndStartSource(1280, 720, absl::nullopt, true);
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
@@ -380,7 +407,8 @@ TEST_F(MediaStreamVideoSourceTest, RotatedSourceDetectionEnabled) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
-  WebMediaStreamTrack track = CreateTrackAndStartSource(1280, 720, 0.0, true);
+  WebMediaStreamTrack track =
+      CreateTrackAndStartSource(1280, 720, absl::nullopt, true);
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
@@ -443,7 +471,36 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   sink.DisconnectFromTrack();
 }
 
-TEST_F(MediaStreamVideoSourceTest, NotifyFrameDropped) {
+// This test ensures that the filter used by the VideoTrackAdapter to estimate
+// the frame rate is initialized correctly and does not drop any frames from
+// start but forwards all as intended.
+TEST_F(MediaStreamVideoSourceTest,
+       SendAtMaxRateAndExpectAllFramesToBeDelivered) {
+  constexpr int kMaxFps = 10;
+  WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
+  MockMediaStreamVideoSink sink;
+  sink.ConnectToTrack(track);
+
+  // Drive five frames through at approximately the specified max frame rate
+  // and expect all frames to be delivered.
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(100 + 10),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(200 - 10),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(300 + 5),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(400 - 5),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(500 + 20),
+                                      &sink);
+  EXPECT_EQ(5, sink.number_of_frames());
+
+  sink.DisconnectFromTrack();
+}
+
+// This test verifies that a too high input frame rate triggers an
+// OnNotifyFrameDropped() notification on the sink.
+TEST_F(MediaStreamVideoSourceTest, NotifyFrameDroppedWhenStartAtTooHighRate) {
   constexpr int kMaxFps = 10;
   WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
   MockMediaStreamVideoSink sink;
@@ -452,22 +509,218 @@ TEST_F(MediaStreamVideoSourceTest, NotifyFrameDropped) {
   native_track->SetSinkNotifyFrameDroppedCallback(
       &sink, sink.GetNotifyFrameDroppedCB());
 
-  // Drive two frames through whose timestamps are spaced too close for the max
-  // frame rate. The last one should be dropped and cause a notification.
+  // Drive two frames through whose timestamps are spaced way too close for
+  // the max frame rate. The EMA filter inside the VideoTrackAdapter starts at
+  // `kMaxFps` and will quickly measure a too high frame rate since the input
+  // rate is ten times the max rate. The second frame should be dropped and
+  // cause a notification.
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(sink, OnNotifyFrameDropped).WillOnce([&] {
     std::move(quit_closure).Run();
   });
-  scoped_refptr<media::VideoFrame> frame1 =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(100, 100));
-  frame1->set_timestamp(base::Milliseconds(10));
-  mock_source()->DeliverVideoFrame(frame1);
-  scoped_refptr<media::VideoFrame> frame2 =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(100, 100));
-  frame2->set_timestamp(base::Milliseconds(20));
-  mock_source()->DeliverVideoFrame(frame2);
+
+  DeliverVideoFrame(100, 100, base::Milliseconds(10));
+  DeliverVideoFrame(100, 100, base::Milliseconds(20));
   run_loop.Run();
+  sink.DisconnectFromTrack();
+}
+
+// This test verifies that all frames are forwarded when sending starts at the
+// specified max rate and that a frame sent too close in time related to the
+// previous frame is dropped but that forwarding is then restored as soon as the
+// spacing is normal again.
+TEST_F(MediaStreamVideoSourceTest, ForwardsAtMaxFrameRateAndDropsWhenTooClose) {
+  constexpr int kMaxFps = 10;
+  WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
+  MockMediaStreamVideoSink sink;
+  sink.ConnectToTrack(track);
+  MediaStreamVideoTrack* native_track = MediaStreamVideoTrack::From(track);
+  native_track->SetSinkNotifyFrameDroppedCallback(
+      &sink, sink.GetNotifyFrameDroppedCB());
+
+  // Drive three frames through at the specified max frame rate and expect all
+  // three to be delivered since the EMA filter inside the VideoTrackAdapter
+  // (VTA) should be initialized to `kMaxFps` and therefore forward these frames
+  // from the start. The fourth frame is sent too close to the third and should
+  // be dropped with `TimestampTooCloseToPrevious`.
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+
+  EXPECT_CALL(sink, OnVideoFrame).Times(3).WillRepeatedly(Return());
+  EXPECT_CALL(*mock_source(),
+              OnFrameDropped(media::VideoCaptureFrameDropReason::
+                                 kResolutionAdapterTimestampTooCloseToPrevious))
+      .Times(1)
+      .WillOnce([&] { std::move(quit_closure).Run(); });
+
+  DeliverVideoFrame(100, 100, base::Milliseconds(100));
+  DeliverVideoFrame(100, 100, base::Milliseconds(200));
+  DeliverVideoFrame(100, 100, base::Milliseconds(300));
+  DeliverVideoFrame(
+      100, 100,
+      base::Milliseconds(300 + VideoTrackAdapter::kMinTimeBetweenFramesMs - 1));
+  run_loop.Run();
+  EXPECT_EQ(3, sink.number_of_frames());
+
+  // The dropped frame should not affect any state in the VTA and additional
+  // frames sent at max rate should pass as before.
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(400), &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(500), &sink);
+  EXPECT_EQ(5, sink.number_of_frames());
+
+  sink.DisconnectFromTrack();
+}
+
+// This test verifies that a frame sent directly after a dropped frame will
+// pass even if it is sent with a slightly too high rate related to the frame
+// that was dropped. The frame should pass since the frame-rate calculation
+// is be based on the last forwarded frame and not the dropped frame.
+TEST_F(MediaStreamVideoSourceTest, DropFrameAtTooHighRateAndThenStopDropping) {
+  constexpr int kMaxFps = 10;
+  WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
+  MockMediaStreamVideoSink sink;
+  sink.ConnectToTrack(track);
+  MediaStreamVideoTrack* native_track = MediaStreamVideoTrack::From(track);
+  native_track->SetSinkNotifyFrameDroppedCallback(
+      &sink, sink.GetNotifyFrameDroppedCB());
+
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(sink, OnNotifyFrameDropped).WillOnce([&] {
+    std::move(quit_closure).Run();
+  });
+
+  // Start by sending frames at a slightly too high rate (12.5 fps). Given the
+  // current EMA filter in the VideoFrameAdapter, it takes four frames until the
+  // frame rate is detected as too high and the first frame is dropped.
+  constexpr base::TimeDelta kDeltaTimestampSlightlyTooHighRateDuration =
+      base::Milliseconds(80);
+  base::TimeDelta timestamp =
+      base::TimeDelta() + kDeltaTimestampSlightlyTooHighRateDuration;
+  for (int i = 0; i < 4; ++i) {
+    DeliverVideoFrame(100, 100, timestamp);
+    timestamp += kDeltaTimestampSlightlyTooHighRateDuration;
+  }
+  run_loop.Run();
+
+  // Given that a frame was just dropped, send yet another at the same rate.
+  // This time it should pass since the rate should be derived based on frames
+  // that are actually delivered. In this case, the last forwarded packet had
+  // a timestamp which is 160 ms less than `timestamp`; hence the sending rate
+  // should be seen as ~6.2 fps which is lower than max fps (10). The last
+  // frame will cause the filtered frame rate estimate to go from ~10.7 fps
+  // (=> dropped) to ~10.2 fps (=> forwarded).
+  DeliverVideoFrameAndWaitForRenderer(100, 100, timestamp, &sink);
+
+  sink.DisconnectFromTrack();
+}
+
+// This test verifies that the frame-dropping algorithm works correctly and
+// does not drop frames with a "too close" reason code after a packet has been
+// dropped due to too high frame rate. The test also continues driving frames
+// after the first session of dropped frames to ensure that not all frames are
+// dropped even at a too high frame rate.
+TEST_F(MediaStreamVideoSourceTest,
+       EmitsFrameRateTooHighDespiteTooClosePreviousDrop) {
+  constexpr int kMaxFps = 5;
+  WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
+  MockMediaStreamVideoSink sink;
+  sink.ConnectToTrack(track);
+
+  // Send one initial frame and ensure that it gets delivered. This action will
+  // reset all states (EMA filter, timestamp etc.) in the VideoFrameAdapter
+  // (VTA).
+  DeliverVideoFrameAndWaitForRenderer(100, 100, &sink);
+  EXPECT_EQ(1, sink.number_of_frames());
+
+  // Drive three frames through where the timestamps for the first two are
+  // spaced too close for the max frame rate. The second frame should be dropped
+  // and cause a notification and a `FrameRateIsHigherThanRequested` reason.
+  // The third frame is then sent with a time difference less than the allowed
+  // min delta time between two frames after the second frame. But, given that
+  // the second frame was dropped, the actual time difference between two valid
+  // frames is 14 milliseconds and it should not trigger dropped frame with
+  // reason set to `TimestampTooCloseToPrevious` but instead a second reason
+  // code of `FrameRateIsHigherThanRequested`.
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+
+  EXPECT_CALL(
+      *mock_source(),
+      OnFrameDropped(media::VideoCaptureFrameDropReason::
+                         kResolutionAdapterFrameRateIsHigherThanRequested))
+      .Times(3)
+      .WillOnce(Return())
+      .WillOnce(Return())
+      .WillOnce([&] { std::move(quit_closure).Run(); });
+
+  DeliverVideoFrame(100, 100, base::Milliseconds(10));
+  DeliverVideoFrame(100, 100, base::Milliseconds(20));
+  DeliverVideoFrame(
+      100, 100,
+      base::Milliseconds(20 + VideoTrackAdapter::kMinTimeBetweenFramesMs - 1));
+  run_loop.Run();
+  EXPECT_EQ(1, sink.number_of_frames());
+
+  // At this stage the EMA filter inside the VTA is at ~21 fps given the initial
+  // too high rate. But the VTA also contains a "keep, or leak mechanism" which
+  // builds up a "keep indicator" over time also when frames are dropped.
+  // Sending one more frame at the specified max rate should therefore be
+  // delivered in this state but those after shall not since the
+  // "keep mechanism" is reset after each pass and the EMA filter still says
+  // "too high frame rate".
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(200), &sink);
+  EXPECT_EQ(2, sink.number_of_frames());
+
+  // Send one more frame close enough to the previous one to trigger a
+  // frame drop with reason set to `TooClose`. No states in the VTA should be
+  // updated and the EMA filter is now at ~19 fps given the frame that passed.
+  base::RunLoop run_loop2;
+  base::OnceClosure quit_closure2 = run_loop2.QuitClosure();
+
+  EXPECT_CALL(*mock_source(),
+              OnFrameDropped(media::VideoCaptureFrameDropReason::
+                                 kResolutionAdapterTimestampTooCloseToPrevious))
+      .Times(1)
+      .WillOnce([&] { std::move(quit_closure2).Run(); });
+
+  DeliverVideoFrame(
+      100, 100,
+      base::Milliseconds(200 + VideoTrackAdapter::kMinTimeBetweenFramesMs - 1));
+  run_loop2.Run();
+  EXPECT_EQ(2, sink.number_of_frames());
+
+  // Drive three more frames at max fps (5 Hz) and expect the first two to be
+  // dropped with `FrameRateIsHigherThanRequested` but the third frame to pass
+  // due to the "keep mechanism" in the VTA. The estimated frame rate after
+  // this session has reduced to  ~14.5 fps. The last timestamp of the last
+  // forwarded frame is 800 ms. In total, three frames should have been
+  // delivered after this round.
+  base::RunLoop run_loop3;
+  base::OnceClosure quit_closure3 = run_loop3.QuitClosure();
+
+  EXPECT_CALL(
+      *mock_source(),
+      OnFrameDropped(media::VideoCaptureFrameDropReason::
+                         kResolutionAdapterFrameRateIsHigherThanRequested))
+      .Times(2)
+      .WillRepeatedly(Return());
+  EXPECT_CALL(sink, OnVideoFrame).Times(1).WillOnce([&](base::TimeTicks) {
+    std::move(quit_closure3).Run();
+  });
+
+  constexpr base::TimeDelta kDeltaTimestampSteadyRateDuration =
+      base::Milliseconds(200);
+  base::TimeDelta timestamp =
+      base::Milliseconds(200) + kDeltaTimestampSteadyRateDuration;
+  for (int i = 0; i < 3; ++i) {
+    DeliverVideoFrame(100, 100, timestamp);
+    timestamp += kDeltaTimestampSteadyRateDuration;
+  }
+  run_loop3.Run();
+  EXPECT_EQ(3, sink.number_of_frames());
+
   sink.DisconnectFromTrack();
 }
 

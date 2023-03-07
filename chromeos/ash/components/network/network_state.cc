@@ -29,7 +29,13 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+namespace ash {
+
 namespace {
+
+namespace network_config {
+namespace mojom = ::chromeos::network_config::mojom;
+}
 
 // TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
 constexpr char kPaymentPortalMethodPost[] = "POST";
@@ -51,20 +57,10 @@ bool IsValidConnectionState(const std::string& connection_state) {
          connection_state == shill::kStatePortalSuspected ||
          connection_state == shill::kStateOnline ||
          connection_state == shill::kStateFailure ||
-         connection_state == shill::kStateDisconnect ||
-         // TODO(b/260792466): Empty should not be a valid state,
-         // but e.g. new tether NetworkStates and unit tests use it currently.
-         connection_state.empty();
+         connection_state == shill::kStateDisconnect;
 }
 
 }  // namespace
-
-namespace ash {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace network_config {
-namespace mojom = ::chromeos::network_config::mojom;
-}
 
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path) {}
@@ -238,7 +234,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
 bool NetworkState::InitialPropertiesReceived(const base::Value& properties) {
   NET_LOG(EVENT) << "InitialPropertiesReceived: " << NetworkId(this)
                  << " State: " << connection_state_ << " Visible: " << visible_;
-  if (!properties.FindKey(shill::kTypeProperty)) {
+  if (!properties.GetDict().contains(shill::kTypeProperty)) {
     NET_LOG(ERROR) << "NetworkState has no type: " << NetworkId(this);
     return false;
   }
@@ -650,6 +646,13 @@ bool NetworkState::UpdateName(const base::Value& properties) {
 }
 
 void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
+  if (!IsConnectedState()) {
+    // Unconnected networks are in an unknown portal state and should not
+    // update histograms.
+    shill_portal_state_ = PortalState::kUnknown;
+    return;
+  }
+
   int status_code =
       properties.FindIntKey(shill::kPortalDetectionFailedStatusCodeProperty)
           .value_or(0);

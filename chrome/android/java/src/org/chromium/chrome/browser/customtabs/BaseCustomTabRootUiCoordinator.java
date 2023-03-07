@@ -37,6 +37,10 @@ import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
+import org.chromium.chrome.browser.customtabs.features.partialcustomtab.CustomTabHeightStrategy;
+import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabDisplayManager;
+import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabHeightStrategy;
+import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -208,8 +212,15 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         }
         toolbar.setCloseButtonPosition(mIntentDataProvider.get().getCloseButtonPosition());
         if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
-            Callback<Runnable> softInputCallback =
-                    ((PartialCustomTabHeightStrategy) mCustomTabHeightStrategy)::onShowSoftInput;
+            Callback<Runnable> softInputCallback;
+            if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
+                softInputCallback = ((
+                        PartialCustomTabDisplayManager) mCustomTabHeightStrategy)::onShowSoftInput;
+            } else {
+                softInputCallback = ((
+                        PartialCustomTabHeightStrategy) mCustomTabHeightStrategy)::onShowSoftInput;
+            }
+
             mTabController.get().registerTabObserver(
                     new PartialCustomTabTabObserver(softInputCallback));
             mTabController.get().registerTabObserver(new EmptyTabObserver() {

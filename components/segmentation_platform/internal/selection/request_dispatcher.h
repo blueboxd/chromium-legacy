@@ -9,9 +9,10 @@
 #include <string>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "components/segmentation_platform/internal/selection/cached_result_provider.h"
 #include "components/segmentation_platform/internal/selection/request_handler.h"
 #include "components/segmentation_platform/public/input_context.h"
 #include "components/segmentation_platform/public/result.h"
@@ -28,10 +29,9 @@ class SegmentResultProvider;
 // 2. Dispatching requests to client specific request handlers.
 class RequestDispatcher {
  public:
-  RequestDispatcher(
+  explicit RequestDispatcher(
       const std::vector<std::unique_ptr<Config>>& configs,
-      std::map<std::string, std::unique_ptr<SegmentResultProvider>>
-          result_providers);
+      CachedResultProvider* cached_result_provider);
   ~RequestDispatcher();
 
   // Disallow copy/assign.
@@ -39,7 +39,11 @@ class RequestDispatcher {
   RequestDispatcher& operator=(RequestDispatcher&) = delete;
 
   // Called when platform and database initializations are completed.
-  void OnPlatformInitialized(bool success);
+  void OnPlatformInitialized(
+      bool success,
+      ExecutionService* execution_service,
+      std::map<std::string, std::unique_ptr<SegmentResultProvider>>
+          result_providers);
 
   // Client API. See `SegmentationPlatformService::GetClassificationResult`.
   void GetClassificationResult(const std::string& segmentation_key,
@@ -61,6 +65,9 @@ class RequestDispatcher {
 
   // Request handlers associated with the clients.
   std::map<std::string, std::unique_ptr<RequestHandler>> request_handlers_;
+
+  // Delegate to provide cached results for all clients, shared among clients.
+  const raw_ptr<CachedResultProvider> cached_result_provider_;
 
   // Storage initialization status.
   absl::optional<bool> storage_init_status_;

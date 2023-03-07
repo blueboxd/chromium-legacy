@@ -96,7 +96,7 @@ TEST_F(MatchedPropertiesCacheTest, AllowedKeyValues) {
   unsigned deleted = std::numeric_limits<unsigned>::max();
 
   ASSERT_EQ(0u, HashTraits<unsigned>::EmptyValue());
-  ASSERT_TRUE(HashTraits<unsigned>::IsDeletedValue(deleted));
+  ASSERT_EQ(deleted, HashTraits<unsigned>::DeletedValue());
 
   EXPECT_FALSE(TestKey("left:0", empty, GetDocument()).InnerKey().IsValid());
   EXPECT_TRUE(TestKey("left:0", empty + 1, GetDocument()).InnerKey().IsValid());
@@ -152,8 +152,10 @@ TEST_F(MatchedPropertiesCacheTest, EnsuredInDisplayNone) {
 
   auto style = CreateStyle();
   auto parent = CreateStyle();
-  auto ensured_parent = CreateStyle();
-  ensured_parent->SetIsEnsuredInDisplayNone();
+  ComputedStyleBuilder ensured_parent_builder = CreateStyleBuilder();
+  ensured_parent_builder.SetIsEnsuredInDisplayNone();
+  scoped_refptr<const ComputedStyle> ensured_parent =
+      ensured_parent_builder.TakeStyle();
 
   TestKey key1("display:block", 1, GetDocument());
 

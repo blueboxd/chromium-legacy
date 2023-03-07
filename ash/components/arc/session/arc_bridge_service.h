@@ -35,8 +35,6 @@ class BootPhaseMonitorInstance;
 class CameraHost;
 class CameraInstance;
 class CastReceiverInstance;
-class CertStoreHost;
-class CertStoreInstance;
 class ClipboardHost;
 class ClipboardInstance;
 class CompatibilityModeInstance;
@@ -94,12 +92,8 @@ class PropertyInstance;
 class RotationLockInstance;
 class ScreenCaptureHost;
 class ScreenCaptureInstance;
-class SensorHost;
-class SensorInstance;
 class SharesheetHost;
 class SharesheetInstance;
-class SmartCardManagerHost;
-class SmartCardManagerInstance;
 class StorageManagerInstance;
 class SystemUiInstance;
 class TimerHost;
@@ -191,10 +185,6 @@ class ArcBridgeService {
   }
   ConnectionHolder<mojom::CastReceiverInstance>* cast_receiver() {
     return &cast_receiver_;
-  }
-  ConnectionHolder<mojom::CertStoreInstance, mojom::CertStoreHost>*
-  cert_store() {
-    return &cert_store_;
   }
   ConnectionHolder<mojom::ClipboardInstance, mojom::ClipboardHost>*
   clipboard() {
@@ -302,17 +292,9 @@ class ArcBridgeService {
   screen_capture() {
     return &screen_capture_;
   }
-  ConnectionHolder<mojom::SensorInstance, mojom::SensorHost>* sensor() {
-    return &sensor_;
-  }
   ConnectionHolder<mojom::SharesheetInstance, mojom::SharesheetHost>*
   sharesheet() {
     return &sharesheet_;
-  }
-  ConnectionHolder<mojom::SmartCardManagerInstance,
-                   mojom::SmartCardManagerHost>*
-  smart_card_manager() {
-    return &smart_card_manager_;
   }
 
   ConnectionHolder<mojom::StorageManagerInstance>* storage_manager() {
@@ -362,7 +344,6 @@ class ArcBridgeService {
       boot_phase_monitor_;
   ConnectionHolder<mojom::CameraInstance, mojom::CameraHost> camera_;
   ConnectionHolder<mojom::CastReceiverInstance> cast_receiver_;
-  ConnectionHolder<mojom::CertStoreInstance, mojom::CertStoreHost> cert_store_;
   ConnectionHolder<mojom::ClipboardInstance, mojom::ClipboardHost> clipboard_;
   ConnectionHolder<mojom::CompatibilityModeInstance> compatibility_mode_;
   ConnectionHolder<mojom::CrashCollectorInstance, mojom::CrashCollectorHost>
@@ -409,11 +390,8 @@ class ArcBridgeService {
   ConnectionHolder<mojom::RotationLockInstance> rotation_lock_;
   ConnectionHolder<mojom::ScreenCaptureInstance, mojom::ScreenCaptureHost>
       screen_capture_;
-  ConnectionHolder<mojom::SensorInstance, mojom::SensorHost> sensor_;
   ConnectionHolder<mojom::SharesheetInstance, mojom::SharesheetHost>
       sharesheet_;
-  ConnectionHolder<mojom::SmartCardManagerInstance, mojom::SmartCardManagerHost>
-      smart_card_manager_;
   ConnectionHolder<mojom::StorageManagerInstance> storage_manager_;
   ConnectionHolder<mojom::SystemUiInstance> system_ui_;
   ConnectionHolder<mojom::TimerInstance, mojom::TimerHost> timer_;

@@ -9,9 +9,9 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -366,10 +366,6 @@ class WebMediaPlayerImplTest
         .WillByDefault(ReturnRef(surface_id_));
   }
 
-  void InitializeWebMediaPlayerImpl() {
-    InitializeWebMediaPlayerImplInternal(nullptr);
-  }
-
   WebMediaPlayerImplTest(const WebMediaPlayerImplTest&) = delete;
   WebMediaPlayerImplTest& operator=(const WebMediaPlayerImplTest&) = delete;
 
@@ -390,8 +386,8 @@ class WebMediaPlayerImplTest
   }
 
  protected:
-  void InitializeWebMediaPlayerImplInternal(
-      std::unique_ptr<media::Demuxer> demuxer_override) {
+  void InitializeWebMediaPlayerImpl(
+      std::unique_ptr<media::Demuxer> demuxer_override = nullptr) {
     auto media_log = std::make_unique<NiceMock<media::MockMediaLog>>();
     InitializeSurfaceLayerBridge();
 
@@ -595,8 +591,10 @@ class WebMediaPlayerImplTest
 
   bool IsSuspended() { return wmpi_->pipeline_controller_->IsSuspended(); }
 
+  bool IsStreaming() const { return wmpi_->IsStreaming(); }
+
   int64_t GetDataSourceMemoryUsage() const {
-    return wmpi_->data_source_->GetMemoryUsage();
+    return wmpi_->demuxer_manager_->GetDataSourceMemoryUsage();
   }
 
   void AddBufferedRanges() {
@@ -690,8 +688,9 @@ class WebMediaPlayerImplTest
   }
 
   bool ShouldCancelUponDefer() const {
-    CHECK_NE(wmpi_->data_source_, nullptr);
-    CHECK_NE(wmpi_->data_source_->GetAsCrossOriginDataSource(), nullptr);
+    const auto* ds = wmpi_->demuxer_manager_->GetDataSourceForTesting();
+    CHECK_NE(ds, nullptr);
+    CHECK_NE(ds->GetAsCrossOriginDataSource(), nullptr);
     // Right now, the only implementation of DataSource that WMPI can get
     // which returns non-null from GetAsCrossOriginDataSource is
     // MultiBufferDataSource, so the CHECKs above allow us to be safe casting
@@ -699,16 +698,16 @@ class WebMediaPlayerImplTest
     // TODO(crbug/1377053): Can we add |cancel_on_defer_for_testing| to
     // CrossOriginDataSource? We can't do a |GetAsMultiBufferDataSource| since
     // MBDS is in blink, and we can't import that into media.
-    return static_cast<MultiBufferDataSource*>(wmpi_->data_source_.get())
+    return static_cast<const MultiBufferDataSource*>(ds)
         ->cancel_on_defer_for_testing();
   }
 
   bool IsDataSourceMarkedAsPlaying() const {
-    CHECK_NE(wmpi_->data_source_, nullptr);
-    CHECK_NE(wmpi_->data_source_->GetAsCrossOriginDataSource(), nullptr);
+    const auto* ds = wmpi_->demuxer_manager_->GetDataSourceForTesting();
+    CHECK_NE(ds, nullptr);
+    CHECK_NE(ds->GetAsCrossOriginDataSource(), nullptr);
     // See comment in |ShouldCancelUponDefer|.
-    return static_cast<MultiBufferDataSource*>(wmpi_->data_source_.get())
-        ->media_has_played();
+    return static_cast<const MultiBufferDataSource*>(ds)->media_has_played();
   }
 
   scoped_refptr<media::VideoFrame> CreateFrame() {
@@ -747,14 +746,20 @@ class WebMediaPlayerImplTest
     // to the WebAssociatedURLLoaderClient handed out by the DataSource after it
     // requests loading of a resource. We then use that client as if we are the
     // network stack and "serve" an in memory file to the DataSource.
+    const bool should_have_client =
+        !wmpi_->demuxer_manager_->HasDemuxerOverride();
     WebAssociatedURLLoaderClient* client = nullptr;
-    EXPECT_CALL(mock_resource_fetch_context_, CreateUrlLoader(_))
-        .WillRepeatedly(Invoke([&client](const WebAssociatedURLLoaderOptions&) {
-          auto a = std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
-          EXPECT_CALL(*a, LoadAsynchronously(_, _))
-              .WillRepeatedly(testing::SaveArg<1>(&client));
-          return a;
-        }));
+    if (should_have_client) {
+      EXPECT_CALL(mock_resource_fetch_context_, CreateUrlLoader(_))
+          .WillRepeatedly(
+              Invoke([&client](const WebAssociatedURLLoaderOptions&) {
+                auto a =
+                    std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
+                EXPECT_CALL(*a, LoadAsynchronously(_, _))
+                    .WillRepeatedly(testing::SaveArg<1>(&client));
+                return a;
+              }));
+    }
 
     wmpi_->Load(WebMediaPlayer::kLoadTypeURL,
                 WebMediaPlayerSource(WebURL(kTestURL)),
@@ -762,6 +767,10 @@ class WebMediaPlayerImplTest
                 /*is_cache_disabled=*/false);
 
     base::RunLoop().RunUntilIdle();
+    if (!should_have_client) {
+      return;
+    }
+    EXPECT_TRUE(client);
 
     // Load a real media file into memory.
     scoped_refptr<media::DecoderBuffer> data =
@@ -807,8 +816,8 @@ class WebMediaPlayerImplTest
     }
 
     // Verify we made it through pipeline startup.
-    EXPECT_TRUE(wmpi_->data_source_);
-    EXPECT_TRUE(wmpi_->demuxer_);
+    EXPECT_TRUE(wmpi_->demuxer_manager_->HasDataSource());
+    EXPECT_TRUE(wmpi_->demuxer_manager_->HasDemuxer());
 
     if (ready_state > WebMediaPlayer::kReadyStateHaveCurrentData)
       EXPECT_FALSE(wmpi_->seeking_);
@@ -902,8 +911,9 @@ class WebMediaPlayerImplTest
   media::MockCdmContext mock_cdm_context_;
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
-  viz::LocalSurfaceId local_surface_id_ =
-      viz::LocalSurfaceId(11, base::UnguessableToken::Deserialize(0x111111, 0));
+  viz::LocalSurfaceId local_surface_id_ = viz::LocalSurfaceId(
+      11,
+      base::UnguessableToken::CreateForTesting(0x111111, 0));
   viz::SurfaceId surface_id_ =
       viz::SurfaceId(frame_sink_id_, local_surface_id_);
 
@@ -1590,6 +1600,24 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Streaming) {
   EXPECT_TRUE(state.is_idle);
   EXPECT_TRUE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, IsStreamingIfDemuxerDoesntSupportSeeking) {
+  std::unique_ptr<media::MockDemuxer> demuxer =
+      std::make_unique<NiceMock<media::MockDemuxer>>();
+  ON_CALL(*demuxer, IsSeekable()).WillByDefault(Return(false));
+  InitializeWebMediaPlayerImpl(std::move(demuxer));
+  Load(kVideoOnlyTestFile);
+  EXPECT_TRUE(IsStreaming());
+}
+
+TEST_F(WebMediaPlayerImplTest, IsNotStreamingIfDemuxerSupportsSeeking) {
+  std::unique_ptr<media::MockDemuxer> demuxer =
+      std::make_unique<NiceMock<media::MockDemuxer>>();
+  ON_CALL(*demuxer, IsSeekable()).WillByDefault(Return(true));
+  InitializeWebMediaPlayerImpl(std::move(demuxer));
+  Load(kVideoOnlyTestFile);
+  EXPECT_FALSE(IsStreaming());
 }
 
 TEST_F(WebMediaPlayerImplTest, ResumeEnded) {
@@ -2332,7 +2360,7 @@ TEST_F(WebMediaPlayerImplTest, DISABLED_DemuxerOverride) {
   // Called when WebMediaPlayerImpl is destroyed.
   EXPECT_CALL(*demuxer.get(), Stop());
 
-  InitializeWebMediaPlayerImplInternal(std::move(demuxer));
+  InitializeWebMediaPlayerImpl(std::move(demuxer));
 
   EXPECT_FALSE(IsSuspended());
   wmpi_->Load(WebMediaPlayer::kLoadTypeURL,

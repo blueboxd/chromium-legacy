@@ -614,13 +614,13 @@
       },
     },
   },
-  'ios_runtime_cache_16_1': {
+  'ios_runtime_cache_16_2': {
     '$mixin_append': {
       'swarming': {
         'named_caches': [
           {
-            'name': 'runtime_ios_16_1',
-            'path': 'Runtime-ios-16.1',
+            'name': 'runtime_ios_16_2',
+            'path': 'Runtime-ios-16.2',
           },
         ],
       },
@@ -658,15 +658,6 @@
           'path': '.android_emulator/generic_android19',
         },
       ]
-    },
-  },
-  # TODO(crbug.com/901197): Remove this mixin and all uses once LIFO rolls
-  # out more widely.
-  'lifo-test-pool': {
-    'swarming': {
-      'dimensions': {
-        'pool': 'chromium.tests.lifo',
-      },
     },
   },
   'limited_capacity_bot': {
@@ -1260,14 +1251,7 @@
   'win10': {
     'swarming': {
       'dimensions': {
-        'os': 'Windows-10-19042|Windows-10-19045',
-      },
-    },
-  },
-  'win10-20h2': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Windows-10-19042',
+        'os': 'Windows-10-19045',
       },
     },
   },
@@ -1297,7 +1281,7 @@
       },
     },
   },
-  'win10_intel_hd_630_stable': {
+  'win10_intel_uhd_630_experimental': {
     'swarming': {
       'dimensions': {
         'gpu': '8086:9bc5-31.0.101.2111',
@@ -1306,7 +1290,16 @@
       },
     },
   },
-  'win10_intel_hd_630_stable_dimension_set': {
+  'win10_intel_uhd_630_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:9bc5-31.0.101.2111',
+        'os': 'Windows-10',
+        'pool': 'chromium.tests.gpu',
+      },
+    },
+  },
+  'win10_intel_uhd_630_stable_dimension_set': {
     'swarming': {
       # We use explicit 'dimension_sets' instead of 'dimensions' since this is
       # used in conjunction with 'win10_nvidia_gtx_1660_stable_dimension_set'
@@ -1318,15 +1311,6 @@
           'pool': 'chromium.tests.gpu',
         },
       ],
-    },
-  },
-  'win10_intel_uhd_630_experimental': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:9bc5-31.0.101.2111',
-        'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu',
-      },
     },
   },
   'win10_nvidia_gtx_1660_experimental': {
@@ -1368,20 +1352,6 @@
       },
     },
   },
-  'win7': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Windows-7-SP1',
-      },
-    },
-  },
-  'x86-32': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-32',
-      },
-    },
-  },
   'x86-64': {
     'swarming': {
       'dimensions': {
@@ -1394,13 +1364,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14b47b'
+        '14c18'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14b47b',
+          'name': 'xcode_ios_14c18',
           'path': 'Xcode.app',
         },
       ],
@@ -1411,13 +1381,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14b47b'
+        '14c18'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14b47b',
+          'name': 'xcode_ios_14c18',
           'path': 'Xcode.app',
         },
       ],

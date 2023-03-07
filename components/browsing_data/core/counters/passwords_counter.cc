@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/time/time.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -138,7 +138,7 @@ void PasswordStoreFetcher::OnGetPasswordStoreResults(
   std::sort(results.begin(), results.end(),
             [](const std::unique_ptr<password_manager::PasswordForm>& a,
                const std::unique_ptr<password_manager::PasswordForm>& b) {
-              return a->times_used > b->times_used;
+              return a->times_used_in_html_form > b->times_used_in_html_form;
             });
 
   std::vector<std::string> sorted_domains;

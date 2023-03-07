@@ -22,15 +22,14 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/ostream_operators.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -6645,7 +6644,7 @@ void GLES2Implementation::ProduceTextureDirectCHROMIUM(GLuint texture,
                      << static_cast<const void*>(data) << ")");
   static_assert(std::is_trivially_copyable<Mailbox>::value,
                 "gpu::Mailbox is not trivially copyable");
-  Mailbox result = Mailbox::Generate();
+  Mailbox result = Mailbox::GenerateLegacyMailbox();
   memcpy(data, result.name, sizeof(result.name));
   helper_->ProduceTextureDirectCHROMIUMImmediate(texture, data);
   CheckGLError();

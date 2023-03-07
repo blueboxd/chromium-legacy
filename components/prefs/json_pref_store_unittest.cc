@@ -9,11 +9,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_samples.h"
@@ -73,12 +73,11 @@ class InterceptingPrefFilter : public PrefFilter {
   ~InterceptingPrefFilter() override;
 
   // PrefFilter implementation:
-  void FilterOnLoad(
-      PostFilterOnLoadCallback post_filter_on_load_callback,
-      std::unique_ptr<base::DictionaryValue> pref_store_contents) override;
+  void FilterOnLoad(PostFilterOnLoadCallback post_filter_on_load_callback,
+                    base::Value::Dict pref_store_contents) override;
   void FilterUpdate(const std::string& path) override {}
   OnWriteCallbackPair FilterSerializeData(
-      base::DictionaryValue* pref_store_contents) override {
+      base::Value::Dict& pref_store_contents) override {
     return std::move(on_write_callback_pair_);
   }
   void OnStoreDeletionFromDisk() override {}
@@ -91,7 +90,7 @@ class InterceptingPrefFilter : public PrefFilter {
 
  private:
   PostFilterOnLoadCallback post_filter_on_load_callback_;
-  std::unique_ptr<base::DictionaryValue> intercepted_prefs_;
+  std::unique_ptr<base::Value::Dict> intercepted_prefs_;
   OnWriteCallbackPair on_write_callback_pair_;
 };
 
@@ -106,15 +105,16 @@ InterceptingPrefFilter::~InterceptingPrefFilter() {}
 
 void InterceptingPrefFilter::FilterOnLoad(
     PostFilterOnLoadCallback post_filter_on_load_callback,
-    std::unique_ptr<base::DictionaryValue> pref_store_contents) {
+    base::Value::Dict pref_store_contents) {
   post_filter_on_load_callback_ = std::move(post_filter_on_load_callback);
-  intercepted_prefs_ = std::move(pref_store_contents);
+  intercepted_prefs_ =
+      std::make_unique<base::Value::Dict>(std::move(pref_store_contents));
 }
 
 void InterceptingPrefFilter::ReleasePrefs() {
   EXPECT_FALSE(post_filter_on_load_callback_.is_null());
-  std::move(post_filter_on_load_callback_)
-      .Run(std::move(intercepted_prefs_), false);
+  std::unique_ptr<base::Value::Dict> prefs = std::move(intercepted_prefs_);
+  std::move(post_filter_on_load_callback_).Run(std::move(*prefs), false);
 }
 
 class MockPrefStoreObserver : public PrefStore::Observer {
@@ -401,9 +401,9 @@ TEST_P(JsonPrefStoreTest, PreserveEmptyValues) {
   // Check values.
   const Value* result = nullptr;
   EXPECT_TRUE(pref_store->GetValue("list", &result));
-  EXPECT_EQ(ListValue(), *result);
+  EXPECT_EQ(Value::List(), *result);
   EXPECT_TRUE(pref_store->GetValue("dict", &result));
-  EXPECT_EQ(DictionaryValue(), *result);
+  EXPECT_EQ(Value::Dict(), *result);
 }
 
 // This test is just documenting some potentially non-obvious behavior. It

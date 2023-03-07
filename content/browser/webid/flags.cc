@@ -12,8 +12,7 @@
 namespace content {
 
 bool IsFedCmAutoSigninEnabled() {
-  return GetFieldTrialParamByFeatureAsBool(
-      features::kFedCm, features::kFedCmAutoSigninFieldTrialParamName, false);
+  return base::FeatureList::IsEnabled(features::kFedCmAutoSignin);
 }
 
 bool IsFedCmIdpSignoutEnabled() {
@@ -45,8 +44,20 @@ bool IsFedCmMetricsEndpointEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmMetricsEndpoint);
 }
 
+bool IsFedCmRpContextEnabled() {
+  return base::FeatureList::IsEnabled(features::kFedCmRpContext);
+}
+
 bool IsFedCmUserInfoEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmUserInfo);
+}
+
+bool IsFedCmSelectiveDisclosureEnabled() {
+  return base::FeatureList::IsEnabled(features::kFedCmSelectiveDisclosure);
+}
+
+bool IsFedCmLoginHintEnabled() {
+  return base::FeatureList::IsEnabled(features::kFedCmLoginHint);
 }
 
 }  // namespace content

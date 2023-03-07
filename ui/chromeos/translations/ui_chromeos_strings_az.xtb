@@ -128,7 +128,6 @@
 <translation id="2084108471225856927">Cihaz ayarları</translation>
 <translation id="2084809735218147718">Təşəkkür edən adam</translation>
 <translation id="2088690981887365033">VPN şəbəkəsi</translation>
-<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> element silinəcək və onları bərpa edə bilməyəcəksiniz.</translation>
 <translation id="2122305276694332719">Gizlədilmiş şəbəkəyə avtomatik qoşulduqda başqaları cihaz və şəbəkə ayarlarınızı görəcək. Bu, tövsiyə edilmir.</translation>
 <translation id="2125607626296734455">Xmer</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administratorunuz tərəfindən idarə olunur, Qoşulun</translation>
@@ -145,6 +144,7 @@
 <translation id="2208919847696382164">Linux ilə quraşdırın</translation>
 <translation id="2225536596944493418"><ph name="NUMBER_OF_ITEMS" /> elementi silmək istədiyinizə əminsiniz?</translation>
 <translation id="2230062665678605299">Qovluq yaratmaq alınmadı "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
+<translation id="2236732657580416950">Google Disk keşiniz silinib.</translation>
 <translation id="2239068707900391003">Kofe içən adam</translation>
 <translation id="2251368349685848079">Zibil qutusundan bərpa edin</translation>
 <translation id="2282155092769082568">Avtokonfiqurasiya URL-i:</translation>
@@ -219,6 +219,7 @@
 <translation id="2888807692577297075">Heç bir element &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt; məhsuluna uyğun gəlmədi.</translation>
 <translation id="2894654529758326923">Məlumat</translation>
 <translation id="2902734494705624966">Genişlənmiş ABŞ klaviaturası</translation>
+<translation id="2904378509913846215">"<ph name="FILENAME" />" adlı qovluq hazırda mövcuddur. Onu köçürdüyünüzlə əvəz etmək istəyirsiniz?</translation>
 <translation id="290843123675549676">Marathi</translation>
 <translation id="2923240520113693977">Eston</translation>
 <translation id="2938685643439809023">Monqolca</translation>
@@ -396,7 +397,6 @@
 <translation id="4398096759193130964">Elementləri bərpa edin və ya zibil qutusunun xaricində yeni bir qovluğa sürüşdürün</translation>
 <translation id="4401287888955153199">Hamısını çıxarın</translation>
 <translation id="4410695710508688828">Çıxarılma əməliyyatı alınmadı. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="4414834425328380570">"<ph name="FILE_NAME" />" silinəcək və onu bərpa edə bilməyəcəksiniz.</translation>
 <translation id="4418686080762064601">Fayllarınız üçün qısayol yaradın</translation>
 <translation id="4425149324548788773">Diskim</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Qoşulun</translation>
@@ -639,6 +639,7 @@
 <translation id="6241349547798190358">Holland dili (Belçika)</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="PHONE_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Telefonun Batareyası <ph name="BATTERY_STATUS" />%, Qoşulun</translation>
 <translation id="6269630227984243955">Malay</translation>
+<translation id="6271903698064569429">"<ph name="SHARED_DRIVE_NAME" />" diskində kifayət qədər yer olmadığı üçün faylları yükləmək mümkün deyil.</translation>
 <translation id="6287852322318138013">Bu faylı açmaq üçün bir tətbiq seçin</translation>
 <translation id="6295542640242147836">SIM'i kilidləyin</translation>
 <translation id="6296410173147755564">Yanlış PUK</translation>
@@ -926,7 +927,6 @@
 <translation id="8560515948038859357">Kanton</translation>
 <translation id="8561206103590473338">Fil</translation>
 <translation id="8566466896628108558">Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administrator tərəfindən bloklanıb, Detallar</translation>
-<translation id="8568374623837201676">Bu fayl həmişəlik silinsin?</translation>
 <translation id="8569764466147087991">Açmaq üçün fayl seçin</translation>
 <translation id="8577897833047451336">Xorvat</translation>
 <translation id="8578308463707544055">İndoneziya</translation>

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
@@ -181,7 +180,6 @@
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
-#include "components/lens/lens_features.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/performance_manager/public/features.h"
@@ -285,7 +283,6 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/browser/taskbar/taskbar_decorator_win.h"
 #include "chrome/browser/win/jumplist.h"
 #include "chrome/browser/win/jumplist_factory.h"
@@ -301,10 +298,6 @@
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/ui/views/lens/lens_side_panel_controller.h"
-#endif
 
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
@@ -754,20 +747,10 @@ class BrowserView::SidePanelVisibilityController : public views::ViewObserver {
   using Panels = std::vector<PanelStateEntry>;
 
   SidePanelVisibilityController(views::View* side_search_panel,
-                                views::View* lens_panel,
                                 views::View* rhs_panel)
       : side_search_panel_(side_search_panel) {
-    if (lens_panel)
-      global_panels_.push_back({lens_panel, absl::nullopt});
     if (rhs_panel)
       global_panels_.push_back({rhs_panel, absl::nullopt});
-
-    // Observing the side search panel is only necessary when enabling the
-    // improved clobbering functionality.
-    if (side_search_panel_ &&
-        base::FeatureList::IsEnabled(features::kSidePanelImprovedClobbering)) {
-      side_search_panel_observation_.Observe(side_search_panel_);
-    }
   }
   ~SidePanelVisibilityController() override = default;
 
@@ -945,41 +928,13 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   right_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
 
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    const bool is_right_aligned = GetProfile()->GetPrefs()->GetBoolean(
-        prefs::kSidePanelHorizontalAlignment);
-    unified_side_panel_ = AddChildView(std::make_unique<SidePanel>(
-        this,
-        is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
-    left_aligned_side_panel_separator_ =
-        AddChildView(std::make_unique<ContentsSeparator>());
-    side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
-  } else {
-    unified_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
-  }
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (lens::features::IsLensSidePanelEnabled()) {
-    lens_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
-    // If the separator was not already created, create one.
-    if (!right_aligned_side_panel_separator_)
-      right_aligned_side_panel_separator_ =
-          AddChildView(std::make_unique<ContentsSeparator>());
-  }
-#endif
-
-  if (side_search::IsEnabledForBrowser(browser_.get()) &&
-      !side_search::ShouldUseUnifiedSidePanel()) {
-    bool dse_support =
-        base::FeatureList::IsEnabled(features::kSideSearchDSESupport);
-    side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(
-        this, dse_support ? SidePanel::HorizontalAlignment::kAlignRight
-                          : SidePanel::HorizontalAlignment::kAlignLeft));
-    left_aligned_side_panel_separator_ =
-        AddChildView(std::make_unique<ContentsSeparator>());
-    side_search_controller_ = std::make_unique<SideSearchBrowserController>(
-        side_search_side_panel_, this);
-  }
+  const bool is_right_aligned = GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kSidePanelHorizontalAlignment);
+  unified_side_panel_ = AddChildView(std::make_unique<SidePanel>(
+      this, is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
+  left_aligned_side_panel_separator_ =
+      AddChildView(std::make_unique<ContentsSeparator>());
+  side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
 
   // InfoBarContainer needs to be added as a child here for drop-shadow, but
   // needs to come after toolbar in focus order (see EnsureFocusOrder()).
@@ -1051,12 +1006,6 @@ BrowserView::~BrowserView() {
   // this observer before those children are removed.
   side_panel_button_highlighter_.reset();
   side_panel_visibility_controller_.reset();
-
-// Delete lens side panel controller before deleting the child views.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (lens_side_panel_controller_)
-    lens_side_panel_controller_.reset();
-#endif
 
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
@@ -1327,9 +1276,7 @@ void BrowserView::Show() {
 }
 
 void BrowserView::ShowInactive() {
-  if (!frame_->IsVisible()) {
-    frame_->ShowInactive();
-  }
+  frame_->ShowInactive();
 }
 
 void BrowserView::Hide() {
@@ -1393,8 +1340,6 @@ bool BrowserView::IsOnCurrentWorkspace() const {
   return chromeos::DesksHelper::Get(native_win)
       ->BelongsToActiveDesk(native_win);
 #elif BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return true;
   absl::optional<bool> on_current_workspace =
       native_win->GetHost()->on_current_workspace();
   base::UmaHistogramBoolean("Windows.OnCurrentWorkspaceCached",
@@ -1854,21 +1799,6 @@ void BrowserView::ExitFullscreen() {
                     display::kInvalidDisplayId);
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-void BrowserView::CreateLensSidePanelController() {
-  DCHECK(!lens_side_panel_controller_);
-  lens_side_panel_controller_ = std::make_unique<lens::LensSidePanelController>(
-      base::BindOnce(&BrowserView::DeleteLensSidePanelController,
-                     weak_ptr_factory_.GetWeakPtr()),
-      lens_side_panel_, this);
-}
-
-void BrowserView::DeleteLensSidePanelController() {
-  DCHECK(lens_side_panel_controller_);
-  lens_side_panel_controller_.reset();
-}
-#endif
-
 void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
@@ -2273,33 +2203,31 @@ void BrowserView::SetWindowManagementPermissionSubscriptionForBorderlessMode(
   auto* controller = rfh->GetBrowserContext()->GetPermissionController();
 
   // Last committed URL is null when PWA is opened from chrome://apps.
-  url::Origin url = url::Origin::Create(web_contents->GetVisibleURL());
+  url::Origin origin = url::Origin::Create(web_contents->GetVisibleURL());
+  if (origin.opaque()) {
+    // Permission check should not be tied to an empty origin. This can happen
+    // when opening popups from borderless IWAs.
+    return;
+  }
 
   UpdateWindowManagementPermission(
       controller
           ->GetPermissionResultForOriginWithoutContext(
-              blink::PermissionType::WINDOW_MANAGEMENT, url)
+              blink::PermissionType::WINDOW_MANAGEMENT, origin)
           .status);
 
   // It is safe to bind base::Unretained(this) because WebContents is
   // owned by BrowserView.
   window_management_subscription_id_ =
       controller->SubscribePermissionStatusChange(
-          blink::PermissionType::WINDOW_MANAGEMENT, rfh->GetProcess(), url,
+          blink::PermissionType::WINDOW_MANAGEMENT, rfh->GetProcess(), origin,
           base::BindRepeating(&BrowserView::UpdateWindowManagementPermission,
                               base::Unretained(this)));
 }
 
 void BrowserView::UpdateIsIsolatedWebApp() {
-  auto* web_contents = GetActiveWebContents();
-  DCHECK(web_contents);
-
-  // Last committed URL is null when PWA is opened from chrome://apps.
-  GURL url = web_contents->GetVisibleURL();
-
-  is_isolated_web_app_ =
-      content::SiteIsolationPolicy::ShouldUrlUseApplicationIsolationLevel(
-          web_contents->GetPrimaryMainFrame()->GetBrowserContext(), url);
+  is_isolated_web_app_ = browser()->app_controller() &&
+                         browser()->app_controller()->IsIsolatedWebApp();
 }
 
 void BrowserView::ToggleWindowControlsOverlayEnabled(base::OnceClosure done) {
@@ -3664,8 +3592,7 @@ void BrowserView::CloseTabSearchBubble() {
     tab_search_host->CloseTabSearchBubble();
 }
 
-bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_lens,
-                                                 bool exclude_side_search) {
+bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_side_search) {
   // Check if any side panels are open before closing side panels.
   if (!side_panel_visibility_controller_ ||
       !side_panel_visibility_controller_->IsManagedSidePanelVisible()) {
@@ -3675,40 +3602,23 @@ bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_lens,
   // Ensure all side panels are closed. Close contextual panels first.
 
   // Hide side search panel if it's right aligned.
-  if (!exclude_side_search && side_search_controller_ &&
-      base::FeatureList::IsEnabled(features::kSideSearchDSESupport)) {
+  if (!exclude_side_search && side_search_controller_) {
     side_search_controller_->CloseSidePanel();
   }
 
   toolbar()->side_panel_button()->HideSidePanel();
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (!exclude_lens && lens_side_panel_controller_)
-    lens_side_panel_controller_->Close();
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
   return true;
 }
 
 void BrowserView::MaybeClobberAllSideSearchSidePanels() {
-  if (!base::FeatureList::IsEnabled(features::kSideSearchDSESupport) ||
-      !base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
           features::kClobberAllSideSearchSidePanels)) {
     return;
   }
 
   if (side_search_controller_) {
     side_search_controller_->ClobberAllInCurrentBrowser();
-  }
-}
-
-void BrowserView::RightAlignedSidePanelWasClosed() {
-  // For the improved side panel clobbering experience we must close all side
-  // panels for the window when the user explicitly closes a participating side
-  // panel.
-  if (base::FeatureList::IsEnabled(features::kSidePanelImprovedClobbering)) {
-    CloseOpenRightAlignedSidePanel();
-    MaybeClobberAllSideSearchSidePanels();
   }
 }
 
@@ -3759,8 +3669,6 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
     panes->push_back(download_shelf_->GetView());
   if (unified_side_panel_)
     panes->push_back(unified_side_panel_);
-  if (lens_side_panel_)
-    panes->push_back(lens_side_panel_);
   if (side_search_side_panel_)
     panes->push_back(side_search_side_panel_);
   // TODO(crbug.com/1055150): Implement for mac.
@@ -3941,15 +3849,11 @@ void BrowserView::AddedToWidget() {
   // TODO(pbos): Investigate whether the side panels should be creatable when
   // the ToolbarView does not create a button for them. This specifically seems
   // to hit web apps. See https://crbug.com/1267781.
-  if (toolbar_->side_panel_button() &&
-      (lens_side_panel_ || unified_side_panel_)) {
+  if (toolbar_->side_panel_button() && unified_side_panel_) {
     std::vector<View*> panels;
-    if (lens_side_panel_)
-      panels.push_back(lens_side_panel_);
     if (unified_side_panel_)
       panels.push_back(unified_side_panel_);
-    if (base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
-        side_search_side_panel_) {
+    if (side_search_side_panel_) {
       panels.push_back(side_search_side_panel_);
     }
     side_panel_button_highlighter_ =
@@ -3957,8 +3861,8 @@ void BrowserView::AddedToWidget() {
             toolbar_->side_panel_button(), panels);
 
     side_panel_visibility_controller_ =
-        std::make_unique<SidePanelVisibilityController>(
-            side_search_side_panel_, lens_side_panel_, unified_side_panel_);
+        std::make_unique<SidePanelVisibilityController>(side_search_side_panel_,
+                                                        unified_side_panel_);
   }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -3988,8 +3892,8 @@ void BrowserView::AddedToWidget() {
       top_container_, tab_strip_region_view_, tabstrip_, toolbar_,
       infobar_container_, contents_container_, side_search_side_panel_,
       left_aligned_side_panel_separator_, unified_side_panel_,
-      right_aligned_side_panel_separator_, lens_side_panel_,
-      immersive_mode_controller_.get(), contents_separator_));
+      right_aligned_side_panel_separator_, immersive_mode_controller_.get(),
+      contents_separator_));
 
   EnsureFocusOrder();
 

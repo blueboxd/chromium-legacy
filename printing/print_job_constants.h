@@ -19,10 +19,6 @@ extern const char kPreviewRequestID[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kPreviewUIID[];
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingCapabilities[];
-#if BUILDFLAG(IS_CHROMEOS)
-COMPONENT_EXPORT(PRINTING_BASE)
-extern const char kSettingChromeOSAccessOAuthToken[];
-#endif
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kSettingCollate[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kSettingColor[];
 COMPONENT_EXPORT(PRINTING_BASE)
@@ -157,32 +153,23 @@ COMPONENT_EXPORT(PRINTING_BASE)
 extern const uint32_t kInvalidPageIndex;
 COMPONENT_EXPORT(PRINTING_BASE) extern const uint32_t kMaxPageCount;
 
-#if BUILDFLAG(USE_CUPS)
-// Printer color models
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kBlack[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kCMYK[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kKCMY[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kCMY_K[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kCMY[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kColor[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kEpsonColor[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kEpsonMono[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kFullColor[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kGray[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kGrayscale[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kGreyscale[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kMono[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kMonochrome[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kNormal[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kNormalGray[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kRGB[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kRGBA[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kRGB16[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kSharpCMColor[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kSharpCMBW[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kXeroxAutomatic[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kXeroxBW[];
-#endif
+#if BUILDFLAG(IS_CHROMEOS)
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingChromeOSAccessOAuthToken[];
+
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingIppClientInfo[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingIppClientName[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingIppClientPatches[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingIppClientStringVersion[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingIppClientType[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingIppClientVersion[];
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Specifies the horizontal alignment of the headers and footers.
 enum HorizontalHeaderFooterPosition { LEFT, CENTER, RIGHT };

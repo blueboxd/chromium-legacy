@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/force_installed_affiliated_extension_apitest.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
@@ -32,21 +31,10 @@ base::FilePath GetTestDataDir() {
 namespace extensions {
 
 ForceInstalledAffiliatedExtensionApiTest::
-    ForceInstalledAffiliatedExtensionApiTest(bool is_affiliated,
-                                             bool is_auth_session_enabled)
+    ForceInstalledAffiliatedExtensionApiTest(bool is_affiliated)
     : test_install_attributes_(
           ash::StubInstallAttributes::CreateCloudManaged("fake-domain",
                                                          "fake-id")) {
-  // TODO(b/239422391): This test is run with the feature
-  // kUseAuthFactors enabled and disabled because of a
-  // transitive dependency of AffiliationTestHelper on that feature. Remove
-  // the parameter when kUseAuthFactors is removed.
-  if (is_auth_session_enabled) {
-    feature_list_.InitAndEnableFeature(ash::features::kUseAuthFactors);
-  } else {
-    feature_list_.InitAndDisableFeature(ash::features::kUseAuthFactors);
-  }
-
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
   affiliation_mixin_.set_affiliated(is_affiliated);
@@ -112,7 +100,7 @@ ForceInstalledAffiliatedExtensionApiTest::ForceInstallExtension(
 void ForceInstalledAffiliatedExtensionApiTest::TestExtension(
     Browser* browser,
     const GURL& page_url,
-    const base::Value& custom_arg_value) {
+    const base::Value::Dict& custom_arg_value) {
   DCHECK(page_url.is_valid()) << "page_url must be valid";
 
   std::string custom_arg;

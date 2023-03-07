@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -52,7 +52,7 @@ bool GLSurfaceEglReadback::IsOffscreen() {
 }
 
 gfx::SwapResult GLSurfaceEglReadback::SwapBuffers(PresentationCallback callback,
-                                                  gl::FrameData data) {
+                                                  gfx::FrameData data) {
   gfx::SwapResult swap_result = gfx::SwapResult::SWAP_FAILED;
   gfx::PresentationFeedback feedback;
 

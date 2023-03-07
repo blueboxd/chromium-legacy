@@ -7,7 +7,7 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -17,9 +17,10 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/transaction_impl.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using blink::IndexedDBIndexKeys;
@@ -733,6 +734,47 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
       transaction,
       IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                              "Transaction aborted by user."));
+}
+
+void DatabaseImpl::DidBecomeInactive() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(blink::features::
+            IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled())
+      << "This method will only be called if a page with IndexedDB transaction "
+         "is eligible for BFCache.";
+  if (!connection_->IsConnected()) {
+    return;
+  }
+
+  for (const auto& [_, transaction] : connection_->transactions()) {
+    switch (transaction->state()) {
+      case IndexedDBTransaction::State::CREATED: {
+        // The transaction is created but not started yet, which means it may be
+        // blocked by others and waiting for the lock to be acquired. We should
+        // disallow the activation for the client.
+        connection_->RequireClientToBeActive(
+            storage::mojom::DisallowClientActivationReason::
+                kTransactionIsAcquiringLocks);
+        return;
+      }
+      case IndexedDBTransaction::State::STARTED: {
+        if (connection_->database()->IsTransactionBlockingOthers(
+                transaction.get())) {
+          // The transaction is holding the locks while others are waiting for
+          // the acquisition. We should disallow the activation for this client
+          // so the lock is immediately available.
+          connection_->RequireClientToBeActive(
+              storage::mojom::DisallowClientActivationReason::
+                  kTransactionIsBlockingOthers);
+          return;
+        }
+        break;
+      }
+      case IndexedDBTransaction::State::COMMITTING:
+      case IndexedDBTransaction::State::FINISHED:
+        break;
+    }
+  }
 }
 
 }  // namespace content

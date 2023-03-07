@@ -7,9 +7,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
@@ -269,7 +270,7 @@ void PepperTCPServerSocketMessageFilter::OpenFirewallHole(
   pepper_socket_utils::OpenTCPFirewallHole(
       local_addr,
       base::BindOnce(&PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened,
-                     this, context));
+                     weak_ptr_factory_.GetWeakPtr(), context));
 }
 
 void PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened(

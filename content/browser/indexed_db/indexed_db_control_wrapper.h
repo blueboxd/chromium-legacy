@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONTROL_WRAPPER_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONTROL_WRAPPER_H_
 
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_policy_update.mojom.h"
@@ -40,9 +41,13 @@ class IndexedDBControlWrapper : public storage::mojom::IndexedDBControl {
   // mojom::IndexedDBControl implementation:
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
+      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+          client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindIndexedDBForBucket(
       const storage::BucketLocator& bucket_locator,
+      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+          client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
   void DeleteForStorageKey(const blink::StorageKey& storage_key,

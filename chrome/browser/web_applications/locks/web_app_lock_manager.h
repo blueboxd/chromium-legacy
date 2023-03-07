@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
 #include "base/types/pass_key.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -43,12 +43,12 @@ class WebAppLockManager {
   // `older` call. The lock is considered released when the `lock` is
   // destroyed.
   void AcquireLock(base::WeakPtr<content::PartitionedLockHolder> holder,
-                   LockDescription& lock,
+                   const LockDescription& lock,
                    base::OnceClosure on_lock_acquired);
 
   template <class LockType>
   void AcquireLock(
-      LockDescription& lock_description,
+      const LockDescription& lock_description,
       base::OnceCallback<void(std::unique_ptr<LockType>)> on_lock_acquired);
 
   // Upgrades the given lock to a new one, and will call `on_lock_acquired` on

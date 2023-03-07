@@ -42,9 +42,8 @@ std::map<std::string, std::vector<AppNodeInfo>>& GetAppIDToTreeNodeMap() {
 }
 
 AutomationAXTreeWrapper::AutomationAXTreeWrapper(
-    AXTreeID tree_id,
     AutomationTreeManagerOwner* owner)
-    : AXTreeManager(tree_id, std::make_unique<AXTree>()), owner_(owner) {}
+    : AXTreeManager(std::make_unique<AXTree>()), owner_(owner) {}
 
 AutomationAXTreeWrapper::~AutomationAXTreeWrapper() = default;
 
@@ -555,7 +554,7 @@ AXNode* AutomationAXTreeWrapper::GetNodeFromTree(const AXTreeID& tree_id,
 }
 
 AXTreeID AutomationAXTreeWrapper::GetParentTreeID() const {
-  AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(ax_tree_id_);
+  AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(GetTreeID());
   return parent_tree ? parent_tree->GetTreeID() : AXTreeIDUnknown();
 }
 

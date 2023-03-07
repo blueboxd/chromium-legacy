@@ -6,11 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/win/windows_version.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
 #include "net/test/test_with_task_environment.h"
@@ -308,10 +307,6 @@ class TestConnectionCostObserver
 };
 
 TEST_F(NetworkChangeNotifierWinTest, NetworkCostManagerIntegration) {
-  // NetworkCostManager integration only exist on Win10+.
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return;
-
   // Upon creation, none of the NetworkCostManager integration should be
   // initialized yet.
   ASSERT_FALSE(HasNetworkCostManager());

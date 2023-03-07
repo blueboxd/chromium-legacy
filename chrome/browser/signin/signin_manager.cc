@@ -6,10 +6,11 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -114,16 +115,24 @@ void SigninManager::UpdateUnconsentedPrimaryAccount() {
       DCHECK(
           !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
       identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
-          account.account_id, signin::ConsentLevel::kSignin);
+          account.account_id, signin::ConsentLevel::kSignin,
+          // TODO(crbug.com/1261772): Attribute this to actual access points.
+          signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER);
     }
   } else if (identity_manager_->HasPrimaryAccount(
                  signin::ConsentLevel::kSignin)) {
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // On Lacros, the `SigninManager` only clears the primary account if it is
+    // no longer on the device.
+    signin_metrics::ProfileSignout source =
+        signin_metrics::ProfileSignout::kAccountRemovedFromDevice;
+#else
     DCHECK(!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
+    signin_metrics::ProfileSignout source =
+        signin_metrics::ProfileSignout::kUserDeletedAccountCookies;
 #endif
     identity_manager_->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-        signin_metrics::USER_DELETED_ACCOUNT_COOKIES,
-        signin_metrics::SignoutDelete::kIgnoreMetric);
+        source, signin_metrics::SignoutDelete::kIgnoreMetric);
   }
 }
 

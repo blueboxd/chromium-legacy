@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -287,8 +287,7 @@ void InputMethodSyncer::FinishMerge(const std::string& languages) {
 void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
   DCHECK(pref_name == language::prefs::kPreferredLanguages ||
          pref_name == prefs::kLanguagePreloadEngines ||
-         pref_name == prefs::kLanguageEnabledImes ||
-         pref_name == prefs::kHindiInscriptLayoutEnabled);
+         pref_name == prefs::kLanguageEnabledImes);
 
   if (merging_ || prefs_->GetBoolean(prefs::kLanguageShouldMergeInputMethods))
     return;

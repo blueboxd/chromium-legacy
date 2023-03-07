@@ -5,6 +5,7 @@
 import './accelerator_row.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
@@ -35,11 +36,11 @@ export interface AcceleratorSubsectionElement {
 const AcceleratorSubsectionElementBase = I18nMixin(PolymerElement);
 export class AcceleratorSubsectionElement extends
     AcceleratorSubsectionElementBase {
-  static get is() {
+  static get is(): string {
     return 'accelerator-subsection';
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       title: {
         type: String,
@@ -54,7 +55,7 @@ export class AcceleratorSubsectionElement extends
       subcategory: {
         type: Number,
         value: null,
-        observer: 'onCategoryUpdated_',
+        observer: AcceleratorSubsectionElement.prototype.onCategoryUpdated,
       },
 
       /**
@@ -73,26 +74,26 @@ export class AcceleratorSubsectionElement extends
   category: AcceleratorCategory;
   subcategory: AcceleratorSubcategory;
   accelRowDataArray: AcceleratorRowData[];
-  private lookupManager_: AcceleratorLookupManager =
+  private lookupManager: AcceleratorLookupManager =
       AcceleratorLookupManager.getInstance();
 
-  updateSubsection() {
+  updateSubsection(): void {
     // Force the rendered list to reset, Polymer's dom-repeat does not perform
     // a deep check on objects so it won't detect changes to same size length
     // array of objects.
     this.set('acceleratorContainer', []);
     this.$.list.render();
-    this.onCategoryUpdated_();
+    this.onCategoryUpdated();
   }
 
-  protected onCategoryUpdated_() {
+  protected onCategoryUpdated(): void {
     if (this.subcategory === null) {
       return;
     }
 
     // Fetch the layout infos based off of the subsection's category and
     // subcategory.
-    const layoutInfos = this.lookupManager_.getAcceleratorLayout(
+    const layoutInfos = this.lookupManager.getAcceleratorLayout(
         this.category, this.subcategory);
 
     this.title = this.i18n(getSubcategoryNameStringId(this.subcategory));
@@ -104,24 +105,35 @@ export class AcceleratorSubsectionElement extends
     // subsection's accelerators are kept distinct from each other.
     const tempAccelRowData: AcceleratorRowData[] = [];
     layoutInfos!.forEach((layoutInfo) => {
-      const acceleratorInfos = this.lookupManager_.getAcceleratorInfos(
-          layoutInfo.source, layoutInfo.action);
-      acceleratorInfos.filter((accel) => {
-        // Hide accelerators that are default and disabled.
-        return !(
-            accel.type === AcceleratorType.kDefault &&
-            accel.state === AcceleratorState.kDisabledByUser);
-      });
-      const accelRowData: AcceleratorRowData = {
-        layoutInfo,
-        acceleratorInfos,
-      };
-      tempAccelRowData.push(accelRowData);
+      if (this.lookupManager.isStandardAccelerator(
+              layoutInfo.source, layoutInfo.action)) {
+        const acceleratorInfos = this.lookupManager.getStandardAcceleratorInfos(
+            layoutInfo.source, layoutInfo.action);
+        acceleratorInfos.filter((accel) => {
+          // Hide accelerators that are default and disabled.
+          // TODO(michaelcheco): Confirm that this is the intended
+          // behavior for accelerators that are default and disabled.
+          return !(
+              accel.type === AcceleratorType.kDefault &&
+              accel.state === AcceleratorState.kDisabledByUser);
+        });
+        const accelRowData: AcceleratorRowData = {
+          layoutInfo,
+          acceleratorInfos,
+        };
+        tempAccelRowData.push(accelRowData);
+      } else {
+        tempAccelRowData.push({
+          layoutInfo,
+          acceleratorInfos: this.lookupManager.getTextAcceleratorInfos(
+              layoutInfo.source, layoutInfo.action),
+        });
+      }
     });
     this.accelRowDataArray = tempAccelRowData;
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 }

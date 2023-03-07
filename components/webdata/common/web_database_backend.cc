@@ -7,8 +7,9 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/webdata/common/web_data_request_manager.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/web_database_table.h"

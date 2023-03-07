@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/profiler/module_cache.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
@@ -21,6 +21,11 @@
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #include "base/debug/proc_maps_linux.h"
 #endif
+
+// Note: The special-case IS_CHROMEOS code inside GetDebugBasenameForModule to
+// handle the interaction between that function and
+// SetProcessTitleFromCommandLine() is tested in
+// content/common/set_process_title_linux_unittest.cc due to dependency issues.
 
 namespace base {
 namespace {

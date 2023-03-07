@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -167,10 +167,11 @@ void WebApkIconHasher::OnSimpleLoaderComplete(
     return;
   }
 
-  // If it's an SVG file, decode the image using Blink's image decoder.
+  // If it's an SVG or WEBP file, decode the image using Blink's image decoder.
   auto simple_url_loader = std::move(simple_url_loader_);
   if (simple_url_loader->ResponseInfo() &&
-      simple_url_loader->ResponseInfo()->mime_type == "image/svg+xml") {
+      (simple_url_loader->ResponseInfo()->mime_type == "image/svg+xml" ||
+       simple_url_loader->ResponseInfo()->mime_type == "image/webp")) {
     if (!web_contents) {
       RunCallback({});
       return;

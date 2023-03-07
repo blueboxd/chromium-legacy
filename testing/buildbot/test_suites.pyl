@@ -25,6 +25,7 @@
       # Name is vr_*, but actually has AR tests.
       'vr_android_unittests': {},
     },
+
     'android_ddready_vr_gtests': {
       'chrome_public_test_vr_apk-ddready-cardboard': {
         'args': [
@@ -218,6 +219,20 @@
       },
       'mojo_test_apk': {},
       'ui_android_unittests': {},
+      'webview_instrumentation_test_apk': {
+        'swarming': {
+          'shards': 7,
+        },
+      },
+    },
+
+    'android_specific_coverage_java_tests': {
+      'content_shell_test_apk': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+      'mojo_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -626,6 +641,9 @@
           'io_timeout': 3600,
           'shards': 10,
         },
+        'args': [
+          '--tast-retries=1',
+        ],
         'mixins': [
           'has_native_resultdb_integration',
         ],
@@ -773,6 +791,13 @@
       'cc_unittests': {},
       'crypto_unittests': {},
       'display_unittests': {},
+      'fake_libva_driver_unittest': {
+        'args': [
+          '--env-var', 'LIBVA_DRIVERS_PATH', './',
+          '--env-var', 'LIBVA_DRIVER_NAME', 'libfake',
+        ],
+        'experiment_percentage': 100,
+      },
       'google_apis_unittests': {},
       'ipc_tests': {},
       'latency_unittests': {},
@@ -1107,6 +1132,54 @@
     },
 
     'chromium_junit_tests_scripts': {
+      'android_webview_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'base_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'build_junit_tests':{
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'chrome_java_test_pagecontroller_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
       'chrome_junit_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.nougat-x86-rel.chrome_junit_tests.filter',
@@ -1122,114 +1195,197 @@
         ],
         'use_isolated_scripts_api': True,
       },
-    },
-
-    # TODO(crbug.com/1320434): remove this once all junit tests are migrated
-    'chromium_junit_tests_some_swarming': {
-      'android_webview_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'base_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'build_junit_tests':{
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'chrome_java_test_pagecontroller_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
       'components_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'content_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'device_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'junit_unit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
-      },
-      'keyboard_accessory_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
+        'use_isolated_scripts_api': True,
       },
       'media_base_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'module_installer_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'net_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'paint_preview_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'password_check_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'password_manager_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'services_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'touch_to_fill_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'ui_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'webapk_client_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'webapk_shell_apk_h2o_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
       'webapk_shell_apk_junit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
         'remove_mixins': [
+          'emulator-4-cores',
           'nougat-x86-emulator',
         ],
+        'use_isolated_scripts_api': True,
       },
     },
 
@@ -1300,7 +1456,7 @@
               'cores': '8',
             },
           ],
-          'shards': 2,
+          'shards': 8,
         },
       },
       'content_browsertests': {
@@ -1310,6 +1466,7 @@
               'cores': '8',
             },
           ],
+          'shards': 5,
         },
       },
       'content_unittests': {
@@ -1328,6 +1485,7 @@
               'cores': '8',
             },
           ],
+          'shards': 3,
         },
       },
       'net_unittests': {
@@ -1355,78 +1513,6 @@
     # ensure are still working.
     'chromium_tracing_gtests': {
       'services_unittests': {},
-    },
-
-    'chromium_web_tests_and_wpt_webdriver_isolated_scripts': {
-      'blink_web_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-           # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'blink_wpt_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--num-retries=3',
-          '--step-name=blink-wpt-tests',
-        ],
-        'isolate_name': 'blink_wpt_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-          # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 7,
-        },
-      },
-      'webdriver_tests_suite': {
-        'isolate_name': 'webdriver_wpt_tests',
-         'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'swarming': {
-          'shards': 4,
-        },
-      },
     },
 
     'chromium_web_tests_high_dpi_isolated_scripts': {
@@ -2164,7 +2250,29 @@
           '--disable-field-trial-config',
         ],
         'test': 'android_browsertests',
-      }
+      },
+      'webview_cts_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'swarming': {
+          'shards': 2,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+            }
+          ]
+        },
+        'test': 'webview_cts_tests',
+      },
+      'webview_ui_test_app_test_apk_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'webview_ui_test_app_test_apk',
+      },
     },
     'fieldtrial_browser_tests': {
       'browser_tests_no_field_trial': {
@@ -2602,19 +2710,6 @@
         'mixins': ['dawn_end2end_gpu_test'],
         'args': [
           '--use-wire',
-        ],
-        'linux_args': [ '--no-xvfb' ],
-        'test': 'dawn_end2end_tests',
-      },
-    },
-
-    # For Windows. Use the D3D12 backend validation layers but without GPU-based
-    # validation and shader patching. This avoids hangs on less powerful systems.
-    'gpu_dawn_gtests_with_partial_validation': {
-      'dawn_end2end_validation_layers_tests': {
-        'mixins': ['dawn_end2end_gpu_test'],
-        'args': [
-          '--enable-backend-validation=partial',
         ],
         'linux_args': [ '--no-xvfb' ],
         'test': 'dawn_end2end_tests',
@@ -3615,6 +3710,13 @@
         'android_args': [
           '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
         ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
         'mixins': [
           'has_native_resultdb_integration',
         ],
@@ -3830,11 +3932,6 @@
           'shards': 8,
         },
       },
-      'ios_chrome_ui_eg2tests_module': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
       'ios_web_shell_eg2tests_module': {},
     },
 
@@ -3851,6 +3948,11 @@
         },
       },
       'ios_chrome_smoke_eg2tests_module': {},
+      'ios_chrome_ui_eg2tests_module': {
+        'swarming': {
+          'shards': 12,
+        },
+      },
       'ios_chrome_web_eg2tests_module': {},
       'ios_showcase_eg2tests_module': {},
     },
@@ -3952,6 +4054,13 @@
       },
     },
 
+    'lacros_skylab': {
+      'lacros_all_tast_tests': {
+        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
+        'timeout_sec': 10800,
+      },
+    },
+
     'lacros_skylab_amd64_fyi': {
       'lacros_fyi_tast_tests': {
         'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
@@ -3987,7 +4096,7 @@
 
     # create this temporary lacros arm test suites that runs on skylab
     # TODO(crbug.com/1247425): remove it if it is the same as
-    # lacros_skylab_poc
+    # lacros_skylab
     'lacros_skylab_arm_tests_fyi': {
       'lacros_all_tast_tests': {
         'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
@@ -3997,16 +4106,6 @@
         'timeout_sec': 3600,
       },
       'viz_unittests': {
-        'timeout_sec': 3600,
-      },
-    },
-
-    'lacros_skylab_poc': {
-      'lacros_fyi_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
-        'timeout_sec': 10800,
-      },
-      'ozone_unittests': {
         'timeout_sec': 3600,
       },
     },
@@ -4037,15 +4136,6 @@
 
     'lacros_vm_gtests': {
       'base_unittests': {},
-    },
-
-    'layout_ng_gtests': {
-      'webkit_unit_tests_ng': {
-        'args': [
-          '--disable-blink-features=LayoutNG,LayoutNGBlockFragmentation'
-        ],
-        'test': 'blink_unittests',
-      },
     },
 
     'leak_detection_isolated_scripts': {
@@ -4091,7 +4181,7 @@
         ],
         'test': 'browser_tests',
         'swarming': {
-          'shards': 4,
+          'shards': 8,
         },
       },
     },
@@ -4928,6 +5018,12 @@
       },
     },
 
+    # TODO(crbug.com/1381588): remove this test definition once
+    # crbug.com/1394839 is resolved.
+    'updater_gtests_mac_user': {
+      'updater_tests': {},
+    },
+
     'updater_gtests_win': {
       'updater_tests': {},
       'updater_tests_system': {
@@ -4994,7 +5090,6 @@
       # Only run on platforms that intend to support WebVR in the near
       # future.
       'vr_common_unittests': {},
-      'vr_pixeltests': {},
     },
 
     'vulkan_swiftshader_isolated_scripts': {
@@ -5356,6 +5451,28 @@
       },
     },
 
+    'wpt_web_tests_enable_leak_detection': {
+      'wpt_tests_suite': {
+        'args': [
+          '--log-wptreport',
+          '--xvfb',
+          '--enable-leak-detection',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 15,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
     'wpt_web_tests_highdpi': {
       'wpt_tests_suite_highdpi': {
         'args': [
@@ -5444,29 +5561,6 @@
       },
     },
 
-    'wpt_web_tests_layout_ng_disabled': {
-      'wpt_tests_suite_layout_ng_disabled': {
-        'args': [
-          '--log-wptreport',
-          '--xvfb',
-          '--flag-specific',
-          'disable-layout-ng',
-        ],
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'isolate_name': 'wpt_tests_isolate_content_shell',
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 12,
-        },
-        'experiment_percentage': 100,
-      },
-    },
-
     'wpt_web_tests_not_site_per_process': {
       'wpt_tests_suite_not_site_per_process': {
         'args': [
@@ -5549,20 +5643,12 @@
       'android_smoke_tests',
     ],
 
-    # This is the same as 'chromium_android_gtests'
-    # with the addition of 'android_modern_smoke_tests',
-    # 'webview_cts_tests_gtest', and 'webview_ui_instrumentation_tests',
-    'android_pie_coverage_gtests': [
+    'android_pie_coverage_instrumentation_tests': [
       'android_modern_smoke_tests',
       'android_smoke_tests',
-      'android_specific_chromium_gtests',  # Already includes gl_gtests.
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
+      'android_specific_coverage_java_tests',
       'chrome_public_tests',
-      'linux_flavor_specific_chromium_gtests',
       'vr_android_specific_chromium_tests',
-      'vr_platform_specific_chromium_gtests',
-      'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
@@ -5605,7 +5691,6 @@
     #   'android_specific_chromium_gtests',  # Already includes gl_gtests.
     #   'chromium_gtests',
     #   'chromium_gtests_for_devices_with_graphical_output',
-      'chrome_persistent_shell_tests',
       'chrome_public_tests',
     #   'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests',
@@ -5717,6 +5802,13 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
+    ],
+
+    'chromium_linux_blink_rel_isolated_scripts': [
+      'chromium_webkit_isolated_scripts',
+      'linux_specific_chromium_isolated_scripts',
+      'vulkan_swiftshader_isolated_scripts',
+      'chromium_web_tests_high_dpi_isolated_scripts',
     ],
 
     'chromium_linux_cast_audio_gtests': [
@@ -6018,14 +6110,6 @@
       'gpu_common_gtests_passthrough',
     ],
 
-    # GPU gtests that test Dawn and integration with Chromium
-    # These tests are run both on the CI and trybots which test DEPS Dawn.
-    'gpu_dawn_integration_gtests_passthrough_win_intel': [
-      'gpu_dawn_gtests',
-      'gpu_dawn_gtests_with_partial_validation',
-      'gpu_common_gtests_passthrough',
-    ],
-
     'gpu_dawn_isolated_scripts': [
       'gpu_dawn_common_isolated_scripts',
       'gpu_dawn_perf_smoke_isolated_scripts',
@@ -6106,6 +6190,20 @@
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
       # 'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+    ],
+
+
+    # The same as gpu_fyi_chromeos_release_telemetry_tests, but using
+    # passthrough instead of validating since the Lacros bots are actually
+    # Lacros-like Linux bots, and Linux uses the passthrough decoder.
+    # Additionally, we use GLES instead of GL since that's what is supported.
+    'gpu_fyi_lacros_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_mediapipe_passthrough_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_webcodecs_telemetry_test',
+      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_linux_debug_gtests': [
@@ -6276,12 +6374,6 @@
       'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
     ],
 
-    'gpu_v8_desktop_passthrough_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
-    ],
-
     'gpu_win_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
@@ -6403,7 +6495,6 @@
     'wpt_web_tests_content_shell_multiple_flags': [
       'wpt_web_tests_content_shell',
       'wpt_web_tests_not_site_per_process',
-      'wpt_web_tests_layout_ng_disabled',
       'wpt_web_tests_highdpi',
     ],
   },
@@ -6466,6 +6557,14 @@
       'webview_ui_instrumentation_tests': {},
     },
 
+    'chromeos_octopus_skylab_tests': {
+      'chromeos_chrome_all_tast_tests': {
+        'variants': [
+          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS',
+        ]
+      },
+    },
+
     'chromeos_trogdor64_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
@@ -6500,12 +6599,12 @@
     'gpu_angle_ios_gtests': {
       'gpu_angle_ios_end2end_gtests': {
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
         ],
       },
       'gpu_angle_ios_white_box_gtests': {
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
         ],
       },
     },
@@ -6605,40 +6704,40 @@
     'ios16_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPAD_6_GEN_16_1',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_6_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_6_GEN_16_1',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_6_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_PLUS_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPHONE_8_PLUS_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
         ]
       },
     },
@@ -6646,7 +6745,7 @@
     'ios16_sdk_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_6S_14_4',
         ],
@@ -6654,7 +6753,7 @@
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_X_16_2',
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_6S_14_4',
         ]
@@ -6662,9 +6761,9 @@
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_X_16_2',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
@@ -6672,15 +6771,15 @@
           'SIM_IPAD_AIR_2_14_4',
           'SIM_IPHONE_X_14_4',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_X_16_2',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
@@ -6688,16 +6787,16 @@
           'SIM_IPAD_AIR_2_14_4',
           'SIM_IPHONE_X_14_4',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_PLUS_16_1',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_SE_3RD_GEN_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPHONE_8_PLUS_16_2',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
     },
@@ -6739,7 +6838,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -6748,11 +6847,11 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
       'ios_eg2_tests': {
@@ -6761,11 +6860,11 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPHONE_X_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_X_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
@@ -6774,12 +6873,12 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_SE_1ST_GEN_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_PLUS_16_1',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_SE_3RD_GEN_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_PLUS_16_2',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
     },
@@ -6841,11 +6940,11 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6854,10 +6953,9 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_screen_size_dependent_tests': {
@@ -6909,6 +7007,7 @@
           'SIM_IPHONE_7_14_5',
           'SIM_IPAD_AIR_2_14_5',
           'SIM_IPHONE_X_14_5',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6942,22 +7041,22 @@
     'ios_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_8_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_1',
-          'SIM_IPHONE_X_16_1',
-          'SIM_IPAD_AIR_3RD_GEN_16_1',
-          'SIM_IPHONE_SE_3RD_GEN_16_1',
-          'SIM_IPAD_PRO_3RD_GEN_16_1',
+          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ]
       }
     },
@@ -7001,7 +7100,7 @@
     },
 
     'lacros_amd64_generic_rel_skylab_fyi': {
-      'lacros_skylab_poc': {
+      'lacros_skylab': {
         'variants': [
           'CROS_OCTOPUS_FULL',
           'CROS_EVE_FULL',
@@ -7009,8 +7108,16 @@
       },
     },
 
+    'lacros_arm64_generic_rel_skylab': {
+      'lacros_skylab': {
+        'variants': [
+          'CROS_KEVIN_PUBLIC',
+        ]
+      },
+    },
+
     'lacros_arm64_generic_rel_skylab_fyi': {
-      'lacros_skylab_poc': {
+      'lacros_skylab': {
         'variants': [
           'CROS_JACUZZI_PUBLIC',
           'CROS_KEVIN_PUBLIC',
@@ -7018,6 +7125,22 @@
       },
     },
 
+    'lacros_arm_generic_rel_skylab': {
+      'lacros_skylab': {
+        'variants': [
+          'CROS_JACUZZI_PUBLIC',
+        ]
+      },
+    },
+
+    'lacros_arm_generic_rel_skylab_fyi': {
+      'lacros_skylab': {
+        'variants': [
+          'CROS_JACUZZI_PUBLIC',
+          'CROS_KEVIN_PUBLIC',
+        ]
+      },
+    },
 
     'lacros_device_arm_tests': {
       'lacros_all_tast_tests': {
@@ -7368,43 +7491,43 @@
     'win_optional_gpu_tests_rel_gpu_telemetry_tests': {
       'gpu_common_and_optional_telemetry_tests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webcodecs_telemetry_test': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
@@ -7413,25 +7536,25 @@
     'win_optional_gpu_tests_rel_gtests': {
       'gpu_default_and_optional_win_specific_gtests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_fyi_and_optional_non_linux_gtests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_fyi_and_optional_win_specific_gtests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_gles2_conform_gtests': {
         'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },

@@ -56,8 +56,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   void Trace(Visitor*) const override;
 
-  static bool CanHaveChildren(Element& element);
-
  protected:
 #if DCHECK_IS_ON()
   bool initialized_ = false;
@@ -193,6 +191,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
       Vector<ax::mojom::blink::Dropeffect>& dropeffects) const override;
 
   ax::mojom::blink::HasPopup HasPopup() const override;
+  ax::mojom::blink::IsPopup IsPopup() const override;
   bool IsEditableRoot() const override;
   bool HasContentEditableAttributeSet() const override;
 
@@ -315,7 +314,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   void AddChildrenImpl();
   void AddNodeChildren();
-  void AddLayoutChildren();
+  void AddPseudoElementChildrenFromLayoutTree();
   bool CanAddLayoutChild(LayoutObject& child);
   // Add inline textbox children, if either force == true or
   // AXObjectCache().InlineTextBoxAccessibilityEnabled().

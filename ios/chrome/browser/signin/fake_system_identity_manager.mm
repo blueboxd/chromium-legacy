@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
@@ -105,7 +105,7 @@ void FakeSystemIdentityManager::ForgetIdentityFromOtherApplication(
 
 void FakeSystemIdentityManager::SetCapabilities(
     id<SystemIdentity> identity,
-    NSDictionary<NSString*, NSNumber*>* capabilities) {
+    const std::map<std::string, CapabilityResult>& capabilities) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK([storage_ containsIdentity:identity]);
   FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
@@ -144,6 +144,11 @@ FakeSystemIdentityManager::CreateRefreshAccessTokenFailure(
   details.error = [[FakeRefreshAccessTokenError alloc]
       initWithCallback:std::move(callback)];
   return details.error;
+}
+
+bool FakeSystemIdentityManager::IsSigninSupported() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return true;
 }
 
 bool FakeSystemIdentityManager::HandleSessionOpenURLContexts(
@@ -379,29 +384,19 @@ void FakeSystemIdentityManager::FetchCapabilitiesAsync(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK([storage_ containsIdentity:identity]);
   FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
+  const FakeSystemIdentityCapabilitiesMap& capabilities = details.capabilities;
 
-  std::map<std::string, CapabilityResult> capabilities;
+  FakeSystemIdentityCapabilitiesMap result;
   for (const std::string& name : names) {
-    NSString* key = base::SysUTF8ToNSString(name);
-    NSNumber* value = details.capabilities[key];
-    CapabilityResult capability = CapabilityResult::kUnknown;
-    if (value) {
-      const int int_value = value.intValue;
-      switch (int_value) {
-        case static_cast<int>(CapabilityResult::kUnknown):
-        case static_cast<int>(CapabilityResult::kTrue):
-        case static_cast<int>(CapabilityResult::kFalse):
-          capability = static_cast<CapabilityResult>(int_value);
-          break;
-        default:
-          NOTREACHED() << "unexpected capability value: " << int_value;
-          break;
-      }
+    const auto& iter = capabilities.find(name);
+    if (iter == capabilities.end()) {
+      result.insert({name, CapabilityResult::kUnknown});
+    } else {
+      result.insert({name, iter->second});
     }
-    capabilities.insert({name, capability});
   }
 
-  std::move(callback).Run(capabilities);
+  std::move(callback).Run(result);
 }
 
 void FakeSystemIdentityManager::PostClosure(base::Location from_here,

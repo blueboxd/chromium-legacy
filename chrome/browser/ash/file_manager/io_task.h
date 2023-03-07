@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -26,6 +26,9 @@ enum class State {
 
   // Task is currently running.
   kInProgress,
+
+  // Task is currently paused.
+  kPaused,
 
   // Task has been successfully completed.
   kSuccess,
@@ -72,9 +75,14 @@ struct EntryStatus {
   EntryStatus(EntryStatus&& other);
   EntryStatus& operator=(EntryStatus&& other);
 
+  // The entry FileSystemURL.
   storage::FileSystemURL url;
+
   // May be empty if the entry has not been fully processed yet.
   absl::optional<base::File::Error> error;
+
+  // True if entry is a directory when its metadata is processed.
+  bool is_directory = false;
 };
 
 // Represents the current progress of an I/O task.

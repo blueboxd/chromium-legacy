@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -188,7 +188,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                void(uint32_t client_texture_id,
                     uint32_t texture_target,
                     gl::GLImage* image));
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   MOCK_METHOD3(AttachImageToTextureWithClientBinding,
                void(uint32_t client_texture_id,
                     uint32_t texture_target,

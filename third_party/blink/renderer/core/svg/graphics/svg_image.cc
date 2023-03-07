@@ -29,6 +29,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -112,7 +113,7 @@ class FailingLoader final : public WebURLLoader {
       absl::optional<WebURLError>& error,
       WebData&,
       int64_t& encoded_data_length,
-      int64_t& encoded_body_length,
+      uint64_t& encoded_body_length,
       WebBlobInfo& downloaded_blob,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper) override {
@@ -193,7 +194,6 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
 
 SVGImage::SVGImage(ImageObserver* observer, bool is_multipart)
     : Image(observer, is_multipart),
-      paint_controller_(std::make_unique<PaintController>()),
       // TODO(chikamune): use an existing AgentGroupScheduler
       // SVG will be shared via MemoryCache (which is renderer process
       // global cache) across multiple AgentSchedulingGroups. That's
@@ -506,14 +506,17 @@ bool SVGImage::ApplyShaderInternal(const DrawInfo& draw_info,
                                    const SkMatrix& local_matrix) {
   if (draw_info.ContainerSize().IsEmpty())
     return false;
-  sk_sp<PaintRecord> record = PaintRecordForCurrentFrame(draw_info);
+  // TODO(pdr): Pass a tighter cull rect based on the src rect to optimize out
+  // parts of the paint record that are not visible (see: crbug.com/1401086).
+  absl::optional<PaintRecord> record =
+      PaintRecordForCurrentFrame(draw_info, nullptr);
   if (!record)
     return false;
 
   const SkRect bounds =
       SkRect::MakeSize(gfx::SizeFToSkSize(draw_info.ContainerSize()));
   flags.setShader(PaintShader::MakePaintRecord(
-      std::move(record), bounds, SkTileMode::kClamp, SkTileMode::kClamp,
+      std::move(*record), bounds, SkTileMode::kClamp, SkTileMode::kClamp,
       &local_matrix));
 
   // Animation is normally refreshed in Draw() impls, which we don't reach when
@@ -553,10 +556,12 @@ void SVGImage::Draw(cc::PaintCanvas* canvas,
   DrawInternal(draw_info, canvas, flags, dst_rect, src_rect);
 }
 
-sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
-    const DrawInfo& draw_info) {
-  if (!page_)
-    return nullptr;
+absl::optional<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
+    const DrawInfo& draw_info,
+    const gfx::Rect* cull_rect) {
+  if (!page_) {
+    return absl::nullopt;
+  }
   // Temporarily disable the image observer to prevent ChangeInRect() calls due
   // re-laying out the image.
   ImageObserverDisabler disable_image_observer(this);
@@ -582,7 +587,8 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
   page_->GetSettings().SetForceDarkModeEnabled(draw_info.IsDarkModeEnabled());
 
   view->UpdateAllLifecyclePhases(DocumentUpdateReason::kSVGImage);
-  return view->GetPaintRecord();
+
+  return view->GetPaintRecord(cull_rect);
 }
 
 static bool DrawNeedsLayer(const cc::PaintFlags& flags) {
@@ -602,7 +608,9 @@ void SVGImage::DrawInternal(const DrawInfo& draw_info,
                             const cc::PaintFlags& flags,
                             const gfx::RectF& dst_rect,
                             const gfx::RectF& unzoomed_src_rect) {
-  sk_sp<PaintRecord> record = PaintRecordForCurrentFrame(draw_info);
+  gfx::Rect cull_rect(gfx::ToEnclosingRect(unzoomed_src_rect));
+  absl::optional<PaintRecord> record =
+      PaintRecordForCurrentFrame(draw_info, &cull_rect);
   if (!record)
     return;
 
@@ -610,16 +618,16 @@ void SVGImage::DrawInternal(const DrawInfo& draw_info,
     PaintCanvasAutoRestore ar(canvas, false);
     if (DrawNeedsLayer(flags)) {
       SkRect layer_rect = gfx::RectFToSkRect(dst_rect);
-      canvas->saveLayer(&layer_rect, &flags);
+      canvas->saveLayer(layer_rect, flags);
     }
     // We can only draw the entire frame, clipped to the rect we want. So
     // compute where the top left of the image would be if we were drawing
     // without clipping, and translate accordingly.
     canvas->save();
     canvas->clipRect(gfx::RectToSkRect(gfx::ToEnclosingRect(dst_rect)));
-    canvas->concat(SkMatrix::RectToRect(gfx::RectFToSkRect(unzoomed_src_rect),
-                                        gfx::RectFToSkRect(dst_rect)));
-    canvas->drawPicture(std::move(record));
+    canvas->concat(SkM44::RectToRect(gfx::RectFToSkRect(unzoomed_src_rect),
+                                     gfx::RectFToSkRect(dst_rect)));
+    canvas->drawPicture(std::move(*record));
     canvas->restore();
   }
 

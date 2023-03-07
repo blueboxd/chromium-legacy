@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -693,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextTrustTokensBrowsertest,
       /*incognito=*/browser()->profile()->IsIncognitoProfile());
   privacy_sandbox_settings->SetDelegateForTesting(
       std::move(privacy_sandbox_delegate));
-  privacy_sandbox_settings->SetPrivacySandboxEnabled(true);
+  privacy_sandbox_settings->SetAllPrivacySandboxAllowedForTesting();
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kOff));
@@ -709,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextTrustTokensBrowsertest,
   std::string command = content::JsReplace(R"(
   (async () => {
     try {
-      await fetch("/issue", {trustToken: {type: 'token-request'}});
+      await fetch("/issue", {trustToken: {operation: 'token-request'}});
       return await document.hasPrivateToken($1, 'private-state-token');
     } catch {
       return false;

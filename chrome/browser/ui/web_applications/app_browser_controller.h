@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
@@ -261,11 +261,11 @@ class AppBrowserController
   // Gets the icon to use if the app icon is not available.
   ui::ImageModel GetFallbackAppIcon() const;
 
+  void UpdateThemePack();
+
  private:
   // Sets the url that the app browser controller was created with.
   void SetInitialURL(const GURL& initial_url);
-
-  void UpdateThemePack();
 
   const raw_ptr<Browser> browser_;
   const AppId app_id_;

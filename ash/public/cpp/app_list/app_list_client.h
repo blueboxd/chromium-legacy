@@ -13,7 +13,7 @@
 
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -73,13 +73,6 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Invokes a custom action |action| on a result with |result_id|.
   virtual void InvokeSearchResultAction(const std::string& result_id,
                                         SearchResultActionType action) = 0;
-  // Returns the context menu model for the search result with |result_id|, or
-  // an empty array if there is currently no menu for the result.
-  using GetSearchResultContextMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
-  virtual void GetSearchResultContextMenuModel(
-      const std::string& result_id,
-      GetSearchResultContextMenuModelCallback callback) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on the app list UI:

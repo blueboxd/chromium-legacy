@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ref.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/locks/lock.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 
@@ -25,7 +26,7 @@ class WebAppSyncBridge;
 class WebAppTranslationManager;
 class WebAppUiManager;
 
-// This locks the given app ids in the WebAppProvider system.
+// This locks the given app ID(s) in the WebAppProvider system.
 //
 // Locks can be acquired by using the `WebAppLockManager`. The lock is acquired
 // when the callback given to the WebAppLockManager is called. Destruction of
@@ -33,6 +34,7 @@ class WebAppUiManager;
 // acquired yet.
 class AppLockDescription : public LockDescription {
  public:
+  explicit AppLockDescription(const AppId& app_id);
   explicit AppLockDescription(base::flat_set<AppId> app_ids);
   ~AppLockDescription();
 };
@@ -92,6 +94,11 @@ class AppLock : public Lock, public WithAppResources {
           WebAppTranslationManager& translation_manager,
           WebAppUiManager& ui_manager);
   ~AppLock();
+
+  base::WeakPtr<AppLock> AsWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
+ private:
+  base::WeakPtrFactory<AppLock> weak_factory_{this};
 };
 
 }  // namespace web_app

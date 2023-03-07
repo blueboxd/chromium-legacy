@@ -19,6 +19,7 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/pill_button.h"
 #include "ash/utility/haptics_util.h"
+#include "ash/wm/desks/cros_next_desk_button.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_drag_proxy.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -41,9 +42,9 @@
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -210,8 +211,7 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
   DesksBarScrollViewLayout& operator=(const DesksBarScrollViewLayout&) = delete;
   ~DesksBarScrollViewLayout() override = default;
 
-  // views::LayoutManager:
-  void Layout(views::View* host) override {
+  void LayoutInternal(views::View* host) {
     const gfx::Rect scroll_bounds = bar_view_->scroll_view_->bounds();
 
     // The glanceables UI goes on the left edge regardless of zero state or
@@ -224,7 +224,7 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
       up_next_button->SetBounds(kUpNextX, y, size.width(), size.height());
     }
 
-    // |host| here is |scroll_view_contents_|.
+    // `host` here is `scroll_view_contents_`.
     if (bar_view_->IsZeroState()) {
       host->SetBoundsRect(scroll_bounds);
       auto* zero_state_default_desk_button =
@@ -246,22 +246,20 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
           saved_desk_util::IsSavedDesksEnabled() && session &&
           !session->is_shutting_down() &&
           session->saved_desk_presenter()->should_show_saved_desk_library();
-      auto* zero_state_desks_templates_button =
-          bar_view_->zero_state_desks_templates_button();
-      const gfx::Size zero_state_desks_templates_button_size =
+      auto* zero_state_library_button = bar_view_->zero_state_library_button();
+      const gfx::Size zero_state_library_button_size =
           should_show_saved_desk_library
-              ? zero_state_desks_templates_button->GetPreferredSize()
+              ? zero_state_library_button->GetPreferredSize()
               : gfx::Size();
-      const int width_for_zero_state_desks_templates_button =
+      const int width_for_zero_state_library_button =
           should_show_saved_desk_library
-              ? zero_state_desks_templates_button_size.width() +
-                    kZeroStateButtonSpacing
+              ? zero_state_library_button_size.width() + kZeroStateButtonSpacing
               : 0;
 
       const int content_width = zero_state_default_desk_button_size.width() +
                                 kZeroStateButtonSpacing +
                                 zero_state_new_desk_button_size.width() +
-                                width_for_zero_state_desks_templates_button;
+                                width_for_zero_state_library_button;
       zero_state_default_desk_button->SetBoundsRect(gfx::Rect(
           gfx::Point((scroll_bounds.width() - content_width) / 2, kZeroStateY),
           zero_state_default_desk_button_size));
@@ -278,40 +276,40 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
                      kZeroStateY),
           zero_state_new_desk_button_size));
 
-      if (zero_state_desks_templates_button) {
-        zero_state_desks_templates_button->SetBoundsRect(
+      if (zero_state_library_button) {
+        zero_state_library_button->SetBoundsRect(
             gfx::Rect(gfx::Point(zero_state_new_desk_button->bounds().right() +
                                      kZeroStateButtonSpacing,
                                  kZeroStateY),
-                      zero_state_desks_templates_button_size));
-        zero_state_desks_templates_button->SetVisible(
-            should_show_saved_desk_library);
+                      zero_state_library_button_size));
+        zero_state_library_button->SetVisible(should_show_saved_desk_library);
       }
       return;
     }
 
     std::vector<DeskMiniView*> mini_views = bar_view_->mini_views();
-    if (mini_views.empty())
+    if (mini_views.empty()) {
       return;
+    }
     // When RTL is enabled, we still want desks to be laid our in LTR, to match
     // the spatial order of desks. Therefore, we reverse the order of the mini
     // views before laying them out.
-    if (base::i18n::IsRTL())
+    if (base::i18n::IsRTL()) {
       base::ranges::reverse(mini_views);
+    }
 
-    auto* expanded_state_desks_templates_button =
-        bar_view_->expanded_state_desks_templates_button();
-    const bool expanded_state_desks_templates_button_visible =
-        expanded_state_desks_templates_button &&
-        expanded_state_desks_templates_button->GetVisible();
+    auto* expanded_state_library_button =
+        bar_view_->expanded_state_library_button();
+    const bool expanded_state_library_button_visible =
+        expanded_state_library_button &&
+        expanded_state_library_button->GetVisible();
 
     gfx::Size mini_view_size = mini_views[0]->GetPreferredSize();
 
-    // The new desk button and template button in the expanded bar view has the
+    // The new desk button and library button in the expanded bar view has the
     // same size as mini view.
-    const int num_items =
-        static_cast<int>(mini_views.size()) +
-        (expanded_state_desks_templates_button_visible ? 2 : 1);
+    const int num_items = static_cast<int>(mini_views.size()) +
+                          (expanded_state_library_button_visible ? 2 : 1);
 
     // Content width is sum of the width of all views, and plus the spacing
     // between the views, the focus ring's thickness and padding on each sides.
@@ -339,10 +337,147 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
     bar_view_->expanded_state_new_desk_button()->SetBoundsRect(
         gfx::Rect(gfx::Point(x, y), mini_view_size));
 
-    if (expanded_state_desks_templates_button) {
+    if (expanded_state_library_button) {
       x += (mini_view_size.width() + kMiniViewsSpacing);
-      expanded_state_desks_templates_button->SetBoundsRect(
+      expanded_state_library_button->SetBoundsRect(
           gfx::Rect(gfx::Point(x, y), mini_view_size));
+    }
+  }
+
+  // TODO(conniekxu): After CrOS Next is launched, remove function
+  // `LayoutInternal`, and move this to Layout.
+  void LayoutInternalCrOSNext(views::View* host) {
+    const gfx::Rect scroll_bounds = bar_view_->scroll_view_->bounds();
+
+    // The glanceables UI goes on the left edge regardless of zero state or
+    // expanded state.
+    // TODO(crbug.com/1353119): Real layout once we have specs for both modes.
+    auto* up_next_button = bar_view_->up_next_button();
+    if (up_next_button) {
+      const gfx::Size size = up_next_button->GetPreferredSize();
+      const int y = (scroll_bounds.height() / 2) - (size.height() / 2);
+      up_next_button->SetBounds(kUpNextX, y, size.width(), size.height());
+    }
+
+    // `host` here is `scroll_view_contents_`.
+    if (bar_view_->IsZeroState()) {
+      host->SetBoundsRect(scroll_bounds);
+      auto* default_desk_button = bar_view_->default_desk_button();
+      const gfx::Size default_desk_button_size =
+          default_desk_button->GetPreferredSize();
+
+      auto* new_desk_button = bar_view_->new_desk_button();
+      const gfx::Size new_desk_button_size =
+          new_desk_button->GetPreferredSize();
+
+      // The presenter is shutdown early in the overview destruction process to
+      // prevent calls to the model. Some animations on the desks bar may still
+      // call this function past shutdown start. In this case we just continue
+      // as if the saved desks UI should be hidden.
+      OverviewSession* session = bar_view_->overview_grid()->overview_session();
+      const bool should_show_saved_desk_library =
+          saved_desk_util::IsSavedDesksEnabled() && session &&
+          !session->is_shutting_down() &&
+          session->saved_desk_presenter()->should_show_saved_desk_library();
+      auto* library_button = bar_view_->library_button();
+      const gfx::Size library_button_size =
+          should_show_saved_desk_library ? library_button->GetPreferredSize()
+                                         : gfx::Size();
+      const int width_for_library_button =
+          should_show_saved_desk_library
+              ? library_button_size.width() + kZeroStateButtonSpacing
+              : 0;
+
+      const int content_width =
+          default_desk_button_size.width() + kZeroStateButtonSpacing +
+          new_desk_button_size.width() + width_for_library_button;
+      default_desk_button->SetBoundsRect(gfx::Rect(
+          gfx::Point((scroll_bounds.width() - content_width) / 2, kZeroStateY),
+          default_desk_button_size));
+      // Update this button's text since it may changes while removing a desk
+      // and going back to the zero state.
+      default_desk_button->UpdateLabelText();
+      // Make sure default desk button is always visible while in zero state
+      // bar.
+      default_desk_button->SetVisible(true);
+      new_desk_button->SetBoundsRect(gfx::Rect(
+          gfx::Point(
+              default_desk_button->bounds().right() + kZeroStateButtonSpacing,
+              kZeroStateY),
+          new_desk_button_size));
+
+      if (library_button) {
+        library_button->SetBoundsRect(gfx::Rect(
+            gfx::Point(
+                new_desk_button->bounds().right() + kZeroStateButtonSpacing,
+                kZeroStateY),
+            library_button_size));
+        library_button->SetVisible(should_show_saved_desk_library);
+      }
+      return;
+    }
+
+    std::vector<DeskMiniView*> mini_views = bar_view_->mini_views();
+    if (mini_views.empty()) {
+      return;
+    }
+    // When RTL is enabled, we still want desks to be laid our in LTR, to match
+    // the spatial order of desks. Therefore, we reverse the order of the mini
+    // views before laying them out.
+    if (base::i18n::IsRTL()) {
+      base::ranges::reverse(mini_views);
+    }
+
+    auto* library_button = bar_view_->library_button();
+    const bool library_button_visible =
+        library_button && library_button->GetVisible();
+
+    gfx::Size mini_view_size = mini_views[0]->GetPreferredSize();
+
+    gfx::Size library_button_size = library_button->GetPreferredSize();
+    // New desk button and library button have the same size;
+    const int num_buttons = library_button_visible ? 2 : 1;
+
+    // Content width is sum of the width of all views, and plus the spacing
+    // between the views, the focus ring's thickness and padding on each sides.
+    const int content_width =
+        mini_views.size() * (mini_view_size.width() + kMiniViewsSpacing) +
+        num_buttons * (library_button_size.width() + kMiniViewsSpacing) -
+        kMiniViewsSpacing + kDeskPreviewViewFocusRingThicknessAndPadding * 2;
+    width_ = std::max(scroll_bounds.width(), content_width);
+
+    // Update the size of the `host`, which is `scroll_view_contents_` here.
+    // This is done to make sure its size can be updated on mini views' adding
+    // or removing, then `scroll_view_` will know whether the contents need to
+    // be scolled or not.
+    host->SetSize(gfx::Size(width_, scroll_bounds.height()));
+
+    // The x of the first mini view should include the focus ring thickness and
+    // padding into consideration, otherwise the focus ring won't be drawn on
+    // the left side of the first mini view.
+    int x = (width_ - content_width) / 2 +
+            kDeskPreviewViewFocusRingThicknessAndPadding;
+    const int y = kMiniViewsY - mini_views[0]->GetPreviewBorderInsets().top();
+    for (auto* mini_view : mini_views) {
+      mini_view->SetBoundsRect(gfx::Rect(gfx::Point(x, y), mini_view_size));
+      x += (mini_view_size.width() + kMiniViewsSpacing);
+    }
+    bar_view_->new_desk_button()->SetBoundsRect(
+        gfx::Rect(gfx::Point(x, y), library_button_size));
+
+    if (library_button) {
+      x += (library_button_size.width() + kMiniViewsSpacing);
+      library_button->SetBoundsRect(
+          gfx::Rect(gfx::Point(x, y), library_button_size));
+    }
+  }
+
+  // views::LayoutManager:
+  void Layout(views::View* host) override {
+    if (features::IsJellyrollEnabled()) {
+      LayoutInternalCrOSNext(host);
+    } else {
+      LayoutInternal(host);
     }
   }
 
@@ -415,42 +550,68 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
             l10n_util::GetStringUTF16(IDS_GLANCEABLES_UP_NEXT)));
   }
 
-  expanded_state_new_desk_button_ = scroll_view_contents_->AddChildView(
-      std::make_unique<ExpandedDesksBarButton>(
-          this, &kDesksNewDeskButtonIcon,
-          l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
-          /*initially_enabled=*/DesksController::Get()->CanCreateDesks(),
-          base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
-                              base::Unretained(this),
-                              DesksCreationRemovalSource::kButton)));
+  if (features::IsJellyrollEnabled()) {
+    default_desk_button_ = scroll_view_contents_->AddChildView(
+        std::make_unique<CrOSNextDefaultDeskButton>(this));
+    new_desk_button_ = scroll_view_contents_->AddChildView(
+        std::make_unique<CrOSNextDeskIconButton>(
+            this, &kDesksNewDeskButtonIcon,
+            l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
+            cros_tokens::kCrosSysOnPrimary, cros_tokens::kCrosSysPrimary,
+            /*initially_enabled=*/DesksController::Get()->CanCreateDesks(),
+            base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
+                                base::Unretained(this),
+                                DesksCreationRemovalSource::kButton)));
+  } else {
+    expanded_state_new_desk_button_ = scroll_view_contents_->AddChildView(
+        std::make_unique<ExpandedDesksBarButton>(
+            this, &kDesksNewDeskButtonIcon,
+            l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
+            /*initially_enabled=*/DesksController::Get()->CanCreateDesks(),
+            base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
+                                base::Unretained(this),
+                                DesksCreationRemovalSource::kButton)));
 
-  zero_state_default_desk_button_ = scroll_view_contents_->AddChildView(
-      std::make_unique<ZeroStateDefaultDeskButton>(this));
-  zero_state_new_desk_button_ =
-      scroll_view_contents_->AddChildView(std::make_unique<ZeroStateIconButton>(
-          &kDesksNewDeskButtonIcon,
-          l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
-          base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
-                              base::Unretained(this),
-                              DesksCreationRemovalSource::kButton)));
+    zero_state_default_desk_button_ = scroll_view_contents_->AddChildView(
+        std::make_unique<ZeroStateDefaultDeskButton>(this));
+    zero_state_new_desk_button_ = scroll_view_contents_->AddChildView(
+        std::make_unique<ZeroStateIconButton>(
+            &kDesksNewDeskButtonIcon,
+            l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
+            base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
+                                base::Unretained(this),
+                                DesksCreationRemovalSource::kButton)));
+  }
+
   if (saved_desk_util::IsSavedDesksEnabled()) {
     int button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_LIBRARY;
     if (!saved_desk_util::AreDesksTemplatesEnabled())
       button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_SAVED_FOR_LATER;
 
-    expanded_state_desks_templates_button_ =
-        scroll_view_contents_->AddChildView(
-            std::make_unique<ExpandedDesksBarButton>(
-                this, &kDesksTemplatesIcon,
-                l10n_util::GetStringUTF16(button_text_id),
-                /*initially_enabled=*/true,
-                base::BindRepeating(&DesksBarView::OnLibraryButtonPressed,
-                                    base::Unretained(this))));
-    zero_state_desks_templates_button_ = scroll_view_contents_->AddChildView(
-        std::make_unique<ZeroStateIconButton>(
-            &kDesksTemplatesIcon, l10n_util::GetStringUTF16(button_text_id),
-            base::BindRepeating(&DesksBarView::OnLibraryButtonPressed,
-                                base::Unretained(this))));
+    if (features::IsJellyrollEnabled()) {
+      library_button_ = scroll_view_contents_->AddChildView(
+          std::make_unique<CrOSNextDeskIconButton>(
+              this, &kDesksTemplatesIcon,
+              l10n_util::GetStringUTF16(button_text_id),
+              cros_tokens::kCrosSysOnPrimaryContainer,
+              cros_tokens::kCrosSysSystemPrimaryContainer,
+              /*initially_enabled=*/true,
+              base::BindRepeating(&DesksBarView::OnLibraryButtonPressed,
+                                  base::Unretained(this))));
+    } else {
+      expanded_state_library_button_ = scroll_view_contents_->AddChildView(
+          std::make_unique<ExpandedDesksBarButton>(
+              this, &kDesksTemplatesIcon,
+              l10n_util::GetStringUTF16(button_text_id),
+              /*initially_enabled=*/true,
+              base::BindRepeating(&DesksBarView::OnLibraryButtonPressed,
+                                  base::Unretained(this))));
+      zero_state_library_button_ = scroll_view_contents_->AddChildView(
+          std::make_unique<ZeroStateIconButton>(
+              &kDesksTemplatesIcon, l10n_util::GetStringUTF16(button_text_id),
+              base::BindRepeating(&DesksBarView::OnLibraryButtonPressed,
+                                  base::Unretained(this))));
+    }
   }
   scroll_view_contents_->SetLayoutManager(
       std::make_unique<DesksBarScrollViewLayout>(this));
@@ -765,8 +926,9 @@ bool DesksBarView::IsDraggingDesk() const {
 }
 
 void DesksBarView::OnSavedDeskLibraryHidden() {
-  if (mini_views_.size() == 1u)
+  if (!features::IsJellyrollEnabled() && mini_views_.size() == 1u) {
     SwitchToZeroState();
+  }
 }
 
 const char* DesksBarView::GetClassName() const {
@@ -837,12 +999,25 @@ void DesksBarView::OnGestureEvent(ui::GestureEvent* event) {
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
   DeskNameView::CommitChanges(GetWidget());
-  const bool is_expanding_bar_view = zero_state_new_desk_button_->GetVisible();
-  UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
-  MaybeUpdateCombineDesksTooltips();
 
-  if (!DesksController::Get()->CanCreateDesks())
-    expanded_state_new_desk_button_->SetButtonState(/*enabled=*/false);
+  if (features::IsJellyrollEnabled()) {
+    const bool is_expanding_bar_view =
+        new_desk_button_->state() == CrOSNextDeskIconButton::State::kZero;
+    UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
+    MaybeUpdateCombineDesksTooltips();
+    if (!DesksController::Get()->CanCreateDesks()) {
+      new_desk_button_->SetEnabled(/*enabled=*/false);
+    }
+  } else {
+    const bool is_expanding_bar_view =
+        zero_state_new_desk_button_->GetVisible();
+    UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
+    MaybeUpdateCombineDesksTooltips();
+
+    if (!DesksController::Get()->CanCreateDesks()) {
+      expanded_state_new_desk_button_->SetButtonState(/*enabled=*/false);
+    }
+  }
 }
 
 void DesksBarView::OnDeskRemoved(const Desk* desk) {
@@ -868,14 +1043,18 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_name_view());
   highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_preview());
 
-  expanded_state_new_desk_button_->SetButtonState(/*enabled=*/true);
+  if (features::IsJellyrollEnabled()) {
+    new_desk_button_->SetEnabled(/*enabled=*/true);
+  } else {
+    expanded_state_new_desk_button_->SetButtonState(/*enabled=*/true);
+  }
 
   for (auto* mini_view : mini_views_)
     mini_view->UpdateDeskButtonVisibility();
 
-  // Switch to zero state, which happens if there would be one desk after
-  // removal, unless we are viewing the saved desk library.
-  if (mini_views_.size() == 2u &&
+  // If Jellyroll is not enabled, switch to zero state if there will be one desk
+  // after removal, unless we are viewing the saved desk library.
+  if (!features::IsJellyrollEnabled() && mini_views_.size() == 2u &&
       !overview_grid_->IsShowingSavedDeskLibrary()) {
     SwitchToZeroState();
     return;
@@ -896,7 +1075,6 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
       this, removed_mini_view,
       std::vector<DeskMiniView*>(mini_views_.begin(), partition_iter),
       std::vector<DeskMiniView*>(partition_iter, mini_views_.end()),
-      expanded_state_new_desk_button_, expanded_state_desks_templates_button_,
       begin_x - GetFirstMiniViewXOffset());
 
   MaybeUpdateCombineDesksTooltips();
@@ -962,7 +1140,11 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
 
   if (expanding_bar_view) {
     UpdateDeskButtonsVisibility();
-    PerformZeroStateToExpandedStateMiniViewAnimation(this);
+    if (features::IsJellyrollEnabled()) {
+      PerformZeroStateToExpandedStateMiniViewAnimationCrOSNext(this);
+    } else {
+      PerformZeroStateToExpandedStateMiniViewAnimation(this);
+    }
     return;
   }
 
@@ -985,10 +1167,9 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
                                     right_partition_iter) == new_mini_views);
 
   PerformNewDeskMiniViewAnimation(
-      new_mini_views,
+      this, new_mini_views,
       std::vector<DeskMiniView*>(mini_views_.begin(), left_partition_iter),
       std::vector<DeskMiniView*>(right_partition_iter, mini_views_.end()),
-      expanded_state_new_desk_button_, expanded_state_desks_templates_button_,
       begin_x - GetFirstMiniViewXOffset());
 }
 
@@ -1023,12 +1204,23 @@ void DesksBarView::UpdateButtonsForSavedDeskGrid() {
 
   FindMiniViewForDesk(Shell::Get()->desks_controller()->active_desk())
       ->UpdateFocusColor();
-  expanded_state_desks_templates_button_->set_active(
-      overview_grid_->IsShowingSavedDeskLibrary());
-  expanded_state_desks_templates_button_->UpdateFocusColor();
+
+  if (features::IsJellyrollEnabled()) {
+    library_button_->set_paint_as_active(
+        overview_grid_->IsShowingSavedDeskLibrary());
+    library_button_->UpdateFocusState();
+  } else {
+    expanded_state_library_button_->set_active(
+        overview_grid_->IsShowingSavedDeskLibrary());
+    expanded_state_library_button_->UpdateFocusColor();
+  }
 }
 
 void DesksBarView::UpdateDeskButtonsVisibility() {
+  if (features::IsJellyrollEnabled()) {
+    UpdateDeskButtonsVisibilityCrOSNext();
+    return;
+  }
   const bool is_zero_state = IsZeroState();
   zero_state_default_desk_button_->SetVisible(is_zero_state);
   zero_state_new_desk_button_->SetVisible(is_zero_state);
@@ -1039,7 +1231,21 @@ void DesksBarView::UpdateDeskButtonsVisibility() {
   UpdateLibraryButtonVisibility();
 }
 
+void DesksBarView::UpdateDeskButtonsVisibilityCrOSNext() {
+  const bool is_zero_state = IsZeroState();
+  default_desk_button_->SetVisible(is_zero_state);
+  if (vertical_dots_button_) {
+    vertical_dots_button_->SetVisible(!is_zero_state);
+  }
+
+  UpdateLibraryButtonVisibilityCrOSNext();
+}
+
 void DesksBarView::UpdateLibraryButtonVisibility() {
+  if (features::IsJellyrollEnabled()) {
+    UpdateLibraryButtonVisibilityCrOSNext();
+    return;
+  }
   if (!saved_desk_util::IsSavedDesksEnabled())
     return;
 
@@ -1048,20 +1254,18 @@ void DesksBarView::UpdateLibraryButtonVisibility() {
                                   ->should_show_saved_desk_library();
   const bool is_zero_state = IsZeroState();
 
-  zero_state_desks_templates_button_->SetVisible(should_show_ui &&
-                                                 is_zero_state);
-  expanded_state_desks_templates_button_->SetVisible(should_show_ui &&
-                                                     !is_zero_state);
+  zero_state_library_button_->SetVisible(should_show_ui && is_zero_state);
+  expanded_state_library_button_->SetVisible(should_show_ui && !is_zero_state);
 
   // Removes the button from the tabbing order if it becomes invisible.
   auto* highlight_controller = GetHighlightController();
-  if (!zero_state_desks_templates_button_->GetVisible()) {
+  if (!zero_state_library_button_->GetVisible()) {
     highlight_controller->OnViewDestroyingOrDisabling(
-        zero_state_desks_templates_button_);
+        zero_state_library_button_);
   }
-  if (!expanded_state_desks_templates_button_->GetVisible()) {
+  if (!expanded_state_library_button_->GetVisible()) {
     highlight_controller->OnViewDestroyingOrDisabling(
-        expanded_state_desks_templates_button_->GetInnerButton());
+        expanded_state_library_button_->GetInnerButton());
   }
 
   const int begin_x = GetFirstMiniViewXOffset();
@@ -1081,6 +1285,34 @@ void DesksBarView::UpdateLibraryButtonVisibility() {
       begin_x - GetFirstMiniViewXOffset());
 }
 
+void DesksBarView::UpdateLibraryButtonVisibilityCrOSNext() {
+  if (!saved_desk_util::IsSavedDesksEnabled()) {
+    return;
+  }
+
+  const bool should_show_ui = overview_grid_->overview_session()
+                                  ->saved_desk_presenter()
+                                  ->should_show_saved_desk_library();
+
+  // If the visibility of the library button doesn't change, return early.
+  if (library_button_->GetVisible() == should_show_ui) {
+    return;
+  }
+
+  if (mini_views_.empty()) {
+    return;
+  }
+
+  const int begin_x = GetFirstMiniViewXOffset();
+  Layout();
+
+  // The mini views and new desk button are already laid out in the earlier
+  // `Layout()` call. This call shifts the transforms of the mini views and new
+  // desk button and then animates to the identity transform.
+  PerformLibraryButtonVisibilityAnimation(mini_views_, new_desk_button_,
+                                          begin_x - GetFirstMiniViewXOffset());
+}
+
 DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
   for (auto* mini_view : mini_views_) {
     if (mini_view->desk() == desk)
@@ -1091,6 +1323,8 @@ DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
 }
 
 void DesksBarView::SwitchToZeroState() {
+  DCHECK(!features::IsJellyrollEnabled());
+
   // Hiding the button immediately instead of the ends of the animation while
   // switching from expanded state to zero state.
   if (vertical_dots_button_)

@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.thatMatchesFirst;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -80,6 +81,7 @@ import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
+import org.chromium.chrome.browser.sync.settings.SignInPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
@@ -89,6 +91,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
@@ -97,6 +101,7 @@ import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -117,7 +122,7 @@ import java.util.HashSet;
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
 
-    private static final int RENDER_TEST_REVISION = 8;
+    private static final int RENDER_TEST_REVISION = 9;
 
     private final HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
@@ -184,10 +189,6 @@ public class MainSettingsFragmentTest {
     @DisableFeatures({
             ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID,
             ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ALTERNATIVE_TITLE,
     })
     public void
     testRenderDifferentSignedInStates() throws IOException {
@@ -217,72 +218,7 @@ public class MainSettingsFragmentTest {
      */
     @Test
     @SmallTest
-    @DisableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testStartupWithSyncPromoFeaturesDisabled() {
-        launchSettingsActivity();
-
-        // For non-signed-in users, the section contains the generic header.
-        assertSettingsExists(MainSettings.PREF_SIGN_IN, null);
-        Assert.assertTrue("Google services preference should be shown",
-                mMainSettings.findPreference(MainSettings.PREF_GOOGLE_SERVICES).isVisible());
-
-        // SignInPreference status check.
-        // As the user is not signed in, sign in promo will show, section header and sync preference
-        // will be hidden.
-        Assert.assertFalse("Account section header should be hidden.",
-                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
-                        .isVisible());
-        Assert.assertFalse("Sync preference should be hidden",
-                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
-
-        // Assert for "Basics" section
-        assertSettingsExists(MainSettings.PREF_SEARCH_ENGINE, SearchEngineSettings.class);
-        assertSettingsExists(MainSettings.PREF_PASSWORDS, PasswordSettings.class);
-        assertSettingsExists("autofill_payment_methods", AutofillPaymentMethodsFragment.class);
-        assertSettingsExists("autofill_addresses", AutofillProfilesFragment.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            assertSettingsExists(MainSettings.PREF_NOTIFICATIONS, null);
-        } else {
-            Assert.assertNull("Notification setting should be hidden",
-                    mMainSettings.findPreference(MainSettings.PREF_NOTIFICATIONS));
-        }
-        assertSettingsExists(MainSettings.PREF_HOMEPAGE, HomepageSettings.class);
-
-        Preference themePref =
-                assertSettingsExists(MainSettings.PREF_UI_THEME, ThemeSettingsFragment.class);
-        Assert.assertEquals("ThemeSettingsEntry is missing.", ThemeSettingsEntry.SETTINGS,
-                themePref.getExtras().getInt(ThemeSettingsFragment.KEY_THEME_SETTINGS_ENTRY));
-
-        // Verification for summary for the search engine and the homepage
-        Assert.assertEquals("Homepage summary is different than homepage state",
-                mMainSettings.getString(R.string.text_on),
-                mMainSettings.findPreference(MainSettings.PREF_HOMEPAGE).getSummary().toString());
-
-        // Assert for advanced section
-        assertSettingsExists("privacy", PrivacySettings.class);
-        assertSettingsExists(MainSettings.PREF_SAFETY_CHECK, SafetyCheckSettingsFragment.class);
-        assertSettingsExists("accessibility", AccessibilitySettings.class);
-        assertSettingsExists("content_settings", SiteSettings.class);
-        assertSettingsExists("languages", LanguageSettings.class);
-        assertSettingsExists(MainSettings.PREF_DOWNLOADS, DownloadSettings.class);
-        assertSettingsExists(MainSettings.PREF_DEVELOPER, DeveloperSettings.class);
-        assertSettingsExists("about_chrome", AboutChromeSettings.class);
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testStartupWithSyncPromoFeaturesEnabled() {
+    public void testStartup() {
         launchSettingsActivity();
 
         // For non-signed-in users, the section contains the generic header.
@@ -335,7 +271,6 @@ public class MainSettingsFragmentTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)
     public void testSigninRowLaunchesSignInFlowForSignedOutAccounts() {
         // When there are no accounts, sync promo and the signin preference shows the same text.
         mSyncTestRule.addTestAccount();
@@ -350,10 +285,8 @@ public class MainSettingsFragmentTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON})
-    public void
-    testSigninRowLaunchesTangibleSignInFlowForSignedOutAccounts() {
+    @EnableFeatures(ChromeFeatureList.TANGIBLE_SYNC)
+    public void testSigninRowLaunchesTangibleSignInFlowForSignedOutAccounts() {
         // When there are no accounts, sync promo and the signin preference shows the same text.
         mSyncTestRule.addTestAccount();
         launchSettingsActivity();
@@ -453,13 +386,7 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testAccountSignInWithNewPromo() throws InterruptedException {
+    public void testAccountSignIn() throws InterruptedException {
         launchSettingsActivity();
 
         SyncPromoPreference syncPromoPreference =
@@ -487,45 +414,66 @@ public class MainSettingsFragmentTest {
                 mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
     }
 
-    /**
-     * Test when the sign-in preference is the promo. The section header should be hidden.
-     */
     @Test
     @SmallTest
-    @DisableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testAccountSignIn() throws InterruptedException {
+    @EnableFeatures(ChromeFeatureList.HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL)
+    public void testAccountManagementRowForChildAccountWithNonDisplayableAccountEmail()
+            throws InterruptedException {
         launchSettingsActivity();
 
-        SyncPromoPreference syncPromoPreference =
-                (SyncPromoPreference) mMainSettings.findPreference(MainSettings.PREF_SYNC_PROMO);
-        Assert.assertEquals(
-                "SyncPromoPreference should be at the personalized signin promo state. ",
-                syncPromoPreference.getState(), State.PERSONALIZED_SIGNIN_PROMO);
-        Assert.assertFalse("Account section header should be hidden when promo is shown.",
-                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
-                        .isVisible());
-        Assert.assertFalse("Sync preference should be hidden when promo is shown.",
-                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+        // Account set up.
+        final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
+        AccountInfo accountInfo =
+                signinTestRule.addAccount(AccountManagerTestRule.CHILD_ACCOUNT_EMAIL,
+                        SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
+        signinTestRule.waitForSeeding();
+        signinTestRule.waitForSignin(accountInfo);
 
-        // SignIn to see the changes
-        CoreAccountInfo account = mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncFeatureActive();
-        // SignInPreference should be at the signed in state
-        Assert.assertEquals("SignInPreference should be at the signed in state.",
-                account.getEmail(),
-                mMainSettings.findPreference(MainSettings.PREF_SIGN_IN).getSummary().toString());
-        assertSettingsExists(MainSettings.PREF_SIGN_IN, AccountManagementFragment.class);
+        // Force update the preference so that NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES is
+        // actually utilized. This is to replicate downstream implementation behavior, where
+        // checkIfDisplayableEmailAddress() differs.
+        SignInPreference signInPreference = mMainSettings.findPreference(MainSettings.PREF_SIGN_IN);
+        CriteriaHelper.pollUiThread(() -> {
+            return !signInPreference.getProfileDataCache()
+                            .getProfileDataOrDefault(accountInfo.getEmail())
+                            .hasDisplayableEmailAddress();
+        });
+        TestThreadUtils.runOnUiThreadBlocking(signInPreference::syncStateChanged);
 
-        Assert.assertTrue("Account section header should appear when user signed in.",
-                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
-                        .isVisible());
-        Assert.assertTrue("Sync preference should appear when the user is signed in.",
-                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+        mSettingsActivityTestRule.startSettingsActivity();
+        onView(thatMatchesFirst(withText(accountInfo.getFullName()))).check(matches(isDisplayed()));
+        onView(withText(accountInfo.getEmail())).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL)
+    public void
+    testAccountManagementRowForChildAccountWithNonDisplayableAccountEmailWithEmptyDisplayName()
+            throws InterruptedException {
+        launchSettingsActivity();
+
+        // Account set up.
+        // If both fullName and givenName are empty, accountCapabilities is ignored.
+        final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
+        AccountInfo accountInfo = signinTestRule.addAccount(
+                AccountManagerTestRule.CHILD_ACCOUNT_EMAIL, "", "child.test.given", null,
+                SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
+        signinTestRule.waitForSeeding();
+        signinTestRule.waitForSignin(accountInfo);
+
+        SignInPreference signInPreference = mMainSettings.findPreference(MainSettings.PREF_SIGN_IN);
+        CriteriaHelper.pollUiThread(() -> {
+            return !signInPreference.getProfileDataCache()
+                            .getProfileDataOrDefault(accountInfo.getEmail())
+                            .hasDisplayableEmailAddress();
+        });
+        TestThreadUtils.runOnUiThreadBlocking(signInPreference::syncStateChanged);
+
+        mSettingsActivityTestRule.startSettingsActivity();
+        onView(withText(accountInfo.getEmail())).check(matches(not(isDisplayed())));
+        onView(thatMatchesFirst(withText(R.string.default_google_account_username)))
+                .check(matches(isDisplayed()));
     }
 
     @Test

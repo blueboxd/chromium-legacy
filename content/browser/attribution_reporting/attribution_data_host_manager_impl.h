@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 
@@ -59,23 +60,24 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
       attribution_reporting::SuitableOrigin context_origin,
       bool is_within_fenced_frame,
-      blink::mojom::AttributionRegistrationType) override;
+      attribution_reporting::mojom::RegistrationType) override;
   bool RegisterNavigationDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
       const blink::AttributionSrcToken& attribution_src_token,
-      AttributionInputEvent input_event,
-      blink::mojom::AttributionNavigationType nav_type) override;
+      AttributionInputEvent input_event) override;
   void NotifyNavigationRedirectRegistration(
       const blink::AttributionSrcToken& attribution_src_token,
       std::string header_value,
       attribution_reporting::SuitableOrigin reporting_origin,
       const attribution_reporting::SuitableOrigin& source_origin,
       AttributionInputEvent input_event,
-      blink::mojom::AttributionNavigationType nav_type) override;
+      blink::mojom::AttributionNavigationType nav_type,
+      bool is_within_fenced_frame) override;
   void NotifyNavigationForDataHost(
       const blink::AttributionSrcToken& attribution_src_token,
       const attribution_reporting::SuitableOrigin& source_origin,
-      blink::mojom::AttributionNavigationType nav_type) override;
+      blink::mojom::AttributionNavigationType nav_type,
+      bool is_within_fenced_frame) override;
   void NotifyNavigationFailure(
       const blink::AttributionSrcToken& attribution_src_token) override;
 
@@ -95,16 +97,17 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
       attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
-      attribution_reporting::TriggerRegistration) override;
+      attribution_reporting::TriggerRegistration,
+      absl::optional<attribution_reporting::TriggerAttestation> attestation)
+      override;
 
   void OnReceiverDisconnected();
   void OnSourceEligibleDataHostFinished(base::TimeTicks register_time);
 
   void OnRedirectSourceParsed(
       const blink::AttributionSrcToken& attribution_src_token,
-      attribution_reporting::SuitableOrigin reporting_origin,
-      std::string header_value,
-      blink::mojom::AttributionNavigationType nav_type,
+      const attribution_reporting::SuitableOrigin& reporting_origin,
+      const std::string& header_value,
       data_decoder::DataDecoder::ValueOrError result);
 
   void SetTriggerTimer(base::TimeDelta delay);

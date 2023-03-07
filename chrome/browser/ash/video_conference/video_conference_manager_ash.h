@@ -22,6 +22,7 @@ class UnguessableToken;
 namespace ash {
 
 class VideoConferenceClientWrapper;
+class VideoConferenceTrayController;
 struct VideoConferenceMediaState;
 
 // VideoConferenceManagerAsh is the central hub responsible for:
@@ -90,7 +91,12 @@ class VideoConferenceManagerAsh
   // VcUiController by overriding this method.
   virtual void SendUpdatedState();
 
+  // Returns the `VideoConferenceTrayController`.
+  VideoConferenceTrayController* GetTrayController();
+
  private:
+  friend class VideoConferenceAppServiceClientTest;
+
   // A (client_id, client_wrapper) entry is inserted into this map
   // whenever a new client is registered on the manager and deleted
   // upon destruction of the client.

@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/external_install_options.h"
@@ -27,6 +27,7 @@ class WebContents;
 
 namespace web_app {
 
+class FullSystemLock;
 class ExternallyManagedAppRegistrationTaskBase;
 
 // Installs, uninstalls, and updates any External Web Apps. This class should
@@ -74,6 +75,7 @@ class ExternallyManagedAppManagerImpl : public ExternallyManagedAppManager {
   void PostMaybeStartNext();
 
   void MaybeStartNext();
+  void MaybeStartNextOnLockAcquired(FullSystemLock& lock);
 
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 

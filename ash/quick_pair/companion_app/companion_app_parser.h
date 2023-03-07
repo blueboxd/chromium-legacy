@@ -5,14 +5,14 @@
 #ifndef ASH_QUICK_PAIR_COMPANION_APP_COMPANION_APP_PARSER_H_
 #define ASH_QUICK_PAIR_COMPANION_APP_COMPANION_APP_PARSER_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace quick_pair {
 
-struct Device;
+class Device;
 class DeviceMetadata;
 
 // CompanionAppParser finds the name of a device's companion app

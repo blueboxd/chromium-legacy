@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "components/cast/message_port/fuchsia/create_web_message.h"
@@ -49,6 +49,16 @@ class NamedMessagePortConnectorFuchsiaTest : public WebEngineBrowserTest {
         base::Unretained(this)));
     connector_ =
         std::make_unique<NamedMessagePortConnectorFuchsia>(frame_.get());
+  }
+
+  void TearDownOnMainThread() override {
+    // Destroy the NamedMessagePortConnector before the Frame.
+    connector_ = nullptr;
+
+    // Destroy the Frame before the test terminates
+    frame_ = {};
+
+    WebEngineBrowserTest::TearDownOnMainThread();
   }
 
   // Intercepts the page load event to trigger the injection of |connector_|'s

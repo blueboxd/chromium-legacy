@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/lru_cache.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/hash/hash.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -40,10 +40,6 @@
 
 class OptimizationGuideLogger;
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace history {
 class HistoryService;
 }  // namespace history
@@ -54,7 +50,6 @@ class ProtoDatabaseProvider;
 
 namespace optimization_guide {
 
-class LocalPageEntitiesMetadataProvider;
 class OptimizationGuideModelProvider;
 class PageContentAnnotationsModelManager;
 class PageContentAnnotationsServiceBrowserTest;
@@ -65,16 +60,25 @@ class PageContentAnnotationsWebContentsObserver;
 struct HistoryVisit {
   HistoryVisit();
   HistoryVisit(base::Time nav_entry_timestamp, GURL url, int64_t navigation_id);
+  explicit HistoryVisit(history::VisitID visit_id);
   ~HistoryVisit();
   HistoryVisit(const HistoryVisit&);
 
   base::Time nav_entry_timestamp;
   GURL url;
   int64_t navigation_id = 0;
+  absl::optional<history::VisitID> visit_id;
   absl::optional<std::string> text_to_annotate;
 
   struct Comp {
     bool operator()(const HistoryVisit& lhs, const HistoryVisit& rhs) const {
+      if (lhs.visit_id && rhs.visit_id) {
+        return *lhs.visit_id < *rhs.visit_id;
+      }
+      if (lhs.visit_id) {
+        // If we get here, this means that |rhs| does not have a visit ID.
+        return false;
+      }
       if (lhs.nav_entry_timestamp != rhs.nav_entry_timestamp)
         return lhs.nav_entry_timestamp < rhs.nav_entry_timestamp;
       return lhs.url < rhs.url;
@@ -142,6 +146,9 @@ class PageContentAnnotationsService : public KeyedService,
   void GetMetadataForEntityId(
       const std::string& entity_id,
       EntityMetadataRetrievedCallback callback) override;
+  void GetMetadataForEntityIds(
+      const base::flat_set<std::string>& entity_ids,
+      BatchEntityMetadataRetrievedCallback callback) override;
 
   // history::HistoryServiceObserver:
   void OnURLVisited(history::HistoryService* history_service,
@@ -226,11 +233,6 @@ class PageContentAnnotationsService : public KeyedService,
   // Virtualized for testing.
   virtual void Annotate(const HistoryVisit& visit);
 
-  // Creates a HistoryVisit based on the current state of |web_contents|.
-  static HistoryVisit CreateHistoryVisitFromWebContents(
-      content::WebContents* web_contents,
-      int64_t navigation_id);
-
   // Requests |search_result_extractor_client_| to extract related searches from
   // the Google SRP DOM associated with |web_contents|.
   //
@@ -284,13 +286,6 @@ class PageContentAnnotationsService : public KeyedService,
   // The minimum score that an allowlisted page category must have for it to be
   // persisted.
   const int min_page_category_score_to_persist_;
-
-  // A metadata-only provider for page entities (as opposed to |model_manager_|
-  // which does both entity model execution and metadata providing) that uses a
-  // local database to provide the metadata for a given entity id. This is only
-  // non-null and initialized when its feature flag is enabled.
-  std::unique_ptr<LocalPageEntitiesMetadataProvider>
-      local_page_entities_metadata_provider_;
 
   // The history service to write content annotations to. Not owned. Guaranteed
   // to outlive |this|.

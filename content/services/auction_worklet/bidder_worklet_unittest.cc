@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
@@ -304,6 +304,9 @@ class BidderWorkletTest : public testing::Test {
     per_buyer_signals_ = "[\"per_buyer_signals\"]";
     per_buyer_timeout_ = absl::nullopt;
     top_window_origin_ = url::Origin::Create(GURL("https://top.window.test/"));
+    permissions_policy_state_ =
+        mojom::AuctionWorkletPermissionsPolicyState::New(
+            /*private_aggregation_allowed=*/true);
     experiment_group_id_ = absl::nullopt;
     browser_signal_seller_origin_ =
         url::Origin::Create(GURL("https://browser.signal.seller.test/"));
@@ -563,7 +566,8 @@ class BidderWorkletTest : public testing::Test {
         v8_helper_, pause_for_debugger_on_start, std::move(url_loader_factory),
         url.is_empty() ? interest_group_bidding_url_ : url,
         interest_group_wasm_url_, interest_group_trusted_bidding_signals_url_,
-        top_window_origin_, experiment_group_id_);
+        top_window_origin_, permissions_policy_state_.Clone(),
+        experiment_group_id_);
     auto* bidder_worklet_ptr = bidder_worklet_impl.get();
     mojo::Remote<mojom::BidderWorklet> bidder_worklet;
     mojo::ReceiverId receiver_id =
@@ -582,42 +586,62 @@ class BidderWorkletTest : public testing::Test {
 
   // If no `generate_bid_client` is provided, uses one that invokes
   // GenerateBidCallback().
-  void GenerateBid(mojom::BidderWorklet* bidder_worklet,
-                   mojo::PendingAssociatedRemote<mojom::GenerateBidClient>
-                       generate_bid_client = mojo::NullAssociatedRemote()) {
+  void BeginGenerateBid(
+      mojom::BidderWorklet* bidder_worklet,
+      mojo::PendingAssociatedReceiver<mojom::GenerateBidFinalizer> finalizer,
+      mojo::PendingAssociatedRemote<mojom::GenerateBidClient>
+          generate_bid_client = mojo::NullAssociatedRemote()) {
     if (!generate_bid_client) {
       generate_bid_client =
           GenerateBidClientWithCallbacks::Create(base::BindOnce(
               &BidderWorkletTest::GenerateBidCallback, base::Unretained(this)));
     }
-    bidder_worklet->GenerateBid(
+    bidder_worklet->BeginGenerateBid(
         CreateBidderWorkletNonSharedParams(), kanon_mode_, join_origin_,
-        auction_signals_, per_buyer_signals_,
         direct_from_seller_per_buyer_signals_,
-        direct_from_seller_auction_signals_, per_buyer_timeout_,
-        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
-        /*trace_id=*/1, std::move(generate_bid_client));
+        direct_from_seller_auction_signals_, browser_signal_seller_origin_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
+        /*trace_id=*/1, std::move(generate_bid_client), std::move(finalizer));
     bidder_worklet->SendPendingSignalsRequests();
   }
 
-  // Calls GenerateBid(), expecting the GenerateBidClient's
-  // OnGenerateBidComplete() method never to be invoked.
+  // If no `generate_bid_client` is provided, uses one that invokes
+  // GenerateBidCallback().
+  void GenerateBid(mojom::BidderWorklet* bidder_worklet,
+                   mojo::PendingAssociatedRemote<mojom::GenerateBidClient>
+                       generate_bid_client = mojo::NullAssociatedRemote()) {
+    mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+        bid_finalizer;
+    BeginGenerateBid(bidder_worklet,
+                     bid_finalizer.BindNewEndpointAndPassReceiver(),
+                     std::move(generate_bid_client));
+    bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                     per_buyer_timeout_);
+  }
+
+  // Calls BeginGenerateBid()/FinishGenerateBid(), expecting the
+  // GenerateBidClient's OnGenerateBidComplete() method never to be invoked.
   void GenerateBidExpectingNeverCompletes(
       mojom::BidderWorklet* bidder_worklet) {
-    bidder_worklet->GenerateBid(
+    mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+        bid_finalizer;
+    bidder_worklet->BeginGenerateBid(
         CreateBidderWorkletNonSharedParams(), kanon_mode_, join_origin_,
-        auction_signals_, per_buyer_signals_,
         direct_from_seller_per_buyer_signals_,
-        direct_from_seller_auction_signals_, per_buyer_timeout_,
-        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
-        /*trace_id=*/1, GenerateBidClientWithCallbacks::CreateNeverCompletes());
+        direct_from_seller_auction_signals_, browser_signal_seller_origin_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
+        /*trace_id=*/1, GenerateBidClientWithCallbacks::CreateNeverCompletes(),
+        bid_finalizer.BindNewEndpointAndPassReceiver());
     bidder_worklet->SendPendingSignalsRequests();
+    bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                     per_buyer_timeout_);
   }
 
-  // Create a BidderWorklet and invokes GenerateBid(), waiting for the
-  // GenerateBid() callback to be invoked. Returns a null Remote on failure.
+  // Create a BidderWorklet and invokes BeginGenerateBid()/FinishGenerateBid(),
+  // waiting for the GenerateBid() callback to be invoked. Returns a null
+  // Remote on failure.
   mojo::Remote<mojom::BidderWorklet> CreateWorkletAndGenerateBid() {
     mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
     GenerateBid(bidder_worklet.get());
@@ -716,7 +740,7 @@ class BidderWorkletTest : public testing::Test {
   // Values used to construct the BiddingInterestGroup passed to the
   // BidderWorklet.
   //
-  // NOTE: For each new GURL field, GeneateBidLoadCompletionOrder /
+  // NOTE: For each new GURL field, GenerateBidLoadCompletionOrder /
   // ReportWinLoadCompletionOrder should be updated.
   std::string interest_group_name_;
   bool interest_group_enable_bidding_signals_prioritization_;
@@ -748,6 +772,7 @@ class BidderWorkletTest : public testing::Test {
   absl::optional<GURL> direct_from_seller_auction_signals_;
   absl::optional<base::TimeDelta> per_buyer_timeout_;
   url::Origin top_window_origin_;
+  mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state_;
   absl::optional<uint16_t> experiment_group_id_;
   url::Origin browser_signal_seller_origin_;
   absl::optional<url::Origin> browser_signal_top_level_seller_origin_;
@@ -1863,12 +1888,12 @@ TEST_F(BidderWorkletTest, GenerateBidParallel) {
     size_t num_generate_bid_calls = 0;
     for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
       size_t bid_value = i + 1;
-      bidder_worklet->GenerateBid(
+      mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+          bid_finalizer;
+      bidder_worklet->BeginGenerateBid(
           CreateBidderWorkletNonSharedParams(), kanon_mode_, join_origin_,
-          /*auction_signals_json=*/base::NumberToString(bid_value),
-          per_buyer_signals_, direct_from_seller_per_buyer_signals_,
-          direct_from_seller_auction_signals_, per_buyer_timeout_,
-          browser_signal_seller_origin_,
+          direct_from_seller_per_buyer_signals_,
+          direct_from_seller_auction_signals_, browser_signal_seller_origin_,
           browser_signal_top_level_seller_origin_,
           CreateBiddingBrowserSignals(), auction_start_time_,
           /*trace_id=*/1,
@@ -1895,7 +1920,11 @@ TEST_F(BidderWorkletTest, GenerateBidParallel) {
                 ++num_generate_bid_calls;
                 if (num_generate_bid_calls == kNumGenerateBidCalls)
                   run_loop.Quit();
-              })));
+              })),
+          bid_finalizer.BindNewEndpointAndPassReceiver());
+      bid_finalizer->FinishGenerateBid(
+          /*auction_signals_json=*/base::NumberToString(bid_value),
+          per_buyer_signals_, per_buyer_timeout_);
     }
 
     // If this is the first loop iteration, wait for all the Mojo calls to
@@ -1966,13 +1995,14 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched1) {
     auto interest_group_fields = CreateBidderWorkletNonSharedParams();
     interest_group_fields->trusted_bidding_signals_keys->push_back(
         base::NumberToString(i));
-    bidder_worklet->GenerateBid(
+    mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+        bid_finalizer;
+    bidder_worklet->BeginGenerateBid(
         std::move(interest_group_fields), kanon_mode_, join_origin_,
-        auction_signals_, per_buyer_signals_,
         direct_from_seller_per_buyer_signals_,
-        direct_from_seller_auction_signals_, per_buyer_timeout_,
-        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        direct_from_seller_auction_signals_, browser_signal_seller_origin_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -1997,7 +2027,10 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched1) {
               ++num_generate_bid_calls;
               if (num_generate_bid_calls == kNumGenerateBidCalls)
                 run_loop.Quit();
-            })));
+            })),
+        bid_finalizer.BindNewEndpointAndPassReceiver());
+    bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                     per_buyer_timeout_);
   }
   // This should trigger a single network request for all needed signals.
   bidder_worklet->SendPendingSignalsRequests();
@@ -2076,13 +2109,14 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched2) {
     auto interest_group_fields = CreateBidderWorkletNonSharedParams();
     interest_group_fields->trusted_bidding_signals_keys->push_back(
         base::NumberToString(i));
-    bidder_worklet->GenerateBid(
+    mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+        bid_finalizer;
+    bidder_worklet->BeginGenerateBid(
         std::move(interest_group_fields), kanon_mode_, join_origin_,
-        auction_signals_, per_buyer_signals_,
         direct_from_seller_per_buyer_signals_,
-        direct_from_seller_auction_signals_, per_buyer_timeout_,
-        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        direct_from_seller_auction_signals_, browser_signal_seller_origin_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -2107,7 +2141,10 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched2) {
               ++num_generate_bid_calls;
               if (num_generate_bid_calls == kNumGenerateBidCalls)
                 run_loop.Quit();
-            })));
+            })),
+        bid_finalizer.BindNewEndpointAndPassReceiver());
+    bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                     per_buyer_timeout_);
   }
   // This should trigger a single network request for all needed signals.
   bidder_worklet->SendPendingSignalsRequests();
@@ -2192,13 +2229,14 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched3) {
     auto interest_group_fields = CreateBidderWorkletNonSharedParams();
     interest_group_fields->trusted_bidding_signals_keys->push_back(
         base::NumberToString(i));
-    bidder_worklet->GenerateBid(
+    mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+        bid_finalizer;
+    bidder_worklet->BeginGenerateBid(
         std::move(interest_group_fields), kanon_mode_, join_origin_,
-        auction_signals_, per_buyer_signals_,
         direct_from_seller_per_buyer_signals_,
-        direct_from_seller_auction_signals_, per_buyer_timeout_,
-        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        direct_from_seller_auction_signals_, browser_signal_seller_origin_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -2223,7 +2261,10 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched3) {
               ++num_generate_bid_calls;
               if (num_generate_bid_calls == kNumGenerateBidCalls)
                 run_loop.Quit();
-            })));
+            })),
+        bid_finalizer.BindNewEndpointAndPassReceiver());
+    bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                     per_buyer_timeout_);
   }
   // This should trigger a single network request for all needed signals.
   bidder_worklet->SendPendingSignalsRequests();
@@ -2278,7 +2319,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
 
   auto bidder_worklet = CreateWorklet();
 
-  // 1) GenerateBid() calls are made
+  // 1) BeginGenerateBid()/FinishGenerateBid() calls are made
   base::RunLoop run_loop;
   const size_t kNumGenerateBidCalls = 10;
   size_t num_generate_bid_calls = 0;
@@ -2287,13 +2328,14 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
     auto interest_group_fields = CreateBidderWorkletNonSharedParams();
     interest_group_fields->trusted_bidding_signals_keys->push_back(
         base::NumberToString(i));
-    bidder_worklet->GenerateBid(
+    mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+        bid_finalizer;
+    bidder_worklet->BeginGenerateBid(
         std::move(interest_group_fields), kanon_mode_, join_origin_,
-        auction_signals_, per_buyer_signals_,
         direct_from_seller_per_buyer_signals_,
-        direct_from_seller_auction_signals_, per_buyer_timeout_,
-        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        direct_from_seller_auction_signals_, browser_signal_seller_origin_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -2318,15 +2360,19 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
               ++num_generate_bid_calls;
               if (num_generate_bid_calls == kNumGenerateBidCalls)
                 run_loop.Quit();
-            })));
+            })),
+        bid_finalizer.BindNewEndpointAndPassReceiver());
 
     // Send one request at a time.
     bidder_worklet->SendPendingSignalsRequests();
+
+    bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                     per_buyer_timeout_);
   }
 
-  // Calling GenerateBid() shouldn't cause any callbacks to be invoked - the
-  // BidderWorklet is waiting on both the trusted bidding signals and Javascript
-  // responses from the network.
+  // Calling FinishGenerateBid() shouldn't cause any callbacks to be invoked -
+  // the BidderWorklet is waiting on both the trusted bidding signals and
+  // Javascript responses from the network.
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(run_loop.AnyQuitCalled());
   EXPECT_EQ(0u, num_generate_bid_calls);
@@ -2359,7 +2405,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
 // It shouldn't matter the order in which network fetches complete. For each
 // required and optional generateBid() URL load prerequisite, ensure that
 // generateBid() completes when that URL is the last loaded URL.
-TEST_F(BidderWorkletTest, GeneateBidLoadCompletionOrder) {
+TEST_F(BidderWorkletTest, GenerateBidLoadCompletionOrder) {
   constexpr char kTrustedSignalsResponse[] = R"({"keys":{"1":1}})";
   constexpr char kJsonResponse[] = "{}";
   constexpr char kDirectFromSellerSignalsHeaders[] =
@@ -3566,6 +3612,14 @@ TEST_F(BidderWorkletTest, GenerateBidTimedOutWithSetBid) {
       mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
       {"https://url.test/ execution of `generateBid` timed out."});
+}
+
+// Test that per-buyer timeout of zero results in no bid produced.
+TEST_F(BidderWorkletTest, TimeoutZero) {
+  per_buyer_timeout_ = base::Seconds(0);
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: "ad", bid:1, render:"https://response.test/"})",
+      mojom::BidderWorkletBidPtr());
 }
 
 // Test that in the case of multiple setBid() calls, the most recent call takes
@@ -5388,6 +5442,34 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, GenerateBid) {
         std::move(expected_pa_requests));
   }
 
+  // Set the private-aggregation permissions policy to disallowed.
+  {
+    permissions_policy_state_ =
+        mojom::AuctionWorkletPermissionsPolicyState::New(
+            /*private_aggregation_allowed=*/false);
+
+    RunGenerateBidWithJavascriptExpectingResult(
+        CreateGenerateBidScript(
+            R"({ad: "ad", bid:1, render:"https://response.test/" })",
+            /*extra_code=*/R"(
+            privateAggregation.sendHistogramReport({bucket: 123n, value: 45});
+          )"),
+        /*expected_bid=*/nullptr,
+        /*expected_data_version=*/absl::nullopt,
+        /*expected_errors=*/
+        {"https://url.test/:6 Uncaught TypeError: The \"private-aggregation\" "
+         "Permissions Policy denied the method on privateAggregation."},
+        /*expected_debug_loss_report_url=*/absl::nullopt,
+        /*expected_debug_win_report_url=*/absl::nullopt,
+        /*expected_set_priority=*/absl::nullopt,
+        /*expected_update_priority_signals_overrides=*/{},
+        /*expected_pa_requests=*/{});
+
+    permissions_policy_state_ =
+        mojom::AuctionWorkletPermissionsPolicyState::New(
+            /*private_aggregation_allowed=*/true);
+  }
+
   // Large bucket
   {
     PrivateAggregationRequests expected_pa_requests;
@@ -5580,6 +5662,27 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
         /*expected_report_url =*/absl::nullopt,
         /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
         /*expected_errors=*/{});
+  }
+
+  // Set the private-aggregation permissions policy to disallowed.
+  {
+    permissions_policy_state_ =
+        mojom::AuctionWorkletPermissionsPolicyState::New(
+            /*private_aggregation_allowed=*/false);
+
+    RunReportWinWithFunctionBodyExpectingResult(
+        R"(
+          privateAggregation.sendHistogramReport({bucket: 123n, value: 45});
+        )",
+        /*expected_report_url =*/absl::nullopt,
+        /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+        /*expected_errors=*/
+        {"https://url.test/:12 Uncaught TypeError: The \"private-aggregation\" "
+         "Permissions Policy denied the method on privateAggregation."});
+
+    permissions_policy_state_ =
+        mojom::AuctionWorkletPermissionsPolicyState::New(
+            /*private_aggregation_allowed=*/true);
   }
 
   // Large bucket
@@ -5954,6 +6057,127 @@ TEST(BidderWorklerTest, IsKAnonResult) {
   bid->render_url = kUrl1;
   bid->ad_components->push_back(kUrl3);
   EXPECT_FALSE(BidderWorklet::IsKAnon(params.get(), bid));
+}
+
+// Test of handling of FinalizeGenerateBid that comes in after the trusted
+// signals.
+TEST_F(BidderWorkletTest, AsyncFinalizeGenerateBid) {
+  interest_group_trusted_bidding_signals_url_ =
+      GURL("https://url.test/trustedsignals");
+  interest_group_trusted_bidding_signals_keys_ = {"1"};
+
+  const char kSerializeParams[] =
+      R"({ad: [auctionSignals, trustedBiddingSignals,
+               perBuyerSignals], bid:1,
+          render:"https://response.test/"})";
+
+  // Add script, but not trusted signals yet.
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        CreateGenerateBidScript(kSerializeParams));
+
+  mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
+  mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+      bid_finalizer;
+  BeginGenerateBid(bidder_worklet.get(),
+                   bid_finalizer.BindNewEndpointAndPassReceiver());
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(bid_);
+
+  // Add trusted signals, too.
+  AddBidderJsonResponse(&url_loader_factory_,
+                        GURL("https://url.test/"
+                             "trustedsignals?hostname=top.window.test&keys=1&"
+                             "interestGroupNames=Fred"),
+                        R"({"keys": {"1":123}})");
+  // Not enough yet.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(bid_);
+
+  // Now feed in the rest of the arguments.
+  bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                   per_buyer_timeout_);
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(R"([["auction_signals"],{"1":123},["per_buyer_signals"]])",
+            bid_->ad);
+  EXPECT_EQ(1, bid_->bid);
+  EXPECT_THAT(bid_errors_, testing::ElementsAre());
+}
+
+// Test of handling of FinalizeGenerateBid that comes in before the trusted
+// signals.
+TEST_F(BidderWorkletTest, AsyncFinalizeGenerateBid2) {
+  interest_group_trusted_bidding_signals_url_ =
+      GURL("https://url.test/trustedsignals");
+  interest_group_trusted_bidding_signals_keys_ = {"1"};
+
+  const char kSerializeParams[] =
+      R"({ad: [auctionSignals, trustedBiddingSignals,
+               perBuyerSignals], bid:1,
+          render:"https://response.test/"})";
+
+  // Add script, but not trusted signals yet.
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        CreateGenerateBidScript(kSerializeParams));
+
+  mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
+  mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+      bid_finalizer;
+  BeginGenerateBid(bidder_worklet.get(),
+                   bid_finalizer.BindNewEndpointAndPassReceiver());
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(bid_);
+
+  // Feed in the rest of the arguments.
+  bid_finalizer->FinishGenerateBid(auction_signals_, per_buyer_signals_,
+                                   per_buyer_timeout_);
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(bid_);
+
+  // Add trusted signals, too.
+  AddBidderJsonResponse(&url_loader_factory_,
+                        GURL("https://url.test/"
+                             "trustedsignals?hostname=top.window.test&keys=1&"
+                             "interestGroupNames=Fred"),
+                        R"({"keys": {"1":123}})");
+  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  load_script_run_loop_->Run();
+  ASSERT_TRUE(bid_);
+  EXPECT_EQ(R"([["auction_signals"],{"1":123},["per_buyer_signals"]])",
+            bid_->ad);
+  EXPECT_EQ(1, bid_->bid);
+  EXPECT_THAT(bid_errors_, testing::ElementsAre());
+}
+
+// The sequence when GenerateBidClient gets destroyed w/o getting to
+// FinalizeGenerateBid() needs to do some extra cleaning up, so exercise it.
+TEST_F(BidderWorkletTest, CloseGenerateBidClientBeforeFinalize) {
+  mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
+  mojo::AssociatedRemote<auction_worklet::mojom::GenerateBidFinalizer>
+      bid_finalizer;
+  mojo::PendingAssociatedRemote<mojom::GenerateBidClient> generate_bid_client;
+  auto generate_bid_client_impl =
+      std::make_unique<GenerateBidClientWithCallbacks>(
+          GenerateBidClientWithCallbacks::GenerateBidNeverInvokedCallback());
+
+  mojo::AssociatedReceiver<mojom::GenerateBidClient>
+      generate_bid_client_receiver(
+          generate_bid_client_impl.get(),
+          generate_bid_client.InitWithNewEndpointAndPassReceiver());
+
+  BeginGenerateBid(bidder_worklet.get(),
+                   bid_finalizer.BindNewEndpointAndPassReceiver(),
+                   std::move(generate_bid_client));
+  task_environment_.RunUntilIdle();
+
+  // Drop this end of generate_bid_client pipe w/o getting to
+  // FinalizeGenerateBid.
+  generate_bid_client_receiver.reset();
+  task_environment_.RunUntilIdle();
+
+  // The finalizer pipe must have been closed, too.
+  EXPECT_FALSE(bid_finalizer.is_connected());
 }
 
 }  // namespace

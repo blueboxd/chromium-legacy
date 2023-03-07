@@ -35,6 +35,27 @@ bool IsEnrollingAfterRollback() {
   return wizard_context && ash::IsRollbackFlow(*wizard_context);
 }
 
+// Returns the license type to use based on the license type, assigned
+// upgrade type and the license packaged from device state.
+policy::LicenseType GetLicenseTypeToUse(
+    const std::string license_type, const bool is_license_packaged_with_device,
+    const std::string assigned_upgrade_type) {
+  if (license_type == policy::kDeviceStateLicenseTypeEnterprise) {
+    return policy::LicenseType::kEnterprise;
+  } else if (license_type == policy::kDeviceStateLicenseTypeEducation) {
+    return policy::LicenseType::kEducation;
+  } else if (license_type == policy::kDeviceStateLicenseTypeTerminal) {
+    return policy::LicenseType::kTerminal;
+  }
+
+  if (!is_license_packaged_with_device &&
+      assigned_upgrade_type == policy::kDeviceStateAssignedUpgradeTypeKiosk) {
+    return policy::LicenseType::kTerminal;
+  }
+
+  return policy::LicenseType::kNone;
+}
+
 }  // namespace
 
 namespace policy {
@@ -47,14 +68,14 @@ EnrollmentConfig::~EnrollmentConfig() = default;
 EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig() {
   return GetPrescribedEnrollmentConfig(
       *g_browser_process->local_state(), *ash::InstallAttributes::Get(),
-      chromeos::system::StatisticsProvider::GetInstance());
+      ash::system::StatisticsProvider::GetInstance());
 }
 
 // static
 EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
     const PrefService& local_state,
     const ash::InstallAttributes& install_attributes,
-    chromeos::system::StatisticsProvider* statistics_provider) {
+    ash::system::StatisticsProvider* statistics_provider) {
   DCHECK(statistics_provider);
 
   EnrollmentConfig config;
@@ -125,18 +146,20 @@ EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
       device_state.FindBool(kDeviceStatePackagedLicense).value_or(false);
   const std::string license_type =
       GetString(device_state, kDeviceStateLicenseType);
+  const std::string assigned_upgrade_type = GetString(device_state, kDeviceStateAssignedUpgradeType);
 
   config.is_license_packaged_with_device = is_license_packaged_with_device;
 
-  if (license_type == kDeviceStateLicenseTypeEnterprise) {
-    config.license_type = LicenseType::kEnterprise;
-  } else if (license_type == kDeviceStateLicenseTypeEducation) {
-    config.license_type = LicenseType::kEducation;
-  } else if (license_type == kDeviceStateLicenseTypeTerminal) {
-    config.license_type = LicenseType::kTerminal;
-  } else {
-    config.license_type = LicenseType::kNone;
+  if(assigned_upgrade_type == kDeviceStateAssignedUpgradeTypeChromeEnterprise) {
+    config.assigned_upgrade_type =
+        AssignedUpgradeType::kAssignedUpgradeTypeChromeEnterprise;
+  } else if(assigned_upgrade_type == kDeviceStateAssignedUpgradeTypeKiosk) {
+    config.assigned_upgrade_type =
+        AssignedUpgradeType::kAssignedUpgradeTypeKioskAndSignage;
   }
+
+  config.license_type = GetLicenseTypeToUse(
+      license_type, is_license_packaged_with_device, assigned_upgrade_type);
 
   const bool pref_enrollment_auto_start_present =
       local_state.HasPrefPath(prefs::kDeviceEnrollmentAutoStart);
@@ -148,15 +171,14 @@ EnrollmentConfig EnrollmentConfig::GetPrescribedEnrollmentConfig(
   const bool pref_enrollment_can_exit =
       local_state.GetBoolean(prefs::kDeviceEnrollmentCanExit);
 
-  const bool oem_is_managed =
-      chromeos::system::StatisticsProvider::FlagValueToBool(
-          statistics_provider->GetMachineFlag(
-              chromeos::system::kOemIsEnterpriseManagedKey),
-          /*default_value=*/false);
+  const bool oem_is_managed = ash::system::StatisticsProvider::FlagValueToBool(
+      statistics_provider->GetMachineFlag(
+          ash::system::kOemIsEnterpriseManagedKey),
+      /*default_value=*/false);
   const bool oem_can_exit_enrollment =
-      chromeos::system::StatisticsProvider::FlagValueToBool(
+      ash::system::StatisticsProvider::FlagValueToBool(
           statistics_provider->GetMachineFlag(
-              chromeos::system::kOemCanExitEnterpriseEnrollmentKey),
+              ash::system::kOemCanExitEnterpriseEnrollmentKey),
           /*default_value=*/true);
 
   // Decide enrollment mode. Give precedence to forced variants.

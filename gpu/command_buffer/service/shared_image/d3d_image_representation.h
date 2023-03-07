@@ -31,7 +31,7 @@ class GLTexturePassthroughD3DImageRepresentation
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
-      scoped_refptr<gles2::TexturePassthrough> texture);
+      std::vector<scoped_refptr<gles2::TexturePassthrough>> textures);
   ~GLTexturePassthroughD3DImageRepresentation() override;
 
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(
@@ -41,7 +41,7 @@ class GLTexturePassthroughD3DImageRepresentation
   bool BeginAccess(GLenum mode) override;
   void EndAccess() override;
 
-  scoped_refptr<gles2::TexturePassthrough> texture_;
+  std::vector<scoped_refptr<gles2::TexturePassthrough>> textures_;
 };
 
 // Representation of a D3DImageBacking as a Dawn Texture
@@ -72,17 +72,14 @@ class OverlayD3DImageRepresentation : public OverlayImageRepresentation {
  public:
   OverlayD3DImageRepresentation(SharedImageManager* manager,
                                 SharedImageBacking* backing,
-                                MemoryTypeTracker* tracker,
-                                scoped_refptr<gl::GLImage> gl_image);
+                                MemoryTypeTracker* tracker);
   ~OverlayD3DImageRepresentation() override;
 
  private:
   bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override;
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override;
 
-  gl::GLImage* GetGLImage() override;
-
-  scoped_refptr<gl::GLImage> gl_image_;
+  absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage() override;
 };
 
 class D3D11VideoDecodeImageRepresentation

@@ -65,7 +65,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kFrequencyCappingForLargeStickyAdDetection);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDisplayLocking);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEditingNG);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLayoutNGBlockInInline);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMixedContentAutoupgrade);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNavigationPredictor);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnchorElementInteraction);
@@ -131,6 +130,26 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // main frame has fenced frame depth 1, etc).
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL;
+
+// If enabled, limits the number of times per origin per pageload that
+// `sharedStorage.selectURL()` is allowed to be invoked.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageSelectURLLimit);
+// Maximum number of times per origin per pageload that
+// `sharedStorage.selectURL()` is allowed to be invoked, if
+// `kSharedStorageSelectURLLimit` is enabled.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad;
+
+// If enabled, limits the maximum bits of entropy per pageload that
+// `fence.reportEvent()` is allowed to leak when called with
+// `FencedFrame::ReportingDestination::kSharedStorageSelectUrl`.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageReportEventLimit);
+// Maximum number of bits of entropy per pageload that are allowed to leak via
+// calls to `fence.reportEvent()` with
+// `FencedFrame::ReportingDestination::kSharedStorageSelectUrl`, if
+// `kSharedStorageReportEventLimit` is enabled.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSharedStorageReportEventBitBudgetPerPageLoad;
 
 // Enables the multiple prerendering in a sequential way:
 // https://crbug.com/1355151
@@ -441,6 +460,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBrowsingTopicsBypassIPIsPubliclyRoutableCheck);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBrowsingTopicsXHR);
+
 // Uses page viewport instead of frame viewport in the Largest Contentful Paint
 // heuristic where images occupying the full viewport are ignored.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kUsePageViewportInLCP);
@@ -503,11 +524,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT void ClearUnthrottledNestedTimeoutOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
-
-// If enabled, ContentToVisibleTimeReporter logs
-// Browser.Tabs.TotalSwitchDuration2.* instead of
-// Browser.Tabs.TotalSwitchDuration.*.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTabSwitchMetrics2);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPAnimatedImagesReporting);
 
@@ -673,11 +689,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // If enabled, expose non-standard stats in the WebRTC getStats API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcExposeNonStandardStats);
 
-// If enabled, style invalidation will use a Bloom filter for storing
-// CSS classes that need (only) self-invalidation, instead of having them
-// in the main hash map.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInvalidationSetClassBloomFilter);
-
 // Whether the pending beacon API is enabled or not.
 // https://github.com/WICG/pending-beacon/blob/main/README.md
 // - kPendingBeaconAPI = {true: {"requires_origin_trial": false}} to enable the
@@ -718,6 +729,11 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // disabled by default (and removed) before 5/17/2023.
 // See https://crbug.com/1326622 for more info.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSimulateClickOnAXFocus);
+
+// When enabled, the serialization of accessibility information for the browser
+// process will be done during LocalFrameView::RunPostLifecycleSteps, rather
+// than from a stand-alone task.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSerializeAccessibilityPostLifecycle);
 
 // If enabled, the HTMLPreloadScanner will run on a worker thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedPreloadScanner);
@@ -774,14 +790,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kWebRtcThreadsUseResourceEfficientType);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMetronome);
-
-// If enabled, all of FileSystemAccessSyncAccessHandle methods are synchronous.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSyncAccessHandleAllSyncSurface);
-
-// Disables centralized browser-side management of web cache memory limits.
-//
-// TODO(crbug.com/1340565): Remove once the data is available.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNoCentralWebCacheLimitControl);
 
 // If enabled, IME updates are computed at the end of a lifecycle update rather
 // than the beginning.
@@ -968,6 +976,29 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // Controls whether the SpeculationRulesPrefetchFuture origin trial can be
 // enabled.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSpeculationRulesPrefetchFuture);
+
+// Feature for allowing page with open IDB connection to be
+// stored in back/forward cache.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowPageWithIDBConnectionInBFCache);
+
+// Feature for allowing page with open IDB transaction to be stored in
+// back/forward cache.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowPageWithIDBTransactionInBFCache);
+
+// Checks both of kAllowPageWithIDBConnectionInBFCache and
+// kAllowPageWithIDBTransactionInBFCache are turned on when determining if a
+// page with IndexedDB transaction is eligible for BFCache.
+BLINK_COMMON_EXPORT bool
+IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled();
+
+// Kill switch for using a custom task runner in the blink scheduler that makes
+// DeleteSoon/ReleaseSoon less prone to memory leaks.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kUseBlinkSchedulerTaskRunnerWithCustomDeleter);
+
+// Extend ScriptResource's lifetime to match its payload's lifetime.
+// See https://crbug.com/1393246.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExtendScriptResourceLifetime);
 
 }  // namespace features
 }  // namespace blink

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_view_views.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -48,7 +48,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   OmniboxSuggestionRowButton(PressedCallback callback,
                              const std::u16string& text,
                              const gfx::VectorIcon& icon,
-                             OmniboxPopupContentsView* popup_contents_view,
+                             OmniboxPopupViewViews* popup_contents_view,
                              OmniboxPopupSelection selection)
       : MdTextButton(std::move(callback), text, CONTEXT_OMNIBOX_PRIMARY),
         icon_(&icon),
@@ -98,12 +98,12 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     // different (for example, if the NTP colors are customized).
     const auto* const color_provider = GetColorProvider();
     const bool selected = theme_state_ == OmniboxPartState::SELECTED;
-    SkColor icon_color = color_provider->GetColor(
-        selected ? kColorOmniboxResultsIconSelected : kColorOmniboxResultsIcon);
-    SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(*icon_, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                              icon_color));
+    SetImageModel(views::Button::STATE_NORMAL,
+                  ui::ImageModel::FromVectorIcon(
+                      *icon_,
+                      selected ? kColorOmniboxResultsIconSelected
+                               : kColorOmniboxResultsIcon,
+                      GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
     SetEnabledTextColors(color_provider->GetColor(
         selected ? kColorOmniboxResultsTextSelected : kColorOmniboxText));
     views::InkDrop::Get(this)->SetBaseColorId(
@@ -140,7 +140,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
 
  private:
   raw_ptr<const gfx::VectorIcon> icon_;
-  raw_ptr<OmniboxPopupContentsView> popup_contents_view_;
+  raw_ptr<OmniboxPopupViewViews> popup_contents_view_;
   OmniboxPopupSelection selection_;
   OmniboxPartState theme_state_ = OmniboxPartState::NORMAL;
 };
@@ -149,7 +149,7 @@ BEGIN_METADATA(OmniboxSuggestionRowButton, views::MdTextButton)
 END_METADATA
 
 OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
-    OmniboxPopupContentsView* popup_contents_view,
+    OmniboxPopupViewViews* popup_contents_view,
     OmniboxEditModel* model,
     int model_index)
     : popup_contents_view_(popup_contents_view),

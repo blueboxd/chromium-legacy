@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/x11/native_pixmap_egl_x11_binding.h"
 
+#include <GL/gl.h>
+
 #include <unistd.h>
 
 #include "base/logging.h"
@@ -13,6 +15,7 @@
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/dri3.h"
 #include "ui/gfx/x/future.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_image_egl_pixmap.h"
 
 namespace gl {
@@ -75,7 +78,10 @@ x11::Pixmap XPixmapFromNativePixmap(
 
 namespace ui {
 
-NativePixmapEGLX11Binding::NativePixmapEGLX11Binding() = default;
+NativePixmapEGLX11Binding::NativePixmapEGLX11Binding(
+    scoped_refptr<gl::GLImageEGLPixmap> gl_image,
+    gfx::BufferFormat format)
+    : gl_image_(std::move(gl_image)), format_(format) {}
 NativePixmapEGLX11Binding::~NativePixmapEGLX11Binding() = default;
 
 // static
@@ -97,12 +103,31 @@ std::unique_ptr<NativePixmapGLBinding> NativePixmapEGLX11Binding::Create(
     return nullptr;
   }
 
-  auto binding = std::make_unique<NativePixmapEGLX11Binding>();
-  if (!binding->BindTexture(std::move(gl_image), target, texture_id)) {
+  auto binding = std::make_unique<NativePixmapEGLX11Binding>(
+      std::move(gl_image), plane_format);
+  if (!binding->BindTexture(target, texture_id)) {
     return nullptr;
   }
 
   return binding;
+}
+
+bool NativePixmapEGLX11Binding::BindTexture(GLenum target, GLuint texture_id) {
+  return NativePixmapGLBinding::BindTexture(gl_image_.get(), target,
+                                            texture_id);
+}
+
+GLuint NativePixmapEGLX11Binding::GetInternalFormat() {
+  return gl::BufferFormatToGLInternalFormat(format_);
+}
+
+GLenum NativePixmapEGLX11Binding::GetDataFormat() {
+  return NativePixmapGLBinding::GetDataFormatFromInternalFormat(
+      GetInternalFormat());
+}
+
+GLenum NativePixmapEGLX11Binding::GetDataType() {
+  return GL_UNSIGNED_BYTE;
 }
 
 }  // namespace ui

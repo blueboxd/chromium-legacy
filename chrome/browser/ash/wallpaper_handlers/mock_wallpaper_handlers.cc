@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,6 +41,37 @@ MockGooglePhotosAlbumsFetcher::~MockGooglePhotosAlbumsFetcher() = default;
 absl::optional<size_t> MockGooglePhotosAlbumsFetcher::GetResultCount(
     const GooglePhotosAlbumsCbkArgs& result) {
   return GooglePhotosAlbumsFetcher::GetResultCount(result);
+}
+
+MockGooglePhotosSharedAlbumsFetcher::MockGooglePhotosSharedAlbumsFetcher(
+    Profile* profile)
+    : GooglePhotosSharedAlbumsFetcher(profile) {
+  using ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse;
+  using ash::personalization_app::mojom::GooglePhotosAlbumPtr;
+
+  ON_CALL(*this, AddRequestAndStartIfNecessary)
+      .WillByDefault(
+          [](const absl::optional<std::string>& resume_token,
+             base::OnceCallback<void(GooglePhotosAlbumsCbkArgs)> callback) {
+            auto response = FetchGooglePhotosAlbumsResponse::New(
+                std::vector<GooglePhotosAlbumPtr>(), absl::nullopt);
+            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE,
+                base::BindOnce(std::move(callback), std::move(response)));
+          });
+
+  ON_CALL(*this, ParseResponse)
+      .WillByDefault([this](const base::Value::Dict* response) {
+        return GooglePhotosSharedAlbumsFetcher::ParseResponse(response);
+      });
+}
+
+MockGooglePhotosSharedAlbumsFetcher::~MockGooglePhotosSharedAlbumsFetcher() =
+    default;
+
+absl::optional<size_t> MockGooglePhotosSharedAlbumsFetcher::GetResultCount(
+    const GooglePhotosAlbumsCbkArgs& result) {
+  return GooglePhotosSharedAlbumsFetcher::GetResultCount(result);
 }
 
 MockGooglePhotosEnabledFetcher::MockGooglePhotosEnabledFetcher(Profile* profile)

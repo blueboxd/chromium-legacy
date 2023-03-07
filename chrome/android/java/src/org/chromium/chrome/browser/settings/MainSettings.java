@@ -46,8 +46,6 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
-import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
-import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
@@ -56,6 +54,7 @@ import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -98,7 +97,6 @@ public class MainSettings extends PreferenceFragmentCompat
 
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
-    private SyncPromoPreference mSyncPromoPreference;
     private SignInPreference mSignInPreference;
     private ChromeBasePreference mManageSync;
     private @Nullable PasswordCheck mPasswordCheck;
@@ -177,8 +175,6 @@ public class MainSettings extends PreferenceFragmentCompat
 
         cachePreferences();
 
-        mSyncPromoPreference.setOnStateChangedCallback(this::onSyncPromoPreferenceStateChanged);
-
         updatePasswordsPreference();
 
         if (usesUnifiedPasswordManagerUI()) {
@@ -233,7 +229,6 @@ public class MainSettings extends PreferenceFragmentCompat
             Preference preference = getPreferenceScreen().getPreference(index);
             mAllPreferences.put(preference.getKey(), preference);
         }
-        mSyncPromoPreference = (SyncPromoPreference) mAllPreferences.get(PREF_SYNC_PROMO);
         mSignInPreference = (SignInPreference) mAllPreferences.get(PREF_SIGN_IN);
         mManageSync = (ChromeBasePreference) findPreference(PREF_MANAGE_SYNC);
     }
@@ -373,7 +368,7 @@ public class MainSettings extends PreferenceFragmentCompat
                     new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
                             new RelativeSizeSpan(0.75f),
                             new ForegroundColorSpan(
-                                    context.getColor(R.color.default_text_color_blue_baseline))));
+                                    SemanticColorUtils.getDefaultTextColorAccent1(context))));
         } else {
             // Remove the "NEW" text and the trailing whitespace.
             return (CharSequence) (SpanApplier
@@ -401,24 +396,6 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void onSignedOut() {
         updatePreferences();
-    }
-
-    private void onSyncPromoPreferenceStateChanged() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION)
-                || ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)) {
-            // For promo experiments, we want to have mSignInPreference and
-            // PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION visible even if the personalized promo is
-            // shown, so skip setting the visibility.
-            return;
-        }
-        // Remove "Account" section header if the personalized sign-in promo is shown.
-        boolean isShowingPersonalizedSigninPromo =
-                mSyncPromoPreference.getState() == State.PERSONALIZED_SIGNIN_PROMO;
-        findPreference(PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
-                .setVisible(!isShowingPersonalizedSigninPromo);
-        mSignInPreference.setIsShowingPersonalizedSigninPromo(isShowingPersonalizedSigninPromo);
     }
 
     // TemplateUrlService.LoadListener implementation.

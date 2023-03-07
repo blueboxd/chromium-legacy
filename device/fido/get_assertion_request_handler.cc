@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
@@ -300,6 +300,28 @@ CtapGetAssertionRequest SpecializeRequestForAuthenticator(
   return specialized_request;
 }
 
+CtapGetAssertionOptions SpecializeOptionsForAuthenticator(
+    const CtapGetAssertionOptions& options,
+    const FidoAuthenticator& authenticator) {
+  CtapGetAssertionOptions specialized_options(options);
+
+  if (!options.prf_inputs.empty() &&
+      !authenticator.SupportsHMACSecretExtension()) {
+    specialized_options.prf_inputs.clear();
+  }
+
+  return specialized_options;
+}
+
+CtapGetAssertionRequest SetUVForDiscoverableRequests(
+    CtapGetAssertionRequest request) {
+  if (request.allow_list.empty()) {
+    // Resident credential requests always involve user verification.
+    request.user_verification = UserVerificationRequirement::kRequired;
+  }
+  return request;
+}
+
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
@@ -315,7 +337,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
               supported_transports,
               GetTransportsAllowedByRP(request))),
       completion_callback_(std::move(completion_callback)),
-      request_(std::move(request)),
+      request_(SetUVForDiscoverableRequests(std::move(request))),
       options_(std::move(options)),
       allow_skipping_pin_touch_(allow_skipping_pin_touch) {
   transport_availability_info().request_type = FidoRequestType::kGetAssertion;
@@ -330,11 +352,6 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
                            base::Contains(cred.transports,
                                           FidoTransportProtocol::kInternal);
                   });
-
-  if (request_.allow_list.empty()) {
-    // Resident credential requests always involve user verification.
-    request_.user_verification = UserVerificationRequirement::kRequired;
-  }
 
   FIDO_LOG(EVENT) << "Starting GetAssertion flow";
   Start();
@@ -408,6 +425,8 @@ void GetAssertionRequestHandler::DispatchRequest(
 
   CtapGetAssertionRequest request =
       SpecializeRequestForAuthenticator(request_, *authenticator);
+  CtapGetAssertionOptions options =
+      SpecializeOptionsForAuthenticator(options_, *authenticator);
   PINUVDisposition uv_disposition =
       authenticator->PINUVDispositionForGetAssertion(request, observer());
   switch (uv_disposition) {
@@ -443,7 +462,7 @@ void GetAssertionRequestHandler::DispatchRequest(
 
   CtapGetAssertionRequest request_copy(request);
   authenticator->GetAssertion(
-      std::move(request_copy), options_,
+      std::move(request_copy), std::move(options),
       base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator,
                      std::move(request), base::ElapsedTimer()));
@@ -559,9 +578,6 @@ void GetAssertionRequestHandler::HavePINUVAuthTokenResultForAuthenticator(
   }
 
   DCHECK_EQ(result, AuthTokenRequester::Result::kSuccess);
-
-  auto request = std::make_unique<CtapGetAssertionRequest>(request_);
-  SpecializeRequestForAuthenticator(*request, *authenticator);
   DispatchRequestWithToken(std::move(*token_response));
 }
 
@@ -799,6 +815,8 @@ void GetAssertionRequestHandler::DispatchRequestWithToken(
   state_ = State::kWaitingForResponseWithToken;
   CtapGetAssertionRequest request = SpecializeRequestForAuthenticator(
       request_, *selected_authenticator_for_pin_uv_auth_token_);
+  CtapGetAssertionOptions options = SpecializeOptionsForAuthenticator(
+      options_, *selected_authenticator_for_pin_uv_auth_token_);
   std::tie(request.pin_protocol, request.pin_auth) =
       pin_token_->PinAuth(request.client_data_hash);
 
@@ -807,7 +825,7 @@ void GetAssertionRequestHandler::DispatchRequestWithToken(
 
   auto request_copy(request);
   selected_authenticator_for_pin_uv_auth_token_->GetAssertion(
-      std::move(request_copy), options_,
+      std::move(request_copy), std::move(options),
       base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(),
                      selected_authenticator_for_pin_uv_auth_token_,

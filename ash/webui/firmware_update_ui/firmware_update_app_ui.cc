@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/webui/firmware_update_ui/mojom/firmware_update.mojom.h"
 #include "ash/webui/firmware_update_ui/url_constants.h"
 #include "ash/webui/grit/ash_firmware_update_app_resources.h"
@@ -19,7 +18,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace ash {
@@ -31,7 +30,7 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           int default_resource) {
   source->AddResourcePaths(resources);
   source->SetDefaultResource(default_resource);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_TEST_LOADER_HTML);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
   source->AddResourcePath("test_loader_util.js",
                           IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
@@ -69,11 +68,6 @@ void AddFirmwareUpdateAppStrings(content::WebUIDataSource* source) {
 }
 
 }  // namespace
-
-bool FirmwareUpdateAppUIConfig::IsWebUIEnabled(
-    content::BrowserContext* browser_context) {
-  return ash::features::IsFirmwareUpdaterAppEnabled();
-}
 
 FirmwareUpdateAppUI::FirmwareUpdateAppUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI(web_ui) {

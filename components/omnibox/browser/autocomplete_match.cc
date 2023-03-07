@@ -31,6 +31,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "inline_autocompletion_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/omnibox_proto/groups.pb.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -231,7 +232,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
     : provider(provider),
       relevance(relevance),
       deletable(deletable),
-      transition(ui::PAGE_TRANSITION_TYPED),
       type(type) {}
 
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
@@ -618,54 +618,6 @@ bool AutocompleteMatch::BetterDuplicateByIterator(
 }
 
 // static
-void AutocompleteMatch::ClassifyMatchInString(
-    const std::u16string& find_text,
-    const std::u16string& text,
-    int style,
-    ACMatchClassifications* classification) {
-  ClassifyLocationInString(text.find(find_text), find_text.length(),
-                           text.length(), style, classification);
-}
-
-// static
-void AutocompleteMatch::ClassifyLocationInString(
-    size_t match_location,
-    size_t match_length,
-    size_t overall_length,
-    int style,
-    ACMatchClassifications* classification) {
-  classification->clear();
-
-  // Don't classify anything about an empty string
-  // (AutocompleteMatch::Validate() checks this).
-  if (overall_length == 0)
-    return;
-
-  // Mark pre-match portion of string (if any).
-  if (match_location != 0) {
-    classification->push_back(ACMatchClassification(0, style));
-  }
-
-  // Mark matching portion of string.
-  if (match_location == std::u16string::npos) {
-    // No match, above classification will suffice for whole string.
-    return;
-  }
-  // Classifying an empty match makes no sense and will lead to validation
-  // errors later.
-  DCHECK_GT(match_length, 0U);
-  classification->push_back(ACMatchClassification(
-      match_location,
-      (style | ACMatchClassification::MATCH) & ~ACMatchClassification::DIM));
-
-  // Mark post-match portion of string (if any).
-  const size_t after_match(match_location + match_length);
-  if (after_match < overall_length) {
-    classification->push_back(ACMatchClassification(after_match, style));
-  }
-}
-
-// static
 AutocompleteMatch::ACMatchClassifications
 AutocompleteMatch::MergeClassifications(
     const ACMatchClassifications& classifications1,
@@ -748,16 +700,6 @@ void AutocompleteMatch::AddLastClassificationIfNecessary(
 }
 
 // static
-bool AutocompleteMatch::HasMatchStyle(
-    const ACMatchClassifications& classifications) {
-  for (const auto& it : classifications) {
-    if (it.style & AutocompleteMatch::ACMatchClassification::MATCH)
-      return true;
-  }
-  return false;
-}
-
-// static
 std::u16string AutocompleteMatch::SanitizeString(const std::u16string& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
   // omnibox_custom_bindings.js.
@@ -807,6 +749,31 @@ bool AutocompleteMatch::ShouldBeSkippedForGroupBySearchVsUrl(Type type) {
 }
 
 // static
+omnibox::GroupId AutocompleteMatch::GetDefaultGroupId(Type type) {
+  if (type == AutocompleteMatchType::TILE_NAVSUGGEST ||
+      type == AutocompleteMatchType::TILE_SUGGESTION) {
+    return omnibox::GROUP_MOBILE_MOST_VISITED;
+  }
+
+  if (type == AutocompleteMatchType::CLIPBOARD_URL ||
+      type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+      type == AutocompleteMatchType::CLIPBOARD_IMAGE) {
+    return omnibox::GROUP_MOBILE_CLIPBOARD;
+  }
+
+  if (IsStarterPackType(type))
+    return omnibox::GROUP_STARTER_PACK;
+
+  if (IsSearchType(type))
+    return omnibox::GROUP_SEARCH;
+
+  if (type == AutocompleteMatchType::HISTORY_CLUSTER)
+    return omnibox::GROUP_HISTORY_CLUSTER;
+
+  return omnibox::GROUP_OTHER_NAVS;
+}
+
+// static
 TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
     TemplateURLService* template_url_service,
     const std::u16string& keyword,
@@ -837,7 +804,8 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
     const std::u16string& keyword,
-    const bool keep_search_intent_params) {
+    const bool keep_search_intent_params,
+    const bool normalize_search_terms) {
   if (!url.is_valid())
     return url;
 
@@ -862,21 +830,24 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     static const bool optimize =
         base::FeatureList::IsEnabled(omnibox::kStrippedGurlOptimization);
     if (optimize) {
-      using CacheKey = std::tuple<const TemplateURL*, GURL, bool>;
+      using CacheKey = std::tuple<const TemplateURL*, GURL, bool, bool>;
       static base::LRUCache<CacheKey, GURL> template_cache(30);
-      const CacheKey cache_key = {template_url, url, keep_search_intent_params};
+      const CacheKey cache_key = {template_url, url, keep_search_intent_params,
+                                  normalize_search_terms};
       const auto& cached = template_cache.Get(cache_key);
       if (cached != template_cache.end()) {
         stripped_destination_url = cached->second;
       } else if (template_url->KeepSearchTermsInURL(
                      url, template_url_service->search_terms_data(),
-                     keep_search_intent_params, &stripped_destination_url)) {
+                     keep_search_intent_params, normalize_search_terms,
+                     &stripped_destination_url)) {
         template_cache.Put(cache_key, stripped_destination_url);
       }
     } else {
       template_url->KeepSearchTermsInURL(
           url, template_url_service->search_terms_data(),
-          keep_search_intent_params, &stripped_destination_url);
+          keep_search_intent_params, normalize_search_terms,
+          &stripped_destination_url);
     }
   }
 
@@ -1000,9 +971,11 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(
   // the document provider, and overwriting them here would be wasteful and, in
   // the case of the document provider, prevent potential deduping.
   if (stripped_destination_url.is_empty()) {
-    stripped_destination_url =
-        GURLToStrippedGURL(destination_url, input, template_url_service,
-                           keyword, /*keep_search_intent_params=*/false);
+    stripped_destination_url = GURLToStrippedGURL(
+        destination_url, input, template_url_service, keyword,
+        /*keep_search_intent_params=*/false,
+        /*normalize_search_terms=*/
+        base::FeatureList::IsEnabled(omnibox::kNormalizeSearchSuggestions));
   }
 }
 
@@ -1154,8 +1127,7 @@ AutocompleteMatch::AsOmniboxEventResultType() const {
     case AutocompleteMatchType::STARTER_PACK:
       return OmniboxEventProto::Suggestion::STARTER_PACK;
     case AutocompleteMatchType::VOICE_SUGGEST:
-      // VOICE_SUGGEST matches are only used in Java and are not logged,
-      // so we should never reach this case.
+      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:

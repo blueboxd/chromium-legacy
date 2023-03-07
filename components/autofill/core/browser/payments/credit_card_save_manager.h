@@ -190,7 +190,7 @@ class CreditCardSaveManager {
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const std::u16string& context_token,
-      std::unique_ptr<base::Value> legal_message,
+      std::unique_ptr<base::Value::Dict> legal_message,
       std::vector<std::pair<int, int>> supported_card_bin_ranges);
 
   // Logs the number of strikes that a card had when save succeeded.
@@ -303,8 +303,8 @@ class CreditCardSaveManager {
 
   const raw_ptr<AutofillClient> client_;
 
-  // Handles Payments service requests.
-  // Owned by BrowserAutofillManager.
+  // Handles Payments service requests. Weak ref. In Chrome, it's owned by
+  // ChromeAutofillClient and ChromeAutofillClientIOS.
   raw_ptr<payments::PaymentsClient> payments_client_;
 
   std::string app_locale_;

@@ -56,10 +56,16 @@ class HistoryBackendForSync {
   virtual bool UpdateVisitReferrerOpenerIDs(VisitID visit_id,
                                             VisitID referrer_id,
                                             VisitID opener_id) = 0;
+  virtual void AddVisitToSyncedCluster(
+      const history::ClusterVisit& cluster_visit,
+      const std::string& originator_cache_guid,
+      int64_t originator_cluster_id) = 0;
+  virtual int64_t GetClusterIdContainingVisit(VisitID visit_id) = 0;
 
   virtual std::vector<GURL> GetFaviconURLsForURL(const GURL& page_url) = 0;
 
-  virtual bool DeleteAllForeignVisits() = 0;
+  virtual void MarkVisitAsKnownToSync(VisitID visit_id) = 0;
+  virtual void DeleteAllForeignVisitsAndResetIsKnownToSync() = 0;
 
   virtual void AddObserver(HistoryBackendObserver* observer) = 0;
   virtual void RemoveObserver(HistoryBackendObserver* observer) = 0;

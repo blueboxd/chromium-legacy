@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/tts_crosapi_util.h"
@@ -45,13 +46,6 @@ class LacrosTtsApiTest : public ExtensionApiTest,
   }
 
  protected:
-  bool IsServiceAvailable() {
-    // Ash version must have the change to allow enabling lacros_tts_support
-    // for testing.
-    return chromeos::IsAshVersionAtLeastForTesting(
-        base::Version({106, 0, 5228}));
-  }
-
   bool HasVoiceWithName(const std::string& name) {
     std::vector<content::VoiceData> voices;
     content::TtsController::GetInstance()->GetVoices(profile(), GURL(),
@@ -163,9 +157,6 @@ class LacrosTtsApiTest : public ExtensionApiTest,
 // TTS Engine tests.
 //
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, LoadAndUnloadLacrosTtsEngine) {
-  if (!IsServiceAvailable())
-    GTEST_SKIP() << "Unsupported ash version.";
-
   // Before tts engine extension is loaded, verify the internal states are
   // clean.
   EXPECT_FALSE(VoicesChangedNotified());
@@ -315,6 +306,27 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
   WaitUntilTtsEventReceivedByUtteranceEventDelegateInAsh();
   EXPECT_TRUE(TtsEventNotifiedInAsh());
   EXPECT_TRUE(TtsEventReceivedEq(content::TTS_EVENT_END));
+
+  // Verify the utterance issued from the testing extension is properly
+  // finished and the utterance queue is empty in Ash's TtsController.
+  ASSERT_TRUE(IsUtteranceQueueEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
+                       StopLacrosUtteranceWithLacrosTtsEngine) {
+  if (chromeos::LacrosService::Get()->GetInterfaceVersion(
+          crosapi::mojom::Tts::Uuid_) <
+      static_cast<int>(crosapi::mojom::Tts::kStopMinVersion)) {
+    GTEST_SKIP() << "Unsupported ash version.";
+  }
+
+  // Load tts engine extension, register the tts engine events and
+  // call tts.speak and tts.stop from the testing extension.
+  ASSERT_TRUE(
+      RunExtensionTest("tts_engine/lacros_tts_support/"
+                       "tts_stop_lacros_engine",
+                       {}, {.ignore_manifest_warnings = true}))
+      << message_;
 
   // Verify the utterance issued from the testing extension is properly
   // finished and the utterance queue is empty in Ash's TtsController.

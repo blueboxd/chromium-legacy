@@ -15,16 +15,16 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 
-import {CrPolicyIndicatorType} from 'chrome://resources/ash/common/cr_policy_indicator_behavior.js';
+import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {microTask, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {assertExists} from '../assert_extras.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
-import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
+import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
 
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, NoteAppInfo, NoteAppLockScreenSupport} from './device_page_browser_proxy.js';
@@ -40,11 +40,7 @@ const FIND_MORE_APPS_URL = 'https://play.google.com/store/apps/' +
     'collection/promotion_30023cb_stylus_apps';
 
 const SettingsStylusElementBase =
-    mixinBehaviors([DeepLinkingBehavior], RouteObserverMixin(PolymerElement)) as
-    {
-      new (): PolymerElement & DeepLinkingBehaviorInterface &
-          RouteObserverMixinInterface,
-    };
+    DeepLinkingMixin(RouteObserverMixin(PolymerElement));
 
 class SettingsStylusElement extends SettingsStylusElementBase {
   static get is() {
@@ -111,11 +107,11 @@ class SettingsStylusElement extends SettingsStylusElementBase {
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kStylusToolsInShelf,
           Setting.kStylusNoteTakingApp,
           Setting.kStylusNoteTakingFromLockScreen,

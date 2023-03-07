@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "base/android/jni_string.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/android/chrome_jni_headers/SigninManagerImpl_jni.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"

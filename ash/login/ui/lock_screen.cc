@@ -22,9 +22,10 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/capture_controller.h"
@@ -35,6 +36,20 @@ namespace {
 // Global lock screen instance. There can only ever be on lock screen at a
 // time.
 LockScreen* instance_ = nullptr;
+
+// Record screen type for metrics.
+void RecordScreenType(LockScreen::ScreenType type) {
+  AuthMetricsRecorder::AuthenticationSurface screen_type;
+  switch (type) {
+    case LockScreen::ScreenType::kLogin:
+      screen_type = AuthMetricsRecorder::AuthenticationSurface::kLogin;
+      break;
+    case LockScreen::ScreenType::kLock:
+      screen_type = AuthMetricsRecorder::AuthenticationSurface::kLock;
+      break;
+  }
+  AuthMetricsRecorder::Get()->OnAuthenticationSurfaceChange(screen_type);
+}
 
 }  // namespace
 
@@ -60,8 +75,9 @@ LockScreen::LockScreen(ScreenType type) : type_(type) {
   if (active_window) {
     auto* active_widget =
         views::Widget::GetWidgetForNativeWindow(active_window);
-    if (active_widget)
+    if (active_widget) {
       paint_as_active_lock_ = active_widget->LockPaintAsActive();
+    }
   }
 
   tray_action_observation_.Observe(Shell::Get()->tray_action());
@@ -77,8 +93,9 @@ LockScreen::~LockScreen() {
   if (Shell::Get()->session_controller()->GetSessionState() !=
       session_manager::SessionState::LOGIN_SECONDARY) {
     ui::Clipboard::DestroyClipboardForCurrentThread();
-    if (saved_clipboard_)
+    if (saved_clipboard_) {
       ui::Clipboard::SetClipboardForCurrentThread(std::move(saved_clipboard_));
+    }
   }
 }
 
@@ -116,6 +133,7 @@ void LockScreen::Show(ScreenType type) {
   ::wm::CaptureController::Get()->SetCapture(nullptr);
 
   instance_ = new LockScreen(type);
+  RecordScreenType(type);
 
   aura::Window* parent = nullptr;
   if (Shell::HasInstance()) {
@@ -184,11 +202,13 @@ void LockScreen::OnSessionStateChanged(session_manager::SessionState state) {
 }
 
 void LockScreen::OnLockStateChanged(bool locked) {
-  if (type_ != ScreenType::kLock)
+  if (type_ != ScreenType::kLock) {
     return;
+  }
 
-  if (!locked)
+  if (!locked) {
     Destroy();
+  }
 }
 
 void LockScreen::OnChromeTerminating() {
@@ -198,15 +218,17 @@ void LockScreen::OnChromeTerminating() {
 // static
 void LockScreen::ShowWidgetUponWallpaperReady() {
   // |instance_| may already be destroyed in tests.
-  if (!instance_ || instance_->is_shown_)
+  if (!instance_ || instance_->is_shown_) {
     return;
+  }
   instance_->is_shown_ = true;
   instance_->widget_->Show();
 
   std::vector<base::OnceClosure> on_shown_callbacks;
   swap(instance_->on_shown_callbacks_, on_shown_callbacks);
-  for (auto& callback : on_shown_callbacks)
+  for (auto& callback : on_shown_callbacks) {
     std::move(callback).Run();
+  }
 
   Shell::Get()->login_screen_controller()->NotifyLoginScreenShown();
 }

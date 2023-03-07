@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/android/chrome_jni_headers/TabInteractionRecorder_jni.h"
 #include "chrome/browser/android/customtabs/custom_tab_session_state_tracker.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "content/public/browser/document_user_data.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -25,6 +26,7 @@ namespace customtabs {
 using autofill::AutofillManager;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using content::GlobalRenderFrameHostId;
 using content::RenderFrameHost;
 
 namespace {
@@ -36,13 +38,14 @@ AutofillManager* GetAutofillManager(RenderFrameHost* render_frame_host) {
     return nullptr;
   return autofill_driver->autofill_manager();
 }
-
 }  // namespace
 
 AutofillObserverImpl::AutofillObserverImpl(
+    GlobalRenderFrameHostId id,
     autofill::AutofillManager* autofill_manager,
     OnFormInteractionCallback form_interaction_callback)
-    : autofill_manager_(autofill_manager),
+    : global_id_(id),
+      autofill_manager_(autofill_manager),
       form_interaction_callback_(std::move(form_interaction_callback)) {
   autofill_manager->AddObserver(this);
 }
@@ -77,7 +80,22 @@ void AutofillObserverImpl::Invalidate() {
 
 void AutofillObserverImpl::OnFormInteraction() {
   Invalidate();
-  std::move(form_interaction_callback_).Run();
+  std::move(form_interaction_callback_).Run(global_id_);
+}
+
+DOCUMENT_USER_DATA_KEY_IMPL(FormInteractionData);
+
+FormInteractionData::~FormInteractionData() = default;
+
+FormInteractionData::FormInteractionData(RenderFrameHost* rfh)
+    : DocumentUserData<FormInteractionData>(rfh) {}
+
+void FormInteractionData::SetHasFormInteractionData() {
+  had_form_interaction_data_ = true;
+}
+
+bool FormInteractionData::GetHasFormInteractionData() {
+  return had_form_interaction_data_;
 }
 
 TabInteractionRecorderAndroid::~TabInteractionRecorderAndroid() = default;
@@ -93,6 +111,34 @@ bool TabInteractionRecorderAndroid::HasNavigatedFromFirstPage() const {
          web_contents()->GetController().CanGoForward();
 }
 
+bool TabInteractionRecorderAndroid::HasActiveFormInteraction() const {
+  bool interaction = false;
+  web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHostWithAction(
+      [&interaction](RenderFrameHost* rfh) {
+        if (!FormInteractionData::GetForCurrentDocument(rfh)) {
+          return RenderFrameHost::FrameIterationAction::kContinue;
+        }
+        if (FormInteractionData::GetForCurrentDocument(rfh)
+                ->GetHasFormInteractionData()) {
+          interaction = true;
+          return RenderFrameHost::FrameIterationAction::kStop;
+        }
+        return RenderFrameHost::FrameIterationAction::kContinue;
+      });
+  return interaction;
+}
+
+void TabInteractionRecorderAndroid::ResetImpl() {
+  has_form_interactions_in_session_ = false;
+  did_get_user_interaction_ = false;
+  web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+      [](RenderFrameHost* rfh) {
+        if (FormInteractionData::GetForCurrentDocument(rfh)) {
+          FormInteractionData::DeleteForCurrentDocument(rfh);
+        }
+      });
+}
+
 // content::WebContentsObserver:
 void TabInteractionRecorderAndroid::RenderFrameHostStateChanged(
     RenderFrameHost* render_frame_host,
@@ -100,16 +146,13 @@ void TabInteractionRecorderAndroid::RenderFrameHostStateChanged(
     RenderFrameHost::LifecycleState new_state) {
   if (old_state == RenderFrameHost::LifecycleState::kActive) {
     rfh_observer_map_.erase(render_frame_host->GetGlobalId());
-  } else if (new_state == RenderFrameHost::LifecycleState::kActive &&
-             !has_form_interactions_) {
+  } else if (new_state == RenderFrameHost::LifecycleState::kActive) {
     StartObservingFrame(render_frame_host);
   }
 }
 
 void TabInteractionRecorderAndroid::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (has_form_interactions_)
-    return;
   if (!navigation_handle->IsSameDocument() &&
       navigation_handle->HasCommitted() &&
       navigation_handle->GetRenderFrameHost()->IsActive())
@@ -128,8 +171,15 @@ void TabInteractionRecorderAndroid::DidGetUserInteraction(
       .OnUserInteraction();
 }
 
-void TabInteractionRecorderAndroid::SetHasFormInteractions() {
-  has_form_interactions_ = true;
+void TabInteractionRecorderAndroid::SetHasFormInteractions(
+    GlobalRenderFrameHostId id) {
+  if (RenderFrameHost::FromID(id)) {
+    FormInteractionData::GetOrCreateForCurrentDocument(
+        RenderFrameHost::FromID(id))
+        ->SetHasFormInteractionData();
+  }
+
+  has_form_interactions_in_session_ = true;
   rfh_observer_map_.clear();
 }
 
@@ -147,7 +197,7 @@ void TabInteractionRecorderAndroid::StartObservingFrame(
 
   rfh_observer_map_[render_frame_host->GetGlobalId()] =
       std::make_unique<AutofillObserverImpl>(
-          autofill_manager,
+          render_frame_host->GetGlobalId(), autofill_manager,
           base::BindOnce(&TabInteractionRecorderAndroid::SetHasFormInteractions,
                          weak_factory_.GetWeakPtr()));
 }
@@ -160,13 +210,23 @@ jboolean TabInteractionRecorderAndroid::DidGetUserInteraction(
   return did_get_user_interaction_;
 }
 
-jboolean TabInteractionRecorderAndroid::HadInteraction(JNIEnv* env) const {
-  bool has_interaction = has_form_interactions() || HasNavigatedFromFirstPage();
-  return static_cast<jboolean>(has_interaction);
+jboolean TabInteractionRecorderAndroid::HadFormInteractionInSession(
+    JNIEnv* env) const {
+  return has_form_interactions_in_session();
+}
+
+jboolean TabInteractionRecorderAndroid::HadNavigationInteraction(
+    JNIEnv* env) const {
+  return did_get_user_interaction_ && HasNavigatedFromFirstPage();
+}
+
+jboolean TabInteractionRecorderAndroid::HadFormInteractionInActivePage(
+    JNIEnv* env) const {
+  return HasActiveFormInteraction();
 }
 
 void TabInteractionRecorderAndroid::Reset(JNIEnv* env) {
-  has_form_interactions_ = false;
+  ResetImpl();
 }
 
 ScopedJavaLocalRef<jobject> JNI_TabInteractionRecorder_GetFromTab(

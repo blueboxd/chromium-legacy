@@ -8,6 +8,7 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/mem_buffer_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_future.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -25,6 +26,7 @@
 #include "fuchsia_web/webengine/test/frame_for_test.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 using testing::_;
@@ -1102,12 +1104,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ImmediateNavigationEvent) {
 
   // Attach a new navigation listener, we should get the new page state, even if
   // no new navigation occurred.
-  TestNavigationListener navigation_listener;
-  fidl::Binding<fuchsia::web::NavigationEventListener>
-      navigation_listener_binding(&navigation_listener);
-  frame.ptr()->SetNavigationEventListener2(
-      navigation_listener_binding.NewBinding(), /*flags=*/{});
-  navigation_listener.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
+  frame.CreateAndAttachNavigationListener(/*flags=*/{});
+  frame.navigation_listener().RunUntilUrlAndTitleEquals(page_url, kPage1Title);
 }
 
 // Check loading an invalid URL in NavigationController.LoadUrl() sets the right
@@ -1301,6 +1299,9 @@ class FrameForTestWithMessageLog : public FrameForTest {
     // tests to verify.
     ptr().set_error_handler(CallbackToFitFunction(epitaph_.GetCallback()));
 
+    // Don't error-out if the Frame disconnects.
+    navigation_listener_binding().set_error_handler([](zx_status_t) {});
+
     // Start reading messages from the port into a queue, until the port closes.
     message_port_.set_error_handler(
         [quit = loop_.QuitClosure()](zx_status_t) { std::move(quit).Run(); });
@@ -1397,7 +1398,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Close_WithInsufficientTimeout) {
   frame->Close(std::move(fuchsia::web::FrameCloseRequest().set_timeout(
       base::Milliseconds(1u).ToZxDuration())));
 
-  frame.RunUntilMessagePortClosed();
+  // Don't wait for the MessagePort to close, since that doesn't happen in
+  // ASAN builds, for some reason (crbug.com/1400304).
 
   // Regardless of how many events may have been delivered, teardown should
   // have timed-out.

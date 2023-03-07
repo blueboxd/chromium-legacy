@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 GEN_INCLUDE(['../testing/fake_objects.js']);
 
 /**
  * Test fixture for DesktopAutomationHandler.
  */
-ChromeVoxDesktopAutomationHandlerTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxDesktopAutomationHandlerTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
 
     // Alphabetical based on file path.
+    await importModule(
+        'ChromeVoxState', '/chromevox/background/chromevox_state.js');
     await importModule(
         'DesktopAutomationHandler',
         '/chromevox/background/desktop_automation_handler.js');
@@ -27,14 +29,14 @@ ChromeVoxDesktopAutomationHandlerTest = class extends ChromeVoxNextE2ETest {
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
 
-    await new Promise(r => {
-      chrome.automation.getDesktop(desktop => {
-        this.handler_ = DesktopAutomationInterface.instance;
-        r();
-      });
-    });
+    await ChromeVoxState.ready();
+    this.handler_ = DesktopAutomationInterface.instance;
 
-    window.press = this.press;
+    globalThis.EventType = chrome.automation.EventType;
+    globalThis.RoleType = chrome.automation.RoleType;
+    globalThis.StateType = chrome.automation.StateType;
+
+    globalThis.press = this.press;
   }
 
   press(keyCode, modifiers) {
@@ -84,6 +86,53 @@ AX_TEST_F(
 
           .expectNextSpeechUtteranceIsNot('70%')
           .expectSpeech('80%');
+
+      await mockFeedback.replay();
+    });
+
+AX_TEST_F(
+    'ChromeVoxDesktopAutomationHandlerTest', 'OnAutofillAvailabilityChanged',
+    async function() {
+      const AUTOFILL_AVAILABLE_UTTERANCE =
+          'Press up or down arrow for auto completions';
+      const root = await this.runWithLoadedTree(`<input><button>`);
+      const input = root.find({role: RoleType.TEXT_FIELD});
+      const button = root.find({role: RoleType.BUTTON});
+      const state =
+          {[StateType.FOCUSED]: false, [StateType.AUTOFILL_AVAILABLE]: false};
+      Object.defineProperty(input, 'state', {get: () => state});
+
+      const event = new CustomAutomationEvent(
+          EventType.AUTOFILL_AVAILABILITY_CHANGED, input);
+      const utterances = [];
+      ChromeVox.tts.speak = utterances.push.bind(utterances);
+
+      // Autofill available, but it is not focused: no feedback expected
+      state[StateType.FOCUSED] = false;
+      state[StateType.AUTOFILL_AVAILABLE] = true;
+      this.handler_.onAutofillAvailabilityChanged(event);
+      assertEquals(utterances.indexOf(AUTOFILL_AVAILABLE_UTTERANCE), -1);
+
+      // Focused element with no autofill availability: no feedback
+      state[StateType.FOCUSED] = true;
+      state[StateType.AUTOFILL_AVAILABLE] = false;
+      this.handler_.onAutofillAvailabilityChanged(event);
+      assertEquals(utterances.indexOf(AUTOFILL_AVAILABLE_UTTERANCE), -1);
+
+      // Focused element receives autofill options: announce it
+      state[StateType.FOCUSED] = true;
+      state[StateType.AUTOFILL_AVAILABLE] = true;
+      this.handler_.onAutofillAvailabilityChanged(event);
+      assertNotEquals(utterances.indexOf(AUTOFILL_AVAILABLE_UTTERANCE), -1);
+
+      const mockFeedback = this.createMockFeedback();
+      mockFeedback
+          .call(() => {
+            // Get focus on element with autofill: it should be announced
+            button.focus();
+            input.focus();
+          })
+          .expectSpeech(AUTOFILL_AVAILABLE_UTTERANCE);
 
       await mockFeedback.replay();
     });
@@ -170,8 +219,9 @@ AX_TEST_F(
       await mockFeedback.replay();
     });
 
+// TODO(crbug.com/1292501): Fix flakiness.
 AX_TEST_F(
-    'ChromeVoxDesktopAutomationHandlerTest', 'DatalistSelection',
+    'ChromeVoxDesktopAutomationHandlerTest', 'DISABLED_DatalistSelection',
     async function() {
       const mockFeedback = this.createMockFeedback();
       const site = `

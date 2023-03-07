@@ -7,17 +7,18 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/debug/stack_trace.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_url_data_source.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -349,7 +350,7 @@ std::unique_ptr<WebAppInstallInfo> GenerateWebAppInstallInfoForTestApp() {
   info->title = u"Test System App";
   info->theme_color = 0xFF00FF00;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+  info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
   info->install_url = GURL("chrome://test-system-app/pwa.html");
   return info;
 }
@@ -536,7 +537,8 @@ TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
             info->title = u"Test System App";
             info->theme_color = 0xFF00FF00;
             info->display_mode = blink::mojom::DisplayMode::kStandalone;
-            info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+            info->user_display_mode =
+                web_app::mojom::UserDisplayMode::kStandalone;
             info->install_url = GURL("chrome://initiating-app/pwa.html");
             return info;
           })));
@@ -718,7 +720,7 @@ CreateSystemAppDelegateWithWindowConfig(
         info->title = u"Test System App";
         info->theme_color = 0xFF00FF00;
         info->display_mode = blink::mojom::DisplayMode::kStandalone;
-        info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+        info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
         return info;
       }));
 

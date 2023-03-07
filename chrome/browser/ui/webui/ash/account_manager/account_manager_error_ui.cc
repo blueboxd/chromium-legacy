@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/ash/account_manager/account_manager_error_ui.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -18,8 +18,9 @@ namespace ash {
 
 AccountManagerErrorUI::AccountManagerErrorUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui), weak_factory_(this) {
-  content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
-      chrome::kChromeUIAccountManagerErrorHost);
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::CreateAndAdd(
+          Profile::FromWebUI(web_ui), chrome::kChromeUIAccountManagerErrorHost);
 
   web_ui->RegisterMessageCallback(
       "closeDialog", base::BindRepeating(&WebDialogUI::CloseDialog,
@@ -55,9 +56,6 @@ AccountManagerErrorUI::AccountManagerErrorUI(content::WebUI* web_ui)
                                IDR_ACCOUNT_MANAGER_ERROR_APP_HTML_JS);
 
   html_source->SetDefaultResource(IDR_ACCOUNT_MANAGER_ERROR_HTML);
-
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, html_source);
 }
 
 AccountManagerErrorUI::~AccountManagerErrorUI() = default;

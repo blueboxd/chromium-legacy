@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
@@ -234,7 +234,7 @@ void CryptAuthDeviceSyncerImpl::AttemptNextStep() {
       GetBluetoothAddress();
       return;
     case State::kWaitingForBluetoothAddress:
-      if (features::IsEcheSWAEnabled()) {
+      if (features::IsCryptauthAttestationSyncingEnabled()) {
         GetAttestationCertificates();
         return;
       }
@@ -774,7 +774,7 @@ void CryptAuthDeviceSyncerImpl::FinishAttempt(
   if (result_type == CryptAuthDeviceSyncResult::ResultType::kSuccess) {
     synced_bluetooth_address_tracker_->SetLastSyncedBluetoothAddress(
         local_better_together_device_metadata_.bluetooth_public_address());
-    if (features::IsEcheSWAEnabled()) {
+    if (features::IsCryptauthAttestationSyncingEnabled()) {
       if (are_attestation_certs_valid_) {
         attestation_certificates_syncer_->SetLastSyncTimestamp();
       }

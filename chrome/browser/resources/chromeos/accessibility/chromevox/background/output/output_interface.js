@@ -19,98 +19,47 @@ const EventType = chrome.automation.EventType;
 export class OutputInterface {
   /**
    * Appends output to the |buff|.
+   *
+   * This function is public only to output classes.
    * @param {!Array<Spannable>} buff
    * @param {string|!Spannable} value
    * @param {{annotation: Array<*>, isUnique: (boolean|undefined)}=} opt_options
    */
-  append_(buff, value, opt_options) {}
+  append(buff, value, opt_options) {}
 
   /**
+   * This function is public only to output classes.
    * @param {string} text
    * @param {!AutomationNode} contextNode
    * @param {!Array<Spannable>} buff
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    */
-  assignLocaleAndAppend_(text, contextNode, buff, options) {}
+  assignLocaleAndAppend(text, contextNode, buff, options) {}
 
   /**
    * Find the earcon for a given node (including ancestry).
+   *
+   * This function is public only to output classes.
    * @param {!AutomationNode} node
    * @param {!AutomationNode=} opt_prevNode
    * @return {outputTypes.OutputAction}
    */
-  findEarcon_(node, opt_prevNode) {}
+  findEarcon(node, opt_prevNode) {}
 
   /**
-   * Format the node given the format specifier.
-   * @param {!outputTypes.OutputFormattingData} params All the required and
-   *     optional parameters for formatting.
+   * @param {!AutomationNode} node
+   * @param {!AutomationNode} prevNode
+   * @param {!outputTypes.OutputEventType} type
+   * @param {!Array<Spannable>} buff
+   * @param {!OutputFormatLogger} formatLog
    */
-  format_(params) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatAsFieldAccessor_(data, token, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatAsStateValue_(data, token, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatCustomFunction_(data, token, tree, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   */
-  formatListNestedLevel_(data) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatMessage_(data, token, tree, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatNode_(data, token, tree, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   */
-  formatPhoneticReading_(data) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   */
-  formatPrecedingBullet_(data) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatTextContent_(data, token, options) {}
+  formatNode(node, prevNode, type, buff, formatLog) {}
 
   /**
    * Renders the given range using optional context previous range and event
    * type.
+   *
+   * This function is public only to output classes.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
    * @param {EventType|outputTypes.OutputEventType} type
@@ -118,7 +67,7 @@ export class OutputInterface {
    * @param {!OutputFormatLogger} formatLog
    * @param {{suppressStartEndAncestry: (boolean|undefined)}} optionalArgs
    */
-  render_(range, prevRange, type, buff, formatLog, optionalArgs) {}
+  render(range, prevRange, type, buff, formatLog, optionalArgs) {}
 
   /**
    * @param {string} token
@@ -131,4 +80,7 @@ export class OutputInterface {
 
   /** @return {boolean} */
   get formatAsBraille() {}
+
+  /** @return {boolean} */
+  get formatAsSpeech() {}
 }

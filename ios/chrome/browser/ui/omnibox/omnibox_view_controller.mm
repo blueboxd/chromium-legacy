@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
-#import "base/bind.h"
 #import "base/containers/contains.h"
+#import "base/functional/bind.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
@@ -117,6 +117,7 @@ const CGFloat kClearButtonSize = 28.0f;
                                             textFieldTint:textFieldTintColor
                                                  iconTint:iconTintColor];
   self.view.incognito = self.incognito;
+  self.view.layoutGuideCenter = self.layoutGuideCenter;
 
   self.view.shouldGroupAccessibilityChildren = YES;
 
@@ -161,8 +162,6 @@ const CGFloat kClearButtonSize = 28.0f;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-
-  [self.view attachLayoutGuides];
 
   [NSNotificationCenter.defaultCenter
       addObserver:self

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -24,14 +24,8 @@ class PrefRegistrySimple;
 class Profile;
 
 namespace base {
-// TODO(crbug.com/1187061): Refactor this to remove base::DictionaryValue.
-class DictionaryValue;
 class FilePath;
 }  // namespace base
-
-namespace chromeos::system {
-class StatisticsProvider;
-}
 
 namespace extensions {
 class ExternalLoader;
@@ -47,6 +41,10 @@ class PrefRegistrySyncable;
 }  // namespace user_prefs
 
 namespace ash {
+
+namespace system {
+class StatisticsProvider;
+}
 
 class CustomizationWallpaperDownloader;
 class ServicesCustomizationExternalLoader;
@@ -124,12 +122,12 @@ class StartupCustomizationDocument : public CustomizationDocument {
   StartupCustomizationDocument();
 
   // C-tor for test construction.
-  StartupCustomizationDocument(chromeos::system::StatisticsProvider* provider,
+  StartupCustomizationDocument(system::StatisticsProvider* provider,
                                const std::string& manifest);
 
   ~StartupCustomizationDocument() override;
 
-  void Init(chromeos::system::StatisticsProvider* provider);
+  void Init(system::StatisticsProvider* provider);
 
   std::string initial_locale_;
   std::vector<std::string> configured_locales_;

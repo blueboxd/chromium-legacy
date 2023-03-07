@@ -41,6 +41,10 @@ BASE_FEATURE(kClientSideDetectionReferrerChain,
              "ClientSideDetectionReferrerChain",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kClientSideDetectionTypeForceRequest,
+             "ClientSideDetectionTypeForceRequest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kComponentUpdaterAndroidProtegoAllowlist,
              "SafeBrowsingComponentUpdaterAndroidProtegoAllowlist",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -98,6 +102,10 @@ BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
 
 BASE_FEATURE(kExtensionTelemetryPersistence,
              "SafeBrowsingExtensionTelemetryPersistence",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExtensionTelemetryConfiguration,
+             "SafeBrowsingExtensionTelemetryConfiguration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryPotentialPasswordTheft,
@@ -218,6 +226,7 @@ constexpr struct {
     {&kClientSideDetectionKillswitch, true},
     {&kClientSideDetectionModelIsFlatBuffer, true},
     {&kClientSideDetectionReferrerChain, true},
+    {&kClientSideDetectionTypeForceRequest, true},
     {&kComponentUpdaterAndroidProtegoAllowlist, true},
     {&kConnectorsScanningAccessToken, true},
     {&kConnectorsScanningReportOnlyUI, true},

@@ -4,10 +4,10 @@
 
 #include "base/task/thread_pool/test_task_factory.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
@@ -59,7 +59,8 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
                     ->RunsTasksInCurrentSequence());
   }
 
-  // Verify TaskRunnerHandles are set as expected in the task's scope.
+  // Verify task runner CurrentDefaultHandles are set as expected in the task's
+  // scope.
   switch (execution_mode_) {
     case TaskSourceExecutionMode::kJob:
     case TaskSourceExecutionMode::kParallel:
@@ -72,8 +73,9 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
       EXPECT_EQ(task_runner_, SequencedTaskRunner::GetCurrentDefault());
       break;
     case TaskSourceExecutionMode::kSingleThread:
-      // SequencedTaskRunnerHandle inherits from ThreadTaskRunnerHandle so
-      // both are expected to be "set" in the kSingleThread case.
+      // SequencedTaskRunner::CurrentDefaultHandle inherits from
+      // SingleThreadTaskRunner::CurrentDefaultHandle so both are expected to be
+      // "set" in the kSingleThread case.
       EXPECT_TRUE(SingleThreadTaskRunner::HasCurrentDefault());
       EXPECT_TRUE(SequencedTaskRunner::HasCurrentDefault());
       EXPECT_EQ(task_runner_, SingleThreadTaskRunner::GetCurrentDefault());

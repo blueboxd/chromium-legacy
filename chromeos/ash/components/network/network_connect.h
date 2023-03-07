@@ -8,10 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
-
-namespace base {
-class Value;
-}
+#include "base/values.h"
 
 namespace ash {
 
@@ -22,6 +19,14 @@ class NetworkTypePattern;
 // of UI is handled by the NetworkConnect::Delegate implementation.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnect {
  public:
+  // Track the source of NetworkConnect calls for metrics.
+  enum class Source {
+    // Opened from the Settings UI.
+    kSettings = 1,
+    // Opened from the QuickSettings UI.
+    kQuickSettings = 2,
+  };
+
   class COMPONENT_EXPORT(CHROMEOS_NETWORK) Delegate {
    public:
     // Shows UI to configure or activate the network specified by |network_id|,
@@ -43,7 +48,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnect {
     virtual void ShowCarrierAccountDetail(const std::string& network_id) = 0;
 
     // Shows portal signin.
-    virtual void ShowPortalSignin(const std::string& network_id) = 0;
+    virtual void ShowPortalSignin(const std::string& network_id,
+                                  Source source) = 0;
 
     // Shows an error notification. |error_name| is an error defined in
     // NetworkConnectionHandler. |network_id| may be empty.
@@ -95,7 +101,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnect {
   virtual void ShowCarrierAccountDetail(const std::string& network_id) = 0;
 
   // Opens the portal signin.
-  virtual void ShowPortalSignin(const std::string& network_id) = 0;
+  virtual void ShowPortalSignin(const std::string& network_id,
+                                Source source) = 0;
 
   // Configures a network with a dictionary of Shill properties, then sends a
   // connect request. The profile is set according to 'shared' if allowed.
@@ -108,12 +115,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnect {
   // Shill properties and sends a connect request if the configuration succeeds.
   // The profile used is determined by |shared|.
   // TODO(stevenjb): Use ONC properties instead of shill.
-  virtual void CreateConfigurationAndConnect(base::Value* shill_properties,
+  virtual void CreateConfigurationAndConnect(base::Value::Dict shill_properties,
                                              bool shared) = 0;
 
   // Requests a new network configuration to be created from a dictionary of
   // Shill properties. The profile used is determined by |shared|.
-  virtual void CreateConfiguration(base::Value* shill_properties,
+  virtual void CreateConfiguration(base::Value::Dict shill_properties,
                                    bool shared) = 0;
 
  protected:
@@ -121,10 +128,5 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnect {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::NetworkConnect;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_CONNECT_H_

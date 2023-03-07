@@ -6,6 +6,7 @@
 #define NET_CERT_INTERNAL_TRUST_STORE_WIN_H_
 
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/lock.h"
 #include "base/win/wincrypt_shim.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/base/net_export.h"
@@ -19,9 +20,42 @@ namespace net {
 // TODO(https://crbug.com/1239270): confirm this is thread safe.
 class NET_EXPORT TrustStoreWin : public TrustStore {
  public:
-  // Creates a TrustStoreWin by reading user settings from Windows system
-  // CertStores. If there are errors, will return a TrustStoreWin object
-  // that may not read all Windows system CertStores.
+  struct NET_EXPORT_PRIVATE CertStores {
+    ~CertStores();
+    CertStores(CertStores&& other);
+    CertStores& operator=(CertStores&& other);
+
+    // Create a CertStores object with the stores initialized with (empty)
+    // CERT_STORE_PROV_COLLECTION stores.
+    static CertStores CreateWithCollections();
+
+    // Create a CertStores object with the stores pre-initialized with
+    // in-memory cert stores for testing purposes.
+    static CertStores CreateInMemoryStoresForTesting();
+
+    // Create a CertStores object with null cert store pointers for testing
+    // purposes.
+    static CertStores CreateNullStoresForTesting();
+
+    // Returns true if any of the cert stores are not initialized.
+    bool is_null() const {
+      return !roots.get() || !intermediates.get() || !trusted_people.get() ||
+             !disallowed.get() || !all.get();
+    }
+
+    crypto::ScopedHCERTSTORE roots;
+    crypto::ScopedHCERTSTORE intermediates;
+    crypto::ScopedHCERTSTORE trusted_people;
+    crypto::ScopedHCERTSTORE disallowed;
+    crypto::ScopedHCERTSTORE all;
+
+   private:
+    CertStores();
+
+    void InitializeAllCertsStore();
+  };
+
+  // Creates a TrustStoreWin.
   TrustStoreWin();
 
   ~TrustStoreWin() override;
@@ -32,34 +66,31 @@ class NET_EXPORT TrustStoreWin : public TrustStore {
   // as if it's the source of truth for roots for `GetTrust,
   // and `intermediate_cert_store` as an extra store (in addition to
   // root_cert_store) for locating certificates during `SyncGetIssuersOf`.
-  static std::unique_ptr<TrustStoreWin> CreateForTesting(
-      crypto::ScopedHCERTSTORE root_cert_store,
-      crypto::ScopedHCERTSTORE intermediate_cert_store,
-      crypto::ScopedHCERTSTORE disallowed_cert_store);
+  static std::unique_ptr<TrustStoreWin> CreateForTesting(CertStores stores);
+
+  // Loads user settings from Windows CertStores. If there are errors,
+  // the underlyingTrustStoreWin object may not read all Windows
+  // CertStores when making trust decisions.
+  void InitializeStores();
 
   void SyncGetIssuersOf(const ParsedCertificate* cert,
                         ParsedCertificateList* issuers) override;
 
   CertificateTrust GetTrust(const ParsedCertificate* cert,
-                            base::SupportsUserData* debug_data) const override;
+                            base::SupportsUserData* debug_data) override;
 
  private:
-  TrustStoreWin(crypto::ScopedHCERTSTORE root_cert_store,
-                crypto::ScopedHCERTSTORE intermediate_cert_store,
-                crypto::ScopedHCERTSTORE disallowed_cert_store,
-                crypto::ScopedHCERTSTORE all_certs_store);
+  // Inner Impl class for use in initializing stores.
+  class Impl;
 
-  // Cert Collection containing all user-added trust anchors.
-  crypto::ScopedHCERTSTORE root_cert_store_;
+  explicit TrustStoreWin(std::unique_ptr<Impl> impl);
 
-  // Cert Collection containing all user-added intermediates.
-  crypto::ScopedHCERTSTORE intermediate_cert_store_;
+  // Loads user settings from Windows CertStores if not already done and
+  // returns pointer to the Impl.
+  Impl* MaybeInitializeAndGetImpl();
 
-  // Cert Collection for searching via SyncGetIssuersOf()
-  crypto::ScopedHCERTSTORE all_certs_store_;
-
-  // Cert Collection for all disallowed certs.
-  crypto::ScopedHCERTSTORE disallowed_cert_store_;
+  base::Lock init_lock_;
+  std::unique_ptr<Impl> impl_ GUARDED_BY(init_lock_);
 };
 
 }  // namespace net

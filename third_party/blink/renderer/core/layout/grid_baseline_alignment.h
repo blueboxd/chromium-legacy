@@ -193,8 +193,7 @@ class GridBaselineAlignment {
 
   typedef HeapHashMap<unsigned,
                       Member<BaselineContext>,
-                      DefaultHash<unsigned>,
-                      WTF::UnsignedWithZeroKeyHashTraits<unsigned>>
+                      IntWithZeroKeyHashTraits<unsigned>>
       BaselineContextsMap;
 
   // Grid Container's WritingMode, used to determine grid item's orthogonality.

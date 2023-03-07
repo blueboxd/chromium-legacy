@@ -18,14 +18,16 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#include "base/memory/raw_ptr_exclusion.h"
+
 #if defined(ANDROID)
 // Work-around for buggy headers in Android's NDK
 #define __user
 #endif
 #include <linux/futex.h>
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
@@ -58,8 +60,6 @@
 #define PR_CAPBSET_READ 23
 #define PR_CAPBSET_DROP 24
 #endif
-
-#define CASES SANDBOX_BPF_DSL_CASES
 
 namespace sandbox {
 namespace bpf_dsl {
@@ -821,7 +821,7 @@ ResultExpr SimpleCondTestPolicy::EvaluateSyscall(int sysno) const {
       // disallow everything else.
       const Arg<int> option(0);
       return Switch(option)
-          .CASES((PR_SET_DUMPABLE, PR_GET_DUMPABLE), Allow())
+          .Cases({PR_SET_DUMPABLE, PR_GET_DUMPABLE}, Allow())
           .Default(Error(ENOMEM));
     }
     default:
@@ -923,7 +923,9 @@ class EqualityStressTest {
   struct ArgValue {
     int argno;  // Argument number to inspect.
     int size;   // Number of test cases (must be > 0).
-    struct Tests {
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #overlapping
+    RAW_PTR_EXCLUSION struct Tests {
       uint32_t k_value;            // Value to compare syscall arg against.
       int err;                     // If non-zero, errno value to return.
       raw_ptr<struct ArgValue>
@@ -1788,8 +1790,8 @@ ResultExpr PthreadPolicyEquality::EvaluateSyscall(int sysno) const {
                                            CLONE_SYSVSEM;
     const Arg<unsigned long> flags(0);
     return Switch(flags)
-        .CASES((kGlibcCloneMask, (kBaseAndroidCloneMask | CLONE_DETACHED),
-                kBaseAndroidCloneMask),
+        .Cases({kGlibcCloneMask, (kBaseAndroidCloneMask | CLONE_DETACHED),
+                kBaseAndroidCloneMask},
                Allow())
         .Default(Trap(PthreadTrapHandler, "Unknown mask"));
   }

@@ -38,12 +38,13 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 59;
+const int kCurrentVersionNumber = 61;
 const int kCompatibleVersionNumber = 16;
 
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 const char kMayContainForeignVisits[] = "may_contain_foreign_visits";
 const char kDeleteForeignVisitsUntilId[] = "delete_foreign_visits_until_id";
+const char kKnownToSyncVisitsExist[] = "known_to_sync_visits_exist";
 
 // Logs a migration failure to UMA and logging. The return value will be
 // what to return from ::Init (to simplify the call sites). Migration failures
@@ -471,6 +472,16 @@ void HistoryDatabase::SetDeleteForeignVisitsUntilId(VisitID visit_id) {
   meta_table_.SetValue(kDeleteForeignVisitsUntilId, visit_id);
 }
 
+bool HistoryDatabase::KnownToSyncVisitsExist() {
+  int result = false;
+  meta_table_.GetValue(kKnownToSyncVisitsExist, &result);
+  return result != 0;
+}
+
+void HistoryDatabase::SetKnownToSyncVisitsExist(bool exist) {
+  meta_table_.SetValue(kKnownToSyncVisitsExist, exist ? 1 : 0);
+}
+
 TypedURLSyncMetadataDatabase* HistoryDatabase::GetTypedURLMetadataDB() {
   return &typed_url_metadata_db_;
 }
@@ -822,6 +833,22 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 58) {
     if (!MigrateVisitsAddIsKnownToSyncColumn())
       return LogMigrationFailure(58);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 59) {
+    if (!MigrateClustersAddTriggerabilityCalculated()) {
+      return LogMigrationFailure(59);
+    }
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 60) {
+    if (!MigrateClustersAutoincrementIdAndAddOriginatorColumns()) {
+      return LogMigrationFailure(60);
+    }
     cur_version++;
     meta_table_.SetVersionNumber(cur_version);
   }

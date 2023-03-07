@@ -6,9 +6,9 @@
 
 #include <unistd.h>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -29,7 +29,6 @@ void PopulateTerminationInfo(
   info->threw_exception_during_init = content_info.threw_exception_during_init;
   info->was_killed_intentionally_by_browser =
       content_info.was_killed_intentionally_by_browser;
-  info->best_effort_reverse_rank = content_info.best_effort_reverse_rank;
   info->renderer_has_visible_clients =
       content_info.renderer_has_visible_clients;
   info->renderer_was_subframe = content_info.renderer_was_subframe;
@@ -45,9 +44,6 @@ operator=(const TerminationInfo& other) = default;
 
 ChildExitObserver::ChildExitObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                              content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                               content::NotificationService::AllSources());
@@ -75,6 +71,13 @@ void ChildExitObserver::ChildReceivedCrashSignal(base::ProcessId pid,
   bool result =
       child_pid_to_crash_signal_.insert(std::make_pair(pid, signo)).second;
   DCHECK(result);
+}
+
+void ChildExitObserver::OnRenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  // The child process pid isn't available when process is gone, keep a mapping
+  // between process_host_id and pid, so we can find it later.
+  process_host_id_to_pid_[host->GetID()] = host->GetProcess().Handle();
 }
 
 void ChildExitObserver::OnChildExit(TerminationInfo* info) {
@@ -178,12 +181,6 @@ void ChildExitObserver::Observe(int type,
                .ptr();
       PopulateTerminationInfo(content_info, &info);
       break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      // The child process pid isn't available when process is gone, keep a
-      // mapping between process_host_id and pid, so we can find it later.
-      process_host_id_to_pid_[rph->GetID()] = rph->GetProcess().Handle();
-      return;
     }
     default:
       NOTREACHED();

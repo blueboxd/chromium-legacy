@@ -9,7 +9,7 @@
 #import <memory>
 #import <utility>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/i18n/time_formatting.h"
 #import "base/ios/device_util.h"
 #import "base/logging.h"
@@ -380,30 +380,30 @@ void OmahaService::Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
 void OmahaService::CheckNow(OneOffCallback callback) {
   DCHECK(!callback.is_null());
 
-  if (OmahaService::IsEnabled()) {
-    OmahaService* service = GetInstance();
-    web::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&OmahaService::CheckNowOnIOThread,
-                       base::Unretained(service), std::move(callback)));
-  }
-}
+  OmahaService* service = GetInstance();
+  DCHECK(service->started_);
 
-void OmahaService::CheckNowOnIOThread(OneOffCallback callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  DCHECK(!callback.is_null());
-
-  DCHECK(one_off_check_callback_.is_null());
-  one_off_check_callback_ = std::move(callback);
+  DCHECK(service->one_off_check_callback_.is_null());
+  service->one_off_check_callback_ = std::move(callback);
 
   // If there is not an ongoing ping, send one.
-  if (!url_loader_) {
-    SendPing();
+  if (!service->url_loader_) {
+    service->SendPing();
   } else {
     // The one off ping is taking the scheduled one, so the scheduled ping is
     // now "canceled".
-    scheduled_ping_canceled_ = true;
+    service->scheduled_ping_canceled_ = true;
   }
+}
+
+// static
+void OmahaService::Stop() {
+  if (!OmahaService::IsEnabled()) {
+    return;
+  }
+
+  OmahaService* service = GetInstance();
+  service->StopInternal();
 }
 
 OmahaService::OmahaService() : OmahaService(/*schedule=*/true) {}
@@ -481,6 +481,12 @@ void OmahaService::StartInternal() {
     PersistStates();
 }
 
+void OmahaService::StopInternal() {
+  if (!started_) {
+    return;
+  }
+}
+
 // static
 void OmahaService::GetDebugInformation(
     base::OnceCallback<void(base::Value::Dict)> callback) {
@@ -500,7 +506,6 @@ void OmahaService::GetDebugInformation(
 
 // static
 base::TimeDelta OmahaService::GetBackOff(uint8_t number_of_tries) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // Configuration for the service exponential backoff
   static net::BackoffEntry::Policy kBackoffPolicy = {
       0,                             // num_errors_to_ignore
@@ -526,7 +531,6 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
                                          const std::string& channelName,
                                          const base::Time& installationTime,
                                          PingContent pingContent) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   XmlWrapper xml_wrapper;
 
   {
@@ -615,7 +619,6 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
 }
 
 std::string OmahaService::GetCurrentPingContent() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   const base::Version& current_version = version_info::GetVersion();
   sending_install_event_ = last_sent_version_ < current_version;
   PingContent ping_content =
@@ -631,7 +634,6 @@ std::string OmahaService::GetCurrentPingContent() {
 }
 
 void OmahaService::SendPing() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // If a scheduled ping comes during a one off, drop it.
   if (url_loader_ && !one_off_check_callback_.is_null()) {
     scheduled_ping_canceled_ = true;
@@ -687,7 +689,6 @@ void OmahaService::SendPing() {
 }
 
 void OmahaService::SendOrScheduleNextPing() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   base::Time now = base::Time::Now();
   if (next_tries_time_ <= now) {
     SendPing();
@@ -723,7 +724,6 @@ void OmahaService::PersistStates() {
 
 void OmahaService::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // Reset the loader.
   url_loader_.reset();
 
@@ -789,7 +789,6 @@ void OmahaService::OnURLLoadComplete(
 
 void OmahaService::GetDebugInformationOnIOThread(
     base::OnceCallback<void(base::Value::Dict)> callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   base::Value::Dict result;
 
   result.Set("message", GetCurrentPingContent());
@@ -815,13 +814,11 @@ void OmahaService::GetDebugInformationOnIOThread(
 }
 
 bool OmahaService::IsNextPingInstallRetry() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return [[NSUserDefaults standardUserDefaults]
              stringForKey:kRetryRequestIdKey] != nil;
 }
 
 std::string OmahaService::GetNextPingRequestId(PingContent ping_content) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   NSString* stored_id =
       [[NSUserDefaults standardUserDefaults] stringForKey:kRetryRequestIdKey];
   if (stored_id) {
@@ -836,7 +833,6 @@ std::string OmahaService::GetNextPingRequestId(PingContent ping_content) {
 }
 
 void OmahaService::SetInstallRetryRequestId(const std::string& request_id) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setObject:base::SysUTF8ToNSString(request_id)
                forKey:kRetryRequestIdKey];
@@ -845,7 +841,6 @@ void OmahaService::SetInstallRetryRequestId(const std::string& request_id) {
 }
 
 void OmahaService::ClearInstallRetryRequestId() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kRetryRequestIdKey];
   // Clear critical state information for usage reporting.
@@ -854,12 +849,10 @@ void OmahaService::ClearInstallRetryRequestId() {
 
 void OmahaService::InitializeURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   url_loader_factory_ = url_loader_factory;
 }
 
 void OmahaService::ClearPersistentStateForTests() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kNextTriesTimesKey];
   [defaults removeObjectForKey:kCurrentPingKey];

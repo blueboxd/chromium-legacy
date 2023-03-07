@@ -10,10 +10,10 @@
 
 #include "base/barrier_closure.h"
 #include "base/base64url.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -53,6 +53,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/devtools_background_services_context.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_result.h"
@@ -60,7 +61,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
@@ -945,20 +945,6 @@ void PushMessagingServiceImpl::RevokePermissionIfPossible(
     PrefService* prefs,
     Profile* profile) {
   if (app_level_notifications_enabled) {
-    if (prefs->GetTime(kNotificationsPermissionRevocationGracePeriodDate) !=
-        base::Time()) {
-      // Record when the grace period was started so we can adjust the grace
-      // period duration.
-      base::UmaHistogramLongTimes(
-          "Permissions.FCM.Revocation.ResetGracePeriod",
-          base::Time::Now() -
-              prefs->GetTime(
-                  kNotificationsPermissionRevocationGracePeriodDate));
-    }
-
-    base::UmaHistogramEnumeration("Permissions.FCM.Revocation",
-                                  FcmTokenRevocation::kResetGracePeriod);
-
     // Chrome has app-level Notifications permission. Reset the grace period
     // flag and continue as normal.
     prefs->ClearPref(kNotificationsPermissionRevocationGracePeriodDate);
@@ -985,12 +971,6 @@ void PushMessagingServiceImpl::RevokePermissionIfPossible(
     // revokes a push message registration token.
     permission_controller->ResetPermission(blink::PermissionType::NOTIFICATIONS,
                                            url::Origin::Create(origin));
-
-    base::UmaHistogramEnumeration("Permissions.FCM.Revocation",
-                                  FcmTokenRevocation::kRevokePermission);
-  } else {
-    base::UmaHistogramEnumeration("Permissions.FCM.Revocation",
-                                  FcmTokenRevocation::kGracePeriodIsNotOver);
   }
 }
 

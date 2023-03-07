@@ -9,24 +9,17 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/app_list/app_list_util.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_page_anchored_dialog.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/search_box/search_box_constants.h"
-#include "ash/style/ash_color_id.h"
 #include "ash/style/system_shadow.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/time/time.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/color/color_id.h"
-#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
@@ -122,10 +115,10 @@ void SearchResultPageView::InitializeContainers(
   // to keep the position of dialogs consistent.
   dialog_controller_ =
       std::make_unique<SearchResultPageDialogController>(search_box_view);
-  std::unique_ptr<ProductivityLauncherSearchView> search_view_ptr =
-      std::make_unique<ProductivityLauncherSearchView>(
+  std::unique_ptr<AppListSearchView> search_view_ptr =
+      std::make_unique<AppListSearchView>(
           view_delegate, dialog_controller_.get(), search_box_view);
-  productivity_launcher_search_view_ = search_view_ptr.get();
+  search_view_ = search_view_ptr.get();
   root_view_->AddChildView(
       std::make_unique<SearchCardView>(std::move(search_view_ptr)));
 }
@@ -135,11 +128,11 @@ const char* SearchResultPageView::GetClassName() const {
 }
 
 gfx::Size SearchResultPageView::CalculatePreferredSize() const {
-  int adjusted_height = std::min(
-      std::max(kMinHeight,
-               productivity_launcher_search_view_->TabletModePreferredHeight() +
-                   kActiveSearchBoxHeight + kExpandedSearchBoxCornerRadius),
-      contents_view()->height());
+  int adjusted_height =
+      std::min(std::max(kMinHeight, search_view_->TabletModePreferredHeight() +
+                                        kActiveSearchBoxHeight +
+                                        kExpandedSearchBoxCornerRadius),
+               contents_view()->height());
   return gfx::Size(kWidth, adjusted_height);
 }
 
@@ -172,8 +165,7 @@ void SearchResultPageView::OnThemeChanged() {
 }
 
 void SearchResultPageView::UpdateForNewSearch() {
-  productivity_launcher_search_view_->UpdateForNewSearch(
-      ShouldShowSearchResultView());
+  search_view_->UpdateForNewSearch(ShouldShowSearchResultView());
 }
 
 void SearchResultPageView::UpdateResultContainersVisibility() {
@@ -366,7 +358,7 @@ bool SearchResultPageView::CanSelectSearchResults() const {
   if (!GetVisible())
     return false;
 
-  return productivity_launcher_search_view_->CanSelectSearchResults();
+  return search_view_->CanSelectSearchResults();
 }
 
 bool SearchResultPageView::ShouldShowSearchResultView() const {
@@ -391,32 +383,6 @@ void SearchResultPageView::OnShown() {
 
   contents_view()->GetSearchBoxView()->OnResultContainerVisibilityChanged(
       ShouldShowSearchResultView());
-}
-
-void SearchResultPageView::AnimateYPosition(AppListViewState target_view_state,
-                                            const TransformAnimator& animator,
-                                            float default_offset) {
-  // Search result page view may host a native view to show answer card results.
-  // The native view hosts use view to widget coordinate conversion to calculate
-  // the native view bounds, and thus depend on the view transform values.
-  // Make sure the view is laid out before starting the transform animation so
-  // native views are not placed according to interim, animated page transform
-  // value.
-  layer()->GetAnimator()->StopAnimatingProperty(
-      ui::LayerAnimationElement::TRANSFORM);
-  if (needs_layout())
-    Layout();
-
-  animator.Run(default_offset, layer());
-  if (shadow_)
-    animator.Run(default_offset, shadow_->GetNinePatchLayer());
-  SearchResultPageAnchoredDialog* search_page_dialog =
-      dialog_controller_->dialog();
-  if (search_page_dialog) {
-    const float offset =
-        search_page_dialog->AdjustVerticalTransformOffset(default_offset);
-    animator.Run(offset, search_page_dialog->widget()->GetLayer());
-  }
 }
 
 void SearchResultPageView::UpdatePageOpacityForState(AppListState state,

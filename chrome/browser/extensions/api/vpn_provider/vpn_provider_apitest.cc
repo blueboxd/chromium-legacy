@@ -5,9 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/chromeos/extensions/vpn_provider/vpn_provider_api.h"
@@ -302,9 +302,11 @@ class VpnProviderApiTestAsh : public VpnProviderApiTestBase {
   }
 
   void TriggerInternalRemove() {
-    NetworkHandler::Get()->network_configuration_handler()->RemoveConfiguration(
-        GetSingleServicePath(), /*remove_confirmer=*/absl::nullopt,
-        base::DoNothing(), base::BindOnce(DoNothingFailureCallback));
+    ash::NetworkHandler::Get()
+        ->network_configuration_handler()
+        ->RemoveConfiguration(
+            GetSingleServicePath(), /*remove_confirmer=*/absl::nullopt,
+            base::DoNothing(), base::BindOnce(DoNothingFailureCallback));
   }
 
   bool HasService(const std::string& service_path) const {
@@ -435,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, ConfigPersistence) {
   properties.Set(shill::kProviderTypeProperty, shill::kProviderThirdPartyVpn);
   properties.Set(shill::kProfileProperty, kNetworkProfilePath);
 
-  NetworkHandler::Get()
+  ash::NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(base::Value(std::move(properties)),
                                  base::BindOnce(DoNothingSuccessCallback),

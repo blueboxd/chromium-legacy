@@ -45,7 +45,6 @@ import org.chromium.components.sync.protocol.AutofillWalletSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
 import org.chromium.components.sync.protocol.WalletMaskedCreditCard;
-import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -185,6 +184,10 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     private FakeServerHelper mFakeServerHelper;
     private SyncService mSyncService;
     private final SigninTestRule mSigninTestRule = new SigninTestRule();
+
+    public SigninTestRule getSigninTestRule() {
+        return mSigninTestRule;
+    }
 
     private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -377,9 +380,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
                 TrustedVaultClient.setInstanceForTesting(
                         new TrustedVaultClient(FakeTrustedVaultClientBackend.get()));
 
-                // Load native since the FakeServer needs it and possibly SyncService as well
-                // (depends on what fake is provided by |createSyncServiceImpl()|).
-                NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
+                startMainActivityForSyncTest();
 
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     SyncServiceImpl syncService = createSyncServiceImpl();
@@ -391,8 +392,6 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
                     mContext = InstrumentationRegistry.getTargetContext();
                     mFakeServerHelper = FakeServerHelper.createInstanceAndGet();
                 });
-
-                startMainActivityForSyncTest();
 
                 statement.evaluate();
             }

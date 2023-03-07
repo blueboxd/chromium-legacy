@@ -6,7 +6,8 @@
 
 #import <memory>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
+#import "base/ios/ios_util.h"
 #import "base/strings/strcat.h"
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
@@ -32,7 +33,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey/test_switches.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
@@ -49,7 +49,7 @@
 namespace {
 
 constexpr base::TimeDelta kWaitOnScheduledUserPolicyFetchInterval =
-    base::Seconds(10);
+    base::Seconds(20);
 
 std::string GetTestEmail() {
   return base::StrCat({"enterprise@", policy::SignatureProvider::kTestDomain1});
@@ -233,10 +233,10 @@ void VerifyTheNotificationUI() {
   VerifyThatPoliciesAreNotSet();
 }
 
+// TODO(crbug.com/1404093): Re-enable once we figure out a way to deal with the
+// Sync birthday.
 // Tests that the user policies are loaded from the store when Sync is still ON
 // at startup when the user policies were fetched in the previous session.
-// TODO(crbug.com/1362122): Re-enable this test once we figure out the problem
-// with flakes.
 - (void)DISABLED_testThatPoliciesAreLoadedFromStoreAtStartupIfSyncOn {
   // Turn on Sync for managed account to fetch user policies.
   FakeSystemIdentity* fakeManagedIdentity = [FakeSystemIdentity
@@ -263,9 +263,6 @@ void VerifyTheNotificationUI() {
       [FakeSystemIdentity encodeIdentitiesToBase64:@[ fakeManagedIdentity ]]);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:base::Seconds(5)];
-
   // Wait until the user policies are loaded from disk.
   WaitOnUserPolicy(kWaitOnScheduledUserPolicyFetchInterval);
 
@@ -274,9 +271,8 @@ void VerifyTheNotificationUI() {
   VerifyThatPoliciesAreSet();
 }
 
-// Tests that the user policies are fetched when the user decides to "Continue"
-// in the notification dialog.
-// TODO(crbug.com/1386163): Failing on iphone device and simulator.
+// TODO(crbug.com/1386163): Tests that the user policies are fetched when the
+// user decides to "Continue" in the notification dialog.
 - (void)DISABLED_testUserPolicyNotificationWithAcceptChoice {
   // Clear the prefs related to user policy to make sure that the notification
   // isn't skipped and that the fetch is started within the minimal schedule
@@ -294,6 +290,8 @@ void VerifyTheNotificationUI() {
                  gaiaID:@"exampleManagedID"
                    name:@"Fake Managed"];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity];
+
+  [ChromeEarlGreyAppInterface commitPendingUserPrefsWrite];
 
   // Restart the browser while keeping Sync ON by preserving the identity of the
   // managed account.

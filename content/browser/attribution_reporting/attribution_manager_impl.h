@@ -9,10 +9,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -159,8 +159,15 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
                  base::OnceClosure done) override;
   void NotifyFailedSourceRegistration(
       const std::string& header_value,
+      const attribution_reporting::SuitableOrigin& source_origin,
       const attribution_reporting::SuitableOrigin& reporting_origin,
       attribution_reporting::mojom::SourceRegistrationError) override;
+
+  void GetAllDataKeys(
+      base::OnceCallback<void(std::vector<DataKey>)> callback) override;
+
+  void RemoveAttributionDataByDataKey(const DataKey& data_key,
+                                      base::OnceClosure callback) override;
 
  private:
   friend class AttributionManagerImplTest;
@@ -207,7 +214,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
                            bool is_debug_report,
                            ReportSentCallback callback);
   void OnReportSent(base::OnceClosure done,
-                    AttributionReport report,
+                    const AttributionReport&,
                     SendResult info);
   void AssembleAggregatableReport(AttributionReport report,
                                   bool is_debug_report,
@@ -221,11 +228,11 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       AggregationService::AssemblyStatus);
   void MarkReportCompleted(AttributionReport::Id report_id);
 
-  void OnSourceStored(StorableSource source,
+  void OnSourceStored(const StorableSource& source,
                       absl::optional<uint64_t> cleared_debug_key,
                       bool is_debug_cookie_set,
                       AttributionStorage::StoreSourceResult result);
-  void OnReportStored(AttributionTrigger trigger,
+  void OnReportStored(const AttributionTrigger& trigger,
                       absl::optional<uint64_t> cleared_debug_key,
                       bool is_debug_cookie_set,
                       CreateReportResult result);
@@ -234,8 +241,10 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   void NotifySourcesChanged();
   void NotifyReportsChanged(AttributionReport::Type report_type);
-  void NotifyReportSent(bool is_debug_report, AttributionReport, SendResult);
-  void NotifyDebugReportSent(AttributionDebugReport, int status);
+  void NotifyReportSent(bool is_debug_report,
+                        const AttributionReport&,
+                        SendResult);
+  void NotifyDebugReportSent(const AttributionDebugReport&, int status);
 
   bool IsReportAllowed(const AttributionReport&) const;
 

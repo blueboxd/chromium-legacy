@@ -15,9 +15,9 @@
 
 #include "base/atomicops.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -84,6 +84,7 @@ class ThreadGroupImplImplTestBase : public ThreadGroup::Delegate {
     task_tracker_.FlushForTesting();
     if (thread_group_)
       thread_group_->JoinForTesting();
+    mock_pooled_task_runner_delegate_.SetThreadGroup(nullptr);
     thread_group_.reset();
   }
 
@@ -1423,6 +1424,7 @@ TEST_F(ThreadGroupImplBlockingTest, ThreadBusyShutdown) {
   task_tracker_.FlushForTesting();
   thread_group_->JoinForTesting();
   EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+  mock_pooled_task_runner_delegate_.SetThreadGroup(nullptr);
   thread_group_.reset();
 }
 
@@ -1907,6 +1909,7 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, RacyCleanup) {
 
   // Unwinding this test will be racy if worker cleanup can race with
   // ThreadGroupImpl destruction : https://crbug.com/810464.
+  mock_pooled_task_runner_delegate_.SetThreadGroup(nullptr);
   thread_group_.reset();
 }
 

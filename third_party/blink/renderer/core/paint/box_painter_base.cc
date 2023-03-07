@@ -208,35 +208,20 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
           context.ClipOut(rect_to_clip_out.Rect());
       }
 
-      absl::optional<gfx::RectF> clip_rect;
-      auto GetClipRect = [&clip_rect, &fill_rect,
-                          shadow_blur]() -> gfx::RectF& {
-        if (!clip_rect) {
-          // Create a "pseudo-infinite" rectangle, that should be large enough
-          // to contain shadows on all four sides, including blur.
-          clip_rect.emplace(fill_rect.x() - shadow_blur * 3,
-                            fill_rect.y() - shadow_blur * 3,
-                            fill_rect.width() + shadow_blur * 6,
-                            fill_rect.height() + shadow_blur * 6);
-        }
-        return *clip_rect;
-      };
+      if (!sides_to_include.HasAllSides()) {
+        // Create a "pseudo-infinite" clip rectangle that should be large enough
+        // to contain shadows on all four sides, including blur. Clip to the
+        // border box for the sides that are excluded in this fragment.
+        gfx::RectF keep = fill_rect + shadow_offset;
+        keep.Outset(shadow_blur * 3);
+        const gfx::RectF& clip = border.Rect();
 
-      // Clip out the sides that are excluded in this fragment.
-      if (!sides_to_include.left)
-        GetClipRect().set_x(rect_to_clip_out.Rect().x());
-      if (!sides_to_include.top)
-        GetClipRect().set_y(rect_to_clip_out.Rect().y());
-      if (!sides_to_include.right) {
-        GetClipRect().set_width(rect_to_clip_out.Rect().right() -
-                                clip_rect->x());
+        float left = sides_to_include.left ? keep.x() : clip.x();
+        float top = sides_to_include.top ? keep.y() : clip.y();
+        float right = sides_to_include.right ? keep.right() : clip.right();
+        float bottom = sides_to_include.bottom ? keep.bottom() : clip.bottom();
+        context.Clip(gfx::RectF(left, top, right - left, bottom - top));
       }
-      if (!sides_to_include.bottom) {
-        GetClipRect().set_height(rect_to_clip_out.Rect().bottom() -
-                                 clip_rect->y());
-      }
-      if (clip_rect)
-        context.Clip(*clip_rect);
     }
 
     // Draw only the shadow. If the color of the shadow is transparent we will
@@ -1190,7 +1175,7 @@ void BoxPainterBase::PaintFillLayerTextFillBox(
   GraphicsContextStateSaver background_clip_state_saver(context, false);
   background_clip_state_saver.Save();
   context.Clip(mask_rect);
-  context.BeginLayer(1, composite_op);
+  context.BeginLayer(composite_op);
 
   PaintFillLayerBackground(document_, context, info, node_, style_, image,
                            SkBlendMode::kSrcOver, geometry,
@@ -1199,7 +1184,7 @@ void BoxPainterBase::PaintFillLayerTextFillBox(
   // Create the text mask layer and draw the text into the mask. We do this by
   // painting using a special paint phase that signals to InlineTextBoxes that
   // they should just add their contents to the clip.
-  context.BeginLayer(1, SkBlendMode::kDstIn);
+  context.BeginLayer(SkBlendMode::kDstIn);
 
   PaintTextClipMask(paint_info, mask_rect, scrolled_paint_rect.offset,
                     object_has_multiple_boxes);

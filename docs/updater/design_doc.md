@@ -18,11 +18,12 @@ The updater is responsible for:
 *   Detecting the uninstallation of those applications, and automatically
     removing itself when all other applications have been uninstalled.
 
-The updater is written for Windows, macOS, Linux. The behavior of the updater
-is mostly platform-independent. However, platform-specific modules exist to
-translate cross-platform concepts (such as IPC interfaces) to platform-specific
-technologies (such as COM or XPC). Additionally, some updater behavior related
-to installs and uninstalls are tailored to platform conventions.
+The updater is written for Windows, macOS, and Linux. The behavior of the
+updater is mostly platform-independent. However, platform-specific modules
+exist to translate cross-platform concepts (such as IPC interfaces) to
+platform-specific technologies (such as COM). Additionally, some updater
+behavior related to installs and uninstalls are tailored to platform
+conventions.
 
 The updater is layered atop //components/update\_client, which implements a
 cross-platform mechanism to interact with an Omaha server for the purpose of
@@ -910,43 +911,164 @@ the updater that is present in the base install directory.
 TODO(crbug.com/1035895): Document usage of Keystone tickets on macOS.
 
 ### IPC
-On macOS, the updater uses both XPC (for non-side-by-side communications) and
-mojo (for communications within a single version of the program). XPC is the
-macOS native IPC system controlled by launchd. The main portion to utilize XPC
-is to create launch agent plists under `${HOME}/Library/LaunchAgents` for user
-level installs and launch daemon plists under `/Library/LaunchDaemons` for
-system level installs. XPC should be replaced with mojo in the future.
-
-The updater uses multiple layers of RPC to start-up separate processes that are
-responsible for different actions. Mojo is used for UpdateServiceInternal,
-while the `.service` plist covers UpdateService, which actually performs the
-update check and the update itself.
+On macOS, the updater uses mojo for IPC.
 
 Mojo does not orchestrate process launches and connections. When using mojo,
 the updater first attempts to connect to an existing process, and if this
 fails, launches the server process and then repeatedly retries to connect.
+During activation of a new instance of the updater, the updater creates a hard
+link to a simple launcher program outside the versioned directories. This
+program is used to launch UpdateService servers.
 
 Since Mojo's NamedPlatformChannel is not reusable for multiple connections, the
 updater relies on NamedMojoIpcServer's utilities to bootstrap mojo connections
 using multiple connections on a mach port, and for messages to that port to
 contain a reply port.
 
-The XPC interface is also utilized to communicate between the browser and the
-updater for on-demand updates. The protocol utilized by the browser has to be in
-sync with the updater's protocol, or else the XPC call will fail. The same
-`.service` launchd plist is utilized to communicate between the browser and the
-updater for the on-demand updates.
-
-Lastly, the XPC interface connects the browser and updater to promote the
-updater to a system-level updater. Promotion in this context means that the
-browser will install a system-level updater. This process entails the browser
-showing UI to the user on the About Page to prompt the user to promote. When the
-user accepts, the browser will then ask the user to elevate to allow root
-privileges so that a system-level updater can be installed. Inside of the
-browser, there exists a Privileged Helper tool executable. This is installed
-from the browser if promotion is selected via SMJobBless. When the Privileged
-Helper tool is installed, the browser can make an XPC connection to it and
-invoke a call to start the system-level updater installation process.
+The updater project provides a helper tool to the browser to promote an
+installation of the browser from user-scope to system-scope. This process
+entails the browser showing UI to the user on the About Page to prompt the user
+to promote. When the user accepts, the browser will then ask the user to
+elevate to allow root privileges so that a system-level updater can be
+installed. Inside of the browser, there exists a Privileged Helper tool
+executable. This is installed from the browser if promotion is selected via
+SMJobBless. When the Privileged Helper tool is installed, the browser can make
+an XPC connection to it and invoke a call to start the system-level updater
+installation process.
 
 ### Network
 On macOS, the updater uses NSURLSession to implement the network.
+
+## Linux-Specific Notes
+
+### Locking
+
+The global preferences lock is implemented using a pthread mutex in shared
+memory. Qualifying updaters will attempt to open a POSIX shared memory object
+with a name known at compile time (e.g. `/ChromiumUpdater.lock`), creating the
+object if it does not exist. The mutex will be configured with the
+`PTHREAD_MUTEX_ROBUST` attribute to ensure that it remains recoverable if the
+process holding the lock exits abnormally.
+
+Due to the nature of the `shm_unlink` system call, it is impossible for any
+updater process to determine if it is safe to destroy the shared memory object.
+Consider the following sequence of updater processes A, B, and C
+
+  1. A: Shared memory `foo` does not exist. Create the shared memory object.
+  2. A: Creates and acquires the mutex lock in shared memory.
+  3. B: Shared memory `foo` exists. Open the existing shared memory object.
+  4. A: Release the mutex lock and `shm_unlink` “foo”. Note: Process B can
+     still use the shared memory until it closes it. Future attempts to open
+     `foo` will fail with ENOENT. `foo` can be recreated. 
+  5. C:  Shared memory `foo` does not exist. Create the shared memory object.
+  6. B: Acquire the mutex lock in shared memory.
+  7. C: Creates and acquires the mutex lock in shared memory.
+
+In the sequence above, unlinking the shared memory created a situation in which
+processes B and C are able to hold the lock simultaneously. Thus, by design,
+the updater uses a leaky mutex in shared memory. The leak occurs once per
+system per updater branding and is around 40 bytes.
+
+### Persistent Storage
+
+The updater is installed to subdirectories of `/opt/` for system-scope
+installations and `~/.local` for user-scope. Subdirectory naming is determined
+by updater branding. E.g. an unbranded user-scope updater will be installed to
+`~/.local/Chromium/ChromiumUpdater.` The installation directory will contain
+subdirectories for each installed updater version and data files.
+
+
+### Networking
+
+The updater needs to perform HTTP GET and POST requests for device management
+and communication with the Omaha servers. Implementations of the network
+fetcher on Mac and Windows use os-provided HTTP stacks. However no such service
+exists on Linux. Instead, the updater is dynamically linked against
+[libcurl](https://curl.se/libcurl/). Using //net would have been preferable to
+reduce external dependencies, however using it outside of the browser is
+infeasible and linking against it would dramatically increase binary size.
+
+Libcurl is widely used, and we expect it to be present on most systems, however
+we might consider statically linking against libcurl in the future.
+
+### IPC
+
+#### Interfaces
+
+Each updater exposes two Mojo IPC interfaces: `UpdateService` and
+`UpdateServiceInternal`. Client processes will create interface proxies, which
+instantiate `mojo::Remote` objects. Server processes will create interface
+stubs, which instantiate `mojo::Receiver` objects.
+
+Callbacks provided by callers of the proxy will be wrapped by
+`mojo::WrapCallbackWithDefaultInvokeIfNotRun` to ensure that client processes
+don’t become deadlocked if a connection is dropped.
+
+In the `UpdateService` class definition, some RPC calls expect two callback
+methods: one to signal completion and another to post state change updates.
+However, Mojo only allows messages to be replied to once. Instead, a
+`StateChangeObserver` Mojo interface has been created with two messages:
+OnStateChange and OnComplete. The server will respond to such RPC calls with a
+`StateChangeObserver` pending receiver. The client can then bind this pending
+receiver to receive the two callback types.
+
+Client proxies handle the `StateChangeObserver` as an implementation detail,
+allowing callers to provide two callback methods. Internally, a
+`StateChangeObserverImpl` forwards IPC calls to the native callbacks using
+`mojo::MakeSelfOwnedReceiver`. This binds the lifetime of the observer to the
+lifetime of the receiver. Thus, when the remote is dropped by the server, the
+observer is free’d in the client.
+
+#### Bootstrapping
+
+The Mojo library provides an invitation API for connecting two processes and
+establishing a Mojo Remote/Receiver pair between them. However, as described in
+the Mac section above, to allow a server process to continuously post
+invitations for clients to receive, additional tooling was required.
+
+The `NamedMojoIpcServer` component provides a helper to allow the server
+process to handle multiple concurrent IPCs coming through a Mojo
+`NamedPlatformChannel`.
+
+On Linux, `NamedPlatformChannel` is a Unix domain socket. Socket files for IPC
+are located in the base install directory. Each updater version creates a
+versioned socket file which will be used for binding the
+`UpdateServiceInternal` interface. The active version of the updater obtains
+exclusive listening rights to an unversioned socket file, which is used for
+binding the `UpdateService` interface.
+
+The `NamedMojoIpcServer` for `UpdateService` is configured to provision two
+different implementations depending on the caller’s permissions. If the caller
+has the same UID as the server, a full implementation is provided. Otherwise,
+an “untrusted” stub is returned which only allows for certain RPCs
+(`GetVersion`, `GetAppStates`, `Update`) while returning an error code for all
+others.
+
+### Managing out-of-process services
+
+The client-server architecture of O4 was predicated on os-provided subsystems
+(e.g. COM, and previously on XPC on macOS) for starting and managing the
+lifetime of out-of-process services. On Linux there is no universal system for
+managing daemons. However, `systemd` is widely used and required by many of the
+standard distributions (e.g. Debian, Arch Linux, Fedora, Ubuntu (after 16.10),
+and others cannot run without `systemd`).
+
+The updater service will be managed by `systemd`. When an updater is promoted,
+it installs two `systemd` “units” to the user or system directory, depending on
+installation scope. The first is a service definition which registers the non
+side-by-side launcher (a hard link to a versioned updater executable placed in
+the base install directory). The second is a socket which can be used to
+activate the service. The activation socket file is in the same directory as
+the updater launcher.
+
+Thus, clients will be able to connect to the out-of-process server by 1)
+attempting to connect to the updater socket and 2) connecting to the activation
+socket if (1) fails. The advantage of a socket-activated design is that a
+non-privileged user may connect to the activation socket which requests
+`systemd` to start the update service as the appropriate user.
+
+The server will manage its own lifetime by stopping when there are no active
+tasks and a duration of inactivity is experienced.
+
+The `UpdateServiceInternal` process can be started by clients by running the
+launcher executable directly. It is not managed or activated by `systemd`.

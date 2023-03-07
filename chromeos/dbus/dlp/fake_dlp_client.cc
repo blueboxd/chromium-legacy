@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 
@@ -95,6 +95,18 @@ void FakeDlpClient::RequestFileAccess(
 
 bool FakeDlpClient::IsAlive() const {
   return is_alive_;
+}
+
+void FakeDlpClient::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeDlpClient::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool FakeDlpClient::HasObserver(const Observer* observer) const {
+  return observers_.HasObserver(observer);
 }
 
 DlpClient::TestInterface* FakeDlpClient::GetTestInterface() {

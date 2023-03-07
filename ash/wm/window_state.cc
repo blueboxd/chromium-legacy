@@ -40,8 +40,11 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "chromeos/ui/wm/features.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -79,6 +82,7 @@ constexpr char kValidDragMaximizedHistogramName[] =
 
 using ::chromeos::kHideShelfWhenFullscreenKey;
 using ::chromeos::kImmersiveIsActive;
+using ::chromeos::kPartialSplitDurationHistogramName;
 using ::chromeos::kWindowManagerManagesOpacityKey;
 using ::chromeos::WindowStateType;
 
@@ -138,6 +142,27 @@ bool CanRestoreState(WindowStateType current_state,
   return false;
 }
 
+// Compares two WindowStateTypes for equivalence, where kDefault and kNormal
+// are treated as equivalent.
+bool IsEquivalent(WindowStateType lhs, WindowStateType rhs) {
+  return lhs == rhs ||
+         // Treat kDefault and kNormal as equivalent.
+         ((lhs == chromeos::WindowStateType::kDefault &&
+           rhs == chromeos::WindowStateType::kNormal) ||
+          (lhs == chromeos::WindowStateType::kNormal &&
+           rhs == chromeos::WindowStateType::kDefault));
+}
+
+// Gets the bounds in screen coordinates from the RestoreState that can be used
+// for restore. Returns empty bounds if state is nullptr.
+gfx::Rect GetBoundsForRestore(const WindowState::RestoreState* state) {
+  if (!state) {
+    return {};
+  }
+  return state->restore_bounds_in_screen ? *state->restore_bounds_in_screen
+                                         : state->actual_bounds_in_screen;
+}
+
 bool IsTabletModeEnabled() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
@@ -161,6 +186,13 @@ bool IsTemporarilyHiddenForFullrestore(aura::Window* window) {
   auto* transient_parent = wm::GetTransientParent(window);
   return transient_parent && transient_parent->GetProperty(
                                  app_restore::kParentToHiddenContainerKey);
+}
+
+bool IsPartial(float snap_ratio) {
+  return cc::MathUtil::IsWithinEpsilon(snap_ratio,
+                                       chromeos::kOneThirdSnapRatio) ||
+         cc::MathUtil::IsWithinEpsilon(snap_ratio,
+                                       chromeos::kTwoThirdSnapRatio);
 }
 
 // A tentative class to set the bounds on the window.
@@ -292,6 +324,25 @@ void WindowState::ScopedBoundsChangeAnimation::OnWindowDestroying(
     aura::Window* window) {
   window_->RemoveObserver(this);
   window_ = nullptr;
+}
+
+bool WindowState::RestoreState::operator==(
+    const WindowState::RestoreState& other) const {
+  return window_state_type == other.window_state_type &&
+         actual_bounds_in_screen == other.actual_bounds_in_screen &&
+         restore_bounds_in_screen == other.restore_bounds_in_screen;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const WindowState::RestoreState& state) {
+  os << "RestoreState{ window_state_type=" << state.window_state_type
+     << " actual_bounds_in_screen=" << state.actual_bounds_in_screen.ToString()
+     << " restore_bounds_in_screen="
+     << (state.restore_bounds_in_screen
+             ? state.restore_bounds_in_screen->ToString()
+             : "unset")
+     << " }";
+  return os;
 }
 
 WindowState::~WindowState() {
@@ -468,7 +519,14 @@ void WindowState::RestoreZOrdering() {
 void WindowState::OnWMEvent(const WMEvent* event) {
   if (event->IsSnapEvent()) {
     // Save `event` requested snap ratio.
-    snap_ratio_ = absl::make_optional(event->snap_ratio());
+    const float target_snap_ratio = event->snap_ratio();
+    snap_ratio_ = absl::make_optional(target_snap_ratio);
+    if (IsPartial(target_snap_ratio)) {
+      partial_start_time_ = base::TimeTicks::Now();
+    } else {
+      // If a different snap ratio was requested, partial may have just ended.
+      MaybeRecordPartialDuration();
+    }
   }
 
   current_state_->OnWMEvent(this, event);
@@ -484,10 +542,14 @@ void WindowState::OnWMEvent(const WMEvent* event) {
     bar_controller->UpdateBarOnWindowStateChanges(window_);
 }
 
-void WindowState::SaveCurrentBoundsForRestore() {
+gfx::Rect WindowState::GetCurrentBoundsInScreen() const {
   gfx::Rect bounds_in_screen = window_->GetTargetBounds();
   ::wm::ConvertRectToScreen(window_->parent(), &bounds_in_screen);
-  SetRestoreBoundsInScreen(bounds_in_screen);
+  return bounds_in_screen;
+}
+
+void WindowState::SaveCurrentBoundsForRestore() {
+  SetRestoreBoundsInScreen(GetCurrentBoundsInScreen());
 }
 
 gfx::Rect WindowState::GetRestoreBoundsInScreen() const {
@@ -573,6 +635,22 @@ void WindowState::UpdatePipBounds() {
   }
 }
 
+void WindowState::UpdateSnappedBounds() {
+  DCHECK(IsSnapped());
+  const float current_snap_ratio = GetCurrentSnapRatio(window_);
+  const gfx::Rect maximized_bounds =
+      screen_util::GetMaximizedWindowBoundsInParent(window_);
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+  const gfx::Rect snapped_bounds =
+      GetSnappedWindowBounds(maximized_bounds, display, window_,
+                             GetStateType() == WindowStateType::kPrimarySnapped
+                                 ? ash::SnapViewType::kPrimary
+                                 : ash::SnapViewType::kSecondary,
+                             current_snap_ratio);
+  SetBoundsInScreen(snapped_bounds);
+}
+
 std::unique_ptr<WindowState::State> WindowState::SetStateObject(
     std::unique_ptr<WindowState::State> new_state) {
   current_state_->DetachState(this);
@@ -586,6 +664,8 @@ void WindowState::UpdateSnapRatio() {
   if (!IsSnapped())
     return;
   snap_ratio_ = absl::make_optional(GetCurrentSnapRatio(window_));
+  // If the snap ratio was adjusted, partial may have ended.
+  MaybeRecordPartialDuration();
 }
 
 void WindowState::SetPreAutoManageWindowBounds(const gfx::Rect& bounds) {
@@ -692,11 +772,12 @@ display::Display WindowState::GetDisplay() const {
 }
 
 WindowStateType WindowState::GetRestoreWindowState() const {
-  WindowStateType restore_state =
-      window_state_restore_history_.empty() ||
-              window_state_restore_history_.back() == WindowStateType::kDefault
-          ? WindowStateType::kNormal
-          : window_state_restore_history_.back();
+  WindowStateType restore_state = WindowStateType::kNormal;
+  if (auto* state = PeekNextRestoreState()) {
+    restore_state = state->window_state_type == WindowStateType::kDefault
+                        ? WindowStateType::kNormal
+                        : state->window_state_type;
+  }
 
   // Different with the restore behaviors in clamshell mode, a window can not be
   // restored to kNormal window state if it's a maximize-able window.
@@ -704,8 +785,17 @@ WindowStateType WindowState::GetRestoreWindowState() const {
   // kMaximized window state for a maximize-able window, and also should be able
   // to support restoring a fullscreen/minimized/maximized window to snapped
   // window states.
-  if (IsTabletModeEnabled() && restore_state == WindowStateType::kNormal)
-    restore_state = GetMaximizedOrCenteredWindowType();
+  if (IsTabletModeEnabled()) {
+    // In tablet mode, if we reset a floated window that's previously snapped
+    // (float another window will reset currently floated window), maximize
+    // floated window instead of restore floated window back to snapped state.
+    if (restore_state == WindowStateType::kNormal ||
+        (IsFloated() &&
+         (restore_state == WindowStateType::kPrimarySnapped ||
+          restore_state == WindowStateType::kSecondarySnapped))) {
+      restore_state = GetMaximizedOrCenteredWindowType();
+    }
+  }
 
   return restore_state;
 }
@@ -848,6 +938,7 @@ void WindowState::NotifyPreStateTypeChange(
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
   OnPrePipStateChange(old_window_state_type);
+  UpdateRestoreHistory(old_window_state_type);
 }
 
 void WindowState::NotifyPostStateTypeChange(
@@ -855,8 +946,12 @@ void WindowState::NotifyPostStateTypeChange(
   for (auto& observer : observer_list_)
     observer.OnPostWindowStateTypeChange(this, old_window_state_type);
   OnPostPipStateChange(old_window_state_type);
-  UpdateWindowStateRestoreHistoryStack(old_window_state_type);
+  UpdateRestorePropertiesFromRestoreHistory();
   SaveWindowForWindowRestore(this);
+  if (chromeos::IsSnappedWindowStateType(old_window_state_type)) {
+    // If the state type is no longer snapped, partial may have ended.
+    MaybeRecordPartialDuration();
+  }
 }
 
 void WindowState::OnPostPipStateChange(WindowStateType old_window_state_type) {
@@ -1035,7 +1130,18 @@ void WindowState::CollectPipEnterExitMetrics(bool enter) {
   }
 }
 
-void WindowState::UpdateWindowStateRestoreHistoryStack(
+void WindowState::MaybeRecordPartialDuration() {
+  // No-op if `partial_start_time_` is null, i.e. partial never started.
+  if (!partial_start_time_.is_null()) {
+    base::UmaHistogramCustomCounts(
+        kPartialSplitDurationHistogramName,
+        (base::TimeTicks::Now() - partial_start_time_).InMinutes(), /*min=*/1,
+        /*exclusive_max=*/base::Days(7).InMinutes(), 50);
+    partial_start_time_ = base::TimeTicks();
+  }
+}
+
+void WindowState::UpdateRestoreHistory(
     chromeos::WindowStateType previous_state_type) {
   WindowStateType current_state_type = GetStateType();
 
@@ -1048,17 +1154,35 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
   // We'll need to pop out any window state that the `current_state_type` can
   // not restore back to (i.e., whose restore order is equal or higher than
   // `current_state_type`).
-  for (auto state : base::Reversed(window_state_restore_history_)) {
+  for (auto& state : base::Reversed(window_state_restore_history_)) {
     // Don't allow same-level restore here to prevent restore cycles which can
     // lead to unbounded stack, e.g. when toggling between fullscreen and
     // floated repeatedly. The side effect is that restore will only remember
     // (handled below) at most one such same-level transition (e.g. fullscreen
     // to floated, or vice versa), which is ok.
-    if (CanRestoreState(current_state_type, state,
+    if (CanRestoreState(current_state_type, state.window_state_type,
                         /*allow_same_level_restore=*/false)) {
       break;
     }
+    // Retrieve and hold onto the restore state for the state type that we're
+    // entering into, so it can be used later, e.g., to update the restore
+    // bounds property.
+    if (IsEquivalent(state.window_state_type, current_state_type)) {
+      current_restore_state_ = std::move(state);
+    }
     window_state_restore_history_.pop_back();
+  }
+  // If the state we're entering into is not in the history, but we also have
+  // existing restore bounds, then we want to use it. This can happen if, for
+  // example, a window was restored from full restore in a non-normal window
+  // state type, then it may have a truncated restore history but with restore
+  // bounds.
+  if (!current_restore_state_ && HasRestoreBounds()) {
+    current_restore_state_ = {
+        .window_state_type = current_state_type,
+        .actual_bounds_in_screen = GetCurrentBoundsInScreen(),
+        .restore_bounds_in_screen = GetRestoreBoundsInScreen(),
+    };
   }
 
   if (IsValidForRestoreHistory(previous_state_type) &&
@@ -1067,9 +1191,37 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
       // time, in the code above.
       CanRestoreState(current_state_type, previous_state_type,
                       /*allow_same_level_restore=*/true)) {
-    window_state_restore_history_.push_back(previous_state_type);
+    window_state_restore_history_.push_back({
+        .window_state_type = previous_state_type,
+        .actual_bounds_in_screen = GetCurrentBoundsInScreen(),
+    });
+    // Save current restore bounds, if any. Also check that restore bounds are
+    // not the same as current bounds, because when dragging a window, the
+    // restore bounds is used temporarily to remember the original pre-drag
+    // bounds and is not cleared, which gets unnecessarily carried over later
+    // when updating restore state from the restore history.
+    // TODO(aluh): Fix drag-drop code to properly clear temporary restore
+    // bounds, so we can remove this workaround.
+    if (HasRestoreBounds() &&
+        GetRestoreBoundsInScreen() != GetCurrentBoundsInScreen()) {
+      window_state_restore_history_.back().restore_bounds_in_screen =
+          GetRestoreBoundsInScreen();
+    }
   }
 
+  // The check for tablet mode has the same reason as
+  // UpdateRestorePropertiesFromRestoreHistory().
+  if (!IsTabletModeEnabled()) {
+    // Update the restore bounds so it can be used to update window bounds.
+    if (current_restore_state_ &&
+        current_restore_state_->restore_bounds_in_screen) {
+      SetRestoreBoundsInScreen(
+          *current_restore_state_->restore_bounds_in_screen);
+    }
+  }
+}
+
+void WindowState::UpdateRestorePropertiesFromRestoreHistory() {
   // TODO(xdai): For now we don't save the restore history in tablet mode in the
   // window property, so that when exiting tablet mode, the window can still
   // restore back to its old window state (see the test case
@@ -1078,7 +1230,31 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
   if (!IsTabletModeEnabled()) {
     window_->SetProperty(aura::client::kRestoreShowStateKey,
                          chromeos::ToWindowShowState(GetRestoreWindowState()));
+    // Update restore bounds again, since it may have been modified by other
+    // bounds update logic, e.g. when unminimizing.
+    if (current_restore_state_ &&
+        current_restore_state_->restore_bounds_in_screen) {
+      // This means we had existing restore bounds, so propagate it.
+      SetRestoreBoundsInScreen(
+          *current_restore_state_->restore_bounds_in_screen);
+    } else if (auto bounds = GetBoundsForRestore(PeekNextRestoreState());
+               !bounds.IsEmpty()) {
+      // This means we're entering a new state not in the restore history, i.e.
+      // not restoring back to an earlier state, so we propagate the restorable
+      // bounds from the most recent restore state.
+      SetRestoreBoundsInScreen(bounds);
+    } else {
+      // There's no restore bounds from anywhere to propagate, so clear it.
+      ClearRestoreBounds();
+    }
   }
+  current_restore_state_.reset();
+}
+
+const WindowState::RestoreState* WindowState::PeekNextRestoreState() const {
+  return !window_state_restore_history_.empty()
+             ? &window_state_restore_history_.back()
+             : nullptr;
 }
 
 chromeos::WindowStateType WindowState::GetMaximizedOrCenteredWindowType()
@@ -1199,6 +1375,8 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
   if (IsPip())
     CollectPipEnterExitMetrics(/*enter=*/false);
 
+  MaybeRecordPartialDuration();
+
   auto* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (widget)
     Shell::Get()->focus_cycler()->RemoveWidget(widget);
@@ -1219,6 +1397,32 @@ void WindowState::OnWindowBoundsChanged(aura::Window* window,
 
   if (reason != ui::PropertyChangeReason::FROM_ANIMATION && !is_dragged())
     SaveWindowForWindowRestore(this);
+}
+
+void WindowState::OnWindowParentChanged(aura::Window* window,
+                                        aura::Window* parent) {
+  if (window != window_) {
+    return;
+  }
+  // If the window is moved to another desk, partial may have ended.
+  MaybeRecordPartialDuration();
+}
+
+void WindowState::OnWindowVisibilityChanged(aura::Window* window,
+                                            bool visible) {
+  // We are only interested if the parent visibility changes, i.e. desk changes.
+  if (window != window_->parent()) {
+    return;
+  }
+  // If the parent just became visible and `window_` is partial split, start
+  // recording.
+  if (visible && snap_ratio_ && IsPartial(*snap_ratio_)) {
+    partial_start_time_ = base::TimeTicks::Now();
+  }
+  // If the parent is no longer visible, partial may have ended.
+  if (!visible) {
+    MaybeRecordPartialDuration();
+  }
 }
 
 bool WindowState::CanUnresizableSnapOnDisplay(display::Display display) const {

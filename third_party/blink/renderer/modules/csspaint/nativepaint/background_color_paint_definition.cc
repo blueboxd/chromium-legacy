@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/csspaint/nativepaint/background_color_paint_definition.h"
 
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
@@ -220,7 +221,7 @@ BackgroundColorPaintDefinition::BackgroundColorPaintDefinition(
           &local_root,
           PaintWorkletInput::PaintWorkletInputType::kBackgroundColor) {}
 
-sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
+PaintRecord BackgroundColorPaintDefinition::Paint(
     const CompositorPaintWorkletInput* compositor_input,
     const CompositorPaintWorkletJob::AnimatedPropertyValues&
         animated_property_values) {
@@ -228,7 +229,7 @@ sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
                worker_backing_thread_->BackingThread().GetTaskRunner());
 }
 
-sk_sp<PaintRecord> BackgroundColorPaintDefinition::Paint(
+PaintRecord BackgroundColorPaintDefinition::Paint(
     const CompositorPaintWorkletInput* compositor_input,
     const CompositorPaintWorkletJob::AnimatedPropertyValues&
         animated_property_values,
@@ -334,7 +335,7 @@ bool BackgroundColorPaintDefinition::GetBGColorPaintWorkletParams(
                                               progress, compositable_animation);
 }
 
-sk_sp<PaintRecord> BackgroundColorPaintDefinition::PaintForTest(
+PaintRecord BackgroundColorPaintDefinition::PaintForTest(
     const Vector<Color>& animated_colors,
     const Vector<double>& offsets,
     const CompositorPaintWorkletJob::AnimatedPropertyValues&

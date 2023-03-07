@@ -13,7 +13,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/posix/unix_domain_socket.h"
 #include "components/exo/display.h"
 #include "components/exo/shell_surface.h"
@@ -233,7 +233,7 @@ TEST_F(WaylandRemoteShellTest, TabletTransition) {
   auto* const window = widget->GetNativeWindow();
 
   // Snap window.
-  ash::WindowSnapWMEvent event(ash::WM_EVENT_SNAP_PRIMARY);
+  ash::WMEvent event(ash::WM_EVENT_SNAP_PRIMARY);
   ash::WindowState::Get(window)->OnWMEvent(&event);
   shell_surface->SetSnapPrimary(chromeos::kDefaultSnapRatio);
   shell_surface->SetGeometry(gfx::Rect(0, 0, 400, 520));

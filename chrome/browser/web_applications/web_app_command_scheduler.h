@@ -37,6 +37,7 @@ class WebAppDataRetriever;
 class WebAppProvider;
 struct IsolationData;
 class WebApp;
+enum class ApiApprovalState;
 
 // The command scheduler is the main API to access the web app system. The
 // scheduler internally ensures:
@@ -72,6 +73,8 @@ class WebAppCommandScheduler {
 
   // Install with provided `WebAppInstallInfo` instead of fetching data from
   // manifest.
+  // `InstallFromInfo` doesn't install OS hooks. `InstallFromInfoWithParams`
+  // install OS hooks when they are set in `install_params`.
   void InstallFromInfo(std::unique_ptr<WebAppInstallInfo> install_info,
                        bool overwrite_existing_manifest_fields,
                        webapps::WebappInstallSource install_surface,
@@ -84,19 +87,37 @@ class WebAppCommandScheduler {
       OnceInstallCallback install_callback,
       const WebAppInstallParams& install_params);
 
-  // Install web apps managed by `ExternallyInstalledAppsManager`.
+  void InstallFromInfoWithParams(
+      std::unique_ptr<WebAppInstallInfo> install_info,
+      bool overwrite_existing_manifest_fields,
+      webapps::WebappInstallSource install_surface,
+      base::OnceCallback<void(const AppId& app_id,
+                              webapps::InstallResultCode code,
+                              bool did_uninstall_and_replace)> install_callback,
+      const WebAppInstallParams& install_params,
+      const std::vector<AppId>& apps_to_uninstall);
+
+  // Install web apps managed by `ExternallyInstalledAppManager`.
   void InstallExternallyManagedApp(
       const ExternalInstallOptions& external_install_options,
-      OnceInstallCallback callback,
+      base::OnceCallback<void(const AppId& app_id,
+                              webapps::InstallResultCode code,
+                              bool did_uninstall_and_replace)> install_callback,
       base::WeakPtr<content::WebContents> contents,
       std::unique_ptr<WebAppDataRetriever> data_retriever);
+
+  // Install a placeholder app, this is used during externally managed install
+  // flow when url load fails.
+  void InstallPlaceholder(
+      const ExternalInstallOptions& install_options,
+      base::OnceCallback<void(const AppId& app_id,
+                              webapps::InstallResultCode code,
+                              bool did_uninstall_and_replace)> callback,
+      base::WeakPtr<content::WebContents> web_contents);
 
   void PersistFileHandlersUserChoice(const AppId& app_id,
                                      bool allowed,
                                      base::OnceClosure callback);
-
-  void UpdateFileHandlerOsIntegration(const AppId& app_id,
-                                      base::OnceClosure callback);
 
   // Schedule a command that performs fetching data from the manifest
   // for a manifest update.
@@ -151,7 +172,7 @@ class WebAppCommandScheduler {
   // necessary, it also updates the protocol registration with the OS.
   void UpdateProtocolHandlerUserApproval(const AppId& app_id,
                                          const std::string& protocol_scheme,
-                                         bool allowed,
+                                         ApiApprovalState approval_state,
                                          base::OnceClosure callback);
 
   // Set app to disabled, This is Chrome OS specific and no-op on other
@@ -202,6 +223,15 @@ class WebAppCommandScheduler {
   // configuration of the app, and will respect whatever the params say.
   void LaunchAppWithCustomParams(apps::AppLaunchParams params,
                                  LaunchWebAppCallback callback);
+
+  // Used to locally install an app from the chrome://apps page, triggered
+  // by the AppLauncherHandler.
+  void InstallAppLocally(const AppId& app_id, base::OnceClosure callback);
+
+  // Used to schedule a synchronization of a web app's OS states with the
+  // current DB states.
+  void SynchronizeOsIntegration(const AppId& app_id,
+                                base::OnceClosure synchronize_callback);
 
   // TODO(https://crbug.com/1298130): expose all commands for web app
   // operations.

@@ -128,7 +128,6 @@
 <translation id="2084108471225856927">डिवाइस की सेटिंग</translation>
 <translation id="2084809735218147718">जेस्चर से धन्यवाद बोलता हुआ व्यक्ति</translation>
 <translation id="2088690981887365033">वीपीएन नेटवर्क</translation>
-<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> आइटम मिटा दिए जाएंगे और इन्हें वापस नहीं लाया जा सकेगा.</translation>
 <translation id="2122305276694332719">दिखाई न देने वाले नेटवर्क से अपने आप जुड़ने से दूसरे लोग आपके डिवाइस और कुछ नेटवर्क सेटिंग को देख सकते हैं. ऐसा करने का सुझाव नहीं दिया जाता.</translation>
 <translation id="2125607626296734455">खमेर</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, आपका एडमिन प्रबंधित करता है, कनेक्ट करें</translation>
@@ -145,6 +144,7 @@
 <translation id="2208919847696382164">Linux ऐप्लिकेशन की मदद से इंस्टॉल करें</translation>
 <translation id="2225536596944493418">क्या आप वाकई <ph name="NUMBER_OF_ITEMS" /> आइटम मिटाना चाहते हैं?</translation>
 <translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" फ़ोल्डर बनाने में असमर्थ. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="2236732657580416950">आपके Google Drive की कैश मेमोरी मिटा दी गई है.</translation>
 <translation id="2239068707900391003">कॉफ़ी का मग पकड़ा हुआ व्यक्ति</translation>
 <translation id="2251368349685848079">ट्रैश से वापस लाएं</translation>
 <translation id="2282155092769082568">URL का अपने आप कॉन्‍फ़िगरेशन:</translation>
@@ -213,7 +213,7 @@
 <translation id="2820957248982571256">स्कैन हो रहा है...</translation>
 <translation id="2830077785865012357">चाइनीज़ ज़ूयिन</translation>
 <translation id="2843806747483486897">डिफ़ॉल्ट बदलें...</translation>
-<translation id="2873951654529031587">ट्रैश</translation>
+<translation id="2873951654529031587">बेकार फ़ाइलें</translation>
 <translation id="288024221176729610">चेक</translation>
 <translation id="2887525882758501333">PDF दस्‍तावेज़</translation>
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt; से किसी आइटम का मिलान नहीं होता</translation>
@@ -396,7 +396,6 @@
 <translation id="4398096759193130964">आइटम को वापस लाएं या इन्हें खींचकर ट्रैश के बाहर किसी नए फ़ोल्डर में ले जाएं</translation>
 <translation id="4401287888955153199">सभी निकालें</translation>
 <translation id="4410695710508688828">एक्सट्रैक्ट नहीं किया जा सका. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="4414834425328380570">"<ph name="FILE_NAME" />" को मिटा दिया जाएगा और इसे वापस नहीं लाया जा सकेगा.</translation>
 <translation id="4418686080762064601">अपनी फ़ाइलों के लिए एक शॉर्टकट बनाएं</translation>
 <translation id="4425149324548788773">मेरी डिस्क</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, कनेक्ट करें</translation>
@@ -457,7 +456,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="485316830061041779">जर्मन</translation>
-<translation id="4867079195717347957">कॉलम को घटते क्रम में लगाने के लिए क्लिक करें.</translation>
+<translation id="4867079195717347957">स्तंभ को घटते क्रम में लगाने के लिए क्लिक करें.</translation>
 <translation id="4867297348137739678">पिछले सप्ताह</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> बाइट</translation>
 <translation id="4874569719830985133">हमेशा के लिए मिटाएं</translation>
@@ -507,7 +506,7 @@
 <translation id="516592729076796170">यूएस प्रोग्रामर ड्वोरक</translation>
 <translation id="5177526793333269655">थंबनेल व्यू</translation>
 <translation id="5181896909298187506">हाल ही की कोई फ़ाइल नहीं मिली</translation>
-<translation id="5194713942430106590">कॉलम को बढ़ते क्रम में लगाने के लिए क्लिक करें.</translation>
+<translation id="5194713942430106590">स्तंभ को बढ़ते क्रम में लगाने के लिए क्लिक करें.</translation>
 <translation id="5211614973734216083">फ़ेरोसे</translation>
 <translation id="5218183485292899140">स्विस फ़्रेंच</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
@@ -929,7 +928,6 @@
 <translation id="8560515948038859357">कैंटोनीज़</translation>
 <translation id="8561206103590473338">हाथी</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_COUNT" /> में से नेटवर्क <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, सिग्नल का स्तर <ph name="SIGNAL_STRENGTH" />%, आपके एडमिन ने ब्लॉक किया है, ब्यौरा</translation>
-<translation id="8568374623837201676">क्या आपको यह फ़ाइल हमेशा के लिए मिटानी है?</translation>
 <translation id="8569764466147087991">खोलने के लिए फ़ाइल को चुनें</translation>
 <translation id="8577897833047451336">क्रोएशियन</translation>
 <translation id="8578308463707544055">इंडोनेशियन</translation>

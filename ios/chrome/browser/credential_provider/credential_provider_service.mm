@@ -10,7 +10,6 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
-#import "base/threading/sequenced_task_runner_handle.h"
 #import "build/build_config.h"
 #import "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #import "components/password_manager/core/browser/affiliation/affiliation_service.h"
@@ -146,7 +145,8 @@ CredentialProviderService::CredentialProviderService(
       authentication_service_(authentication_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
-      affiliation_service_(affiliation_service),
+      affiliated_helper_(
+          std::make_unique<AffiliatedMatchHelper>(affiliation_service)),
       favicon_loader_(favicon_loader),
       credential_store_(credential_store) {
   DCHECK(password_store_);
@@ -308,14 +308,8 @@ void CredentialProviderService::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   auto callback = base::BindOnce(&CredentialProviderService::SyncAllCredentials,
                                  weak_ptr_factory_.GetWeakPtr());
-  if (affiliation_service_) {
-    affiliation_service_->InjectAffiliationAndBrandingInformation(
-        std::move(results),
-        AffiliationService::StrategyOnCacheMiss::FETCH_OVER_NETWORK,
-        std::move(callback));
-  } else {
-    std::move(callback).Run(std::move(results));
-  }
+  affiliated_helper_->InjectAffiliationAndBrandingInformation(
+      std::move(results), std::move(callback));
 }
 
 void CredentialProviderService::OnPrimaryAccountChanged(
@@ -366,14 +360,8 @@ void CredentialProviderService::OnLoginsChanged(
       &CredentialProviderService::OnInjectedAffiliationAfterLoginsChanged,
       weak_ptr_factory_.GetWeakPtr());
 
-  if (affiliation_service_) {
-    affiliation_service_->InjectAffiliationAndBrandingInformation(
-        std::move(forms_to_add),
-        AffiliationService::StrategyOnCacheMiss::FETCH_OVER_NETWORK,
-        std::move(callback));
-  } else {
-    std::move(callback).Run(std::move(forms_to_add));
-  }
+  affiliated_helper_->InjectAffiliationAndBrandingInformation(
+      std::move(forms_to_add), std::move(callback));
 }
 
 void CredentialProviderService::OnLoginsRetained(

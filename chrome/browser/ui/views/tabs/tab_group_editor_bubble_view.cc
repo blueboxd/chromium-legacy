@@ -7,11 +7,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,6 +25,8 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -150,6 +152,8 @@ class TabGroupEditorBubbleDelegate : public ui::DialogModelDelegate {
     if (!model->group_model())
       return;
 
+    // TODO(dpenning): When adding saved groups to TabGroupEditorBubbleDelegate
+    // disconnect the tab groups first.
     base::RecordAction(
         base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
     if (header_view) {
@@ -611,8 +615,8 @@ tab_groups::TabGroupColorId TabGroupEditorBubbleView::InitColorSet() {
 
 void TabGroupEditorBubbleView::UpdateGroup() {
   absl::optional<int> selected_element = color_selector_->GetSelectedElement();
-  TabGroup* tab_group =
-      browser_->tab_strip_model()->group_model()->GetTabGroup(group_);
+  const TabStripModel *const model = browser_->tab_strip_model();
+  TabGroup *const tab_group = model->group_model()->GetTabGroup(group_);
 
   const tab_groups::TabGroupVisualData* current_visual_data =
       tab_group->visual_data();
@@ -628,21 +632,25 @@ void TabGroupEditorBubbleView::UpdateGroup() {
   tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
                                           updated_color,
                                           current_visual_data->is_collapsed());
-  tab_group->SetVisualData(new_data, true);
+  tab_group->SetVisualData(new_data, tab_group->IsCustomized());
 }
 
 void TabGroupEditorBubbleView::OnSaveTogglePressed() {
-  auto* group = browser_->tab_strip_model()->group_model()->GetTabGroup(group_);
+  SavedTabGroupKeyedService* saved_tab_group_service =
+      SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
+  CHECK(saved_tab_group_service);
 
   if (save_group_toggle_->GetIsOn()) {
     base::RecordAction(
         base::UserMetricsAction("TabGroups_TabGroupBubble_GroupSaved"));
-    group->SaveGroup();
+    saved_tab_group_service->SaveGroup(group_);
   } else {
     base::RecordAction(
         base::UserMetricsAction("TabGroups_TabGroupBubble_GroupUnsaved"));
-    group->UnsaveGroup();
+    saved_tab_group_service->UnsaveGroup(group_);
   }
+
+  UpdateGroup();
 }
 
 void TabGroupEditorBubbleView::NewTabInGroupPressed() {
@@ -659,6 +667,14 @@ void TabGroupEditorBubbleView::NewTabInGroupPressed() {
 void TabGroupEditorBubbleView::UngroupPressed(TabGroupHeader* header_view) {
   base::RecordAction(
       base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
+  if (base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
+      browser_->profile()->IsRegularProfile() &&
+      save_group_toggle_->GetIsOn()) {
+    SavedTabGroupKeyedService* saved_tab_group_service =
+        SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
+    CHECK(saved_tab_group_service);
+    saved_tab_group_service->DisconnectLocalTabGroup(group_);
+  }
   if (header_view)
     header_view->RemoveObserverFromWidget(GetWidget());
   TabStripModel* const model = browser_->tab_strip_model();
@@ -679,6 +695,14 @@ void TabGroupEditorBubbleView::UngroupPressed(TabGroupHeader* header_view) {
 void TabGroupEditorBubbleView::CloseGroupPressed() {
   base::RecordAction(
       base::UserMetricsAction("TabGroups_TabGroupBubble_CloseGroup"));
+  if (base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
+      browser_->profile()->IsRegularProfile() &&
+      save_group_toggle_->GetIsOn()) {
+    SavedTabGroupKeyedService* saved_tab_group_service =
+        SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
+    CHECK(saved_tab_group_service);
+    saved_tab_group_service->DisconnectLocalTabGroup(group_);
+  }
   browser_->tab_strip_model()->CloseAllTabsInGroup(group_);
   // Close the widget because it is no longer applicable.
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);

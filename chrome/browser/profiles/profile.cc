@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -367,7 +367,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kClickedUpdateMenuItem, false);
   registry->RegisterStringPref(prefs::kLatestVersionWhenClickedUpdateMenuItem,
                                std::string());
 #endif
@@ -517,6 +516,13 @@ void Profile::NotifyOffTheRecordProfileCreated(Profile* off_the_record) {
   DCHECK(off_the_record->IsOffTheRecord());
   for (auto& observer : observers_)
     observer.OnOffTheRecordProfileCreated(off_the_record);
+}
+
+void Profile::NotifyProfileInitializationComplete() {
+  DCHECK(!IsOffTheRecord());
+  for (auto& observer : observers_) {
+    observer.OnProfileInitializationComplete(this);
+  }
 }
 
 Profile* Profile::GetPrimaryOTRProfile(bool create_if_needed) {

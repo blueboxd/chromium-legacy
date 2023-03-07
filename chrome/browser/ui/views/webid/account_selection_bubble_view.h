@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEBID_ACCOUNT_SELECTION_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_WEBID_ACCOUNT_SELECTION_BUBBLE_VIEW_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/webid/account_selection_bubble_view_interface.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "content/public/browser/identity_request_account.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
@@ -38,14 +39,17 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
    public:
     enum class LinkType { PRIVACY_POLICY, TERMS_OF_SERVICE };
 
-    // Called when the user either selects the account from the multi-account
-    // chooser or clicks the "continue" button.
+    // Called when:
+    // 1. A user either selects the account from the multi-account chooser or
+    // clicks the "continue" button. (auto_signin == false)
+    // 2. Auto sign-in is triggered. (auto_signin == true)
     // Takes `account` as well as `idp_data` since passing `account_id` is
     // insufficient in the multiple IDP case. The caller should pass a cref, as
     // these objects are owned by the observer.
     virtual void OnAccountSelected(
         const content::IdentityRequestAccount& account,
-        const IdentityProviderDisplayData& idp_data) = 0;
+        const IdentityProviderDisplayData& idp_data,
+        bool auto_signin) = 0;
 
     // Called when the user clicks "privacy policy" or "terms of service" link.
     virtual void OnLinkClicked(LinkType link_type, const GURL& url) = 0;
@@ -61,6 +65,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   AccountSelectionBubbleView(
       const std::u16string& rp_for_display,
       const absl::optional<std::u16string>& idp_title,
+      blink::mojom::RpContext rp_context,
       views::View* anchor_view,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Observer* observer);
@@ -71,7 +76,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
       const std::vector<IdentityProviderDisplayData>& idp_data_list,
       bool show_back_button) override;
   void ShowVerifyingSheet(const content::IdentityRequestAccount& account,
-                          const IdentityProviderDisplayData& idp_data) override;
+                          const IdentityProviderDisplayData& idp_data,
+                          const std::u16string& title) override;
 
   void ShowSingleAccountConfirmDialog(
       const std::u16string& rp_for_display,
@@ -129,7 +135,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   // button visibiltiy. `idp_metadata` is not null when we need to set a header
   // image based on the IDP.
   void UpdateHeader(const content::IdentityProviderMetadata& idp_metadata,
-                    const std::u16string title,
+                    const std::u16string subpage_title,
                     bool show_back_button);
 
   // Sets the brand views::ImageView visibility and image. Initiates the
@@ -146,6 +152,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
 
   // The accessible title.
   std::u16string accessible_title_;
+
+  blink::mojom::RpContext rp_context_;
 
   // The images for the IDP icons. Stored so that they can be reused upon
   // pressing the back button after choosing an account on the multi IDP

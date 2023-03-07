@@ -1115,3 +1115,53 @@ testcase.trashNudgeShownOnFirstTrashOperation = async () => {
       appId, ['xf-nudge', '#dot'], ['left']);
   chrome.test.assertTrue(nudgeDot.renderedLeft < 0);
 };
+
+testcase.trashStaleTrashInfoFilesAreRemovedAfterOneHour = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  const fileSelector = '#file-list [file-name="hello.txt"]';
+  const trashInfoSelector = '#file-list [file-name="hello.txt.trashinfo"]';
+
+  // Select hello.txt and send it to the Trash.
+  await remoteCall.waitAndClickElement(appId, fileSelector);
+  await clickTrashButton(appId);
+  await remoteCall.waitForElementLost(appId, fileSelector);
+
+  // Enable hidden files to be shown.
+  await showHiddenFiles(appId);
+
+  // Navigate to /My files/Downloads/.Trash/files.
+  await navigateWithDirectoryTree(appId, '/My files/Downloads/.Trash/files');
+
+  // Select hello.txt.
+  await remoteCall.waitAndClickElement(appId, fileSelector);
+
+  // Delete selected item.
+  await clickDeleteButtonAndConfirmDeletion(appId);
+  await remoteCall.waitForElementLost(appId, fileSelector);
+
+  // Navigate to /My files/Downloads/.Trash/info and ensure the .trashinfo file
+  // is still there.
+  await navigateWithDirectoryTree(appId, '/My files/Downloads/.Trash/info');
+  await remoteCall.waitForElement(appId, trashInfoSelector);
+
+  // Update the modification date for the .trashinfo file.
+  chrome.test.assertEq(
+      await sendTestMessage({
+        name: 'updateModificationDate',
+        localPath: 'Downloads/.Trash/info/hello.txt.trashinfo',
+        modificationDate: ((new Date()).getTime() - 120 * 60 * 1000),
+      }),
+      'true');
+
+  // Navigate to the Trash directory which should kick off the removal of the
+  // stale .trashinfo file.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  await remoteCall.waitForElementLost(appId, fileSelector);
+
+  // Navigate back to the .Trash/info directory and ensure the .trashinfo file
+  // has been removed.
+  await navigateWithDirectoryTree(appId, '/My files/Downloads/.Trash/info');
+  await remoteCall.waitForElementLost(appId, trashInfoSelector);
+};

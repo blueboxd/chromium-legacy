@@ -4,15 +4,16 @@
 
 #import "chrome/browser/ui/cocoa/first_run_dialog_cocoa.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/current_thread.h"
+#import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -36,7 +37,7 @@ namespace {
 
 class FirstRunShowBridge : public base::RefCounted<FirstRunShowBridge> {
  public:
-  FirstRunShowBridge(FirstRunDialogController* controller);
+  explicit FirstRunShowBridge(FirstRunDialogController* controller);
 
   void ShowDialog(base::OnceClosure quit_closure);
 
@@ -59,7 +60,7 @@ void FirstRunShowBridge::ShowDialog(base::OnceClosure quit_closure) {
   std::move(quit_closure).Run();
 }
 
-FirstRunShowBridge::~FirstRunShowBridge() {}
+FirstRunShowBridge::~FirstRunShowBridge() = default;
 
 void ShowFirstRunModal() {
   base::scoped_nsobject<FirstRunDialogController> dialog(

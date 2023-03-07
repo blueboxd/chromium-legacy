@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_context.h"
@@ -49,7 +49,7 @@ bool BaseGraphicsDelegate::RunInSkiaContext(base::OnceClosure callback) {
 void BaseGraphicsDelegate::SwapSurfaceBuffers() {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(surface_);
-  surface_->SwapBuffers(base::DoNothing(), gl::FrameData());
+  surface_->SwapBuffers(base::DoNothing(), gfx::FrameData());
 }
 
 bool BaseGraphicsDelegate::MakeContextCurrent(ContextId context_id) {

@@ -30,19 +30,19 @@
 #include <windows.h>
 #endif  // BUILDFLAG(IS_WIN)
 
-#if defined(PA_ENABLE_SHADOW_METADATA) || BUILDFLAG(ENABLE_PKEYS)
+#if PA_CONFIG(ENABLE_SHADOW_METADATA) || BUILDFLAG(ENABLE_PKEYS)
 #include <sys/mman.h>
 #endif
 
 namespace partition_alloc::internal {
 
-#if defined(PA_HAS_64_BITS_POINTERS)
+#if PA_CONFIG(HAS_64_BITS_POINTERS)
 
 namespace {
 
 #if BUILDFLAG(IS_WIN)
 
-#if defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#if PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
 bool IsLegacyWindowsVersion() {
   // Use ::RtlGetVersion instead of ::GetVersionEx or helpers from
   // VersionHelpers.h because those alternatives change their behavior depending
@@ -53,20 +53,22 @@ bool IsLegacyWindowsVersion() {
   using RtlGetVersion = LONG(WINAPI*)(OSVERSIONINFOEX*);
   const RtlGetVersion rtl_get_version = reinterpret_cast<RtlGetVersion>(
       ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"));
-  if (!rtl_get_version)
+  if (!rtl_get_version) {
     return true;
+  }
 
   OSVERSIONINFOEX version_info = {};
   version_info.dwOSVersionInfoSize = sizeof(version_info);
-  if (rtl_get_version(&version_info) != ERROR_SUCCESS)
+  if (rtl_get_version(&version_info) != ERROR_SUCCESS) {
     return true;
+  }
 
   // Anything prior to Windows 8.1 is considered legacy for the allocator.
   // Windows 8.1 is major 6 with minor 3.
   return version_info.dwMajorVersion < 6 ||
          (version_info.dwMajorVersion == 6 && version_info.dwMinorVersion < 3);
 }
-#endif  // defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#endif  // PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
 
 PA_NOINLINE void HandlePoolAllocFailureOutOfVASpace() {
   PA_NO_CODE_FOLDING();
@@ -111,12 +113,12 @@ alignas(kPartitionCachelineSize)
 #endif
     PartitionAddressSpace::PoolSetup PartitionAddressSpace::setup_;
 
-#if defined(PA_ENABLE_SHADOW_METADATA)
+#if PA_CONFIG(ENABLE_SHADOW_METADATA)
 std::ptrdiff_t PartitionAddressSpace::regular_pool_shadow_offset_ = 0;
 std::ptrdiff_t PartitionAddressSpace::brp_pool_shadow_offset_ = 0;
 #endif
 
-#if defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#if PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
 #if BUILDFLAG(IS_IOS)
 namespace {
 bool IsIOSTestProcess() {
@@ -140,8 +142,9 @@ bool IsIOSTestProcess() {
 
   auto has_suffix = [&](const char* suffix) -> bool {
     size_t suffix_length = std::char_traits<char>::length(suffix);
-    if (executable_path_length < suffix_length)
+    if (executable_path_length < suffix_length) {
       return false;
+    }
     return std::char_traits<char>::compare(
                executable_path + (executable_path_length - suffix_length),
                suffix, suffix_length) == 0;
@@ -167,16 +170,17 @@ PA_ALWAYS_INLINE size_t PartitionAddressSpace::BRPPoolSize() {
   return IsLegacyWindowsVersion() ? kBRPPoolSizeForLegacyWindows : kBRPPoolSize;
 }
 #endif  // BUILDFLAG(IS_IOS)
-#endif  // defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#endif  // PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
 
 void PartitionAddressSpace::Init() {
-  if (IsInitialized())
+  if (IsInitialized()) {
     return;
+  }
 
   size_t regular_pool_size = RegularPoolSize();
   size_t brp_pool_size = BRPPoolSize();
 
-#if defined(PA_GLUE_CORE_POOLS)
+#if PA_CONFIG(GLUE_CORE_POOLS)
   // Gluing core pools (regular & BRP) makes sense only when both pools are of
   // the same size. This the only way we can check belonging to either of the
   // two with a single bitmask operation.
@@ -193,12 +197,13 @@ void PartitionAddressSpace::Init() {
                  PageAccessibilityConfiguration(
                      PageAccessibilityConfiguration::kInaccessible),
                  PageTag::kPartitionAlloc, pools_fd);
-  if (!setup_.regular_pool_base_address_)
+  if (!setup_.regular_pool_base_address_) {
     HandlePoolAllocFailure();
+  }
   setup_.brp_pool_base_address_ =
       setup_.regular_pool_base_address_ + regular_pool_size;
-#else  // defined(PA_GLUE_CORE_POOLS)
-#if defined(PA_ENABLE_SHADOW_METADATA)
+#else  // PA_CONFIG(GLUE_CORE_POOLS)
+#if PA_CONFIG(ENABLE_SHADOW_METADATA)
   int regular_pool_fd = memfd_create("/regular_pool", MFD_CLOEXEC);
 #else
   int regular_pool_fd = -1;
@@ -208,12 +213,11 @@ void PartitionAddressSpace::Init() {
                  PageAccessibilityConfiguration(
                      PageAccessibilityConfiguration::kInaccessible),
                  PageTag::kPartitionAlloc, regular_pool_fd);
-  if (!setup_.regular_pool_base_address_)
+  if (!setup_.regular_pool_base_address_) {
     HandlePoolAllocFailure();
-#if defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
-#endif
+  }
 
-#if defined(PA_ENABLE_SHADOW_METADATA)
+#if PA_CONFIG(ENABLE_SHADOW_METADATA)
   int brp_pool_fd = memfd_create("/brp_pool", MFD_CLOEXEC);
 #else
   int brp_pool_fd = -1;
@@ -229,22 +233,23 @@ void PartitionAddressSpace::Init() {
       PageAccessibilityConfiguration(
           PageAccessibilityConfiguration::kInaccessible),
       PageTag::kPartitionAlloc, brp_pool_fd);
-  if (!base_address)
+  if (!base_address) {
     HandlePoolAllocFailure();
+  }
   setup_.brp_pool_base_address_ = base_address + kForbiddenZoneSize;
-#endif  // defined(PA_GLUE_CORE_POOLS)
+#endif  // PA_CONFIG(GLUE_CORE_POOLS)
 
-#if defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#if PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
   setup_.regular_pool_base_mask_ = ~(regular_pool_size - 1);
   setup_.brp_pool_base_mask_ = ~(brp_pool_size - 1);
-#if defined(PA_GLUE_CORE_POOLS)
+#if PA_CONFIG(GLUE_CORE_POOLS)
   // When PA_GLUE_CORE_POOLS is on, the BRP pool is placed at the end of the
   // regular pool, effectively forming one virtual pool of a twice bigger
   // size. Adjust the mask appropriately.
   setup_.core_pools_base_mask_ = setup_.regular_pool_base_mask_ << 1;
   PA_DCHECK(setup_.core_pools_base_mask_ == (setup_.brp_pool_base_mask_ << 1));
 #endif
-#endif  // defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#endif  // PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
 
   AddressPoolManager::GetInstance().Add(
       kRegularPoolHandle, setup_.regular_pool_base_address_, regular_pool_size);
@@ -254,7 +259,7 @@ void PartitionAddressSpace::Init() {
   // Sanity check pool alignment.
   PA_DCHECK(!(setup_.regular_pool_base_address_ & (regular_pool_size - 1)));
   PA_DCHECK(!(setup_.brp_pool_base_address_ & (brp_pool_size - 1)));
-#if defined(PA_GLUE_CORE_POOLS)
+#if PA_CONFIG(GLUE_CORE_POOLS)
   PA_DCHECK(!(setup_.regular_pool_base_address_ & (glued_pool_sizes - 1)));
 #endif
 
@@ -269,7 +274,7 @@ void PartitionAddressSpace::Init() {
   PA_DCHECK(IsInBRPPool(setup_.brp_pool_base_address_));
   PA_DCHECK(IsInBRPPool(setup_.brp_pool_base_address_ + brp_pool_size - 1));
   PA_DCHECK(!IsInBRPPool(setup_.brp_pool_base_address_ + brp_pool_size));
-#if defined(PA_GLUE_CORE_POOLS)
+#if PA_CONFIG(GLUE_CORE_POOLS)
   PA_DCHECK(!IsInCorePools(setup_.regular_pool_base_address_ - 1));
   PA_DCHECK(IsInCorePools(setup_.regular_pool_base_address_));
   PA_DCHECK(
@@ -280,9 +285,9 @@ void PartitionAddressSpace::Init() {
   PA_DCHECK(IsInCorePools(setup_.brp_pool_base_address_));
   PA_DCHECK(IsInCorePools(setup_.brp_pool_base_address_ + brp_pool_size - 1));
   PA_DCHECK(!IsInCorePools(setup_.brp_pool_base_address_ + brp_pool_size));
-#endif  // defined(PA_GLUE_CORE_POOLS)
+#endif  // PA_CONFIG(GLUE_CORE_POOLS)
 
-#if PA_STARSCAN_USE_CARD_TABLE
+#if PA_CONFIG(STARSCAN_USE_CARD_TABLE)
   // Reserve memory for PCScan quarantine card table.
   uintptr_t requested_address = setup_.regular_pool_base_address_;
   uintptr_t actual_address = AddressPoolManager::GetInstance().Reserve(
@@ -290,9 +295,9 @@ void PartitionAddressSpace::Init() {
   PA_CHECK(requested_address == actual_address)
       << "QuarantineCardTable is required to be allocated at the beginning of "
          "the regular pool";
-#endif  // PA_STARSCAN_USE_CARD_TABLE
+#endif  // PA_CONFIG(STARSCAN_USE_CARD_TABLE)
 
-#if defined(PA_ENABLE_SHADOW_METADATA)
+#if PA_CONFIG(ENABLE_SHADOW_METADATA)
   // Reserve memory for the shadow pools.
   uintptr_t regular_pool_shadow_address =
       AllocPages(regular_pool_size, regular_pool_size,
@@ -312,9 +317,9 @@ void PartitionAddressSpace::Init() {
       brp_pool_shadow_address - setup_.brp_pool_base_address_;
 #endif
 
-#if defined(PA_POINTER_COMPRESSION)
+#if PA_CONFIG(POINTER_COMPRESSION)
   CompressedPointerBaseGlobal::SetBase(setup_.regular_pool_base_address_);
-#endif  // defined(PA_POINTER_COMPRESSION)
+#endif  // PA_CONFIG(POINTER_COMPRESSION)
 }
 
 void PartitionAddressSpace::InitConfigurablePool(uintptr_t pool_base,
@@ -326,8 +331,9 @@ void PartitionAddressSpace::InitConfigurablePool(uintptr_t pool_base,
   // It's possible that the pkey pool has been initialized first, in which case
   // the setup_ memory has been made read-only. Remove the protection
   // temporarily.
-  if (IsPkeyPoolInitialized())
+  if (IsPkeyPoolInitialized()) {
     TagGlobalsWithPkey(kDefaultPkey);
+  }
 #endif
 
   PA_CHECK(pool_base);
@@ -344,8 +350,9 @@ void PartitionAddressSpace::InitConfigurablePool(uintptr_t pool_base,
 
 #if BUILDFLAG(ENABLE_PKEYS)
   // Put the pkey protection back in place.
-  if (IsPkeyPoolInitialized())
+  if (IsPkeyPoolInitialized()) {
     TagGlobalsWithPkey(setup_.pkey_);
+  }
 #endif
 }
 
@@ -363,8 +370,9 @@ void PartitionAddressSpace::InitPkeyPool(int pkey) {
                  PageAccessibilityConfiguration(
                      PageAccessibilityConfiguration::kInaccessible),
                  PageTag::kPartitionAlloc);
-  if (!setup_.pkey_pool_base_address_)
+  if (!setup_.pkey_pool_base_address_) {
     HandlePoolAllocFailure();
+  }
 
   PA_DCHECK(!(setup_.pkey_pool_base_address_ & (pool_size - 1)));
   setup_.pkey_ = pkey;
@@ -384,18 +392,18 @@ void PartitionAddressSpace::UninitForTesting() {
 #if BUILDFLAG(ENABLE_PKEYS)
   UninitPkeyPoolForTesting();  // IN-TEST
 #endif
-#if defined(PA_GLUE_CORE_POOLS)
+#if PA_CONFIG(GLUE_CORE_POOLS)
   // The core pools (regular & BRP) were allocated using a single allocation of
   // double size.
   FreePages(setup_.regular_pool_base_address_, 2 * RegularPoolSize());
-#else   // defined(PA_GLUE_CORE_POOLS)
+#else   // PA_CONFIG(GLUE_CORE_POOLS)
   FreePages(setup_.regular_pool_base_address_, RegularPoolSize());
   // For BRP pool, the allocation region includes a "forbidden zone" before the
   // pool.
   const size_t kForbiddenZoneSize = PageAllocationGranularity();
   FreePages(setup_.brp_pool_base_address_ - kForbiddenZoneSize,
             BRPPoolSize() + kForbiddenZoneSize);
-#endif  // defined(PA_GLUE_CORE_POOLS)
+#endif  // PA_CONFIG(GLUE_CORE_POOLS)
   // Do not free pages for the configurable pool, because its memory is owned
   // by someone else, but deinitialize it nonetheless.
   setup_.regular_pool_base_address_ = kUninitializedPoolBaseAddress;
@@ -403,9 +411,9 @@ void PartitionAddressSpace::UninitForTesting() {
   setup_.configurable_pool_base_address_ = kUninitializedPoolBaseAddress;
   setup_.configurable_pool_base_mask_ = 0;
   AddressPoolManager::GetInstance().ResetForTesting();
-#if defined(PA_POINTER_COMPRESSION)
+#if PA_CONFIG(POINTER_COMPRESSION)
   CompressedPointerBaseGlobal::ResetBaseForTesting();
-#endif  // defined(PA_POINTER_COMPRESSION)
+#endif  // PA_CONFIG(POINTER_COMPRESSION)
 }
 
 void PartitionAddressSpace::UninitConfigurablePoolForTesting() {
@@ -413,16 +421,18 @@ void PartitionAddressSpace::UninitConfigurablePoolForTesting() {
   // It's possible that the pkey pool has been initialized first, in which case
   // the setup_ memory has been made read-only. Remove the protection
   // temporarily.
-  if (IsPkeyPoolInitialized())
+  if (IsPkeyPoolInitialized()) {
     TagGlobalsWithPkey(kDefaultPkey);
+  }
 #endif
   AddressPoolManager::GetInstance().Remove(kConfigurablePoolHandle);
   setup_.configurable_pool_base_address_ = kUninitializedPoolBaseAddress;
   setup_.configurable_pool_base_mask_ = 0;
 #if BUILDFLAG(ENABLE_PKEYS)
   // Put the pkey protection back in place.
-  if (IsPkeyPoolInitialized())
+  if (IsPkeyPoolInitialized()) {
     TagGlobalsWithPkey(setup_.pkey_);
+  }
 #endif
 }
 
@@ -446,6 +456,6 @@ PageCharacteristics page_characteristics;
 
 #endif  // BUILDFLAG(IS_LINUX) && defined(ARCH_CPU_ARM64)
 
-#endif  // defined(PA_HAS_64_BITS_POINTERS)
+#endif  // PA_CONFIG(HAS_64_BITS_POINTERS)
 
 }  // namespace partition_alloc::internal

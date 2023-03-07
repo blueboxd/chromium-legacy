@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_header.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
@@ -37,6 +36,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -717,8 +717,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     scenario = MenuScenarioHistogram::kTabGridEntry;
   }
 
-  return [self.menuProvider contextMenuConfigurationForGridCell:cell
-                                                   menuScenario:scenario];
+  return [self.menuProvider contextMenuConfigurationForTabCell:cell
+                                                  menuScenario:scenario];
 }
 
 - (UICollectionViewTransitionLayout*)
@@ -913,7 +913,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
     // Drop synchronously if local object is available.
     if (item.dragItem.localObject) {
-      [coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath];
+      __weak __typeof(self) weakSelf = self;
+      [self.delegate gridViewControllerDropAnimationWillBegin:weakSelf];
+      [[coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath]
+          addCompletion:^(UIViewAnimatingPosition finalPosition) {
+            [weakSelf.delegate gridViewControllerDropAnimationDidEnd:weakSelf];
+          }];
       // The sourceIndexPath is non-nil if the drop item is from this same
       // collection view.
       [self.dragDropHandler dropItem:item.dragItem
@@ -1219,8 +1224,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   NSUInteger fromIndex = [self indexOfItemWithID:itemID];
   // If this move would be a no-op, early return and avoid spurious UI updates.
-  if (fromIndex == toIndex)
+  if (fromIndex == toIndex || toIndex == NSNotFound ||
+      fromIndex == NSNotFound) {
     return;
+  }
   auto modelUpdates = ^{
     TabSwitcherItem* item = self.items[fromIndex];
     [self.items removeObjectAtIndex:fromIndex];

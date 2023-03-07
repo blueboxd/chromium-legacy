@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
-#include "base/bind.h"
 #include "base/debug/stack_trace.h"
+#include "base/functional/bind.h"
+#include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -71,7 +72,7 @@ class TestWebURLLoader final : public WebURLLoader {
       absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
-      int64_t& encoded_body_length,
+      uint64_t& encoded_body_length,
       WebBlobInfo& downloaded_blob,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper) override {

@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
@@ -22,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -32,6 +32,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -589,10 +590,10 @@ class NotificationPlatformBridgeLinuxImpl
     }
 
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    notification_proxy_ = nullptr;
     if (bus_)
       bus_->ShutdownAndBlock();
     bus_ = nullptr;
-    notification_proxy_ = nullptr;
     product_logo_png_bytes_ = nullptr;
     product_logo_file_.reset();
     product_logo_file_watcher_.reset();
@@ -1123,7 +1124,7 @@ class NotificationPlatformBridgeLinuxImpl
 
   scoped_refptr<dbus::Bus> bus_;
 
-  raw_ptr<dbus::ObjectProxy, DanglingUntriaged> notification_proxy_ = nullptr;
+  raw_ptr<dbus::ObjectProxy> notification_proxy_ = nullptr;
 
   std::unordered_set<std::string> capabilities_;
 

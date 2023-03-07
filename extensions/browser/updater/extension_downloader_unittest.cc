@@ -4,7 +4,7 @@
 
 #include "extensions/browser/updater/extension_downloader.h"
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "content/public/test/browser_task_environment.h"
@@ -497,7 +497,7 @@ TEST_F(ExtensionDownloaderTest, TestMultipleUpdates) {
 TEST_F(ExtensionDownloaderTest, TestNoNetworkRetryAfterCacheMiss) {
   ExtensionDownloaderTestHelper helper;
 
-  helper.downloader().SetBackoffPolicyForTesting(&kZeroBackoffPolicy);
+  helper.downloader().SetBackoffPolicy(kZeroBackoffPolicy);
 
   ExtensionDownloaderTask task = CreateDownloaderTask(
       kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());
@@ -524,7 +524,7 @@ TEST_F(ExtensionDownloaderTest, TestNoNetworkRetryAfterCacheMiss) {
 TEST_F(ExtensionDownloaderTest, TestManifestFetchFailureAfterCacheMiss) {
   ExtensionDownloaderTestHelper helper;
 
-  helper.downloader().SetBackoffPolicyForTesting(&kZeroBackoffPolicy);
+  helper.downloader().SetBackoffPolicy(kZeroBackoffPolicy);
 
   ExtensionDownloaderTask task = CreateDownloaderTask(
       kTestExtensionId, extension_urls::GetWebstoreUpdateUrl());

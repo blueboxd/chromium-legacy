@@ -12,9 +12,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/task/sequenced_task_runner_helpers.h"
@@ -273,9 +273,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Creates a configured NetworkContextParams when the network service is in
   // use.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
-
-  // Logs metrics related to cookies.
-  void RecordCookieMetrics(Profile* profile);
 
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 

@@ -6,14 +6,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/cocoa/nswindow_test_util.h"
 
 namespace ui {

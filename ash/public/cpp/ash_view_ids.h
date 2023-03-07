@@ -17,6 +17,12 @@ enum ViewID {
   VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD,
   // Icon that indicates the virtual keyboard is enabled.
   VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD_ENABLED,
+
+  // Feature tile ids.
+  VIEW_ID_SCREEN_CAPTURE_FEATURE_TILE,
+  VIEW_ID_DND_FEATURE_TILE,
+  VIEW_ID_AUTOROTATE_FEATURE_TILE,
+
   // Accessibility feature pod button in main view.
   VIEW_ID_ACCESSIBILITY_TRAY_ITEM,
   // System tray AddUserButton in UserChooserView.
@@ -27,9 +33,12 @@ enum ViewID {
   VIEW_ID_CAST_CAST_VIEW_LABEL,
   VIEW_ID_CAST_MAIN_VIEW,
   VIEW_ID_CAST_SELECT_VIEW,
+  // The entry to add wifi network in the quick settings network subpage.
+  VIEW_ID_JOIN_NETWORK_ENTRY,
+
   VIEW_ID_MEDIA_TRAY_VIEW,
 
-  // System tray quick settings view buttons:
+  // System tray quick settings view buttons shown in the root QS view:
   VIEW_ID_QS_MIN,
   VIEW_ID_QS_BATTERY_BUTTON = VIEW_ID_QS_MIN,
   VIEW_ID_QS_COLLAPSE_BUTTON,
@@ -48,6 +57,9 @@ enum ViewID {
   VIEW_ID_QS_USER_AVATAR_BUTTON,
   VIEW_ID_QS_VERSION_BUTTON,
   VIEW_ID_QS_MAX = VIEW_ID_QS_VERSION_BUTTON,
+
+  // Shown in system tray detailed views:
+  VIEW_ID_QS_DETAILED_VIEW_BACK_BUTTON,
 
   // Status area trays:
   VIEW_ID_SA_MIN,

@@ -34,8 +34,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -892,7 +892,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
         window_state()->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
-        const WindowSnapWMEvent snap_primary_event(WM_EVENT_SNAP_PRIMARY);
+        const WMEvent snap_primary_event(WM_EVENT_SNAP_PRIMARY);
         window_state()->OnWMEvent(&snap_primary_event);
         return;
       }
@@ -900,7 +900,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
         window_state()->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
-        const WindowSnapWMEvent snap_secondary_event(WM_EVENT_SNAP_SECONDARY);
+        const WMEvent snap_secondary_event(WM_EVENT_SNAP_SECONDARY);
         window_state()->OnWMEvent(&snap_secondary_event);
         return;
       }
@@ -974,11 +974,13 @@ void WorkspaceWindowResizer::CompleteDrag() {
     return;
   }
 
-  // Update the restore bounds of a floated window in case it has changed
-  // displays.
   if (window_state()->IsFloated()) {
-    window_state()->SetRestoreBoundsInParent(
-        details().restore_bounds_in_parent);
+    // Update the restore bounds of a floated window in case it has changed
+    // displays.
+    if (!details().restore_bounds_in_parent.IsEmpty()) {
+      window_state()->SetRestoreBoundsInParent(
+          details().restore_bounds_in_parent);
+    }
     return;
   }
 
@@ -1708,7 +1710,7 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
         window_state->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
 
-        const WindowSnapWMEvent event(WM_EVENT_SNAP_PRIMARY);
+        const WMEvent event(WM_EVENT_SNAP_PRIMARY);
         window_state->OnWMEvent(&event);
       }
       break;
@@ -1718,7 +1720,7 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
         window_state->set_snap_action_source(
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
 
-        const WindowSnapWMEvent event(WM_EVENT_SNAP_SECONDARY);
+        const WMEvent event(WM_EVENT_SNAP_SECONDARY);
         window_state->OnWMEvent(&event);
       }
       break;

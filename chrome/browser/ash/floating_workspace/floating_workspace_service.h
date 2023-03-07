@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_ASH_FLOATING_WORKSPACE_FLOATING_WORKSPACE_SERVICE_H_
 #define CHROME_BROWSER_ASH_FLOATING_WORKSPACE_FLOATING_WORKSPACE_SERVICE_H_
 
+#include "ash/public/cpp/desk_template.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/ash/desks/desks_client.h"
+#include "components/desks_storage/core/desk_model.h"
 #include "components/desks_storage/core/desk_model_observer.h"
 #include "components/desks_storage/core/desk_sync_bridge.h"
 #include "components/desks_storage/core/desk_sync_service.h"
@@ -107,9 +109,7 @@ class FloatingWorkspaceService : public KeyedService,
   // Compare currently captured and previous floating workspace desk.
   // Called by CaptureAndUploadActiveDesk before upload.
   // If no difference is recorded no upload job will be triggered.
-  bool IsCurrentDeskSameAsPrevious(DeskTemplate* current) const;
-
-  const base::TimeDelta kPeriodicJobIntervalInSeconds = base::Seconds(30);
+  bool IsCurrentDeskSameAsPrevious(DeskTemplate* current_desk_template) const;
 
   // Callback function that is run after a floating workspace template
   // is downloaded and launched.
@@ -120,6 +120,10 @@ class FloatingWorkspaceService : public KeyedService,
   // captured by `desks_storage::DeskSyncBridge`.
   void OnTemplateCaptured(absl::optional<DesksClient::DeskActionError> error,
                           std::unique_ptr<DeskTemplate>);
+
+  void OnTemplateUploaded(
+      desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+      std::unique_ptr<DeskTemplate> new_entry);
 
   Profile* const profile_;
 
@@ -139,6 +143,8 @@ class FloatingWorkspaceService : public KeyedService,
   // Convenience pointer to desks_storage::DeskSyncService. Guaranteed to be not
   // null for the duration of `this`.
   raw_ptr<desks_storage::DeskSyncService> desk_sync_service_ = nullptr;
+
+  std::unique_ptr<DeskTemplate> previously_captured_desk_template_;
 
   // Indicate if it is a testing class.
   bool is_testing_ = false;

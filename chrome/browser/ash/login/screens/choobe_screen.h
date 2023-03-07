@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
@@ -59,11 +59,5 @@ class ChoobeScreen : public BaseScreen {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash ::ChoobeScreen;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_CHOOBE_SCREEN_H_

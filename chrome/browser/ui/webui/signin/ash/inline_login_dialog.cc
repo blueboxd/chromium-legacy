@@ -8,8 +8,8 @@
 #include <string>
 
 #include "ash/public/cpp/window_backdrop.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -85,11 +85,11 @@ GURL GetInlineLoginUrl(const std::string& email) {
 // chrome/browser/resources/inline_login/inline_login_app.js
 base::Value AccountAdditionOptionsToValue(
     const account_manager::AccountAdditionOptions& options) {
-  base::Value args(base::Value::Type::DICTIONARY);
-  args.SetKey("isAvailableInArc", base::Value(options.is_available_in_arc));
-  args.SetKey("showArcAvailabilityPicker",
-              base::Value(options.show_arc_availability_picker));
-  return args;
+  base::Value::Dict args;
+  args.Set("isAvailableInArc", base::Value(options.is_available_in_arc));
+  args.Set("showArcAvailabilityPicker",
+           base::Value(options.show_arc_availability_picker));
+  return base::Value(std::move(args));
 }
 
 }  // namespace

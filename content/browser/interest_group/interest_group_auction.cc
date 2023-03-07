@@ -14,9 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -507,6 +507,12 @@ class InterestGroupAuction::BuyerHelper
     }
   }
 
+  void NotifyConfigPromisesResolved() {
+    for (const auto& bid_state : bid_states_) {
+      FinishGenerateBidIfReady(bid_state.get());
+    }
+  }
+
  private:
   // Sorts by descending priority, also grouping entries within each priority
   // band to permit context reuse if the executionMode allows it.
@@ -638,7 +644,7 @@ class InterestGroupAuction::BuyerHelper
     auction_worklet::mojom::KAnonymityBidMode kanon_mode =
         auction_->kanon_mode();
     bid_state->kanon_render_urls = ComputeKAnon(*bid_state->bidder, kanon_mode);
-    bid_state->worklet_handle->GetBidderWorklet()->GenerateBid(
+    bid_state->worklet_handle->GetBidderWorklet()->BeginGenerateBid(
         auction_worklet::mojom::BidderWorkletNonSharedParams::New(
             interest_group.name,
             interest_group.enable_bidding_signals_prioritization,
@@ -648,24 +654,22 @@ class InterestGroupAuction::BuyerHelper
             interest_group.user_bidding_signals, interest_group.ads,
             interest_group.ad_components, bid_state->kanon_render_urls),
         kanon_mode, bid_state->bidder->joining_origin,
-        auction_->config_->non_shared_params.auction_signals.maybe_json(),
-        GetPerBuyerSignals(*auction_->config_,
-                           bid_state->bidder->interest_group.owner),
         GetDirectFromSellerPerBuyerSignals(
             *auction_->subresource_url_builder_,
             bid_state->bidder->interest_group.owner),
         GetDirectFromSellerAuctionSignals(*auction_->subresource_url_builder_),
-        auction_->PerBuyerTimeout(bid_state), auction_->config_->seller,
+        auction_->config_->seller,
         auction_->parent_ ? auction_->parent_->config_->seller
                           : absl::optional<url::Origin>(),
         bid_state->bidder->bidding_browser_signals.Clone(),
         auction_->auction_start_time_, *bid_state->trace_id,
-        std::move(pending_remote));
+        std::move(pending_remote),
+        bid_state->bid_finalizer.BindNewEndpointAndPassReceiver());
 
     // Invoke SendPendingSignalsRequests() asynchronously, if necessary. Do this
-    // asynchronously so that all GenerateBid() calls that share a BidderWorklet
-    // will have been invoked before the first SendPendingSignalsRequests()
-    // call.
+    // asynchronously so that all BeginGenerateBid() calls that share a
+    // BidderWorklet will have been invoked before the first
+    // SendPendingSignalsRequests() call.
     //
     // This relies on AuctionWorkletManager::Handle invoking all the callbacks
     // listening for creation of the same BidderWorklet synchronously.
@@ -675,6 +679,27 @@ class InterestGroupAuction::BuyerHelper
           base::BindOnce(&BuyerHelper::SendPendingSignalsRequestsForBidder,
                          weak_ptr_factory_.GetWeakPtr(), bid_state));
     }
+
+    FinishGenerateBidIfReady(bid_state);
+  }
+
+  void FinishGenerateBidIfReady(BidState* bid_state) {
+    if (!auction_->config_promises_resolved_) {
+      return;
+    }
+
+    if (!bid_state->bid_finalizer.is_bound()) {
+      // This can happen if the promise resolves while the worklet process is
+      // still being launched.
+      return;
+    }
+
+    bid_state->bid_finalizer->FinishGenerateBid(
+        auction_->config_->non_shared_params.auction_signals.maybe_json(),
+        GetPerBuyerSignals(*auction_->config_,
+                           bid_state->bidder->interest_group.owner),
+        auction_->PerBuyerTimeout(bid_state));
+    bid_state->bid_finalizer.reset();
   }
 
   // Invoked when OnBiddingSignalsReceived() has been called for `state`, or
@@ -1049,6 +1074,7 @@ class InterestGroupAuction::BuyerHelper
       generate_bid_client_receiver_set_.Remove(
           *state.generate_bid_client_receiver_id);
       state.generate_bid_client_receiver_id.reset();
+      state.bid_finalizer.reset();
     }
   }
 
@@ -1098,27 +1124,34 @@ InterestGroupAuction::InterestGroupAuction(
       auction_worklet_manager_(auction_worklet_manager),
       interest_group_manager_(interest_group_manager),
       config_(config),
+      config_promises_resolved_(config_->non_shared_params.NumPromises() == 0),
       parent_(parent),
       auction_start_time_(auction_start_time),
       creation_time_(base::TimeTicks::Now()),
       subresource_url_builder_(std::make_unique<SubresourceUrlBuilder>(
           config->direct_from_seller_signals)) {
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("fledge", "auction", trace_id_,
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("fledge", "auction", *trace_id_,
                                     "decision_logic_url",
                                     config_->decision_logic_url);
 
+  uint32_t child_pos = 0;
   for (const auto& component_auction_config :
        config->non_shared_params.component_auctions) {
     // Nested component auctions are not supported.
     DCHECK(!parent_);
-    component_auctions_.emplace_back(std::make_unique<InterestGroupAuction>(
-        kanon_mode_, &component_auction_config, /*parent=*/this,
-        auction_worklet_manager, interest_group_manager, auction_start_time));
+    component_auctions_.emplace(
+        child_pos, std::make_unique<InterestGroupAuction>(
+                       kanon_mode_, &component_auction_config, /*parent=*/this,
+                       auction_worklet_manager, interest_group_manager,
+                       auction_start_time));
+    ++child_pos;
   }
 }
 
 InterestGroupAuction::~InterestGroupAuction() {
-  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "auction", trace_id_);
+  if (trace_id_.has_value()) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "auction", *trace_id_);
+  }
 
   if (!final_auction_result_)
     final_auction_result_ = AuctionResult::kAborted;
@@ -1167,7 +1200,7 @@ void InterestGroupAuction::StartLoadInterestGroupsPhase(
   DCHECK(!final_auction_result_);
   DCHECK_EQ(num_pending_loads_, 0u);
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "load_groups_phase", trace_id_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "load_groups_phase", *trace_id_);
 
   load_interest_groups_phase_callback_ =
       std::move(load_interest_groups_phase_callback);
@@ -1186,11 +1219,10 @@ void InterestGroupAuction::StartLoadInterestGroupsPhase(
 
   for (auto component_auction = component_auctions_.begin();
        component_auction != component_auctions_.end(); ++component_auction) {
-    (*component_auction)
-        ->StartLoadInterestGroupsPhase(
-            is_interest_group_api_allowed_callback,
-            base::BindOnce(&InterestGroupAuction::OnComponentInterestGroupsRead,
-                           weak_ptr_factory_.GetWeakPtr(), component_auction));
+    component_auction->second->StartLoadInterestGroupsPhase(
+        is_interest_group_api_allowed_callback,
+        base::BindOnce(&InterestGroupAuction::OnComponentInterestGroupsRead,
+                       weak_ptr_factory_.GetWeakPtr(), component_auction));
     ++num_pending_loads_;
   }
 
@@ -1232,7 +1264,7 @@ void InterestGroupAuction::StartBiddingAndScoringPhase(
   DCHECK_EQ(pending_component_seller_worklet_requests_, 0u);
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "bidding_and_scoring_phase",
-                                    trace_id_);
+                                    *trace_id_);
 
   on_seller_receiver_callback_ = std::move(on_seller_receiver_callback);
   bidding_and_scoring_phase_callback_ =
@@ -1253,13 +1285,15 @@ void InterestGroupAuction::StartBiddingAndScoringPhase(
     // component auctions before invoking StartBiddingAndScoringPhase() on any
     // component auction.
     pending_component_seller_worklet_requests_ = component_auctions_.size();
-    for (auto& component_auction : component_auctions_) {
+    for (auto& component_auction_info : component_auctions_) {
+      InterestGroupAuction* component_auction =
+          component_auction_info.second.get();
       component_auction->StartBiddingAndScoringPhase(
           base::BindOnce(
               &InterestGroupAuction::OnComponentSellerWorkletReceived,
               base::Unretained(this)),
           base::BindOnce(&InterestGroupAuction::OnComponentAuctionComplete,
-                         base::Unretained(this), component_auction.get()));
+                         base::Unretained(this), component_auction));
     }
   }
 
@@ -1279,7 +1313,8 @@ InterestGroupAuction::CreateReporter(
   // This should only be called on top-level auctions.
   DCHECK(!parent_);
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "reporting_phase", trace_id_);
+  uint64_t trace_id = *trace_id_;
+  trace_id_.reset();
 
   const LeaderInfo& leader = leader_info();
   InterestGroupAuction::ScoredBid* winner = leader.top_bid.get();
@@ -1319,7 +1354,7 @@ InterestGroupAuction::CreateReporter(
       leader.highest_scoring_other_bid_owner;
   top_level_seller_winning_bid_info.scoring_signals_data_version =
       leader.top_bid->scoring_signals_data_version;
-  top_level_seller_winning_bid_info.trace_id = trace_id_;
+  top_level_seller_winning_bid_info.trace_id = trace_id;
 
   // Populate the SellerWinningBidInfo for the component auction that the
   // winning bid came from, if any. This largely duplicates the above block.
@@ -1349,7 +1384,7 @@ InterestGroupAuction::CreateReporter(
         component_leader.highest_scoring_other_bid_owner;
     component_seller_winning_bid_info->scoring_signals_data_version =
         component_leader.top_bid->scoring_signals_data_version;
-    component_seller_winning_bid_info->trace_id = component_auction->trace_id_;
+    component_seller_winning_bid_info->trace_id = *component_auction->trace_id_;
     component_seller_winning_bid_info->component_auction_modified_bid_params =
         component_leader.top_bid->component_auction_modified_bid_params
             ->Clone();
@@ -1360,6 +1395,36 @@ InterestGroupAuction::CreateReporter(
       std::move(winning_bid_info), std::move(top_level_seller_winning_bid_info),
       std::move(component_seller_winning_bid_info),
       TakePrivateAggregationRequests());
+}
+
+void InterestGroupAuction::NotifyConfigPromisesResolved() {
+  DCHECK(!config_promises_resolved_);
+  DCHECK_EQ(0, config_->non_shared_params.NumPromises());
+  config_promises_resolved_ = true;
+  for (const auto& buyer_helper : buyer_helpers_) {
+    buyer_helper->NotifyConfigPromisesResolved();
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (auto& unscored_bid : unscored_bids_) {
+    unscored_bid->wait_promises =
+        now - unscored_bid->trace_wait_seller_deps_start;
+  }
+
+  ScoreQueuedBidsIfReady();
+}
+
+void InterestGroupAuction::NotifyComponentConfigPromisesResolved(uint32_t pos) {
+  DCHECK(!parent_);  // Should not be called on a component.
+  auto it = component_auctions_.find(pos);
+
+  if (it == component_auctions_.end()) {
+    // It's OK if the component auction isn't found; that means it got dropped
+    // at database loading stage.
+    return;
+  }
+
+  it->second->NotifyConfigPromisesResolved();
 }
 
 void InterestGroupAuction::ClosePipes() {
@@ -1375,8 +1440,8 @@ void InterestGroupAuction::ClosePipes() {
   seller_worklet_handle_.reset();
 
   // Close pipes for component auctions as well.
-  for (auto& component_auction : component_auctions_) {
-    component_auction->ClosePipes();
+  for (auto& component_auction_info : component_auctions_) {
+    component_auction_info.second->ClosePipes();
   }
 }
 
@@ -1385,8 +1450,8 @@ size_t InterestGroupAuction::NumPotentialBidders() const {
   for (const auto& buyer_helper : buyer_helpers_) {
     num_interest_groups += buyer_helper->num_potential_bidders();
   }
-  for (auto& component_auction : component_auctions_) {
-    num_interest_groups += component_auction->NumPotentialBidders();
+  for (const auto& component_auction_info : component_auctions_) {
+    num_interest_groups += component_auction_info.second->NumPotentialBidders();
   }
   return num_interest_groups;
 }
@@ -1401,8 +1466,8 @@ void InterestGroupAuction::GetInterestGroupsThatBid(
   }
 
   // Retrieve data from component auctions as well.
-  for (auto& component_auction : component_auctions_) {
-    component_auction->GetInterestGroupsThatBid(interest_groups);
+  for (const auto& component_auction_info : component_auctions_) {
+    component_auction_info.second->GetInterestGroupsThatBid(interest_groups);
   }
 }
 
@@ -1588,17 +1653,17 @@ void InterestGroupAuction::TakeDebugReportUrls(
   }
 
   // Retrieve data from component auctions as well.
-  for (auto& component_auction : component_auctions_) {
-    component_auction->TakeDebugReportUrls(debug_win_report_urls,
-                                           debug_loss_report_urls);
+  for (auto& component_auction_info : component_auctions_) {
+    component_auction_info.second->TakeDebugReportUrls(debug_win_report_urls,
+                                                       debug_loss_report_urls);
   }
 }
 
 std::map<url::Origin, InterestGroupAuction::PrivateAggregationRequests>
 InterestGroupAuction::TakePrivateAggregationRequests() {
-  for (auto& component_auction : component_auctions_) {
+  for (auto& component_auction_info : component_auctions_) {
     std::map<url::Origin, PrivateAggregationRequests> requests_map =
-        component_auction->TakePrivateAggregationRequests();
+        component_auction_info.second->TakePrivateAggregationRequests();
     for (auto& [origin, requests] : requests_map) {
       DCHECK(!requests.empty());
       PrivateAggregationRequests& destination_vector =
@@ -1612,8 +1677,9 @@ InterestGroupAuction::TakePrivateAggregationRequests() {
 }
 
 std::vector<std::string> InterestGroupAuction::TakeErrors() {
-  for (auto& component_auction : component_auctions_) {
-    std::vector<std::string> errors = component_auction->TakeErrors();
+  for (auto& component_auction_info : component_auctions_) {
+    std::vector<std::string> errors =
+        component_auction_info.second->TakeErrors();
     errors_.insert(errors_.begin(), errors.begin(), errors.end());
   }
   return std::move(errors_);
@@ -1625,8 +1691,8 @@ void InterestGroupAuction::TakePostAuctionUpdateOwners(
     owners.emplace_back(std::move(owner));
   }
 
-  for (auto& component_auction : component_auctions_) {
-    component_auction->TakePostAuctionUpdateOwners(owners);
+  for (auto& component_auction_info : component_auctions_) {
+    component_auction_info.second->TakePostAuctionUpdateOwners(owners);
   }
 }
 
@@ -1706,10 +1772,12 @@ absl::optional<std::string> InterestGroupAuction::GetPerBuyerSignals(
     const url::Origin& buyer) {
   const auto& auction_config_per_buyer_signals =
       config.non_shared_params.per_buyer_signals;
-  if (auction_config_per_buyer_signals.has_value()) {
-    auto it = auction_config_per_buyer_signals.value().find(buyer);
-    if (it != auction_config_per_buyer_signals.value().end())
+  DCHECK(!auction_config_per_buyer_signals.is_promise());
+  if (auction_config_per_buyer_signals.value().has_value()) {
+    auto it = auction_config_per_buyer_signals.value()->find(buyer);
+    if (it != auction_config_per_buyer_signals.value()->end()) {
       return it->second;
+    }
   }
   return absl::nullopt;
 }
@@ -1802,17 +1870,18 @@ void InterestGroupAuction::OnInterestGroupRead(
 }
 
 void InterestGroupAuction::OnComponentInterestGroupsRead(
-    AuctionList::iterator component_auction,
+    AuctionMap::iterator component_auction,
     bool success) {
-  num_owners_loaded_ += (*component_auction)->num_owners_loaded_;
+  num_owners_loaded_ += component_auction->second->num_owners_loaded_;
   num_owners_with_interest_groups_ +=
-      (*component_auction)->num_owners_with_interest_groups_;
+      component_auction->second->num_owners_with_interest_groups_;
 
   // Erase component auctions that failed to load anything, so they won't be
   // invoked in the generate bid phase. This is not a problem in the reporting
   // phase, as the top-level auction knows which component auction, if any, won.
-  if (!success)
+  if (!success) {
     component_auctions_.erase(component_auction);
+  }
   OnOneLoadCompleted();
 }
 
@@ -1868,7 +1937,7 @@ void InterestGroupAuction::OnStartLoadInterestGroupsPhaseComplete(
   DCHECK(load_interest_groups_phase_callback_);
   DCHECK(!final_auction_result_);
 
-  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "load_groups_phase", trace_id_);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "load_groups_phase", *trace_id_);
   if (auction_result == AuctionResult::kNoInterestGroups) {
     UMA_HISTOGRAM_TIMES("Ads.InterestGroup.Auction.LoadNoGroupsTime",
                         base::TimeTicks::Now() - creation_time_);
@@ -1901,7 +1970,7 @@ void InterestGroupAuction::OnComponentSellerWorkletReceived() {
 
 void InterestGroupAuction::RequestSellerWorklet() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "request_seller_worklet",
-                                    trace_id_);
+                                    *trace_id_);
   if (auction_worklet_manager_->RequestSellerWorklet(
           config_->decision_logic_url, config_->trusted_scoring_signals_url,
           *subresource_url_builder_, config_->seller_experiment_group_id,
@@ -1918,19 +1987,52 @@ void InterestGroupAuction::OnSellerWorkletReceived() {
   DCHECK(!seller_worklet_received_);
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "request_seller_worklet",
-                                  trace_id_);
+                                  *trace_id_);
 
   if (on_seller_receiver_callback_)
     std::move(on_seller_receiver_callback_).Run();
 
   seller_worklet_received_ = true;
 
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (auto& unscored_bid : unscored_bids_) {
+    unscored_bid->wait_worklet =
+        now - unscored_bid->trace_wait_seller_deps_start;
+  }
+
+  ScoreQueuedBidsIfReady();
+}
+
+void InterestGroupAuction::ScoreQueuedBidsIfReady() {
+  if (!ReadyToScoreBids() || unscored_bids_.empty()) {
+    return;
+  }
+
   auto unscored_bids = std::move(unscored_bids_);
   for (auto& unscored_bid : unscored_bids) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "Wait_for_seller_worklet",
-                                    unscored_bid->TraceId());
+    TRACE_EVENT_NESTABLE_ASYNC_END1(
+        "fledge", "wait_for_seller_deps", unscored_bid->TraceId(), "data",
+        [&](perfetto::TracedValue trace_context) {
+          auto dict = std::move(trace_context).WriteDictionary();
+          if (!unscored_bid->wait_worklet.is_zero()) {
+            dict.Add("wait_worklet_ms",
+                     unscored_bid->wait_worklet.InMillisecondsF());
+          }
+          if (!unscored_bid->wait_promises.is_zero()) {
+            dict.Add("wait_promises_ms",
+                     unscored_bid->wait_promises.InMillisecondsF());
+          }
+        });
     ScoreBidIfReady(std::move(unscored_bid));
   }
+
+  // If no further bids are outstanding, now is the time to send a coalesced
+  // request for all the trusted seller signals (if some still are pending,
+  // OnBidSourceDone() will take care of it).
+  if (outstanding_bid_sources_ == 0) {
+    seller_worklet_handle_->GetSellerWorklet()->SendPendingSignalsRequests();
+  }
+
   // No more unscored bids should be added, once the seller worklet has been
   // received.
   DCHECK(unscored_bids_.empty());
@@ -2008,11 +2110,11 @@ InterestGroupAuction::CreateBidFromComponentAuctionWinner(
 void InterestGroupAuction::OnBidSourceDone() {
   --outstanding_bid_sources_;
 
-  // If this is the only bid that yet to be sent to the seller worklet, and
-  // the seller worklet has loaded, then tell the seller worklet to send any
+  // If we issued the final set of bids to a seller worklet, tell it to send any
   // pending scoring signals request to complete the auction more quickly.
-  if (outstanding_bid_sources_ == 0 && seller_worklet_received_)
+  if (outstanding_bid_sources_ == 0 && ReadyToScoreBids()) {
     seller_worklet_handle_->GetSellerWorklet()->SendPendingSignalsRequests();
+  }
 
   MaybeCompleteBiddingAndScoringPhase();
 }
@@ -2023,10 +2125,13 @@ void InterestGroupAuction::ScoreBidIfReady(std::unique_ptr<Bid> bid) {
 
   any_bid_made_ = true;
 
-  // If seller worklet hasn't been received yet, wait until it is.
+  // If seller worklet hasn't been received yet, or configuration is still
+  // waiting on some promises, wait till everything is ready.
+  // TODO(morlovich): Tracing doesn't reflect config wait here.
   uint64_t bid_trace_id = bid->TraceId();
-  if (!seller_worklet_received_) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "wait_for_seller_worklet",
+  if (!ReadyToScoreBids()) {
+    bid->trace_wait_seller_deps_start = base::TimeTicks::Now();
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "wait_for_seller_deps",
                                       bid_trace_id);
     unscored_bids_.emplace_back(std::move(bid));
     return;
@@ -2042,6 +2147,7 @@ void InterestGroupAuction::ScoreBidIfReady(std::unique_ptr<Bid> bid) {
   mojo::PendingRemote<auction_worklet::mojom::ScoreAdClient> score_ad_remote;
   score_ad_receivers_.Add(
       this, score_ad_remote.InitWithNewPipeAndPassReceiver(), std::move(bid));
+  DCHECK_EQ(0, config_->non_shared_params.NumPromises());
   seller_worklet_handle_->GetSellerWorklet()->ScoreAd(
       bid_raw->ad_metadata, bid_raw->bid, config_->non_shared_params,
       GetDirectFromSellerSellerSignals(*subresource_url_builder_),
@@ -2293,16 +2399,17 @@ void InterestGroupAuction::OnNewHighestScoringOtherBid(
 
 absl::optional<base::TimeDelta> InterestGroupAuction::PerBuyerTimeout(
     const BidState* state) {
+  DCHECK(!config_->non_shared_params.buyer_timeouts.is_promise());
   const auto& per_buyer_timeouts =
-      config_->non_shared_params.per_buyer_timeouts;
+      config_->non_shared_params.buyer_timeouts.value().per_buyer_timeouts;
   if (per_buyer_timeouts.has_value()) {
-    auto it =
-        per_buyer_timeouts.value().find(state->bidder->interest_group.owner);
-    if (it != per_buyer_timeouts.value().end())
+    auto it = per_buyer_timeouts->find(state->bidder->interest_group.owner);
+    if (it != per_buyer_timeouts->end()) {
       return std::min(it->second, kMaxTimeout);
+    }
   }
   const auto& all_buyers_timeout =
-      config_->non_shared_params.all_buyers_timeout;
+      config_->non_shared_params.buyer_timeouts.value().all_buyers_timeout;
   if (all_buyers_timeout.has_value())
     return std::min(all_buyers_timeout.value(), kMaxTimeout);
   return absl::nullopt;
@@ -2343,7 +2450,7 @@ void InterestGroupAuction::OnBiddingAndScoringComplete(
   DCHECK(!final_auction_result_);
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "bidding_and_scoring_phase",
-                                  trace_id_);
+                                  *trace_id_);
 
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
@@ -2393,12 +2500,15 @@ void InterestGroupAuction::OnBiddingAndScoringComplete(
   // If this is a top-level auction with component auction, update final state
   // of all successfully completed component auctions with bids that did not win
   // to reflect a loss.
-  for (auto& component_auction : component_auctions_) {
+  for (auto& component_auction_info : component_auctions_) {
+    InterestGroupAuction* component_auction =
+        component_auction_info.second.get();
     // Leave the state of the winning component auction alone, if the winning
     // bid is from a component auction.
     ScoredBid* winner = top_bid();
-    if (winner && winner->bid->auction == component_auction.get())
+    if (winner && winner->bid->auction == component_auction) {
       continue;
+    }
     if (component_auction->final_auction_result_)
       continue;
     component_auction->final_auction_result_ =

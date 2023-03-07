@@ -10,14 +10,18 @@
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
+#include "chrome/browser/search/background/ntp_custom_background_service_observer.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_observer.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
+#include "chrome/common/search/ntp_logging_events.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace content {
 class WebContents;
@@ -29,14 +33,17 @@ class CustomizeChromePageHandler
     : public side_panel::mojom::CustomizeChromePageHandler,
       public NtpBackgroundServiceObserver,
       public ui::NativeThemeObserver,
-      public ThemeServiceObserver {
+      public ThemeServiceObserver,
+      public NtpCustomBackgroundServiceObserver,
+      public ui::SelectFileDialog::Listener {
  public:
   CustomizeChromePageHandler(
       mojo::PendingReceiver<side_panel::mojom::CustomizeChromePageHandler>
           pending_page_handler,
       mojo::PendingRemote<side_panel::mojom::CustomizeChromePage> pending_page,
       NtpCustomBackgroundService* ntp_custom_background_service,
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const std::vector<std::pair<const std::string, int>> module_id_names);
 
   CustomizeChromePageHandler(const CustomizeChromePageHandler&) = delete;
   CustomizeChromePageHandler& operator=(const CustomizeChromePageHandler&) =
@@ -45,25 +52,48 @@ class CustomizeChromePageHandler
   ~CustomizeChromePageHandler() override;
 
   // side_panel::mojom::CustomizeChromePageHandler:
-  void SetMostVisitedSettings(bool custom_links_enabled, bool visible) override;
-  void GetMostVisitedSettings(GetMostVisitedSettingsCallback callback) override;
+  void SetDefaultColor() override;
+  void SetSeedColor(SkColor seed_color) override;
+  void GetOverviewChromeColors(
+      GetOverviewChromeColorsCallback callback) override;
   void GetChromeColors(GetChromeColorsCallback callback) override;
+  void SetBackgroundImage(const std::string& attribution_1,
+                          const std::string& attribution_2,
+                          const GURL& attribution_url,
+                          const GURL& image_url,
+                          const GURL& thumbnail_url) override;
+  void SetDailyRefreshCollectionId(const std::string& collection_id) override;
   void GetBackgroundCollections(
       GetBackgroundCollectionsCallback callback) override;
-  void UpdateTheme() override;
-  void SetDefaultColor() override;
-  void SetForegroundColor(SkColor foreground_color) override;
+  void GetBackgroundImages(const std::string& collection_id,
+                           GetBackgroundImagesCallback callback) override;
+  void ChooseLocalCustomBackground(
+      ChooseLocalCustomBackgroundCallback callback) override;
   void SetClassicChromeDefaultTheme() override;
+  void UpdateTheme() override;
+  void OpenChromeWebStore() override;
+  void OpenThirdPartyThemePage(const std::string& theme_id) override;
+  void SetMostVisitedSettings(bool custom_links_enabled, bool visible) override;
+  void UpdateMostVisitedSettings() override;
+  void SetModulesVisible(bool visible) override;
+  void SetModuleDisabled(const std::string& module_id, bool disabled) override;
+  void UpdateModulesSettings() override;
 
  private:
+  void LogEvent(NTPLoggingEventType event);
+
+  bool IsCustomLinksEnabled() const;
+  bool IsShortcutsVisible() const;
+
   // ui::NativeThemeObserver:
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // ThemeServiceObserver:
   void OnThemeChanged() override;
 
-  bool IsCustomLinksEnabled() const;
-  bool IsShortcutsVisible() const;
+  // NtpCustomBackgroundServiceObserver:
+  void OnCustomBackgroundImageUpdated() override;
+  void OnNtpCustomBackgroundServiceShuttingDown() override;
 
   // NtpBackgroundServiceObserver:
   void OnCollectionInfoAvailable() override;
@@ -71,18 +101,34 @@ class CustomizeChromePageHandler
   void OnNextCollectionImageAvailable() override;
   void OnNtpBackgroundServiceShuttingDown() override;
 
+  // SelectFileDialog::Listener:
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
+
+  ChooseLocalCustomBackgroundCallback choose_local_custom_background_callback_;
   raw_ptr<NtpCustomBackgroundService> ntp_custom_background_service_;
   raw_ptr<Profile> profile_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   raw_ptr<content::WebContents> web_contents_;
   raw_ptr<NtpBackgroundService> ntp_background_service_;
   GetBackgroundCollectionsCallback background_collections_callback_;
   base::TimeTicks background_collections_request_start_time_;
+  std::string images_request_collection_id_;
+  GetBackgroundImagesCallback background_images_callback_;
+  base::TimeTicks background_images_request_start_time_;
   raw_ptr<ThemeService> theme_service_;
+  const std::vector<std::pair<const std::string, int>> module_id_names_;
 
+  PrefChangeRegistrar pref_change_registrar_;
   base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observation_{this};
   base::ScopedObservation<ThemeService, ThemeServiceObserver>
       theme_service_observation_{this};
+  base::ScopedObservation<NtpCustomBackgroundService,
+                          NtpCustomBackgroundServiceObserver>
+      ntp_custom_background_service_observation_{this};
 
   mojo::Remote<side_panel::mojom::CustomizeChromePage> page_;
   mojo::Receiver<side_panel::mojom::CustomizeChromePageHandler> receiver_;

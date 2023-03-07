@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -57,8 +57,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
           const PortConfig& output_config,
           OutputMode output_mode,
           VideoRotation relative_rotation,
-          ErrorCB error_cb,
-          scoped_refptr<base::SequencedTaskRunner> backend_task_runner)>;
+          ErrorCB error_cb)>;
 
   static std::unique_ptr<ImageProcessor> Create(
       CreateBackendCB create_backend_cb,

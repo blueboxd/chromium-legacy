@@ -18,15 +18,7 @@
 #endif
 
 PushNotificationService::PushNotificationService()
-    : PushNotificationService(
-          GetApplicationContext()->GetChromeBrowserStateManager()) {}
-
-PushNotificationService::PushNotificationService(
-    ios::ChromeBrowserStateManager* manager)
-    : client_manager_(std::make_unique<PushNotificationClientManager>()) {
-  context_manager_ = [[PushNotificationAccountContextManager alloc]
-      initWithChromeBrowserStateManager:manager];
-}
+    : client_manager_(std::make_unique<PushNotificationClientManager>()) {}
 
 PushNotificationService::~PushNotificationService() = default;
 
@@ -35,8 +27,15 @@ PushNotificationService::GetPushNotificationClientManager() {
   return client_manager_.get();
 }
 
-bool PushNotificationService::DeviceTokenIsSet() const {
-  return false;
+PushNotificationAccountContext* PushNotificationService::GetAccountContext(
+    NSString* account_id) {
+  return context_manager_.contextMap[account_id];
+}
+
+void PushNotificationService::InitializeAccountContextManager(
+    ios::ChromeBrowserStateManager* manager) {
+  context_manager_ = [[PushNotificationAccountContextManager alloc]
+      initWithChromeBrowserStateManager:manager];
 }
 
 void PushNotificationService::RegisterAccount(
@@ -66,7 +65,6 @@ void PushNotificationService::RegisterBrowserStatePrefs(
     feature_push_notification_permission.Set(
         base::NumberToString(static_cast<int>(client_id)), false);
   }
-
   registry->RegisterDictionaryPref(
       prefs::kFeaturePushNotificationPermissions,
       std::move(feature_push_notification_permission));

@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -2131,15 +2131,15 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
 
   // Configure the normal profile to automatically satisfy the client cert
   // request.
-  std::unique_ptr<base::DictionaryValue> setting =
-      std::make_unique<base::DictionaryValue>();
-  base::Value* filters = setting->SetKey("filters", base::ListValue());
-  filters->Append(base::DictionaryValue());
+  base::Value::Dict setting;
+  base::Value::List filter;
+  filter.Append(base::Value::Dict());
+  setting.Set("filters", std::move(filter));
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetWebsiteSettingDefaultScope(
           client_cert_needed_page, GURL(),
           ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-          base::Value::FromUniquePtrValue(std::move(setting)));
+          base::Value(std::move(setting)));
 
   // Navigating to the page should work just fine in the normal profile.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), client_cert_needed_page));

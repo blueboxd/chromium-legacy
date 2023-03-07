@@ -14,7 +14,6 @@
 #include "apps/launcher.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/file_manager/url_constants.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -74,7 +73,6 @@
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/network_service_instance.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
@@ -164,21 +162,6 @@ std::string ParseFilesAppActionId(const std::string& action_id) {
   }
 
   return action_id;
-}
-
-// Returns true if the `task` is a Web Drive Office task.
-bool IsWebDriveOfficeTask(const TaskDescriptor& task) {
-  const std::string action_id = ParseFilesAppActionId(task.action_id);
-  bool is_web_drive_office_action_id =
-      action_id == kActionIdWebDriveOfficeWord ||
-      action_id == kActionIdWebDriveOfficeExcel ||
-      action_id == kActionIdWebDriveOfficePowerPoint;
-  return IsFilesAppId(task.app_id) && is_web_drive_office_action_id;
-}
-
-bool IsOpenInOfficeTask(const TaskDescriptor& task) {
-  const std::string action_id = ParseFilesAppActionId(task.action_id);
-  return IsFilesAppId(task.app_id) && action_id == kActionIdOpenInOffice;
 }
 
 // Returns true if path_mime_set contains a Google document.
@@ -322,7 +305,7 @@ void ExecuteTaskAfterMimeTypesCollected(
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
   if (task.task_type == TASK_TYPE_ARC_APP &&
-      !ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
+      !ash::features::ShouldArcFileTasksUseAppService()) {
     apps::RecordAppLaunchMetrics(profile, apps::AppType::kArc, task.app_id,
                                  apps::LaunchSource::kFromFileManager,
                                  apps::LaunchContainer::kLaunchContainerWindow);
@@ -538,18 +521,33 @@ bool TaskDescriptor::operator<(const TaskDescriptor& other) const {
   }
 }
 
+bool TaskDescriptor::operator==(const TaskDescriptor& other) const {
+  if (app_id != other.app_id) {
+    return false;
+  }
+  if (task_type != other.task_type) {
+    return false;
+  }
+  if (action_id != other.action_id) {
+    return false;
+  }
+  return true;
+}
+
 FullTaskDescriptor::FullTaskDescriptor(const TaskDescriptor& in_task_descriptor,
                                        const std::string& in_task_title,
                                        const GURL& in_icon_url,
                                        bool in_is_default,
                                        bool in_is_generic_file_handler,
-                                       bool in_is_file_extension_match)
+                                       bool in_is_file_extension_match,
+                                       bool is_dlp_blocked)
     : task_descriptor(in_task_descriptor),
       task_title(in_task_title),
       icon_url(in_icon_url),
       is_default(in_is_default),
       is_generic_file_handler(in_is_generic_file_handler),
-      is_file_extension_match(in_is_file_extension_match) {}
+      is_file_extension_match(in_is_file_extension_match),
+      is_dlp_blocked(is_dlp_blocked) {}
 
 FullTaskDescriptor::FullTaskDescriptor(const FullTaskDescriptor& other) =
     default;
@@ -566,7 +564,7 @@ void UpdateDefaultTask(Profile* profile,
     return;
 
   std::string task_id = TaskDescriptorToId(task_descriptor);
-  if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+  if (ash::features::ShouldArcFileTasksUseAppService() &&
       task_descriptor.task_type == TASK_TYPE_ARC_APP) {
     // Task IDs for Android apps are stored in a legacy format (app id:
     // "<package>/<activity>", task id: "view"). For ARC app task descriptors
@@ -796,7 +794,7 @@ bool ExecuteFileTask(Profile* profile,
   if (task.task_type == TASK_TYPE_ARC_APP ||
       task.task_type == TASK_TYPE_WEB_APP ||
       task.task_type == TASK_TYPE_FILE_HANDLER ||
-      (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+      (ash::features::ShouldGuestOsFileTasksUseAppService() &&
        (task.task_type == TASK_TYPE_CROSTINI_APP ||
         task.task_type == TASK_TYPE_PLUGIN_VM_APP))) {
     // TODO(petermarshall): Implement GetProfileForExtensionTask in Lacros if
@@ -810,7 +808,7 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  if (!ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+  if (!ash::features::ShouldGuestOsFileTasksUseAppService() &&
       (task.task_type == TASK_TYPE_CROSTINI_APP ||
        task.task_type == TASK_TYPE_PLUGIN_VM_APP)) {
     DCHECK_EQ(kGuestOsAppActionID, task.action_id);
@@ -904,40 +902,46 @@ bool GetUserFallbackChoice(
 void FindExtensionAndAppTasks(Profile* profile,
                               const std::vector<extensions::EntryInfo>& entries,
                               const std::vector<GURL>& file_urls,
+                              const std::vector<std::string>& dlp_source_urls,
                               FindTasksCallback callback,
                               std::unique_ptr<ResultingTasks> resulting_tasks) {
   auto* tasks = &resulting_tasks->tasks;
 
   // 2. Web tasks file_handlers (View/Open With), Chrome app file_handlers, and
   // extension file_browser_handlers.
-  FindAppServiceTasks(profile, entries, file_urls, tasks);
+  FindAppServiceTasks(profile, entries, file_urls, dlp_source_urls, tasks);
 
-  // 3. Find and append Guest OS tasks.
-  FindGuestOsTasks(
-      profile, entries, file_urls, tasks,
-      // Done. Apply post-filtering and callback.
-      base::BindOnce(PostProcessFoundTasks, profile, entries,
-                     std::move(callback), std::move(resulting_tasks)));
+  // 3. Find and append Guest OS tasks directly if Guest OS file tasks aren't
+  // provided by App Service.
+  if (!ash::features::ShouldGuestOsFileTasksUseAppService()) {
+    FindGuestOsTasks(
+        profile, entries, file_urls, tasks,
+        // Done. Apply post-filtering and callback.
+        base::BindOnce(PostProcessFoundTasks, profile, entries,
+                       std::move(callback), std::move(resulting_tasks)));
+  } else {
+    PostProcessFoundTasks(profile, entries, std::move(callback),
+                          std::move(resulting_tasks));
+  }
 }
 
 void FindAllTypesOfTasks(Profile* profile,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
+                         const std::vector<std::string>& dlp_source_urls,
                          FindTasksCallback callback) {
   DCHECK(profile);
   auto resulting_tasks = std::make_unique<ResultingTasks>();
-
-  if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
-    // Skip FindArcTasks and FindGuestOsTasks since these tasks are now found in
-    // App Service.
-    FindAppServiceTasks(profile, entries, file_urls, &resulting_tasks->tasks);
-    PostProcessFoundTasks(profile, entries, std::move(callback),
-                          std::move(resulting_tasks));
+  if (!ash::features::ShouldArcFileTasksUseAppService()) {
+    // 1. Find and append ARC handler tasks if ARC file tasks aren't
+    // provided by App Service.
+    FindArcTasks(
+        profile, entries, file_urls, std::move(resulting_tasks),
+        base::BindOnce(&FindExtensionAndAppTasks, profile, entries, file_urls,
+                       dlp_source_urls, std::move(callback)));
   } else {
-    // 1. Find and append ARC handler tasks.
-    FindArcTasks(profile, entries, file_urls, std::move(resulting_tasks),
-                 base::BindOnce(&FindExtensionAndAppTasks, profile, entries,
-                                file_urls, std::move(callback)));
+    FindExtensionAndAppTasks(profile, entries, file_urls, dlp_source_urls,
+                             std::move(callback), std::move(resulting_tasks));
   }
 }
 
@@ -965,7 +969,7 @@ void ChooseAndSetDefaultTask(Profile* profile,
                                             file_path.Extension(),
                                             &default_task)) {
       default_tasks.insert(default_task);
-      if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+      if (ash::features::ShouldArcFileTasksUseAppService() &&
           default_task.task_type == TASK_TYPE_ARC_APP) {
         // Default preference Task Descriptors for Android apps are stored in a
         // legacy format (app id: "<package>/<activity>", action id: "view"). To
@@ -1060,6 +1064,20 @@ void ChooseAndSetDefaultTask(Profile* profile,
   }
 }
 
+bool IsWebDriveOfficeTask(const TaskDescriptor& task) {
+  const std::string action_id = ParseFilesAppActionId(task.action_id);
+  bool is_web_drive_office_action_id =
+      action_id == kActionIdWebDriveOfficeWord ||
+      action_id == kActionIdWebDriveOfficeExcel ||
+      action_id == kActionIdWebDriveOfficePowerPoint;
+  return IsFilesAppId(task.app_id) && is_web_drive_office_action_id;
+}
+
+bool IsOpenInOfficeTask(const TaskDescriptor& task) {
+  const std::string action_id = ParseFilesAppActionId(task.action_id);
+  return IsFilesAppId(task.app_id) && action_id == kActionIdOpenInOffice;
+}
+
 bool IsExtensionInstalled(Profile* profile, const std::string& extension_id) {
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
@@ -1096,33 +1114,47 @@ std::string ToSwaActionId(const std::string& action_id) {
 
 }  // namespace
 
-void SetWordFileHandler(Profile* profile, const std::string& action_id) {
-  TaskDescriptor task(kFileManagerSwaAppId, TaskType::TASK_TYPE_WEB_APP,
-                      ToSwaActionId(action_id));
+void SetWordFileHandler(Profile* profile, TaskDescriptor& task) {
   UpdateDefaultTask(
       profile, task, {".doc", ".docx"},
       {"application/msword",
        "application/"
        "vnd.openxmlformats-officedocument.wordprocessingml.document"});
 }
-
-void SetExcelFileHandler(Profile* profile, const std::string& action_id) {
+void SetWordFileHandlerToFilesSWA(Profile* profile,
+                                  const std::string& action_id) {
   TaskDescriptor task(kFileManagerSwaAppId, TaskType::TASK_TYPE_WEB_APP,
                       ToSwaActionId(action_id));
+  SetWordFileHandler(profile, task);
+}
+
+void SetExcelFileHandler(Profile* profile, TaskDescriptor& task) {
   UpdateDefaultTask(
       profile, task, {".xls", ".xlsx"},
       {"application/vnd.ms-excel",
        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 }
 
-void SetPowerPointFileHandler(Profile* profile, const std::string& action_id) {
+void SetExcelFileHandlerToFilesSWA(Profile* profile,
+                                   const std::string& action_id) {
   TaskDescriptor task(kFileManagerSwaAppId, TaskType::TASK_TYPE_WEB_APP,
                       ToSwaActionId(action_id));
+  SetExcelFileHandler(profile, task);
+}
+
+void SetPowerPointFileHandler(Profile* profile, TaskDescriptor& task) {
   UpdateDefaultTask(
       profile, task, {".ppt", ".pptx"},
       {"application/vnd.ms-powerpoint",
        "application/"
        "vnd.openxmlformats-officedocument.presentationml.presentation"});
+}
+
+void SetPowerPointFileHandlerToFilesSWA(Profile* profile,
+                                        const std::string& action_id) {
+  TaskDescriptor task(kFileManagerSwaAppId, TaskType::TASK_TYPE_WEB_APP,
+                      ToSwaActionId(action_id));
+  SetPowerPointFileHandler(profile, task);
 }
 
 void SetOfficeSetupComplete(Profile* profile, bool complete) {

@@ -11,7 +11,7 @@
 #include <memory>
 #include <set>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
@@ -20,6 +20,10 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+
+namespace crypto {
+class SecureHash;
+}  // namespace crypto
 
 namespace content {
 
@@ -142,6 +146,11 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   }
 
   void FlushRemotesForTesting();
+
+  // Gets the hex-encoded checksum hash string calculated from the script body.
+  // This function should be called only once as it destroys the underlying data
+  // of the checksum. It resets |checksum_| not to be called multiple times.
+  std::string GetSha256Checksum();
 
  private:
   class ReadResponseHeadCallbackAdapter;
@@ -337,6 +346,11 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer_;
   const int64_t writer_resource_id_ =
       blink::mojom::kInvalidServiceWorkerResourceId;
+
+  // Calculate the hash string for the written bytes. This will be used for the
+  // experiment which needs to identify some specific service worker scripts
+  // (crbug.com/1371756).
+  std::unique_ptr<crypto::SecureHash> checksum_;
 
   base::WeakPtrFactory<ServiceWorkerCacheWriter> weak_factory_{this};
 };

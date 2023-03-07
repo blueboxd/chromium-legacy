@@ -9,13 +9,15 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
@@ -841,7 +843,14 @@ void FrameSinkManagerImpl::StartFrameCountingForTest(
 
 void FrameSinkManagerImpl::StopFrameCountingForTest(
     StopFrameCountingForTestCallback callback) {
-  DCHECK(frame_counter_.has_value());
+  // Returns empty data if `frame_counter_` has no value. This could happen
+  // when gpu-process is restarted in middle of test and test scripts still
+  // calls this at the end.
+  if (!frame_counter_.has_value()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
   std::move(callback).Run(frame_counter_->TakeData());
   frame_counter_.reset();
 }

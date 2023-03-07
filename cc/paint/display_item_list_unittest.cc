@@ -336,7 +336,7 @@ TEST_F(DisplayItemListTest, TransformPairedRange) {
       SkRect::MakeLTRB(0.f + first_offset.x(), 0.f + first_offset.y(),
                        60.f + first_offset.x(), 60.f + first_offset.y()),
       red_paint);
-  expected_canvas.setMatrix(gfx::TransformToFlattenedSkMatrix(transform));
+  expected_canvas.setMatrix(gfx::TransformToSkM44(transform));
   expected_canvas.drawRect(
       SkRect::MakeLTRB(50.f + second_offset.x(), 50.f + second_offset.y(),
                        75.f + second_offset.x(), 75.f + second_offset.y()),
@@ -388,7 +388,7 @@ TEST_F(DisplayItemListTest, FilterPairedRange) {
 
     SkRect layer_bounds = gfx::RectFToSkRect(filter_bounds);
     layer_bounds.offset(-filter_bounds.x(), -filter_bounds.y());
-    list->push<SaveLayerOp>(&layer_bounds, &flags);
+    list->push<SaveLayerOp>(layer_bounds, flags);
     list->push<TranslateOp>(-filter_bounds.x(), -filter_bounds.y());
 
     list->EndPaintOfPairedBegin();
@@ -530,7 +530,7 @@ TEST_F(DisplayItemListTest, AsValueWithOps) {
     PaintFlags red_paint;
     red_paint.setColor(SK_ColorRED);
 
-    list->push<SaveLayerOp>(nullptr, &red_paint);
+    list->push<SaveLayerOp>(red_paint);
     list->push<TranslateOp>(static_cast<float>(offset.x()),
                             static_cast<float>(offset.y()));
     list->push<DrawRectOp>(SkRect::MakeWH(4, 4), red_paint);

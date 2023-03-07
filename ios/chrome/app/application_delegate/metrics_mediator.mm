@@ -7,7 +7,7 @@
 #import <mach/mach.h>
 #import <sys/sysctl.h>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
@@ -35,7 +35,7 @@
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/widget_kit/features.h"
@@ -305,11 +305,16 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
 
 #pragma mark - Public methods.
 
++ (void)createStartupTrackingTask {
+  [MetricKitSubscriber createExtendedLaunchTask];
+}
+
 + (void)logStartupDuration:(id<StartupInformation>)startupInformation
      connectionInformation:(id<ConnectionInformation>)connectionInformation {
   if (![startupInformation isColdStart])
     return;
 
+  [MetricKitSubscriber endExtendedLaunchTask];
   base::TimeTicks now = base::TimeTicks::Now();
   const base::TimeDelta processStartToNowTime =
       TimeDeltaSinceAppLaunchFromProcess();

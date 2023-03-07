@@ -142,7 +142,8 @@ scoped_refptr<GLImageNativePixmap> GLImageNativePixmap::CreateForPlane(
     const gfx::ColorSpace& color_space) {
   auto image =
       base::WrapRefCounted(new GLImageNativePixmap(size, format, plane));
-  if (!image->Initialize(std::move(pixmap), color_space)) {
+
+  if (!image->InitializeFromNativePixmap(std::move(pixmap), color_space)) {
     return nullptr;
   }
   return image;
@@ -163,119 +164,136 @@ scoped_refptr<GLImageNativePixmap> GLImageNativePixmap::CreateFromTexture(
 GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
                                          gfx::BufferFormat format,
                                          gfx::BufferPlane plane)
-    : GLImageEGL(size),
+    : egl_image_(EGL_NO_IMAGE_KHR),
+      size_(size),
       format_(format),
       plane_(plane),
       has_image_dma_buf_export_(gl::GLSurfaceEGL::GetGLDisplayEGL()
                                     ->ext->b_EGL_MESA_image_dma_buf_export) {}
 
-GLImageNativePixmap::~GLImageNativePixmap() {}
+GLImageNativePixmap::~GLImageNativePixmap() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (egl_image_ == EGL_NO_IMAGE_KHR) {
+    return;
+  }
 
-bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap,
-                                     const gfx::ColorSpace& color_space) {
+  const EGLBoolean result = eglDestroyImageKHR(
+      GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay(), egl_image_);
+  if (result == EGL_FALSE) {
+    DLOG(ERROR) << "Error destroying EGLImage: " << ui::GetLastEGLErrorString();
+  }
+}
+
+bool GLImageNativePixmap::InitializeFromNativePixmap(
+    scoped_refptr<gfx::NativePixmap> pixmap,
+    const gfx::ColorSpace& color_space) {
   DCHECK(!pixmap_);
   if (GLInternalFormat(format_) == GL_NONE) {
     LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
     return false;
   }
-  if (pixmap->AreDmaBufFdsValid()) {
-    // Note: If eglCreateImageKHR is successful for a EGL_LINUX_DMA_BUF_EXT
-    // target, the EGL will take a reference to the dma_buf.
-    std::vector<EGLint> attrs;
-    attrs.push_back(EGL_WIDTH);
-    attrs.push_back(size_.width());
-    attrs.push_back(EGL_HEIGHT);
-    attrs.push_back(size_.height());
-    attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
-    attrs.push_back(FourCC(format_));
 
-    if (format_ == gfx::BufferFormat::YUV_420_BIPLANAR ||
-        format_ == gfx::BufferFormat::YVU_420) {
-      // TODO(b/233667677): Since https://crrev.com/c/3855381, the only NV12
-      // quads that we allow to be promoted to overlays are those that don't use
-      // the BT.2020 primaries and that don't use full range. Furthermore, since
-      // https://crrev.com/c/2336347, we force the DRM/KMS driver to use BT.601
-      // with limited range. Therefore, for compositing purposes, we need to a)
-      // use EGL_ITU_REC601_EXT for any video frames that might be promoted to
-      // overlays - we shouldn't use EGL_ITU_REC709_EXT because we might then
-      // see a slight difference in compositing vs. overlays (note that the
-      // BT.601 and BT.709 primaries are close to each other, so this shouldn't
-      // be a huge correctness issue, though we'll need to address this at some
-      // point); b) use EGL_ITU_REC2020_EXT for BT.2020 frames in order to
-      // composite them correctly (and we won't need to worry about a difference
-      // in compositing vs. overlays in this case since those frames won't be
-      // promoted to overlays). We'll need to revisit this once we plumb the
-      // color space and range to DRM/KMS.
-      attrs.push_back(EGL_YUV_COLOR_SPACE_HINT_EXT);
-      switch (color_space.GetMatrixID()) {
-        case gfx::ColorSpace::MatrixID::BT2020_NCL:
-          attrs.push_back(EGL_ITU_REC2020_EXT);
-          break;
-        default:
-          attrs.push_back(EGL_ITU_REC601_EXT);
-      }
+  if (!pixmap->AreDmaBufFdsValid()) {
+    LOG(ERROR) << "Pixmap doesn't have valid dma bufs";
+    return false;
+  }
 
-      attrs.push_back(EGL_SAMPLE_RANGE_HINT_EXT);
-      switch (color_space.GetRangeID()) {
-        case gfx::ColorSpace::RangeID::FULL:
-          attrs.push_back(EGL_YUV_FULL_RANGE_EXT);
-          break;
-        default:
-          attrs.push_back(EGL_YUV_NARROW_RANGE_EXT);
-      }
+  // Note: If eglCreateImageKHR is successful for a EGL_LINUX_DMA_BUF_EXT
+  // target, the EGL will take a reference to the dma_buf.
+  std::vector<EGLint> attrs;
+  attrs.push_back(EGL_WIDTH);
+  attrs.push_back(size_.width());
+  attrs.push_back(EGL_HEIGHT);
+  attrs.push_back(size_.height());
+  attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
+  attrs.push_back(FourCC(format_));
+
+  if (format_ == gfx::BufferFormat::YUV_420_BIPLANAR ||
+      format_ == gfx::BufferFormat::YVU_420) {
+    // TODO(b/233667677): Since https://crrev.com/c/3855381, the only NV12
+    // quads that we allow to be promoted to overlays are those that don't use
+    // the BT.2020 primaries and that don't use full range. Furthermore, since
+    // https://crrev.com/c/2336347, we force the DRM/KMS driver to use BT.601
+    // with limited range. Therefore, for compositing purposes, we need to a)
+    // use EGL_ITU_REC601_EXT for any video frames that might be promoted to
+    // overlays - we shouldn't use EGL_ITU_REC709_EXT because we might then
+    // see a slight difference in compositing vs. overlays (note that the
+    // BT.601 and BT.709 primaries are close to each other, so this shouldn't
+    // be a huge correctness issue, though we'll need to address this at some
+    // point); b) use EGL_ITU_REC2020_EXT for BT.2020 frames in order to
+    // composite them correctly (and we won't need to worry about a difference
+    // in compositing vs. overlays in this case since those frames won't be
+    // promoted to overlays). We'll need to revisit this once we plumb the
+    // color space and range to DRM/KMS.
+    attrs.push_back(EGL_YUV_COLOR_SPACE_HINT_EXT);
+    switch (color_space.GetMatrixID()) {
+      case gfx::ColorSpace::MatrixID::BT2020_NCL:
+        attrs.push_back(EGL_ITU_REC2020_EXT);
+        break;
+      default:
+        attrs.push_back(EGL_ITU_REC601_EXT);
     }
 
-    if (plane_ == gfx::BufferPlane::DEFAULT) {
-      const EGLint kLinuxDrmModifiers[] = {EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
-                                           EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT,
-                                           EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT};
-      bool has_dma_buf_import_modifier =
-          gl::GLSurfaceEGL::GetGLDisplayEGL()
-              ->ext->b_EGL_EXT_image_dma_buf_import_modifiers;
-
-      for (size_t attrs_plane = 0; attrs_plane < pixmap->GetNumberOfPlanes();
-           ++attrs_plane) {
-        attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + attrs_plane * 3);
-
-        size_t pixmap_plane = attrs_plane;
-
-        attrs.push_back(pixmap->GetDmaBufFd(pixmap_plane));
-        attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + attrs_plane * 3);
-        attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
-        attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + attrs_plane * 3);
-        attrs.push_back(pixmap->GetDmaBufPitch(pixmap_plane));
-        uint64_t modifier = pixmap->GetBufferFormatModifier();
-        if (has_dma_buf_import_modifier &&
-            modifier != gfx::NativePixmapHandle::kNoModifier) {
-          DCHECK(attrs_plane < std::size(kLinuxDrmModifiers));
-          attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
-          attrs.push_back(modifier & 0xffffffff);
-          attrs.push_back(kLinuxDrmModifiers[attrs_plane] + 1);
-          attrs.push_back(static_cast<uint32_t>(modifier >> 32));
-        }
-      }
-      attrs.push_back(EGL_NONE);
-    } else {
-      DCHECK(plane_ == gfx::BufferPlane::Y || plane_ == gfx::BufferPlane::UV);
-      size_t pixmap_plane = plane_ == gfx::BufferPlane::Y ? 0 : 1;
-
-      attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT);
-      attrs.push_back(pixmap->GetDmaBufFd(pixmap_plane));
-      attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT);
-      attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
-      attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT);
-      attrs.push_back(pixmap->GetDmaBufPitch(pixmap_plane));
-      attrs.push_back(EGL_NONE);
-    }
-
-    if (!GLImageEGL::Initialize(EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
-                                static_cast<EGLClientBuffer>(nullptr),
-                                &attrs[0])) {
-      return false;
+    attrs.push_back(EGL_SAMPLE_RANGE_HINT_EXT);
+    switch (color_space.GetRangeID()) {
+      case gfx::ColorSpace::RangeID::FULL:
+        attrs.push_back(EGL_YUV_FULL_RANGE_EXT);
+        break;
+      default:
+        attrs.push_back(EGL_YUV_NARROW_RANGE_EXT);
     }
   }
 
+  if (plane_ == gfx::BufferPlane::DEFAULT) {
+    const EGLint kLinuxDrmModifiers[] = {EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
+                                         EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT,
+                                         EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT};
+    bool has_dma_buf_import_modifier =
+        gl::GLSurfaceEGL::GetGLDisplayEGL()
+            ->ext->b_EGL_EXT_image_dma_buf_import_modifiers;
+
+    for (size_t attrs_plane = 0; attrs_plane < pixmap->GetNumberOfPlanes();
+         ++attrs_plane) {
+      attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + attrs_plane * 3);
+
+      size_t pixmap_plane = attrs_plane;
+
+      attrs.push_back(pixmap->GetDmaBufFd(pixmap_plane));
+      attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + attrs_plane * 3);
+      attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
+      attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + attrs_plane * 3);
+      attrs.push_back(pixmap->GetDmaBufPitch(pixmap_plane));
+      uint64_t modifier = pixmap->GetBufferFormatModifier();
+      if (has_dma_buf_import_modifier &&
+          modifier != gfx::NativePixmapHandle::kNoModifier) {
+        DCHECK(attrs_plane < std::size(kLinuxDrmModifiers));
+        attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
+        attrs.push_back(modifier & 0xffffffff);
+        attrs.push_back(kLinuxDrmModifiers[attrs_plane] + 1);
+        attrs.push_back(static_cast<uint32_t>(modifier >> 32));
+      }
+    }
+    attrs.push_back(EGL_NONE);
+  } else {
+    DCHECK(plane_ == gfx::BufferPlane::Y || plane_ == gfx::BufferPlane::UV);
+    size_t pixmap_plane = plane_ == gfx::BufferPlane::Y ? 0 : 1;
+
+    attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT);
+    attrs.push_back(pixmap->GetDmaBufFd(pixmap_plane));
+    attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT);
+    attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
+    attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT);
+    attrs.push_back(pixmap->GetDmaBufPitch(pixmap_plane));
+    attrs.push_back(EGL_NONE);
+  }
+
+  if (!Initialize(EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
+                  static_cast<EGLClientBuffer>(nullptr), &attrs[0])) {
+    return false;
+  }
+
   pixmap_ = pixmap;
+  DCHECK_NE(egl_image_, EGL_NO_IMAGE_KHR);
   return true;
 }
 
@@ -294,21 +312,35 @@ bool GLImageNativePixmap::InitializeFromTexture(uint32_t texture_id) {
       reinterpret_cast<EGLContext>(current_context->GetHandle());
   DCHECK_NE(context_handle, EGL_NO_CONTEXT);
 
-  if (!GLImageEGL::Initialize(context_handle, EGL_GL_TEXTURE_2D_KHR,
-                              reinterpret_cast<EGLClientBuffer>(texture_id),
-                              nullptr)) {
+  if (!Initialize(context_handle, EGL_GL_TEXTURE_2D_KHR,
+                  reinterpret_cast<EGLClientBuffer>(texture_id), nullptr)) {
     return false;
   }
   return true;
 }
 
+bool GLImageNativePixmap::Initialize(EGLContext context,
+                                     EGLenum target,
+                                     EGLClientBuffer buffer,
+                                     const EGLint* attrs) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
+  egl_image_ = eglCreateImageKHR(GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay(),
+                                 context, target, buffer, attrs);
+  const bool success = egl_image_ != EGL_NO_IMAGE_KHR;
+  if (!success) {
+    LOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
+  }
+  return success;
+}
+
 gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
   DCHECK(!pixmap_);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Must use GLImageEGL::Initialize.
+  // Must use Initialize.
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
-    LOG(ERROR) << "GLImageEGL is not initialized";
+    LOG(ERROR) << "GLImageNativePixmap is not initialized";
     return gfx::NativePixmapHandle();
   }
 
@@ -385,41 +417,19 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
 #endif  // BUILDFLAG(IS_FUCHSIA)
 }
 
-unsigned GLImageNativePixmap::GetInternalFormat() {
-  return GLInternalFormat(format_);
-}
-
-unsigned GLImageNativePixmap::GetDataType() {
-  return gl::BufferFormatToGLDataType(format_);
+gfx::Size GLImageNativePixmap::GetSize() {
+  return size_;
 }
 
 bool GLImageNativePixmap::BindTexImage(unsigned target) {
-  return GLImageEGL::BindTexImage(target);
-}
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-bool GLImageNativePixmap::CopyTexImage(unsigned target) {
-  if (egl_image_ != EGL_NO_IMAGE_KHR)
-    return false;
-
-  // Pass-through image type fails to bind and copy; make sure we
-  // don't draw with uninitialized texture.
-  std::vector<unsigned char> data(size_.width() * size_.height() * 4);
-  glTexImage2D(target, 0, GL_RGBA, size_.width(), size_.height(), 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, data.data());
+  glEGLImageTargetTexture2DOES(target, egl_image_);
   return true;
 }
 
-bool GLImageNativePixmap::CopyTexSubImage(unsigned target,
-                                          const gfx::Point& offset,
-                                          const gfx::Rect& rect) {
-  return false;
-}
-
-void GLImageNativePixmap::OnMemoryDump(
-    base::trace_event::ProcessMemoryDump* pmd,
-    uint64_t process_tracing_id,
-    const std::string& dump_name) {
-  // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
+unsigned GLImageNativePixmap::GetInternalFormat() {
+  return GLInternalFormat(format_);
 }
 
 scoped_refptr<gfx::NativePixmap> GLImageNativePixmap::GetNativePixmap() {

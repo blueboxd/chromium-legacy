@@ -62,10 +62,6 @@ std::ostream& operator<<(std::ostream& os, ManifestUpdateResult result) {
       return os << "kIconReadFromDiskFailed";
     case ManifestUpdateResult::kAppIdMismatch:
       return os << "kAppIdMismatch";
-    case ManifestUpdateResult::kAppAssociationsUpdateFailed:
-      return os << "kAppAssociationsUpdateFailed";
-    case ManifestUpdateResult::kAppAssociationsUpdated:
-      return os << "kAppAssociationsUpdated";
   }
 }
 
@@ -79,10 +75,6 @@ std::ostream& operator<<(std::ostream& os, ManifestUpdateStage stage) {
       return os << "kPendingIconReadFromDisk";
     case ManifestUpdateStage::kPendingAppIdentityCheck:
       return os << "kPendingAppIdentityCheck";
-    case ManifestUpdateStage::kPendingMaybeReadExistingIcons:
-      return os << "kPendingMaybeReadExistingIcons";
-    case ManifestUpdateStage::kPendingAssociationsUpdate:
-      return os << "kPendingAssociationsUpdate";
     case ManifestUpdateStage::kAppWindowsClosed:
       return os << "kAppWindowsClosed";
     case ManifestUpdateStage::kPendingFinalizerUpdate:

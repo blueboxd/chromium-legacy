@@ -64,7 +64,6 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     ic_size = em_size;
     line_height = em_size;
     three_d_enabled = MediaValues::CalculateThreeDEnabled(frame);
-    immersive_mode = MediaValues::CalculateInImmersiveMode(frame);
     strict_mode = MediaValues::CalculateStrictMode(frame);
     display_mode = MediaValues::CalculateDisplayMode(frame);
     media_type = MediaValues::CalculateMediaType(frame);
@@ -110,8 +109,20 @@ float MediaValuesCached::ExFontSize(float zoom) const {
   return data_.ex_size;
 }
 
+float MediaValuesCached::RexFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rex and ex units are both based on the initial font.
+  return data_.ex_size;
+}
+
 float MediaValuesCached::ChFontSize(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
+  return data_.ch_size;
+}
+
+float MediaValuesCached::RchFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rch and ch units are both based on the initial font.
   return data_.ch_size;
 }
 
@@ -120,8 +131,20 @@ float MediaValuesCached::IcFontSize(float zoom) const {
   return data_.ic_size;
 }
 
+float MediaValuesCached::RicFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries ric and ic units are both based on the initial font.
+  return data_.ic_size;
+}
+
 float MediaValuesCached::LineHeight(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
+  return data_.line_height;
+}
+
+float MediaValuesCached::RootLineHeight(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rlh and lh units are both based on the initial font.
   return data_.line_height;
 }
 
@@ -207,10 +230,6 @@ int MediaValuesCached::AvailableHoverTypes() const {
 
 bool MediaValuesCached::ThreeDEnabled() const {
   return data_.three_d_enabled;
-}
-
-bool MediaValuesCached::InImmersiveMode() const {
-  return data_.immersive_mode;
 }
 
 bool MediaValuesCached::StrictMode() const {

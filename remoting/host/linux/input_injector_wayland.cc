@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/input_injector.h"
+#include "remoting/host/linux/input_injector_wayland.h"
 
 #include <gtk/gtk.h>
 #include <stddef.h>
@@ -11,10 +11,10 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/containers/queue.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -43,7 +43,6 @@
 #endif
 
 namespace remoting {
-
 namespace {
 
 using protocol::ClipboardEvent;
@@ -61,6 +60,7 @@ constexpr int BUTTON_FORWARD_KEYCODE = 277;
 constexpr int BUTTON_BACK_KEYCODE = 278;
 constexpr int BUTTON_UNKNOWN_KEYCODE = -1;
 constexpr int MIN_KEYCODE = 8;
+constexpr int SHIFT_KEY_CODE = 42;
 
 ScrollDirection WheelDeltaToScrollDirection(float num) {
   return (num > 0)   ? ScrollDirection::UP
@@ -104,106 +104,12 @@ constexpr float kWheelTicksPerPixel = 3.0f / 160.0f;
 // When the user is scrolling, generate at least one tick per time period.
 constexpr base::TimeDelta kContinuousScrollTimeout = base::Milliseconds(500);
 
-// A class to generate events on wayland.
-class InputInjectorWayland : public InputInjector {
- public:
-  explicit InputInjectorWayland(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  InputInjectorWayland(const InputInjectorWayland&) = delete;
-  InputInjectorWayland& operator=(const InputInjectorWayland&) = delete;
-
-  ~InputInjectorWayland() override;
-
-  // Clipboard stub interface.
-  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
-
-  // InputStub interface.
-  void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  void InjectTextEvent(const protocol::TextEvent& event) override;
-  void InjectMouseEvent(const protocol::MouseEvent& event) override;
-  void InjectTouchEvent(const protocol::TouchEvent& event) override;
-
-  void SetMetadata(InputInjectorMetadata metadata) override;
-
-  // InputInjector interface.
-  void Start(
-      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
-
- private:
-  // The actual implementation resides in InputInjectorWayland::Core class.
-  class Core : public base::RefCountedThreadSafe<Core> {
-   public:
-    explicit Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-    Core(const Core&) = delete;
-    Core& operator=(const Core&) = delete;
-
-    // Mirrors the ClipboardStub interface.
-    void InjectClipboardEvent(const protocol::ClipboardEvent& event);
-
-    // Mirrors the InputStub interface.
-    void InjectKeyEvent(const protocol::KeyEvent& event);
-    void InjectTextEvent(const protocol::TextEvent& event);
-    void InjectMouseEvent(const protocol::MouseEvent& event);
-
-    void SetRemoteDesktopSessionDetails(const SessionDetails& session_details);
-
-    void SetClipboardSessionDetails(const SessionDetails& session_details);
-
-    // Mirrors the InputInjector interface.
-    void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
-
-   private:
-    friend class base::RefCountedThreadSafe<Core>;
-    virtual ~Core();
-
-    void InjectScrollWheelClicks(int button, int count);
-
-    void InjectMouseButton(unsigned int code, bool pressed);
-    void InjectMouseScroll(unsigned int axis, int steps);
-    void MovePointerTo(int x, int y);
-    void MovePointerBy(int delta_x, int delta_y);
-    void InjectKeyPress(unsigned int code, bool pressed, bool is_code = true);
-
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
-
-    std::set<int> pressed_keys_;
-    absl::optional<webrtc::DesktopVector> latest_mouse_position_;
-    float wheel_ticks_x_ = 0;
-    float wheel_ticks_y_ = 0;
-    base::TimeTicks latest_tick_y_event_;
-
-    // The direction of the last scroll event that resulted in at least one
-    // "tick" being injected.
-    ScrollDirection latest_tick_y_direction_ = ScrollDirection::NONE;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    PointTransformer point_transformer_;
-#endif
-    ClipboardWayland clipboard_;
-    xdg_portal::RemoteDesktopPortalInjector remotedesktop_portal_;
-
-    // If input is injected before complete initialization then some portal
-    // APIs can crash. This flag is marked to track initialization,
-    // and all inputs before the initialization is complete are added to
-    // |pending_tasks| queue and injected upon initialization.
-    bool remote_desktop_initialized_ = false;
-    base::queue<base::OnceClosure> pending_remote_desktop_tasks_;
-
-    // Similar to remote_desktop_initialized_, we keep the last clipboard event
-    // but separated so that the remote desktop isn't blocked waiting for the
-    // clipboard.
-    bool clipboard_initialized_ = false;
-    absl::optional<ClipboardEvent> pending_clipboard_event_;
-  };
-
-  scoped_refptr<Core> core_;
-};
+}  // namespace
 
 InputInjectorWayland::InputInjectorWayland(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   core_ = new Core(task_runner);
+  core_->SetKeyboardCapabilityCallback();
 
   // Register callback with the wayland manager so that it can get details
   // about the desktop capture metadata (which include session details of the
@@ -216,9 +122,13 @@ InputInjectorWayland::InputInjectorWayland(
       base::BindRepeating(&Core::SetRemoteDesktopSessionDetails, core_)));
   WaylandManager::Get()->AddClipboardMetadataCallback(converting_cb.Then(
       base::BindRepeating(&Core::SetClipboardSessionDetails, core_)));
+  WaylandManager::Get()->AddCapturerDestroyedCallback(
+      base::BindRepeating(&Core::Shutdown, core_));
 }
 
-InputInjectorWayland::~InputInjectorWayland() {}
+InputInjectorWayland::~InputInjectorWayland() {
+  core_->Shutdown();
+}
 
 void InputInjectorWayland::InjectClipboardEvent(const ClipboardEvent& event) {
   core_->InjectClipboardEvent(event);
@@ -254,6 +164,49 @@ InputInjectorWayland::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner)
     : input_task_runner_(input_task_runner) {}
 
+void InputInjectorWayland::Core::SetKeyboardCapabilityCallback() {
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::SetKeyboardCapabilityCallback, this));
+    return;
+  }
+
+  auto on_seat_acquired_keyboard_capability =
+      base::BindOnce(&Core::SeatAcquiredKeyboardCapability, this);
+  auto on_seat_present =
+      base::BindOnce(&WaylandManager::SetKeyboardCapabilityCallback,
+                     base::Unretained(WaylandManager::Get()),
+                     std::move(on_seat_acquired_keyboard_capability));
+  WaylandManager::Get()->SetSeatPresentCallback(std::move(on_seat_present));
+}
+
+void InputInjectorWayland::Core::InjectFakeKeyEvent() {
+  DCHECK(input_task_runner_->BelongsToCurrentThread());
+  if (seat_has_keyboard_capability_) {
+    return;
+  }
+
+  // Press shift key once.
+  InjectKeyPress(SHIFT_KEY_CODE, /*pressed=*/true);
+  InjectKeyPress(SHIFT_KEY_CODE, /*pressed=*/false);
+}
+
+void InputInjectorWayland::Core::SeatAcquiredKeyboardCapability() {
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::SeatAcquiredKeyboardCapability, this));
+    return;
+  }
+
+  seat_has_keyboard_capability_ = true;
+  MaybeFlushPendingEvents();
+}
+
+bool InputInjectorWayland::Core::IsReady() {
+  DCHECK(input_task_runner_->BelongsToCurrentThread());
+  return seat_has_keyboard_capability_ && remote_desktop_initialized_;
+}
+
 void InputInjectorWayland::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
@@ -266,7 +219,6 @@ void InputInjectorWayland::Core::InjectClipboardEvent(
     pending_clipboard_event_ = absl::make_optional(event);
     return;
   }
-
   clipboard_.InjectClipboardEvent(event);
 }
 
@@ -277,14 +229,15 @@ void InputInjectorWayland::Core::InjectKeyEvent(const KeyEvent& event) {
     return;
   }
   DCHECK(input_task_runner_->BelongsToCurrentThread());
-  if (!remote_desktop_initialized_) {
+  if (!IsReady()) {
     pending_remote_desktop_tasks_.push(
         base::BindOnce(&Core::InjectKeyEvent, this, event));
     return;
   }
   // HostEventDispatcher should filter events missing the pressed field.
-  if (!event.has_pressed() || !event.has_usb_keycode())
+  if (!event.has_pressed() || !event.has_usb_keycode()) {
     return;
+  }
 
   int keycode =
       ui::KeycodeConverter::UsbKeycodeToNativeKeycode(event.usb_keycode()) -
@@ -344,7 +297,9 @@ void InputInjectorWayland::Core::InjectMouseEvent(const MouseEvent& event) {
     return;
   }
   DCHECK(input_task_runner_->BelongsToCurrentThread());
-  if (!remote_desktop_initialized_) {
+  // We wait for keyboard capability here so that we can inject all the mouse
+  // and keyboard events in the correct order in which they were received.
+  if (!IsReady()) {
     pending_remote_desktop_tasks_.push(
         base::BindOnce(&Core::InjectMouseEvent, this, event));
     return;
@@ -369,8 +324,9 @@ void InputInjectorWayland::Core::InjectMouseEvent(const MouseEvent& event) {
 #endif
     if (event.has_button() && event.has_button_down() && !event.button_down()) {
       if (latest_mouse_position_ &&
-          new_mouse_position.equals(*latest_mouse_position_))
+          new_mouse_position.equals(*latest_mouse_position_)) {
         inject_motion = false;
+      }
     }
 
     if (inject_motion) {
@@ -391,7 +347,6 @@ void InputInjectorWayland::Core::InjectMouseEvent(const MouseEvent& event) {
       LOG(WARNING) << "Ignoring unknown button type: " << event.button();
       return;
     }
-
     VLOG(3) << "Pressing mouse button: " << event.button()
             << ", number: " << button_number;
     InjectMouseButton(button_number, event.button_down());
@@ -477,6 +432,16 @@ void InputInjectorWayland::Core::SetRemoteDesktopSessionDetails(
   remotedesktop_portal_.SetSessionDetails(session_details);
   remote_desktop_initialized_ = true;
 
+  // This is needed so that we can acquire keyboard capability.
+  InjectFakeKeyEvent();
+  MaybeFlushPendingEvents();
+}
+
+void InputInjectorWayland::Core::MaybeFlushPendingEvents() {
+  DCHECK(input_task_runner_->BelongsToCurrentThread());
+  if (!IsReady()) {
+    return;
+  }
   while (!pending_remote_desktop_tasks_.empty()) {
     base::OnceClosure task = std::move(pending_remote_desktop_tasks_.front());
     pending_remote_desktop_tasks_.pop();
@@ -544,18 +509,19 @@ void InputInjectorWayland::Core::Start(
   clipboard_.Start(std::move(client_clipboard));
 }
 
-}  // namespace
-
-// static
-std::unique_ptr<InputInjector> InputInjector::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  return std::make_unique<InputInjectorWayland>(input_task_runner);
-}
-
-// static
-bool InputInjector::SupportsTouchEvents() {
-  return false;
+void InputInjectorWayland::Core::Shutdown() {
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(FROM_HERE,
+                                 base::BindOnce(&Core::Shutdown, this));
+    return;
+  }
+  DCHECK(input_task_runner_->BelongsToCurrentThread());
+  // We disable processing the events here. This may cause the events to be
+  // queued for sometime but the expectation here is that after `Shutdown` is
+  // invoked, we expect the injector to be destroyed soon.
+  seat_has_keyboard_capability_ = false;
+  clipboard_initialized_ = false;
+  remote_desktop_initialized_ = false;
 }
 
 }  // namespace remoting

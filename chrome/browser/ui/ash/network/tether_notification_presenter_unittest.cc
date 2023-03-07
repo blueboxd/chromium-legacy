@@ -42,13 +42,14 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
                               bool enabled_state) override {}
     void ShowMobileSetup(const std::string& network_id) override {}
     void ShowCarrierAccountDetail(const std::string& network_id) override {}
-    void ShowPortalSignin(const std::string& network_id) override {}
+    void ShowPortalSignin(const std::string& network_id,
+                          NetworkConnect::Source source) override {}
     void ConfigureNetworkIdAndConnect(const std::string& network_id,
                                       const base::Value& shill_properties,
                                       bool shared) override {}
-    void CreateConfigurationAndConnect(base::Value* shill_properties,
+    void CreateConfigurationAndConnect(base::Value::Dict shill_properties,
                                        bool shared) override {}
-    void CreateConfiguration(base::Value* shill_properties,
+    void CreateConfiguration(base::Value::Dict shill_properties,
                              bool shared) override {}
 
     void ConnectToNetworkId(const std::string& network_id) override {

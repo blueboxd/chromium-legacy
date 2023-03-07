@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_POWER_BOOKMARKS_STORAGE_EMPTY_POWER_BOOKMARK_DATABASE_H_
 #define COMPONENTS_POWER_BOOKMARKS_STORAGE_EMPTY_POWER_BOOKMARK_DATABASE_H_
 
-#include "components/power_bookmarks/core/powers/power.h"
-#include "components/power_bookmarks/core/powers/power_overview.h"
+#include "components/power_bookmarks/common/power.h"
+#include "components/power_bookmarks/common/power_overview.h"
 #include "components/power_bookmarks/storage/power_bookmark_database.h"
 #include "url/gurl.h"
 
@@ -34,12 +34,23 @@ class EmptyPowerBookmarkDatabase : public PowerBookmarkDatabase {
       const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
   std::vector<std::unique_ptr<Power>> GetPowersForSearchParams(
       const SearchParams& search_params) override;
+  std::vector<std::unique_ptr<PowerOverview>> GetPowerOverviewsForSearchParams(
+      const SearchParams& search_params) override;
   bool CreatePower(std::unique_ptr<Power> power) override;
-  bool UpdatePower(std::unique_ptr<Power> power) override;
+  std::unique_ptr<Power> UpdatePower(std::unique_ptr<Power> power) override;
   bool DeletePower(const base::GUID& guid) override;
   bool DeletePowersForURL(
       const GURL& url,
-      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) override;
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type,
+      std::vector<std::string>* deleted_guids) override;
+  std::vector<std::unique_ptr<Power>> GetAllPowers() override;
+  std::vector<std::unique_ptr<Power>> GetPowersForGUIDs(
+      const std::vector<std::string>& guids) override;
+  std::unique_ptr<Power> GetPowerForGUID(const std::string& guid) override;
+  bool CreateOrMergePowerFromSync(const Power& power) override;
+  bool DeletePowerFromSync(const std::string& guid) override;
+  syncer::SyncMetadataStore* GetSyncMetadataDatabase() override;
+  std::unique_ptr<Transaction> BeginTransaction() override;
 };
 
 }  // namespace power_bookmarks

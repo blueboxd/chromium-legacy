@@ -11,11 +11,11 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -312,12 +312,11 @@ void ModuleSystemTest::TearDown() {
 }
 
 scoped_refptr<const Extension> ModuleSystemTest::CreateExtension() {
-  std::unique_ptr<base::DictionaryValue> manifest =
-      DictionaryBuilder()
-          .Set("name", "test")
-          .Set("version", "1.0")
-          .Set("manifest_version", 2)
-          .Build();
+  base::Value::Dict manifest = DictionaryBuilder()
+                                   .Set("name", "test")
+                                   .Set("version", "1.0")
+                                   .Set("manifest_version", 2)
+                                   .Build();
   return ExtensionBuilder().SetManifest(std::move(manifest)).Build();
 }
 

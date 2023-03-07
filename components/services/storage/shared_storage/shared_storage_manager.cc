@@ -4,12 +4,11 @@
 
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "components/services/storage/shared_storage/async_shared_storage_database_impl.h"
@@ -210,10 +209,10 @@ void SharedStorageManager::PurgeMatchingOrigins(
 }
 
 void SharedStorageManager::FetchOrigins(
-    base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)> callback,
-    bool exclude_empty_origins) {
+    base::OnceCallback<void(std::vector<mojom::StorageUsageInfoPtr>)>
+        callback) {
   DCHECK(database_);
-  database_->FetchOrigins(std::move(callback), exclude_empty_origins);
+  database_->FetchOrigins(std::move(callback));
 }
 
 void SharedStorageManager::MakeBudgetWithdrawal(
@@ -312,6 +311,16 @@ void SharedStorageManager::GetEntriesForDevTools(
 
   database_->GetEntriesForDevTools(std::move(context_origin),
                                    std::move(new_callback));
+}
+
+void SharedStorageManager::ResetBudgetForDevTools(
+    url::Origin context_origin,
+    base::OnceCallback<void(OperationResult)> callback) {
+  DCHECK(callback);
+  DCHECK(database_);
+  database_->ResetBudgetForDevTools(
+      std::move(context_origin),
+      GetOperationResultCallback(std::move(callback)));
 }
 
 void SharedStorageManager::SetOnDBDestroyedCallbackForTesting(

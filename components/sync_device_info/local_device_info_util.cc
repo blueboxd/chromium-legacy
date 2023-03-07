@@ -5,8 +5,8 @@
 #include "components/sync_device_info/local_device_info_util.h"
 
 #include "base/barrier_closure.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -67,8 +67,8 @@ void OnMachineStatisticsLoaded(LocalDeviceNameInfo* name_info_ptr,
   // |full_hardware_class| is set on Chrome OS devices if the user has UMA
   // enabled. Otherwise |full_hardware_class| is set to an empty string.
   if (const absl::optional<base::StringPiece> full_hardware_class =
-          chromeos::system::StatisticsProvider::GetInstance()
-              ->GetMachineStatistic(chromeos::system::kHardwareClassKey)) {
+          ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+              ash::system::kHardwareClassKey)) {
     name_info_ptr->full_hardware_class =
         std::string(full_hardware_class.value());
   }
@@ -163,7 +163,7 @@ void GetLocalDeviceNameInfo(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Bind hwclass once the statistics are available on ChromeOS devices.
-  chromeos::system::StatisticsProvider::GetInstance()
+  ash::system::StatisticsProvider::GetInstance()
       ->ScheduleOnMachineStatisticsLoaded(
           base::BindOnce(&OnMachineStatisticsLoaded, name_info_ptr,
                          base::ScopedClosureRunner(done_closure)));

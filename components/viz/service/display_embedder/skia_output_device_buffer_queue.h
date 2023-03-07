@@ -65,6 +65,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
       override;
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays) override;
 
+  // SkiaOutputDevice override
+  void SetGpuVSyncEnabled(bool enabled) override;
+  void SetVSyncDisplayID(int64_t display_id) override;
+
  private:
   friend class SkiaOutputDeviceBufferQueueTest;
 
@@ -89,6 +93,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   // Given an overlay mailbox, returns the corresponding OverlayData* from
   // |overlays_|. Inserts an OverlayData if mailbox is not in |overlays_|.
   OverlayData* GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
+                                      bool is_root_render_pass,
                                       bool* is_existing = nullptr);
 
   std::unique_ptr<OutputPresenter> presenter_;

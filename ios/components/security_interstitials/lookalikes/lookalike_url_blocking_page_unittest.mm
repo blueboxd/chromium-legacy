@@ -39,8 +39,8 @@ const char kInterstitialDecisionMetric[] = "interstitial.lookalike.decision";
 const char kInterstitialInteractionMetric[] =
     "interstitial.lookalike.interaction";
 const ukm::SourceId kTestSourceId = 1;
-const LookalikeUrlMatchType kTestMatchType =
-    LookalikeUrlMatchType::kSkeletonMatchTop500;
+const lookalikes::LookalikeUrlMatchType kTestMatchType =
+    lookalikes::LookalikeUrlMatchType::kSkeletonMatchTop500;
 
 using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 
@@ -78,9 +78,7 @@ class LookalikeUrlBlockingPageTest : public PlatformTest {
   }
 
   void SendCommand(SecurityInterstitialCommand command) {
-    page_->HandleCommand(command, url_,
-                         /*user_is_interacting=*/true,
-                         /*sender_frame=*/nullptr);
+    page_->HandleCommand(command);
   }
 
   // Checks that UKM recorded an event with the given metric name and value.
@@ -133,7 +131,8 @@ TEST_F(LookalikeUrlBlockingPageTest, HandleProceedCommand) {
   histogram_tester_.ExpectBucketCount(kInterstitialInteractionMetric,
                                       MetricsHelper::TOTAL_VISITS, 1);
   CheckUkm("MatchType", kTestMatchType);
-  CheckUkm("UserAction", LookalikeUrlBlockingPageUserAction::kClickThrough);
+  CheckUkm("UserAction",
+           lookalikes::LookalikeUrlBlockingPageUserAction::kClickThrough);
 }
 
 // Tests that the blocking page handles the don't proceed command by navigating
@@ -161,7 +160,8 @@ TEST_F(LookalikeUrlBlockingPageTest, HandleDontProceedCommand) {
   histogram_tester_.ExpectBucketCount(kInterstitialInteractionMetric,
                                       MetricsHelper::TOTAL_VISITS, 1);
   CheckUkm("MatchType", kTestMatchType);
-  CheckUkm("UserAction", LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
+  CheckUkm("UserAction",
+           lookalikes::LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
 }
 
 // Tests that the blocking page handles the don't proceed command by going back
@@ -196,7 +196,8 @@ TEST_F(LookalikeUrlBlockingPageTest,
   histogram_tester_.ExpectBucketCount(kInterstitialInteractionMetric,
                                       MetricsHelper::TOTAL_VISITS, 1);
   CheckUkm("MatchType", kTestMatchType);
-  CheckUkm("UserAction", LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
+  CheckUkm("UserAction",
+           lookalikes::LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
 }
 
 // Tests that the blocking page handles the don't proceed command by closing the
@@ -228,5 +229,6 @@ TEST_F(LookalikeUrlBlockingPageTest,
   histogram_tester_.ExpectBucketCount(kInterstitialInteractionMetric,
                                       MetricsHelper::TOTAL_VISITS, 1);
   CheckUkm("MatchType", kTestMatchType);
-  CheckUkm("UserAction", LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
+  CheckUkm("UserAction",
+           lookalikes::LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
 }

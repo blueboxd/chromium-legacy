@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
@@ -93,7 +92,9 @@ class ParentAccessAsh;
 class PolicyServiceAsh;
 class PowerAsh;
 class PrefsAsh;
+#if BUILDFLAG(USE_CUPS)
 class PrintingMetricsAsh;
+#endif  // BUILDFLAG(USE_CUPS)
 class RemotingAsh;
 class ResourceManagerAsh;
 class ScreenManagerAsh;
@@ -110,7 +111,6 @@ class WallpaperAsh;
 class WebAppServiceAsh;
 class WebPageInfoFactoryAsh;
 class UrlHandlerAsh;
-class VideoCaptureDeviceFactoryAsh;
 class VirtualKeyboardAsh;
 class VolumeManagerAsh;
 class VpnExtensionObserverAsh;
@@ -441,9 +441,11 @@ class CrosapiAsh : public mojom::Crosapi {
 
   ParentAccessAsh* parent_access_ash() { return parent_access_ash_.get(); }
 
+#if BUILDFLAG(USE_CUPS)
   PrintingMetricsAsh* printing_metrics_ash() {
     return printing_metrics_ash_.get();
   }
+#endif  // BUILDFLAG(USE_CUPS)
 
   ScreenManagerAsh* screen_manager_ash() { return screen_manager_ash_.get(); }
 
@@ -551,7 +553,9 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<PolicyServiceAsh> policy_service_ash_;
   std::unique_ptr<PowerAsh> power_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
+#if BUILDFLAG(USE_CUPS)
   std::unique_ptr<PrintingMetricsAsh> printing_metrics_ash_;
+#endif  // BUILDFLAG(USE_CUPS)
   std::unique_ptr<ash::ProbeServiceAsh> probe_service_ash_;
   std::unique_ptr<RemotingAsh> remoting_ash_;
   std::unique_ptr<ResourceManagerAsh> resource_manager_ash_;
@@ -565,8 +569,6 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<TimeZoneServiceAsh> time_zone_service_ash_;
   std::unique_ptr<TtsAsh> tts_ash_;
   std::unique_ptr<UrlHandlerAsh> url_handler_ash_;
-  std::unique_ptr<VideoCaptureDeviceFactoryAsh>
-      video_capture_device_factory_ash_;
   std::unique_ptr<ash::VideoConferenceManagerAsh> video_conference_manager_ash_;
   std::unique_ptr<VirtualKeyboardAsh> virtual_keyboard_ash_;
   std::unique_ptr<VolumeManagerAsh> volume_manager_ash_;

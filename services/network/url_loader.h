@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
@@ -445,8 +445,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // send or store credentials for no-cors cross-origin request.
   bool CoepAllowCredentials(const GURL& url);
 
-  bool ThirdPartyCookiesEnabled() const;
-
   raw_ptr<net::URLRequestContext> url_request_context_;
 
   raw_ptr<mojom::NetworkContextClient> network_context_client_;
@@ -622,8 +620,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   bool emitted_devtools_raw_request_ = false;
   bool emitted_devtools_raw_response_ = false;
-
-  const bool third_party_cookies_enabled_;
 
   mojo::Remote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer_;
 

@@ -26,6 +26,7 @@ _PRODUCT_BUNDLES = [
     'workstation_eng.chromebook-x64',
     'workstation_eng.chromebook-x64-dfv2',
     'workstation_eng.qemu-x64',
+    'workstation_eng.x64',
 ]
 
 # TODO(crbug/1361089): Remove when the old scripts have been deprecated.
@@ -223,7 +224,8 @@ def download_product_bundle(product_bundle, ffx_runner):
   update_repositories_list(ffx_runner)
 
   try:
-    ffx_runner.run_ffx(('product-bundle', 'get', product_bundle))
+    ffx_runner.run_ffx(
+        ('product-bundle', 'get', product_bundle, '--force-repo'))
   except subprocess.CalledProcessError as cpe:
     logging.error('Product bundle download has failed. ' +
                   _PRODUCT_BUNDLE_FIX_INSTRUCTIONS)
@@ -243,7 +245,7 @@ def get_current_signature(ffx_runner):
   """
   product_bundles = get_product_bundles(ffx_runner)
   if not product_bundles:
-    logging.warning('No product bundles - signature will default to None')
+    logging.info('No product bundles - signature will default to None')
     return None
   product_bundle_urls = get_product_bundle_urls(ffx_runner)
 

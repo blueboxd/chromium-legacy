@@ -46,14 +46,17 @@ class TabHandleLayer : public Layer {
                      float width,
                      float height,
                      float content_offset_x,
+                     float content_offset_y,
                      float divider_offset_x,
                      float bottom_offset_y,
+                     float close_button_padding,
                      float close_button_alpha,
                      float divider_alpha,
                      bool is_loading,
                      float spinner_rotation,
                      float brightness,
-                     float opacity);
+                     float opacity,
+                     bool is_tab_strip_redesign_enabled);
   scoped_refptr<cc::Layer> layer() override;
 
  protected:

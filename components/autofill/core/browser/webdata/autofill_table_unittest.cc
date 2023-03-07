@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
@@ -45,6 +46,7 @@
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using base::Time;
 using sync_pb::EntityMetadata;
@@ -55,8 +57,6 @@ using testing::ElementsAre;
 using testing::UnorderedElementsAre;
 
 namespace autofill {
-
-using structured_address::VerificationStatus;
 
 // So we can compare AutofillKeys with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
@@ -3222,6 +3222,66 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
         data.GetEligibleInstrumentIds(),
         testing::UnorderedElementsAreArray(
             output_offer_data[output_index]->GetEligibleInstrumentIds()));
+  }
+}
+
+TEST_F(AutofillTableTest, SetAndGetVirtualCardUsageData) {
+  // Create test data.
+  VirtualCardUsageData virtual_card_usage_data_1;
+  VirtualCardUsageData virtual_card_usage_data_2;
+  VirtualCardUsageData virtual_card_usage_data_3;
+
+  // Set instrument id.
+  virtual_card_usage_data_1.instrument_id =
+      VirtualCardUsageData::InstrumentId(123);
+  virtual_card_usage_data_2.instrument_id =
+      VirtualCardUsageData::InstrumentId(234);
+  virtual_card_usage_data_3.instrument_id =
+      VirtualCardUsageData::InstrumentId(345);
+
+  // Set VCN last four.
+  virtual_card_usage_data_1.virtual_card_last_four =
+      VirtualCardUsageData::VirtualCardLastFour("1111");
+  virtual_card_usage_data_2.virtual_card_last_four =
+      VirtualCardUsageData::VirtualCardLastFour("2222");
+  virtual_card_usage_data_3.virtual_card_last_four =
+      VirtualCardUsageData::VirtualCardLastFour("3333");
+
+  // Set merchant origin.
+  virtual_card_usage_data_1.merchant_origin =
+      url::Origin::Create(GURL("https://www.merchant_domain_1.com/"));
+  virtual_card_usage_data_2.merchant_origin =
+      url::Origin::Create(GURL("https://www.merchant_domain_2.com/"));
+  virtual_card_usage_data_3.merchant_origin =
+      url::Origin::Create(GURL("https://www.merchant_domain_3.com/"));
+
+  // Create vector of VCN usage data.
+  std::vector<VirtualCardUsageData> virtual_card_usage_data;
+  virtual_card_usage_data.push_back(virtual_card_usage_data_1);
+  virtual_card_usage_data.push_back(virtual_card_usage_data_2);
+  virtual_card_usage_data.push_back(virtual_card_usage_data_3);
+
+  table_->SetVirtualCardUsageData(virtual_card_usage_data);
+
+  std::vector<std::unique_ptr<VirtualCardUsageData>> output_data;
+
+  EXPECT_TRUE(table_->GetVirtualCardUsageData(&output_data));
+  EXPECT_EQ(virtual_card_usage_data.size(), output_data.size());
+
+  for (const auto& data : virtual_card_usage_data) {
+    // Find output data with corresponding data.
+    auto it = base::ranges::find(output_data, data.instrument_id,
+                                 &VirtualCardUsageData::instrument_id);
+
+    // Expect to find a usage data match in the vector.
+    EXPECT_NE(it, output_data.end());
+
+    // All corresponding fields must be equal.
+    EXPECT_EQ(data.instrument_id.value(), (*it)->instrument_id.value());
+    EXPECT_EQ(data.virtual_card_last_four.value(),
+              (*it)->virtual_card_last_four.value());
+    EXPECT_EQ(data.merchant_origin.Serialize(),
+              (*it)->merchant_origin.Serialize());
   }
 }
 

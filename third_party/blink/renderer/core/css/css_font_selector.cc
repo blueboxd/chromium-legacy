@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -125,8 +126,14 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
   }
 
   if (request_description.GetFontVariantAlternates()) {
+    // TODO(https://crbug.com/1382722): For scoping to work correctly, we'd need
+    // to traverse the TreeScopes here and fuse / override values of
+    // @font-feature-values from these.
     const FontFeatureValuesStorage* feature_values_storage =
-        document.GetStyleEngine().FontFeatureValuesForFamily(family_name);
+        document.GetScopedStyleResolver()
+            ? document.GetScopedStyleResolver()->FontFeatureValuesForFamily(
+                  family_name)
+            : nullptr;
     scoped_refptr<FontVariantAlternates> new_alternates = nullptr;
     if (feature_values_storage) {
       new_alternates = request_description.GetFontVariantAlternates()->Resolve(
@@ -158,8 +165,9 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
           no_lookup, no_lookup, no_lookup, no_lookup, no_lookup, no_lookup);
     }
 
-    if (new_alternates)
+    if (new_alternates) {
       request_description.SetFontVariantAlternates(new_alternates);
+    }
   }
 
   if (!font_family.FamilyIsGeneric()) {
@@ -176,8 +184,9 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
   // handed the generic font family name.
   AtomicString settings_family_name =
       FamilyNameFromSettings(request_description, font_family);
-  if (settings_family_name.empty())
+  if (settings_family_name.empty()) {
     return nullptr;
+  }
 
   ReportFontFamilyLookupByGenericFamily(
       family_name, request_description.GetScript(),
@@ -193,8 +202,9 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
 }
 
 void CSSFontSelector::UpdateGenericFontFamilySettings(Document& document) {
-  if (!document.GetSettings())
+  if (!document.GetSettings()) {
     return;
+  }
   generic_font_family_settings_ =
       document.GetSettings()->GetGenericFontFamilySettings();
   FontCacheInvalidated();

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
@@ -76,7 +76,8 @@ class SigninUI {
                                          bool password_incorrect) = 0;
 
   // Start Cryptohome recovery flow and show the screen.
-  virtual void StartCryptohomeRecovery(const AccountId& account_id) = 0;
+  virtual void StartCryptohomeRecovery(
+      std::unique_ptr<UserContext> user_context) = 0;
 
   virtual void ShowSigninError(SigninError error,
                                const std::string& details) = 0;

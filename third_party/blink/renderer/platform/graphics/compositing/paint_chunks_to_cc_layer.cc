@@ -109,7 +109,8 @@ class ConversionContext {
   // At last, close all pushed states to balance pairs (this happens when the
   // context object is destructed):
   //   Output: End_C4 End_C3 End_C2 End_C1
-  void Convert(const PaintChunkSubset&);
+  void Convert(const PaintChunkSubset&,
+               const gfx::Rect* additional_cull_rect = nullptr);
 
  private:
   // Adjust the translation of the whole display list relative to layer offset.
@@ -161,7 +162,7 @@ class ConversionContext {
     if (&target_transform == current_transform_)
       return;
     gfx::Transform projection = TargetToCurrentProjection(target_transform);
-    if (projection.IsIdentityOr2DTranslation()) {
+    if (projection.IsIdentityOr2dTranslation()) {
       gfx::Vector2dF translation = projection.To2dTranslation();
       if (!translation.IsZero())
         push<cc::TranslateOp>(translation.x(), translation.y());
@@ -253,7 +254,7 @@ class ConversionContext {
   gfx::Vector2dF layer_offset_;
   bool translated_for_layer_offset_ = false;
 
-  // These fields are neve nullptr.
+  // These fields are never nullptr.
   const TransformPaintPropertyNode* current_transform_;
   const ClipPaintPropertyNode* current_clip_;
   const EffectPaintPropertyNode* current_effect_;
@@ -592,17 +593,13 @@ void ConversionContext<Result>::StartEffect(
   // Apply effects.
   result_.StartPaint();
   if (!has_filter) {
-    // TODO(ajuma): This should really be rounding instead of flooring the
-    // alpha value, but that breaks slimming paint reftests.
-    auto alpha = base::ClampFloor<uint8_t>(255 * effect.Opacity());
     if (has_other_effects) {
       cc::PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());
-      flags.setAlpha(alpha);
-      save_layer_id = push<cc::SaveLayerOp>(nullptr, &flags);
+      flags.setAlphaf(effect.Opacity());
+      save_layer_id = push<cc::SaveLayerOp>(flags);
     } else {
-      save_layer_id = push<cc::SaveLayerAlphaOp>(
-          nullptr, static_cast<float>(alpha / 255.0f));
+      save_layer_id = push<cc::SaveLayerAlphaOp>(effect.Opacity());
     }
   } else {
     // Handle filter effect.
@@ -612,7 +609,7 @@ void ConversionContext<Result>::StartEffect(
     cc::PaintFlags filter_flags;
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         effect.Filter().AsCcFilterOperations(), empty));
-    save_layer_id = push<cc::SaveLayerOp>(nullptr, &filter_flags);
+    save_layer_id = push<cc::SaveLayerOp>(filter_flags);
   }
   result_.EndPaintOfPairedBegin();
 
@@ -743,7 +740,7 @@ void ConversionContext<Result>::SwitchToTransform(
 
   result_.StartPaint();
   push<cc::SaveOp>();
-  if (projection.IsIdentityOr2DTranslation()) {
+  if (projection.IsIdentityOr2dTranslation()) {
     gfx::Vector2dF translation = projection.To2dTranslation();
     push<cc::TranslateOp>(translation.x(), translation.y());
   } else {
@@ -767,7 +764,8 @@ void ConversionContext<Result>::EndTransform() {
 }
 
 template <typename Result>
-void ConversionContext<Result>::Convert(const PaintChunkSubset& chunks) {
+void ConversionContext<Result>::Convert(const PaintChunkSubset& chunks,
+                                        const gfx::Rect* additional_cull_rect) {
   for (auto it = chunks.begin(); it != chunks.end(); ++it) {
     const auto& chunk = *it;
     if (chunk.effectively_invisible)
@@ -776,7 +774,7 @@ void ConversionContext<Result>::Convert(const PaintChunkSubset& chunks) {
     bool switched_to_chunk_state = false;
 
     for (const auto& item : it.DisplayItems()) {
-      sk_sp<const PaintRecord> record;
+      PaintRecord record;
       if (auto* scrollbar = DynamicTo<ScrollbarDisplayItem>(item))
         record = scrollbar->Paint();
       else if (auto* drawing = DynamicTo<DrawingDisplayItem>(item))
@@ -789,8 +787,9 @@ void ConversionContext<Result>::Convert(const PaintChunkSubset& chunks) {
       // might be for a mask with empty content which should make the masked
       // content fully invisible. We need to "draw" this record to ensure that
       // the effect has correct visual rect.
-      if ((!record || record->size() == 0) &&
-          &chunk_state.Effect() == &EffectPaintPropertyNode::Root()) {
+      bool can_ignore_record =
+          &chunk_state.Effect() == &EffectPaintPropertyNode::Root();
+      if (record.empty() && can_ignore_record) {
         continue;
       }
 
@@ -799,11 +798,18 @@ void ConversionContext<Result>::Convert(const PaintChunkSubset& chunks) {
         switched_to_chunk_state = true;
       }
 
+      gfx::Rect visual_rect =
+          chunk_to_layer_mapper_.MapVisualRect(item.VisualRect());
+      if (additional_cull_rect && can_ignore_record &&
+          !additional_cull_rect->Intersects(visual_rect)) {
+        continue;
+      }
+
       result_.StartPaint();
-      if (record && record->size() != 0)
+      if (!record.empty()) {
         push<cc::DrawRecordOp>(std::move(record));
-      result_.EndPaintOfUnpaired(
-          chunk_to_layer_mapper_.MapVisualRect(item.VisualRect()));
+      }
+      result_.EndPaintOfUnpaired(visual_rect);
     }
 
     // If we have an empty paint chunk, then we would prefer ignoring it.
@@ -835,27 +841,28 @@ void PaintChunksToCcLayer::ConvertInto(
     recorder.beginRecording();
     // Create a complete cloned list for under-invalidation checking. We can't
     // use cc_list because it is not finalized yet.
-    sk_sp<PaintOpBufferExt> buffer = sk_make_sp<PaintOpBufferExt>();
-    ConversionContext(layer_state, layer_offset, *buffer).Convert(chunks);
-    recorder.getRecordingCanvas()->drawPicture(std::move(buffer));
+    PaintOpBufferExt buffer;
+    ConversionContext(layer_state, layer_offset, buffer).Convert(chunks);
+    recorder.getRecordingCanvas()->drawPicture(buffer.ReleaseAsRecord());
     params.tracking.CheckUnderInvalidations(params.debug_name,
                                             recorder.finishRecordingAsPicture(),
                                             params.interest_rect);
-    if (auto record = params.tracking.UnderInvalidationRecord()) {
+    auto under_invalidation_record = params.tracking.UnderInvalidationRecord();
+    if (!under_invalidation_record.empty()) {
       cc_list.StartPaint();
-      cc_list.push<cc::DrawRecordOp>(std::move(record));
+      cc_list.push<cc::DrawRecordOp>(std::move(under_invalidation_record));
       cc_list.EndPaintOfUnpaired(params.interest_rect);
     }
   }
 }
 
-sk_sp<PaintRecord> PaintChunksToCcLayer::Convert(
-    const PaintChunkSubset& chunks,
-    const PropertyTreeState& layer_state,
-    const gfx::Vector2dF& layer_offset) {
-  sk_sp<PaintOpBufferExt> buffer = sk_make_sp<PaintOpBufferExt>();
-  ConversionContext(layer_state, layer_offset, *buffer).Convert(chunks);
-  return buffer;
+PaintRecord PaintChunksToCcLayer::Convert(const PaintChunkSubset& chunks,
+                                          const PropertyTreeState& layer_state,
+                                          const gfx::Rect* cull_rect) {
+  PaintOpBufferExt buffer;
+  ConversionContext(layer_state, gfx::Vector2dF(), buffer)
+      .Convert(chunks, cull_rect);
+  return buffer.ReleaseAsRecord();
 }
 
 static void UpdateTouchActionRegion(

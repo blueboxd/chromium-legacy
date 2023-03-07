@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/api/networking_private.h"
@@ -30,7 +30,7 @@ class NetworkingPrivateDelegate : public KeyedService {
   using StringCallback = base::OnceCallback<void(const std::string&)>;
   using NetworkListCallback = base::OnceCallback<void(base::Value::List)>;
   using EnabledNetworkTypesCallback =
-      base::OnceCallback<void(std::unique_ptr<base::Value>)>;
+      base::OnceCallback<void(base::Value::List)>;
   using FailureCallback = base::OnceCallback<void(const std::string&)>;
   using DeviceStateList = std::vector<
       std::unique_ptr<api::networking_private::DeviceStateProperties>>;

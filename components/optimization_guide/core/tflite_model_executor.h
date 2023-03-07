@@ -5,15 +5,15 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_TFLITE_MODEL_EXECUTOR_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_TFLITE_MODEL_EXECUTOR_H_
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -114,8 +114,8 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputTypes...> {
     }
   }
 
-  // Called when a model file is available to load. Depending on feature flags,
-  // the model may or may not be immediately loaded.
+  // Called when a model file is available to load. Immediately loads model into
+  // memory when `should_unload_model_on_complete_` is false.
   void UpdateModelFile(const base::FilePath& file_path) override {
     DCHECK(execution_task_runner_ &&
            execution_task_runner_->RunsTasksInCurrentSequence());
@@ -133,6 +133,11 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputTypes...> {
                 optimization_target_),
         base::Histogram::kNoFlags);
     histogram->Add(true);
+
+    if (should_unload_model_on_complete_) {
+      ExecutionStatus out_status;
+      LoadModelFile(&out_status);
+    }
   }
 
   // Calling this method allows the default model loading/unloading behavior to

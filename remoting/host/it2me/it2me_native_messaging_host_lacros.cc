@@ -11,19 +11,21 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_split.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -51,6 +53,15 @@ protocol::ErrorCode SupportSessionErrorToProtocolError(
     default:
       return protocol::ErrorCode::UNKNOWN_ERROR;
   }
+}
+
+// This function checks the email address provided to see if it is properly
+// formatted. It does not validate the username or domain sections.
+// TODO(joedow): Move to a shared location.
+bool IsValidEmailAddress(const std::string& email) {
+  return base::SplitString(email, "@", base::KEEP_WHITESPACE,
+                           base::SPLIT_WANT_ALL)
+             .size() == 2U;
 }
 
 // This class is JSON <-> Mojo message converter which enables communication
@@ -378,6 +389,16 @@ void It2MeNativeMessagingHostLacros::ProcessConnect(int message_id,
   }
   session_params->oauth_access_token = *access_token;
 
+  const std::string* authorized_helper = message.FindString(kAuthorizedHelper);
+  if (authorized_helper) {
+    session_params->authorized_helper =
+        gaia::CanonicalizeEmail(*authorized_helper);
+    if (!IsValidEmailAddress(session_params->authorized_helper.value())) {
+      SendErrorAndExit(protocol::ErrorCode::INCOMPATIBLE_PROTOCOL, message_id);
+      return;
+    }
+  }
+
   // TODO(joedow): Add the ability to toggle the RemoteCommand settings for
   // testing purposes. This should probably be encapsulated in a check that the
   // machine is in developer-mode and/or !NDEBUG.
@@ -430,7 +451,6 @@ void It2MeNativeMessagingHostLacros::SendErrorAndExit(
     message.Set(kMessageId, message_id);
   }
   message.Set(kErrorMessageCode, ErrorCodeToString(error_code));
-  message.Set(kErrorMessageDescription, ErrorCodeToString(error_code));
 
   SendMessageToClient(std::move(message));
 
@@ -443,8 +463,7 @@ void It2MeNativeMessagingHostLacros::SendErrorAndExit(
 std::unique_ptr<extensions::NativeMessageHost>
 CreateIt2MeNativeMessagingHostForLacros(
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner) {
-  return std::make_unique<It2MeNativeMessagingHostLacros>(
-      std::move(ui_runner));
+  return std::make_unique<It2MeNativeMessagingHostLacros>(std::move(ui_runner));
 }
 
 }  // namespace remoting

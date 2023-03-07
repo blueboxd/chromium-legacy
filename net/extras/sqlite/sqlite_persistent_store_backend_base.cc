@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros_local.h"
@@ -80,7 +80,6 @@ bool SQLitePersistentStoreBackendBase::InitializeDatabase() {
 
   const base::FilePath dir = path_.DirName();
   if (!base::PathExists(dir) && !base::CreateDirectory(dir)) {
-    RecordPathDoesNotExistProblem();
     return false;
   }
 
@@ -92,8 +91,6 @@ bool SQLitePersistentStoreBackendBase::InitializeDatabase() {
   db_->set_error_callback(base::BindRepeating(
       &SQLitePersistentStoreBackendBase::DatabaseErrorCallback,
       base::Unretained(this)));
-
-  bool new_db = !base::PathExists(path_);
 
   if (!db_->Open(path_)) {
     DLOG(ERROR) << "Unable to open " << histogram_tag_ << " DB.";
@@ -118,12 +115,6 @@ bool SQLitePersistentStoreBackendBase::InitializeDatabase() {
     RecordOpenDBProblem();
     Reset();
     return false;
-  }
-
-  if (new_db) {
-    RecordNewDBFile();
-  } else {
-    RecordDBLoaded();
   }
 
   return true;

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
@@ -54,9 +55,8 @@ constexpr net::NetworkTrafficAnnotationTag kSystemProxyConfigTrafficAnnotation =
           "User cannot override system proxy settings, but can change them "
           "through 'Advanced/System/Open proxy settings'."
         policy_exception_justification:
-          "Using either of 'ProxyMode', 'ProxyServer', or 'ProxyPacUrl' "
-          "policies can set Chrome to use a specific proxy settings and avoid "
-          "system proxy."
+          "Using 'ProxySettings' policy can set Chrome to use specific "
+          "proxy settings and avoid system proxy."
       })");
 #endif
 

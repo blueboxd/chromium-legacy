@@ -5,15 +5,16 @@
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 
 #include "base/memory/raw_ptr.h"
+#import "base/task/sequenced_task_runner.h"
 
 #import <Foundation/Foundation.h>
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/sequenced_task_runner.h"
@@ -160,7 +161,7 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   NSDictionary* AdvertisementData() {
     NSDictionary* advertisement_data = @{
-      CBAdvertisementDataIsConnectable : @(YES),
+      CBAdvertisementDataIsConnectable : @YES,
       CBAdvertisementDataServiceDataKey : @{},
     };
     return [advertisement_data retain];

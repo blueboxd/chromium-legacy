@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/lru_cache.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -23,6 +23,7 @@
 #include "components/optimization_guide/core/model_enums.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/prediction_model_download_observer.h"
+#include "components/optimization_guide/core/prediction_model_store.h"
 #include "components/optimization_guide/optimization_guide_internals/webui/optimization_guide_internals.mojom.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "url/origin.h"
@@ -157,7 +158,7 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
  private:
   friend class PredictionManagerTestBase;
-  friend class PredictionModelStoreBrowserTest;
+  friend class PredictionModelStoreBrowserTestBase;
 
   // Called on construction to initialize the prediction model.
   // |background_dowload_service_provider| can provide the
@@ -255,6 +256,24 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // updated.
   void NotifyObserversOfNewModel(proto::OptimizationTarget optimization_target,
                                  const ModelInfo& model_info);
+
+  // Updates the metadata for |model|.
+  void UpdateModelMetadata(const proto::PredictionModel& model);
+
+  // Returns whether the model should be downloaded, or the correct model
+  // version already exists in the model store.
+  bool ShouldDownloadNewModel(const proto::PredictionModel& model) const;
+
+  // Starts the model download for |optimization_target| from |download_url|.
+  void StartModelDownload(proto::OptimizationTarget optimization_target,
+                          const GURL& download_url);
+
+  // Start downloading the model if the load failed, or update the model if it
+  // is loaded fine.
+  void MaybeDownloadOrUpdatePredictionModel(
+      proto::OptimizationTarget optimization_target,
+      const proto::PredictionModel& get_models_response_model,
+      std::unique_ptr<proto::PredictionModel> loaded_model);
 
   void SetModelCacheKeyForTesting(const proto::ModelCacheKey& model_cache_key) {
     model_cache_key_ = model_cache_key;

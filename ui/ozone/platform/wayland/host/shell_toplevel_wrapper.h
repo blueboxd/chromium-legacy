@@ -17,10 +17,17 @@ class Rect;
 namespace ui {
 
 class WaylandConnection;
+class XDGToplevelWrapperImpl;
 enum class ZOrderLevel;
 
-// A wrapper around different versions of xdg toplevels. Allows
-// WaylandToplevelWindow to set window-like properties such as maximize,
+// Wrapper interface for shell top level windows.
+//
+// This is one of three wrapper classes: Shell{Surface,Toplevel,Popup}Wrapper.
+// It has the only sub-class in Chromium, but should not be removed because it
+// eases downstream implementations.
+// See https://crbug.com/1402672
+//
+// Allows WaylandToplevelWindow to set window-like properties such as maximize,
 // fullscreen, and minimize, set application-specific metadata like title and
 // id, as well as trigger user interactive operations such as interactive resize
 // and move.
@@ -167,6 +174,9 @@ class ShellToplevelWrapper {
   // feedback.
   virtual void ShowSnapPreview(WaylandWindowSnapDirection snap_direction,
                                bool allow_haptic_feedback) = 0;
+
+  // Casts `this` to XDGToplevelWrapperImpl, if it is of that type.
+  virtual XDGToplevelWrapperImpl* AsXDGToplevelWrapper();
 };
 
 // Look for |value| in |wl_array| in C++ style.

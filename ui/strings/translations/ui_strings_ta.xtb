@@ -21,11 +21,12 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">இப்போது</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 நிமிடம்}other{# நிமிடங்கள்}}</translation>
-<translation id="1761785978543082658"><ph name="QUANTITY" /> பை.</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY" /> பை</translation>
 <translation id="1801827354178857021">காலம்</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 மாதம்}other{# மாதங்கள்}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> மெ.பை/வி</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 மணிநேரம், }other{# மணிநேரம், }}</translation>
+<translation id="185013357618350178">&amp;தேர்ந்தெடு</translation>
 <translation id="1859234291848436338">எழுதும் திசை</translation>
 <translation id="1860796786778352021">அறிவிப்பை மூடு</translation>
 <translation id="186476001994626254">இணைய ஸ்மார்ட் ஒட்டுதல் உள்ளடக்கம்</translation>

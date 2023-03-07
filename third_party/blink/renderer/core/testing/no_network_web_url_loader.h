@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_NO_NETWORK_WEB_URL_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_NO_NETWORK_WEB_URL_LOADER_H_
 
+#include "base/task/single_thread_task_runner.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
@@ -33,7 +34,7 @@ class NoNetworkWebURLLoader : public WebURLLoader {
       absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
-      int64_t& encoded_body_length,
+      uint64_t& encoded_body_length,
       blink::WebBlobInfo& downloaded_blob,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper) override {

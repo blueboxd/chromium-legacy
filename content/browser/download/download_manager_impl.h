@@ -13,11 +13,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/sequenced_task_runner_helpers.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
@@ -136,8 +137,8 @@ class CONTENT_EXPORT DownloadManagerImpl
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices,
-      const download::DownloadItemRerouteInfo& reroute_info) override;
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
+      override;
   void PostInitialization(DownloadInitializationDependency dependency) override;
   bool IsManagerInitialized() override;
   int InProgressCount() override;
@@ -263,9 +264,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
   void BindWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
-  std::unique_ptr<download::DownloadItemRenameHandler>
-  GetRenameHandlerForDownload(
-      download::DownloadItemImpl* download_item) override;
 
   // Drops a download before it is created.
   void DropDownload();

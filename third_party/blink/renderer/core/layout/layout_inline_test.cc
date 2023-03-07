@@ -19,26 +19,15 @@ namespace blink {
 
 using ::testing::UnorderedElementsAre;
 
-class LayoutInlineTest : public RenderingTest {};
-
-// Helper class to run the same test code with and without LayoutNG
-class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
-                                      private ScopedLayoutNGForTest,
-                                      public LayoutInlineTest {
- public:
-  ParameterizedLayoutInlineTest() : ScopedLayoutNGForTest(GetParam()) {}
-
+class LayoutInlineTest : public RenderingTest {
  protected:
-  bool LayoutNGEnabled() const {
-    return RuntimeEnabledFeatures::LayoutNGEnabled();
-  }
-
   bool HitTestAllPhases(LayoutObject& object,
                         HitTestResult& result,
                         const HitTestLocation& location,
                         const PhysicalOffset& offset) {
-    if (!LayoutNGEnabled() || !object.IsBox())
+    if (!object.IsBox()) {
       return object.HitTestAllPhases(result, location, offset);
+    }
     const LayoutBox& box = To<LayoutBox>(object);
     DCHECK_EQ(box.PhysicalFragmentCount(), 1u);
     const NGPhysicalBoxFragment& fragment = *box.GetPhysicalFragment(0);
@@ -47,9 +36,7 @@ class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
-
-TEST_P(ParameterizedLayoutInlineTest, PhysicalLinesBoundingBox) {
+TEST_F(LayoutInlineTest, PhysicalLinesBoundingBox) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -96,34 +83,15 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
   EXPECT_EQ(split_inline_part1->FirstChild(), before);
   auto* block_child = GetLayoutObjectByElementId("blockChild");
   auto* after = GetLayoutObjectByElementId("after");
-  if (RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) {
-    EXPECT_EQ(split_inline_part1->FirstChild(), before);
-    LayoutObject* anonymous = block_child->Parent();
-    EXPECT_TRUE(anonymous->IsBlockInInline());
-    EXPECT_EQ(before->NextSibling(), anonymous);
-    EXPECT_EQ(anonymous->NextSibling(), after);
-    EXPECT_FALSE(after->NextSibling());
-  } else {
-    EXPECT_FALSE(split_inline_part1->FirstChild()->NextSibling());
-    auto* block = To<LayoutBlockFlow>(split_inline_part1->Continuation());
-    ASSERT_TRUE(block);
-    ASSERT_TRUE(block->FirstChild());
-    EXPECT_EQ(block->FirstChild(), block_child);
-    EXPECT_FALSE(block->FirstChild()->NextSibling());
-
-    auto* split_inline_part2 = To<LayoutInline>(block->Continuation());
-    ASSERT_TRUE(split_inline_part2);
-    ASSERT_TRUE(split_inline_part2->FirstChild());
-    EXPECT_EQ(split_inline_part2->FirstChild(), after);
-    EXPECT_FALSE(split_inline_part2->FirstChild()->NextSibling());
-    EXPECT_FALSE(split_inline_part2->Continuation());
-  }
+  EXPECT_EQ(split_inline_part1->FirstChild(), before);
+  LayoutObject* anonymous = block_child->Parent();
+  EXPECT_TRUE(anonymous->IsBlockInInline());
+  EXPECT_EQ(before->NextSibling(), anonymous);
+  EXPECT_EQ(anonymous->NextSibling(), after);
+  EXPECT_FALSE(after->NextSibling());
 }
 
 TEST_F(LayoutInlineTest, BlockInInlineRemove) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-  ScopedLayoutNGBlockInInlineForTest ng_block_in_inline(true);
   SetBodyInnerHTML(R"HTML(
     <div>
       <span id="span">before
@@ -230,7 +198,7 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
 }
 
 // crbug.com/844746
-TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
+TEST_F(LayoutInlineTest, RelativePositionedHitTest) {
   LoadAhem();
   SetBodyInnerHTML(
       "<div style='font: 10px/10px Ahem'>"
@@ -277,7 +245,7 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
   }
 }
 
-TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
+TEST_F(LayoutInlineTest, MultilineRelativePositionedHitTest) {
   LoadAhem();
   SetBodyInnerHTML(
       "<div style='font: 10px/10px Ahem; width: 30px'>"
@@ -355,7 +323,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   }
 }
 
-TEST_P(ParameterizedLayoutInlineTest, HitTestCulledInlinePreWrap) {
+TEST_F(LayoutInlineTest, HitTestCulledInlinePreWrap) {
   SetBodyInnerHTML(R"HTML(
     <style>
       html, body { margin: 0; }
@@ -383,7 +351,7 @@ TEST_P(ParameterizedLayoutInlineTest, HitTestCulledInlinePreWrap) {
   EXPECT_EQ(hit_result.InnerNode(), text_node);
 }
 
-TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
+TEST_F(LayoutInlineTest, VisualRectInDocument) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -403,15 +371,14 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   )HTML");
 
   auto* target = To<LayoutInline>(GetLayoutObjectByElementId("target"));
-  const int width =
-      RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled() ? 400 : 111;
+  const int width = 400;
   EXPECT_EQ(PhysicalRect(0, 20, width, 222 + 20 * 2),
             target->VisualRectInDocument());
   EXPECT_EQ(PhysicalRect(0, 20, width, 222 + 20 * 2),
             target->VisualRectInDocument(kUseGeometryMapper));
 }
 
-TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentVerticalRL) {
+TEST_F(LayoutInlineTest, VisualRectInDocumentVerticalRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -431,14 +398,13 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentVerticalRL) {
   )HTML");
 
   auto* target = To<LayoutInline>(GetLayoutObjectByElementId("target"));
-  const int height =
-      RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled() ? 400 : 222;
+  const int height = 400;
   PhysicalRect expected(400 - 111 - 20 * 3, 0, 111 + 20 * 2, height);
   EXPECT_EQ(expected, target->VisualRectInDocument());
   EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
 }
 
-TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentSVGTspan) {
+TEST_F(LayoutInlineTest, VisualRectInDocumentSVGTspan) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -461,7 +427,7 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentSVGTspan) {
   EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
 }
 
-TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentSVGTspanTB) {
+TEST_F(LayoutInlineTest, VisualRectInDocumentSVGTspanTB) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -485,11 +451,8 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentSVGTspanTB) {
 
 // When adding focus ring rects, we should avoid adding duplicated rect for
 // continuations.
-TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveContinuations) {
-  // TODO(crbug.com/835484): The test is broken for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
+// TODO(crbug.com/835484): The test is broken for LayoutNG.
+TEST_F(LayoutInlineTest, DISABLED_FocusRingRecursiveContinuations) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -520,11 +483,8 @@ TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveContinuations) {
 
 // When adding focus ring rects, we should avoid adding line box rects of
 // recursive inlines repeatedly.
-TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlinesVerticalRL) {
-  // TODO(crbug.com/835484): The test is broken for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
+// TODO(crbug.com/835484): The test is broken for LayoutNG.
+TEST_F(LayoutInlineTest, DISABLED_FocusRingRecursiveInlinesVerticalRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -558,12 +518,8 @@ TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlinesVerticalRL) {
 
 // When adding focus ring rects, we should avoid adding duplicated rect for
 // continuations.
-TEST_P(ParameterizedLayoutInlineTest,
-       FocusRingRecursiveContinuationsVerticalRL) {
-  // TODO(crbug.com/835484): The test is broken for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
+// TODO(crbug.com/835484): The test is broken for LayoutNG.
+TEST_F(LayoutInlineTest, DISABLED_FocusRingRecursiveContinuationsVerticalRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -597,11 +553,8 @@ TEST_P(ParameterizedLayoutInlineTest,
 
 // When adding focus ring rects, we should avoid adding line box rects of
 // recursive inlines repeatedly.
-TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlines) {
-  // TODO(crbug.com/835484): The test is broken for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
+// TODO(crbug.com/835484): The test is broken for LayoutNG.
+TEST_F(LayoutInlineTest, DISABLED_FocusRingRecursiveInlines) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -632,8 +585,7 @@ TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlines) {
                          PhysicalRect(0, 55, 160, 20)));  // 'CONTENTS'
 }
 
-TEST_P(ParameterizedLayoutInlineTest,
-       AbsoluteBoundingBoxRectHandlingEmptyInline) {
+TEST_F(LayoutInlineTest, AbsoluteBoundingBoxRectHandlingEmptyInline) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -673,15 +625,13 @@ TEST_P(ParameterizedLayoutInlineTest,
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
   // This rect covers the overflowing images and continuations.
   // 168 = (30 + 4) * 2 + 100. 4 is the descent of the font.
-  const int width =
-      RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled() ? 400 : 100;
+  const int width = 400;
   EXPECT_EQ(PhysicalRect(50, 170, width, 168),
             GetLayoutObjectByElementId("target6")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
 }
 
-TEST_P(ParameterizedLayoutInlineTest,
-       AbsoluteBoundingBoxRectHandlingEmptyInlineVerticalRL) {
+TEST_F(LayoutInlineTest, AbsoluteBoundingBoxRectHandlingEmptyInlineVerticalRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -721,14 +671,13 @@ TEST_P(ParameterizedLayoutInlineTest,
             GetLayoutObjectByElementId("target5")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
   // This rect covers the overflowing images and continuations.
-  const int height =
-      RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled() ? 400 : 100;
+  const int height = 400;
   EXPECT_EQ(PhysicalRect(390, 70, 160, height),
             GetLayoutObjectByElementId("target6")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
 }
 
-TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegions) {
+TEST_F(LayoutInlineTest, AddAnnotatedRegions) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -762,7 +711,7 @@ TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegions) {
   EXPECT_TRUE(regions3.empty());
 }
 
-TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegionsVerticalRL) {
+TEST_F(LayoutInlineTest, AddAnnotatedRegionsVerticalRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -796,7 +745,7 @@ TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegionsVerticalRL) {
   EXPECT_TRUE(regions3.empty());
 }
 
-TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLegacyLayout) {
+TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayout) {
   // "contenteditable" forces us to use legacy layout, other options could be
   // using "display: -webkit-box", ruby, etc.
   LoadAhem();
@@ -842,7 +791,7 @@ TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLegacyLayout) {
   EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
 }
 
-TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLayoutNG) {
+TEST_F(LayoutInlineTest, VisualOverflowRecalcLayoutNG) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -886,8 +835,7 @@ TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLayoutNG) {
   EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
 }
 
-TEST_P(ParameterizedLayoutInlineTest,
-       VisualOverflowRecalcLegacyLayoutPositionRelative) {
+TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayoutPositionRelative) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>

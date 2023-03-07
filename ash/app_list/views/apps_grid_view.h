@@ -19,6 +19,7 @@
 #include "ash/app_list/grid_index.h"
 #include "ash/app_list/model/app_list_item_list_observer.h"
 #include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/app_list/views/app_drag_icon_proxy.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/ash_export.h"
 #include "base/time/time.h"
@@ -38,7 +39,6 @@ class AppsGridViewTest;
 class AppsGridViewTestApi;
 }  // namespace test
 
-class AppDragIconProxy;
 class AppListA11yAnnouncer;
 class ApplicationDragAndDropHost;
 class AppListConfig;
@@ -175,6 +175,9 @@ class ASH_EXPORT AppsGridView : public views::View,
                       std::set<ui::ClipboardFormatType>* format_types) override;
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragEntered(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  DropCallback GetDropCallback(const ui::DropTargetEvent& event) override;
 
   // Updates the visibility of app list items according to |app_list_state|.
   void UpdateControlVisibility(AppListViewState app_list_state);
@@ -361,6 +364,10 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   AppListGridAnimationStatus grid_animation_status_for_test() const {
     return grid_animation_status_;
+  }
+
+  AppDragIconProxy* app_drag_icon_proxy_for_test() const {
+    return drag_icon_proxy_.get();
   }
 
  protected:
@@ -920,6 +927,10 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Called when ideal bounds animations complete.
   void OnIdealBoundsAnimationDone();
+
+  // Callback method to clean up the dragging state of the app list.
+  void EndDragCallback(const ui::DropTargetEvent& event,
+                       ui::mojom::DragOperation& output_drag_op);
 
   class ScopedModelUpdate;
 

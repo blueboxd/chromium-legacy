@@ -5,13 +5,14 @@
 #include "components/history/core/browser/sync/history_sync_bridge.h"
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/sync/history_sync_metadata_database.h"
 #include "components/history/core/browser/sync/visit_id_remapper.h"
 #include "components/history/core/browser/url_row.h"
@@ -168,6 +169,9 @@ VisitRow MakeVisitRow(const sync_pb::HistorySpecifics& specifics,
   row.originator_visit_id =
       specifics.redirect_entries(redirect_index).originator_visit_id();
 
+  // Definitionally, any visit from Sync is known to sync.
+  row.is_known_to_sync = true;
+
   // Reconstruct the page transition - first get the core type.
   int page_transition = syncer::FromSyncPageTransition(
       specifics.page_transition().core_transition());
@@ -270,12 +274,15 @@ absl::optional<VisitContentAnnotations> MakeContentAnnotations(
   return annotations;
 }
 
+// `included_visit_ids` may be nullptr.
 std::unique_ptr<syncer::EntityData> MakeEntityData(
     const std::string& local_cache_guid,
     const std::vector<AnnotatedVisit>& redirect_visits,
     bool redirect_chain_middle_trimmed,
     const GURL& referrer_url,
-    const std::vector<GURL>& favicon_urls) {
+    const std::vector<GURL>& favicon_urls,
+    int64_t local_cluster_id,
+    std::vector<VisitID>* included_visit_ids) {
   DCHECK(!local_cache_guid.empty());
   DCHECK(!redirect_visits.empty());
 
@@ -300,6 +307,12 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   for (const AnnotatedVisit& annotated_visit : redirect_visits) {
     const URLRow& url = annotated_visit.url_row;
     const VisitRow& visit = annotated_visit.visit_row;
+
+    // Add the visit ID to the out param vector indicating it was included.
+    if (included_visit_ids) {
+      included_visit_ids->push_back(visit.visit_id);
+    }
+
     auto* redirect_entry = history->add_redirect_entries();
     redirect_entry->set_originator_visit_id(
         is_local_entity ? visit.visit_id : visit.originator_visit_id);
@@ -392,6 +405,8 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
       history->set_favicon_url(url.spec());
     }
   }
+
+  history->set_originator_cluster_id(local_cluster_id);
 
   // The entity name is used for debugging purposes; choose something that's a
   // decent tradeoff between "unique" and "readable".
@@ -582,12 +597,8 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
 
   id_remapper.RemapIDs();
 
-  // `metadata_change_list` must have been created via
-  // CreateMetadataChangeList(), so downcasting is safe.
   absl::optional<syncer::ModelError> metadata_error =
-      static_cast<syncer::SyncMetadataStoreChangeList*>(
-          metadata_change_list.get())
-          ->TakeError();
+      change_processor()->GetError();
   if (metadata_error) {
     RecordDatabaseError(
         SyncHistoryDatabaseError::kApplySyncChangesWriteMetadata);
@@ -607,7 +618,7 @@ void HistorySyncBridge::ApplyStopSyncChanges(
   if (delete_metadata_change_list) {
     // A non-null `delete_metadata_change_list` indicates that Sync is being
     // turned off only permanently. Delete all foreign visits from the DB.
-    history_backend_->DeleteAllForeignVisits();
+    history_backend_->DeleteAllForeignVisitsAndResetIsKnownToSync();
   }
 
   ModelTypeSyncBridge::ApplyStopSyncChanges(
@@ -627,8 +638,11 @@ void HistorySyncBridge::GetData(StorageKeyList storage_keys,
       continue;
     }
 
+    // Purposely don't mark visits as known to sync here, as this bit must have
+    // already been set before, when the visit was first seen by Sync.
     std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
-        QueryRedirectChainAndMakeEntityData(final_visit);
+        QueryRedirectChainAndMakeEntityData(final_visit,
+                                            /*included_visit_ids=*/nullptr);
     // Typically, `entity_data_list` will have exactly one entry. In some error
     // cases (corrupted DB), it may be empty, and in some cases the redirect
     // chain may have been split into multiple entities. In that case, the last
@@ -810,9 +824,9 @@ void HistorySyncBridge::SetSyncTransportState(
   // is a workaround to still clear foreign history in that case. Remove once
   // that bug is fixed.
   if (sync_transport_state_ == syncer::SyncService::TransportState::DISABLED) {
-    // DeleteAllForeignVisits() is cheap if there is no foreign history in the
-    // DB, so it's okay to call this somewhat too often.
-    history_backend_->DeleteAllForeignVisits();
+    // This is cheap if there is no foreign history in the DB, so it's okay to
+    // call this somewhat too often.
+    history_backend_->DeleteAllForeignVisitsAndResetIsKnownToSync();
   }
 }
 
@@ -893,10 +907,12 @@ void HistorySyncBridge::MaybeCommit(const VisitRow& visit_row) {
     return;
   }
 
-  // All conditions are fulfilled - convert the visit into Sync's format and
-  // send it on.
+  // Attempt converting the the visit into Sync's format. In some cases, the
+  // conversion process catches additional un-syncable conditions, so early exit
+  // to account for that case as well.
+  std::vector<VisitID> included_visit_ids;
   std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
-      QueryRedirectChainAndMakeEntityData(visit_row);
+      QueryRedirectChainAndMakeEntityData(visit_row, &included_visit_ids);
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
@@ -906,11 +922,17 @@ void HistorySyncBridge::MaybeCommit(const VisitRow& visit_row) {
     change_processor()->Put(storage_key, std::move(entity_data),
                             metadata_change_list.get());
   }
+
+  // Mark these visits as sent in the database. They are sent in a few seconds.
+  for (auto visit_id : included_visit_ids) {
+    history_backend_->MarkVisitAsKnownToSync(visit_id);
+  }
 }
 
 std::vector<std::unique_ptr<syncer::EntityData>>
 HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
-    const VisitRow& final_visit) {
+    const VisitRow& final_visit,
+    std::vector<VisitID>* included_visit_ids) {
   // Query the redirect chain that ended in this visit.
   std::vector<VisitRow> redirect_visits =
       history_backend_->GetRedirectChain(final_visit);
@@ -977,12 +999,17 @@ HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
     // Convert the current subchain into a SyncEntity.
     GURL referrer_url =
         GetURLForVisit(annotated_visits.front().visit_row.referring_visit);
+    // Note: `favicon_urls` may legitimately be empty, that's fine.
     std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
         annotated_visits.back().url_row.url());
-    // Note: `favicon_urls` may legitimately be empty, that's fine.
-    entities.push_back(MakeEntityData(GetLocalCacheGuid(), annotated_visits,
-                                      chain_middle_trimmed, referrer_url,
-                                      favicon_urls));
+    // Note: `local_cluster_id` can legitimately be 0 and only get it for the
+    // first visit, as the cluster id for everything in the redirect chain
+    // should be the same (except potentially in unit tests).
+    int64_t local_cluster_id = history_backend_->GetClusterIdContainingVisit(
+        redirect_visits.front().visit_id);
+    entities.push_back(MakeEntityData(
+        GetLocalCacheGuid(), annotated_visits, chain_middle_trimmed,
+        referrer_url, favicon_urls, local_cluster_id, included_visit_ids));
   }
   return entities;
 }
@@ -1034,6 +1061,21 @@ bool HistorySyncBridge::AddEntityInBackend(
       return false;
     }
     referring_visit_id = added_visit_id;
+
+    // If the sending client supports syncing its clusters, add the appropriate
+    // details to history.
+    DCHECK(!specifics.originator_cache_guid().empty());
+    if (specifics.originator_cluster_id() > 0) {
+      // Populate the visit to a synced cluster.
+      history::ClusterVisit cluster_visit;
+      cluster_visit.annotated_visit.visit_row = visit_row;
+      cluster_visit.annotated_visit.visit_row.visit_id = added_visit_id;
+      // TODO(b/264457591): Refactor some of the cluster visit details to
+      //   History so it can be appropriately populated here.
+      history_backend_->AddVisitToSyncedCluster(
+          cluster_visit, specifics.originator_cache_guid(),
+          specifics.originator_cluster_id());
+    }
 
     // Remapping chain extremities (i.e. first and last visit in the chain) via
     // `id_remapper`: The first visit in the chain can refer to a visit outside

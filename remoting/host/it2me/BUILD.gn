@@ -48,9 +48,7 @@ source_set("common") {
     "it2me_native_messaging_host.h",
   ]
 
-  if (remoting_use_wayland) {
-    defines = [ "REMOTING_USE_WAYLAND" ]
-  }
+  deps = []
 
   if (is_linux) {
     sources += [ "it2me_confirmation_dialog_linux.cc" ]
@@ -78,12 +76,13 @@ source_set("common") {
     ":helpers",
   ]
 
-  deps = [
+  deps += [
     "//base:i18n",
     "//build:chromeos_buildflags",
     "//components/policy:policy_code_generate",
     "//components/webrtc:thread_wrapper",
     "//extensions/browser/api/messaging:native_messaging",
+    "//google_apis:google_apis",
     "//mojo/core/embedder",
     "//net",
     "//remoting/base",
@@ -105,6 +104,7 @@ source_set("common") {
       # GTK pulls pangoft2, which requires HarfBuzz symbols. When linking
       # our own HarfBuzz avoid mixing symbols from system HarfBuzz and
       # our own through the indirect dependency to harfbuzz-ng here.
+      "//remoting/host/linux:wayland",
       "//third_party:freetype_harfbuzz",
     ]
   }
@@ -147,6 +147,7 @@ if (is_chromeos) {
         "//chromeos/crosapi/mojom",
         "//chromeos/lacros",
         "//extensions/browser/api/messaging:native_messaging",
+        "//google_apis:google_apis",
         "//remoting/host/native_messaging",
         "//remoting/protocol:errors",
       ]
@@ -209,15 +210,16 @@ if (!is_chromeos_ash && enable_remoting_host) {
       "//ui/gfx",
     ]
 
+    if (is_linux) {
+      deps += [ "//remoting/host/linux:wayland" ]
+    }
     if (is_linux && remoting_use_x11) {
       defines = [ "REMOTING_USE_X11" ]
       deps += [
         "//build/config/linux/gtk",
         "//ui/events/platform/x11",
+        "//ui/gtk:gtk_config",
       ]
-    } else if (remoting_use_wayland) {
-      defines = [ "REMOTING_USE_WAYLAND" ]
-      deps += [ "//ui/gtk:gtk_config" ]
     }
 
     if (is_mac) {

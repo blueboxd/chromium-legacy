@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/process/process.h"
@@ -18,9 +18,9 @@
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/rand_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
@@ -158,8 +158,8 @@ void IOSThreadProfiler::StartOnChildThread(
   // threads to give it the same lifetime as the threads.
   static base::SequenceLocalStorageSlot<std::unique_ptr<IOSThreadProfiler>>
       child_thread_profiler_sequence_local_storage;
-  child_thread_profiler_sequence_local_storage.emplace(
-      new IOSThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get()));
+  child_thread_profiler_sequence_local_storage.emplace(new IOSThreadProfiler(
+      thread, base::SingleThreadTaskRunner::GetCurrentDefault()));
 }
 
 // static

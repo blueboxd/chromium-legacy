@@ -45,6 +45,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_SCROLLABLE_AREA_H_
 
 #include "base/check_op.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
@@ -626,6 +627,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // background paint location.
   bool ComputeNeedsCompositedScrolling(
       bool force_prefer_compositing_to_lcd_text);
+  int ComputeHypotheticalScrollbarThickness(
+      ScrollbarOrientation,
+      bool should_include_overlay_thickness) const;
 
   bool NeedsScrollbarReconstruction() const;
 
@@ -673,7 +677,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool SetHasVerticalScrollbar(bool has_scrollbar);
 
   void UpdateScrollCornerStyle();
-  LayoutSize MinimumSizeForResizing(float zoom_factor);
 
   void UpdateResizerStyle(const ComputedStyle* old_style);
 
@@ -786,6 +789,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // MainThreadScrollingReason due to the properties of the LayoutObject
   uint32_t non_composited_main_thread_scrolling_reasons_;
+
+  // These are cached after layout to avoid computation of custom scrollbar
+  // dimensions (requiring layout) outside of a lifecycle update.
+  int hypothetical_horizontal_scrollbar_thickness_ = 0;
+  int hypothetical_vertical_scrollbar_thickness_ = 0;
 
   // These are not bitfields because they need to be passed as references.
   bool horizontal_scrollbar_previously_was_overlay_ = false;

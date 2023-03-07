@@ -19,6 +19,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
@@ -27,7 +28,6 @@
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
@@ -40,7 +40,6 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
-#include "ash/public/cpp/test/test_app_list_color_provider.h"
 #include "ash/search_box/search_box_constants.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/run_loop.h"
@@ -186,8 +185,9 @@ void CheckView(views::View* subview) {
 bool IsViewVisibleOnScreen(views::View* view) {
   if (!view->IsDrawn())
     return false;
-  if (view->layer() && !view->layer()->IsDrawn())
+  if (view->layer() && !view->layer()->IsVisible()) {
     return false;
+  }
   if (view->layer() && view->layer()->opacity() == 0.0f)
     return false;
 
@@ -285,7 +285,7 @@ class AppListViewTest : public views::ViewsTestBase {
 
   // Checks the search box widget is at |expected| in the contents view's
   // coordinate space.
-  bool CheckSearchBoxWidget(const gfx::Rect& expected) {
+  bool CheckSearchBoxView(const gfx::Rect& expected) {
     ContentsView* contents_view = view_->app_list_main_view()->contents_view();
     // Adjust for the search box view's shadow.
     gfx::Rect expected_with_shadow =
@@ -296,7 +296,7 @@ class AppListViewTest : public views::ViewsTestBase {
     views::View::ConvertPointToScreen(contents_view, &point);
 
     return gfx::Rect(point, expected_with_shadow.size()) ==
-           view_->search_box_view()->GetWidget()->GetWindowBoundsInScreen();
+           view_->search_box_view()->GetBoundsInScreen();
   }
 
   void SetTextInSearchBox(const std::u16string& text) {
@@ -493,8 +493,6 @@ class AppListViewTest : public views::ViewsTestBase {
   // Sets animation durations to zero.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
-  TestAppListColorProvider app_list_color_provider_;  // Needed by AppListView.
-
   // Needed by AppsContainerView::ContinueContainer.
   AshColorProvider ash_color_provider_;
 
@@ -596,7 +594,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     constexpr int kBestMatchContainerIndex = 1;
     return contents_view()
         ->search_result_page_view()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
@@ -852,7 +850,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  TestAppListColorProvider app_list_color_provider_;  // Needed by AppListView.
   AshColorProvider ash_color_provider_;
   AppListView* view_ = nullptr;          // Owned by native widget.
 
@@ -1095,7 +1092,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   ResultSelectionController* selection_controller =
       contents_view()
           ->search_result_page_view()
-          ->productivity_launcher_search_view_for_test()
+          ->search_view_for_test()
           ->result_selection_controller_for_test();
 
   // Ensures the |ResultSelectionController| selects the correct result.
@@ -1507,14 +1504,14 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
-  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
+  EXPECT_TRUE(CheckSearchBoxView(contents_view->GetSearchBoxBounds(
       ash::AppListState::kStateSearchResults)));
 
   // Check that typing into the search box triggers the search page.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
   views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_TRUE(CheckSearchBoxWidget(
+  EXPECT_TRUE(CheckSearchBoxView(
       contents_view->GetSearchBoxBounds(ash::AppListState::kStateApps)));
 
   std::u16string new_search_text = u"apple";
@@ -1528,7 +1525,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   EXPECT_EQ(search_text, main_view->search_box_view()->current_query());
   views::test::RunScheduledLayout(contents_view);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
-  EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
+  EXPECT_TRUE(CheckSearchBoxView(contents_view->GetSearchBoxBounds(
       ash::AppListState::kStateSearchResults)));
 }
 
@@ -1702,12 +1699,12 @@ TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
   Initialize(/*is_tablet_mode=*/true);
   Show();
 
-  EXPECT_TRUE(search_box_view()->GetWidget()->IsVisible());
+  EXPECT_TRUE(search_box_view()->GetVisible());
 
   contents_view()->ShowEmbeddedAssistantUI(true);
 
   EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
-  EXPECT_FALSE(search_box_view()->GetWidget()->IsVisible());
+  EXPECT_FALSE(search_box_view()->GetVisible());
 }
 
 TEST_F(AppListViewScalableLayoutTest, RegularLandscapeScreen) {

@@ -397,8 +397,6 @@ public class FeedStream implements Stream {
 
             String url = productSpecificDataMap.get(XSURFACE_CARD_URL);
 
-            Map<String, String> feedContext = convertNameFormat(productSpecificDataMap);
-
             // We want to hide the bottom sheet before sending feedback so the snapshot doesn't show
             // the menu covering the article.  However the menu is animating down, we need to wait
             // for the animation to finish.  We post a task to wait for the duration of the
@@ -409,8 +407,8 @@ public class FeedStream implements Stream {
             // matching an allow list rule.
             PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
                     ()
-                            -> mHelpAndFeedbackLauncher.showFeedback(
-                                    mActivity, profile, url, FEEDBACK_REPORT_TYPE, feedContext),
+                            -> mHelpAndFeedbackLauncher.showFeedback(mActivity, profile, url,
+                                    FEEDBACK_REPORT_TYPE, productSpecificDataMap),
                     MENU_DISMISS_TASK_DELAY);
         }
 
@@ -539,37 +537,6 @@ public class FeedStream implements Stream {
                         mNativeFeedStream, FeedStream.this, feedKindToInvalidate);
             }
         }
-
-        // Since the XSurface client strings are slightly different than the Feed strings, convert
-        // the name from the XSurface format to the format that can be handled by the feedback
-        // system.  Any new strings that are added on the XSurface side will need a code change
-        // here, and adding the PSD to the allow list.
-        private Map<String, String> convertNameFormat(Map<String, String> xSurfaceMap) {
-            Map<String, String> feedbackNameConversionMap = new HashMap<>();
-            feedbackNameConversionMap.put("Card URL", "CardUrl");
-            feedbackNameConversionMap.put("Card Title", "CardTitle");
-            feedbackNameConversionMap.put("Card Snippet", "CardSnippet");
-            feedbackNameConversionMap.put("Card category", "CardCategory");
-            feedbackNameConversionMap.put("Doc Creation Date", "DocCreationDate");
-
-            // For each <name, value> entry in the input map, convert the name to the new name, and
-            // write the new <name, value> pair into the output map.
-            Map<String, String> feedbackMap = new HashMap<>();
-            for (Map.Entry<String, String> entry : xSurfaceMap.entrySet()) {
-                String newName = feedbackNameConversionMap.get(entry.getKey());
-                if (newName != null) {
-                    feedbackMap.put(newName, entry.getValue());
-                } else {
-                    Log.v(TAG, "Found an entry with no conversion available.");
-                    // We will put the entry into the map if untranslatable. It will be discarded
-                    // unless it matches an allow list on the server, though. This way we can choose
-                    // to allow it on the server if desired.
-                    feedbackMap.put(entry.getKey(), entry.getValue());
-                }
-            }
-
-            return feedbackMap;
-        }
     }
 
     private class RotationObserver implements DisplayAndroid.DisplayAndroidObserver {
@@ -601,6 +568,7 @@ public class FeedStream implements Stream {
     private final FeedAutoplaySettingsDelegate mFeedAutoplaySettingsDelegate;
     private UnreadContentObserver mUnreadContentObserver;
     FeedContentFirstLoadWatcher mFeedContentFirstLoadWatcher;
+    private Stream.StreamsMediator mStreamsMediator;
     // Snackbar (and post-Follow dialog) controller used exclusively for handling in-feed
     // post-Follow and post-Unfollow UX.
     WebFeedSnackbarController mWebFeedSnackbarController;
@@ -680,15 +648,15 @@ public class FeedStream implements Stream {
         mFeedAutoplaySettingsDelegate = feedAutoplaySettingsDelegate;
         mRotationObserver = new RotationObserver();
         mFeedContentFirstLoadWatcher = feedContentFirstLoadWatcher;
+        mStreamsMediator = streamsMediator;
         WebFeedSnackbarController.FeedLauncher snackbarAction;
-        // Note: for now there's no need to store streamsMediator as an instance variable.
         if (mStreamKind == StreamKind.FOLLOWING) {
             snackbarAction = () -> {
-                streamsMediator.refreshStream();
+                mStreamsMediator.refreshStream();
             };
         } else {
             snackbarAction = () -> {
-                streamsMediator.switchToStreamKind(StreamKind.FOLLOWING);
+                mStreamsMediator.switchToStreamKind(StreamKind.FOLLOWING);
             };
         }
         mWebFeedSnackbarController = new WebFeedSnackbarController(
@@ -1154,6 +1122,7 @@ public class FeedStream implements Stream {
                 creatorErrorCard = LayoutInflater.from(mActivity).inflate(
                         R.layout.creator_content_unavailable_error, mRecyclerView, false);
             } else {
+                mStreamsMediator.disableFollowButton();
                 creatorErrorCard = LayoutInflater.from(mActivity).inflate(
                         R.layout.creator_general_error, mRecyclerView, false);
             }
@@ -1326,16 +1295,6 @@ public class FeedStream implements Stream {
     class RestoreScrollObserver extends RecyclerView.AdapterDataObserver {
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
-            restoreScrollStateIfNeeded();
-        }
-
-        // This is the triggering event when FeedReplaceAll experiment is on.
-        @Override
-        public void onChanged() {
-            restoreScrollStateIfNeeded();
-        }
-
-        private void restoreScrollStateIfNeeded() {
             if (mScrollStateToRestore != null) {
                 if (restoreScrollState(mScrollStateToRestore)) {
                     mScrollStateToRestore = null;

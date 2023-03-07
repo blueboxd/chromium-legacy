@@ -4,8 +4,8 @@
 
 #include "base/task/deferred_sequenced_task_runner.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -13,7 +13,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,8 +56,8 @@ class DeferredSequencedTaskRunnerTest : public testing::Test {
 
  protected:
   DeferredSequencedTaskRunnerTest()
-      : runner_(
-            new DeferredSequencedTaskRunner(ThreadTaskRunnerHandle::Get())) {}
+      : runner_(new DeferredSequencedTaskRunner(
+            SingleThreadTaskRunner::GetCurrentDefault())) {}
 
   test::TaskEnvironment task_environment_;
   scoped_refptr<DeferredSequencedTaskRunner> runner_;
@@ -206,7 +205,7 @@ TEST_F(DeferredSequencedTaskRunnerTest, StartWithTaskRunner) {
                          std::move(quit_closure).Run();
                        },
                        &run_called, run_loop.QuitClosure()));
-  runner->StartWithTaskRunner(ThreadTaskRunnerHandle::Get());
+  runner->StartWithTaskRunner(SingleThreadTaskRunner::GetCurrentDefault());
   run_loop.Run();
   EXPECT_TRUE(run_called);
 }

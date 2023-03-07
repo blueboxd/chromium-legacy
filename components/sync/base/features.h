@@ -10,15 +10,17 @@
 
 namespace syncer {
 
-// Allows device registration within trusted vault server without having trusted
-// vault key. Effectively disabled if kSyncTrustedVaultPassphraseRecovery
-// is disabled.
-BASE_DECLARE_FEATURE(kAllowSilentTrustedVaultDeviceRegistration);
-
 // If enabled, EntitySpecifics will be cached in EntityMetadata in order to
 // prevent data loss caused by older clients dealing with unknown proto fields
 // (introduced later).
 BASE_DECLARE_FEATURE(kCacheBaseEntitySpecificsInMetadata);
+
+// Customizes the delay of a deferred sync startup.
+BASE_DECLARE_FEATURE(kDeferredSyncStartupCustomDelay);
+inline constexpr base::FeatureParam<int>
+    kDeferredSyncStartupCustomDelayInSeconds{
+        &kDeferredSyncStartupCustomDelay,
+        "DeferredSyncStartupCustomDelayInSeconds", 1};
 
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
@@ -55,10 +57,6 @@ BASE_DECLARE_FEATURE(kSyncAndroidLimitNTPPromoImpressions);
 inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
     &kSyncAndroidLimitNTPPromoImpressions, "SyncAndroidNTPPromoMaxImpressions",
     5};
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithAlternativeTitle);
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithIllustration);
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithSingleButton);
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithTitle);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Controls whether to enable syncing of Autofill Wallet Usage Data.
@@ -75,10 +73,6 @@ BASE_DECLARE_FEATURE(kSyncResetPollIntervalOnStart);
 // If enabled, Segmentation data type will be synced.
 BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
 
-// If enabled, interested data types, excluding Wallet and Offer, will be sent
-// to the Sync Server as part of DeviceInfo.
-BASE_DECLARE_FEATURE(kSyncSendInterestedDataTypes);
-
 #if BUILDFLAG(IS_CHROMEOS)
 // Whether warning should be shown in sync settings page when lacros
 // side-by-side mode is enabled.
@@ -89,6 +83,9 @@ BASE_DECLARE_FEATURE(kSyncChromeOSExplicitPassphraseSharing);
 
 // Whether Apps toggle value is exposed by Ash to Lacros.
 BASE_DECLARE_FEATURE(kSyncChromeOSAppsToggleSharing);
+
+// Whether SyncedSessions are updated by Lacros to Ash.
+BASE_DECLARE_FEATURE(kChromeOSSyncedSessionSharing);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Whether the periodic degraded recoverability polling is enabled.
@@ -107,14 +104,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 // Whether the entry point to opt in to trusted vault in settings should be
 // shown.
 BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphrasePromo);
-
-BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphraseRecovery);
-// Specifies how long requests to vault service shouldn't be retried after
-// encountering transient error.
-inline constexpr base::FeatureParam<base::TimeDelta>
-    kTrustedVaultServiceThrottlingDuration{
-        &kSyncTrustedVaultPassphraseRecovery,
-        "TrustedVaultServiceThrottlingDuration", base::Days(1)};
 
 // Enables logging a UMA metric that requires first communicating with the
 // trusted vault server, in order to verify that the local notion of the device
@@ -166,8 +155,6 @@ inline constexpr base::FeatureParam<int>
 
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
 
-BASE_DECLARE_FEATURE(kSyncPauseUponAnyPersistentAuthError);
-
 // If enabled, issues error and disables bookmarks sync when limit is crossed.
 BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
 
@@ -179,6 +166,9 @@ BASE_DECLARE_FEATURE(kSyncIgnoreAccountWithoutRefreshToken);
 // which implies that DataTypeManager (and hence individual datatypes) won't be
 // notified about browser shutdown.
 BASE_DECLARE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes);
+
+// Enables codepath to allow clearing metadata when the data type is stopped.
+BASE_DECLARE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped);
 
 }  // namespace syncer
 

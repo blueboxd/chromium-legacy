@@ -8,34 +8,50 @@
 <script src="/css/support/shorthand-testcommon.js"></script>
 <div id="target"></div>
 <script>
-test_valid_value('scroll-timeline', 'block none', 'block');
-test_valid_value('scroll-timeline', 'none inline', 'inline');
-test_valid_value('scroll-timeline', 'horizontal abc');
-test_valid_value('scroll-timeline', 'inline abc');
-test_valid_value('scroll-timeline', 'inline aBc');
-test_valid_value('scroll-timeline', 'vertical none', 'vertical');
+test_valid_value('scroll-timeline', 'none block', 'none');
+test_valid_value('scroll-timeline', 'none inline');
+test_valid_value('scroll-timeline', 'abc horizontal');
+test_valid_value('scroll-timeline', 'abc inline');
+test_valid_value('scroll-timeline', 'aBc inline');
+test_valid_value('scroll-timeline', 'none vertical');
 test_valid_value('scroll-timeline', 'inline inline');
 test_valid_value('scroll-timeline', 'abc');
 test_valid_value('scroll-timeline', 'inline');
+test_valid_value('view-timeline', 'a, b, c');
+test_valid_value('view-timeline', 'a inline, b block, c vertical', 'a inline, b, c vertical');
 
 test_invalid_value('scroll-timeline', '');
 test_invalid_value('scroll-timeline', 'abc abc');
+test_invalid_value('view-timeline', ',');
+test_invalid_value('view-timeline', ',,block,,');
 
-test_computed_value('scroll-timeline', 'block none', 'block');
-test_computed_value('scroll-timeline', 'abc inline', 'inline abc');
-test_computed_value('scroll-timeline', 'none vertical', 'vertical');
-test_computed_value('scroll-timeline', 'horizontal abc');
+test_computed_value('scroll-timeline', 'none block', 'none');
+test_computed_value('scroll-timeline', 'abc inline');
+test_computed_value('scroll-timeline', 'none vertical', 'none vertical');
+test_computed_value('scroll-timeline', 'abc horizontal');
 test_computed_value('scroll-timeline', 'vertical vertical');
 test_computed_value('scroll-timeline', 'abc');
+test_computed_value('view-timeline', 'a, b, c');
+test_computed_value('view-timeline', 'a inline, b block, c vertical', 'a inline, b, c vertical');
 
-test_shorthand_value('scroll-timeline', 'vertical abc',
+test_shorthand_value('scroll-timeline', 'abc vertical',
 {
-  'scroll-timeline-axis': 'vertical',
   'scroll-timeline-name': 'abc',
+  'scroll-timeline-axis': 'vertical',
 });
-test_shorthand_value('scroll-timeline', 'horizontal inline',
+test_shorthand_value('scroll-timeline', 'inline horizontal',
 {
-  'scroll-timeline-axis': 'horizontal',
   'scroll-timeline-name': 'inline',
+  'scroll-timeline-axis': 'horizontal',
+});
+test_shorthand_value('scroll-timeline', 'abc vertical, def',
+{
+  'scroll-timeline-name': 'abc, def',
+  'scroll-timeline-axis': 'vertical, block',
+});
+test_shorthand_value('scroll-timeline', 'abc, def',
+{
+  'scroll-timeline-name': 'abc, def',
+  'scroll-timeline-axis': 'block, block',
 });
 </script>

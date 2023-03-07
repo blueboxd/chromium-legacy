@@ -211,8 +211,14 @@ ScreenAIService::~ScreenAIService() = default;
 
 LibraryFunctions::LibraryFunctions(const base::FilePath& library_path) {
   library_ = base::ScopedNativeLibrary(library_path);
-  std::string library_error = library_.GetError()->ToString();
-  DCHECK(library_error.empty()) << library_error;
+  DCHECK(library_.GetError());
+#if BUILDFLAG(IS_WIN)
+  DCHECK_EQ(0u, library_.GetError()->code)
+      << "Library load error: " << library_.GetError()->code;
+#else
+  DCHECK(library_.GetError()->message.empty())
+      << "Library load error: " << library_.GetError()->message;
+#endif
 
   // General functions.
   get_library_version_ = reinterpret_cast<GetLibraryVersionFn>(
@@ -371,9 +377,9 @@ void ScreenAIService::VisualAnnotationInternal(
     result = CallLibraryLayoutExtractionFunction(image, annotation_proto,
                                                  annotation_proto_length);
   }
-  if (!result) {
+  if (!result || !annotation_proto_length) {
     DCHECK_EQ(annotation->tree_data.tree_id, ui::AXTreeIDUnknown());
-    VLOG(1) << "Screen AI library could not process snapshot.";
+    VLOG(1) << "Screen AI library could not process snapshot or no OCR data.";
     return;
   }
 
@@ -446,11 +452,17 @@ void ScreenAIService::ExtractMainContentInternal(
 
   int32_t* node_ids = nullptr;
   uint32_t nodes_count = 0;
-  if (!CallLibraryExtractMainContentFunction(serialized_snapshot.c_str(),
-                                             serialized_snapshot.length(),
-                                             node_ids, nodes_count)) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  bool success = CallLibraryExtractMainContentFunction(
+      serialized_snapshot.c_str(), serialized_snapshot.length(), node_ids,
+      nodes_count);
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  if (!success) {
     VLOG(1) << "Screen2x did not return main content.";
     DCHECK(content_node_ids->empty());
+    base::UmaHistogramTimes(
+        "Accessibility.ScreenAI.Screen2xDistillationTime.Failure",
+        elapsed_time);
     return;
   }
 
@@ -462,6 +474,8 @@ void ScreenAIService::ExtractMainContentInternal(
   VLOG(2) << "Screen2x returned " << content_node_ids->size() << " node ids:";
   for (int32_t i : *content_node_ids)
     VLOG(2) << i;
+  base::UmaHistogramTimes(
+      "Accessibility.ScreenAI.Screen2xDistillationTime.Success", elapsed_time);
 }
 
 NO_SANITIZE("cfi-icall")

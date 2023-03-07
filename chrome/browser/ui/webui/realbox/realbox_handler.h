@@ -12,8 +12,8 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/omnibox/browser/omnibox.mojom.h"
-#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/url_formatter/spoof_checks/idna_metrics.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -47,6 +47,8 @@ class RealboxHandler : public omnibox::mojom::PageHandler,
 
   static void SetupWebUIDataSource(content::WebUIDataSource* source,
                                    Profile* profile);
+  static void SetupDropdownWebUIDataSource(content::WebUIDataSource* source,
+                                           Profile* profile);
   static std::string AutocompleteMatchVectorIconToResourceName(
       const gfx::VectorIcon& icon);
   static std::string PedalVectorIconToResourceName(const gfx::VectorIcon& icon);
@@ -107,11 +109,13 @@ class RealboxHandler : public omnibox::mojom::PageHandler,
                const AutocompleteMatch&,
                IDNA2008DeviationCharacter);
 
+  void SelectMatchAtLine(size_t old_line, size_t new_line);
+
  private:
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
-  base::ScopedObservation<OmniboxControllerEmitter,
+  base::ScopedObservation<AutocompleteControllerEmitter,
                           AutocompleteController::Observer>
       controller_emitter_observation_{this};
   base::TimeTicks time_user_first_modified_realbox_;

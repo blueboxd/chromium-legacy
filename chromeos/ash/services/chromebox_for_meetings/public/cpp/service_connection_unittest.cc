@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -30,7 +30,8 @@ namespace ash {
 namespace cfm {
 namespace {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
+// TODO(https://crbug.com/1403174): Remove when namespace of mojoms for CfM are
+// migarted to ash.
 namespace mojom = ::chromeos::cfm::mojom;
 
 class CfmServiceConnectionTest : public testing::Test {

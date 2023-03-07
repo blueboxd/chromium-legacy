@@ -4,7 +4,7 @@
 
 #include "headless/lib/browser/protocol/page_handler.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -107,7 +107,6 @@ void PageHandler::PDFCreated(bool return_as_stream,
                              std::unique_ptr<PrintToPDFCallback> callback,
                              print_to_pdf::PdfPrintResult print_result,
                              scoped_refptr<base::RefCountedMemory> data) {
-  std::unique_ptr<base::DictionaryValue> response;
   if (print_result != print_to_pdf::PdfPrintResult::kPrintSuccess) {
     callback->sendFailure(Response::ServerError(
         print_to_pdf::PdfPrintResultToString(print_result)));

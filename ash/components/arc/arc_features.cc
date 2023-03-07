@@ -40,6 +40,13 @@ BASE_FEATURE(kEnableArcIdleManager,
              "ArcIdleManager",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+
+// For test purposes, ignore battery status changes, allowing Doze mode to
+// kick in even if we do not receive powerd changes related to battery.
+const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT{
+    &kEnableArcIdleManager, "ignore_battery_for_test", false};
+
+
 // Controls whether files shared to ARC Nearby Share are shared through the
 // FuseBox filesystem, instead of the default method (through a temporary path
 // managed by file manager).
@@ -235,11 +242,6 @@ BASE_FEATURE(kSaveRawFilesOnTracing,
 // Controls whether to update the O4C list via A2C2.
 BASE_FEATURE(kArcUpdateO4CListViaA2C2,
              "ArcUpdateO4CListViaA2C2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, unclaimed USB device will be attached to ARCVM by default.
-BASE_FEATURE(kUsbDeviceDefaultAttachToArcVm,
-             "UsbDeviceDefaultAttachToArcVm",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls ARC USB Storage UI feature.

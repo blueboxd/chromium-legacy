@@ -14,8 +14,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -24,6 +22,8 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -86,7 +86,6 @@
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/cursors/webcursor.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,6 +126,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ui_base_features.h"
@@ -611,31 +611,9 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() {
   return view_.get();
 }
 
-VisibleTimeRequestTrigger*
+VisibleTimeRequestTrigger&
 RenderWidgetHostImpl::GetVisibleTimeRequestTrigger() {
-  auto* trigger = delegate()->GetVisibleTimeRequestTrigger();
-
-  // Use the delegate's trigger only if the kTabSwitchMetrics2 feature is
-  // enabled. Note that `trigger` can be null in unit tests even if the feature
-  // is enabled.
-  if (trigger && trigger->is_tab_switch_metrics2_feature_enabled())
-    return trigger;
-
-  // Go through this widget's view if the kTabSwitchMetrics2 feature is NOT
-  // enabled. This is different from delegate()->GetVisibleTimeRequestTrigger()
-  // which goes through the current view for the WebContents - this widget may
-  // not be current.
-  // TODO(crbug.com/1164477): Remove this obsolete implementation and return a
-  // reference instead of a pointer once kTabSwitchMetrics2 is validated and
-  // becomes the default.
-  if (GetView()) {
-    trigger = GetView()->GetVisibleTimeRequestTrigger();
-    if (trigger) {
-      DCHECK(!trigger->is_tab_switch_metrics2_feature_enabled());
-      return trigger;
-    }
-  }
-  return nullptr;
+  return delegate()->GetVisibleTimeRequestTrigger();
 }
 
 const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() {
@@ -1483,15 +1461,6 @@ void RenderWidgetHostImpl::DidNavigate() {
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
-  // VrController moves the pointer during the scrolling and fling. To ensure
-  // that scroll performance is not affected we drop mouse events during
-  // scroll/fling.
-  if (GetView()->IsInVR() && (is_in_gesture_scroll_[static_cast<int>(
-                                  blink::WebGestureDevice::kTouchpad)] ||
-                              is_in_touchpad_gesture_fling_)) {
-    return;
-  }
-
   ForwardMouseEventWithLatencyInfo(mouse_event,
                                    ui::LatencyInfo(ui::SourceEventType::MOUSE));
   if (owner_delegate_)
@@ -1651,24 +1620,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     NotifyUISchedulerOfScrollStateUpdate(
         BrowserUIThreadScheduler::ScrollState::kFlingActive);
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
-      // TODO(crbug.com/797322): Remove the VR specific case when motion events
-      // are used for Android VR event processing and VR touchpad scrolling is
-      // handled by sending wheel events rather than directly injecting Gesture
-      // Scroll Events.
-      if (GetView()->IsInVR()) {
-        // Regardless of the state of the wheel scroll latching
-        // WebContentsEventForwarder doesn't inject any GSE events before GFS.
-        DCHECK(is_in_gesture_scroll_[static_cast<int>(
-            gesture_event.SourceDevice())]);
-
-        // Reset the is_in_gesture_scroll since while scrolling in Android VR
-        // the first wheel event sent by the FlingController will cause a GSB
-        // generation in MouseWheelEventQueue. This is because GSU events before
-        // the GFS are directly injected to RWHI rather than being generated
-        // from wheel events in MouseWheelEventQueue.
-        is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
-            false;
-      }
       // a GSB event is generated from the first wheel event in a sequence after
       // the event is acked as not consumed by the renderer. Sometimes when the
       // main thread is busy/slow (e.g ChromeOS debug builds) a GFS arrives
@@ -2095,7 +2046,7 @@ void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
 
 void RenderWidgetHostImpl::SetCursor(const ui::Cursor& cursor) {
   if (view_)
-    view_->UpdateCursor(WebCursor(cursor));
+    view_->UpdateCursor(cursor);
 }
 
 void RenderWidgetHostImpl::ShowContextMenuAtPoint(

@@ -57,8 +57,6 @@ class ReceiverSessionImpl final
 
     // ReceiverSession::RendererController overrides.
     bool IsValid() const override;
-    void StartPlayingFrom(base::TimeDelta time) override;
-    void SetPlaybackRate(double playback_rate) override;
     void SetVolume(float volume) override;
 
    private:
@@ -66,6 +64,13 @@ class ReceiverSessionImpl final
 
     mojo::Remote<media::mojom::Renderer> renderer_controls_;
   };
+
+  // Helper function to execute code shared between the two implementations of
+  // StartStreamingAsync().
+  void StartStreamingAsyncInternal(
+      mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector);
+
+  void PreloadBuffersAndStartPlayback();
 
   // Handler for |demuxer_connector_| disconnect.
   void OnMojoDisconnect();

@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/app_list/extension_app_utils.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -126,14 +126,17 @@ std::u16string ExtensionShelfContextMenu::GetLabelForCommandId(
 
 bool ExtensionShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
-    case ash::USE_LAUNCH_TYPE_PINNED:
-      return GetLaunchType() == extensions::LAUNCH_TYPE_PINNED;
     case ash::USE_LAUNCH_TYPE_REGULAR:
       return GetLaunchType() == extensions::LAUNCH_TYPE_REGULAR;
     case ash::USE_LAUNCH_TYPE_WINDOW:
       return GetLaunchType() == extensions::LAUNCH_TYPE_WINDOW;
-    case ash::USE_LAUNCH_TYPE_FULLSCREEN:
-      return GetLaunchType() == extensions::LAUNCH_TYPE_FULLSCREEN;
+    case ash::USE_LAUNCH_TYPE_TABBED_WINDOW:
+      // Tabbed window is not supported for extension based items.
+      [[fallthrough]];
+    case ash::DEPRECATED_USE_LAUNCH_TYPE_PINNED:
+    case ash::DEPRECATED_USE_LAUNCH_TYPE_FULLSCREEN:
+      NOTREACHED();
+      return false;
     default:
       if (command_id < ash::COMMAND_ID_COUNT)
         return ShelfContextMenu::IsCommandIdChecked(command_id);
@@ -183,9 +186,6 @@ void ExtensionShelfContextMenu::ExecuteCommand(int command_id,
       controller()->DoShowAppInfoFlow(controller()->profile(),
                                       item().id.app_id);
       break;
-    case ash::USE_LAUNCH_TYPE_PINNED:
-      SetLaunchType(extensions::LAUNCH_TYPE_PINNED);
-      break;
     case ash::USE_LAUNCH_TYPE_REGULAR:
       SetLaunchType(extensions::LAUNCH_TYPE_REGULAR);
       break;
@@ -198,8 +198,12 @@ void ExtensionShelfContextMenu::ExecuteCommand(int command_id,
       SetLaunchType(launch_type);
       break;
     }
-    case ash::USE_LAUNCH_TYPE_FULLSCREEN:
-      SetLaunchType(extensions::LAUNCH_TYPE_FULLSCREEN);
+    case ash::USE_LAUNCH_TYPE_TABBED_WINDOW:
+      // Tabbed window is not supported for extension based items.
+      [[fallthrough]];
+    case ash::DEPRECATED_USE_LAUNCH_TYPE_PINNED:
+    case ash::DEPRECATED_USE_LAUNCH_TYPE_FULLSCREEN:
+      NOTREACHED();
       break;
     case ash::APP_CONTEXT_MENU_NEW_WINDOW:
       ash::NewWindowDelegate::GetInstance()->NewWindow(

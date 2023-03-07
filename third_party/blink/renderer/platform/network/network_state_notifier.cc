@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/client_hints.h"
@@ -434,7 +435,7 @@ double NetworkStateNotifier::GetRandomMultiplier(const String& host) const {
   if (!host)
     return 1.0;
 
-  unsigned hash = StringHash::GetHash(host) + RandomizationSalt();
+  unsigned hash = WTF::GetHash(host) + RandomizationSalt();
   double random_multiplier = 0.9 + static_cast<double>((hash % 21)) * 0.01;
   DCHECK_LE(0.90, random_multiplier);
   DCHECK_GE(1.10, random_multiplier);

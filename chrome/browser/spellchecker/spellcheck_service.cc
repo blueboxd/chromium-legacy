@@ -9,10 +9,10 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
@@ -38,8 +38,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -157,9 +155,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       std::make_unique<SpellcheckCustomDictionary>(context_->GetPath());
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
-
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllSources());
 
 #if BUILDFLAG(IS_WIN)
   if (spellcheck::UseBrowserSpellChecker() &&
@@ -520,11 +515,9 @@ bool SpellcheckService::IsSpellcheckEnabled() const {
          (!hunspell_dictionaries_.empty() || enable_if_uninitialized);
 }
 
-void SpellcheckService::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
-  InitForRenderer(content::Source<content::RenderProcessHost>(source).ptr());
+void SpellcheckService::OnRenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  InitForRenderer(host);
 }
 
 void SpellcheckService::OnCustomDictionaryLoaded() {
@@ -900,32 +893,29 @@ void SpellcheckService::InitializePlatformSpellchecker() {
   // since metrics on the availability of Windows platform language packs are
   // being recorded. Thus method should only be called once, except in test
   // code.
-  if (!platform_spell_checker() &&
-      spellcheck::WindowsVersionSupportsSpellchecker()) {
+  if (!platform_spell_checker()) {
     platform_spell_checker_ = std::make_unique<WindowsSpellChecker>(
         base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}));
   }
 }
 
 void SpellcheckService::RecordSpellcheckLocalesStats() {
-  if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
-      platform_spell_checker() && !hunspell_dictionaries_.empty()) {
+  if (metrics_ && platform_spell_checker() && !hunspell_dictionaries_.empty()) {
     std::vector<std::string> hunspell_locales;
     for (auto& dict : hunspell_dictionaries_) {
       hunspell_locales.push_back(dict->GetLanguage());
     }
     spellcheck_platform::RecordSpellcheckLocalesStats(
-        platform_spell_checker(), std::move(hunspell_locales), metrics_.get());
+        platform_spell_checker(), std::move(hunspell_locales));
   }
 }
 
 void SpellcheckService::RecordChromeLocalesStats() {
   const auto& accept_languages =
       GetNormalizedAcceptLanguages(/* normalize_for_spellcheck */ false);
-  if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
-      platform_spell_checker() && !accept_languages.empty()) {
-    spellcheck_platform::RecordChromeLocalesStats(
-        platform_spell_checker(), std::move(accept_languages), metrics_.get());
+  if (metrics_ && platform_spell_checker() && !accept_languages.empty()) {
+    spellcheck_platform::RecordChromeLocalesStats(platform_spell_checker(),
+                                                  std::move(accept_languages));
   }
 }
 

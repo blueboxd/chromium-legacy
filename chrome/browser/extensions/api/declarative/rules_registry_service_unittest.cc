@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/testing_profile.h"
@@ -113,7 +113,7 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
                                    .Set("name", "Extension")
                                    .Set("version", "1.0")
                                    .Set("manifest_version", 2)
-                                   .BuildDict();
+                                   .Build();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(std::move(manifest))

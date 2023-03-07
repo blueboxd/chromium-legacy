@@ -4,8 +4,8 @@
 
 #include "net/proxy_resolution/proxy_list.h"
 
-#include "base/callback.h"
 #include "base/check.h"
+#include "base/functional/callback.h"
 #include "base/notreached.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/time/time.h"
@@ -150,10 +150,10 @@ std::string ProxyList::ToPacString() const {
 }
 
 base::Value ProxyList::ToValue() const {
-  base::Value list(base::Value::Type::LIST);
+  base::Value::List list;
   for (const auto& proxy : proxies_)
     list.Append(ProxyServerToProxyUri(proxy));
-  return list;
+  return base::Value(std::move(list));
 }
 
 bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,

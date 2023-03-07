@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
@@ -34,6 +34,7 @@ class GURL;
 @class CRWSessionStorage;
 @protocol CRWScrollableContent;
 @protocol CRWWebViewDownload;
+@class UIFindInteraction;
 @protocol CRWWebViewDownloadDelegate;
 @protocol CRWWebViewProxy;
 typedef id<CRWWebViewProxy> CRWWebViewProxyType;
@@ -355,6 +356,9 @@ class WebState : public base::SupportsUserData {
   // Whether this instance is in the process of being destroyed.
   virtual bool IsBeingDestroyed() const = 0;
 
+  // Whether this instance's web page is in fullscreen mode.
+  virtual bool IsWebPageInFullscreenMode() const = 0;
+
   // Gets/Sets the favicon for the current page displayed by this WebState.
   virtual const FaviconStatus& GetFaviconStatus() const = 0;
   virtual void SetFaviconStatus(const FaviconStatus& favicon_status) = 0;
@@ -483,6 +487,22 @@ class WebState : public base::SupportsUserData {
                                    id<CRWWebViewDownloadDelegate> delegate,
                                    void (^handler)(id<CRWWebViewDownload>))
       API_AVAILABLE(ios(14.5)) = 0;
+
+  // Whether the Find interaction is supported and can be enabled.
+  virtual bool IsFindInteractionSupported() = 0;
+
+  // Whether the Find interaction in the contained web view is enabled. Should
+  // only be called if `IsFindInteractionSupported()` returns `true`.
+  virtual bool IsFindInteractionEnabled() = 0;
+
+  // Enable or disable the Find interaction for the contained web view. Should
+  // only be called if `IsFindInteractionSupported()` returns `true`.
+  virtual void SetFindInteractionEnabled(bool enabled) = 0;
+
+  // Get the Find interaction object associated with the contained web view.
+  // Returns `nil` if the Find interaction is currently disabled. Should only be
+  // called if `IsFindInteractionSupported()` returns `true`.
+  virtual UIFindInteraction* GetFindInteraction() API_AVAILABLE(ios(16)) = 0;
 
  protected:
   friend class WebStatePolicyDecider;

@@ -13,7 +13,6 @@
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_eula_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
 
@@ -53,9 +53,7 @@ class ThemeSelectionScreenTest
       public ::testing::WithParamInterface<test::UIPath> {
  public:
   ThemeSelectionScreenTest() {
-    feature_list_.InitWithFeatures({features::kEnableOobeThemeSelection,
-                                    chromeos::features::kDarkLightMode},
-                                   {});
+    feature_list_.InitWithFeatures({chromeos::features::kDarkLightMode}, {});
   }
 
   void SetUpOnMainThread() override {

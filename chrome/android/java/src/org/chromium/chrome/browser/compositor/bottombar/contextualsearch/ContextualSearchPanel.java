@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
@@ -39,7 +38,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
-import org.chromium.components.browser_ui.widget.chips.ChipProperties;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.base.LocalizationUtils;
@@ -676,8 +674,7 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
             int quickActionCategory, @CardTag int cardTagEnum,
             @Nullable List<String> relatedSearchesInBar, boolean showDefaultSearchInBar) {
         onSearchTermResolved(searchTerm, null, thumbnailUrl, quickActionUri, quickActionCategory,
-                cardTagEnum, relatedSearchesInBar, showDefaultSearchInBar,
-                ChipProperties.SHOW_WHOLE_TEXT /* defaultQueryInBarTextMaxWidthPx */);
+                cardTagEnum, relatedSearchesInBar, showDefaultSearchInBar);
     }
 
     /**
@@ -691,16 +688,15 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
      *        or {@code 0}.
      * @param relatedSearchesInBar Related Searches suggestions to be displayed in the Bar.
      * @param showDefaultSearchInBar Whether the first query is the default query in the bar.
-     * @param defaultQueryInBarTextMaxWidthPx The bar's default query text max width in pixels.
      */
     @Override
     public void onSearchTermResolved(String searchTerm, @Nullable String pronunciation,
             String thumbnailUrl, String quickActionUri, int quickActionCategory,
             @CardTag int cardTagEnum, @Nullable List<String> relatedSearchesInBar,
-            boolean showDefaultSearchInBar, @Px int defaultQueryInBarTextMaxWidthPx) {
+            boolean showDefaultSearchInBar) {
         boolean hadInBarSuggestions = getRelatedSearchesInBarControl().hasReleatedSearchesToShow();
         getRelatedSearchesInBarControl().setRelatedSearchesSuggestions(
-                relatedSearchesInBar, showDefaultSearchInBar, defaultQueryInBarTextMaxWidthPx);
+                relatedSearchesInBar, showDefaultSearchInBar);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES_IN_BAR)) {
             if (getRelatedSearchesInBarControl().hasReleatedSearchesToShow()
                     != hadInBarSuggestions) {
@@ -810,7 +806,6 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
 
         getPromoControl().onUpdateFromExpandToMaximize(percentage);
         getRelatedSearchesInBarControl().onUpdateFromExpandToMaximize(percentage);
-        getSearchBarControl().onUpdateFromExpandToMaximize(percentage);
     }
 
     @Override
@@ -1057,18 +1052,6 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
         // Returns null in tests. TODO(donnd): figure out why - tests should have the same views.
         if (coordinator != null) result = coordinator;
         return result;
-    }
-
-    // ============================================================================================
-    // The Delayed Intelligence Feature support
-    // ============================================================================================
-
-    /**
-     * Returns whether the Delayed Intelligence Feature is currently active for the current user.
-     * A user must be in the undecided privacy state for Delayed Intelligence to take affect.
-     */
-    boolean isDelayedIntelligenceActive() {
-        return mManagementDelegate.isDelayedIntelligenceActive();
     }
 
     // ============================================================================================

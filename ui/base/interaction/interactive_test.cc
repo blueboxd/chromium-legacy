@@ -11,7 +11,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_test_util.h"
 #include "ui/base/interaction/interaction_sequence.h"
@@ -35,8 +34,12 @@ InteractionSequence::StepBuilder InteractiveTestApi::PressButton(
   internal::SpecifyElement(builder, button);
   builder.SetMustRemainVisible(false);
   builder.SetStartCallback(base::BindOnce(
-      [](InputType input_type, InteractiveTestApi* test, InteractionSequence*,
-         TrackedElement* el) { test->test_util().PressButton(el, input_type); },
+      [](InputType input_type, InteractiveTestApi* test,
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "PressButton",
+            test->test_util().PressButton(el, input_type));
+      },
       input_type, base::Unretained(this)));
   return builder;
 }
@@ -49,9 +52,11 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectMenuItem(
   internal::SpecifyElement(builder, menu_item);
   builder.SetMustRemainVisible(false);
   builder.SetStartCallback(base::BindOnce(
-      [](InputType input_type, InteractiveTestApi* test, InteractionSequence*,
-         TrackedElement* el) {
-        test->test_util().SelectMenuItem(el, input_type);
+      [](InputType input_type, InteractiveTestApi* test,
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "SelectMenuItem",
+            test->test_util().SelectMenuItem(el, input_type));
       },
       input_type, base::Unretained(this)));
   return builder;
@@ -65,9 +70,11 @@ InteractionSequence::StepBuilder InteractiveTestApi::DoDefaultAction(
   internal::SpecifyElement(builder, element);
   builder.SetMustRemainVisible(false);
   builder.SetStartCallback(base::BindOnce(
-      [](InputType input_type, InteractiveTestApi* test, InteractionSequence*,
-         TrackedElement* el) {
-        test->test_util().DoDefaultAction(el, input_type);
+      [](InputType input_type, InteractiveTestApi* test,
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "DoDefaultAction",
+            test->test_util().DoDefaultAction(el, input_type));
       },
       input_type, base::Unretained(this)));
   return builder;
@@ -82,8 +89,10 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectTab(
   internal::SpecifyElement(builder, tab_collection);
   builder.SetStartCallback(base::BindOnce(
       [](size_t index, InputType input_type, InteractiveTestApi* test,
-         InteractionSequence*, TrackedElement* el) {
-        test->test_util().SelectTab(el, index, input_type);
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "SelectTab",
+            test->test_util().SelectTab(el, index, input_type));
       },
       tab_index, input_type, base::Unretained(this)));
   return builder;
@@ -98,8 +107,10 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectDropdownItem(
   internal::SpecifyElement(builder, collection);
   builder.SetStartCallback(base::BindOnce(
       [](size_t item, InputType input_type, InteractiveTestApi* test,
-         InteractionSequence*, TrackedElement* el) {
-        test->test_util().SelectDropdownItem(el, item, input_type);
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "SelectDropdownItem",
+            test->test_util().SelectDropdownItem(el, item, input_type));
       },
       item, input_type, base::Unretained(this)));
   return builder;
@@ -115,8 +126,10 @@ InteractionSequence::StepBuilder InteractiveTestApi::EnterText(
   internal::SpecifyElement(builder, element);
   builder.SetStartCallback(base::BindOnce(
       [](std::u16string text, TextEntryMode mode, InteractiveTestApi* test,
-         InteractionSequence*, TrackedElement* el) {
-        test->test_util().EnterText(el, std::move(text), mode);
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "EnterText",
+            test->test_util().EnterText(el, std::move(text), mode));
       },
       std::move(text), mode, base::Unretained(this)));
   return builder;
@@ -128,8 +141,10 @@ InteractionSequence::StepBuilder InteractiveTestApi::ActivateSurface(
   builder.SetDescription("ActivateSurface()");
   internal::SpecifyElement(builder, element);
   builder.SetStartCallback(base::BindOnce(
-      [](InteractiveTestApi* test, InteractionSequence*, TrackedElement* el) {
-        test->test_util().ActivateSurface(el);
+      [](InteractiveTestApi* test, InteractionSequence* seq,
+         TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "ActivateSurface", test->test_util().ActivateSurface(el));
       },
       base::Unretained(this)));
   return builder;
@@ -146,8 +161,10 @@ InteractionSequence::StepBuilder InteractiveTestApi::SendAccelerator(
   internal::SpecifyElement(builder, element);
   builder.SetStartCallback(base::BindOnce(
       [](Accelerator accelerator, InteractiveTestApi* test,
-         InteractionSequence*, TrackedElement* el) {
-        test->test_util().SendAccelerator(el, accelerator);
+         InteractionSequence* seq, TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "SendAccelerator",
+            test->test_util().SendAccelerator(el, accelerator));
       },
       accelerator, base::Unretained(this)));
   return builder;
@@ -159,10 +176,13 @@ InteractionSequence::StepBuilder InteractiveTestApi::Confirm(
   StepBuilder builder;
   builder.SetDescription("Confirm()");
   internal::SpecifyElement(builder, element);
-  builder.SetStartCallback(
-      base::BindOnce([](InteractiveTestApi* test, InteractionSequence*,
-                        TrackedElement* el) { test->test_util().Confirm(el); },
-                     base::Unretained(this)));
+  builder.SetStartCallback(base::BindOnce(
+      [](InteractiveTestApi* test, InteractionSequence* seq,
+         TrackedElement* el) {
+        test->private_test_impl().HandleActionResult(
+            seq, el, "Confirm", test->test_util().Confirm(el));
+      },
+      base::Unretained(this)));
   return builder;
 }
 
@@ -326,6 +346,19 @@ InteractiveTestApi::MultiStep InteractiveTestApi::InContext(
   }
 
   return steps;
+}
+
+InteractiveTestApi::StepBuilder InteractiveTestApi::SetOnIncompatibleAction(
+    OnIncompatibleAction action,
+    const char* reason) {
+  return Do(base::BindOnce(
+      [](InteractiveTestApi* test, OnIncompatibleAction action,
+         std::string reason) {
+        DCHECK(action == OnIncompatibleAction::kFailTest || !reason.empty());
+        test->private_test_impl().on_incompatible_action_ = action;
+        test->private_test_impl().on_incompatible_action_reason_ = reason;
+      },
+      base::Unretained(this), action, std::string(reason)));
 }
 
 bool InteractiveTestApi::RunTestSequenceImpl(

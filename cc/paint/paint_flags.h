@@ -52,9 +52,6 @@ class CC_PAINT_EXPORT PaintFlags {
     return SkColorGetA(color_.toSkColor());
   }
   ALWAYS_INLINE float getAlphaf() const { return color_.fA; }
-  ALWAYS_INLINE void setAlpha(uint8_t a) {
-    color_ = SkColor4f::FromColor(SkColorSetA(color_.toSkColor(), a));
-  }
   template <class F, class = std::enable_if_t<std::is_same_v<F, float>>>
   ALWAYS_INLINE void setAlphaf(F a) {
     color_.fA = a;
@@ -165,13 +162,9 @@ class CC_PAINT_EXPORT PaintFlags {
     draw_looper_ = std::move(looper);
   }
 
-  // Returns true if this just represents an opacity blend when used as
-  // saveLayer flags, thus the saveLayer can be converted to a saveLayerAlpha.
-  bool IsSimpleOpacity() const;
-
   // Returns true if this (of a drawOp) allows the sequence
-  // saveLayerAlpha/drawOp/restore to be folded into a single drawOp by baking
-  // the alpha in the saveLayerAlpha into the flags of the drawOp.
+  // saveLayerAlphaf/drawOp/restore to be folded into a single drawOp by baking
+  // the alpha in the saveLayerAlphaf into the flags of the drawOp.
   bool SupportsFoldingAlpha() const;
 
   // SkPaint does not support loopers, so callers of SkToPaint need
@@ -191,8 +184,7 @@ class CC_PAINT_EXPORT PaintFlags {
       FilterQuality filter_quality);
 
   bool IsValid() const;
-  bool operator==(const PaintFlags& other) const;
-  bool operator!=(const PaintFlags& other) const { return !(*this == other); }
+  bool EqualsForTesting(const PaintFlags& other) const;
 
   bool HasDiscardableImages() const;
 

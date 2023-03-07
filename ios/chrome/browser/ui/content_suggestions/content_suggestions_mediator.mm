@@ -6,8 +6,8 @@
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
-#import "base/bind.h"
-#import "base/callback.h"
+#import "base/functional/bind.h"
+#import "base/functional/callback.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
@@ -15,8 +15,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
-#import "components/ntp_snippets/category.h"
-#import "components/ntp_snippets/category_info.h"
 #import "components/ntp_tiles/metrics.h"
 #import "components/ntp_tiles/most_visited_sites.h"
 #import "components/ntp_tiles/ntp_tile.h"
@@ -25,8 +23,10 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "components/search_engines/template_url.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -43,12 +43,12 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_tile_saver.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
-#import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -57,7 +57,6 @@
 #import "ios/chrome/browser/ui/ntp/feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
-#import "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -131,11 +130,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
 // Whether the page impression has been recorded.
 @property(nonatomic, assign) BOOL recordedPageImpression;
-// Map the section information created to the relevant category.
-@property(nonatomic, strong, nonnull)
-    NSMutableDictionary<ContentSuggestionsCategoryWrapper*,
-                        ContentSuggestionsSectionInformation*>*
-        sectionInformationByCategory;
 // Mediator fetching the favicons for the items.
 @property(nonatomic, strong) ContentSuggestionsFaviconMediator* faviconMediator;
 // Item for the reading list action item.  Reference is used to update the
@@ -179,8 +173,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
         prefService->FindPreference(prefs::kArticlesForYouEnabled);
     _contentSuggestionsPolicyEnabled =
         prefService->FindPreference(prefs::kNTPContentSuggestionsEnabled);
-
-    _sectionInformationByCategory = [[NSMutableDictionary alloc] init];
 
     _faviconMediator = [[ContentSuggestionsFaviconMediator alloc]
         initWithLargeIconService:largeIconService
@@ -485,7 +477,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
   // This is used by the content widget.
-  ntp_tile_saver::SaveMostVisitedToDisk(
+  content_suggestions_tile_saver::SaveMostVisitedToDisk(
       mostVisited, self.faviconMediator.mostVisitedAttributesProvider,
       app_group::ContentWidgetFaviconsFolder());
 
@@ -514,7 +506,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)onIconMadeAvailable:(const GURL&)siteURL {
   // This is used by the content widget.
-  ntp_tile_saver::UpdateSingleFavicon(
+  content_suggestions_tile_saver::UpdateSingleFavicon(
       siteURL, self.faviconMediator.mostVisitedAttributesProvider,
       app_group::ContentWidgetFaviconsFolder());
 
@@ -524,14 +516,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       return;
     }
   }
-}
-
-#pragma mark - ContentSuggestionsMetricsRecorderDelegate
-
-- (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
-    (ContentSuggestionsSectionInformation*)sectionInfo {
-  return [[self.sectionInformationByCategory allKeysForObject:sectionInfo]
-      firstObject];
 }
 
 #pragma mark - Private
@@ -600,10 +584,17 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   PrefService* pref_service =
       ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
           ->GetPrefs();
+
+  // Feed is disabled in safe mode.
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  BOOL isSafeMode = [sceneState.appState resumingFromSafeMode];
+
   BOOL isFeedVisible =
       (pref_service->GetBoolean(prefs::kArticlesForYouEnabled) &&
        pref_service->GetBoolean(prefs::kNTPContentSuggestionsEnabled) &&
        !IsFeedAblationEnabled()) &&
+      !isSafeMode &&
       pref_service->GetBoolean(feed::prefs::kArticlesListVisible);
   if (ShouldOnlyShowTrendingQueriesForDisabledFeed() && isFeedVisible) {
     // Notify consumer with empty array so it knows to remove the module.

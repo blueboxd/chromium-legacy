@@ -249,6 +249,7 @@ struct SameSizeAsDocumentLoader
   scoped_refptr<SecurityOrigin> origin_to_commit;
   AtomicString origin_calculation_debug_info;
   BlinkStorageKey storage_key;
+  BlinkStorageKey session_storage_key;
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
@@ -284,7 +285,6 @@ struct SameSizeAsDocumentLoader
   CommitReason commit_reason;
   uint64_t main_resource_identifier;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info;
-  bool report_timing_info_to_parent;
   WebScopedVirtualTimePauser virtual_time_pauser;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager;
   const KURL web_bundle_physical_url;
@@ -303,7 +303,7 @@ struct SameSizeAsDocumentLoader
   std::unique_ptr<CodeCacheHost> code_cache_host;
   HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
-  absl::optional<blink::FencedFrameReporting> fenced_frame_reporting;
+  bool has_fenced_frame_reporting_;
   std::unique_ptr<ExtraData> extra_data;
   AtomicString reduced_accept_language;
   network::mojom::NavigationDeliveryType navigation_delivery_type;
@@ -469,6 +469,7 @@ DocumentLoader::DocumentLoader(
                             ? nullptr
                             : params_->origin_to_commit.Get()->IsolatedCopy()),
       storage_key_(std::move(params_->storage_key)),
+      session_storage_key_(std::move(params_->session_storage_key)),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
       service_worker_network_provider_(
@@ -504,6 +505,7 @@ DocumentLoader::DocumentLoader(
           params_->is_cross_site_cross_browsing_context_group),
       navigation_api_back_entries_(params_->navigation_api_back_entries),
       navigation_api_forward_entries_(params_->navigation_api_forward_entries),
+      has_fenced_frame_reporting_(params_->has_fenced_frame_reporting),
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
@@ -558,18 +560,6 @@ DocumentLoader::DocumentLoader(
     ad_auction_components_.emplace();
     for (const WebURL& url : *params_->ad_auction_components) {
       ad_auction_components_->emplace_back(KURL(url));
-    }
-  }
-
-  if (params_->fenced_frame_reporting) {
-    fenced_frame_reporting_.emplace();
-    for (const auto& [destination, metadata] :
-         params_->fenced_frame_reporting->metadata) {
-      HashMap<String, KURL> data;
-      for (const auto& [event_type, url] : metadata) {
-        data.insert(String::FromUTF8(event_type), KURL(url));
-      }
-      fenced_frame_reporting_->metadata.insert(destination, std::move(data));
     }
   }
 
@@ -655,20 +645,7 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
       params->ad_auction_components->emplace_back(KURL(url));
     }
   }
-  if (fenced_frame_reporting_) {
-    params->fenced_frame_reporting.emplace();
-    for (const auto& [destination, metadata] :
-         fenced_frame_reporting_->metadata) {
-      base::flat_map<std::string, GURL> data;
-      for (const auto& [event_type, url] : metadata) {
-        data.emplace(event_type.Utf8(), url);
-      }
-      params->fenced_frame_reporting->metadata.emplace(destination,
-                                                       std::move(data));
-    }
-  }
-  if (fenced_frame_properties_)
-    params->fenced_frame_properties = std::move(fenced_frame_properties_);
+  params->has_fenced_frame_reporting = has_fenced_frame_reporting_;
   params->reduced_accept_language = reduced_accept_language_;
   params->navigation_delivery_type = navigation_delivery_type_;
   return params;
@@ -1124,13 +1101,17 @@ void DocumentLoader::BodyLoadingFinished(
         probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
         completion_time, total_encoded_data_length, total_decoded_body_length,
         should_report_corb_blocking);
+
     if (response_.ShouldPopulateResourceTiming() ||
         is_error_page_for_failed_navigation_) {
-      // The response is being copied here to pass the Encoded and Decoded
-      // sizes.
-      // TODO(yoav): copy the sizes info directly.
       navigation_timing_info_->SetFinalResponse(response_);
-      if (report_timing_info_to_parent_) {
+
+      // We only automatically report resource timing when Timing-Allow-Origin
+      // passes, to avoid exposing cross-origin navigation behavior.
+      if (frame_->Owner() && (response_.TimingAllowPassed())) {
+        // The response is being copied here to pass the Encoded and Decoded
+        // sizes.
+        // TODO(yoav): copy the sizes info directly.
         navigation_timing_info_->SetLoadResponseEnd(completion_time);
         if (state_ >= kCommitted) {
           // Note that we currently lose timing info for empty documents,
@@ -1140,7 +1121,6 @@ void DocumentLoader::BodyLoadingFinished(
 
           frame_->Owner()->AddResourceTiming(*navigation_timing_info_);
         }
-        frame_->SetShouldSendResourceTimingInfoToParent(false);
       }
     }
     FinishedLoading(completion_time);
@@ -1274,26 +1254,6 @@ void DocumentLoader::HandleRedirect(
 
   DCHECK(!GetTiming().FetchStart().is_null());
   GetTiming().AddRedirect(url_before_redirect, url_after_redirect);
-}
-
-bool DocumentLoader::ShouldReportTimingInfoToParent() {
-  DCHECK(frame_);
-  // <iframe>s should report the initial navigation requested by the parent
-  // document, but not subsequent navigations.
-  if (!frame_->Owner())
-    return false;
-  // Note that this can be racy since this information is forwarded over IPC
-  // when crossing process boundaries.
-  if (!frame_->should_send_resource_timing_info_to_parent())
-    return false;
-  // Do not report iframe navigation that restored from history, since its
-  // location may have been changed after initial navigation,
-  if (load_type_ == WebFrameLoadType::kBackForward) {
-    // ...and do not report subsequent navigations in the iframe too.
-    frame_->SetShouldSendResourceTimingInfoToParent(false);
-    return false;
-  }
-  return true;
 }
 
 void DocumentLoader::ConsoleError(const String& message) {
@@ -1751,8 +1711,6 @@ void DocumentLoader::StartLoadingInternal() {
       network::mojom::RequestDestination::kIframe,
       network::mojom::RequestMode::kNavigate);
   navigation_timing_info_->SetInitialURL(url_);
-  report_timing_info_to_parent_ = ShouldReportTimingInfoToParent();
-
   virtual_time_pauser_ =
       frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
           url_.GetString(),
@@ -2390,12 +2348,51 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   // to preserve the information that is stripped due to the key being re-made.
   const auto& storage_key_with_3psp =
       storage_key_.CopyWithForceEnabledThirdPartyStoragePartitioning();
+
+  // If the nonce isn't null, we need to ensure the top level site matches
+  // origin and the ancestor chain bit is kSameSite. The ancestor chain bit
+  // should be fine as it's from the same StorageKey that already had a nonce,
+  // but it's possible `security_origin` doesn't match the StorageKey's site.
+  // TODO(https://crbug.com/888079): Just use the origin in the storage key.
+  BlinkSchemefulSite top_level_site(security_origin);
+  if (!storage_key_.GetNonce()) {
+    top_level_site = storage_key_with_3psp.GetTopLevelSite();
+  }
+
   // TODO(https://crbug.com/888079): Just use the storage key sent by the
   // browser once the browser will be able to compute the origin in all cases.
   frame_->DomWindow()->SetStorageKey(
-      BlinkStorageKey(security_origin, storage_key_with_3psp.GetTopLevelSite(),
+      BlinkStorageKey(security_origin, top_level_site,
                       base::OptionalToPtr(storage_key_.GetNonce()),
                       storage_key_with_3psp.GetAncestorChainBit()));
+  if (storage_key_ == session_storage_key_ ||
+      storage_key_.GetSecurityOrigin()->IsOpaque() ||
+      session_storage_key_.GetSecurityOrigin()->IsOpaque()) {
+    // If the `storage_key_` and `session_storage_key_` match (or either are
+    // opaque), we should just use whatever storage key was built above as we
+    // aren't preventing partition.
+    frame_->DomWindow()->SetSessionStorageKey(
+        frame_->DomWindow()->GetStorageKey());
+  } else {
+    // Otherwise, we first must verify that the requested StorageKey to use for
+    // binding session storage has the same SecurityOrigin as the actual
+    // storage key. The purpose of this path is to change the partition for a
+    // given origin, not to allow access to another origin's data.
+    DCHECK(session_storage_key_ ==
+           BlinkStorageKey(storage_key_.GetSecurityOrigin()));
+    // We use the renderer side origin when setting the StorageKey on the path
+    // above, so we check that the renderer's understanding of the origin
+    // matches the session storage StorageKey. This is another precaution to
+    // to prevent cross-origin partition binding.
+    // TODO(https://crbug.com/888079): Depend on the origin in the StorageKey.
+    if (session_storage_key_.GetSecurityOrigin()->IsSameOriginWith(
+            security_origin.get())) {
+      frame_->DomWindow()->SetSessionStorageKey(session_storage_key_);
+    } else {
+      frame_->DomWindow()->SetSessionStorageKey(
+          frame_->DomWindow()->GetStorageKey());
+    }
+  }
 
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
@@ -2945,6 +2942,15 @@ void DocumentLoader::RecordUseCountersForCommit() {
       !early_hints_preloaded_resources_.empty()) {
     CountUse(WebFeature::kEarlyHintsPreload);
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  // Record whether this window was requested to be opened as a Popup.
+  // Android doesn't treat popup windows any differently from normal windows
+  // today, but we might want to change that.
+  if (frame_->GetPage()->GetWindowFeatures().is_popup) {
+    CountUse(WebFeature::kWindowOpenedAsPopupOnMobile);
+  }
+#endif
 }
 
 void DocumentLoader::RecordConsoleMessagesForCommit() {

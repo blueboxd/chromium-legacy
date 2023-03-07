@@ -5,6 +5,12 @@
 #ifndef CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_
 #define CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_
 
+#include "content/public/browser/preloading.h"
+
+#include "content/common/content_export.h"
+
+namespace content {
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 //
@@ -76,7 +82,24 @@ enum class PrerenderFinalStatus {
   kActivationNavigationParameterMismatch = 50,
   kActivatedInBackground = 51,
   kEmbedderHostDisallowed = 52,
-  kMaxValue = kEmbedderHostDisallowed,
+  // Called when encounter failures during synchronous activation.
+  // TODO(https://crbug.com/1363550): Remove this reason if no sample is
+  // recorded in stable, or look into the reason if there are.
+  kActivationNavigationDestroyedBeforeSuccess = 53,
+  // See comments on WebContents::kTabClosedWithoutUserGesture for the
+  // difference between the two statuses below.
+  kTabClosedByUserGesture = 54,
+  kTabClosedWithoutUserGesture = 55,
+  kPrimaryMainFrameRendererProcessCrashed = 56,
+  kPrimaryMainFrameRendererProcessKilled = 57,
+  kActivationFramePolicyNotCompatible = 58,
+  kMaxValue = kActivationFramePolicyNotCompatible,
 };
+
+// Helper method to convert PrerenderFinalStatus to PreloadingFailureReason.
+PreloadingFailureReason CONTENT_EXPORT
+    ToPreloadingFailureReason(PrerenderFinalStatus);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_

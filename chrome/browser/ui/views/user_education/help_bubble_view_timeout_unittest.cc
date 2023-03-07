@@ -4,9 +4,9 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -55,7 +55,7 @@ class HelpBubbleViewTimeoutTest : public TestWithBrowserView {
 
   TestHelpBubbleView* CreateHelpBubbleView(HelpBubbleParams params) {
     return new TestHelpBubbleView(GetHelpBubbleDelegate(),
-                                  browser_view()->contents_container(),
+                                  {browser_view()->contents_container()},
                                   std::move(params));
   }
 };

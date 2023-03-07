@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/performance_manager/metrics/page_timeline_monitor.h"
 #include "chrome/browser/performance_manager/policies/high_efficiency_mode_policy.h"
+#include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
@@ -86,9 +87,9 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(
 
 UserPerformanceTuningManager::PreDiscardResourceUsage::PreDiscardResourceUsage(
     content::WebContents* contents,
-    uint64_t resident_set_size_estimate)
+    uint64_t memory_footprint_estimate)
     : content::WebContentsUserData<PreDiscardResourceUsage>(*contents),
-      resident_set_size_estimate_(resident_set_size_estimate) {}
+      memory_footprint_estimate_(memory_footprint_estimate) {}
 
 UserPerformanceTuningManager::PreDiscardResourceUsage::
     ~PreDiscardResourceUsage() = default;
@@ -172,6 +173,17 @@ void UserPerformanceTuningManager::UserPerformanceTuningReceiverImpl::
         // PostMainMessageLoopRun, which shouldn't happen.
         CHECK(g_user_performance_tuning_manager);
         GetInstance()->NotifyMemoryThresholdReached();
+      }));
+}
+
+void UserPerformanceTuningManager::UserPerformanceTuningReceiverImpl::
+    NotifyMemoryMetricsRefreshed() {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        // Hitting this CHECK would mean this task is running after
+        // PostMainMessageLoopRun, which shouldn't happen.
+        CHECK(g_user_performance_tuning_manager);
+        GetInstance()->NotifyMemoryMetricsRefreshed();
       }));
 }
 
@@ -329,6 +341,12 @@ void UserPerformanceTuningManager::NotifyMemoryThresholdReached() {
   }
 }
 
+void UserPerformanceTuningManager::NotifyMemoryMetricsRefreshed() {
+  for (auto& obs : observers_) {
+    obs.OnMemoryMetricsRefreshed();
+  }
+}
+
 void UserPerformanceTuningManager::OnPowerStateChange(bool on_battery_power) {
   on_battery_power_ = on_battery_power;
 
@@ -396,6 +414,28 @@ void UserPerformanceTuningManager::OnBatteryStateSampled(
   }
 
   UpdateBatterySaverModeState();
+}
+
+void UserPerformanceTuningManager::DiscardPageForTesting(
+    content::WebContents* web_contents) {
+  base::RunLoop run_loop;
+  performance_manager::PerformanceManager::CallOnGraph(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::RepeatingClosure quit_closure,
+             base::WeakPtr<performance_manager::PageNode> page_node,
+             performance_manager::Graph* graph) {
+            if (page_node) {
+              performance_manager::policies::PageDiscardingHelper::GetFromGraph(
+                  graph)
+                  ->ImmediatelyDiscardSpecificPage(page_node.get());
+              quit_closure.Run();
+            }
+          },
+          run_loop.QuitClosure(),
+          performance_manager::PerformanceManager::
+              GetPrimaryPageNodeForWebContents(web_contents)));
+  run_loop.Run();
 }
 
 }  // namespace performance_manager::user_tuning

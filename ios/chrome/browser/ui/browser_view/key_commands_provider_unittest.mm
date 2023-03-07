@@ -12,7 +12,7 @@
 #import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/lens/lens_browser_agent.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -36,7 +36,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/uikit_ui_util.h"
-#import "ios/web/find_in_page/find_in_page_manager_impl.h"
+#import "ios/web/find_in_page/java_script_find_in_page_manager_impl.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -233,30 +233,45 @@ TEST_F(KeyCommandsProviderTest, CanPerform_AlwaysAvailableActions) {
   EXPECT_TRUE(CanPerform(@"keyCommand_clearBrowsingData"));
 }
 
+// Checks whether KeyCommandsProvider can perform the actions that are always
+// available when there is a presented view controller.
+TEST_F(KeyCommandsProviderTest,
+       CanPerform_AlwaysAvailableActions_PresentedViewController) {
+  UIViewController* viewController = [[UIViewController alloc] init];
+  [GetAnyKeyWindow() addSubview:viewController.view];
+  [provider_ respondBetweenViewController:viewController andResponder:nil];
+  UIViewController* presentedViewController = [[UIViewController alloc] init];
+  [viewController presentViewController:presentedViewController
+                               animated:NO
+                             completion:nil];
+
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewTab"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewRegularTab"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewIncognitoTab"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewWindow"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewIncognitoWindow"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_showSettings"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_showReadingList"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_goToTabGrid"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_clearBrowsingData"));
+}
+
 // Checks whether KeyCommandsProvider can perform the actions that are only
 // available when there are tabs.
 TEST_F(KeyCommandsProviderTest, CanPerform_TabsActions) {
   // No tabs.
   ASSERT_EQ(web_state_list_->count(), 0);
   NSArray<NSString*>* actions = @[
-    @"keyCommand_openLocation",
-    @"keyCommand_closeTab",
-    @"keyCommand_showBookmarks",
-    @"keyCommand_reload",
-    @"keyCommand_showHistory",
-    @"keyCommand_voiceSearch",
-    @"keyCommand_stop",
-    @"keyCommand_showHelp",
-    @"keyCommand_showDownloads",
-    @"keyCommand_select1",
-    @"keyCommand_select2",
-    @"keyCommand_select3",
-    @"keyCommand_select4",
-    @"keyCommand_select5",
-    @"keyCommand_select6",
-    @"keyCommand_select7",
-    @"keyCommand_select8",
-    @"keyCommand_select9",
+    @"keyCommand_openLocation",  @"keyCommand_closeTab",
+    @"keyCommand_showBookmarks", @"keyCommand_reload",
+    @"keyCommand_showHistory",   @"keyCommand_voiceSearch",
+    @"keyCommand_stop",          @"keyCommand_showHelp",
+    @"keyCommand_showDownloads", @"keyCommand_select1",
+    @"keyCommand_select2",       @"keyCommand_select3",
+    @"keyCommand_select4",       @"keyCommand_select5",
+    @"keyCommand_select6",       @"keyCommand_select7",
+    @"keyCommand_select8",       @"keyCommand_select9",
+    @"keyCommand_showNextTab",   @"keyCommand_showPreviousTab",
   ];
   for (NSString* action in actions) {
     EXPECT_FALSE(CanPerform(action));
@@ -287,8 +302,8 @@ TEST_F(KeyCommandsProviderTest, CanPerform_FindInPageActions) {
 
   // Open a tab.
   web::FakeWebState* web_state = InsertNewWebState(0);
-  web::FindInPageManagerImpl::CreateForWebState(web_state);
-  FindTabHelper::CreateForWebState(web_state);
+  web::JavaScriptFindInPageManagerImpl::CreateForWebState(web_state);
+  JavaScriptFindTabHelper::CreateForWebState(web_state);
 
   // No Find in Page.
   web_state->SetContentIsHTML(false);
@@ -301,7 +316,8 @@ TEST_F(KeyCommandsProviderTest, CanPerform_FindInPageActions) {
   EXPECT_FALSE(CanPerform(@"keyCommand_findPrevious"));
 
   // Find UI active.
-  FindTabHelper* helper = FindTabHelper::FromWebState(web_state);
+  JavaScriptFindTabHelper* helper =
+      JavaScriptFindTabHelper::FromWebState(web_state);
   helper->SetFindUIActive(YES);
   EXPECT_TRUE(CanPerform(@"keyCommand_findNext"));
   EXPECT_TRUE(CanPerform(@"keyCommand_findPrevious"));
@@ -365,38 +381,6 @@ TEST_F(KeyCommandsProviderTest, CanPerform_EditingTextActions) {
   EXPECT_FALSE(CanPerform(@"keyCommand_forward"));
   EXPECT_FALSE(CanPerform(@"keyCommand_back", back_2));
   EXPECT_FALSE(CanPerform(@"keyCommand_forward", forward_2));
-}
-
-// Checks whether KeyCommandsProvider can perform the actions that are only
-// available when there are at least two tabs.
-TEST_F(KeyCommandsProviderTest, CanPerform_ShowPreviousAndNextTab) {
-  // No tabs.
-  ASSERT_EQ(web_state_list_->count(), 0);
-  NSArray<NSString*>* actions = @[
-    @"keyCommand_showNextTab",
-    @"keyCommand_showPreviousTab",
-  ];
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
-
-  // Open a tab.
-  InsertNewWebState(0);
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
-
-  // Open a second tab.
-  InsertNewWebState(1);
-  for (NSString* action in actions) {
-    EXPECT_TRUE(CanPerform(action));
-  }
-
-  // Close the one tab.
-  CloseWebState(0);
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
 }
 
 // Checks whether KeyCommandsProvider can perform the actions that are only
@@ -884,8 +868,8 @@ TEST_F(KeyCommandsProviderTest, BackForward) {
 TEST_F(KeyCommandsProviderTest, ValidateCommands) {
   // Open a tab.
   web::FakeWebState* web_state = InsertNewWebState(0);
-  web::FindInPageManagerImpl::CreateForWebState(web_state);
-  FindTabHelper::CreateForWebState(web_state);
+  web::JavaScriptFindInPageManagerImpl::CreateForWebState(web_state);
+  JavaScriptFindTabHelper::CreateForWebState(web_state);
 
   // Can Find in Page.
   web_state->SetContentIsHTML(true);

@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -62,10 +62,10 @@ scoped_refptr<const Extension> CreateApp(const std::string& extension_id,
                                 DictionaryBuilder()
                                     .Set("scripts", ListBuilder()
                                                         .Append("background.js")
-                                                        .BuildList())
-                                    .BuildDict())
-                           .BuildDict())
-                  .BuildDict())
+                                                        .Build())
+                                    .Build())
+                           .Build())
+                  .Build())
           .SetID(extension_id)
           .Build();
   return app;
@@ -84,8 +84,8 @@ scoped_refptr<const Extension> CreateExtension(const std::string& extension_id,
                   .Set("background", DictionaryBuilder()
                                          .Set("page", "background.html")
                                          .Set("persistent", persistent)
-                                         .BuildDict())
-                  .BuildDict())
+                                         .Build())
+                  .Build())
           .SetID(extension_id)
           .Build();
   return extension;

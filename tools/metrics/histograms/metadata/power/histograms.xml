@@ -306,7 +306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PerformanceMonitor.ResourceCoalition.Availability"
-    enum="CoalitionIDAvailability" expires_after="2023-04-16">
+    enum="CoalitionIDAvailability" expires_after="2023-06-18">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -727,7 +727,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AmbientLightOnResume" units="lux"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
   <owner>bkersten@chromium.org</owner>
   <owner>slangley@chromium.org</owner>
   <summary>
@@ -816,10 +816,11 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS {BatteryCapacityType} battery capacity in milliwatt-hours.
   </summary>
+  <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
 
 <histogram name="Power.BatteryChargeHealth" units="%"
-    expires_after="2023-05-13">
+    expires_after="2023-07-16">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -861,7 +862,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeGranularityMilliwattHours"
+<histogram name="Power.BatteryDischargeGranularityMilliwattHours2"
     units="milliwatt-hours" expires_after="2023-06-04">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
@@ -880,7 +881,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeGranularityRelative"
+<histogram name="Power.BatteryDischargeGranularityRelative2"
     units="hundredth of a percent" expires_after="2023-06-04">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
@@ -921,7 +922,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2023-06-11">
+    expires_after="2023-07-23">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -945,6 +946,32 @@ chromium-metrics-reviews@google.com.
     interval is one that deviate too much from 1 minute, which can be caused by
     the computer going to sleep, or the OS sending multiple notifications in a
     row.
+
+    This is recorded for {UsageScenario}.
+
+    This contains {IntervalType}.
+  </summary>
+  <token key="UsageScenario" variants="UsageScenario"/>
+  <token key="IntervalType" variants="IntervalType"/>
+</histogram>
+
+<histogram
+    name="Power.BatteryDischargeRatePreciseMilliwatts{UsageScenario}{IntervalType}"
+    units="milliwatts" expires_after="2023-03-31">
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Battery discharge in milliwatts, example: - Battery charge at the beginning
+    of the interval: 4000 mWh; - Battery charge at the end of the interval: 3990
+    mWh; - Discharge: (4000-3990) = 10 mWh per minute - Reported value: 600 mW.
+
+    This is reported at the end of every valid 1 minute interval. An invalid
+    interval is one that deviate too much from 1 minute, which can be caused by
+    the computer going to sleep, or the OS sending multiple notifications in a
+    row.
+
+    Clients with a coarse battery discharge granularity (&gt;17 mWh) are
+    excluded.
 
     This is recorded for {UsageScenario}.
 
@@ -995,7 +1022,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRateWhileSuspended" units="mW"
-    expires_after="2023-05-12">
+    expires_after="2023-07-16">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1028,6 +1055,7 @@ chromium-metrics-reviews@google.com.
     rate sampling in Power.BatteryDischargeRate. Note that the size of the
     battery is derated by the low battery shutdown percent.
   </summary>
+  <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
 
 <histogram name="Power.BatteryLifeWhileSuspended.{BatteryCapacityType}"
@@ -1041,9 +1069,10 @@ chromium-metrics-reviews@google.com.
     This is calculated using size of the battery divide by battery discharge
     rate sampling in Power.BatteryDischargeRateWhileSuspended.
   </summary>
+  <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-04-23">
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-06-25">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -1731,6 +1760,24 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Power.HasPreciseBatteryDischargeGranularity" enum="Boolean"
+    expires_after="2023-03-31">
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Records whether or not the reporting client has a battery discharge
+    granularity less or equal to 17 mWh, which is the threshold to report the
+    Power.BatteryDischargeRatePreciseMilliwatts histogram.
+
+    This is reported at the end of every valid 1 minute interval. An invalid
+    interval is one that deviate too much from 1 minute, which can be caused by
+    the computer going to sleep, or the OS sending multiple notifications in a
+    row.
+
+    Only Recorded on Windows.
+  </summary>
+</histogram>
+
 <histogram name="Power.HibernateAttemptsBeforeCancel" units="units"
     expires_after="2023-06-15">
   <owner>puthik@chromium.org</owner>
@@ -1908,7 +1955,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.KernelResumeTimeOnAC" units="ms"
-    expires_after="2023-05-12">
+    expires_after="2023-07-16">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1946,7 +1993,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.KeyboardBacklightLevel" units="%"
-    expires_after="2023-05-12">
+    expires_after="2023-07-16">
   <owner>tbroch@chromium.org</owner>
   <summary>
     The level of the keyboard backlight as a percentage. Sampled every 30
@@ -2007,7 +2054,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -2089,7 +2136,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -2100,7 +2147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressInLaptopMode"
-    enum="PowerButtonPressType" expires_after="2023-05-01">
+    enum="PowerButtonPressType" expires_after="2023-07-02">
   <owner>minch@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -2111,7 +2158,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressInTabletMode"
-    enum="PowerButtonPressType" expires_after="2023-05-01">
+    enum="PowerButtonPressType" expires_after="2023-07-02">
   <owner>minch@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -2226,7 +2273,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttempt" enum="SuspendAttempt"
-    expires_after="2023-05-12">
+    expires_after="2023-07-16">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2251,7 +2298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeSuccess" units="units"
-    expires_after="2023-05-12">
+    expires_after="2023-07-16">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2264,7 +2311,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendResult" enum="SuspendResult"
-    expires_after="2023-05-12">
+    expires_after="2023-07-16">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2332,7 +2379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.DimImminent.Action" enum="PowerMLDimImminentAction"
-    expires_after="2023-05-01">
+    expires_after="2023-07-02">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2342,7 +2389,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2023-05-01">
+    expires_after="2023-07-02">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2352,7 +2399,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelNoDim.Result" enum="PowerMLFinalResult"
-    expires_after="2023-05-01">
+    expires_after="2023-07-02">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2427,7 +2474,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2439,7 +2486,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-09">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

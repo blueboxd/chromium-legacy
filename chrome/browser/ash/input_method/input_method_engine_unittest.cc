@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -34,6 +34,7 @@
 
 namespace ash {
 namespace input_method {
+
 namespace {
 
 const char kTestExtensionId[] = "mppnpdlheglhdfmldimlhpnegondlapf";
@@ -46,8 +47,7 @@ enum CallsBitmap {
   DEACTIVATED = 2U,
   ONFOCUS = 4U,
   ONBLUR = 8U,
-  ONCOMPOSITIONBOUNDSCHANGED = 16U,
-  RESET = 32U
+  RESET = 16U
 };
 
 void InitInputMethod() {
@@ -92,7 +92,7 @@ class TestObserver : public StubInputMethodEngineObserver {
   }
   void OnFocus(const std::string& engine_id,
                int context_id,
-               const ui::TextInputMethod::InputContext& context) override {
+               const TextInputMethod::InputContext& context) override {
     calls_bitmap_ |= ONFOCUS;
   }
   void OnBlur(const std::string& engine_id, int context_id) override {
@@ -100,14 +100,9 @@ class TestObserver : public StubInputMethodEngineObserver {
   }
   void OnKeyEvent(const std::string& engine_id,
                   const ui::KeyEvent& event,
-                  ui::TextInputMethod::KeyEventDoneCallback callback) override {
+                  TextInputMethod::KeyEventDoneCallback callback) override {
     std::move(callback).Run(ui::ime::KeyEventHandledState::kHandledByIME);
   }
-  void OnCompositionBoundsChanged(
-      const std::vector<gfx::Rect>& bounds) override {
-    calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
-  }
-
   void OnReset(const std::string& engine_id) override {
     calls_bitmap_ |= RESET;
     engine_id_ = engine_id;
@@ -137,8 +132,8 @@ class InputMethodEngineTest : public testing::Test {
     layouts_.emplace_back("us");
     InitInputMethod();
     mock_ime_input_context_handler_ =
-        std::make_unique<ui::MockIMEInputContextHandler>();
-    ui::IMEBridge::Get()->SetInputContextHandler(
+        std::make_unique<MockIMEInputContextHandler>();
+    IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
 
     chrome_keyboard_controller_client_test_helper_ =
@@ -149,7 +144,7 @@ class InputMethodEngineTest : public testing::Test {
   InputMethodEngineTest& operator=(const InputMethodEngineTest&) = delete;
 
   ~InputMethodEngineTest() override {
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+    IMEBridge::Get()->SetInputContextHandler(nullptr);
     engine_.reset();
     chrome_keyboard_controller_client_test_helper_.reset();
     Shutdown();
@@ -166,9 +161,9 @@ class InputMethodEngineTest : public testing::Test {
   }
 
   void Focus(ui::TextInputType input_type) {
-    ui::TextInputMethod::InputContext input_context(input_type);
+    TextInputMethod::InputContext input_context(input_type);
     engine_->Focus(input_context);
-    ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
+    IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
   std::unique_ptr<InputMethodEngine> engine_;
@@ -180,8 +175,7 @@ class InputMethodEngineTest : public testing::Test {
   GURL input_view_;
 
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<ui::MockIMEInputContextHandler>
-      mock_ime_input_context_handler_;
+  std::unique_ptr<MockIMEInputContextHandler> mock_ime_input_context_handler_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       chrome_keyboard_controller_client_test_helper_;
 };
@@ -339,13 +333,6 @@ TEST_F(InputMethodEngineTest, TestInvalidCompositionReturnsFalse) {
       false);
   EXPECT_EQ(engine_->SetComposition(context, "test", 0, 6, 0, segments, &error),
             false);
-}
-
-TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
-  CreateEngine(true);
-  // Enable/disable with focus.
-  engine_->SetCompositionBounds({gfx::Rect()});
-  EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
 }
 
 // See https://crbug.com/980437.

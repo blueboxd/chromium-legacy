@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/diagnostics_api_converters.h"
@@ -287,16 +287,8 @@ void OsDiagnosticsRunDnsResolverPresentRoutineFunction::RunIfAllowed() {
 
 // OsDiagnosticsRunEmmcLifetimeRoutineFunction ---------------------------
 
-OsDiagnosticsRunEmmcLifetimeRoutineFunction::
-    OsDiagnosticsRunEmmcLifetimeRoutineFunction() = default;
-OsDiagnosticsRunEmmcLifetimeRoutineFunction::
-    ~OsDiagnosticsRunEmmcLifetimeRoutineFunction() = default;
-
 void OsDiagnosticsRunEmmcLifetimeRoutineFunction::RunIfAllowed() {
-  auto cb =
-      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
-
-  GetRemoteService()->RunEmmcLifetimeRoutine(std::move(cb));
+  GetRemoteService()->RunEmmcLifetimeRoutine(GetOnResult());
 }
 
 // OsDiagnosticsRunGatewayCanBePingedRoutineFunction ---------------------------
@@ -307,16 +299,8 @@ void OsDiagnosticsRunGatewayCanBePingedRoutineFunction::RunIfAllowed() {
 
 // OsDiagnosticsRunFingerprintAliveRoutineFunction -----------------------------
 
-OsDiagnosticsRunFingerprintAliveRoutineFunction::
-    OsDiagnosticsRunFingerprintAliveRoutineFunction() = default;
-OsDiagnosticsRunFingerprintAliveRoutineFunction::
-    ~OsDiagnosticsRunFingerprintAliveRoutineFunction() = default;
-
 void OsDiagnosticsRunFingerprintAliveRoutineFunction::RunIfAllowed() {
-  auto cb =
-      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
-
-  GetRemoteService()->RunFingerprintAliveRoutine(std::move(cb));
+  GetRemoteService()->RunFingerprintAliveRoutine(GetOnResult());
 }
 
 // OsDiagnosticsRunLanConnectivityRoutineFunction ------------------------------
@@ -395,14 +379,11 @@ void OsDiagnosticsRunSmartctlCheckRoutineFunction::RunIfAllowed() {
         params->request->percentage_used_threshold.value());
   }
 
-  auto cb =
-      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
-
   // Backwards compatibility: Calling the routine with an null parameter
   // results in the same behaviour as the former `RunSmartctlCheckRoutine`
   // without any parameters.
   GetRemoteService()->RunSmartctlCheckRoutine(std::move(percentage_used),
-                                              std::move(cb));
+                                              GetOnResult());
 }
 
 }  // namespace chromeos

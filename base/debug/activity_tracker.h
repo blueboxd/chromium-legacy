@@ -18,9 +18,10 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/dcheck_is_on.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -516,6 +517,9 @@ class BASE_EXPORT ActivityUserData {
     OwningProcess owner;  // Information about the creating process.
   };
 
+  static_assert(sizeof(MemoryHeader) % kMemoryAlignment == 0,
+                "Memory following header must also be aligned");
+
   // Header to a key/value record held in persistent memory.
   struct FieldHeader {
     FieldHeader();
@@ -542,7 +546,7 @@ class BASE_EXPORT ActivityUserData {
 
     StringPiece name;                 // The "key" of the record.
     ValueType type;                   // The type of the value.
-    raw_ptr<void> memory;             // Where the "value" is held.
+    base::span<char> memory;          // Where the "value" is held.
     raw_ptr<std::atomic<uint16_t>>
         size_ptr;                     // Address of the actual size of value.
     size_t extent;                    // The total storage of the value,
@@ -568,17 +572,17 @@ class BASE_EXPORT ActivityUserData {
   // Information about the memory block in which new data can be stored. These
   // are "mutable" because they change even on "const" objects that are just
   // skipping already set values.
-  mutable raw_ptr<char> memory_;
-  mutable size_t available_;
+  mutable base::span<char> memory_;
 
   // A pointer to the memory header for this instance.
-  const raw_ptr<MemoryHeader> header_;
+  mutable raw_ptr<MemoryHeader> header_ = nullptr;
 
   // These hold values used when initially creating the object. They are
   // compared against current header values to check for outside changes.
-  const uint32_t orig_data_id;
-  const ProcessId orig_process_id;
-  const int64_t orig_create_stamp;
+  // They may be updated by casting away the const in the constructor.
+  const uint32_t orig_data_id = 0;
+  const ProcessId orig_process_id = 0;
+  const int64_t orig_create_stamp = 0;
 };
 
 // This class manages tracking a stack of activities for a single thread in
@@ -774,8 +778,7 @@ class BASE_EXPORT ThreadActivityTracker {
       ActivityTrackerMemoryAllocator* allocator);
 
   const raw_ptr<Header> header_;   // Pointer to the Header structure.
-  const raw_ptr<Activity, DanglingUntriaged>
-      stack_;  // The stack of activities.
+  const raw_ptr<Activity> stack_;  // The stack of activities.
 
 #if DCHECK_IS_ON()
   // The ActivityTracker is thread bound, and will be invoked across all the

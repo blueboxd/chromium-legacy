@@ -17,10 +17,15 @@ source_set("app_service") {
     ]
   }
 
-  allow_circular_includes_from = [ "//chrome/browser/ui" ]
+  # TODO(crbug.com/1402145): Remove circular dependencies.
+  allow_circular_includes_from = [
+    "//chrome/browser/ui",
+    "//chrome/browser/apps/app_service",
+  ]
 
   deps = [
     "//base",
+    "//chrome/browser/apps/app_service",
     "//chrome/browser/ash/system_web_apps/types",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
@@ -31,7 +36,6 @@ source_set("app_service") {
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:icon_types",
     "//components/services/app_service/public/cpp:intents",
-    "//components/services/app_service/public/cpp:publisher",
     "//components/services/app_service/public/cpp:run_on_os_login",
     "//components/services/app_service/public/cpp:types",
     "//components/sessions",
@@ -49,6 +53,7 @@ source_set("app_service") {
       "//chrome/browser/ash",
       "//chrome/browser/ash/crosapi",
       "//chrome/browser/ash/system_web_apps",
+      "//chrome/browser/chromeos",
       "//components/app_restore",
       "//components/services/app_service/public/cpp:instance_update",
       "//extensions/browser/api/file_handlers",

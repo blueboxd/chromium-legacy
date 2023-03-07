@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/quick_answers/ui/user_consent_view.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -350,7 +350,14 @@ void UserConsentView::UpdateWidgetBounds() {
     y = anchor_view_bounds_.bottom() + kMarginDip;
   }
   gfx::Rect bounds({x, y}, size);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // For Ash, convert the position relative to the screen.
+  // For Lacros, `bounds` is already relative to the toplevel window and the
+  // position will be calculated on server side.
   wm::ConvertRectFromScreen(GetWidget()->GetNativeWindow()->parent(), &bounds);
+#endif
+
   GetWidget()->SetBounds(bounds);
 }
 

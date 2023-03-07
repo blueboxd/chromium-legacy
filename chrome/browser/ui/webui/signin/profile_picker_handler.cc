@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -66,10 +66,11 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
+#include "chrome/browser/lacros/identity_manager_lacros.h"
 #include "chrome/browser/lacros/lacros_url_handling.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/signin/profile_picker_lacros_sign_in_provider.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
 namespace {
@@ -354,7 +355,12 @@ void BeginFirstWebContentsProfiling(Browser* browser,
 
 }  // namespace
 
-ProfilePickerHandler::ProfilePickerHandler() = default;
+ProfilePickerHandler::ProfilePickerHandler()
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    : identity_manager_lacros_(std::make_unique<IdentityManagerLacros>())
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+{
+}
 
 ProfilePickerHandler::~ProfilePickerHandler() {
   OnJavascriptDisallowed();
@@ -1328,6 +1334,57 @@ void ProfilePickerHandler::OnAccountRemoved(
   UpdateAvailableAccounts();
 }
 
+void ProfilePickerHandler::OnReauthDialogClosed() {
+  // After the reauth screen is closed, we can now reuse the profile picker
+  // account list to select an account.
+  FireWebUIListener("reauth-dialog-closed", base::Value());
+  lacros_sign_in_provider_.reset();
+}
+
+void ProfilePickerHandler::ShowReauthWithEmail(
+    account_manager::AccountManagerFacade::AccountAdditionSource source,
+    const std::string& email) {
+  account_manager::AccountManagerFacade* account_manager_facade =
+      ::GetAccountManagerFacade(GetCurrentProfilePath(web_ui()).value());
+  account_manager_facade->ShowReauthAccountDialog(
+      source, email,
+      base::BindOnce(&ProfilePickerHandler::OnReauthDialogClosed,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ProfilePickerHandler::AddExistingAccountToExistingProfile(
+    AccountProfileMapper* mapper,
+    AccountProfileMapper::AddAccountCallback add_account_callback,
+    const std::string& gaia_id) {
+  mapper->AddAccount(
+      GetCurrentProfilePath(web_ui()),
+      account_manager::AccountKey(gaia_id, account_manager::AccountType::kGaia),
+      std::move(add_account_callback));
+}
+
+void ProfilePickerHandler::AddExistingAccountToNewProfile(
+    ProfilePickerLacrosSignInProvider::SignedInCallback signed_in_callback,
+    const std::string& gaia_id) {
+  lacros_sign_in_provider_->CreateSignedInProfileWithExistingAccount(
+      gaia_id, std::move(signed_in_callback));
+}
+
+void ProfilePickerHandler::ResultAccountInPersistentError(
+    const std::string& gaia_id,
+    AddAccountCallback add_account_callback,
+    account_manager::AccountManagerFacade::AccountAdditionSource source,
+    bool persistent_error) {
+  if (persistent_error) {
+    // Get email to show reauth dialog.
+    identity_manager_lacros_->GetAccountEmail(
+        gaia_id, base::BindOnce(&ProfilePickerHandler::ShowReauthWithEmail,
+                                weak_factory_.GetWeakPtr(), source));
+    return;
+  }
+
+  std::move(add_account_callback).Run(gaia_id);
+}
+
 void ProfilePickerHandler::SelectAccountLacrosInternal(
     const std::string& gaia_id,
     absl::optional<SkColor> profile_color) {
@@ -1343,17 +1400,26 @@ void ProfilePickerHandler::SelectAccountLacrosInternal(
                                        AccountAdditionSource::kOgbAddAccount,
                                    std::move(add_account_callback));
     } else {
-      mapper->AddAccount(GetCurrentProfilePath(web_ui()),
-                         account_manager::AccountKey(
-                             gaia_id, account_manager::AccountType::kGaia),
-                         std::move(add_account_callback));
+      AddAccountCallback add_existing_account_to_existing_profile =
+          base::BindOnce(
+              &ProfilePickerHandler::AddExistingAccountToExistingProfile,
+              weak_factory_.GetWeakPtr(), mapper,
+              std::move(add_account_callback));
+      identity_manager_lacros_->HasAccountWithPersistentError(
+          gaia_id,
+          base::BindOnce(&ProfilePickerHandler::ResultAccountInPersistentError,
+                         weak_factory_.GetWeakPtr(), gaia_id,
+                         std::move(add_existing_account_to_existing_profile),
+                         account_manager::AccountManagerFacade::
+                             AccountAdditionSource::kContentAreaReauth));
     }
     return;
   }
 
   DCHECK(!lacros_sign_in_provider_);
   lacros_sign_in_provider_ =
-      std::make_unique<ProfilePickerLacrosSignInProvider>();
+      std::make_unique<ProfilePickerLacrosSignInProvider>(
+          /*hidden_profile=*/true);
   ProfilePickerLacrosSignInProvider::SignedInCallback callback =
       base::BindOnce(&ProfilePickerHandler::OnLacrosSignedInProfileCreated,
                      weak_factory_.GetWeakPtr(), profile_color);
@@ -1361,8 +1427,16 @@ void ProfilePickerHandler::SelectAccountLacrosInternal(
     lacros_sign_in_provider_->ShowAddAccountDialogAndCreateSignedInProfile(
         std::move(callback));
   } else {
-    lacros_sign_in_provider_->CreateSignedInProfileWithExistingAccount(
-        gaia_id, std::move(callback));
+    AddAccountCallback add_exisiting_account_to_new_profile =
+        base::BindOnce(&ProfilePickerHandler::AddExistingAccountToNewProfile,
+                       weak_factory_.GetWeakPtr(), std::move(callback));
+    identity_manager_lacros_->HasAccountWithPersistentError(
+        gaia_id,
+        base::BindOnce(&ProfilePickerHandler::ResultAccountInPersistentError,
+                       weak_factory_.GetWeakPtr(), gaia_id,
+                       std::move(add_exisiting_account_to_new_profile),
+                       account_manager::AccountManagerFacade::
+                           AccountAdditionSource::kChromeProfileCreation));
   }
 }
 

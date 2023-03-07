@@ -9,7 +9,6 @@
 #import "base/time/time.h"
 #import "components/policy/policy_constants.h"
 #import "components/signin/internal/identity_manager/account_capabilities_constants.h"
-#import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_switches.h"
 #import "components/strings/grit/components_strings.h"
@@ -17,7 +16,9 @@
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
@@ -37,8 +38,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -95,7 +94,7 @@ void SetParentalControlsCapabilityForIdentity(FakeSystemIdentity* identity) {
 
   ios::CapabilitiesDict* capabilities = @{
     @(kIsSubjectToParentalControlsCapabilityName) :
-        @(static_cast<int>(ios::ChromeIdentityCapabilityResult::kTrue))
+        @(static_cast<int>(SystemIdentityCapabilityResult::kTrue))
   };
   [SigninEarlGrey setCapabilities:capabilities forIdentity:identity];
 }
@@ -186,8 +185,12 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
-  config.features_enabled.push_back(signin::kEnableUnicornAccountSupport);
-  if ([self isRunningTest:@selector(testOpenSignInFromNTP)]) {
+  if ([self
+          isRunningTest:@selector
+          (testOpenManageSyncSettingsFromNTPWhenSigninIsNotAllowedByPolicy)] ||
+      [self isRunningTest:@selector
+            (testOpenManageSyncSettingsFromNTPWhenSyncDisabledByPolicy)] ||
+      [self isRunningTest:@selector(testOpenSignInFromNTP)]) {
     config.features_enabled.push_back(switches::kIdentityStatusConsistency);
   }
   return config;
@@ -330,15 +333,13 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSignInSwitchAccountsAndKeepDataSeparate {
+- (void)testSignInSwitchAccountsAndKeepDataSeparate {
   ChooseImportOrKeepDataSepareteDialog(SettingsImportDataKeepSeparateButton());
 }
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSignInSwitchAccountsAndImportData {
+- (void)testSignInSwitchAccountsAndImportData {
   ChooseImportOrKeepDataSepareteDialog(SettingsImportDataImportButton());
 }
 
@@ -705,7 +706,7 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 - (void)assertFakeSSOScreenIsVisible {
   // Check for the fake SSO screen.
   [ChromeEarlGrey
-      waitForMatcher:grey_accessibilityID(kFakeAddAccountViewIdentifier)];
+      waitForMatcher:grey_accessibilityID(kFakeAuthActivityViewIdentifier)];
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
       grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
@@ -855,6 +856,42 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   // Sign in to Chrome.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Select the identity disc particle.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(GetNSString(
+                                          IDS_ACCNAME_PARTICLE_DISC))]
+      performAction:grey_tap()];
+
+  // Ensure the Settings menu is displayed.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that a signed-in user can open "Settings" screen from the NTP.
+- (void)testOpenManageSyncSettingsFromNTPWhenSigninIsNotAllowedByPolicy {
+  // Disable sign-in with policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kDisabled);
+
+  // Select the identity disc particle.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(GetNSString(
+                                          IDS_ACCNAME_PARTICLE_DISC))]
+      performAction:grey_tap()];
+
+  // Ensure the Settings menu is displayed.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that a signed-in user can open "Settings" screen from the NTP.
+- (void)testOpenManageSyncSettingsFromNTPWhenSyncDisabledByPolicy {
+  // Disable sync by policy.
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityLabel(GetNSString(
+                                       IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)),
+                                   grey_userInteractionEnabled(), nil)]
+      performAction:grey_tap()];
 
   // Select the identity disc particle.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(GetNSString(
@@ -1122,8 +1159,7 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 }
 
 // Tests to sign-in with one user, and then turn on syncn with a second account.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSignInWithOneAccountStartSyncWithAnotherAccount {
+- (void)testSignInWithOneAccountStartSyncWithAnotherAccount {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
   FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];

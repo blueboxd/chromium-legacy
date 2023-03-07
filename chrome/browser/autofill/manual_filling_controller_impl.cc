@@ -7,12 +7,13 @@
 #include <numeric>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -328,12 +329,10 @@ void ManualFillingControllerImpl::Initialize() {
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents)
     : content::WebContentsUserData<ManualFillingControllerImpl>(*web_contents) {
-  if (PasswordAccessoryController::AllowedForWebContents(web_contents)) {
-    pwd_controller_ = ChromePasswordManagerClient::FromWebContents(web_contents)
-                          ->GetOrCreatePasswordAccessory()
-                          ->AsWeakPtr();
-    DCHECK(pwd_controller_);
-  }
+  pwd_controller_ = ChromePasswordManagerClient::FromWebContents(web_contents)
+                        ->GetOrCreatePasswordAccessory()
+                        ->AsWeakPtr();
+  DCHECK(pwd_controller_);
   if (AddressAccessoryController::AllowedForWebContents(web_contents)) {
     address_controller_ =
         AddressAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();

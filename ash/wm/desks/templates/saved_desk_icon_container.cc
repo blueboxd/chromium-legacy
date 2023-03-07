@@ -8,7 +8,7 @@
 #include <cstdint>
 
 #include "ash/public/cpp/desk_template.h"
-#include "ash/public/cpp/desks_templates_delegate.h"
+#include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -18,7 +18,7 @@
 #include "base/ranges/algorithm.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_restore_utils.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_provider.h"
 #include "ui/views/view.h"
@@ -107,7 +107,8 @@ void InsertIconIdentifierToIconInfoFromLaunchList(
         IsBrowserAppId(app_id) &&
         (!restore_data.second->app_type_browser.has_value() ||
          !restore_data.second->app_type_browser.value());
-    const int activation_index = restore_data.second->activation_index.value();
+    const int activation_index =
+        restore_data.second->activation_index.value_or(0);
     const int active_tab_index =
         restore_data.second->active_tab_index.value_or(-1);
     const std::u16string app_title = restore_data.second->title.value_or(u"");
@@ -195,7 +196,7 @@ void SavedDeskIconContainer::PopulateIconContainerFromWindows(
   // Iterate through `windows`, counting the occurrences of each unique icon and
   // storing their lowest activation index.
   std::map<std::string, IconInfo> icon_identifier_to_icon_info;
-  auto* delegate = Shell::Get()->desks_templates_delegate();
+  auto* delegate = Shell::Get()->saved_desk_delegate();
   for (size_t i = 0; i < windows.size(); ++i) {
     auto* window = windows[i];
 
@@ -320,7 +321,7 @@ void SavedDeskIconContainer::CreateIconViewsFromIconIdentifiers(
   if (icon_identifier_to_icon_info.empty())
     return;
 
-  auto* delegate = Shell::Get()->desks_templates_delegate();
+  auto* delegate = Shell::Get()->saved_desk_delegate();
   uncreated_app_count_ = 0;
   for (size_t i = 0; i < icon_identifier_to_icon_info.size(); i++) {
     const auto& [icon_identifier, icon_info] = icon_identifier_to_icon_info[i];

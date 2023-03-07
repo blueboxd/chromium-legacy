@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/compiler_specific.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
@@ -195,8 +195,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
                              gpu::SurfaceHandle surface_handle,
                              CreateGpuMemoryBufferCallback callback) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              const gpu::SyncToken& sync_token) override;
+                              int client_id) override;
   void CopyGpuMemoryBuffer(gfx::GpuMemoryBufferHandle buffer_handle,
                            base::UnsafeSharedMemoryRegion shared_memory,
                            CopyGpuMemoryBufferCallback callback) override;
@@ -292,7 +291,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
     return compositor_gpu_thread_.get();
   }
 
-  gpu::ImageFactory* gpu_image_factory();
   gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
     return gpu_memory_buffer_factory_.get();
   }

@@ -6,13 +6,12 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/scoped_observation.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
-#include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_later_side_panel_web_view.h"
@@ -25,88 +24,25 @@
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/view_class_properties.h"
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/ui/views/lens/lens_side_panel_controller.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
 SidePanelToolbarButton::SidePanelToolbarButton(Browser* browser)
     : ToolbarButton(base::BindRepeating(&SidePanelToolbarButton::ButtonPressed,
                                         base::Unretained(this))),
-      browser_(browser),
-      dot_indicator_(views::DotIndicator::Install(image())),
-      dot_bounds_updater_(
-          std::make_unique<DotBoundsUpdater>(dot_indicator_, image())),
-      reading_list_model_(
-          ReadingListModelFactory::GetForBrowserContext(browser_->profile())) {
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    pref_change_registrar_.Init(browser_->profile()->GetPrefs());
+      browser_(browser) {
+  pref_change_registrar_.Init(browser_->profile()->GetPrefs());
 
-    pref_change_registrar_.Add(
-        prefs::kSidePanelHorizontalAlignment,
-        base::BindRepeating(&SidePanelToolbarButton::UpdateToolbarButtonIcon,
-                            base::Unretained(this)));
-  }
+  pref_change_registrar_.Add(
+      prefs::kSidePanelHorizontalAlignment,
+      base::BindRepeating(&SidePanelToolbarButton::UpdateToolbarButtonIcon,
+                          base::Unretained(this)));
+
   UpdateToolbarButtonIcon();
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
   SetProperty(views::kElementIdentifierKey, kSidePanelButtonElementId);
-
-  if (reading_list_model_)
-    reading_list_model_scoped_observation_.Observe(reading_list_model_.get());
 }
 
 SidePanelToolbarButton::~SidePanelToolbarButton() = default;
-
-SidePanelToolbarButton::DotBoundsUpdater::DotBoundsUpdater(
-    views::DotIndicator* dot_indicator,
-    views::ImageView* image)
-    : dot_indicator_(dot_indicator), image_(image) {
-  observation_.Observe(image);
-}
-
-SidePanelToolbarButton::DotBoundsUpdater::~DotBoundsUpdater() = default;
-
-void SidePanelToolbarButton::DotBoundsUpdater::OnViewBoundsChanged(
-    View* observed_view) {
-  gfx::Rect dot_rect(8, 8);
-  if (ui::TouchUiController::Get()->touch_ui()) {
-    dot_rect = ScaleToEnclosingRect(
-        dot_rect, float{kDefaultTouchableIconSize} / kDefaultIconSize);
-  }
-  dot_rect.set_origin(image_->GetImageBounds().bottom_right() -
-                      dot_rect.bottom_right().OffsetFromOrigin());
-  dot_indicator_->SetBoundsRect(dot_rect);
-}
-
-void SidePanelToolbarButton::ReadingListModelLoaded(
-    const ReadingListModel* model) {
-  if (model->unseen_size() &&
-      !base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    dot_indicator_->Show();
-  }
-}
-
-void SidePanelToolbarButton::ReadingListModelBeingDeleted(
-    const ReadingListModel* model) {
-  DCHECK(model == reading_list_model_);
-  DCHECK(reading_list_model_scoped_observation_.IsObservingSource(
-      reading_list_model_.get()));
-  reading_list_model_scoped_observation_.Reset();
-}
-
-void SidePanelToolbarButton::ReadingListDidApplyChanges(
-    ReadingListModel* model) {
-  // Unified side panel does not use the blue dot.
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel))
-    return;
-
-  if (!side_panel_webview_ && reading_list_model_->unseen_size() > 0) {
-    dot_indicator_->Show();
-  } else {
-    dot_indicator_->Hide();
-  }
-}
 
 void SidePanelToolbarButton::ButtonPressed() {
   BrowserView* const browser_view =
@@ -133,9 +69,6 @@ void SidePanelToolbarButton::ButtonPressed() {
                                       base::Unretained(this)));
     side_panel_webview_ =
         browser_view->unified_side_panel()->AddChildView(std::move(webview));
-    if (reading_list_model_->loaded())
-      reading_list_model_->MarkAllSeen();
-    dot_indicator_->Hide();
   }
 }
 
@@ -147,7 +80,6 @@ void SidePanelToolbarButton::HideSidePanel() {
     browser_view->unified_side_panel()->RemoveChildViewT(
         side_panel_webview_.get());
     side_panel_webview_ = nullptr;
-    browser_view->RightAlignedSidePanelWasClosed();
   }
 }
 

@@ -99,11 +99,7 @@ TEST(SignedWebBundleIntegrityBlockTest, ValidIntegrityBlockWithOneSignature) {
   ASSERT_TRUE(integrity_block.has_value());
   EXPECT_EQ(integrity_block->size_in_bytes(), 42ul);
 
-  auto public_key_stack = integrity_block->GetPublicKeyStack();
-  EXPECT_EQ(public_key_stack.size(), 1ul);
-  EXPECT_EQ(public_key_stack[0].bytes(), kEd25519PublicKey1);
-
-  auto signature_stack = integrity_block->signature_stack();
+  const auto& signature_stack = integrity_block->signature_stack();
   EXPECT_EQ(signature_stack.size(), 1ul);
   EXPECT_EQ(signature_stack.entries()[0].public_key().bytes(),
             kEd25519PublicKey1);
@@ -133,12 +129,8 @@ TEST(SignedWebBundleIntegrityBlockTest, ValidIntegrityBlockWithTwoSignatures) {
       SignedWebBundleIntegrityBlock::Create(std::move(raw_integrity_block));
   ASSERT_TRUE(integrity_block.has_value());
   EXPECT_EQ(integrity_block->size_in_bytes(), 42ul);
-  auto public_key_stack = integrity_block->GetPublicKeyStack();
-  EXPECT_EQ(public_key_stack.size(), 2ul);
-  EXPECT_EQ(public_key_stack[0].bytes(), kEd25519PublicKey1);
-  EXPECT_EQ(public_key_stack[1].bytes(), kEd25519PublicKey2);
 
-  auto signature_stack = integrity_block->signature_stack();
+  const auto& signature_stack = integrity_block->signature_stack();
   EXPECT_EQ(signature_stack.size(), 2ul);
   EXPECT_EQ(signature_stack.entries()[0].public_key().bytes(),
             kEd25519PublicKey1);
@@ -156,6 +148,57 @@ TEST(SignedWebBundleIntegrityBlockTest, ValidIntegrityBlockWithTwoSignatures) {
               ElementsAreArray(kCompleteEntryCbor2));
   EXPECT_THAT(signature_stack.entries()[1].attributes_cbor(),
               ElementsAreArray(kAttributesCbor2));
+}
+
+TEST(SignedWebBundleIntegrityBlockTest, Comparators) {
+  auto entry1 = MakeSignatureStackEntry(kEd25519PublicKey1, kEd25519Signature1,
+                                        kCompleteEntryCbor1, kAttributesCbor1);
+  auto entry2 = MakeSignatureStackEntry(kEd25519PublicKey2, kEd25519Signature2,
+                                        kCompleteEntryCbor2, kAttributesCbor2);
+
+  std::vector<mojom::BundleIntegrityBlockSignatureStackEntryPtr>
+      raw_signature_stack1;
+  raw_signature_stack1.push_back(entry1->Clone());
+  auto raw_integrity_block1 = mojom::BundleIntegrityBlock::New();
+  raw_integrity_block1->size = 42;
+  raw_integrity_block1->signature_stack = std::move(raw_signature_stack1);
+
+  std::vector<mojom::BundleIntegrityBlockSignatureStackEntryPtr>
+      raw_signature_stack2;
+  raw_signature_stack2.push_back(entry2->Clone());
+  auto raw_integrity_block2 = mojom::BundleIntegrityBlock::New();
+  raw_integrity_block2->size = 42;
+  raw_integrity_block2->signature_stack = std::move(raw_signature_stack2);
+
+  std::vector<mojom::BundleIntegrityBlockSignatureStackEntryPtr>
+      raw_signature_stack3;
+  raw_signature_stack3.push_back(entry1->Clone());
+  auto raw_integrity_block3 = mojom::BundleIntegrityBlock::New();
+  raw_integrity_block3->size = 9999999;
+  raw_integrity_block3->signature_stack = std::move(raw_signature_stack3);
+
+  SignedWebBundleIntegrityBlock block1a =
+      *SignedWebBundleIntegrityBlock::Create(raw_integrity_block1->Clone());
+  SignedWebBundleIntegrityBlock block1b =
+      *SignedWebBundleIntegrityBlock::Create(raw_integrity_block1->Clone());
+
+  SignedWebBundleIntegrityBlock block2 =
+      *SignedWebBundleIntegrityBlock::Create(raw_integrity_block2->Clone());
+
+  SignedWebBundleIntegrityBlock block3 =
+      *SignedWebBundleIntegrityBlock::Create(raw_integrity_block3->Clone());
+
+  EXPECT_TRUE(block1a == block1a);
+  EXPECT_TRUE(block1a == block1b);
+  EXPECT_FALSE(block1a == block2);
+  EXPECT_FALSE(block2 == block3);
+  EXPECT_FALSE(block1a == block3);
+
+  EXPECT_FALSE(block1a != block1a);
+  EXPECT_FALSE(block1a != block1b);
+  EXPECT_TRUE(block1a != block2);
+  EXPECT_TRUE(block2 != block3);
+  EXPECT_TRUE(block1a != block3);
 }
 
 }  // namespace web_package

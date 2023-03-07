@@ -21,16 +21,15 @@
 #include "ash/components/arc/session/arc_session_runner.h"
 #include "ash/components/arc/session/serial_number_util.h"
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
@@ -66,7 +65,7 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
-#include "components/exo/wm_helper_chromeos.h"
+#include "components/exo/wm_helper.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/session_manager/core/session_manager.h"
@@ -101,7 +100,7 @@ base::TimeDelta GetArcSignInTimeout() {
   constexpr base::TimeDelta kArcSignInTimeout = base::Minutes(5);
   constexpr base::TimeDelta kArcVmSignInTimeoutForVM = base::Minutes(20);
 
-  if (chromeos::system::StatisticsProvider::GetInstance()->IsRunningOnVm() &&
+  if (ash::system::StatisticsProvider::GetInstance()->IsRunningOnVm() &&
       arc::IsArcVmEnabled()) {
     return kArcVmSignInTimeoutForVM;
   } else {
@@ -940,14 +939,12 @@ void ArcSessionManager::OnVmStarted(
   if (vm_signal.name() == kArcVmName) {
     vm_info_ = vm_signal.vm_info();
 
-    if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData)) {
-      arcvm_mount_provider_id_ =
-          absl::optional<guest_os::GuestOsMountProviderRegistry::Id>(
-              guest_os::GuestOsService::GetForProfile(profile())
-                  ->MountProviderRegistry()
-                  ->Register(std::make_unique<ArcMountProvider>(
-                      profile(), vm_info_->cid())));
-    }
+    arcvm_mount_provider_id_ =
+        absl::optional<guest_os::GuestOsMountProviderRegistry::Id>(
+            guest_os::GuestOsService::GetForProfile(profile())
+                ->MountProviderRegistry()
+                ->Register(std::make_unique<ArcMountProvider>(
+                    profile(), vm_info_->cid())));
   }
 }
 

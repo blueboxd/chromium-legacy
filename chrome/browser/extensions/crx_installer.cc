@@ -8,10 +8,10 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -1118,15 +1118,6 @@ void CrxInstaller::NotifyCrxInstallComplete(
         break;
     }
   }
-
-  // Some users (such as the download shelf) need to know when a
-  // CRXInstaller is done.  Listening for the EXTENSION_* events
-  // is problematic because they don't know anything about the
-  // extension before it is unpacked, so they cannot filter based
-  // on the extension.
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_CRX_INSTALLER_DONE, content::Source<CrxInstaller>(this),
-      content::Details<const Extension>(success ? extension() : nullptr));
 
   InstallTrackerFactory::GetForBrowserContext(profile())
       ->OnFinishCrxInstall(success ? extension()->id() : expected_id_, success);

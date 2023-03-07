@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
@@ -37,7 +38,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -48,7 +48,6 @@ class LayoutSVGRoot;
 class LocalFrame;
 class Node;
 class Page;
-class PaintController;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 class SVGSVGElement;
@@ -189,8 +188,11 @@ class CORE_EXPORT SVGImage final : public Image {
   void PopulatePaintRecordForCurrentFrameForContainer(const DrawInfo&,
                                                       PaintImageBuilder&);
 
-  // Paints the current frame. Returns new PaintRecord.
-  sk_sp<PaintRecord> PaintRecordForCurrentFrame(const DrawInfo&);
+  // Paints the current frame. Returns new PaintRecord. |cull_rect| is an
+  // optional additional cull rect.
+  absl::optional<PaintRecord> PaintRecordForCurrentFrame(
+      const DrawInfo&,
+      const gfx::Rect* cull_rect);
 
   void DrawInternal(const DrawInfo&,
                     cc::PaintCanvas*,
@@ -224,7 +226,6 @@ class CORE_EXPORT SVGImage final : public Image {
 
   Persistent<SVGImageChromeClient> chrome_client_;
   Persistent<Page> page_;
-  std::unique_ptr<PaintController> paint_controller_;
   Persistent<AgentGroupScheduler> agent_group_scheduler_;
 
   // When an SVG image has no intrinsic size, the size depends on the default

@@ -53,6 +53,61 @@ class StyleScope;
 // in the class is about invalidation sets, and they are the primary
 // “features” being extracted from the selector now, the file does not
 // live in css/invalidation/. Perhaps this should be changed.
+//
+// In addition to complete invalidation (where we just throw up our
+// hands and invalidate everything) and :has() (which is described in
+// detail below), we have fundamentally four types of invalidation.
+// All will be described for a class selector, but apply equally to
+// id etc.:
+//
+//   - Self-invalidation: When an element gets or loses class .c,
+//     that element needs to be invalidated (.c exists as a subject in
+//     some selector). We represent this by a bit in .c's invalidation
+//     set (or by inserting the class name in a Bloom filter; see
+//     class_invalidation_sets_).
+//
+//   - Descendant invalidation: When an element gets or loses class .c,
+//     all of its children with class .d need to be invalidated
+//     (a selector of the form .c .d or .c > .d exists). We represent
+//     this by storing .d in .c's descendant invalidation set.
+//
+//   - Sibling invalidation: When an element gets or loses class .c,
+//     all of its _siblings_ with class .d need to be invalidated
+//     (a selector of the form .c ~ .d or .c + .d exists).
+//     We represent this by storing .d in c's sibling invalidation set.
+//
+//   - nth-child invalidation: Described immediately below.
+//
+// nth-child invalidation deals with peculiarities for :nth-child()
+// and related selectors (such as :only-of-type). We have a couple
+// of distinct strategies for dealing with them:
+//
+//   - When we add or insert a node in the DOM tree where any child
+//     of the parent has matched such a selector, we forcibly schedule
+//     the (global) NthSiblingInvalidationSet. In other words, this
+//     is hardly related to the normal invalidation mechanism at all.
+//
+//   - Finally, for :nth_child(... of :has()), we get a signal when
+//     a node is affected by :has() subject invalidation
+//     (in StyleEngine::InvalidateElementAffectedByHas()), and can
+//     forcibly schedule the NthSiblingInvalidationSet, much like
+//     the previous point.
+//
+//   - When we have :nth-child(... of S) as a subject (ie., not just
+//     pure :nth-child(), but anything with a selector), we set the
+//     invalidates_nth_ bit on all invalidation sets for S. This means
+//     that whenever we schedule invalidation sets for anything in S,
+//     and any child of the parent has matched any :nth-child() selector,
+//     we'll schedule the NthSiblingInvalidationSet.
+//
+//   - For all ancestors, we go through them recursively to find
+//     S within :nth-child(), and set their invalidates_nth_ similarly.
+//     This is conceptually the same thing as the previous point,
+//     but since we already handle subjects and ancestors differently,
+//     it was convenient with some mild code duplication here.
+//
+//   - When we have sibling selectors against :nth-child, special
+//     provisions apply; see comments NthSiblingInvalidationSet.
 class CORE_EXPORT RuleFeatureSet {
   DISALLOW_NEW();
 
@@ -217,8 +272,7 @@ class CORE_EXPORT RuleFeatureSet {
 
   // Inserts the given value as a key for self-invalidation.
   // Return true if the insertion was successful. (It may fail because
-  // e.g. the experiment is not active, or because there is no Bloom
-  // filter yet.)
+  // there is no Bloom filter yet.)
   bool InsertIntoSelfInvalidationBloomFilter(const AtomicString& value,
                                              int salt);
   const int kClassSalt = 13;
@@ -233,8 +287,7 @@ class CORE_EXPORT RuleFeatureSet {
   using PseudoTypeInvalidationSetMap =
       HashMap<CSSSelector::PseudoType,
               scoped_refptr<InvalidationSet>,
-              WTF::IntHash<unsigned>,
-              WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+              IntWithZeroKeyHashTraits<unsigned>>;
   using ValuesInHasArgument = HashSet<AtomicString>;
   using PseudosInHasArgument = HashSet<CSSSelector::PseudoType>;
 
@@ -285,27 +338,31 @@ class CORE_EXPORT RuleFeatureSet {
     bool HasIdClassOrAttribute() const;
 
     void NarrowToClass(const AtomicString& class_name) {
-      if (Size() == 1 && (!ids.empty() || !classes.empty()))
+      if (Size() == 1 && (!ids.empty() || !classes.empty())) {
         return;
+      }
       ClearFeatures();
       classes.push_back(class_name);
     }
     void NarrowToAttribute(const AtomicString& attribute) {
       if (Size() == 1 &&
-          (!ids.empty() || !classes.empty() || !attributes.empty()))
+          (!ids.empty() || !classes.empty() || !attributes.empty())) {
         return;
+      }
       ClearFeatures();
       attributes.push_back(attribute);
     }
     void NarrowToId(const AtomicString& id) {
-      if (Size() == 1 && !ids.empty())
+      if (Size() == 1 && !ids.empty()) {
         return;
+      }
       ClearFeatures();
       ids.push_back(id);
     }
     void NarrowToTag(const AtomicString& tag_name) {
-      if (Size() == 1)
+      if (Size() == 1) {
         return;
+      }
       ClearFeatures();
       tag_names.push_back(tag_name);
     }
@@ -384,8 +441,9 @@ class CORE_EXPORT RuleFeatureSet {
           original_value_(features ? features->max_direct_adjacent_selectors
                                    : 0) {}
     ~AutoRestoreMaxDirectAdjacentSelectors() {
-      if (features_)
+      if (features_) {
         features_->max_direct_adjacent_selectors = original_value_;
+      }
     }
 
    private:
@@ -426,8 +484,9 @@ class CORE_EXPORT RuleFeatureSet {
         : features_(features),
           original_value_(features ? features->descendant_features_depth : 0) {}
     ~AutoRestoreDescendantFeaturesDepth() {
-      if (features_)
+      if (features_) {
         features_->descendant_features_depth = original_value_;
+      }
     }
 
    private:
@@ -522,6 +581,7 @@ class CORE_EXPORT RuleFeatureSet {
   // For top-level complex selectors, the PseudoType is kPseudoUnknown.
   FeatureInvalidationType UpdateInvalidationSetsForComplex(
       const CSSSelector&,
+      bool in_nth_child,
       const StyleScope*,
       InvalidationSetFeatures&,
       PositionType,
@@ -534,8 +594,10 @@ class CORE_EXPORT RuleFeatureSet {
       const CSSSelector&,
       InvalidationSetFeatures&,
       PositionType,
-      bool for_logical_combination_in_has);
+      bool for_logical_combination_in_has,
+      bool in_nth_child);
   void ExtractInvalidationSetFeaturesFromSelectorList(const CSSSelector&,
+                                                      bool in_nth_child,
                                                       InvalidationSetFeatures&,
                                                       PositionType);
   void UpdateFeaturesFromCombinator(
@@ -544,7 +606,8 @@ class CORE_EXPORT RuleFeatureSet {
       InvalidationSetFeatures& last_compound_in_adjacent_chain_features,
       InvalidationSetFeatures*& sibling_features,
       InvalidationSetFeatures& descendant_features,
-      bool for_logical_combination_in_has);
+      bool for_logical_combination_in_has,
+      bool in_nth_child);
   void UpdateFeaturesFromStyleScope(
       const StyleScope&,
       InvalidationSetFeatures& descendant_features);
@@ -553,19 +616,23 @@ class CORE_EXPORT RuleFeatureSet {
                                     const InvalidationSetFeatures&);
   void AddFeaturesToInvalidationSets(
       const CSSSelector&,
+      bool in_nth_child,
       InvalidationSetFeatures* sibling_features,
       InvalidationSetFeatures& descendant_features);
   const CSSSelector* AddFeaturesToInvalidationSetsForCompoundSelector(
       const CSSSelector&,
+      bool in_nth_child,
       InvalidationSetFeatures* sibling_features,
       InvalidationSetFeatures& descendant_features);
   void AddFeaturesToInvalidationSetsForSimpleSelector(
       const CSSSelector& simple_selector,
       const CSSSelector& compound,
+      bool in_nth_child,
       InvalidationSetFeatures* sibling_features,
       InvalidationSetFeatures& descendant_features);
   void AddFeaturesToInvalidationSetsForSelectorList(
       const CSSSelector&,
+      bool in_nth_child,
       InvalidationSetFeatures* sibling_features,
       InvalidationSetFeatures& descendant_features);
   void AddFeaturesToInvalidationSetsForStyleScope(
@@ -693,6 +760,13 @@ class CORE_EXPORT RuleFeatureSet {
       CSSSelector::RelationType previous_combinator,
       AddFeaturesMethodForLogicalCombinationInHas);
 
+  // Go recursively through everything in the given selector
+  // (which is typically an ancestor; see the class comment)
+  // and mark the invalidation sets of any simple selectors within it
+  // for Nth-child invalidation.
+  void MarkInvalidationSetsWithinNthChild(const CSSSelector& selector,
+                                          bool in_nth_child);
+
   // Make sure that the pointer in “invalidation_set” has a single
   // reference that can be modified safely. (This is done through
   // copy-on-write, if needed, so that it can be modified without
@@ -739,8 +813,6 @@ class CORE_EXPORT RuleFeatureSet {
 
   FeatureMetadata metadata_;
 
-  // If the InvalidationSetClassBloomFilter experiment is active:
-  //
   // Class and ID invalidation have a special rule that is different from the
   // other sets; we do not store self-invalidation entries directly, but as a
   // Bloom filter (which can have false positives) keyed on the class/ID name's
@@ -765,10 +837,10 @@ class CORE_EXPORT RuleFeatureSet {
   InvalidationSetMap class_invalidation_sets_;
   std::unique_ptr<WTF::BloomFilter<14>> names_with_self_invalidation_;
 
-  // We don't create the Bloom filter right away; the experiment might be off,
-  // or there may be so few of them that we don't really bother. This number
-  // counts the times we've inserted something that could go in there; once it
-  // reaches 50 (for this style sheet), we create the Bloom filter and start
+  // We don't create the Bloom filter right away; there may be so few of
+  // them that we don't really bother. This number counts the times we've
+  // inserted something that could go in there; once it reaches 50
+  // (for this style sheet), we create the Bloom filter and start
   // inserting there instead. Note that we don't _remove_ any of the sets,
   // though; they will remain. This also means that when merging the
   // RuleFeatureSets into the global one, we can go over 50 such entries

@@ -83,7 +83,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "third_party/blink/renderer/platform/wtf/gc_plugin_ignore.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
@@ -264,6 +264,7 @@ enum NodeListInvalidationType : int {
   kInvalidateForFormControls,
   kInvalidateOnHRefAttrChange,
   kInvalidateOnAnyAttrChange,
+  kInvalidateOnPopoverInvokerAttrChange,
 };
 const int kNumNodeListInvalidationTypes = kInvalidateOnAnyAttrChange + 1;
 
@@ -544,6 +545,7 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLCollection* WindowNamedItems(const AtomicString& name);
   DocumentNameCollection* DocumentNamedItems(const AtomicString& name);
   HTMLCollection* DocumentAllNamedItems(const AtomicString& name);
+  HTMLCollection* PopoverInvokers();
 
   // The unassociated listed elements are listed elements that are not
   // associated to a <form> element.
@@ -1211,11 +1213,6 @@ class CORE_EXPORT Document : public ContainerNode,
                                 const String& issuer,
                                 const String& type,
                                 ExceptionState&);
-  // Being renamed to hasPrivateToken, will remove after all users have
-  // changed to new name.
-  ScriptPromise hasTrustToken(ScriptState* script_state,
-                              const String& issuer,
-                              ExceptionState&);
 
   // Sends a query via Mojo to ask whether the user has a redemption record.
   // This can reject on permissions errors (e.g. associating |issuer| with the
@@ -2486,6 +2483,10 @@ class CORE_EXPORT Document : public ContainerNode,
   using EventNodePathCacheKeyList = HeapLinkedHashSet<Member<Node>>;
   EventNodePathCache event_node_path_cache_;
   EventNodePathCacheKeyList event_node_path_cache_key_list_;
+  // If we only want to cache one event path, we can avoid using the heap hash
+  // map and hash set.
+  Member<Node> latest_cached_event_node_;
+  Member<EventPath::NodePath> latest_cached_event_node_path_;
 
 #if DCHECK_IS_ON()
   unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;

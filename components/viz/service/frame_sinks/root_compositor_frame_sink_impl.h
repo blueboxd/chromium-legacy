@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -76,6 +76,9 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
   void SetDisplayColorMatrix(const gfx::Transform& color_matrix) override;
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& display_color_spaces) override;
+#if BUILDFLAG(IS_MAC)
+  void SetVSyncDisplayID(int64_t display_id) override;
+#endif
   void SetOutputIsSecure(bool secure) override;
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval) override;

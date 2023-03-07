@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -65,8 +65,9 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<DeviceLogMessageHandler>());
 
-  content::WebUIDataSource* html =
-      content::WebUIDataSource::Create(chrome::kChromeUIDeviceLogHost);
+  content::WebUIDataSource* html = content::WebUIDataSource::CreateAndAdd(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      chrome::kChromeUIDeviceLogHost);
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"titleText", IDS_DEVICE_LOG_TITLE},
@@ -93,6 +94,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
       {"logTypeSerialText", IDS_DEVICE_LOG_TYPE_SERIAL},
       {"logTypeCameraText", IDS_DEVICE_LOG_TYPE_CAMERA},
       {"logTypeGeolocationText", IDS_DEVICE_LOG_TYPE_GEOLOCATION},
+      {"logTypeExtensionsText", IDS_DEVICE_LOG_TYPE_EXTENSIONS},
       {"logEntryFormat", IDS_DEVICE_LOG_ENTRY},
   };
   html->AddLocalizedStrings(kStrings);
@@ -101,9 +103,6 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   html->AddResourcePath("device_log_ui.css", IDR_DEVICE_LOG_UI_CSS);
   html->AddResourcePath("device_log_ui.js", IDR_DEVICE_LOG_UI_JS);
   html->SetDefaultResource(IDR_DEVICE_LOG_UI_HTML);
-
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                html);
 }
 
 DeviceLogUI::~DeviceLogUI() {

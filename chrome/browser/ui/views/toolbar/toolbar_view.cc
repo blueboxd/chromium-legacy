@@ -7,10 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -122,6 +122,9 @@
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
+#endif
+
+#if !BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/dialogs/outdated_upgrade_bubble.h"
 #endif
 
@@ -296,7 +299,7 @@ void ToolbarView::Init() {
   // The side search button (if enabled) should sit between the location bar and
   // the other navigation buttons.
   if (browser_view_->side_search_controller() &&
-      !side_search::IsDSESupportEnabled(browser_->profile())) {
+      !IsSideSearchEnabled(browser_->profile())) {
     left_side_panel_button_ = AddChildView(
         browser_view_->side_search_controller()->CreateToolbarButton());
   }
@@ -925,7 +928,11 @@ void ToolbarView::ShowCriticalNotification() {
 }
 
 void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
+  // The outdated upgrade notification is not relevant on ChromeOS, for either
+  // ash-chrome or lacros-chrome, as browser upgrades are managed via a
+  // different process to the rest of the desktop platforms (see
+  // crbug.com/1406873).
   // TODO(pbos): Can this move outside ToolbarView completely?
   ShowOutdatedUpgradeBubble(browser_, auto_update_enabled);
 #endif

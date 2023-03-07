@@ -24,8 +24,8 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
-using chrome_test_util::TappableBookmarkNodeWithLabel;
 using chrome_test_util::MoveButton;
+using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Bookmark accessibility tests for Chrome.
 @interface BookmarksAccessibilityTestCase : WebHttpServerChromeTestCase
@@ -184,7 +184,7 @@ using chrome_test_util::MoveButton;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single URL.
@@ -213,7 +213,7 @@ using chrome_test_util::MoveButton;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];

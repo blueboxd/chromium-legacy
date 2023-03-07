@@ -7,11 +7,11 @@
 #include <iterator>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -1603,7 +1603,7 @@ void RemoteSuggestionsProviderImpl::StoreCategoriesToPrefs() {
                    const std::pair<Category, const CategoryContent*>& right) {
               return category_ranker_->Compare(left.first, right.first);
             });
-  // Convert the relevant info into a base::ListValue for storage.
+  // Convert the relevant info into a base::Value::List for storage.
   base::Value::List list;
   for (const auto& entry : to_store) {
     const Category& category = entry.first;

@@ -23,13 +23,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
+#include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_localalloc.h"
+#include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "chrome/updater/util/unittest_util_win.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/test/test_strings.h"
@@ -116,7 +119,9 @@ TEST(WinUtil, ShellExecuteAndWait) {
   EXPECT_EQ(result.error(), HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
 
   result = ShellExecuteAndWait(
-      GetTestProcessCommandLine(GetTestScope()).GetProgram(), {}, {});
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName())
+          .GetProgram(),
+      {}, {});
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result.value(), DWORD{0});
 }
@@ -128,7 +133,7 @@ TEST(WinUtil, RunElevated) {
     return;
 
   const base::CommandLine test_process_cmd_line =
-      GetTestProcessCommandLine(GetTestScope());
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
   HResultOr<DWORD> result =
       RunElevated(test_process_cmd_line.GetProgram(),
                   test_process_cmd_line.GetArgumentsString());
@@ -171,13 +176,17 @@ TEST(WinUtil, RunDeElevated_Exe) {
   ASSERT_NE(event.handle(), nullptr);
 
   base::CommandLine test_process_cmd_line =
-      GetTestProcessCommandLine(GetTestScope());
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
   test_process_cmd_line.AppendSwitchNative(kTestEventToSignalIfMediumIntegrity,
                                            event_name);
   EXPECT_HRESULT_SUCCEEDED(
       RunDeElevated(test_process_cmd_line.GetProgram().value(),
                     test_process_cmd_line.GetArgumentsString()));
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
+
+  EXPECT_TRUE(test::WaitFor(base::BindLambdaForTesting([&]() {
+    return test::FindProcesses(kTestProcessExecutableName).empty();
+  })));
 }
 
 TEST(WinUtil, GetOSVersion) {
@@ -345,62 +354,6 @@ TEST(WinUtil, StopGoogleUpdateProcesses) {
   // TODO(crbug.com/1290496) perhaps some comprehensive tests for
   // `StopGoogleUpdateProcesses`?
   EXPECT_TRUE(StopGoogleUpdateProcesses(GetTestScope()));
-}
-
-TEST(WinUtil, QuoteForCommandLineToArgvW) {
-  const struct {
-    const wchar_t* input_arg;
-    const wchar_t* expected_output_arg;
-  } test_cases[] = {
-      {L"", L"\"\""},
-      {L"abc = xyz", L"\"abc = xyz\""},
-      {L"C:\\AppData\\Local\\setup.exe", L"C:\\AppData\\Local\\setup.exe"},
-      {L"C:\\Program Files\\setup.exe", L"\"C:\\Program Files\\setup.exe\""},
-      {L"\"C:\\Program Files\\setup.exe\"",
-       L"\"\\\"C:\\Program Files\\setup.exe\\\"\""},
-  };
-
-  for (const auto& test_case : test_cases) {
-    EXPECT_EQ(QuoteForCommandLineToArgvW(test_case.input_arg),
-              test_case.expected_output_arg);
-  }
-}
-
-TEST(WinUtil, QuoteForCommandLineToArgvW_After_CommandLineToArgvW) {
-  const struct {
-    std::vector<std::wstring> input_args;
-    const wchar_t* expected_output;
-  } test_cases[] = {
-      {{L"abc=1"}, L"abc=1"},
-      {{L"abc=1", L"xyz=2"}, L"abc=1 xyz=2"},
-      {{L"abc=1", L"xyz=2", L"q"}, L"abc=1 xyz=2 q"},
-      {{L" abc=1  ", L"  xyz=2", L"q "}, L"abc=1 xyz=2 q"},
-      {{L"\"abc = 1\""}, L"\"abc = 1\""},
-      {{L"abc\" = \"1", L"xyz=2"}, L"\"abc = 1\" xyz=2"},
-      {{L"\"abc = 1\""}, L"\"abc = 1\""},
-      {{L"abc\" = \"1"}, L"\"abc = 1\""},
-      {{L"\\\\", L"\\\\\\\""}, L"\\\\ \\\\\\\""},
-  };
-
-  for (const auto& test_case : test_cases) {
-    std::wstring input_command_line =
-        base::StrCat({L"c:\\test\\process.exe ",
-                      base::JoinString(test_case.input_args, L" ")});
-    int num_args = 0;
-    base::win::ScopedLocalAllocTyped<wchar_t*> argv(
-        ::CommandLineToArgvW(&input_command_line[0], &num_args));
-    ASSERT_EQ(num_args - 1U, test_case.input_args.size());
-
-    std::wstring recreated_command_line;
-    for (int i = 1; i < num_args; ++i) {
-      recreated_command_line.append(QuoteForCommandLineToArgvW(argv.get()[i]));
-
-      if (i + 1 < num_args)
-        recreated_command_line.push_back(L' ');
-    }
-
-    EXPECT_EQ(recreated_command_line, test_case.expected_output);
-  }
 }
 
 }  // namespace updater

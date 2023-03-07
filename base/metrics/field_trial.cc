@@ -202,7 +202,13 @@ bool DeserializeGUIDFromStringPieces(StringPiece first,
   if (!StringToUint64(first, &high) || !StringToUint64(second, &low))
     return false;
 
-  *guid = UnguessableToken::Deserialize(high, low);
+  absl::optional<UnguessableToken> token =
+      UnguessableToken::Deserialize2(high, low);
+  if (!token.has_value()) {
+    return false;
+  }
+
+  *guid = token.value();
   return true;
 }
 #endif  // !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
@@ -512,22 +518,6 @@ bool FieldTrialList::IsTrialActive(StringPiece trial_name) {
 }
 
 // static
-void FieldTrialList::StatesToString(std::string* output) {
-  FieldTrial::ActiveGroups active_groups;
-  GetActiveFieldTrialGroups(&active_groups);
-  for (const auto& active_group : active_groups) {
-    DCHECK_EQ(std::string::npos,
-              active_group.trial_name.find(kPersistentStringSeparator));
-    DCHECK_EQ(std::string::npos,
-              active_group.group_name.find(kPersistentStringSeparator));
-    output->append(active_group.trial_name);
-    output->append(1, kPersistentStringSeparator);
-    output->append(active_group.group_name);
-    output->append(1, kPersistentStringSeparator);
-  }
-}
-
-// static
 std::vector<FieldTrial::State> FieldTrialList::GetAllFieldTrialStates(
     PassKey<test::ScopedFeatureList>) {
   std::vector<FieldTrial::State> states;
@@ -746,7 +736,6 @@ void FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
     CommandLine* command_line,
     LaunchOptions* launch_options) {
   DCHECK(command_line);
-  DCHECK(launch_options);
 
   // Use shared memory to communicate field trial state to child processes.
   // The browser is the only process that has write access to the shared memory.
@@ -1055,8 +1044,6 @@ void FieldTrialList::RestoreInstanceForTesting(FieldTrialList* instance) {
 std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
     const ReadOnlySharedMemoryRegion& shm,
     LaunchOptions* launch_options) {
-  DCHECK(launch_options);
-
   std::stringstream ss;
 #if BUILDFLAG(IS_WIN)
   // Elevated process might not need this, although it is harmless.

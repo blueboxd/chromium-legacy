@@ -21,8 +21,6 @@ after discussions on the right group.
       <annotation id="query_tiles_fetcher"/>
       <annotation id="query_tiles_image_loader"/>
       <annotation id="cached_image_fetcher"/>
-      <annotation id="chime_sdk"/>
-      <annotation id="chrome_android_hats"/>
       <annotation id="chrome_variations_android"/>
       <annotation id="customtabs_parallel_request"/>
       <annotation id="download_bitmap"/>
@@ -262,6 +260,7 @@ after discussions on the right group.
       <annotation id="nearby_share_contacts"/>
       <annotation id="nearby_share_list_public_certificates"/>
       <annotation id="managed_acccount_signin_restrictions_secure_connect_chromeos"/>
+      <annotation id="fenced_frame_reporting_beacon"/>
       <annotation id="ntp_custom_background"/>
       <annotation id="iwa_policy_update_manifest"/>
       <annotation id="iwa_policy_signed_web_bundle"/>
@@ -270,9 +269,24 @@ after discussions on the right group.
       <annotation id="password_sync_token_fetcher"/>
       <annotation id="nearby_webrtc_connection"/>
       <annotation id="projector_xhr_loader"/>
+      <annotation id="cloud_speech_recognition"/>
       <annotation id="bruschetta_installer_download"/>
       <annotation id="quick_start_session_auth_requester"/>
       <annotation id="network_diagnostics_routines"/>
+      <annotation id="trial_group_lookup"/>
+      <annotation id="wallpaper_drivefs_delegate"/>
+      <annotation id="chromeos_emoji_picker_categories_fetcher"/>
+      <annotation id="chromeos_emoji_picker_featured_fetcher"/>
+      <annotation id="chromeos_emoji_picker_search_fetcher"/>
+      <annotation id="app_preload_service_web_installer"/>
+      <annotation id="network_diagnostics_stun"/>
+      <annotation id="network_diagnostics_tls"/>
+      <annotation id="chromeos_emoji_picker_posts_fetcher"/>
+      <annotation id="deduplication_service"/>
+      <annotation id="webapk_minter_install_request"/>
+      <annotation id="network_portal_detector"/>
+      <annotation id="android_feedback_connectivity_checker"/>
+      <annotation id="printer_config_fetch"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -331,6 +345,7 @@ after discussions on the right group.
       <annotation id="safe_browsing_binary_upload_app"/>
       <annotation id="safe_browsing_binary_upload_connector"/>
       <annotation id="safe_browsing_realtime_url_lookup"/>
+      <annotation id="safe_browsing_hashprefix_realtime_lookup"/>
       <annotation id="sct_auditing"/>
       <annotation id="sct_auditing_hashdance"/>
       <annotation id="unwanted_software_report"/>
@@ -479,6 +494,7 @@ after discussions on the right group.
       <annotation id="autofill_image_fetcher_card_art_image"/>
       <annotation id="autofill_query"/>
       <annotation id="autofill_upload"/>
+      <annotation id="gstatic_fast_checkout_funnels"/>
       <annotation id="load_autofill_gstatic_data"/>
     </sender>
     <sender name="Personalization">

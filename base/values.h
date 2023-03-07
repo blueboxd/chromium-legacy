@@ -33,10 +33,6 @@
 
 namespace base {
 
-class DictAdapterForMigration;
-class DictionaryValue;
-class ListValue;
-
 // The `Value` class is a variant type can hold one of the following types:
 // - null
 // - bool
@@ -177,26 +173,6 @@ class ListValue;
 //     return base::Value(std::move(dict));
 //   }
 //
-// To avoid losing type information with the new variant-based design, migration
-// off the deprecated types should use more specific subtypes where possible:
-//
-// OLD WAY:
-//
-//   void AlwaysTakesList(std::unique_ptr<base::ListValue> list);
-//   void AlwaysTakesDict(std::unique_ptr<base::DictionaryValue> dict);
-//
-// DEPRECATED (PREVIOUS) WAY:
-//
-//   void AlwaysTakesList(std::vector<base::Value> list);
-//   void AlwaysTakesListAlterantive3(base::Value::ListStorage);
-//   void AlwaysTakesDict(base::flat_map<std::string, base::Value> dict);
-//   void AlwaysTakesDictAlternative(base::Value::DictStorage);
-//
-// NEW WAY:
-//
-//   void AlwaysTakesList(base::Value::List list);
-//   void AlwaysTakesDict(base::Value::Dict dict);
-//
 // Migrating code may require conversions on API boundaries. If something seems
 // awkward/inefficient, please reach out to #code-health-rotation on Slack for
 // consultation: it is entirely possible that certain classes of APIs may be
@@ -229,14 +205,8 @@ class BASE_EXPORT GSL_OWNER Value {
   };
 
   // Adaptors for converting from the old way to the new way and vice versa.
-  // Note: `DictionaryValue` and `ListValue` have been deprecated.
-  // `AsDictionaryValue()` and `AsListValue()` perform a `static_cast` to these
-  // types (as opposed to the preferred `GetDict()` and `GetList()` APIs - which
-  // use a variant lookup `absl::get<>()`).
   static Value FromUniquePtrValue(std::unique_ptr<Value> val);
   static std::unique_ptr<Value> ToUniquePtrValue(Value val);
-  static const DictionaryValue& AsDictionaryValue(const Value& val);
-  static const ListValue& AsListValue(const Value& val);
 
   Value() noexcept;
 
@@ -670,6 +640,11 @@ class BASE_EXPORT GSL_OWNER Value {
       return base::EraseIf(storage_, predicate);
     }
 
+    // Estimates dynamic memory usage. Requires tracing support
+    // (enable_base_tracing gn flag), otherwise always returns 0. See
+    // base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
+
     // Serializes to a string for logging and debug purposes.
     std::string DebugString() const;
 
@@ -679,6 +654,8 @@ class BASE_EXPORT GSL_OWNER Value {
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
    private:
+    using ListStorage = std::vector<Value>;
+
     BASE_EXPORT friend bool operator==(const List& lhs, const List& rhs);
     BASE_EXPORT friend bool operator!=(const List& lhs, const List& rhs);
     BASE_EXPORT friend bool operator<(const List& lhs, const List& rhs);
@@ -723,6 +700,7 @@ class BASE_EXPORT GSL_OWNER Value {
   // a pointer to the element. Otherwise it returns nullptr.
   //
   // DEPRECATED: prefer `Value::Dict::Find()`.
+  // TODO(https://crbug.com/1406815): Remove this API.
   Value* FindKey(StringPiece key);
   const Value* FindKey(StringPiece key) const;
 
@@ -971,15 +949,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // DEPRECATED: prefer `Value::Dict::Merge()`.
   void MergeDictionary(const Value* dictionary);
 
-  // These methods allow the convenient retrieval of the contents of the Value.
-  // If the current object can be converted into the given type, the value is
-  // returned through the `out_value` parameter and true is returned;
-  // otherwise, false is returned and `out_value` is unchanged.
-  // DictionaryValue::From is the equivalent for std::unique_ptr conversions.
-  //
-  // DEPRECATED: prefer direct use `base::Value::Dict` where possible, or
-  // `GetIfDict()` otherwise.
-  bool GetAsDictionary(const DictionaryValue** out_value) const;
   // Note: Do not add more types. See the file-level comment above for why.
 
   // Comparison operators so that Values can easily be used with standard
@@ -1092,19 +1061,9 @@ class BASE_EXPORT GSL_OWNER Value {
   }
 
  protected:
-  // TODO(https://crbug.com/1187062): Once ListValue has been removed, remove
-  // list() and make this a private member of List.
-  using ListStorage = std::vector<Value>;
-
   // Checked convenience accessors for dict and list.
   const LegacyDictStorage& dict() const { return GetDict().storage_; }
   LegacyDictStorage& dict() { return GetDict().storage_; }
-  const ListStorage& list() const { return GetList().storage_; }
-  ListStorage& list() { return GetList().storage_; }
-
-  // Internal constructors, allowing the simplify the implementation of Clone().
-  explicit Value(const LegacyDictStorage& storage);
-  explicit Value(LegacyDictStorage&& storage) noexcept;
 
  private:
   // For access to DoubleStorage.
@@ -1182,186 +1141,6 @@ class BASE_EXPORT GSL_OWNER Value {
                 Dict,
                 List>
       data_;
-};
-
-// DictAdapterForMigration is an adapter class to help the migration of
-// base::DictionaryValue to base::Value::Dict.
-//
-// DictAdapterForMigration mirrors the API of base::Value::Dict,
-// and is implicitly constructable from both base::DictionaryValue
-// and base::Value::Dict. Currently this is read-only, similar to StringPiece.
-//
-// To migrate a function that takes a base::DictionaryValue, change the
-// signature to take DictAdapterForMigration instead, and update the
-// function body to use the Dict::Value API.
-// The call sites can be left unchanged and migrated later.
-//
-// Note that DictAdapterForMigration is intended as a shim to help migrations,
-// and will go away with base::DictionaryValue.
-class BASE_EXPORT GSL_POINTER DictAdapterForMigration {
- public:
-  using iterator = detail::dict_iterator;
-  using const_iterator = detail::const_dict_iterator;
-
-  DictAdapterForMigration() = delete;
-
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  DictAdapterForMigration(const Value::Dict&) noexcept;
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  DictAdapterForMigration(const DictionaryValue&) noexcept;
-
-  bool empty() const;
-  size_t size() const;
-
-  const_iterator begin() const;
-  const_iterator cbegin() const;
-  const_iterator end() const;
-  const_iterator cend() const;
-
-  bool contains(base::StringPiece key) const;
-
-  Value::Dict Clone() const;
-
-  const Value* Find(StringPiece key) const;
-  absl::optional<bool> FindBool(StringPiece key) const;
-  absl::optional<int> FindInt(StringPiece key) const;
-  absl::optional<double> FindDouble(StringPiece key) const;
-  const std::string* FindString(StringPiece key) const;
-  const Value::BlobStorage* FindBlob(StringPiece key) const;
-  const Value::Dict* FindDict(StringPiece key) const;
-  const Value::List* FindList(StringPiece key) const;
-
-  const Value* FindByDottedPath(StringPiece path) const;
-
-  absl::optional<bool> FindBoolByDottedPath(StringPiece path) const;
-  absl::optional<int> FindIntByDottedPath(StringPiece path) const;
-  absl::optional<double> FindDoubleByDottedPath(StringPiece path) const;
-  const std::string* FindStringByDottedPath(StringPiece path) const;
-  const Value::BlobStorage* FindBlobByDottedPath(StringPiece path) const;
-  const Value::Dict* FindDictByDottedPath(StringPiece path) const;
-  const Value::List* FindListByDottedPath(StringPiece path) const;
-
-  std::string DebugString() const;
-
-#if BUILDFLAG(ENABLE_BASE_TRACING)
-  void WriteIntoTrace(perfetto::TracedValue) const;
-#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
-
-  const Value::Dict& dict_for_test() const;
-
- private:
-  const raw_ref<const Value::Dict> dict_;
-};
-
-// DictionaryValue provides a key-value dictionary with (optional) "path"
-// parsing for recursive access; see the comment at the top of the file. Keys
-// are std::string's and should be UTF-8 encoded.
-//
-// DEPRECATED: prefer `Value::Dict`.
-class BASE_EXPORT DictionaryValue : public Value {
- public:
-  // Returns `value` if it is a dictionary, nullptr otherwise.
-  static std::unique_ptr<DictionaryValue> From(std::unique_ptr<Value> value);
-
-  DictionaryValue();
-  explicit DictionaryValue(const LegacyDictStorage& in_dict);
-  explicit DictionaryValue(LegacyDictStorage&& in_dict) noexcept;
-
-  // Sets the Value associated with the given path starting from this object.
-  // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
-  // into the next DictionaryValue down.  Obviously, "." can't be used
-  // within a key, but there are no other restrictions on keys.
-  // If the key at any step of the way doesn't exist, or exists but isn't
-  // a DictionaryValue, a new DictionaryValue will be created and attached
-  // to the path in that location. `in_value` must be non-null.
-  // Returns a pointer to the inserted value.
-  //
-  // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
-  // otherwise.
-  Value* Set(StringPiece path, std::unique_ptr<Value> in_value);
-
-  // Convenience forms of Set().  These methods will replace any existing
-  // value at that path, even if it has a different type.
-  //
-  // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
-  // otherwise.
-  Value* SetBoolean(StringPiece path, bool in_value);
-  // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
-  // otherwise.
-  Value* SetInteger(StringPiece path, int in_value);
-  // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
-  // otherwise.
-  Value* SetString(StringPiece path, StringPiece in_value);
-  // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
-  // otherwise.
-  Value* SetString(StringPiece path, const std::u16string& in_value);
-
-  // Gets the Value associated with the given path starting from this object.
-  // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
-  // into the next DictionaryValue down.  If the path can be resolved
-  // successfully, the value for the last key in the path will be returned
-  // through the `out_value` parameter, and the function will return true.
-  // Otherwise, it will return false and `out_value` will be untouched.
-  // Note that the dictionary always owns the value that's returned.
-  // `out_value` is optional and will only be set if non-NULL.
-  //
-  // DEPRECATED: prefer `Value::Dict::Find()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindByDottedPath()`
-  // otherwise.
-  bool Get(StringPiece path, const Value** out_value) const;
-  bool Get(StringPiece path, Value** out_value);
-
-  // These are convenience forms of `Get()`.  The value will be retrieved
-  // and the return value will be true if the path is valid and the value at
-  // the end of the path can be returned in the form specified.
-  // `out_value` is optional and will only be set if non-NULL.
-  //
-  // DEPRECATED: prefer `Value::Dict::FindInt()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindIntByDottedPath()`
-  // otherwise.
-  bool GetInteger(StringPiece path, int* out_value) const;
-  // DEPRECATED: prefer `Value::Dict::FindString()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindStringByDottedPath()`
-  // otherwise.
-  bool GetString(StringPiece path, std::string* out_value) const;
-  // DEPRECATED: prefer `Value::Dict::FindDict()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindDictByDottedPath()`
-  // otherwise.
-  bool GetDictionary(StringPiece path, const DictionaryValue** out_value) const;
-  bool GetDictionary(StringPiece path, DictionaryValue** out_value);
-  // DEPRECATED: prefer `Value::Dict::FindList()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindListByDottedPath()`
-  // otherwise.
-  bool GetList(StringPiece path, const ListValue** out_value) const;
-  bool GetList(StringPiece path, ListValue** out_value);
-};
-
-// This type of Value represents a list of other Value values.
-//
-// DEPRECATED: prefer `base::Value::List`.
-class BASE_EXPORT ListValue : public Value {
- public:
-  // Returns `value` if it is a list, nullptr otherwise.
-  static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
-
-  ListValue();
-
-  // Appends a Value to the end of the list.
-  // DEPRECATED: prefer `Value::List::Append()`.
-  using Value::Append;
-  // DEPRECATED: prefer `Value::List::Append()`. Provided to simplify
-  // incremental migration and intentionally only defined on ListValue and not
-  // Value.
-  void Append(base::Value::Dict in_dict);
-  void Append(base::Value::List in_list);
-
-  // Iteration: Use a range-based for loop over `base::Value::List` directly
-  // instead.
 };
 
 // Adapter so `Value::Dict` or `Value::List` can be directly passed to JSON
@@ -1494,18 +1273,6 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& out,
                                      const Value::Dict& dict);
 BASE_EXPORT std::ostream& operator<<(std::ostream& out,
                                      const Value::List& list);
-
-// Hints for DictionaryValue and ListValue; otherwise, gtest tends to prefer the
-// default template implementation over an upcast to Value.
-BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
-                                            const DictionaryValue& value) {
-  return out << static_cast<const Value&>(value);
-}
-
-BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
-                                            const ListValue& value) {
-  return out << static_cast<const Value&>(value);
-}
 
 // Stream operator so that enum class Types can be used in log statements.
 BASE_EXPORT std::ostream& operator<<(std::ostream& out,

@@ -12,9 +12,9 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/resource_mapper.h"
@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
@@ -82,7 +83,7 @@ void MaybeSetRawInfoWithVerificationStatus(
   if (value)
     profile->SetRawInfoWithVerificationStatus(
         type, ConvertJavaStringToUTF16(value),
-        static_cast<structured_address::VerificationStatus>(status));
+        static_cast<VerificationStatus>(status));
 }
 
 void MaybeSetInfoWithVerificationStatus(
@@ -94,7 +95,7 @@ void MaybeSetInfoWithVerificationStatus(
     profile->SetInfoWithVerificationStatus(
         type, ConvertJavaStringToUTF16(value),
         g_browser_process->GetApplicationLocale(),
-        static_cast<structured_address::VerificationStatus>(status));
+        static_cast<VerificationStatus>(status));
 }
 
 // Self-deleting requester of full card details, including full PAN and the CVC
@@ -254,7 +255,8 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
       static_cast<jint>(card.virtual_card_enrollment_state()),
       ConvertUTF16ToJavaString(env, card.product_description()),
       ConvertUTF16ToJavaString(env, card.CardNameForAutofillDisplay()),
-      ConvertUTF16ToJavaString(env, card.ObfuscatedLastFourDigits()));
+      ConvertUTF16ToJavaString(
+          env, card.ObfuscatedNumberWithVisibleLastFourDigits()));
 }
 
 // static
@@ -325,6 +327,7 @@ PersonalDataManagerAndroid::CreateJavaProfileFromNative(
       env, ConvertUTF8ToJavaString(env, profile.guid()),
       ConvertUTF8ToJavaString(env, profile.origin()),
       profile.record_type() == AutofillProfile::LOCAL_PROFILE,
+      static_cast<jint>(profile.source()),
       ConvertUTF16ToJavaString(
           env, profile.GetInfo(AutofillType(NAME_HONORIFIC_PREFIX),
                                g_browser_process->GetApplicationLocale())),
@@ -576,11 +579,9 @@ PersonalDataManagerAndroid::GetCreditCardGUIDsForSettings(
 base::android::ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetCreditCardGUIDsToSuggest(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj,
-    bool include_server_cards) {
-  return GetCreditCardGUIDs(
-      env,
-      personal_data_manager_->GetCreditCardsToSuggest(include_server_cards));
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  return GetCreditCardGUIDs(env,
+                            personal_data_manager_->GetCreditCardsToSuggest());
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(

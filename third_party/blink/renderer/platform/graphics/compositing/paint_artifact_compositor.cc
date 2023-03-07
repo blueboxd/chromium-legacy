@@ -513,7 +513,7 @@ void SynthesizedClip::UpdateLayer(const ClipPaintPropertyNode& clip,
   AdjustMaskLayerGeometry(transform, layer_offset, layer_bounds);
   new_projection.PostTranslate(-layer_offset);
 
-  if (!path && new_projection.IsIdentityOr2DTranslation()) {
+  if (!path && new_projection.IsIdentityOr2dTranslation()) {
     gfx::Vector2dF translation = new_projection.To2dTranslation();
     new_rrect.offset(translation.x(), translation.y());
     needs_display = !rrect_is_local_ || new_rrect != rrect_;
@@ -546,7 +546,7 @@ SynthesizedClip::PaintContentsToDisplayList() {
     cc_list->push<cc::DrawRRectOp>(rrect_, flags);
   } else {
     cc_list->push<cc::SaveOp>();
-    if (projection_.IsIdentityOr2DTranslation()) {
+    if (projection_.IsIdentityOr2dTranslation()) {
       gfx::Vector2dF translation = projection_.To2dTranslation();
       cc_list->push<cc::TranslateOp>(translation.x(), translation.y());
     } else {
@@ -735,8 +735,8 @@ void PaintArtifactCompositor::Update(
     if (layer.subtree_property_changed())
       root_layer_->SetNeedsCommit();
 
-    auto shared_element_id = layer.ViewTransitionResourceId();
-    if (shared_element_id.IsValid()) {
+    auto transition_resource_id = layer.ViewTransitionResourceId();
+    if (transition_resource_id.IsValid()) {
       host->property_trees()
           ->effect_tree_mutable()
           .AddTransitionPseudoElementEffectId(effect_id);

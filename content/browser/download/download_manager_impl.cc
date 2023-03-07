@@ -7,12 +7,12 @@
 #include <iterator>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -176,8 +176,8 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices,
-      const download::DownloadItemRerouteInfo& reroute_info) override {
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
+      override {
     // For history download only as history don't have auto resumption count
     // saved.
     int auto_resume_count = download::DownloadItemImpl::kMaxAutoResumeAttempts;
@@ -189,7 +189,7 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         start_time, end_time, etag, last_modified, received_bytes, total_bytes,
         auto_resume_count, hash, state, danger_type, interrupt_reason,
         false /* paused */, false /* allow_metered */, opened, last_access_time,
-        transient, received_slices, reroute_info, download::kInvalidRange,
+        transient, received_slices, download::kInvalidRange,
         download::kInvalidRange, nullptr /* download_entry */);
   }
 
@@ -751,15 +751,6 @@ DownloadManagerImpl::GetQuarantineConnectionCallback() {
   return delegate_->GetQuarantineConnectionCallback();
 }
 
-std::unique_ptr<download::DownloadItemRenameHandler>
-DownloadManagerImpl::GetRenameHandlerForDownload(
-    download::DownloadItemImpl* download_item) {
-  if (!delegate_)
-    return nullptr;
-
-  return delegate_->GetRenameHandlerForDownload(download_item);
-}
-
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<download::InputStream> stream,
@@ -794,7 +785,6 @@ void DownloadManagerImpl::CheckForFileRemoval(
     download::DownloadItemImpl* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((download_item->GetState() != download::DownloadItem::COMPLETE) ||
-      download_item->GetRenameHandler() ||
       download_item->GetFileExternallyRemoved()) {
     return;
   }
@@ -1057,8 +1047,7 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     bool opened,
     base::Time last_access_time,
     bool transient,
-    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices,
-    const download::DownloadItemRerouteInfo& reroute_info) {
+    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
   // Retrieve the in-progress download if it exists. Notice that this also
   // removes it from |in_progress_downloads_|.
   auto in_progress_download = RetrieveInProgressDownload(id);
@@ -1075,7 +1064,6 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     DeleteDownloadedFileOnUIThread(current_path);
     return nullptr;
   }
-
   auto item = base::WrapUnique(item_factory_->CreatePersistedItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       StoragePartitionConfigToSerializedEmbedderDownloadData(
@@ -1083,7 +1071,7 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       tab_url, tab_refererr_url, request_initiator, mime_type,
       original_mime_type, start_time, end_time, etag, last_modified,
       received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
-      opened, last_access_time, transient, received_slices, reroute_info));
+      opened, last_access_time, transient, received_slices));
   if (in_progress_download) {
     // If a download is in both history DB and in-progress DB, we should
     // be able to remove the in-progress entry if the following 2 conditions

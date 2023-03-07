@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 /**
  * Test fixture for UserActionMonitor.
  */
-ChromeVoxUserActionMonitorTest = class extends ChromeVoxNextE2ETest {
+ChromeVoxUserActionMonitorTest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
@@ -25,6 +25,8 @@ ChromeVoxUserActionMonitorTest = class extends ChromeVoxNextE2ETest {
         'ChromeVoxKbHandler', '/chromevox/common/keyboard_handler.js');
     await importModule('KeySequence', '/chromevox/common/key_sequence.js');
     await importModule('KeyCode', '/common/key_code.js');
+
+    globalThis.Gesture = chrome.accessibilityPrivate.Gesture;
   }
 
   /**
@@ -234,7 +236,7 @@ AX_TEST_F('ChromeVoxUserActionMonitorTest', 'Output', async function() {
 // since we don't directly call a UserActionMonitor function.
 AX_TEST_F('ChromeVoxUserActionMonitorTest', 'SingleKey', async function() {
   await this.runWithLoadedTree(this.simpleDoc);
-  const keyboardHandler = new BackgroundKeyboardHandler();
+  const keyboardHandler = BackgroundKeyboardHandler.instance;
   let finished = false;
   const actions =
       [{type: 'key_sequence', value: {'keys': {'keyCode': [KeyCode.SPACE]}}}];
@@ -256,7 +258,7 @@ AX_TEST_F('ChromeVoxUserActionMonitorTest', 'SingleKey', async function() {
 // since we don't directly call a UserActionMonitor function.
 AX_TEST_F('ChromeVoxUserActionMonitorTest', 'MultipleKeys', async function() {
   await this.runWithLoadedTree(this.simpleDoc);
-  const keyboardHandler = new BackgroundKeyboardHandler();
+  const keyboardHandler = BackgroundKeyboardHandler.instance;
   let finished = false;
   const actions = [{
     type: 'key_sequence',
@@ -339,7 +341,7 @@ AX_TEST_F(
 AX_TEST_F('ChromeVoxUserActionMonitorTest', 'BlockCommands', async function() {
   const mockFeedback = this.createMockFeedback();
   await this.runWithLoadedTree(this.paragraphDoc);
-  const keyboardHandler = new BackgroundKeyboardHandler();
+  const keyboardHandler = BackgroundKeyboardHandler.instance;
   let finished = false;
   const actions = [
     {
@@ -400,7 +402,7 @@ AX_TEST_F('ChromeVoxUserActionMonitorTest', 'BlockCommands', async function() {
 // is active.
 AX_TEST_F('ChromeVoxUserActionMonitorTest', 'CloseChromeVox', async function() {
   await this.runWithLoadedTree(this.simpleDoc);
-  const keyboardHandler = new BackgroundKeyboardHandler();
+  const keyboardHandler = BackgroundKeyboardHandler.instance;
   let finished = false;
   let closed = false;
   const actions =

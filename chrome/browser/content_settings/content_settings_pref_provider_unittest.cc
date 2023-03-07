@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_clock.h"
@@ -172,24 +172,25 @@ TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
 
   // Set some pref data. Each content setting type has the following value:
   // {"[*.]example.com": {"setting": 1}}
-  base::Value plugins_data_pref(base::Value::Type::DICTIONARY);
+  base::Value::Dict plugins_data_pref;
   constexpr char kFlagKey[] = "flashPreviouslyChanged";
-  plugins_data_pref.SetKey(kFlagKey,
-                           base::Value(base::Value::Type::DICTIONARY));
+  plugins_data_pref.Set(kFlagKey, base::Value::Dict());
 
-  base::Value data_for_pattern(base::Value::Type::DICTIONARY);
-  data_for_pattern.SetIntKey("setting", CONTENT_SETTING_ALLOW);
-  base::Value pref_data(base::Value::Type::DICTIONARY);
-  pref_data.SetKey(kPattern, std::move(data_for_pattern));
-  prefs->Set(kFullscreenPrefPath, pref_data);
-  prefs->Set(kNfcPrefPath, pref_data);
+  base::Value::Dict data_for_pattern;
+  data_for_pattern.Set("setting", static_cast<int>(CONTENT_SETTING_ALLOW));
+  base::Value::Dict pref_data;
+  pref_data.Set(kPattern, std::move(data_for_pattern));
+  prefs->SetDict(kFullscreenPrefPath, pref_data.Clone());
+  prefs->SetDict(kNfcPrefPath, pref_data.Clone());
 #if !BUILDFLAG(IS_ANDROID)
-  prefs->Set(kMouselockPrefPath, pref_data);
-  prefs->Set(kObsoletePluginsExceptionsPref, pref_data);
-  prefs->Set(kObsoleteInstalledWebAppMetadataExceptionsPref, pref_data);
-  prefs->Set(kObsoletePluginsDataExceptionsPref, plugins_data_pref);
+  prefs->SetDict(kMouselockPrefPath, pref_data.Clone());
+  prefs->SetDict(kObsoletePluginsExceptionsPref, pref_data.Clone());
+  prefs->SetDict(kObsoleteInstalledWebAppMetadataExceptionsPref,
+                 pref_data.Clone());
+  prefs->SetDict(kObsoletePluginsDataExceptionsPref,
+                 std::move(plugins_data_pref));
 #endif
-  prefs->Set(kGeolocationPrefPath, pref_data);
+  prefs->SetDict(kGeolocationPrefPath, std::move(pref_data));
 
   // Instantiate a new PrefProvider here, because we want to test the
   // constructor's behavior after setting the above.
@@ -731,6 +732,52 @@ TEST_F(PrefProviderTest, SessionScopeSettingsRestoreSession) {
   provider2.ShutdownOnUIThread();
 }
 
+// If a setting is constrained to a non-restorable session scope and a provider
+// is made with the `restore_Session` flag, the setting should be cleared.
+TEST_F(PrefProviderTest, SessionScopeSettingsRestoreSessionNonRestorable) {
+  TestingProfile testing_profile;
+  PrefProvider provider(testing_profile.GetPrefs(), /*off_the_record=*/false,
+                        /*store_last_modified=*/true,
+                        /*restore_session=*/false);
+
+  GURL primary_url("http://example.com/");
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+
+  EXPECT_EQ(
+      CONTENT_SETTING_DEFAULT,
+      TestUtils::GetContentSetting(&provider, primary_url, primary_url,
+                                   ContentSettingsType::STORAGE_ACCESS, false));
+
+  provider.SetWebsiteSetting(
+      primary_pattern, primary_pattern, ContentSettingsType::STORAGE_ACCESS,
+      base::Value(CONTENT_SETTING_BLOCK),
+      {base::Time(), SessionModel::NonRestorableUserSession});
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      TestUtils::GetContentSetting(&provider, primary_url, primary_url,
+                                   ContentSettingsType::STORAGE_ACCESS, false));
+  base::Value value(TestUtils::GetContentSettingValue(
+      &provider, primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS,
+      false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            IntToContentSetting(value.GetIfInt().value_or(-1)));
+
+  // Now if we create a new provider, it should not be able to read our setting
+  // back even with `restore_session` is true.
+  provider.ShutdownOnUIThread();
+
+  PrefProvider provider2(testing_profile.GetPrefs(), /*off_the_record=*/false,
+                         /*store_last_modified=*/true,
+                         /*restore_session=*/true);
+
+  EXPECT_EQ(
+      CONTENT_SETTING_DEFAULT,
+      TestUtils::GetContentSetting(&provider2, primary_url, primary_url,
+                                   ContentSettingsType::STORAGE_ACCESS, false));
+  provider2.ShutdownOnUIThread();
+}
+
 // Validate our settings will properly store our expiry time if specified.
 TEST_F(PrefProviderTest, GetContentSettingsExpiry) {
   TestingProfile testing_profile;
@@ -1068,6 +1115,14 @@ TEST_F(PrefProviderTest, LastVisitedTimeUpdating) {
   EXPECT_GE(metadata.last_visited, clock.Now() - base::Days(7));
   EXPECT_LE(metadata.last_visited, clock.Now());
 
+  // Test resetting the last_visited time.
+  provider.ResetLastVisitTime(primary_pattern, primary_pattern,
+                              ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            TestUtils::GetContentSetting(&provider, primary_url, primary_url,
+                                         ContentSettingsType::GEOLOCATION,
+                                         false, &metadata));
+  EXPECT_EQ(metadata.last_visited, base::Time());
   provider.ShutdownOnUIThread();
 }
 

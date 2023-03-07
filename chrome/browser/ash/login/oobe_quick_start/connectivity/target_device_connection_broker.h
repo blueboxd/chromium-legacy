@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 
 namespace ash::quick_start {
@@ -38,7 +38,7 @@ class TargetDeviceConnectionBroker {
   // StartAdvertising().
   //
   // This interface is a simplification of
-  // location::nearby::connections::mojom::ConnectionLifecycleListener, for ease
+  // nearby::connections::mojom::ConnectionLifecycleListener, for ease
   // of client use.
   class ConnectionLifecycleListener {
    public:

@@ -104,6 +104,15 @@ config("config") {
     }
   }
 
+  if (is_clang && clang_use_chrome_plugins) {
+    cflags += [
+      "-Xclang",
+      "-plugin-arg-find-bad-constructs",
+      "-Xclang",
+      "check-blink-data-member-type",
+    ]
+  }
+
   if (is_clang && blink_gc_plugin && clang_use_chrome_plugins) {
     # The plugin is built directly into clang, so there's no need to load it
     # dynamically.
@@ -123,6 +132,14 @@ config("config") {
         "dump-graph",
       ]
     }
+
+    # Enable GC plugin forbidden fields feature:
+    cflags += [
+      "-Xclang",
+      "-plugin-arg-blink-gc-plugin",
+      "-Xclang",
+      "enable-forbidden-fields-check",
+    ]
   }
 }
 

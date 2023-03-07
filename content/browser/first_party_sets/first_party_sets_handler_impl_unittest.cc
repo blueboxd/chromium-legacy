@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -60,7 +59,7 @@ const char* kPrimaryField = "primary";
 const char* kCctldsField = "ccTLDs";
 
 const char* kFirstPartySetsClearSiteDataOutcomeHistogram =
-    "FirstPartySets.Initialization.ClearSiteDataOutcomeType";
+    "FirstPartySets.Initialization.ClearSiteDataOutcome";
 
 }  // namespace
 
@@ -362,9 +361,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
           Pair(associated,
                net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
                                        absl::nullopt))));
-  histogram.ExpectUniqueSample(
-      kFirstPartySetsClearSiteDataOutcomeHistogram,
-      FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+  histogram.ExpectUniqueSample(kFirstPartySetsClearSiteDataOutcomeHistogram,
+                               /*sample=*/true, 1);
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
@@ -418,9 +416,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
         HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
         Optional(true));
 
-    histogram.ExpectUniqueSample(
-        kFirstPartySetsClearSiteDataOutcomeHistogram,
-        FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+    histogram.ExpectUniqueSample(kFirstPartySetsClearSiteDataOutcomeHistogram,
+                                 /*sample=*/true, 1);
 
     // Make sure the database is closed properly before being opened again.
     handler.SynchronouslyResetDBHelperForTesting();
@@ -463,9 +460,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
         HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
         Optional(true));
 
-    histogram.ExpectUniqueSample(
-        kFirstPartySetsClearSiteDataOutcomeHistogram,
-        FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+    histogram.ExpectUniqueSample(kFirstPartySetsClearSiteDataOutcomeHistogram,
+                                 /*sample=*/true, 1);
   }
 }
 
@@ -550,9 +546,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
           Pair(associated,
                net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
                                        absl::nullopt))));
-  histogram.ExpectUniqueSample(
-      kFirstPartySetsClearSiteDataOutcomeHistogram,
-      FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+  histogram.ExpectUniqueSample(kFirstPartySetsClearSiteDataOutcomeHistogram,
+                               /*sample=*/true, 1);
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,

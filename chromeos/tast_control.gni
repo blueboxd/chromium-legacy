@@ -29,10 +29,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1400636
   "graphics.ScreenshotCLI",
 
-  # b/258714568
-  "inputs.InputMethodManagement.guest",
-  "inputs.PhysicalKeyboardEmojiSuggestion.guest",
-
   # b/251833060
   "peripherals.LaunchAppFromGuestSession.diagnostics",
 
@@ -156,6 +152,9 @@ tast_disabled_tests_from_chrome_all = [
   "assistant.StartupInSignedOutMode",
   "login.ChangePassword",
 
+  # https://crbug.com/1401568
+  "assistant.Hotkey.search_plus_a",
+
   # https://crbug.com/1326279
   "policy.AccessibilityPolicies.focus_highlight",
 
@@ -243,10 +242,6 @@ tast_disabled_tests_from_chrome_all = [
   "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
   "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
 
-  # https://crbug.com/1364721
-  "inputs.VirtualKeyboardHandwriting.docked",
-  "inputs.VirtualKeyboardHandwriting.floating",
-
   # https://crbug.com/1365284
   "crostini.RestartApp.clamshell_stable",
 
@@ -299,12 +294,15 @@ tast_disabled_tests_from_chrome_all = [
   # http://b/261363192
   "crostini.*@kevin",
 
-  # http://b/262361695
-  "printer.ProxyAdd.*",
+  # https://crbug.com/1401605
+  "hwsec.CrossVersionLogin.small",
+  "hwsec.CrossVersionLogin.tpm_dynamic_small",
 
-  # http://b/262649361
-  # Until the LKGM with http://crrev.com/c/4110195 is rolled
-  "a11y.LiveCaption",
+  # https://crbug.com/1402224
+  "audio.PlaybackAudioControls",
+
+  # https://crbug.com/1236234
+  "lacros.AudioPlay",
 
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
@@ -330,7 +328,4 @@ tast_disabled_tests_from_lacros_all = [
 
   # https://crbug.com/1376638
   "lacros.AudioRecord",
-
-  # https://crbug.com/1399370
-  "security.ChromeSandboxed.lacros",
 ]

@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "build/chromecast_buildflags.h"
@@ -175,15 +175,17 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
   static bool allow_insecure_content =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowRunningInsecureContent);
-  if (allow_insecure_content)
+  if (allow_insecure_content) {
     web_prefs->allow_running_insecure_content = true;
+  }
 #endif
 
   FrameImpl* frame = FrameImpl::FromWebContents(web_contents);
   // This method may be called when a |web_contents| is instantiated but an
   // associated frame has not been created.
-  if (frame != nullptr)
+  if (frame != nullptr) {
     frame->OverrideWebPreferences(web_prefs);
+  }
 }
 
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(

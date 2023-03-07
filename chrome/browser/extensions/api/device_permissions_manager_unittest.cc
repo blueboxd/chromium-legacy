@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,14 +45,14 @@ class DevicePermissionsManagerTest : public testing::Test {
     testing::Test::SetUp();
     env_ = std::make_unique<extensions::TestExtensionEnvironment>();
     extension_ = env_->MakeExtension(
-        base::test::ParseJson("{"
-                              "  \"app\": {"
-                              "    \"background\": {"
-                              "      \"scripts\": [\"background.js\"]"
-                              "    }"
-                              "  },"
-                              "  \"permissions\": [ \"hid\", \"usb\" ]"
-                              "}"));
+        base::test::ParseJsonDict("{"
+                                  "  \"app\": {"
+                                  "    \"background\": {"
+                                  "      \"scripts\": [\"background.js\"]"
+                                  "    }"
+                                  "  },"
+                                  "  \"permissions\": [ \"hid\", \"usb\" ]"
+                                  "}"));
 
     // Set fake device manager for extensions::UsbDeviceManager.
     mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;

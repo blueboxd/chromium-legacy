@@ -13,6 +13,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -59,11 +60,6 @@ class SharedImageFormat {
     k16,  // 16 bit unorm
     k16F  // 16 bit float
   };
-
-  static const SharedImageFormat kRGBA_8888;
-  static const SharedImageFormat kBGRA_8888;
-  static const SharedImageFormat kRGBA_F16;
-  static const SharedImageFormat kBGR_565;
 
   SharedImageFormat() = default;
   static constexpr SharedImageFormat SinglePlane(
@@ -116,13 +112,26 @@ class SharedImageFormat {
   // Returns the size for a plane given `plane_index`.
   gfx::Size GetPlaneSize(int plane_index, const gfx::Size& size) const;
 
+  // Returns estimated size in bytes of an image in this format of `size` or
+  // nullopt if size in bytes overflows. Includes all planes for multiplanar
+  // formats.
+  absl::optional<size_t> MaybeEstimatedSizeInBytes(const gfx::Size& size) const;
+
+  // Returns estimated size in bytes for an image in this format of `size` or 0
+  // if size in bytes overflows. Includes all planes for multiplanar formats.
+  size_t EstimatedSizeInBytes(const gfx::Size& size) const;
+
   // Returns number of channels for a plane for multiplanar formats.
   int NumChannelsInPlane(int plane_index) const;
 
   // Returns the bit depth for multiplanar format based on the channel format.
   int MultiplanarBitDepth() const;
 
+  // Returns a std::string for the format.
   std::string ToString() const;
+
+  // Returns a std::string for the format that is compatible with gtest.
+  std::string ToTestParamString() const;
 
   // Returns true if the format contains alpha.
   bool HasAlpha() const;
@@ -195,14 +204,65 @@ class SharedImageFormat {
   SharedImageFormatUnion format_;
 };
 
-constexpr SharedImageFormat SharedImageFormat::kRGBA_8888 =
+// Constants for common single-planar formats.
+namespace SinglePlaneFormat {
+inline constexpr SharedImageFormat kRGBA_8888 =
     SharedImageFormat::SinglePlane(ResourceFormat::RGBA_8888);
-constexpr SharedImageFormat SharedImageFormat::kBGRA_8888 =
+inline constexpr SharedImageFormat kRGBA_4444 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RGBA_4444);
+inline constexpr SharedImageFormat kBGRA_8888 =
     SharedImageFormat::SinglePlane(ResourceFormat::BGRA_8888);
-constexpr SharedImageFormat SharedImageFormat::kRGBA_F16 =
-    SharedImageFormat::SinglePlane(ResourceFormat::RGBA_F16);
-constexpr SharedImageFormat SharedImageFormat::kBGR_565 =
+inline constexpr SharedImageFormat kALPHA_8 =
+    SharedImageFormat::SinglePlane(ResourceFormat::ALPHA_8);
+inline constexpr SharedImageFormat kLUMINANCE_8 =
+    SharedImageFormat::SinglePlane(ResourceFormat::LUMINANCE_8);
+inline constexpr SharedImageFormat kRGB_565 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RGB_565);
+inline constexpr SharedImageFormat kBGR_565 =
     SharedImageFormat::SinglePlane(ResourceFormat::BGR_565);
+inline constexpr SharedImageFormat kETC1 =
+    SharedImageFormat::SinglePlane(ResourceFormat::ETC1);
+inline constexpr SharedImageFormat kRED_8 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RED_8);
+inline constexpr SharedImageFormat kRG_88 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RG_88);
+inline constexpr SharedImageFormat kLUMINANCE_F16 =
+    SharedImageFormat::SinglePlane(ResourceFormat::LUMINANCE_F16);
+inline constexpr SharedImageFormat kRGBA_F16 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RGBA_F16);
+inline constexpr SharedImageFormat kR16_EXT =
+    SharedImageFormat::SinglePlane(ResourceFormat::R16_EXT);
+inline constexpr SharedImageFormat kRG16_EXT =
+    SharedImageFormat::SinglePlane(ResourceFormat::RG16_EXT);
+inline constexpr SharedImageFormat kRGBX_8888 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RGBX_8888);
+inline constexpr SharedImageFormat kBGRX_8888 =
+    SharedImageFormat::SinglePlane(ResourceFormat::BGRX_8888);
+inline constexpr SharedImageFormat kRGBA_1010102 =
+    SharedImageFormat::SinglePlane(ResourceFormat::RGBA_1010102);
+inline constexpr SharedImageFormat kBGRA_1010102 =
+    SharedImageFormat::SinglePlane(ResourceFormat::BGRA_1010102);
+}  // namespace SinglePlaneFormat
+
+// Constants for common multi-planar formats.
+namespace MultiPlaneFormat {
+inline constexpr SharedImageFormat kYVU_420 =
+    SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_V_U,
+                                  SharedImageFormat::Subsampling::k420,
+                                  SharedImageFormat::ChannelFormat::k8);
+inline constexpr SharedImageFormat kYUV_420_BIPLANAR =
+    SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_UV,
+                                  SharedImageFormat::Subsampling::k420,
+                                  SharedImageFormat::ChannelFormat::k8);
+inline constexpr SharedImageFormat kYUVA_420_TRIPLANAR =
+    SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_UV_A,
+                                  SharedImageFormat::Subsampling::k420,
+                                  SharedImageFormat::ChannelFormat::k8);
+inline constexpr SharedImageFormat kP010 =
+    SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_UV,
+                                  SharedImageFormat::Subsampling::k420,
+                                  SharedImageFormat::ChannelFormat::k10);
+}  // namespace MultiPlaneFormat
 
 }  // namespace viz
 

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,13 +22,12 @@
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/trace_event/trace_event.h"
@@ -55,9 +55,6 @@ namespace {
 // The size of app info dialog in fullscreen app list.
 constexpr int kAppInfoDialogWidth = 512;
 constexpr int kAppInfoDialogHeight = 384;
-
-// The duration of app list animations when they should run immediately.
-constexpr int kAppListAnimationDurationImmediateMs = 0;
 
 // The number of minutes that must pass for the current app list page to reset
 // to the first page.
@@ -323,7 +320,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
   // to allow the focus to move from elements in app list view to search box.
   // TODO(pbos): Should this be necessary with the OverrideNextFocus() used
   // below?
-  SetAccessibleRole(ax::mojom::Role::kGroup);
+  SetAccessibleWindowRole(ax::mojom::Role::kGroup);
 }
 
 AppListView::~AppListView() {
@@ -344,7 +341,6 @@ void AppListView::InitView(gfx::NativeView parent) {
   time_shown_ = base::Time::Now();
   InitContents();
   InitWidget(parent);
-  InitChildWidget();
 }
 
 void AppListView::InitContents() {
@@ -355,14 +351,16 @@ void AppListView::InitContents() {
       AddChildView(std::make_unique<views::View>()));
 
   auto app_list_main_view = std::make_unique<AppListMainView>(delegate_, this);
-  search_box_view_ = new SearchBoxView(app_list_main_view.get(), delegate_,
-                                       /*is_app_list_bubble=*/false);
-  search_box_view_->InitializeForFullscreenLauncher();
+  auto search_box_view =
+      std::make_unique<SearchBoxView>(app_list_main_view.get(), delegate_,
+                                      /*is_app_list_bubble=*/false);
+  search_box_view->InitializeForFullscreenLauncher();
 
-  // Assign |app_list_main_view_| here since it is accessed during Init().
-  app_list_main_view_ = app_list_main_view.get();
-  app_list_main_view->Init(0, search_box_view_);
-  AddChildView(std::move(app_list_main_view));
+  // Assign |app_list_main_view_| and |search_box_view_| here since they are
+  // accessed during Init().
+  app_list_main_view_ = AddChildView(std::move(app_list_main_view));
+  search_box_view_ = AddChildView(std::move(search_box_view));
+  app_list_main_view_->Init(0, search_box_view_);
 }
 
 void AppListView::InitWidget(gfx::NativeView parent) {
@@ -386,67 +384,6 @@ void AppListView::InitWidget(gfx::NativeView parent) {
   SetEnableArrowKeyTraversal(true);
 
   widget->GetNativeView()->AddObserver(this);
-
-  // Directs A11y focus ring from search box view to AppListView's descendants
-  // (like ExpandArrowView) without focusing on the whole app list window when
-  // using search + arrow button.
-  search_box_view_->GetViewAccessibility().OverrideNextFocus(GetWidget());
-  search_box_view_->GetViewAccessibility().OverridePreviousFocus(GetWidget());
-}
-
-void AppListView::InitChildWidget() {
-  // Create a widget for the SearchBoxView to live in. This allows the
-  // SearchBoxView to be on top of the custom launcher page's WebContents
-  // (otherwise the search box events will be captured by the WebContents).
-  views::Widget::InitParams search_box_widget_params(
-      views::Widget::InitParams::TYPE_CONTROL);
-  search_box_widget_params.parent = GetWidget()->GetNativeView();
-  search_box_widget_params.opacity =
-      views::Widget::InitParams::WindowOpacity::kTranslucent;
-  search_box_widget_params.name = "SearchBoxView";
-
-  // Focus should be able to move from search box to items in app list view.
-  auto widget_delegate = std::make_unique<views::WidgetDelegate>();
-  widget_delegate->SetFocusTraversesOut(true);
-
-  // Default role of root view is ax::mojom::Role::kWindow which traps
-  // ChromeVox focus within the root view. Assign ax::mojom::Role::kGroup here
-  // to allow the focus to move from elements in search box to app list view.
-  widget_delegate->SetAccessibleRole(ax::mojom::Role::kGroup);
-
-  // SearchBoxView used to be a WidgetDelegateView, so we follow the legacy
-  // behavior and have the Widget delete the delegate.
-  widget_delegate->SetOwnedByWidget(true);
-  search_box_widget_params.delegate = widget_delegate.release();
-
-  views::Widget* search_box_widget = new views::Widget;
-  search_box_widget->Init(std::move(search_box_widget_params));
-  search_box_widget->SetContentsView(search_box_view_);
-  search_box_view_->MaybeCreateFocusRing();
-  DCHECK_EQ(search_box_widget, search_box_view_->GetWidget());
-
-  // Assign an accessibility role to the native window of |search_box_widget|,
-  // so that hitting search+right could move ChromeVox focus across search box
-  // to other elements in app list view.
-  search_box_widget->GetNativeWindow()->SetProperty(
-      ui::kAXRoleOverride,
-      static_cast<ax::mojom::Role>(ax::mojom::Role::kGroup));
-
-  // The search box will not naturally receive focus by itself (because it is in
-  // a separate widget). Create this SearchBoxFocusHost in the main widget to
-  // forward the focus search into to the search box.
-  SearchBoxFocusHost* search_box_focus_host =
-      new SearchBoxFocusHost(search_box_widget);
-  AddChildView(search_box_focus_host);
-  search_box_widget->SetFocusTraversableParentView(search_box_focus_host);
-  search_box_widget->SetFocusTraversableParent(
-      GetWidget()->GetFocusTraversable());
-
-  // Directs A11y focus ring from AppListView's descendants to search box view
-  // without focusing on the whole app list window when using search + arrow
-  // button.
-  GetViewAccessibility().OverrideNextFocus(search_box_widget);
-  GetViewAccessibility().OverridePreviousFocus(search_box_widget);
 }
 
 void AppListView::Show(AppListViewState preferred_state) {
@@ -582,12 +519,10 @@ gfx::Insets AppListView::GetMainViewInsetsForShelf() const {
 }
 
 void AppListView::UpdateWidget() {
-  // The widget's initial position will be off the bottom of the display.
   // Set native view's bounds directly to avoid screen position controller
   // setting bounds in the display where the widget has the largest
   // intersection.
-  GetWidget()->GetNativeView()->SetBounds(
-      GetPreferredWidgetBoundsForState(AppListViewState::kClosed));
+  GetWidget()->GetNativeView()->SetBounds(GetPreferredWidgetBounds());
   ResetSubpixelPositionOffset(GetWidget()->GetNativeView()->layer());
 }
 
@@ -674,8 +609,7 @@ void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {
 }
 
 void AppListView::EnsureWidgetBoundsMatchCurrentState() {
-  const gfx::Rect new_target_bounds =
-      GetPreferredWidgetBoundsForState(target_app_list_state_);
+  const gfx::Rect new_target_bounds = GetPreferredWidgetBounds();
   aura::Window* window = GetWidget()->GetNativeView();
   if (new_target_bounds == window->GetTargetBounds())
     return;
@@ -816,10 +750,6 @@ void AppListView::OnKeyEvent(ui::KeyEvent* event) {
   RedirectKeyEventToSearchBox(event);
 }
 
-void AppListView::OnWallpaperColorsChanged() {
-  search_box_view_->OnWallpaperColorsChanged();
-}
-
 bool AppListView::HandleScroll(const gfx::Point& location,
                                const gfx::Vector2d& offset,
                                ui::EventType type) {
@@ -886,7 +816,8 @@ void AppListView::SetState(AppListViewState new_state) {
   // Prepare state transition notifier for the new state transition.
   state_transition_notifier_->Reset(new_state);
 
-  StartAnimationForState(new_state);
+  app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
+      new_state);
   RecordStateTransitionForUma(new_state);
   app_list_state_ = new_state;
   if (delegate_)
@@ -946,39 +877,9 @@ void AppListView::OnAppListVisibilityChanged(bool shown) {
   GetAppsContainerView()->OnAppListVisibilityChanged(shown);
 }
 
-base::TimeDelta AppListView::GetStateTransitionAnimationDuration(
-    AppListViewState target_state) {
-  if (target_state == AppListViewState::kClosed &&
-      delegate_->ShouldDismissImmediately()) {
-    return base::Milliseconds(kAppListAnimationDurationImmediateMs);
-  }
-
-  if (is_fullscreen() || target_state == AppListViewState::kFullscreenAllApps ||
-      target_state == AppListViewState::kFullscreenSearch) {
-    // Animate over more time to or from a fullscreen state, to maintain a
-    // similar speed.
-    return base::Milliseconds(kAppListAnimationDurationFromFullscreenMs);
-  }
-
-  return base::Milliseconds(kAppListAnimationDurationMs);
-}
-
-void AppListView::StartAnimationForState(AppListViewState target_state) {
-  base::TimeDelta animation_duration =
-      GetStateTransitionAnimationDuration(target_state);
-
-  if (!app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled())
-    ApplyBoundsAnimation(target_state, animation_duration);
-
-  app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
-      target_state);
-  app_list_main_view_->contents_view()->AnimateToViewState(target_state,
-                                                           animation_duration);
-}
-
 void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
                                        base::TimeDelta duration_ms) {
-  gfx::Rect target_bounds = GetPreferredWidgetBoundsForState(target_state);
+  gfx::Rect target_bounds = GetPreferredWidgetBounds();
 
   // When closing the view should animate to the shelf bounds. The workspace
   // area will not reflect an autohidden shelf so ask for the proper bounds.
@@ -1007,7 +908,7 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
   //     layer has non-identity ransform.
   bool report_animation_throughput =
       layer->transform() == gfx::Transform() &&
-      layer->bounds() == GetPreferredWidgetBoundsForState(app_list_state_);
+      layer->bounds() == GetPreferredWidgetBounds();
 
   // Schedule the animation; set to the target bounds, and make the transform
   // to make this appear in the original location. Then set an empty transform
@@ -1098,16 +999,6 @@ void AppListView::SelectInitialAppsPage() {
   if (GetAppsPaginationModel()->total_pages() > 0 &&
       GetAppsPaginationModel()->selected_page() != 0) {
     GetAppsPaginationModel()->SelectPage(0, false /* animate */);
-  }
-}
-
-int AppListView::GetHeightForState(AppListViewState state) const {
-  switch (app_list_state_) {
-    case AppListViewState::kFullscreenAllApps:
-    case AppListViewState::kFullscreenSearch:
-      return GetFullscreenStateHeight();
-    case AppListViewState::kClosed:
-      return 0;
   }
 }
 
@@ -1253,7 +1144,13 @@ bool AppListView::ShouldIgnoreScrollEvents() {
          GetRootAppsGridView()->pagination_model()->has_transition();
 }
 
-int AppListView::GetPreferredWidgetYForState(AppListViewState state) const {
+gfx::Rect AppListView::GetPreferredWidgetBounds() {
+  // Use parent's width instead of display width to avoid 1 px gap (See
+  // https://crbug.com/884889).
+  CHECK(GetWidget());
+  aura::Window* parent = GetWidget()->GetNativeView()->parent();
+  CHECK(parent);
+
   // Note that app list container fills the screen, so we can treat the
   // container's y as the top of display.
   const display::Display display = GetDisplayNearestView();
@@ -1262,34 +1159,10 @@ int AppListView::GetPreferredWidgetYForState(AppListViewState state) const {
   // The ChromeVox panel as well as the Docked Magnifier viewport affect the
   // workarea of the display. We need to account for that when applist is in
   // fullscreen to avoid being shown below them.
-  const int fullscreen_height = work_area_bounds.y() - display.bounds().y();
+  const int preferred_widget_y = work_area_bounds.y() - display.bounds().y();
 
-  // Force fullscreen height if onscreen keyboard is shown to match the UI state
-  // that's set by default when the onscreen keyboard is first shown.
-  if (onscreen_keyboard_shown_ && state != AppListViewState::kClosed)
-    return fullscreen_height;
-
-  switch (state) {
-    case AppListViewState::kFullscreenAllApps:
-    case AppListViewState::kFullscreenSearch:
-      return fullscreen_height;
-    case AppListViewState::kClosed:
-      if (app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled())
-        return fullscreen_height;
-      // Align the widget y with shelf y to avoid flicker in show animation.
-      return work_area_bounds.bottom() - display.bounds().y();
-  }
-}
-
-gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
-    AppListViewState state) {
-  // Use parent's width instead of display width to avoid 1 px gap (See
-  // https://crbug.com/884889).
-  CHECK(GetWidget());
-  aura::Window* parent = GetWidget()->GetNativeView()->parent();
-  CHECK(parent);
   return delegate_->SnapBoundsToDisplayEdge(
-      gfx::Rect(0, GetPreferredWidgetYForState(state), parent->bounds().width(),
+      gfx::Rect(0, preferred_widget_y, parent->bounds().width(),
                 GetFullscreenStateHeight()));
 }
 

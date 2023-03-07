@@ -237,11 +237,11 @@ void FillWidgetProperties(AXObject& ax_object,
 
   AddHasPopupProperty(node_data.GetHasPopup(), properties);
 
-  const int heading_level = node_data.GetIntAttribute(
+  const int hierarchical_level = node_data.GetIntAttribute(
       ax::mojom::blink::IntAttribute::kHierarchicalLevel);
-  if (heading_level > 0) {
-    properties.emplace_back(
-        CreateProperty(AXPropertyNameEnum::Level, CreateValue(heading_level)));
+  if (hierarchical_level > 0) {
+    properties.emplace_back(CreateProperty(AXPropertyNameEnum::Level,
+                                           CreateValue(hierarchical_level)));
   }
 
   if (RoleAllowsMultiselectable(role)) {
@@ -919,7 +919,7 @@ protocol::Response InspectorAccessibilityAgent::getChildAXNodes(
 
   auto& cache = AttachToAXObjectCache(document);
 
-  AXID ax_id = in_id.ToUInt();
+  AXID ax_id = in_id.ToInt();
   AXObject* ax_object = cache.ObjectFromAXID(ax_id);
 
   if (!ax_object || ax_object->IsDetached())

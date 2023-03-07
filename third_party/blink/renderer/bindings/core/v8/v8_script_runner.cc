@@ -121,7 +121,8 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
     absl::optional<inspector_compile_script_event::V8ConsumeCacheResult>*
         cache_result) {
-  v8::Local<v8::String> code = V8String(isolate, classic_script.SourceText());
+  v8::Local<v8::String> code = V8String(isolate, classic_script.SourceText(),
+                                        classic_script.ResourceKeepAlive());
 
   // TODO(kouhei): Plumb the ScriptState into this function and replace all
   // Isolate->GetCurrentContext in this function with ScriptState->GetContext.
@@ -205,6 +206,8 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       }
       return script;
     }
+    default:
+      NOTREACHED();
   }
 
   // All switch branches should return and we should never get here.
@@ -350,6 +353,8 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
                 cached_data->length, cached_data->rejected));
         break;
       }
+      default:
+        NOTREACHED();
     }
   }
 

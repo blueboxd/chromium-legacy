@@ -5,11 +5,12 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/safe_browsing/core/browser/db/v4_database.h"
@@ -29,8 +30,8 @@ class FakeV4Store : public V4Store {
             std::make_unique<InMemoryHashPrefixMap>()),
         hash_prefix_should_match_(hash_prefix_matches) {}
 
-  HashPrefix GetMatchingHashPrefix(const FullHash& full_hash) override {
-    return hash_prefix_should_match_ ? full_hash : HashPrefix();
+  HashPrefixStr GetMatchingHashPrefix(const FullHashStr& full_hash) override {
+    return hash_prefix_should_match_ ? full_hash : HashPrefixStr();
   }
 
   bool HasValidData() override { return true; }

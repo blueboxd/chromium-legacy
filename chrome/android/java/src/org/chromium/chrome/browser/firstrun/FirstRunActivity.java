@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
@@ -26,7 +25,6 @@ import org.chromium.base.Promise;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BackPressHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.fonts.FontPreloader;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -129,15 +127,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * The pager adapter, which provides the pages to the view pager widget.
      */
     private FirstRunPagerAdapter mPagerAdapter;
-
-    @Override
-    protected void onPreCreate() {
-        super.onPreCreate();
-        BackPressHelper.create(this, getOnBackPressedDispatcher(), () -> {
-            handleBackPressed();
-            return true;
-        });
-    }
 
     private boolean isFlowKnown() {
         return mFreProperties != null;
@@ -423,19 +412,13 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                     activity.finish();
                 } else {
                     activity.finishAndRemoveTask();
-                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                        // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails. Try one
-                        // last time, see crbug.com/781396 for origin of this approach.
-                        if (!activity.isFinishing()) {
-                            activity.finish();
-                        }
-                    }
                 }
             }
         }
     }
 
-    private void handleBackPressed() {
+    @Override
+    public void handleBackPress() {
         // Terminate if we are still waiting for the native or for Android EDU / GAIA Child checks.
         if (!mPostNativeAndPolicyPagesCreated) {
             abortFirstRunExperience();

@@ -79,10 +79,10 @@ gfx::PointF GetCursorLocationInWindow(aura::Window* window) {
   return cursor_point;
 }
 
-// Gets the location of the given mouse |event| in the coordinates of the given
-// |window|.
+// Gets the location of the given `event` in the coordinates of the given
+// `window`.
 gfx::PointF GetEventLocationInWindow(aura::Window* window,
-                                     const ui::MouseEvent& event) {
+                                     const ui::LocatedEvent& event) {
   aura::Window* target = static_cast<aura::Window*>(event.target());
   gfx::PointF location = event.location_f();
   if (target != window)
@@ -346,11 +346,13 @@ void VideoRecordingWatcher::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  if (is_in_projector_mode_)
+  if (is_in_projector_mode_) {
     recording_overlay_controller_->SetBounds(GetOverlayWidgetBounds());
+  }
 
-  if (recording_source_ != CaptureModeSource::kWindow)
+  if (recording_source_ != CaptureModeSource::kWindow) {
     return;
+  }
 
   // We care only about size changes, since the location of the window won't
   // affect the recorded video frames of it, however, the size of the window
@@ -362,9 +364,13 @@ void VideoRecordingWatcher::OnWindowBoundsChanged(
       FROM_HERE, kWindowSizeChangeThrottleDelay, this,
       &VideoRecordingWatcher::OnWindowSizeChangeThrottleTimerFiring);
 
-  // The bounds of the camera preview should be updated if the bounds of the
-  // window being recorded is changed.
+  // The bounds of the camera preview widget and key combo widget should be
+  // updated if the bounds of the window being recorded is changed.
   controller_->camera_controller()->MaybeUpdatePreviewWidget();
+
+  if (demo_tools_controller_) {
+    demo_tools_controller_->RefreshBounds();
+  }
 }
 
 void VideoRecordingWatcher::OnWindowOpacitySet(
@@ -487,6 +493,10 @@ void VideoRecordingWatcher::OnDisplayMetricsChanged(
   if (recording_source_ != CaptureModeSource::kWindow)
     controller_->camera_controller()->MaybeUpdatePreviewWidget();
 
+  if (demo_tools_controller_) {
+    demo_tools_controller_->RefreshBounds();
+  }
+
   // We don't show a dimming overlay when recording a fullscreen.
   if (recording_source_ == CaptureModeSource::kFullscreen)
     return;
@@ -549,6 +559,17 @@ void VideoRecordingWatcher::OnMouseEvent(ui::MouseEvent* event) {
 
     default:
       UpdateOrThrottleCursorOverlay(location_in_window);
+  }
+}
+
+void VideoRecordingWatcher::OnTouchEvent(ui::TouchEvent* event) {
+  if (demo_tools_controller_ && (event->type() == ui::ET_TOUCH_PRESSED ||
+                                 event->type() == ui::ET_TOUCH_RELEASED ||
+                                 event->type() == ui::ET_TOUCH_MOVED ||
+                                 event->type() == ui::ET_TOUCH_CANCELLED)) {
+    demo_tools_controller_->OnTouchEvent(
+        event->type(), event->pointer_details().id,
+        GetEventLocationInWindow(window_being_recorded_, *event));
   }
 }
 

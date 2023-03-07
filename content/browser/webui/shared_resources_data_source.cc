@@ -17,8 +17,8 @@
 #include "skia/grit/skia_resources.h"
 #include "skia/grit/skia_resources_map.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/resources/grit/webui_generated_resources.h"
-#include "ui/resources/grit/webui_generated_resources_map.h"
+#include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_resources_map.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/ash/grit/ash_resources.h"
@@ -57,6 +57,7 @@ const std::set<int> GetChromeosMojoResourceIds() {
       IDR_NETWORK_DIAGNOSTICS_MOJOM_LITE_JS,
       IDR_NETWORK_DIAGNOSTICS_MOJOM_WEBUI_JS,
       IDR_NETWORK_HEALTH_MOJOM_WEBUI_JS,
+      IDR_NETWORK_HEALTH_TYPES_MOJOM_WEBUI_JS,
   };
 }
 
@@ -73,6 +74,8 @@ const std::set<int> GetAshMojoResourceIds() {
       IDR_MULTIDEVICE_MULTIDEVICE_SETUP_MOJOM_WEBUI_JS,
       IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_LITE_JS,
       IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_WEBUI_JS,
+      IDR_NEARBY_NEARBY_SHARE_SETTINGS_MOJOM_WEBUI_JS,
+      IDR_NEARBY_NEARBY_SHARE_TARGET_TYPES_MOJOM_WEBUI_JS,
   };
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -103,7 +106,7 @@ void PopulateSharedResourcesDataSource(WebUIDataSource* source) {
   AddResources(GetContentResourceIds(), kContentResources,
                kContentResourcesSize, source);
   source->AddResourcePaths(
-      base::make_span(kWebuiGeneratedResources, kWebuiGeneratedResourcesSize));
+      base::make_span(kWebuiResources, kWebuiResourcesSize));
   source->AddResourcePaths(
       base::make_span(kMojoBindingsResources, kMojoBindingsResourcesSize));
   source->AddResourcePaths(base::make_span(kSkiaResources, kSkiaResourcesSize));

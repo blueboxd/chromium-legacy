@@ -11,8 +11,8 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
@@ -59,7 +59,8 @@ const float kNormalFrameTimeoutInFrameIntervals = 25.0f;
 
 // Min delta time between two frames allowed without being dropped if a max
 // frame rate is specified.
-constexpr base::TimeDelta kMinTimeInMsBetweenFrames = base::Milliseconds(5);
+constexpr base::TimeDelta kMinTimeInMsBetweenFrames =
+    base::Milliseconds(VideoTrackAdapter::kMinTimeBetweenFramesMs);
 // If the delta between two frames is bigger than this, we will consider it to
 // be invalid and reset the fps calculation.
 constexpr base::TimeDelta kMaxTimeInMsBetweenFrames = base::Milliseconds(1000);
@@ -264,6 +265,8 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       last_time_stamp_(base::TimeDelta::Max()),
       keep_frame_counter_(0.0) {
+  DVLOG(1) << __func__ << " max_framerate "
+           << settings.max_frame_rate().value_or(-1);
   DCHECK(renderer_task_runner_.get());
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_sequence_checker_);
   CHECK_NE(0, settings_.max_aspect_ratio());
@@ -271,7 +274,8 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
   absl::optional<double> max_fps_override =
       Platform::Current()->GetWebRtcMaxCaptureFrameRate();
   if (max_fps_override) {
-    DVLOG(1) << "Overriding max frame rate.  Was=" << settings_.max_frame_rate()
+    DVLOG(1) << "Overriding max frame rate.  Was="
+             << settings_.max_frame_rate().value_or(-1)
              << ", Now=" << *max_fps_override;
     settings_.set_max_frame_rate(*max_fps_override);
   }
@@ -360,6 +364,9 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     return;
   }
 
+  // Update the last timestamp since the frame was approved and not dropped.
+  last_time_stamp_ = video_frame->timestamp();
+
   // If the frame is a texture not backed up by GPU memory we don't apply
   // cropping/scaling and deliver the frame as-is, leaving it up to the
   // destination to rescale it. Otherwise, cropping and scaling is soft-applied
@@ -394,14 +401,21 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     gfx::Rect region_in_frame = media::ComputeLetterboxRegion(
         video_frame->visible_rect(), desired_size);
 
-    if (video_frame->HasTextures() || video_frame->HasGpuMemoryBuffer()) {
-      // ComputeLetterboxRegion() produces in some cases odd dimensions due to
-      // internal rounding errors; |region_in_frame| is always smaller or equal
-      // to video_frame->visible_rect(), we can "grow it" if the dimensions are
-      // odd.
-      region_in_frame.set_width((region_in_frame.width() + 1) & ~1);
-      region_in_frame.set_height((region_in_frame.height() + 1) & ~1);
-    }
+    // Some consumers (for example
+    // ImageCaptureFrameGrabber::SingleShotFrameHandler::ConvertAndDeliverFrame)
+    // don't support pixel format conversions when the source format is YUV with
+    // UV subsampled and vsible_rect().x() being odd. The conversion ends up
+    // miscomputing the UV plane and ends up with a VU plane leading to a blue
+    // face tint. Round x() to even to avoid. See crbug.com/1307304.
+    region_in_frame.set_x(region_in_frame.x() & ~1);
+    region_in_frame.set_y(region_in_frame.y() & ~1);
+
+    // ComputeLetterboxRegion() sometimes produces odd dimensions due to
+    // internal rounding errors; |region_in_frame| is always smaller or equal
+    // to video_frame->visible_rect(), we can "grow it" if the dimensions are
+    // odd.
+    region_in_frame.set_width((region_in_frame.width() + 1) & ~1);
+    region_in_frame.set_height((region_in_frame.height() + 1) & ~1);
 
     delivered_video_frame = media::VideoFrame::WrapVideoFrame(
         video_frame, video_frame->format(), region_in_frame, desired_size);
@@ -482,8 +496,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_sequence_checker_);
 
   // Do not drop frames if max frame rate hasn't been specified.
-  if (settings_.max_frame_rate() == 0.0f) {
-    last_time_stamp_ = frame.timestamp();
+  if (!settings_.max_frame_rate().has_value()) {
     return false;
   }
 
@@ -492,16 +505,17 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   // Check if the time since the last frame is completely off.
   if (delta_ms.is_negative() || delta_ms > kMaxTimeInMsBetweenFrames) {
     DVLOG(3) << " reset timestamps";
-    // Reset |last_time_stamp_| and fps calculation.
-    last_time_stamp_ = frame.timestamp();
-    frame_rate_ = MediaStreamVideoSource::kDefaultFrameRate;
+    // Reset fps calculation.
+    frame_rate_ = settings_.max_frame_rate().value_or(
+        MediaStreamVideoSource::kDefaultFrameRate);
+    DVLOG(1) << " frame rate filter initialized to " << frame_rate_ << " fps";
     keep_frame_counter_ = 0.0;
     return false;
   }
 
   if (delta_ms < kMinTimeInMsBetweenFrames) {
     // We have seen video frames being delivered from camera devices back to
-    // back. The simple AR filter for frame rate calculation is too short to
+    // back. The simple EMA filter for frame rate calculation is too short to
     // handle that. https://crbug/394315
     // TODO(perkj): Can we come up with a way to fix the times stamps and the
     // timing when frames are delivered so all frames can be used?
@@ -514,25 +528,27 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
         kResolutionAdapterTimestampTooCloseToPrevious;
     return true;
   }
-  last_time_stamp_ = frame.timestamp();
-  // Calculate the frame rate using a simple AR filter.
+
+  // Calculate the frame rate using an exponential moving average (EMA) filter.
   // Use a simple filter with 0.1 weight of the current sample.
   frame_rate_ = 100 / delta_ms.InMillisecondsF() + 0.9 * frame_rate_;
-  DVLOG(3) << " delta_ms " << delta_ms << " frame_rate_ " << frame_rate_;
+  DVLOG(3) << " delta_ms=" << delta_ms << ", frame_rate=" << frame_rate_
+           << " fps";
 
   // Prefer to not drop frames.
-  if (settings_.max_frame_rate() + 0.5f > frame_rate_)
+  if (*settings_.max_frame_rate() + 0.5f > frame_rate_) {
     return false;  // Keep this frame.
+  }
 
   // The input frame rate is higher than requested.
   // Decide if we should keep this frame or drop it.
-  keep_frame_counter_ += settings_.max_frame_rate() / frame_rate_;
+  keep_frame_counter_ += *settings_.max_frame_rate() / frame_rate_;
   if (keep_frame_counter_ >= 1) {
     keep_frame_counter_ -= 1;
     // Keep the frame.
     return false;
   }
-  DVLOG(3) << "Drop frame. Input frame_rate_ " << frame_rate_ << ".";
+  DVLOG(3) << "Drop frame since frame rate is too high.";
   *reason = media::VideoCaptureFrameDropReason::
       kResolutionAdapterFrameRateIsHigherThanRequested;
   return true;

@@ -94,6 +94,7 @@
 
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -181,6 +182,7 @@
 #include "third_party/blink/renderer/core/events/after_print_event.h"
 #include "third_party/blink/renderer/core/events/before_print_event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -2653,6 +2655,18 @@ void WebLocalFrameImpl::CommitNavigation(
     navigation_params->storage_key = GetFrame()->DomWindow()->GetStorageKey();
     navigation_params->document_ukm_source_id =
         GetFrame()->DomWindow()->UkmSourceID();
+
+    // This corresponds to step 8 of
+    // https://html.spec.whatwg.org/multipage/browsers.html#creating-a-new-browsing-context.
+    // Most of these steps are handled in the caller
+    // (RenderFrameImpl::SynchronouslyCommitAboutBlankForBug778318) but the
+    // caller doesn't have access to the core frame (LocalFrame).
+    // The actual agent is determined downstream, but here we need to request
+    // whether an origin-keyed agent is needed. Since this case is only
+    // for about:blank navigations this reduces to copying the agent flag from
+    // the current document.
+    navigation_params->origin_agent_cluster =
+        GetFrame()->GetDocument()->GetAgent().IsOriginKeyedForInheritance();
   }
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
@@ -2704,7 +2718,6 @@ void WebLocalFrameImpl::SetIsNotOnInitialEmptyDocument() {
   DCHECK(GetFrame());
   GetFrame()->GetDocument()->OverrideIsInitialEmptyDocument();
   GetFrame()->Loader().SetIsNotOnInitialEmptyDocument();
-  GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
 }
 
 bool WebLocalFrameImpl::IsOnInitialEmptyDocument() {
@@ -3123,11 +3136,17 @@ WebLocalFrameImpl::ConvertNotRestoredReasons(
     not_restored_reasons =
         mojom::blink::BackForwardCacheNotRestoredReasons::New();
     not_restored_reasons->blocked = reasons_to_copy->blocked;
-    auto details = mojom::blink::SameOriginBfcacheNotRestoredDetails::New();
+    if (reasons_to_copy->id) {
+      not_restored_reasons->id = reasons_to_copy->id.value().c_str();
+    }
+    if (reasons_to_copy->name) {
+      not_restored_reasons->name = reasons_to_copy->name.value().c_str();
+    }
+    if (reasons_to_copy->src) {
+      not_restored_reasons->src = reasons_to_copy->src.value().c_str();
+    }
     if (reasons_to_copy->same_origin_details) {
-      details->id = reasons_to_copy->same_origin_details->id.c_str();
-      details->name = reasons_to_copy->same_origin_details->name.c_str();
-      details->src = reasons_to_copy->same_origin_details->src.c_str();
+      auto details = mojom::blink::SameOriginBfcacheNotRestoredDetails::New();
       details->url = reasons_to_copy->same_origin_details->url.c_str();
       for (const auto& reason : reasons_to_copy->same_origin_details->reasons) {
         details->reasons.push_back(reason.c_str());
@@ -3135,8 +3154,8 @@ WebLocalFrameImpl::ConvertNotRestoredReasons(
       for (const auto& child : reasons_to_copy->same_origin_details->children) {
         details->children.push_back(ConvertNotRestoredReasons(child));
       }
+      not_restored_reasons->same_origin_details = std::move(details);
     }
-    not_restored_reasons->same_origin_details = std::move(details);
   }
   return not_restored_reasons;
 }

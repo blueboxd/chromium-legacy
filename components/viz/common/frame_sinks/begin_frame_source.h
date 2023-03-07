@@ -412,6 +412,8 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   // observers.
   virtual void SetPreferredInterval(base::TimeDelta interval) {}
 
+  virtual void SetVSyncDisplayID(int64_t display_id) {}
+
  protected:
   // Called on AddObserver and gets missed BeginFrameArgs for the given
   // observer. The missed BeginFrame is sent only if the returned

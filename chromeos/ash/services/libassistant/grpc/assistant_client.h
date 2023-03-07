@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/scoped_observation_traits.h"
 #include "chromeos/ash/services/libassistant/grpc/external_services/grpc_services_observer.h"
 #include "chromeos/ash/services/libassistant/grpc/services_status_observer.h"
@@ -159,8 +159,6 @@ class AssistantClient {
       base::OnceCallback<void(bool)> on_done) = 0;
   virtual void RegisterActionModule(
       assistant_client::ActionModule* action_module) = 0;
-  virtual void SendScreenContextRequest(
-      const std::vector<std::string>& context_protos) = 0;
   virtual void StartVoiceInteraction() = 0;
   virtual void StopAssistantInteraction(bool cancel_conversation) = 0;
   virtual void AddConversationStateEventObserver(
@@ -239,11 +237,6 @@ class AssistantClient {
 };
 
 }  // namespace ash::libassistant
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::libassistant {
-using ::ash::libassistant::AssistantClient;
-}
 
 namespace base {
 

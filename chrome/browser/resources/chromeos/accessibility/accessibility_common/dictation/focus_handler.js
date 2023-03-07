@@ -7,6 +7,7 @@ const AutomationEvent = chrome.automation.AutomationEvent;
 const EventType = chrome.automation.EventType;
 
 import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {AsyncUtil} from '../../common/async_util.js';
 import {EventHandler} from '../../common/event_handler.js';
 
 export class FocusHandler {
@@ -25,6 +26,12 @@ export class FocusHandler {
 
     /** @private {?EventHandler} */
     this.eventHandler_ = null;
+
+    /** @private {?function(): void} */
+    this.onActiveChangedForTesting_ = null;
+
+    /** @private {?function(): void} */
+    this.onEditableNodeChangedForTesting_ = null;
   }
 
   /**
@@ -52,13 +59,10 @@ export class FocusHandler {
       return;
     }
 
-    const desktop =
-        await new Promise(resolve => chrome.automation.getDesktop(resolve));
-
-    const focus =
-        await new Promise(resolve => chrome.automation.getFocus(resolve));
+    const desktop = await AsyncUtil.getDesktop();
+    const focus = await AsyncUtil.getFocus();
     if (focus && AutomationPredicate.editText(focus)) {
-      this.editableNode_ = focus;
+      this.setEditableNode_(focus);
     }
 
     if (!this.eventHandler_) {
@@ -68,15 +72,15 @@ export class FocusHandler {
     this.eventHandler_.setNodes(desktop);
     this.eventHandler_.start();
 
-    this.active_ = true;
+    this.setActive_(true);
   }
 
   /** @private */
   deactivate_() {
     this.eventHandler_.stop();
     this.eventHandler_ = null;
-    this.active_ = false;
-    this.editableNode_ = null;
+    this.setActive_(false);
+    this.setEditableNode_(null);
   }
 
   /**
@@ -87,16 +91,38 @@ export class FocusHandler {
   onFocusChanged_(event) {
     const node = event.target;
     if (!node || !AutomationPredicate.editText(node)) {
-      this.editableNode_ = null;
+      this.setEditableNode_(null);
       return;
     }
 
-    this.editableNode_ = node;
+    this.setEditableNode_(node);
   }
 
   /** @return {?AutomationNode} */
   getEditableNode() {
     return this.editableNode_;
+  }
+
+  /**
+   * @param {boolean} value
+   * @private
+   */
+  setActive_(value) {
+    this.active_ = value;
+    if (this.onActiveChangedForTesting_) {
+      this.onActiveChangedForTesting_();
+    }
+  }
+
+  /**
+   * @param {AutomationNode} node
+   * @private
+   */
+  setEditableNode_(node) {
+    this.editableNode_ = node;
+    if (this.onEditableNodeChangedForTesting_) {
+      this.onEditableNodeChangedForTesting_();
+    }
   }
 
   /** @return {boolean} */

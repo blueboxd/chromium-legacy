@@ -116,6 +116,10 @@ template("rust_target") {
     if (defined(invoker.executable_configs)) {
       _configs += invoker.executable_configs
     }
+  } else if (invoker.target_type == "rust_proc_macro") {
+    if (defined(invoker.proc_macro_configs)) {
+      _configs += invoker.proc_macro_configs
+    }
   } else {
     if (defined(invoker.library_configs)) {
       _configs += invoker.library_configs
@@ -123,14 +127,6 @@ template("rust_target") {
   }
   _forward_to_host_toolchain = false
   if (invoker.target_type == "rust_proc_macro") {
-    # TODO(crbug.com/gn/104): GN rust_proc_macro targets are missing this
-    # command line flag, for the proc_macro crate which is provided by rustc for
-    # compiling proc-macros.
-    _rustflags += [
-      "--extern",
-      "proc_macro",
-    ]
-
     if (current_toolchain != host_toolchain) {
       _forward_to_host_toolchain = true
     }
@@ -146,6 +142,12 @@ template("rust_target") {
   _public_deps = []
   if (defined(invoker.public_deps)) {
     _public_deps += invoker.public_deps
+  }
+  if (defined(invoker.aliased_deps)) {
+    _aliased_deps = invoker.aliased_deps
+  } else {
+    _aliased_deps = {
+    }
   }
 
   _build_unit_tests = false
@@ -203,10 +205,12 @@ template("rust_target") {
                  "_crate_name",
                  "_cxx_bindings",
                  "_deps",
+                 "_aliased_deps",
                  "_metadata",
                  "_out_dir",
                  "_public_deps",
                  "_rustenv",
+                 "_rustflags",
                  "_support_use_from_cpp",
                  "_test_deps",
                  "_testonly",
@@ -240,6 +244,7 @@ template("rust_target") {
     }
 
     _rust_deps = _deps
+    _rust_aliased_deps = _aliased_deps
     _rust_public_deps = _public_deps
     _cxx_deps = _deps
 
@@ -263,6 +268,7 @@ template("rust_target") {
                              TESTONLY_AND_VISIBILITY + [
                                    "features",
                                    "deps",
+                                   "aliased_deps",
                                    "public_deps",
                                    "rustflags",
                                    "rustenv",
@@ -279,6 +285,7 @@ template("rust_target") {
       configs = []
       configs = _configs
       deps = _rust_deps
+      aliased_deps = _rust_aliased_deps
       public_deps = _rust_public_deps
       rustflags = _rustflags
       rustflags += [ string_join("",
@@ -334,6 +341,7 @@ template("rust_target") {
         rustflags = _rustflags
         output_dir = _out_dir
         deps = _rust_deps + _public_deps
+        aliased_deps = _rust_aliased_deps
         public_deps = [ ":${_target_name}" ]
         if (defined(invoker.test_deps)) {
           deps += invoker.test_deps
@@ -364,4 +372,5 @@ template("rust_target") {
 set_defaults("rust_target") {
   executable_configs = default_executable_configs
   library_configs = default_compiler_configs
+  proc_macro_configs = default_rust_proc_macro_configs
 }

@@ -92,7 +92,7 @@
   // OmniboxPopupViewSuggestionsDelegate instead of OmniboxViewIOS.
   std::unique_ptr<OmniboxViewIOS> _editView;
 }
-@synthesize editController = _editController;
+@synthesize editModelDelegate = _editModelDelegate;
 @synthesize keyboardDelegate = _keyboardDelegate;
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
@@ -110,6 +110,8 @@
   self.viewController.defaultLeadingImage =
       GetOmniboxSuggestionIcon(OmniboxSuggestionIconType::kDefaultFavicon);
   self.viewController.textInputDelegate = self;
+  self.viewController.layoutGuideCenter =
+      LayoutGuideCenterForBrowser(self.browser);
   self.mediator = [[OmniboxMediator alloc] initWithIncognito:isIncognito];
 
   TemplateURLService* templateURLService =
@@ -132,12 +134,12 @@
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
   self.viewController.pasteDelegate = self.mediator;
 
-  DCHECK(self.editController);
+  DCHECK(self.editModelDelegate);
 
   id<OmniboxCommands> focuser =
       static_cast<id<OmniboxCommands>>(self.browser->GetCommandDispatcher());
   _editView = std::make_unique<OmniboxViewIOS>(
-      self.textField, self.editController, self.browser->GetBrowserState(),
+      self.textField, self.editModelDelegate, self.browser->GetBrowserState(),
       focuser);
   self.pasteDelegate = [[OmniboxTextFieldPasteDelegate alloc] init];
   [self.textField setPasteDelegate:self.pasteDelegate];
@@ -178,7 +180,7 @@
   self.viewController.textChangeDelegate = nil;
   self.returnDelegate.acceptDelegate = nil;
   _editView.reset();
-  self.editController = nil;
+  self.editModelDelegate = nil;
   self.viewController = nil;
   self.mediator.templateURLService = nullptr;  // Unregister the observer.
   if (self.keyboardAccessoryView) {

@@ -91,9 +91,11 @@ class TaskScheduler {
 
     // User ID under which the task runs.
     std::wstring user_id;
+
+    TriggerType trigger_type = TRIGGER_TYPE_MAX;
   };
 
-  static std::unique_ptr<TaskScheduler> CreateInstance();
+  static std::unique_ptr<TaskScheduler> CreateInstance(UpdaterScope scope);
 
   TaskScheduler(const TaskScheduler&) = delete;
   TaskScheduler& operator=(const TaskScheduler&) = delete;
@@ -119,6 +121,9 @@ class TaskScheduler {
   // Return true if task exists and is enabled.
   virtual bool IsTaskEnabled(const wchar_t* task_name) = 0;
 
+  // Return true if task exists and is running.
+  virtual bool IsTaskRunning(const wchar_t* task_name) = 0;
+
   // List all currently registered scheduled tasks.
   virtual bool GetTaskNameList(std::vector<std::wstring>* task_names) = 0;
 
@@ -135,8 +140,7 @@ class TaskScheduler {
 
   // Register the task to run the specified application and using the given
   // |trigger_type|.
-  virtual bool RegisterTask(UpdaterScope scope,
-                            const wchar_t* task_name,
+  virtual bool RegisterTask(const wchar_t* task_name,
                             const wchar_t* task_description,
                             const base::CommandLine& run_command,
                             TriggerType trigger_type,
@@ -148,7 +152,7 @@ class TaskScheduler {
 
   // Name of the sub-folder that the scheduled tasks are created in, prefixed
   // with the company folder `GetTaskCompanyFolder`.
-  virtual std::wstring GetTaskSubfolderName(UpdaterScope scope) = 0;
+  virtual std::wstring GetTaskSubfolderName() = 0;
 
  protected:
   TaskScheduler();

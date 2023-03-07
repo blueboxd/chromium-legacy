@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/display/screen_info.h"
 
@@ -520,6 +521,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer_;
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
   mojo::Remote<blink::mojom::blink::MediaDevicesDispatcherHost>
       media_devices_dispatcher_;
   MockMediaStreamVideoCapturerSource* video_source_ = nullptr;
@@ -1066,8 +1068,7 @@ TEST_P(UserMediaClientTest, DefaultConstraintsPropagate) {
       1.0 / static_cast<double>(blink::MediaStreamVideoSource::kDefaultHeight));
   EXPECT_EQ(track_settings.max_aspect_ratio(),
             static_cast<double>(blink::MediaStreamVideoSource::kDefaultWidth));
-  // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
-  EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
+  EXPECT_EQ(track_settings.max_frame_rate(), absl::nullopt);
 }
 
 TEST_P(UserMediaClientTest, DefaultTabCapturePropagate) {
@@ -1119,8 +1120,7 @@ TEST_P(UserMediaClientTest, DefaultTabCapturePropagate) {
   EXPECT_EQ(track_settings.min_aspect_ratio(),
             1.0 / blink::kMaxScreenCastDimension);
   EXPECT_EQ(track_settings.max_aspect_ratio(), blink::kMaxScreenCastDimension);
-  // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
-  EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
+  EXPECT_EQ(track_settings.max_frame_rate(), absl::nullopt);
 }
 
 TEST_P(UserMediaClientTest, DefaultDesktopCapturePropagate) {
@@ -1173,8 +1173,7 @@ TEST_P(UserMediaClientTest, DefaultDesktopCapturePropagate) {
   EXPECT_EQ(track_settings.min_aspect_ratio(),
             1.0 / blink::kMaxScreenCastDimension);
   EXPECT_EQ(track_settings.max_aspect_ratio(), blink::kMaxScreenCastDimension);
-  // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
-  EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
+  EXPECT_EQ(track_settings.max_frame_rate(), absl::nullopt);
 }
 
 TEST_P(UserMediaClientTest, NonDefaultAudioConstraintsPropagate) {
@@ -1646,7 +1645,7 @@ TEST_P(UserMediaClientTest, ZoomConstraintRequestPanTiltZoomPermission) {
       advanced_factory.CreateMediaConstraints()));
 }
 
-TEST_P(UserMediaClientTest, MultiDeviceOnStreamGenerated) {
+TEST_P(UserMediaClientTest, MultiDeviceOnStreamsGenerated) {
   const size_t devices_count = 5u;
   const int32_t request_id = 0;
   std::unique_ptr<blink::MediaDevicesDispatcherHostMock>
@@ -1671,7 +1670,7 @@ TEST_P(UserMediaClientTest, MultiDeviceOnStreamGenerated) {
         blink::mojom::blink::StreamDevices::New(absl::nullopt,
                                                 blink::MediaStreamDevice()));
   }
-  user_media_processor_->OnStreamGenerated(
+  user_media_processor_->OnStreamsGenerated(
       request_id, blink::mojom::MediaStreamRequestResult::OK, "",
       std::move(stream_devices_set), /*pan_tilt_zoom_allowed=*/false);
   base::RunLoop run_loop;

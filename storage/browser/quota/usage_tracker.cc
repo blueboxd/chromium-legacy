@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "storage/browser/quota/client_usage_tracker.h"
 #include "storage/browser/quota/quota_client_type.h"
@@ -308,9 +308,6 @@ void UsageTracker::AccumulateClientUsageWithBreakdown(
       break;
     case QuotaClientType::kBackgroundFetch:
       info->usage_breakdown->backgroundFetch += total_usage;
-      break;
-    case QuotaClientType::kNativeIO:
-      info->usage_breakdown->fileSystem += total_usage;
       break;
     case QuotaClientType::kMediaLicense:
       // Media license data does not count against quota and should always

@@ -4,8 +4,11 @@
 
 #include "content/browser/preloading/preloading_attempt_impl.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/state_transitions.h"
+#include "base/strings/strcat.h"
 #include "content/public/browser/preloading.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -63,6 +66,24 @@ void DCHECKTriggeringOutcomeTransitions(PreloadingTriggeringOutcome old_state,
 #endif  // DCHECK_IS_ON()
 }
 
+static base::StringPiece PreloadingTypeToString(PreloadingType type) {
+  switch (type) {
+    case PreloadingType::kUnspecified:
+      return "Unspecified";
+    case PreloadingType::kPreconnect:
+      return "Preconnect";
+    case PreloadingType::kPrefetch:
+      return "Prefetch";
+    case PreloadingType::kPrerender:
+      return "Prerender";
+    case PreloadingType::kNoStatePrefetch:
+      return "NoStatePrefetch";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 }  // namespace
 
 void PreloadingAttemptImpl::SetEligibility(PreloadingEligibility eligibility) {
@@ -97,6 +118,25 @@ void PreloadingAttemptImpl::SetTriggeringOutcome(
   DCHECKTriggeringOutcomeTransitions(/*old_state=*/triggering_outcome_,
                                      /*new_state=*/triggering_outcome);
   triggering_outcome_ = triggering_outcome;
+
+  // Set the ready time, if this attempt was not already ready.
+  switch (triggering_outcome_) {
+    // Currently only Prefetch, Prerender and NoStatePrefetch have a ready
+    // state. Other preloading features do not track the entire progress of the
+    // preloading attempt, where
+    // `PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown` is set for
+    // those other features.
+    case PreloadingTriggeringOutcome::kReady:
+      DCHECK(preloading_type_ == PreloadingType::kPrefetch ||
+             preloading_type_ == PreloadingType::kPrerender ||
+             preloading_type_ == PreloadingType::kNoStatePrefetch);
+      if (!ready_time_) {
+        ready_time_ = elapsed_timer_.Elapsed();
+      }
+      break;
+    default:
+      break;
+  }
 }
 
 void PreloadingAttemptImpl::SetFailureReason(PreloadingFailureReason reason) {
@@ -130,7 +170,7 @@ PreloadingAttemptImpl::PreloadingAttemptImpl(
 
 PreloadingAttemptImpl::~PreloadingAttemptImpl() = default;
 
-void PreloadingAttemptImpl::RecordPreloadingAttemptUKMs(
+void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
     ukm::SourceId navigated_page_source_id) {
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
 
@@ -143,33 +183,69 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptUKMs(
 
   // Don't log when the source id is invalid.
   if (navigated_page_source_id != ukm::kInvalidSourceId) {
-    ukm::builders::Preloading_Attempt(navigated_page_source_id)
-        .SetPreloadingType(static_cast<int64_t>(preloading_type_))
-        .SetPreloadingPredictor(static_cast<int64_t>(predictor_type_))
+    ukm::builders::Preloading_Attempt builder(navigated_page_source_id);
+    builder.SetPreloadingType(static_cast<int64_t>(preloading_type_))
+        .SetPreloadingPredictor(predictor_type_.ukm_value())
         .SetEligibility(static_cast<int64_t>(eligibility_))
         .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
         .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
         .SetFailureReason(static_cast<int64_t>(failure_reason_))
-        .SetAccurateTriggering(is_accurate_triggering_)
-        .Record(ukm_recorder);
+        .SetAccurateTriggering(is_accurate_triggering_);
+    if (time_to_next_navigation_) {
+      builder.SetTimeToNextNavigation(ukm::GetExponentialBucketMinForCounts1000(
+          time_to_next_navigation_->InMilliseconds()));
+    }
+    if (ready_time_) {
+      builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
+          ready_time_->InMilliseconds()));
+    }
+    builder.Record(ukm_recorder);
   }
 
   if (triggered_primary_page_source_id_ != ukm::kInvalidSourceId) {
-    ukm::builders::Preloading_Attempt_PreviousPrimaryPage(
-        triggered_primary_page_source_id_)
-        .SetPreloadingType(static_cast<int64_t>(preloading_type_))
-        .SetPreloadingPredictor(static_cast<int64_t>(predictor_type_))
+    ukm::builders::Preloading_Attempt_PreviousPrimaryPage builder(
+        triggered_primary_page_source_id_);
+    builder.SetPreloadingType(static_cast<int64_t>(preloading_type_))
+        .SetPreloadingPredictor(predictor_type_.ukm_value())
         .SetEligibility(static_cast<int64_t>(eligibility_))
         .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
         .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
         .SetFailureReason(static_cast<int64_t>(failure_reason_))
-        .SetAccurateTriggering(is_accurate_triggering_)
-        .Record(ukm_recorder);
+        .SetAccurateTriggering(is_accurate_triggering_);
+    if (time_to_next_navigation_) {
+      builder.SetTimeToNextNavigation(ukm::GetExponentialBucketMinForCounts1000(
+          time_to_next_navigation_->InMilliseconds()));
+    }
+    if (ready_time_) {
+      builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
+          ready_time_->InMilliseconds()));
+    }
+    builder.Record(ukm_recorder);
   }
+
+  RecordPreloadingAttemptUMA();
+}
+
+void PreloadingAttemptImpl::RecordPreloadingAttemptUMA() {
+  // Records the triggering outcome enum. This can be used to:
+  // 1. Track the number of attempts;
+  // 2. Track the attempts' rates of various terminal status (i.e. success
+  // rate).
+  const auto uma_triggering_outcome_histogram =
+      base::StrCat({"Preloading.", PreloadingTypeToString(preloading_type_),
+                    ".Attempt.", predictor_type_.name(), ".TriggeringOutcome"});
+  base::UmaHistogramEnumeration(std::move(uma_triggering_outcome_histogram),
+                                triggering_outcome_);
 }
 
 void PreloadingAttemptImpl::SetIsAccurateTriggering(const GURL& navigated_url) {
   DCHECK(url_match_predicate_);
+
+  // `PreloadingAttemptImpl::SetIsAccurateTriggering` is called during
+  // `WCO::DidStartNavigation`.
+  if (!time_to_next_navigation_) {
+    time_to_next_navigation_ = elapsed_timer_.Elapsed();
+  }
 
   // Use the predicate to match the URLs as the matching logic varies for each
   // predictor.

@@ -21,7 +21,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/base64.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -139,7 +139,7 @@ class FastPairRepositoryImplTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    chromeos::NetworkHandler::Initialize();
+    NetworkHandler::Initialize();
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
     device_ = base::MakeRefCounted<Device>(kTestModelId, kTestBLEAddress,
                                            Protocol::kFastPairInitial);
@@ -191,7 +191,7 @@ class FastPairRepositoryImplTest : public AshTestBase {
 
   void TearDown() override {
     fast_pair_repository_.reset();
-    chromeos::NetworkHandler::Shutdown();
+    NetworkHandler::Shutdown();
     AshTestBase::TearDown();
   }
 
@@ -1024,7 +1024,9 @@ TEST_F(FastPairRepositoryImplTest,
   // be saved in the registry even if it is not paired locally because
   // the SavedDeviceRegistry  tracks devices that have been Fast paired in the
   // past.
-  saved_device_registry_->SaveAccountKey(kTestClassicAddress1, kAccountKey1);
+  bool success = saved_device_registry_->SaveAccountAssociation(
+      kTestClassicAddress1, kAccountKey1);
+  EXPECT_TRUE(success);
   EXPECT_TRUE(
       saved_device_registry_->IsAccountKeySavedToRegistry(kAccountKey1));
 

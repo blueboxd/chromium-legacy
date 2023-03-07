@@ -5,6 +5,7 @@
 #ifndef CC_PAINT_PAINT_OP_BUFFER_ITERATOR_H_
 #define CC_PAINT_PAINT_OP_BUFFER_ITERATOR_H_
 
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -13,18 +14,27 @@
 
 namespace cc {
 
-class CC_PAINT_EXPORT PaintOpBuffer::Iterator {
+class PaintOpBufferIteratorBase {
  public:
   using value_type = PaintOp;
-  explicit Iterator(const PaintOpBuffer* buffer)
-      : Iterator(buffer, buffer->data_.get(), 0u) {}
+  using difference_type = std::ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+  using iterator_category = std::forward_iterator_tag;
+};
+
+class CC_PAINT_EXPORT PaintOpBuffer::Iterator
+    : public PaintOpBufferIteratorBase {
+ public:
+  explicit Iterator(const PaintOpBuffer& buffer)
+      : Iterator(buffer, buffer.data_.get(), 0u) {}
 
   const PaintOp* get() const { return reinterpret_cast<const PaintOp*>(ptr_); }
   const PaintOp* operator->() const { return get(); }
   const PaintOp& operator*() const { return *get(); }
-  Iterator begin() const { return Iterator(buffer_); }
+  Iterator begin() const { return Iterator(*buffer_); }
   Iterator end() const {
-    return Iterator(buffer_, buffer_->data_.get() + buffer_->used_,
+    return Iterator(*buffer_, buffer_->data_.get() + buffer_->used_,
                     buffer_->used_);
   }
   bool operator==(const Iterator& other) const {
@@ -42,11 +52,16 @@ class CC_PAINT_EXPORT PaintOpBuffer::Iterator {
     CHECK_LE(op_offset_, buffer_->used_);
     return *this;
   }
+  Iterator operator++(int) {
+    Iterator original = *this;
+    operator++();
+    return original;
+  }
   explicit operator bool() const { return op_offset_ < buffer_->used_; }
 
  private:
-  Iterator(const PaintOpBuffer* buffer, const char* ptr, size_t op_offset)
-      : buffer_(buffer), ptr_(ptr), op_offset_(op_offset) {}
+  Iterator(const PaintOpBuffer& buffer, const char* ptr, size_t op_offset)
+      : buffer_(&buffer), ptr_(ptr), op_offset_(op_offset) {}
 
   // `buffer_` and `ptr_` are not a raw_ptr<...> for performance reasons
   // (based on analysis of sampling profiler data and tab_search:top100:2020).
@@ -56,28 +71,28 @@ class CC_PAINT_EXPORT PaintOpBuffer::Iterator {
   size_t op_offset_ = 0;
 };
 
-class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator {
+class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator
+    : public PaintOpBufferIteratorBase {
  public:
-  using value_type = PaintOp;
   // Offsets and paint op buffer must come from the same DisplayItemList.
-  OffsetIterator(const PaintOpBuffer* buffer,
-                 const std::vector<size_t>* offsets)
-      : buffer_(buffer), ptr_(buffer_->data_.get()), offsets_(offsets) {
-    if (!offsets || offsets->empty()) {
+  OffsetIterator(const PaintOpBuffer& buffer,
+                 const std::vector<size_t>& offsets)
+      : buffer_(&buffer), ptr_(buffer_->data_.get()), offsets_(&offsets) {
+    if (offsets.empty()) {
       *this = end();
       return;
     }
-    op_offset_ = (*offsets)[0];
+    op_offset_ = offsets[0];
     ptr_ += op_offset_;
   }
 
   const PaintOp* get() const { return reinterpret_cast<const PaintOp*>(ptr_); }
   const PaintOp* operator->() const { return get(); }
   const PaintOp& operator*() const { return *get(); }
-  OffsetIterator begin() const { return OffsetIterator(buffer_, offsets_); }
+  OffsetIterator begin() const { return OffsetIterator(*buffer_, *offsets_); }
   OffsetIterator end() const {
-    return OffsetIterator(buffer_, buffer_->data_.get() + buffer_->used_,
-                          buffer_->used_, offsets_);
+    return OffsetIterator(*buffer_, buffer_->data_.get() + buffer_->used_,
+                          buffer_->used_, *offsets_);
   }
   bool operator==(const OffsetIterator& other) const {
     // Not valid to compare iterators on different buffers.
@@ -108,15 +123,23 @@ class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator {
                          static_cast<uint32_t>(PaintOpType::LastPaintOpType));
     return *this;
   }
+  OffsetIterator operator++(int) {
+    OffsetIterator original = *this;
+    operator++();
+    return original;
+  }
 
   explicit operator bool() const { return op_offset_ < buffer_->used_; }
 
  private:
-  OffsetIterator(const PaintOpBuffer* buffer,
+  OffsetIterator(const PaintOpBuffer& buffer,
                  const char* ptr,
                  size_t op_offset,
-                 const std::vector<size_t>* offsets)
-      : buffer_(buffer), ptr_(ptr), offsets_(offsets), op_offset_(op_offset) {}
+                 const std::vector<size_t>& offsets)
+      : buffer_(&buffer),
+        ptr_(ptr),
+        offsets_(&offsets),
+        op_offset_(op_offset) {}
 
   // `buffer_`, `ptr_`, and `offsets_` are not a raw_ptr<...> for performance
   // reasons (based on analysis of sampling profiler data and
@@ -129,11 +152,11 @@ class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator {
   size_t offsets_index_ = 0;
 };
 
-class CC_PAINT_EXPORT PaintOpBuffer::CompositeIterator {
+class CC_PAINT_EXPORT PaintOpBuffer::CompositeIterator
+    : public PaintOpBufferIteratorBase {
  public:
-  using value_type = PaintOp;
   // Offsets and paint op buffer must come from the same DisplayItemList.
-  CompositeIterator(const PaintOpBuffer* buffer,
+  CompositeIterator(const PaintOpBuffer& buffer,
                     const std::vector<size_t>* offsets);
   CompositeIterator(const CompositeIterator& other);
   CompositeIterator(CompositeIterator&& other);
@@ -163,6 +186,11 @@ class CC_PAINT_EXPORT PaintOpBuffer::CompositeIterator {
     absl::visit([](auto& iter) { ++iter; }, iter_);
     return *this;
   }
+  CompositeIterator operator++(int) {
+    CompositeIterator original = *this;
+    operator++();
+    return original;
+  }
   explicit operator bool() const {
     return absl::visit([](const auto& iter) { return !!iter; }, iter_);
   }
@@ -174,10 +202,12 @@ class CC_PAINT_EXPORT PaintOpBuffer::CompositeIterator {
   absl::variant<Iterator, OffsetIterator> iter_;
 };
 
-class CC_PAINT_EXPORT PaintOpBuffer::PlaybackFoldingIterator {
+class CC_PAINT_EXPORT PaintOpBuffer::PlaybackFoldingIterator
+    : public PaintOpBufferIteratorBase {
  public:
-  PlaybackFoldingIterator(const PaintOpBuffer* buffer,
+  PlaybackFoldingIterator(const PaintOpBuffer& buffer,
                           const std::vector<size_t>* offsets);
+  PlaybackFoldingIterator(const PlaybackFoldingIterator& other);
   ~PlaybackFoldingIterator();
 
   const PaintOp* get() const { return current_op_; }
@@ -188,13 +218,16 @@ class CC_PAINT_EXPORT PaintOpBuffer::PlaybackFoldingIterator {
     FindNextOp();
     return *this;
   }
+  PlaybackFoldingIterator operator++(int) {
+    PlaybackFoldingIterator original = *this;
+    operator++();
+    return original;
+  }
 
   explicit operator bool() const { return !!current_op_; }
 
-  // Guaranteed to be 255 for all ops without flags.
-  uint8_t alpha() const {
-    return static_cast<uint8_t>(current_alpha_ * 255.0f);
-  }
+  // Guaranteed to be 1.0f for all ops without flags.
+  float alpha() const { return current_alpha_; }
 
  private:
   void FindNextOp();

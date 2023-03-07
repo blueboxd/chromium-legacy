@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
@@ -77,10 +77,13 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                                   base::OnceClosure callback,
                                   ErrorCallback error_callback) override;
   void SetTetheringEnabled(bool enabled,
-                           base::OnceClosure callback,
+                           StringCallback callback,
                            ErrorCallback error_callback) override;
   void CheckTetheringReadiness(StringCallback callback,
                                ErrorCallback error_callback) override;
+  void SetLOHSEnabled(bool enabled,
+                      base::OnceClosure callback,
+                      ErrorCallback error_callback) override;
 
   ShillManagerClient::TestInterface* GetTestInterface() override;
 
@@ -120,7 +123,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
       FakeShillSimulatedResult configuration_result) override;
   void SetSimulateTetheringEnableResult(
       FakeShillSimulatedResult tethering_enable_result,
-      const std::string& tethering_enable_error) override;
+      const std::string& result_string) override;
   void SetSimulateCheckTetheringReadinessResult(
       FakeShillSimulatedResult tethering_readiness_result,
       const std::string& readiness_status) override;
@@ -155,10 +158,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   std::string GetInitialStateForType(const std::string& type, bool* enabled);
 
   // Dictionary of property name -> property value
-  base::Value stub_properties_{base::Value::Type::DICTIONARY};
+  base::Value::Dict stub_properties_;
 
   // Dictionary of technology -> list of property dictionaries
-  base::Value stub_geo_networks_{base::Value::Type::DICTIONARY};
+  base::Value::Dict stub_geo_networks_;
 
   // Delay for interactive actions
   base::TimeDelta interactive_delay_;
@@ -194,7 +197,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
       FakeShillSimulatedResult::kSuccess;
   FakeShillSimulatedResult simulate_tethering_enable_result_ =
       FakeShillSimulatedResult::kSuccess;
-  std::string simulate_enable_tethering_error_;
+  std::string simulate_enable_tethering_result_string_;
   FakeShillSimulatedResult simulate_check_tethering_readiness_result_ =
       FakeShillSimulatedResult::kSuccess;
   std::string simulate_tethering_readiness_status_;

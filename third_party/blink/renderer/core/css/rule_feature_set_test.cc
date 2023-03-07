@@ -74,8 +74,9 @@ class RuleFeatureSetTest : public testing::Test {
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
     for (const CSSSelector* s = style_rule->FirstSelector(); s;
          s = CSSSelectorList::Next(*s)) {
-      if (set.CollectFeaturesFromSelector(*s, style_scope))
+      if (set.CollectFeaturesFromSelector(*s, style_scope)) {
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
+      }
     }
     return result;
   }
@@ -155,8 +156,9 @@ class RuleFeatureSetTest : public testing::Test {
   HashSet<AtomicString> ToHashSet(
       typename InvalidationSet::Backing<type>::Range range) {
     HashSet<AtomicString> hash_set;
-    for (auto str : range)
+    for (auto str : range) {
       hash_set.insert(str);
+    }
     return hash_set;
   }
 
@@ -2868,11 +2870,6 @@ TEST_F(RuleFeatureSetTest, NestedSelector) {
 }
 
 TEST_F(RuleFeatureSetTest, BloomFilterForClassSelfInvalidation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{blink::features::kInvalidationSetClassBloomFilter},
-      /*disabled_features=*/{});
-
   // Add enough dummy classes that the filter will be created.
   for (unsigned i = 0; i < 100; ++i) {
     CollectFeatures(".dummy");
@@ -2896,11 +2893,6 @@ TEST_F(RuleFeatureSetTest, BloomFilterForClassSelfInvalidation) {
 }
 
 TEST_F(RuleFeatureSetTest, BloomFilterForIdSelfInvalidation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{blink::features::kInvalidationSetClassBloomFilter},
-      /*disabled_features=*/{});
-
   // Add enough dummy IDs that the filter will be created.
   for (unsigned i = 0; i < 100; ++i) {
     CollectFeatures("#dummy");

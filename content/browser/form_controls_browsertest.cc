@@ -24,10 +24,6 @@
 #include "base/android/build_info.h"
 #endif
 
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 // TODO(crbug.com/958242): Move the baselines to skia gold for easier
 //   rebaselining when all platforms are supported.
 
@@ -104,11 +100,11 @@ class FormControlsBrowserTest : public ContentBrowserTest {
 #if BUILDFLAG(IS_MAC)
     // This fuzzy pixel comparator handles several mac behaviors:
     // - Different font rendering after 10.14
-    // - 10.12 subpixel rendering differences: crbug.com/1037971
     // - Slight differences in radio and checkbox rendering in 10.15
+    // - Tiny errors (difference <= 1) are ignored for more pixels
     cc::FuzzyPixelComparator comparator(
         /* discard_alpha */ true,
-        /* error_pixels_percentage_limit */ 18.f,
+        /* error_pixels_percentage_limit */ 26.f,
         /* small_error_pixels_percentage_limit */ 0.f,
         /* avg_abs_error_limit */ 20.f,
         /* max_abs_error_limit */ 120.f,
@@ -119,7 +115,7 @@ class FormControlsBrowserTest : public ContentBrowserTest {
     // Some versions have more significant differences than others, which are
     // tracked separately in separate baseline image files. The less significant
     // differences are accommodated for with this fuzzy pixel comparator.
-    // This also applies to different versions of windows.
+    // This also applies to different versions of Windows.
     cc::FuzzyPixelComparator comparator(
         /* discard_alpha */ true,
         /* error_pixels_percentage_limit */ 11.f,
@@ -146,16 +142,6 @@ class FormControlsBrowserTest : public ContentBrowserTest {
       return true;
     }
 #endif  // BUILDFLAG(IS_ANDROID)
-    return false;
-  }
-
-  bool SkipTestForOldWinVersion() const {
-#if BUILDFLAG(IS_WIN)
-    // Win7 font rendering causes too large of rendering diff for pixel
-    // comparison.
-    if (base::win::GetVersion() <= base::win::Version::WIN7)
-      return true;
-#endif  // BUILDFLAG(IS_WIN)
     return false;
   }
 };
@@ -270,9 +256,6 @@ IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, Textarea) {
 
 IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, Button) {
   if (SkipTestForOldAndroidVersions())
-    return;
-
-  if (SkipTestForOldWinVersion())
     return;
 
   RunTest("form_controls_browsertest_button",

@@ -63,8 +63,8 @@ BridgeConstants.ChromeVoxPrefs = {
 };
 
 /** @public {!BridgeEntry} */
-BridgeConstants.ChromeVoxState = {
-  TARGET: 'ChromeVoxState',
+BridgeConstants.ChromeVoxRange = {
+  TARGET: 'ChromeVoxRange',
   Action: {
     CLEAR_CURRENT_RANGE: 'clearCurrentRange',
   },
@@ -79,8 +79,8 @@ BridgeConstants.CommandHandler = {
 };
 
 /** @public {!BridgeEntry} */
-BridgeConstants.EventSourceState = {
-  TARGET: 'EventSourceState',
+BridgeConstants.EventSource = {
+  TARGET: 'EventSource',
   Action: {
     GET: 'get',
   },

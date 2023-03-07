@@ -69,8 +69,6 @@ class FakeAssistantClient : public AssistantClient {
       base::OnceCallback<void(bool)> on_done) override;
   void RegisterActionModule(
       assistant_client::ActionModule* action_module) override;
-  void SendScreenContextRequest(
-      const std::vector<std::string>& context_protos) override;
   void StartVoiceInteraction() override;
   void StopAssistantInteraction(bool cancel_conversation) override;
   void AddConversationStateEventObserver(
@@ -115,10 +113,5 @@ class FakeAssistantClient : public AssistantClient {
 };
 
 }  // namespace ash::libassistant
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::libassistant {
-using ::ash::libassistant::FakeAssistantClient;
-}
 
 #endif  // CHROMEOS_ASH_SERVICES_LIBASSISTANT_TEST_SUPPORT_FAKE_ASSISTANT_CLIENT_H_

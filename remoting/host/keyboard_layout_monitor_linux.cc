@@ -6,15 +6,18 @@
 
 #include <gdk/gdk.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_descriptor_watcher_posix.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "remoting/host/linux/keyboard_layout_monitor_utils.h"
+#include "remoting/host/linux/keyboard_layout_monitor_wayland.h"
+#include "remoting/host/linux/wayland_utils.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/glib/glib_signal.h"
@@ -173,8 +176,9 @@ void GdkLayoutMonitorOnGtkThread::OnEvent(const x11::Event& event) {
   } else if (auto* notify = event.As<x11::Xkb::StateNotifyEvent>()) {
     int new_group = notify->baseGroup + notify->latchedGroup +
                     static_cast<int16_t>(notify->lockedGroup);
-    if (new_group != current_group_)
+    if (new_group != current_group_) {
       QueryLayout();
+    }
   }
 }
 
@@ -189,8 +193,9 @@ void GdkLayoutMonitorOnGtkThread::QueryLayout() {
 
   auto req = connection_->xkb().GetState(
       {static_cast<x11::Xkb::DeviceSpec>(x11::Xkb::Id::UseCoreKbd)});
-  if (auto reply = req.Sync())
+  if (auto reply = req.Sync()) {
     current_group_ = static_cast<int>(reply->group);
+  }
 
   for (ui::DomCode key : KeyboardLayoutMonitorLinux::kSupportedKeys) {
     // Skip single-layout IME keys for now, as they are always present in the
@@ -325,9 +330,13 @@ gboolean KeyboardLayoutMonitorLinux::StartLayoutMonitorOnGtkThread(
 
 }  // namespace
 
+// static
 std::unique_ptr<KeyboardLayoutMonitor> KeyboardLayoutMonitor::Create(
     base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner) {
+  if (IsRunningWayland()) {
+    return std::make_unique<KeyboardLayoutMonitorWayland>(std::move(callback));
+  }
   return std::make_unique<KeyboardLayoutMonitorLinux>(std::move(callback));
 }
 

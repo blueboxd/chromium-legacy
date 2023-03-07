@@ -4,11 +4,11 @@
 
 #include "chromeos/ash/components/language/language_packs/language_pack_manager.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -138,11 +138,13 @@ const base::flat_map<PackSpecPair, std::string>& GetAllLanguagePackDlcIds() {
           {{kHandwritingFeatureId, "zh"}, "handwriting-zh"},
 
           // Text-To-Speech.
+          {{kTtsFeatureId, "de-de"}, "tts-de-de"},
           {{kTtsFeatureId, "en-us"}, "tts-en-us"},
           {{kTtsFeatureId, "es-es"}, "tts-es-es"},
           {{kTtsFeatureId, "es-us"}, "tts-es-us"},
           {{kTtsFeatureId, "fr-fr"}, "tts-fr-fr"},
           {{kTtsFeatureId, "hi-in"}, "tts-hi-in"},
+          {{kTtsFeatureId, "it-it"}, "tts-it-it"},
           {{kTtsFeatureId, "ja-jp"}, "tts-ja-jp"},
           {{kTtsFeatureId, "nl-nl"}, "tts-nl-nl"},
           {{kTtsFeatureId, "pt-br"}, "tts-pt-br"},

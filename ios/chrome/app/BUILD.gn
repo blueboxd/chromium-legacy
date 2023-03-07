@@ -63,7 +63,6 @@ source_set("unit_tests") {
   sources = [
     "app_metrics_app_state_agent_unittest.mm",
     "deferred_initialization_runner_unittest.mm",
-    "main_application_delegate_unittest.mm",
     "post_restore_app_agent_unittest.mm",
     "safe_mode_app_state_agent_unittest.mm",
     "tab_opener_unittest.mm",
@@ -113,8 +112,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/variations:fetcher",
     "//ios/chrome/common/app_group",
     "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser:browser",
-    "//ios/public/provider/chrome/browser:test_support",
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/testing:block_swizzler",
     "//ios/third_party/material_components_ios",
@@ -137,6 +134,16 @@ source_set("tests_fake_hook") {
   # This target is intentionally not test-only, as the main app depends on it.
   sources = [ "tests_fake_hook.mm" ]
   deps = [ ":tests_hook" ]
+}
+
+source_set("perf_tests_hook") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "perf_tests_hook.mm" ]
+  deps = [
+    ":tests_hook",
+    "//base",
+    "//ios/chrome/browser/flags/:system_flags",
+  ]
 }
 
 if (!is_fat_secondary_toolchain) {
@@ -375,6 +382,7 @@ source_set("feed_app_agent") {
     "//ios/chrome/browser/discover_feed:discover_feed_factory",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui/ntp/metrics",
   ]
   frameworks = [
     "BackgroundTasks.framework",
@@ -681,11 +689,16 @@ ios_app_bundle("chrome") {
 
   deps = [
     ":main",
-    ":tests_fake_hook",
 
     # Use the provider API controlled by args.gn.
     ios_provider_target,
   ]
+
+  if (ios_is_perf_test) {
+    deps += [ ":perf_tests_hook" ]
+  } else {
+    deps += [ ":tests_fake_hook" ]
+  }
 
   if (current_toolchain == default_toolchain) {
     if (ios_enable_search_widget_extension) {

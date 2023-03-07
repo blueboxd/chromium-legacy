@@ -4,9 +4,9 @@
 
 #include <limits>
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -545,10 +545,6 @@ int main(int argc, char** argv) {
   bool linear_output = false;
   std::vector<base::test::FeatureRef> disabled_features;
   std::vector<base::test::FeatureRef> enabled_features;
-
-#if defined(ARCH_CPU_ARM_FAMILY)
-  enabled_features.push_back(media::kPreferLibYuvImageProcessor);
-#endif  // defined(ARCH_CPU_ARM_FAMILY)
 
   media::test::DecoderImplementation implementation =
       media::test::DecoderImplementation::kVD;

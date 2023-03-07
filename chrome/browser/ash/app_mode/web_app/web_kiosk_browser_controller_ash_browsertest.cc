@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback_forward.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_forward.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "build/chromeos_buildflags.h"
@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
@@ -120,7 +120,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
     install_info->start_url = start_url;
     install_info->scope = start_url.GetWithoutFilename();
     install_info->title = u"App Name";
-    install_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    install_info->user_display_mode =
+        web_app::mojom::UserDisplayMode::kStandalone;
 
     base::RunLoop run_loop;
     auto* provider = web_app::WebAppProvider::GetForTest(browser()->profile());

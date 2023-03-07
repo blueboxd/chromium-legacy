@@ -141,7 +141,7 @@ class MockSystemTrustStore : public SystemTrustStore {
 class BlockingTrustStore : public TrustStore {
  public:
   CertificateTrust GetTrust(const ParsedCertificate* cert,
-                            base::SupportsUserData* debug_data) const override {
+                            base::SupportsUserData* debug_data) override {
     return backing_trust_store_.GetTrust(cert, debug_data);
   }
 
@@ -231,8 +231,11 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
 
   CertVerifier::Config config_;
   std::unique_ptr<net::URLRequestContext> context_;
-  raw_ptr<MockSystemTrustStore> mock_system_trust_store_ = nullptr;
+
+  // Must outlive `mock_system_trust_store_`.
   scoped_refptr<CertVerifyProc> verify_proc_;
+
+  raw_ptr<MockSystemTrustStore> mock_system_trust_store_ = nullptr;
   scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
 };
 

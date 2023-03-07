@@ -34,6 +34,7 @@ buildflag_header("buildflags") {
     "USE_DAWN=$use_dawn",
     "USE_STATIC_ANGLE=$use_static_angle",
     "USE_OPENGL_APITRACE=$enable_opengl_apitrace",
+    "ENABLE_VALIDATING_COMMAND_DECODER=$enable_validating_command_decoder",
   ]
 }
 
@@ -50,8 +51,6 @@ component("gl") {
   sources = [
     "buffer_format_utils.cc",
     "buffer_format_utils.h",
-    "dc_renderer_layer_params.cc",
-    "dc_renderer_layer_params.h",
     "dual_gpu_state.cc",
     "dual_gpu_state.h",
     "egl_timestamps.h",
@@ -83,12 +82,6 @@ component("gl") {
     "gl_gl_api_implementation.h",
     "gl_helper.cc",
     "gl_helper.h",
-    "gl_image.cc",
-    "gl_image.h",
-    "gl_image_memory.cc",
-    "gl_image_memory.h",
-    "gl_image_stub.cc",
-    "gl_image_stub.h",
     "gl_implementation.cc",
     "gl_implementation.h",
     "gl_implementation_wrapper.h",
@@ -154,6 +147,15 @@ component("gl") {
     ]
   }
 
+  if (!is_android) {
+    sources += [
+      "gl_image.cc",
+      "gl_image.h",
+      "gl_image_stub.cc",
+      "gl_image_stub.h",
+    ]
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
   defines = [ "GL_IMPLEMENTATION" ]
   if (enable_gpu_service_logging) {
@@ -207,8 +209,6 @@ component("gl") {
       "gl_egl_api_implementation.h",
       "gl_fence_egl.cc",
       "gl_fence_egl.h",
-      "gl_image_egl.cc",
-      "gl_image_egl.h",
       "gl_surface_egl.cc",
       "gl_surface_egl.h",
       "scoped_egl_image.cc",
@@ -221,8 +221,6 @@ component("gl") {
       sources += [
         "gl_angle_util_vulkan.cc",
         "gl_angle_util_vulkan.h",
-        "gl_image_egl_angle_vulkan.cc",
-        "gl_image_egl_angle_vulkan.h",
       ]
     }
 
@@ -237,8 +235,6 @@ component("gl") {
       sources += [
         "android/egl_fence_utils.cc",
         "android/egl_fence_utils.h",
-        "gl_image_ahardwarebuffer.cc",
-        "gl_image_ahardwarebuffer.h",
         "gl_surface_egl_surface_control.cc",
         "gl_surface_egl_surface_control.h",
       ]
@@ -255,7 +251,10 @@ component("gl") {
         "gl_fence_android_native_fence_sync.h",
       ]
 
-      deps += [ "//third_party/libsync" ]
+      deps += [
+        "//components/crash/core/common",
+        "//third_party/libsync",
+      ]
     }
   }
 
@@ -303,6 +302,10 @@ component("gl") {
     sources += [
       "child_window_win.cc",
       "child_window_win.h",
+      "dc_layer_overlay_image.cc",
+      "dc_layer_overlay_image.h",
+      "dc_layer_overlay_params.cc",
+      "dc_layer_overlay_params.h",
       "dc_layer_tree.cc",
       "dc_layer_tree.h",
       "dcomp_presenter.cc",
@@ -323,8 +326,6 @@ component("gl") {
       "gl_fence_win.h",
       "gl_image_d3d.cc",
       "gl_image_d3d.h",
-      "gl_image_dxgi.cc",
-      "gl_image_dxgi.h",
       "hdr_metadata_helper_win.cc",
       "hdr_metadata_helper_win.h",
       "swap_chain_presenter.cc",
@@ -482,17 +483,21 @@ static_library("gl_unittest_utils") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "test/gl_image_bind_test_template.h",
     "test/gl_image_test_support.cc",
     "test/gl_image_test_support.h",
-    "test/gl_image_test_template.cc",
-    "test/gl_image_test_template.h",
-    "test/gl_image_zero_initialize_test_template.h",
     "test/gl_surface_test_support.cc",
     "test/gl_surface_test_support.h",
     "test/gl_test_helper.cc",
     "test/gl_test_helper.h",
   ]
+
+  if (!is_android) {
+    sources += [
+      "test/gl_image_bind_test_template.h",
+      "test/gl_image_test_template.cc",
+      "test/gl_image_test_template.h",
+    ]
+  }
 
   configs += [ "//third_party/khronos:khronos_headers" ]
 
@@ -573,13 +578,8 @@ test("gl_unittests") {
       "direct_composition_surface_win_unittest.cc",
       "gl_fence_win_unittest.cc",
       "gl_image_d3d_unittest.cc",
-      "gl_image_dxgi_unittest.cc",
       "hdr_metadata_helper_win_unittest.cc",
     ]
-  }
-
-  if (is_android) {
-    sources += [ "gl_image_ahardwarebuffer_unittest.cc" ]
   }
 
   if (is_linux || is_chromeos_lacros) {

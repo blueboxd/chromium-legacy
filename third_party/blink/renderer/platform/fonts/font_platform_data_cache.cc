@@ -65,8 +65,9 @@ FontPlatformData* FontPlatformDataCache::GetOrCreateFontPlatformData(
     AlternateFontName alternate_font_name) {
   const bool is_unique_match =
       alternate_font_name == AlternateFontName::kLocalUniqueFace;
-  FontCacheKey key =
-      font_description.CacheKey(creation_params, is_unique_match);
+  const bool is_generic_family = false;
+  FontCacheKey key = font_description.CacheKey(creation_params, is_unique_match,
+                                               is_generic_family);
   DCHECK(!key.IsHashTableDeletedValue());
 
   if (no_size_in_key_) {
@@ -82,7 +83,7 @@ FontPlatformData* FontPlatformDataCache::GetOrCreateFontPlatformData(
 
   // Assert that the computed hash map key rounded_size value does not hit
   // the empty (max()) or deleted (max()-1) sentinel values of the hash map,
-  // compare UnsignedWithZeroKeyHashTraits() in hash_traits.h.
+  // compare IntWithZeroKeyHashTraits() in hash_traits.h.
   DCHECK_LT(rounded_size, std::numeric_limits<unsigned>::max() - 1);
 
   // Assert that rounded_size was not reset to 0 due to an integer overflow,

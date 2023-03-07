@@ -5,9 +5,9 @@
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 
 #include "ash/constants/ash_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -92,8 +92,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
   void SetUp() override {
     RegisterLocalState(pref_service_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    system::StatisticsProvider::SetTestProvider(&statistics_provider_);
     policy::EnrollmentRequisitionManager::Initialize();
   }
 
@@ -233,7 +232,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
 
   TestingPrefServiceSimple pref_service_;
 
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  system::FakeStatisticsProvider statistics_provider_;
 
   std::unique_ptr<EnrollmentScreen> enrollment_screen_;
   WizardContext wizard_context_;

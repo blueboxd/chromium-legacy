@@ -18,6 +18,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -125,7 +126,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual bool IsExpanded() const;
   virtual bool IsAutoExpandingAllowed() const;
   virtual bool IsManuallyExpandedOrCollapsed() const;
-  virtual void SetManuallyExpandedOrCollapsed(bool value);
+  virtual void SetManuallyExpandedOrCollapsed(ExpandState state);
   virtual void CloseSwipeControl();
   virtual void SlideOutAndClose(int direction);
 
@@ -276,7 +277,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   void UpdateNestedBorder();
 
   std::string notification_id_;
-  std::u16string accessible_name_;
   const NotifierId notifier_id_;
   base::Time timestamp_;
 

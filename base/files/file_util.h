@@ -17,11 +17,11 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -104,7 +104,18 @@ GetDeletePathRecursivelyCallback(const FilePath& path,
 // 1) The file/directory to be deleted should exist in a temp folder.
 // 2) The directory to be deleted must be empty.
 BASE_EXPORT bool DeleteFileAfterReboot(const FilePath& path);
-#endif
+
+// Prevents opening the file at `path` with EXECUTE access by adding a deny ACE
+// on the filesystem. This allows the file handle to be safely passed to an
+// untrusted process. See also `File::FLAG_WIN_NO_EXECUTE`.
+BASE_EXPORT bool PreventExecuteMapping(const FilePath& path);
+
+// Set `path_key` to the second of two valid paths that support safely marking a
+// file as non-execute. The first allowed path is always PATH_TEMP. This is
+// needed to avoid layering violations, as the user data dir is an embedder
+// concept and only known later at runtime.
+BASE_EXPORT void SetExtraNoExecuteAllowedPath(int path_key);
+#endif  // BUILDFLAG(IS_WIN)
 
 // Moves the given path, whether it's a file or a directory.
 // If a simple rename is not possible, such as in the case where the paths are

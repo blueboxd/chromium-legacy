@@ -175,7 +175,8 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const absl::optional<double>& duration,
                                         const V8UnionDoubleOrString* end,
                                         const ScriptValue& detail,
-                                        ExceptionState& exception_state) {
+                                        ExceptionState& exception_state,
+                                        DOMWindow* source) {
   double start_time =
       start ? GetTimeOrFindMarkTime(measure_name, start, exception_state) : 0;
   if (exception_state.HadException())
@@ -205,7 +206,7 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
         GetPerformanceMarkUnsafeTimeForTraces(start_time, start);
     base::TimeTicks unsafe_end_time =
         GetPerformanceMarkUnsafeTimeForTraces(end_time, end);
-    unsigned hash = WTF::StringHash::GetHash(measure_name);
+    unsigned hash = WTF::GetHash(measure_name);
     WTF::AddFloatToHash(hash, start_time);
     WTF::AddFloatToHash(hash, end_time);
 
@@ -219,7 +220,7 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
 
   PerformanceMeasure* measure =
       PerformanceMeasure::Create(script_state, measure_name, start_time,
-                                 end_time, detail, exception_state);
+                                 end_time, detail, exception_state, source);
   if (!measure)
     return nullptr;
   InsertPerformanceEntry(measures_map_, measures_buffer_, *measure);

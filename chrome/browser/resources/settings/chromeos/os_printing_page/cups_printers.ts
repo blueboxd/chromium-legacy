@@ -30,7 +30,6 @@ import './cups_printers_entry_manager.js';
 import './cups_saved_printers.js';
 import './cups_settings_add_printer_dialog.js';
 
-import {focusWithoutInk} from 'chrome://resources/ash/common/focus_without_ink_js.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
@@ -38,16 +37,18 @@ import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.j
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {addWebUiListener, removeWebUiListener, WebUiListener} from 'chrome://resources/js/cr.js';
+import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {CrosNetworkConfigRemote, FilterType, NetworkStateProperties, NO_LIMIT} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {afterNextRender, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route} from '../router.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {Constructor} from '../common/types.js';
+import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {routes} from '../os_route.js';
-import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
+import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
+import {Route} from '../router.js';
 
 import {PrinterListEntry, PrinterType} from './cups_printer_types.js';
 import {getTemplate} from './cups_printers.html.js';
@@ -58,15 +59,13 @@ import {SettingsCupsAddPrinterDialogElement} from './cups_settings_add_printer_d
 const SettingsCupsPrintersElementBase =
     mixinBehaviors(
         [
-          DeepLinkingBehavior,
           NetworkListenerBehavior,
-          RouteObserverBehavior,
         ],
-        WebUiListenerMixin(PolymerElement)) as {
-      new (): PolymerElement & DeepLinkingBehaviorInterface &
-          NetworkListenerBehaviorInterface & RouteObserverBehaviorInterface &
-          WebUiListenerMixinInterface,
-    };
+        DeepLinkingMixin(
+            RouteObserverMixin(WebUiListenerMixin(PolymerElement)))) as
+    Constructor<PolymerElement&WebUiListenerMixinInterface&
+                RouteObserverMixinInterface&DeepLinkingMixinInterface&
+                NetworkListenerBehaviorInterface>;
 
 interface SettingsCupsPrintersElement {
   $: {
@@ -171,11 +170,11 @@ class SettingsCupsPrintersElement extends SettingsCupsPrintersElementBase {
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kAddPrinter,
           Setting.kSavedPrinters,
         ]),
@@ -258,7 +257,7 @@ class SettingsCupsPrintersElement extends SettingsCupsPrintersElementBase {
   }
 
   /**
-   * Overridden from DeepLinkingBehavior.
+   * Overridden from DeepLinkingMixin.
    */
   override beforeDeepLinkAttempt(settingId: Setting): boolean {
     if (settingId !== Setting.kSavedPrinters) {
@@ -397,7 +396,8 @@ class SettingsCupsPrintersElement extends SettingsCupsPrintersElementBase {
   }
 
   private onAddPrinterDialogClose_(): void {
-    const icon = this.shadowRoot!.querySelector('#addManualPrinterIcon');
+    const icon = this.shadowRoot!.querySelector<CrIconButtonElement>(
+        '#addManualPrinterIcon');
     assert(icon);
     focusWithoutInk(icon);
   }

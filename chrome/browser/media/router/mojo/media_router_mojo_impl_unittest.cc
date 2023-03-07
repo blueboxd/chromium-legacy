@@ -12,8 +12,8 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/string_escape.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -21,7 +21,6 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
@@ -89,7 +88,6 @@ IssueInfo CreateIssueInfo(const std::string& title) {
   IssueInfo issue_info;
   issue_info.title = title;
   issue_info.message = std::string("msg");
-  issue_info.default_action = IssueInfo::Action::DISMISS;
   issue_info.severity = IssueInfo::Severity::WARNING;
   return issue_info;
 }

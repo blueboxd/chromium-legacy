@@ -15,6 +15,7 @@
 #include "net/spdy/spdy_stream.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_basic_stream.h"
+#include "net/websockets/websocket_quic_spdy_stream.h"
 
 namespace net {
 
@@ -130,8 +131,8 @@ class NET_EXPORT_PRIVATE WebSocketSpdyStreamAdapter
 
   // Read buffer and length used for both synchronous and asynchronous
   // read operations.
-  raw_ptr<IOBuffer> read_buffer_;
-  size_t read_length_;
+  raw_ptr<IOBuffer> read_buffer_ = nullptr;
+  size_t read_length_ = 0u;
 
   // Read callback saved for asynchronous reads.
   // Whenever |read_data_| is not empty, |read_callback_| must be null.
@@ -148,6 +149,69 @@ class NET_EXPORT_PRIVATE WebSocketSpdyStreamAdapter
   NetLogWithSource net_log_;
 
   base::WeakPtrFactory<WebSocketSpdyStreamAdapter> weak_factory_{this};
+};
+
+// Adapter to make WebSocketBasicStream use an HTTP/3 stream.
+// Sets itself as a delegate of the WebSocketQuicSpdyStream. Forwards
+// headers-related methods to Delegate.
+class NET_EXPORT_PRIVATE WebSocketQuicStreamAdapter
+    : public WebSocketBasicStream::Adapter,
+      public WebSocketQuicSpdyStream::Delegate {
+ public:
+  // The Delegate interface is implemented by WebSocketHttp3HandshakeStream the
+  // user of the WebSocketQuicStreamAdapter to receive events related to the
+  // lifecycle of the Adapter.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnHeadersSent() = 0;
+    virtual void OnHeadersReceived(
+        const spdy::Http2HeaderBlock& response_headers) = 0;
+    virtual void OnClose(int status) = 0;
+  };
+
+  explicit WebSocketQuicStreamAdapter(
+      WebSocketQuicSpdyStream* websocket_quic_spdy_stream,
+      Delegate* delegate);
+
+  WebSocketQuicStreamAdapter(const WebSocketQuicStreamAdapter&) = delete;
+  WebSocketQuicStreamAdapter& operator=(const WebSocketQuicStreamAdapter&) =
+      delete;
+
+  ~WebSocketQuicStreamAdapter() override;
+
+  // Called by WebSocketQuicStreamAdapter::Delegate before it is destroyed.
+  void clear_delegate() { delegate_ = nullptr; }
+
+  size_t WriteHeaders(spdy::Http2HeaderBlock header_block, bool fin);
+
+  // WebSocketBasicStream::Adapter methods.
+  // TODO(momoka): Add functions that are needed to implement
+  // WebSocketHttp3HandshakeStream.
+  int Read(IOBuffer* buf,
+           int buf_len,
+           CompletionOnceCallback callback) override;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            CompletionOnceCallback callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  void Disconnect() override;
+  bool is_initialized() const override;
+
+  // WebSocketQuicSpdyStream::Delegate methods.
+  void OnInitialHeadersComplete(
+      bool fin,
+      size_t frame_len,
+      const quic::QuicHeaderList& header_list) override;
+  void OnBodyAvailable() override;
+  void ClearStream() override;
+
+ private:
+  //  `websocket_quic_spdy_stream_` notifies this object of its destruction,
+  //  because they may be destroyed in any order.
+  raw_ptr<WebSocketQuicSpdyStream> websocket_quic_spdy_stream_;
+
+  raw_ptr<Delegate> delegate_;
 };
 
 }  // namespace net

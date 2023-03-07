@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -128,6 +128,18 @@ class CanCreateRegistrationTask : public DatabaseTask {
       this};  // Keep as last.
 };
 
+proto::ImageResource_Purpose
+ManifestImageResourcePurposeToImageResoucePurposeProto(
+    blink::mojom::ManifestImageResource_Purpose purpose) {
+  switch (purpose) {
+    case blink::mojom::ManifestImageResource_Purpose::ANY:
+      return proto::ImageResource_Purpose_ANY;
+    case blink::mojom::ManifestImageResource_Purpose::MONOCHROME:
+      return proto::ImageResource_Purpose_MONOCHROME;
+    case blink::mojom::ManifestImageResource_Purpose::MASKABLE:
+      return proto::ImageResource_Purpose_MASKABLE;
+  }
+}
 }  // namespace
 
 CreateMetadataTask::CreateMetadataTask(
@@ -266,20 +278,8 @@ void CreateMetadataTask::InitializeMetadataProto() {
     image_resource_proto->set_type(base::UTF16ToASCII(icon.type));
 
     for (const auto& purpose : icon.purpose) {
-      switch (purpose) {
-        case blink::mojom::ManifestImageResource_Purpose::ANY:
-          image_resource_proto->add_purpose(
-              proto::BackgroundFetchOptions_ImageResource_Purpose_ANY);
-          break;
-        case blink::mojom::ManifestImageResource_Purpose::MONOCHROME:
-          image_resource_proto->add_purpose(
-              proto::BackgroundFetchOptions_ImageResource_Purpose_MONOCHROME);
-          break;
-        case blink::mojom::ManifestImageResource_Purpose::MASKABLE:
-          image_resource_proto->add_purpose(
-              proto::BackgroundFetchOptions_ImageResource_Purpose_MASKABLE);
-          break;
-      }
+      image_resource_proto->add_purpose(
+          ManifestImageResourcePurposeToImageResoucePurposeProto(purpose));
     }
   }
 

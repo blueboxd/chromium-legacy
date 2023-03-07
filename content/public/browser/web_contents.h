@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/functional/function_ref.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -271,10 +271,16 @@ class WebContents : public PageNavigator,
   //
   // The caller is responsible for ensuring that the returned WebContents is
   // destroyed (e.g. closed) *before* the BrowserContext associated with
-  // `params` is destroyed.  It is a bug if WebContents haven't been destroyed
-  // when the destructor of BrowserContext starts running.  It is not
+  // `params` is destroyed.  It is a security bug if WebContents haven't been
+  // destroyed when the destructor of BrowserContext starts running.  It is not
   // necessarily a bug if WebContents haven't been destroyed when
   // BrowserContext::NotifyWillBeDestroyed starts running.
+  //
+  // Best practices for managing the lifetime of `WebContents` and
+  // `BrowserContext` will vary across different //content embedders.  For
+  // example, for information specific to the //chrome layer, please see the
+  // "Managing lifetime of a Profile" section in
+  // //chrome/browser/profiles/README.md.
   CONTENT_EXPORT static std::unique_ptr<WebContents> Create(
       const CreateParams& params);
 
@@ -1383,14 +1389,6 @@ class WebContents : public PageNavigator,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) = 0;
-
-  // Disables Prerender2 for this WebContents.
-  // See
-  // https://docs.google.com/document/d/1P2VKCLpmnNm_cRAjUeE-bqLL0bslL_zKqiNeCzNom_w/
-  virtual void DisablePrerender2() = 0;
-  // Set Prerender2 disabled = false, but this does not imply Prerender2 is
-  // enabled.
-  virtual void ResetPrerender2Disabled() = 0;
 
  private:
   // This interface should only be implemented inside content.

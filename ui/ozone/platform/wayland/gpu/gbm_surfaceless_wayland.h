@@ -40,41 +40,23 @@ class GbmSurfacelessWayland : public gl::Presenter, public WaylandSurfaceGpu {
 
   void QueueWaylandOverlayConfig(wl::WaylandOverlayConfig config);
 
-  // gl::GLSurface:
+  // gl::Presenter:
   bool ScheduleOverlayPlane(
       gl::OverlayImage image,
       std::unique_ptr<gfx::GpuFence> gpu_fence,
       const gfx::OverlayPlaneData& overlay_plane_data) override;
-  bool IsOffscreen() override;
-  bool SupportsAsyncSwap() override;
-  bool SupportsPostSubBuffer() override;
-  gfx::SwapResult PostSubBuffer(int x,
-                                int y,
-                                int width,
-                                int height,
-                                PresentationCallback callback,
-                                gl::FrameData data) override;
-  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
-                        PresentationCallback presentation_callback,
-                        gl::FrameData data) override;
-  void PostSubBufferAsync(int x,
-                          int y,
-                          int width,
-                          int height,
-                          SwapCompletionCallback completion_callback,
-                          PresentationCallback presentation_callback,
-                          gl::FrameData data) override;
+  void Present(SwapCompletionCallback completion_callback,
+               PresentationCallback presentation_callback,
+               gfx::FrameData data) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
   bool SupportsPlaneGpuFences() const override;
   bool SupportsOverridePlatformSize() const override;
   bool SupportsViewporter() const override;
-  gfx::SurfaceOrigin GetOrigin() const override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
-  void SetForceGlFlushOnSwapBuffers() override;
 
   BufferId GetOrCreateSolidColorBuffer(SkColor4f color, const gfx::Size& size);
 
@@ -149,7 +131,7 @@ class GbmSurfacelessWayland : public gl::Presenter, public WaylandSurfaceGpu {
 
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
-    gl::FrameData data;
+    gfx::FrameData data;
 
     // Says if scheduling succeeded.
     bool schedule_planes_succeeded = true;
@@ -187,7 +169,6 @@ class GbmSurfacelessWayland : public gl::Presenter, public WaylandSurfaceGpu {
   bool use_egl_fence_sync_ = true;
 
   bool no_gl_flush_for_tests_ = false;
-  bool requires_gl_flush_on_swap_buffers_ = false;
 
   // Scale factor of the current surface.
   float surface_scale_factor_ = 1.f;

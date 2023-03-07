@@ -22,23 +22,23 @@ TEST(ValueBuilderTest, Basic) {
   ListBuilder permission_list;
   permission_list.Append("tabs").Append("history");
 
-  std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
-
-  ASSERT_FALSE(settings->GetList("permissions", nullptr));
+  base::Value::Dict settings;
+  ASSERT_FALSE(settings.FindList("permissions"));
   settings =
       DictionaryBuilder().Set("permissions", permission_list.Build()).Build();
-  base::ListValue* list_value;
-  ASSERT_TRUE(settings->GetList("permissions", &list_value));
 
-  ASSERT_EQ(list_value->GetList().size(), 2u);
-  ASSERT_TRUE(list_value->GetList()[0].is_string());
-  ASSERT_EQ(list_value->GetList()[0].GetString(), "tabs");
-  ASSERT_TRUE(list_value->GetList()[1].is_string());
-  ASSERT_EQ(list_value->GetList()[1].GetString(), "history");
+  base::Value::List* list_value = settings.FindList("permissions");
+
+  ASSERT_TRUE(list_value);
+  ASSERT_EQ(list_value->size(), 2u);
+  ASSERT_TRUE(list_value->front().is_string());
+  ASSERT_EQ(list_value->front().GetString(), "tabs");
+  ASSERT_TRUE(list_value->back().is_string());
+  ASSERT_EQ(list_value->back().GetString(), "history");
 }
 
 TEST(ValueBuilderTest, AppendList) {
-  auto get_json = [](const base::Value& value) -> std::string {
+  auto get_json = [](const base::Value::List& value) -> std::string {
     std::string json;
     if (!base::JSONWriter::Write(value, &json)) {
       // Since this isn't valid JSON, there shouldn't be any risk of this
@@ -50,23 +50,23 @@ TEST(ValueBuilderTest, AppendList) {
 
   {
     std::vector<std::string> strings = {"hello", "world", "!"};
-    std::unique_ptr<base::Value> value =
+    base::Value::List value =
         ListBuilder().Append(strings.begin(), strings.end()).Build();
-    EXPECT_EQ(R"(["hello","world","!"])", get_json(*value));
+    EXPECT_EQ(R"(["hello","world","!"])", get_json(value));
   }
 
   {
     std::set<int> ints = {0, 1, 2, 3};
-    std::unique_ptr<base::Value> value =
+    base::Value::List value =
         ListBuilder().Append(ints.begin(), ints.end()).Build();
-    EXPECT_EQ(R"([0,1,2,3])", get_json(*value));
+    EXPECT_EQ(R"([0,1,2,3])", get_json(value));
   }
 
   {
     std::list<bool> bools = {false, true, false, true};
-    std::unique_ptr<base::Value> value =
+    base::Value::List value =
         ListBuilder().Append(bools.begin(), bools.end()).Build();
-    EXPECT_EQ(R"([false,true,false,true])", get_json(*value));
+    EXPECT_EQ(R"([false,true,false,true])", get_json(value));
   }
 }
 

@@ -49,6 +49,7 @@ constexpr auto kKeyboardBlocklist = base::MakeFixedFlatSet<DeviceId>({
     {0x0111, 0x1854},  // SteelSeries Aerox 5 Wireless (Bluetooth)
     {0x0111, 0x185a},  // SteelSeries Aerox 9 Wireless (Bluetooth)
     {0x03f0, 0x0b97},  // HyperX Pulsefire Haste 2 Gaming Mouse
+    {0x03f0, 0x4e41},  // HP OMEN Vector Wireless Mouse
     {0x03f0, 0xa407},  // HP X4000 Wireless Mouse
     {0x045e, 0x0745},  // Microsoft Wireless Mobile Mouse 6000
     {0x045e, 0x0821},  // Microsoft Surface Precision Mouse
@@ -239,6 +240,8 @@ constexpr auto kKeyboardBlocklist = base::MakeFixedFlatSet<DeviceId>({
     {0x1050, 0x0407},  // Yubico.com Yubikey 4 OTP+U2F+CCID
     {0x1532, 0x007a},  // Razer Viper Ultimate (Wired)
     {0x1532, 0x007b},  // Razer Viper Ultimate (Wireless)
+    {0x1532, 0x009a},  // Razer Pro Click Mini (Dongle)
+    {0x1532, 0x009b},  // Razer Pro Click Mini (Bluetooth)
     {0x17ef, 0x60be},  // Lenovo Legion M200 RGB Gaming Mouse
     {0x17ef, 0x60e4},  // Lenovo Legion M300 RGB Gaming Mouse
     {0x17ef, 0x6123},  // Lenovo USB-C Wired Compact Mouse

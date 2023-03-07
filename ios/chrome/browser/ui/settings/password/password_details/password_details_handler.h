@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_DETAILS_PASSWORD_DETAILS_HANDLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_DETAILS_PASSWORD_DETAILS_HANDLER_H_
 
+@class PasswordDetails;
+
 // Presenter which handles commands from `PasswordDetailsViewController`.
 @protocol PasswordDetailsHandler
 
@@ -19,11 +21,23 @@
 // version. It is displayed inside dialog. If `origin` is nil dialog is
 // displayed without message. `compromisedPassword` indicates whether password
 // is compromised.
+// TODO(crbug.com/1359392): Remove this when flag is cleaned up.
 - (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin
                        compromisedPassword:(BOOL)compromisedPassword;
 
+// Called when the user wants to delete a password. `anchorView` and
+// `anchorRect` should be the button that triggered this deletion flow and the
+// coordinates of that button, to position the confirmation dialog correctly on
+// tablets.
+- (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password
+                                         anchorView:(UIView*)anchorView
+                                         anchorRect:(CGRect)anchorRect;
+
 // Called when the user wants to save edited password.
 - (void)showPasswordEditDialogWithOrigin:(NSString*)origin;
+
+// Called by the view controller when the user successfully copied a password.
+- (void)onPasswordCopiedByUser;
 
 @end
 

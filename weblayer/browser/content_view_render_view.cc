@@ -5,7 +5,6 @@
 #include "weblayer/browser/content_view_render_view.h"
 
 #include <android/bitmap.h>
-#include <android/native_window_jni.h>
 
 #include <memory>
 #include <utility>
@@ -13,7 +12,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/time/time.h"
 #include "cc/layers/layer.h"
@@ -222,9 +221,6 @@ void ContentViewRenderView::InitCompositor() {
 
   compositor_.reset(content::Compositor::Create(this, root_window_));
   root_container_layer_ = cc::Layer::Create();
-  root_container_layer_->SetHitTestable(false);
-  root_container_layer_->SetElementId(
-      cc::ElementId(root_container_layer_->id()));
   root_container_layer_->SetIsDrawable(false);
   compositor_->SetRootLayer(root_container_layer_);
   UpdateBackgroundColor(base::android::AttachCurrentThread());

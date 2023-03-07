@@ -4,15 +4,16 @@
 
 #include "chrome/browser/ash/tpm_firmware_update.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/task/sequenced_task_runner.h"
@@ -62,27 +63,24 @@ const char kSettingsKeyAllowPreserveDeviceState[] =
     "allow-user-initiated-preserve-device-state";
 const char kSettingsKeyAutoUpdateMode[] = "auto-update-mode";
 
-std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
+base::Value DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings) {
-  std::unique_ptr<base::DictionaryValue> result =
-      std::make_unique<base::DictionaryValue>();
+  base::Value::Dict result;
 
   if (settings.has_allow_user_initiated_powerwash()) {
-    result->SetKey(kSettingsKeyAllowPowerwash,
-                   base::Value(settings.allow_user_initiated_powerwash()));
+    result.Set(kSettingsKeyAllowPowerwash,
+               settings.allow_user_initiated_powerwash());
   }
   if (settings.has_allow_user_initiated_preserve_device_state()) {
-    result->SetKey(
-        kSettingsKeyAllowPreserveDeviceState,
-        base::Value(settings.allow_user_initiated_preserve_device_state()));
+    result.Set(kSettingsKeyAllowPreserveDeviceState,
+               settings.allow_user_initiated_preserve_device_state());
   }
 
   if (settings.has_auto_update_mode()) {
-    result->SetKey(kSettingsKeyAutoUpdateMode,
-                   base::Value(settings.auto_update_mode()));
+    result.Set(kSettingsKeyAutoUpdateMode, settings.auto_update_mode());
   }
 
-  return result;
+  return base::Value(std::move(result));
 }
 
 // AvailabilityChecker tracks TPM firmware update availability information

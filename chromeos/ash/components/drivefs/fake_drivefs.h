@@ -96,6 +96,9 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void GetMetadata(const base::FilePath& path,
                    GetMetadataCallback callback) override;
 
+  void GetMetadataByStableId(int64_t stable_id,
+                             GetMetadataCallback callback) override;
+
   void SetPinned(const base::FilePath& path,
                  bool pinned,
                  SetPinnedCallback callback) override;
@@ -154,6 +157,10 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   void GetPooledQuotaUsage(
       drivefs::mojom::DriveFs::GetPooledQuotaUsageCallback callback) override;
+
+  void SetPinnedByStableId(int64_t stable_id,
+                           bool pinned,
+                           SetPinnedCallback callback) override;
 
   void ToggleMirroring(
       bool enabled,

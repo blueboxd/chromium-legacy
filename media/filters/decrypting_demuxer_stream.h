@@ -5,7 +5,7 @@
 #ifndef MEDIA_FILTERS_DECRYPTING_DEMUXER_STREAM_H_
 #define MEDIA_FILTERS_DECRYPTING_DEMUXER_STREAM_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -62,7 +62,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   std::string GetDisplayName() const;
 
   // DemuxerStream implementation.
-  void Read(ReadCB read_cb) override;
+  void Read(uint32_t count, ReadCB read_cb) override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
@@ -124,6 +124,9 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
     kWaitingForKey
   };
 
+  void OnBuffersReadFromDemuxerStream(
+      DemuxerStream::Status status,
+      DemuxerStream::DecoderBufferVector buffers);
   // Callback for DemuxerStream::Read().
   void OnBufferReadFromDemuxerStream(DemuxerStream::Status status,
                                      scoped_refptr<DecoderBuffer> buffer);

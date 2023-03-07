@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/test/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -66,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(HelpBubbleViewInteractiveTest,
                 testing::Ne(nullptr)),
       WithView(kAppMenuButtonElementId,
                base::BindLambdaForTesting([this](views::View* button) {
-                 new HelpBubbleView(GetHelpBubbleDelegate(), button,
+                 new HelpBubbleView(GetHelpBubbleDelegate(), {button},
                                     GetBubbleParams());
                })),
       WaitForShow(HelpBubbleView::kHelpBubbleElementIdForTesting),
@@ -113,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(HelpBubbleViewInteractiveTest,
                   // bubble.
                   HelpBubbleParams params;
                   params.body_text = u"foo";
-                  new HelpBubbleView(GetHelpBubbleDelegate(), AsView(element),
+                  new HelpBubbleView(GetHelpBubbleDelegate(), {AsView(element)},
                                      std::move(params));
                 })),
       // Activate the help bubble. This should not cause the editor to close.
@@ -160,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(HelpBubbleViewInteractiveTest,
   RunTestSequence(
       WithView(kAppMenuButtonElementId,
                base::BindLambdaForTesting([&](views::View* button) {
-                 new HelpBubbleView(GetHelpBubbleDelegate(), button,
+                 new HelpBubbleView(GetHelpBubbleDelegate(), {button},
                                     std::move(params));
                })),
       CheckViewProperty(HelpBubbleView::kDefaultButtonIdForTesting,

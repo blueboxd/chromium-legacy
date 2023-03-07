@@ -6,12 +6,14 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/task_environment.h"
+#import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync/test/mock_sync_service.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -22,6 +24,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
@@ -31,6 +34,8 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
@@ -39,7 +44,6 @@
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -72,9 +76,19 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
+    builder.AddTestingFactory(
+        IOSChromePasswordStoreFactory::GetInstance(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<
+                web::BrowserState, password_manager::TestPasswordStore>));
     chrome_browser_state_ = builder.Build();
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
+    browser_state_ = TestChromeBrowserState::Builder().Build();
+
+    scene_state_ = [[SceneState alloc] initWithAppState:nil];
+    SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
+
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
@@ -90,18 +104,15 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
 
     password_store_mock_ =
         base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
-            IOSChromePasswordStoreFactory::GetInstance()
-                ->SetTestingFactoryAndUse(
-                    chrome_browser_state_.get(),
-                    base::BindRepeating(&password_manager::BuildPasswordStore<
-                                        web::BrowserState,
-                                        password_manager::TestPasswordStore>))
+            IOSChromePasswordStoreFactory::GetForBrowserState(
+                chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
                 .get()));
 
     fake_identity_ = [FakeSystemIdentity fakeIdentity1];
-    ios::FakeChromeIdentityService* identity_service_ =
-        ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-    identity_service_->AddIdentity(fake_identity_);
+    FakeSystemIdentityManager* system_identity_manager =
+        FakeSystemIdentityManager::FromSystemIdentityManager(
+            GetApplicationContext()->GetSystemIdentityManager());
+    system_identity_manager->AddIdentity(fake_identity_);
     auth_service_->SignIn(fake_identity_);
 
     // Make sure there is no pre-existing policy present.
@@ -195,6 +206,8 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  SceneState* scene_state_;
 
   SettingsTableViewController* controller_ = nullptr;
 };

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ash/crosapi/echo_private_ash.h"
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -90,21 +90,20 @@ void EchoPrivateAsh::GetOobeTimestamp(GetOobeTimestampCallback callback) {
 
 void EchoPrivateAsh::GetRegistrationCode(mojom::RegistrationCodeType type,
                                          GetRegistrationCodeCallback callback) {
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
+  ash::system::StatisticsProvider* provider =
+      ash::system::StatisticsProvider::GetInstance();
   std::string result;
   switch (type) {
     case mojom::RegistrationCodeType::kCoupon:
       if (const absl::optional<base::StringPiece> offers_code =
               provider->GetMachineStatistic(
-                  chromeos::system::kOffersCouponCodeKey)) {
+                  ash::system::kOffersCouponCodeKey)) {
         result = std::string(offers_code.value());
       }
       break;
     case mojom::RegistrationCodeType::kGroup:
       if (const absl::optional<base::StringPiece> offers_code =
-              provider->GetMachineStatistic(
-                  chromeos::system::kOffersGroupCodeKey)) {
+              provider->GetMachineStatistic(ash::system::kOffersGroupCodeKey)) {
         result = std::string(offers_code.value());
       }
       break;

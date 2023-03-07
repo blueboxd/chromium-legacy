@@ -20,14 +20,14 @@ namespace ash {
 namespace file_system_provider {
 
 class ProvidedFileSystemInfo;
-class EventDispatcher;
+class RequestDispatcher;
 
 namespace operations {
 
 // Base class for operation bridges between fileapi and providing extensions.
 class Operation : public RequestManager::HandlerInterface {
  public:
-  Operation(EventDispatcher* dispatcher,
+  Operation(RequestDispatcher* dispatcher,
             const ProvidedFileSystemInfo& file_system_info);
 
   Operation(const Operation&) = delete;
@@ -43,6 +43,7 @@ class Operation : public RequestManager::HandlerInterface {
   void OnError(int request_id,
                std::unique_ptr<RequestValue> result,
                base::File::Error error) override = 0;
+  void OnAbort(int request_id) override;
 
  protected:
   // Sends an event to the providing extension. Returns false, if the providing
@@ -55,7 +56,7 @@ class Operation : public RequestManager::HandlerInterface {
   ProvidedFileSystemInfo file_system_info_;
 
  private:
-  raw_ptr<EventDispatcher> event_dispatcher_;
+  raw_ptr<RequestDispatcher> request_dispatcher_;
 };
 
 }  // namespace operations

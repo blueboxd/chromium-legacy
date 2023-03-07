@@ -75,8 +75,9 @@ BASE_DECLARE_FEATURE(kCommerceCoupons);
 BASE_DECLARE_FEATURE(kCommerceMerchantViewer);
 extern const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory;
 BASE_DECLARE_FEATURE(kShoppingList);
-BASE_DECLARE_FEATURE(kShoppingListEnableDesyncResolution);
+BASE_DECLARE_FEATURE(kShoppingListRegionLaunched);
 BASE_DECLARE_FEATURE(kShoppingPDPMetrics);
+BASE_DECLARE_FEATURE(kShoppingPDPMetricsRegionLaunched);
 BASE_DECLARE_FEATURE(kRetailCoupons);
 BASE_DECLARE_FEATURE(kCommerceDeveloper);
 // Parameter for enabling feature variation of coupons with code.
@@ -222,6 +223,9 @@ constexpr base::FeatureParam<base::TimeDelta> kAddToCartButtonActiveTime{
     &kChromeCartDomBasedHeuristics, "add-to-cart-button-active-time",
     base::Seconds(5)};
 
+constexpr base::FeatureParam<bool> kAddToCartProductImage{
+    &kChromeCartDomBasedHeuristics, "add-to-cart-product-image", false};
+
 constexpr base::FeatureParam<std::string> kSkipHeuristicsDomainPattern{
     &kChromeCartDomBasedHeuristics, "skip-heuristics-domain-pattern",
     // This regex does not match anything.
@@ -358,7 +362,9 @@ std::string GetCurrentCountryCode(variations::VariationsService* variations);
 
 // Check if commerce features are allowed to run for the specified country
 // and locale.
-bool IsEnabledForCountryAndLocale(std::string country, std::string locale);
+bool IsEnabledForCountryAndLocale(const base::Feature& feature,
+                                  std::string country,
+                                  std::string locale);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Get the time delay between discount fetches.

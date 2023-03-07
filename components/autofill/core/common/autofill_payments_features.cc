@@ -85,7 +85,7 @@ BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
 // out.
 BASE_FEATURE(kAutofillEnableMerchantOptOutErrorDialog,
              "AutofillEnableMerchantOptOutErrorDialog",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, a notification will be displayed on page navigation if the
 // domain has an eligible merchant promo code offer or reward.
@@ -166,6 +166,13 @@ BASE_FEATURE(kAutofillFillIbanFields,
 // fields when data is available.
 BASE_FEATURE(kAutofillFillMerchantPromoCodeFields,
              "AutofillFillMerchantPromoCodeFields",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, Autofill will offer saving a card to the users when the Chrome
+// detects a card number with the last 4 digits that matches an existing server
+// card but has a different expiration date.
+BASE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour,
+             "AutofillOfferToSaveCardWithSameLastFour",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, Autofill will attempt to find International Bank Account Number
@@ -215,6 +222,13 @@ BASE_FEATURE(kAutofillShowUnmaskedCachedCardInManualFillingView,
              "AutofillShowUnmaskedCachedCardInManualFillingView",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, Autofill suggestions that consist of a local and server
+// version of the same card will attempt to fill the server card upon selection
+// instead of the local card.
+BASE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard,
+             "AutofillSuggestServerCardInsteadOfLocalCard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.
 // The set of launched countries is listed in autofill_experiments.cc, and this
@@ -235,7 +249,12 @@ BASE_FEATURE(kAutofillUpstreamAllowAdditionalEmailDomains,
 // the user's email domain.
 BASE_FEATURE(kAutofillUpstreamAllowAllEmailDomains,
              "AutofillUpstreamAllowAllEmailDomains",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // The delay required since the last strike before offering another virtual card
 // enrollment attempt.

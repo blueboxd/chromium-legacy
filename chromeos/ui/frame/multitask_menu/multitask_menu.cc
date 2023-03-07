@@ -22,12 +22,14 @@ namespace chromeos {
 namespace {
 
 constexpr int kMultitaskMenuBubbleCornerRadius = 8;
-constexpr int kRowPadding = 16;
+constexpr int kPaddingWide = 12;
+constexpr int kPaddingNarrow = 8;
 
 }  // namespace
 
 MultitaskMenu::MultitaskMenu(views::View* anchor,
-                             views::Widget* parent_widget) {
+                             views::Widget* parent_widget,
+                             base::OnceClosure close_callback) {
   DCHECK(parent_widget);
   aura::Window* parent_window = parent_widget->GetNativeWindow();
 
@@ -36,13 +38,16 @@ MultitaskMenu::MultitaskMenu(views::View* anchor,
   set_internal_name("MultitaskMenuBubbleWidget");
   set_margins(gfx::Insets());
   set_parent_window(parent_window);
-
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   SetAnchorView(anchor);
-  // TODO(shidi): Confirm with UX/UI for additional arrow choices when parent
-  // window has no space for `MultitaskMenu` to arrow at `TOP_CENTER`.
+#else
+  SetAnchorRect(anchor->GetAnchorBoundsInScreen());
+#endif
   SetArrow(views::BubbleBorder::Arrow::TOP_CENTER);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetUseDefaultFillLayout(true);
+
+  RegisterWindowClosingCallback(std::move(close_callback));
 
   // Check the model to see which buttons we should show. Since this menu is
   // triggered from the maximize button on the frame, it should have a frame
@@ -74,28 +79,55 @@ MultitaskMenu::MultitaskMenu(views::View* anchor,
       buttons));
 
   multitask_menu_view_->SetLayoutManager(std::make_unique<views::TableLayout>())
-      ->AddPaddingColumn(views::TableLayout::kFixedSize, kRowPadding)
+      ->AddPaddingColumn(views::TableLayout::kFixedSize, kPaddingWide)
       .AddColumn(views::LayoutAlignment::kCenter,
                  views::LayoutAlignment::kCenter,
                  views::TableLayout::kFixedSize,
                  views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
-      .AddPaddingColumn(views::TableLayout::kFixedSize, kRowPadding)
+      .AddPaddingColumn(views::TableLayout::kFixedSize, kPaddingNarrow)
       .AddColumn(views::LayoutAlignment::kCenter,
                  views::LayoutAlignment::kCenter,
                  views::TableLayout::kFixedSize,
                  views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
-      .AddPaddingColumn(views::TableLayout::kFixedSize, kRowPadding)
-      .AddPaddingRow(views::TableLayout::kFixedSize, kRowPadding)
+      .AddPaddingColumn(views::TableLayout::kFixedSize, kPaddingWide)
+      .AddPaddingRow(views::TableLayout::kFixedSize, kPaddingWide)
       .AddRows(1, views::TableLayout::kFixedSize, 0)
-      .AddPaddingRow(views::TableLayout::kFixedSize, kRowPadding)
+      .AddPaddingRow(views::TableLayout::kFixedSize, kPaddingNarrow)
       .AddRows(1, views::TableLayout::kFixedSize, 0)
-      .AddPaddingRow(views::TableLayout::kFixedSize, kRowPadding);
+      .AddPaddingRow(views::TableLayout::kFixedSize, kPaddingWide);
 
   display_observer_.emplace(this);
 }
 
 MultitaskMenu::~MultitaskMenu() {
   HideBubble();
+}
+
+bool MultitaskMenu::IsBubbleShown() const {
+  return bubble_widget_ && !bubble_widget_->IsClosed();
+}
+
+void MultitaskMenu::ShowBubble() {
+  DCHECK(parent_window());
+  bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
+
+  // This gets reset to the platform default when we call `CreateBubble()`,
+  // which for Lacros is false.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  set_adjust_if_offscreen(true);
+  SizeToContents();
+#endif
+
+  bubble_widget_->Show();
+  bubble_widget_observer_.Observe(bubble_widget_.get());
+}
+
+void MultitaskMenu::HideBubble() {
+  // This calls into `OnWidgetDestroying()` so `bubble_widget_` should have been
+  // reset to nullptr.
+  if (bubble_widget_ && !bubble_widget_->IsClosed()) {
+    bubble_widget_->CloseNow();
+  }
 }
 
 void MultitaskMenu::OnWidgetDestroying(views::Widget* widget) {
@@ -122,28 +154,6 @@ void MultitaskMenu::OnDisplayMetricsChanged(const display::Display& display,
   // bubble at rotation for now.
   if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)
     HideBubble();
-}
-
-void MultitaskMenu::ShowBubble() {
-  DCHECK(parent_window());
-  bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
-
-  // This gets reset to the platform default when we call `CreateBubble()`,
-  // which for Lacros is false.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  set_adjust_if_offscreen(true);
-  SizeToContents();
-#endif
-
-  bubble_widget_->Show();
-  bubble_widget_observer_.Observe(bubble_widget_.get());
-}
-
-void MultitaskMenu::HideBubble() {
-  // This calls into OnWidgetDestroying() so `bubble_widget_` should have been
-  // reset to nullptr.
-  if (bubble_widget_ && !bubble_widget_->IsClosed())
-    bubble_widget_->CloseNow();
 }
 
 BEGIN_METADATA(MultitaskMenu, views::BubbleDialogDelegateView)

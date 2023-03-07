@@ -19,14 +19,14 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/on_device_tail_model_observer.h"
 
-class ChromeOmniboxEditController;
+class ChromeOmniboxEditModelDelegate;
 class GURL;
-class OmniboxEditController;
 class Profile;
 
 class ChromeOmniboxClient : public OmniboxClient {
  public:
-  ChromeOmniboxClient(OmniboxEditController* controller, Profile* profile);
+  ChromeOmniboxClient(ChromeOmniboxEditModelDelegate* edit_model_delegate,
+                      Profile* profile);
 
   ChromeOmniboxClient(const ChromeOmniboxClient&) = delete;
   ChromeOmniboxClient& operator=(const ChromeOmniboxClient&) = delete;
@@ -45,7 +45,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   bool IsDefaultSearchProviderEnabled() const override;
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
-  OmniboxControllerEmitter* GetOmniboxControllerEmitter() override;
+  AutocompleteControllerEmitter* GetAutocompleteControllerEmitter() override;
   TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
@@ -108,7 +108,7 @@ class ChromeOmniboxClient : public OmniboxClient {
                        int result_index,
                        const SkBitmap& bitmap);
 
-  raw_ptr<ChromeOmniboxEditController> controller_;
+  raw_ptr<ChromeOmniboxEditModelDelegate> edit_model_delegate_;
   raw_ptr<Profile> profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::vector<BitmapFetcherService::RequestId> request_ids_;

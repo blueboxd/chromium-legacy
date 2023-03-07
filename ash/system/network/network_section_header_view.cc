@@ -15,7 +15,7 @@
 #include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_toggle_button.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
@@ -26,20 +26,18 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/image_view.h"
 
-using chromeos::network_config::IsInhibited;
-
-using chromeos::network_config::mojom::DeviceStateProperties;
-using chromeos::network_config::mojom::DeviceStateType;
-using chromeos::network_config::mojom::FilterType;
-using chromeos::network_config::mojom::GlobalPolicy;
-using chromeos::network_config::mojom::NetworkFilter;
-using chromeos::network_config::mojom::NetworkStateProperties;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
-
 namespace ash {
 
 namespace {
+
+using ::chromeos::network_config::IsInhibited;
+using ::chromeos::network_config::mojom::DeviceStateProperties;
+using ::chromeos::network_config::mojom::DeviceStateType;
+using ::chromeos::network_config::mojom::FilterType;
+using ::chromeos::network_config::mojom::GlobalPolicy;
+using ::chromeos::network_config::mojom::NetworkFilter;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
 
 const int64_t kBluetoothTimeoutDelaySeconds = 2;
 
@@ -474,7 +472,7 @@ void WifiSectionHeaderView::UpdateJoinButtonVisibility() {
   }
 
   const DeviceStateProperties* wifi_device =
-      model()->GetDevice(chromeos::network_config::mojom::NetworkType::kWiFi);
+      model()->GetDevice(NetworkType::kWiFi);
   if (!wifi_device) {
     join_button_->SetVisible(/*visible=*/false);
     return;

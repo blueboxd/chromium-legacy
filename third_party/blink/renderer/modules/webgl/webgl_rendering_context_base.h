@@ -116,9 +116,7 @@ class WebGLShaderPrecisionFormat;
 class WebGLVertexArrayObjectBase;
 class XRSystem;
 
-using GLenumHashSet = HashSet<GLenum,
-                              WTF::AlreadyHashed,
-                              WTF::UnsignedWithZeroKeyHashTraits<GLenum>>;
+using GLenumHashSet = HashSet<GLenum, AlreadyHashedWithZeroKeyTraits>;
 
 // This class uses the color mask to prevent drawing to the alpha channel, if
 // the DrawingBuffer requires RGB emulation.
@@ -965,6 +963,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   GLboolean color_mask_[4];
   GLboolean depth_mask_;
 
+  bool depth_enabled_;
   bool stencil_enabled_;
   GLuint stencil_mask_, stencil_mask_back_;
   GLint stencil_func_ref_,
@@ -1827,9 +1826,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   String EnsureNotNull(const String&) const;
 
-  // Enable or disable stencil test based on user setting and
-  // whether the current FBO has a stencil buffer.
-  void ApplyStencilTest();
+  // Enable or disable the depth and stencil test based on the user's
+  // setting and whether the current FBO has a depth and stencil
+  // buffer.
+  void ApplyDepthAndStencilTest();
 
   // Helper for enabling or disabling a capability.
   void EnableOrDisable(GLenum capability, bool enable);
@@ -1997,10 +1997,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   PredefinedColorSpace drawing_buffer_color_space_ =
       PredefinedColorSpace::kSRGB;
   PredefinedColorSpace unpack_color_space_ = PredefinedColorSpace::kSRGB;
-
-  // The pixel format of the WebGL canvas. This is based on a deprecated
-  // specification that is being replaced by drawingBufferStorage.
-  CanvasPixelFormat pixel_format_deprecated_ = CanvasPixelFormat::kUint8;
 };
 
 template <>

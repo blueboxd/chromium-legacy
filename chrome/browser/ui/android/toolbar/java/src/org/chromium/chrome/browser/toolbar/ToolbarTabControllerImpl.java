@@ -30,7 +30,6 @@ public class ToolbarTabControllerImpl implements ToolbarTabController {
     private final ObservableSupplier<BottomControlsCoordinator> mBottomControlsCoordinatorSupplier;
     private final Supplier<String> mHomepageUrlSupplier;
     private final Runnable mOnSuccessRunnable;
-
     /**
      *
      * @param tabSupplier Supplier for the currently active tab.

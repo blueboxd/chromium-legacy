@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/barrier_callback.h"
-#include "base/callback.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -219,7 +219,7 @@ void RecordApiErrorInCombinationWithSyncStatus(
   if (sync_error.IsPersistentError()) {
     histogram_suffix = "PersistentAuthError";
   } else if (sync_error.IsTransientError()) {
-    histogram_suffix = "TransientAuthError";
+    NOTREACHED();
   } else {
     histogram_suffix = "NoAuthError";
   }

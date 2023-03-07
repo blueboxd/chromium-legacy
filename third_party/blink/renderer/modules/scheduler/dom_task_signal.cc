@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_task_priority_change_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -16,8 +16,9 @@
 namespace blink {
 
 DOMTaskSignal::DOMTaskSignal(ExecutionContext* context,
-                             const AtomicString& priority)
-    : AbortSignal(context), priority_(priority) {}
+                             const AtomicString& priority,
+                             SignalType signal_type)
+    : AbortSignal(context, signal_type), priority_(priority) {}
 
 DOMTaskSignal::~DOMTaskSignal() = default;
 

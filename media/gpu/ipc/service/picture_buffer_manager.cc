@@ -8,10 +8,11 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -31,6 +32,8 @@ int32_t NextID(int32_t* counter) {
   *counter = (*counter + 1) & 0x3FFFFFFF;
   return value;
 }
+
+}  // namespace
 
 class PictureBufferManagerImpl : public PictureBufferManager {
  public:
@@ -138,7 +141,7 @@ class PictureBufferManagerImpl : public PictureBufferManager {
 
           // Generate a mailbox while we are still on the GPU thread.
           picture_data.mailbox_holders[j] = gpu::MailboxHolder(
-              command_buffer_helper_->CreateMailbox(service_id),
+              command_buffer_helper_->CreateLegacyMailbox(service_id),
               gpu::SyncToken(), texture_target);
         }
       }
@@ -466,8 +469,6 @@ class PictureBufferManagerImpl : public PictureBufferManager {
   std::map<int32_t, PictureBufferData> picture_buffers_
       GUARDED_BY(picture_buffers_lock_);
 };
-
-}  // namespace
 
 // static
 scoped_refptr<PictureBufferManager> PictureBufferManager::Create(

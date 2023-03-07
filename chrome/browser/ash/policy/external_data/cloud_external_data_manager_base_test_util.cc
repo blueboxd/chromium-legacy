@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ash/policy/external_data/cloud_external_data_manager_base_test_util.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -30,7 +31,7 @@
 namespace policy {
 
 namespace {
-// Keys for 'DictionaryValue' objects
+// Keys for 'Value::Dict' objects
 const char kUrlKey[] = "url";
 const char kHashKey[] = "hash";
 }  // namespace
@@ -47,15 +48,13 @@ void ExternalDataFetchCallback(std::unique_ptr<std::string>* data_destination,
   std::move(done_callback).Run();
 }
 
-std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(
-    const std::string& url,
-    const std::string& data) {
+base::Value ConstructExternalDataReference(const std::string& url,
+                                           const std::string& data) {
   const std::string hash = crypto::SHA256HashString(data);
-  std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
-  metadata->SetKey(kUrlKey, base::Value(url));
-  metadata->SetKey(kHashKey,
-                   base::Value(base::HexEncode(hash.c_str(), hash.size())));
-  return metadata;
+  base::Value::Dict metadata;
+  metadata.Set(kUrlKey, url);
+  metadata.Set(kHashKey, base::HexEncode(hash.c_str(), hash.size()));
+  return base::Value(std::move(metadata));
 }
 
 std::string ConstructExternalDataPolicy(
@@ -75,7 +74,7 @@ std::string ConstructExternalDataPolicy(
 
   std::string policy;
   EXPECT_TRUE(base::JSONWriter::Write(
-      *ConstructExternalDataReference(url, external_data), &policy));
+      ConstructExternalDataReference(url, external_data), &policy));
   return policy;
 }
 

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "ash/components/arc/session/arc_container_client_adapter.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -173,6 +173,28 @@ TEST_F(ArcContainerClientAdapterTest, StartArc_DisableUreadahead) {
                             ->last_start_arc_mini_container_request();
   EXPECT_TRUE(request.has_disable_ureadahead());
   EXPECT_TRUE(request.disable_ureadahead());
+}
+
+TEST_F(ArcContainerClientAdapterTest,
+       StartArc_HostUreadaheadGenerationByDefault) {
+  StartParams start_params;
+  client_adapter()->StartMiniArc(std::move(start_params),
+                                 base::BindOnce(&OnMiniInstanceStarted));
+  const auto& request = ash::FakeSessionManagerClient::Get()
+                            ->last_start_arc_mini_container_request();
+  EXPECT_TRUE(request.has_host_ureadahead_generation());
+  EXPECT_FALSE(request.host_ureadahead_generation());
+}
+
+TEST_F(ArcContainerClientAdapterTest, StartArc_HostUreadaheadGenerationSet) {
+  StartParams start_params;
+  start_params.host_ureadahead_generation = true;
+  client_adapter()->StartMiniArc(std::move(start_params),
+                                 base::BindOnce(&OnMiniInstanceStarted));
+  const auto& request = ash::FakeSessionManagerClient::Get()
+                            ->last_start_arc_mini_container_request();
+  EXPECT_TRUE(request.has_host_ureadahead_generation());
+  EXPECT_TRUE(request.host_ureadahead_generation());
 }
 
 TEST_F(ArcContainerClientAdapterTest, ArcVmTTSCachingDefault) {

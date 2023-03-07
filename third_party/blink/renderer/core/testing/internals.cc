@@ -33,6 +33,7 @@
 #include "base/functional/function_ref.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -178,6 +179,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -385,7 +387,7 @@ TestReadableStreamSource::Optimizer::PerformInProcessOptimization(
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   Reply reply = CrossThreadBindOnce(&TestReadableStreamSource::Attach,
-                                    WrapCrossThreadPersistent(source));
+                                    MakeUnwrappingCrossThreadHandle(source));
 
   PostCrossThreadTask(
       *task_runner_, FROM_HERE,
@@ -603,7 +605,7 @@ TestWritableStreamSink::Optimizer::PerformInProcessOptimization(
 
   ExecutionContext* context = ExecutionContext::From(script_state);
   Reply reply = CrossThreadBindOnce(&TestWritableStreamSink::Attach,
-                                    WrapCrossThreadPersistent(sink));
+                                    MakeUnwrappingCrossThreadHandle(sink));
   PostCrossThreadTask(
       *task_runner_, FROM_HERE,
       CrossThreadBindOnce(std::move(callback_),
@@ -1103,10 +1105,10 @@ String Internals::elementLayoutTreeAsText(Element* element,
 }
 
 CSSStyleDeclaration* Internals::computedStyleIncludingVisitedInfo(
-    Node* node) const {
-  DCHECK(node);
+    Element* element) const {
+  DCHECK(element);
   bool allow_visited_style = true;
-  return MakeGarbageCollected<CSSComputedStyleDeclaration>(node,
+  return MakeGarbageCollected<CSSComputedStyleDeclaration>(element,
                                                            allow_visited_style);
 }
 
@@ -3938,9 +3940,9 @@ ScriptValue Internals::createWritableStreamAndSink(
   auto internal_sink = std::make_unique<TestWritableStreamSink::InternalSink>(
       context->GetTaskRunner(TaskType::kInternalDefault),
       CrossThreadBindOnce(&TestWritableStreamSink::Resolve,
-                          WrapCrossThreadPersistent(resolver)),
+                          MakeUnwrappingCrossThreadHandle(resolver)),
       CrossThreadBindOnce(&TestWritableStreamSink::Reject,
-                          WrapCrossThreadPersistent(resolver)));
+                          MakeUnwrappingCrossThreadHandle(resolver)));
   auto* sink = MakeGarbageCollected<TestWritableStreamSink>(script_state, type);
 
   sink->Attach(std::move(internal_sink));

@@ -15,37 +15,26 @@ import androidx.concurrent.futures.CallbackToFutureAdapter;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.chromium.webengine.interfaces.ExceptionType;
-import org.chromium.webengine.interfaces.IBooleanCallback;
+import org.chromium.base.Callback;
 import org.chromium.webengine.interfaces.ITabCallback;
 import org.chromium.webengine.interfaces.ITabManagerDelegate;
 import org.chromium.webengine.interfaces.ITabParams;
 
+import java.util.Set;
+
 /**
- * Class for interaction with WebFragment Tabs.
- * Calls into WebFragmentDelegate which runs on the Binder thread, and requires
+ * Class for interaction with WebEngine Tabs.
+ * Calls into WebEngineDelegate which runs on the Binder thread, and requires
  * finished initialization from onCreate on UIThread.
- * Access only via ListenableFuture through WebFragment.
+ * Access only via ListenableFuture through WebEngine.
  */
 public class TabManager {
     private ITabManagerDelegate mDelegate;
 
-    private final class RequestNavigationCallback extends IBooleanCallback.Stub {
-        private CallbackToFutureAdapter.Completer<Boolean> mCompleter;
+    private TabRegistry mTabRegistry = new TabRegistry();
+    private final TabListObserverDelegate mTabListObserverDelegate;
 
-        RequestNavigationCallback(CallbackToFutureAdapter.Completer<Boolean> completer) {
-            mCompleter = completer;
-        }
-
-        @Override
-        public void onResult(boolean didNavigate) {
-            mCompleter.set(didNavigate);
-        }
-        @Override
-        public void onException(@ExceptionType int type, String msg) {
-            mCompleter.setException(ExceptionHelper.createException(type, msg));
-        }
-    }
+    private Callback mInitializedTabsCallback;
 
     private final class TabCallback extends ITabCallback.Stub {
         private CallbackToFutureAdapter.Completer<Tab> mCompleter;
@@ -58,7 +47,7 @@ public class TabManager {
         public void onResult(@Nullable ITabParams tabParams) {
             if (tabParams != null) {
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    mCompleter.set(TabRegistry.getInstance().getOrCreateTab(tabParams));
+                    mCompleter.set(mTabRegistry.getOrCreateTab(tabParams));
                 });
                 return;
             }
@@ -68,29 +57,51 @@ public class TabManager {
 
     TabManager(ITabManagerDelegate delegate) {
         mDelegate = delegate;
+        mTabListObserverDelegate = new TabListObserverDelegate(mTabRegistry);
+        try {
+            mDelegate.setTabListObserverDelegate(mTabListObserverDelegate);
+        } catch (RemoteException e) {
+        }
+    }
+
+    void initialize(Callback<Void> initializedCallback) {
+        mTabListObserverDelegate.setInitializationFinishedCallback(initializedCallback);
+        try {
+            mDelegate.notifyInitialTabs();
+        } catch (RemoteException e) {
+        }
     }
 
     /**
-     * Returns a ListenableFuture for the currently active Tab; The tab can be null if no Tab is
-     * active.
+     * Registers a tab observer and returns if successful.
      *
-     * @return ListenableFuture for the active Tab.
+     * @param tabListObserver The TabListObserver.
+     *
+     * @return true if observer was added to the list of observers.
      */
-    @NonNull
-    public ListenableFuture<Tab> getActiveTab() {
-        if (mDelegate == null) {
-            return Futures.immediateFailedFuture(
-                    new IllegalStateException("WebSandbox has been destroyed"));
-        }
-        return CallbackToFutureAdapter.getFuture(completer -> {
-            try {
-                mDelegate.getActiveTab(new TabCallback(completer));
-            } catch (RemoteException e) {
-                completer.setException(e);
-            }
-            // Debug string.
-            return "Active Tab Future";
-        });
+    public boolean registerTabListObserver(@NonNull TabListObserver tabListObserver) {
+        return mTabListObserverDelegate.registerObserver(tabListObserver);
+    }
+
+    /**
+     * Unregisters a tab observer and returns if successful.
+     *
+     * @param tabListObserver The TabListObserver to remove.
+     *
+     * @return true if observer was removed from the list of observers.
+     */
+    public boolean unregisterTabListObserver(@NonNull TabListObserver tabListObserver) {
+        return mTabListObserverDelegate.unregisterObserver(tabListObserver);
+    }
+
+    /**
+     * Returns the currently active Tab or null if no Tab is active.
+     *
+     * @return the active Tab.
+     */
+    @Nullable
+    public Tab getActiveTab() {
+        return mTabRegistry.getActiveTab();
     }
 
     /**
@@ -115,33 +126,12 @@ public class TabManager {
         });
     }
 
-    /**
-     * Tries to navigate back inside the Fragment session and returns a Future with a Boolean
-     * which is true if the back navigation was successful.
-     *
-     * Only recommended to use if no switching of Tabs is used.
-     *
-     * Navigates back inside the currently active tab if possible. If that is not possible,
-     * checks if any Tab was added to the WebFragment before the currently active Tab,
-     * if so, the currently active Tab is closed and this Tab is set to active.
-     *
-     * @return ListenableFuture with a Boolean stating if back navigation was successful.
-     */
-    @NonNull
-    public ListenableFuture<Boolean> tryNavigateBack() {
-        if (mDelegate == null) {
-            return Futures.immediateFailedFuture(
-                    new IllegalStateException("WebSandbox has been destroyed"));
-        }
-        return CallbackToFutureAdapter.getFuture(completer -> {
-            mDelegate.tryNavigateBack(new RequestNavigationCallback(completer));
-            // Debug string.
-            return "Did navigate back Future";
-        });
+    public Set<Tab> getAllTabs() {
+        return mTabRegistry.getTabs();
     }
 
     void invalidate() {
         mDelegate = null;
-        TabRegistry.getInstance().invalidate();
+        mTabRegistry.invalidate();
     }
 }

@@ -78,6 +78,8 @@ FeatureTile::FeatureTile(base::RepeatingCallback<void()> callback,
   CreateChildViews();
 }
 
+FeatureTile::~FeatureTile() = default;
+
 void FeatureTile::CreateChildViews() {
   const bool is_compact = type_ == TileType::kCompact;
 
@@ -95,6 +97,7 @@ void FeatureTile::CreateChildViews() {
   SetPreferredSize(is_compact ? kCompactSize : kDefaultSize);
 
   auto* icon_container = AddChildView(std::make_unique<FlexLayoutView>());
+  icon_container->SetCanProcessEventsWithinSubtree(false);
   icon_container->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
   icon_container->SetCrossAxisAlignment(is_compact
                                             ? views::LayoutAlignment::kEnd
@@ -106,6 +109,7 @@ void FeatureTile::CreateChildViews() {
   icon_ = icon_container->AddChildView(std::make_unique<views::ImageView>());
 
   auto* title_container = AddChildView(std::make_unique<FlexLayoutView>());
+  title_container->SetCanProcessEventsWithinSubtree(false);
   title_container->SetOrientation(is_compact
                                       ? views::LayoutOrientation::kHorizontal
                                       : views::LayoutOrientation::kVertical);
@@ -114,8 +118,7 @@ void FeatureTile::CreateChildViews() {
   title_container->SetPreferredSize(is_compact ? kCompactTitleContainerSize
                                                : kTitlesContainerSize);
 
-  label_ = AddChildView(std::make_unique<views::Label>());
-  title_container->AddChildView(label_);
+  label_ = title_container->AddChildView(std::make_unique<views::Label>());
 
   if (is_compact) {
     label_->SetPreferredSize(kCompactTitleLabelSize);
@@ -127,12 +130,12 @@ void FeatureTile::CreateChildViews() {
     label_->SetFontList(views::Label::GetDefaultFontList().Derive(
         -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   } else {
-    sub_label_ = AddChildView(std::make_unique<views::Label>());
+    sub_label_ =
+        title_container->AddChildView(std::make_unique<views::Label>());
     // TODO(b/252873172): update FontList.
     sub_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
         -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
     sub_label_->SetLineHeight(kPrimarySubtitleLineHeight);
-    title_container->AddChildView(sub_label_);
   }
 }
 
@@ -158,12 +161,21 @@ void FeatureTile::CreateDrillInButton(base::RepeatingCallback<void()> callback,
   // `drill_in_button_` handle the button events.
   drill_in_arrow->SetCanProcessEventsWithinSubtree(false);
 
-  // Only buttons with Toggle + Drill-in behavior can focus the drill-in arrow.
-  if (!is_togglable_)
+  // Only buttons with Toggle + Drill-in behavior can focus the drill-in arrow
+  // and process drill-in button events.
+  if (!is_togglable_) {
+    drill_in_button->SetCanProcessEventsWithinSubtree(false);
     drill_in_arrow->SetFocusBehavior(FocusBehavior::NEVER);
+  }
 
   drill_in_button_ = AddChildView(std::move(drill_in_button));
   drill_in_button_->AddChildView(std::move(drill_in_arrow));
+
+  enabled_changed_subscription_ = AddEnabledChangedCallback(base::BindRepeating(
+      [](FeatureTile* feature_tile) {
+        feature_tile->drill_in_button_->SetEnabled(feature_tile->GetEnabled());
+      },
+      base::Unretained(this)));
 }
 
 void FeatureTile::UpdateColors() {
@@ -189,8 +201,13 @@ bool FeatureTile::IsToggled() const {
 }
 
 void FeatureTile::SetVectorIcon(const gfx::VectorIcon& icon) {
+  vector_icon_ = &icon;
   icon_->SetImage(ui::ImageModel::FromVectorIcon(
       icon, cros_tokens::kCrosSysOnSurface, kIconSize));
+}
+
+void FeatureTile::SetImage(gfx::ImageSkia image) {
+  icon_->SetImage(ui::ImageModel::FromImageSkia(image));
 }
 
 void FeatureTile::SetLabel(const std::u16string& label) {
@@ -202,6 +219,8 @@ void FeatureTile::SetSubLabel(const std::u16string& sub_label) {
 }
 
 void FeatureTile::SetSubLabelVisibility(bool visible) {
+  // Only primary tiles have a sub-label.
+  DCHECK(sub_label_);
   sub_label_->SetVisible(visible);
 }
 

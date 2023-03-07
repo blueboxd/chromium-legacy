@@ -8,15 +8,14 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_external_data_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -87,10 +86,10 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
 
   base::Value ConstructMetadata(const std::string& url,
                                 const std::string& hash);
-  void AddMetadataToWebAppPolicyValue(base::Value& value,
-                                      const std::string& app_url,
-                                      const std::string& image_url,
-                                      const std::string& image_hash);
+  void AddMetadataToWebAppPolicyList(base::Value::List& value,
+                                     const std::string& app_url,
+                                     const std::string& image_url,
+                                     const std::string& image_hash);
   void SetExternalDataReference(const std::string& policy,
                                 base::Value policy_value);
 
@@ -175,22 +174,21 @@ void CloudExternalDataManagerBaseTest::SetUpExternalDataManager() {
 base::Value CloudExternalDataManagerBaseTest::ConstructMetadata(
     const std::string& url,
     const std::string& hash) {
-  base::Value metadata(base::Value::Type::DICTIONARY);
-  metadata.SetStringKey("url", url);
-  metadata.SetStringKey("hash", base::HexEncode(hash.c_str(), hash.size()));
-  return metadata;
+  base::Value::Dict metadata;
+  metadata.Set("url", url);
+  metadata.Set("hash", base::HexEncode(hash.c_str(), hash.size()));
+  return base::Value(std::move(metadata));
 }
 
-void CloudExternalDataManagerBaseTest::AddMetadataToWebAppPolicyValue(
-    base::Value& value,
+void CloudExternalDataManagerBaseTest::AddMetadataToWebAppPolicyList(
+    base::Value::List& list,
     const std::string& app_url,
     const std::string& image_url,
     const std::string& image_hash) {
-  DCHECK(value.is_list());
-  base::Value app(base::Value::Type::DICTIONARY);
-  app.SetStringKey("url", app_url);
-  app.SetKey("custom_icon", ConstructMetadata(image_url, image_hash));
-  value.Append(std::move(app));
+  base::Value::Dict app;
+  app.Set("url", app_url);
+  app.Set("custom_icon", ConstructMetadata(image_url, image_hash));
+  list.Append(std::move(app));
 }
 
 void CloudExternalDataManagerBaseTest::SetExternalDataReference(
@@ -779,12 +777,13 @@ TEST_F(CloudExternalDataManagerBaseTest, PolicyChangeWhileDownloadPending) {
 // external data files (every installed app can include one icon).
 TEST_F(CloudExternalDataManagerBaseTest, DownloadMultipleFilesFromPolicy) {
   // Set up the policy value with 2 apps, one icon each:
-  base::Value web_app_value(base::Value::Type::LIST);
-  AddMetadataToWebAppPolicyValue(web_app_value, k10ByteAppURL, k10BytePolicyURL,
-                                 crypto::SHA256HashString(k10ByteData));
-  AddMetadataToWebAppPolicyValue(web_app_value, k20ByteAppURL, k20BytePolicyURL,
-                                 crypto::SHA256HashString(k20ByteData));
-  SetExternalDataReference(kWebAppPolicy, std::move(web_app_value));
+  base::Value::List web_app_value;
+  AddMetadataToWebAppPolicyList(web_app_value, k10ByteAppURL, k10BytePolicyURL,
+                                crypto::SHA256HashString(k10ByteData));
+  AddMetadataToWebAppPolicyList(web_app_value, k20ByteAppURL, k20BytePolicyURL,
+                                crypto::SHA256HashString(k20ByteData));
+  SetExternalDataReference(kWebAppPolicy,
+                           base::Value(std::move(web_app_value)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   // Serve valid external data for both icons.

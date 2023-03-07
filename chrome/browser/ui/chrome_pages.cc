@@ -40,6 +40,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/signin/public/base/consent_level.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
@@ -51,7 +52,6 @@
 #include "url/url_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
 #include "ash/webui/connectivity_diagnostics/url_constants.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
@@ -471,7 +471,11 @@ void ShowWebStore(Browser* browser) {
 
 void ShowPrivacySandboxSettings(Browser* browser) {
   base::RecordAction(UserMetricsAction("Options_ShowPrivacySandbox"));
-  ShowSettingsSubPage(browser, kPrivacySandboxSubPage);
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    ShowSettingsSubPage(browser, kAdPrivacySubPage);
+  } else {
+    ShowSettingsSubPage(browser, kPrivacySandboxSubPage);
+  }
 }
 
 void ShowPrivacySandboxAdPersonalization(Browser* browser) {
@@ -577,7 +581,6 @@ void ShowDiagnosticsApp(Profile* profile) {
 
 void ShowFirmwareUpdatesApp(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  DCHECK(base::FeatureList::IsEnabled(ash::features::kFirmwareUpdaterApp));
   ShowSystemAppInternal(profile, ash::SystemWebAppType::FIRMWARE_UPDATE);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   ShowSystemAppInternal(profile, GURL(kOsUIFirmwareUpdaterAppURL));

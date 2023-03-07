@@ -10,9 +10,10 @@
 #include <memory>
 #include <unordered_set>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -47,6 +48,7 @@
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/compositor/throughput_tracker_host.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -246,6 +248,12 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& display_color_spaces);
 
+#if BUILDFLAG(IS_MAC)
+  // Set the current CGDirectDisplayID and update the private client.
+  void SetVSyncDisplayID(const int64_t display_id);
+  int64_t display_id() const;
+#endif
+
   const gfx::DisplayColorSpaces& display_color_spaces() const {
     return display_color_spaces_;
   }
@@ -328,8 +336,9 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   std::unique_ptr<CompositorLock> GetCompositorLock(
       CompositorLockClient* client,
       base::TimeDelta timeout = base::Milliseconds(kCompositorLockTimeoutMs)) {
-    return lock_manager_.GetCompositorLock(client, timeout,
-                                           host_->DeferMainFrameUpdate());
+    return lock_manager_.GetCompositorLock(
+        client, timeout,
+        base::DoNothingWithBoundArgs(host_->DeferMainFrameUpdate()));
   }
 
   // Registers a callback that is run when the presentation feedback for the
@@ -479,6 +488,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
  private:
   friend class base::RefCounted<Compositor>;
   friend class TotalAnimationThroughputReporter;
+  friend class TestCompositorHost;
 
   static void SendDamagedRectsRecursive(Layer* layer);
 
@@ -513,6 +523,11 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   // A sequence number of a current compositor frame for use with metrics.
   int activated_frame_count_ = 0;
+
+#if BUILDFLAG(IS_MAC)
+  // Current CGDirectDisplayID for the screen.
+  int64_t display_id_ = display::kInvalidDisplayId;
+#endif
 
   // Current vsync refresh rate per second. Initialized to 60hz as a reasonable
   // value until first begin frame arrives with the real refresh rate.

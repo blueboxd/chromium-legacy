@@ -230,8 +230,11 @@ SingleUsernameVoteData::SingleUsernameVoteData(
     FieldRendererId renderer_id,
     const std::u16string& username_value,
     const FormPredictions& form_predictions,
-    const std::vector<const PasswordForm*>& stored_credentials)
-    : renderer_id(renderer_id), form_predictions(form_predictions) {
+    const std::vector<const PasswordForm*>& stored_credentials,
+    bool password_form_had_username_field)
+    : renderer_id(renderer_id),
+      form_predictions(form_predictions),
+      password_form_had_username_field(password_form_had_username_field) {
   base::TrimWhitespace(username_value, base::TrimPositions::TRIM_ALL,
                        &username_candidate_value);
   value_type = GetValueType(username_candidate_value, stored_credentials);
@@ -259,7 +262,7 @@ void VotesUploader::SendVotesOnSave(
     const PasswordForm& submitted_form,
     const std::vector<const PasswordForm*>& best_matches,
     PasswordForm* pending_credentials) {
-  if (pending_credentials->times_used == 1 ||
+  if (pending_credentials->times_used_in_html_form == 1 ||
       IsAddingUsernameToExistingMatch(*pending_credentials, best_matches)) {
     UploadFirstLoginVotes(best_matches, *pending_credentials, submitted_form);
   }
@@ -268,7 +271,7 @@ void VotesUploader::SendVotesOnSave(
   // by password generation to help determine account creation sites.
   // Credentials that have been previously used (e.g., PSL matches) are checked
   // to see if they are valid account creation forms.
-  if (pending_credentials->times_used == 0) {
+  if (pending_credentials->times_used_in_html_form == 0) {
     MaybeSendSingleUsernameVote();
     UploadPasswordVote(*pending_credentials, submitted_form, autofill::PASSWORD,
                        std::string());
@@ -304,7 +307,7 @@ void VotesUploader::SendVoteOnCredentialsReuse(
     // they aren't from an account creation form.
     // Also bypass uploading if the username was edited. Offering generation
     // in cases where we currently save the wrong username isn't great.
-    if (pending->times_used == 1) {
+    if (pending->times_used_in_html_form == 1) {
       if (UploadPasswordVote(*pending, submitted_form,
                              autofill::ACCOUNT_CREATION_PASSWORD,
                              observed_structure.FormSignatureAsStr())) {
@@ -419,7 +422,7 @@ bool VotesUploader::UploadPasswordVote(
         autofill_type == autofill::NEW_PASSWORD) {
       // The password attributes should be uploaded only on the first save or an
       // update.
-      DCHECK_EQ(form_to_upload.times_used, 0);
+      DCHECK_EQ(form_to_upload.times_used_in_html_form, 0);
       GeneratePasswordAttributesVote(autofill_type == autofill::PASSWORD
                                          ? form_to_upload.password_value
                                          : form_to_upload.new_password_value,
@@ -457,8 +460,8 @@ bool VotesUploader::UploadPasswordVote(
   // code duplication.
   bool success = download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
-      login_form_signature, true /* observed_submission */,
-      nullptr /* prefs */);
+      login_form_signature, true /* observed_submission */, nullptr /* prefs */,
+      nullptr /* observer */);
 
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
   return success;
@@ -523,7 +526,8 @@ void VotesUploader::UploadFirstLoginVotes(
   // code duplication.
   download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
-      std::string(), true /* observed_submission */, nullptr /* prefs */);
+      std::string(), true /* observed_submission */, nullptr /* prefs */,
+      nullptr);
 }
 
 void VotesUploader::SetInitialHashValueOfUsernameField(
@@ -594,7 +598,12 @@ void VotesUploader::MaybeSendSingleUsernameVote() {
       logger.LogFormStructure(Logger::STRING_USERNAME_FIRST_FLOW_VOTE,
                               *form_to_upload);
     }
-    StartUploadRequest(std::move(form_to_upload), available_field_types);
+
+    if (StartUploadRequest(std::move(form_to_upload), available_field_types)) {
+      base::UmaHistogramBoolean(
+          "PasswordManager.SingleUsername.PasswordFormHadUsernameField",
+          single_username_vote_data_->password_form_had_username_field);
+    }
   }
 }
 
@@ -828,7 +837,8 @@ bool VotesUploader::StartUploadRequest(
 
   return download_manager->StartUploadRequest(
       *form_to_upload, false /* was_autofilled */, available_field_types,
-      std::string(), true /* observed_submission */, nullptr /* prefs */);
+      std::string(), true /* observed_submission */, nullptr /* prefs */,
+      nullptr);
 }
 
 void VotesUploader::SaveFieldVote(FormSignature form_signature,

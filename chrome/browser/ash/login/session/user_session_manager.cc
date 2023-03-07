@@ -17,12 +17,12 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -30,6 +30,7 @@
 #include "base/path_service.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -1090,7 +1091,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
   // subject to an exploit. See http://crbug.com/677312.
   if (IsOnlineSignin(user_context_) &&
       state == OAuth2LoginManager::SESSION_RESTORE_FAILED) {
-    LOG(ERROR)
+    SYSLOG(ERROR)
         << "Session restore failed for online sign-in, terminating session.";
     chrome::AttemptUserExit();
     return;
@@ -1160,7 +1161,8 @@ void UserSessionManager::OnUsersSignInConstraintsChanged() {
       continue;
     }
     if (!user_manager->IsUserAllowed(*user)) {
-      LOG(ERROR) << "The current user is not allowed, terminating the session.";
+      SYSLOG(ERROR)
+          << "The current user is not allowed, terminating the session.";
       chrome::AttemptUserExit();
     }
   }
@@ -1627,35 +1629,44 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   user_manager::KnownUser known_user(g_browser_process->local_state());
   if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
-    if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
-      known_user.UpdateUsingSAML(user_context_.GetAccountId(), true);
+    const UserContext::AuthFlow auth_flow = user_context_.GetAuthFlow();
+    if (auth_flow == UserContext::AUTH_FLOW_GAIA_WITH_SAML ||
+        auth_flow == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML) {
+      const bool using_saml =
+          auth_flow == UserContext::AUTH_FLOW_GAIA_WITH_SAML;
+      const AccountId& account_id = user_context_.GetAccountId();
+      known_user.UpdateUsingSAML(account_id, using_saml);
       known_user.UpdateIsUsingSAMLPrincipalsAPI(
-          user_context_.GetAccountId(),
-          user_context_.IsUsingSamlPrincipalsApi());
-      user->set_using_saml(true);
+          account_id,
+          using_saml ? user_context_.IsUsingSamlPrincipalsApi() : false);
+      user->set_using_saml(using_saml);
+      if (!using_saml) {
+        known_user.ClearPasswordSyncToken(account_id);
+      }
     }
-    PasswordSyncTokenVerifier* password_sync_token_verifier =
-        PasswordSyncTokenVerifierFactory::GetForProfile(profile);
-    if (password_sync_token_verifier) {
-      if (user_context_.GetAuthFlow() ==
-          UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
-        // Update local sync token after online SAML login.
-        password_sync_token_verifier->FetchSyncTokenOnReauth();
-      } else if (user_context_.GetAuthFlow() ==
-                 UserContext::AUTH_FLOW_OFFLINE) {
-        // Verify local sync token to check whether the local password is out
-        // of sync.
-        password_sync_token_verifier->RecordTokenPollingStart();
-        password_sync_token_verifier->CheckForPasswordNotInSync();
-      } else {
-        NOTREACHED();
+    if (user->using_saml()) {
+      PasswordSyncTokenVerifier* password_sync_token_verifier =
+          PasswordSyncTokenVerifierFactory::GetForProfile(profile);
+      if (password_sync_token_verifier) {
+        if (auth_flow == UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
+          // Update local sync token after online SAML login.
+          password_sync_token_verifier->FetchSyncTokenOnReauth();
+        } else if (auth_flow == UserContext::AUTH_FLOW_OFFLINE) {
+          // Verify local sync token to check whether the local password is out
+          // of sync.
+          password_sync_token_verifier->RecordTokenPollingStart();
+          password_sync_token_verifier->CheckForPasswordNotInSync();
+        } else {
+          // SAML user is not expected to go through other authentication flows.
+          NOTREACHED();
+        }
       }
     }
 
     OfflineSigninLimiter* offline_signin_limiter =
         OfflineSigninLimiterFactory::GetForProfile(profile);
     if (offline_signin_limiter)
-      offline_signin_limiter->SignedIn(user_context_.GetAuthFlow());
+      offline_signin_limiter->SignedIn(auth_flow);
   }
 
   profile->OnLogin();
@@ -1675,20 +1686,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       always_on_vpn_manager_ =
           std::make_unique<arc::AlwaysOnVpnManager>(profile->GetPrefs());
 
-      // SecureDnsManager is only needed if DNS-over-HTTPS is enabled for the
-      // dns-proxy service.
-      if (base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH)) {
-        secure_dns_manager_ = std::make_unique<SecureDnsManager>(
-            g_browser_process->local_state());
-      }
+      secure_dns_manager_ =
+          std::make_unique<SecureDnsManager>(g_browser_process->local_state());
     }
 
     UpdateEasyUnlockKeys(user_context_);
-    if (!features::IsUseAuthFactorsEnabled()) {
-      // Migration to cryptohome uses legacy AddKey-based cryptohome methods.
-      quick_unlock::PinBackend::GetInstance()->MigrateToCryptohome(
-          profile, std::make_unique<UserContext>(user_context_));
-    }
 
     // Save sync password hash and salt to profile prefs if they are available.
     // These will be used to detect Gaia password reuses.

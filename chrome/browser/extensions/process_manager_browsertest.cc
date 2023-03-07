@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -221,15 +221,14 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
              "script-src 'self' 'unsafe-eval'; object-src 'self'")
         .Set("sandbox",
              DictionaryBuilder()
-                 .Set("pages",
-                      ListBuilder().Append("sandboxed.html").BuildList())
-                 .BuildDict())
+                 .Set("pages", ListBuilder().Append("sandboxed.html").Build())
+                 .Build())
         .Set("web_accessible_resources",
-             ListBuilder().Append("*.html").BuildList());
+             ListBuilder().Append("*.html").Build());
 
     if (has_background_process) {
       manifest.Set("background",
-                   DictionaryBuilder().Set("page", "bg.html").BuildDict());
+                   DictionaryBuilder().Set("page", "bg.html").Build());
       dir->WriteFile(FILE_PATH_LITERAL("bg.html"),
                      "<iframe id='bgframe' src='empty.html'></iframe>");
     }

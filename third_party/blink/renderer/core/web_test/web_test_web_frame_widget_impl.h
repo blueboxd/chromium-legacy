@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/test/frame_widget_test_helper.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 
@@ -50,7 +51,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
   // FrameWidgetTestHelper overrides.
   void Reset() override;
   content::EventSender* GetEventSender() override;
-  void SynchronouslyCompositeAfterTest() override;
+  void SynchronouslyCompositeAfterTest(base::OnceClosure callback) override;
   void UpdateAllLifecyclePhasesAndComposite(
       base::OnceClosure completion_callback) override;
 
@@ -87,11 +88,12 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
   // display compositor if there is any damage.
   // Note that compositing has the potential to detach the current frame and
   // thus destroy |this| before returning.
-  void SynchronouslyComposite(bool do_raster);
+  void SynchronouslyComposite(base::OnceClosure callback, bool do_raster);
 
   // Perform the synchronous composite step for a given LayerTreeHost.
-  static void DoComposite(cc::LayerTreeHost* layer_tree_host, bool do_raster);
-
+  static void DoComposite(cc::LayerTreeHost* layer_tree_host,
+                          bool do_raster,
+                          base::OnceClosure callback);
   std::unique_ptr<content::EventSender> event_sender_;
 
   content::TestRunner* const test_runner_;

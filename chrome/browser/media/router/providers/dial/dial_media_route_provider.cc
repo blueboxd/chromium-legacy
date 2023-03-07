@@ -6,12 +6,13 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider_metrics.h"
 #include "components/media_router/common/media_source.h"
@@ -594,8 +595,8 @@ void DialMediaRouteProvider::EnableMdnsDiscovery() {
   NOTIMPLEMENTED();
 }
 
-void DialMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
-  media_sink_service_->OnUserGesture();
+void DialMediaRouteProvider::DiscoverSinksNow() {
+  media_sink_service_->DiscoverSinksNow();
 }
 
 void DialMediaRouteProvider::CreateMediaRouteController(

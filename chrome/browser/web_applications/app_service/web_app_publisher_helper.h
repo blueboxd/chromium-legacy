@@ -24,7 +24,7 @@
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -41,7 +41,6 @@
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/permission.h"
-#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
@@ -158,29 +157,13 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   // Populates the various show_in_* fields of |app|.
   void SetWebAppShowInFields(const WebApp* web_app, apps::App& app);
 
-  // Populates the various show_in_* fields of |app|.
-  void SetWebAppShowInFields(apps::mojom::AppPtr& app, const WebApp* web_app);
-
-  // Appends |web_app| permissions to |target|.
-  // TODO(crbug.com/1253250): Remove and use CreatePermissions.
-  void PopulateWebAppPermissions(
-      const WebApp* web_app,
-      std::vector<apps::mojom::PermissionPtr>* target);
-
   // Creates permissions for `web_app`.
   apps::Permissions CreatePermissions(const WebApp* web_app);
 
   // Creates an |apps::AppPtr| describing |web_app|.
   // Note: migration in progress. Changes should be made to both |CreateWebApp|
   // and |ConvertWebApp| until complete.
-  // TODO(crbug.com/1253250): Delete |ConvertWebApp| once migration is complete.
   apps::AppPtr CreateWebApp(const WebApp* web_app);
-
-  // Creates an |apps::mojom::App| describing |web_app|.
-  // Note: migration in progress. Changes should be made to both |CreateWebApp|
-  // and |ConvertWebApp| until complete.
-  // TODO(crbug.com/1253250): Delete |ConvertWebApp| once migration is complete.
-  apps::mojom::AppPtr ConvertWebApp(const WebApp* web_app);
 
   // Constructs an App with only the information required to identify an
   // uninstallation.
@@ -200,8 +183,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
                        bool clear_site_data,
                        bool report_abuse);
 
-  apps::mojom::IconKeyPtr MakeIconKey(const WebApp* web_app);
-
   void SetIconEffect(const std::string& app_id);
 
   void PauseApp(const std::string& app_id);
@@ -216,7 +197,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
                 apps::IconEffects icon_effects,
                 apps::LoadIconCallback callback);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void GetCompressedIconData(const std::string& app_id,
                              int32_t size_in_dip,
                              ui::ResourceScaleFactor scale_factor,
@@ -349,7 +330,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       const base::Time& last_launch_time) override;
   void OnWebAppUserDisplayModeChanged(
       const AppId& app_id,
-      UserDisplayMode user_display_mode) override;
+      mojom::UserDisplayMode user_display_mode) override;
   void OnWebAppRunOnOsLoginModeChanged(
       const AppId& app_id,
       RunOnOsLoginMode run_on_os_login_mode) override;
@@ -413,9 +394,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 #if BUILDFLAG(IS_CHROMEOS)
   // Updates app visibility.
   void UpdateAppDisabledMode(apps::App& app);
-
-  // Updates app visibility.
-  void UpdateAppDisabledMode(apps::mojom::AppPtr& app);
 
   bool MaybeAddNotification(const std::string& app_id,
                             const std::string& notification_id);

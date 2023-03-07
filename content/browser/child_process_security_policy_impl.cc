@@ -7,7 +7,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
@@ -15,6 +14,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -32,10 +32,12 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/url_info.h"
 #include "content/browser/webui/url_data_manager_backend.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
@@ -43,7 +45,6 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -201,6 +202,35 @@ void LogCanAccessDataForOriginCrashKeys(
                                  shutdown_delay_ref_count);
   base::debug::SetCrashKeyString(GetCanAccessDataProcessRFHCount(),
                                  process_rfh_count);
+}
+
+// Checks whether a lock mismatch should be ignored to allow most visited tiles
+// to commit in third-party NTP processes.
+//
+// TODO(crbug.com/566091): This exception should be removed once these tiles
+// can be loaded in OOPIFs on the NTP.
+bool AllowProcessLockMismatchForNTP(const ProcessLock& expected_lock,
+                                    const ProcessLock& actual_lock) {
+  // First, ensure that the expected lock corresponds to a WebUI site that
+  // does not require its process to be locked.  This should only be the case
+  // for sites used to load most visited tiles.
+  const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
+  if (!base::Contains(webui_schemes, expected_lock.lock_url().scheme())) {
+    return false;
+  }
+  if (GetContentClient()->browser()->DoesWebUIUrlRequireProcessLock(
+          expected_lock.lock_url())) {
+    return false;
+  }
+
+  // Now, check that the actual lock corresponds to an NTP process (using its
+  // site_url() since this check relies on checking effective URLs for NTPs),
+  // and that the expected lock (based on the URL for which we're doing the
+  // access check) is allowed to stay in that process. This restricts the lock
+  // mismatch to just NTP processes, disallowing most visited tiles from being
+  // embedded on sites in other processes.
+  return GetContentClient()->browser()->ShouldStayInParentProcessForNTP(
+      expected_lock.lock_url(), actual_lock.site_url());
 }
 
 }  // namespace
@@ -1149,8 +1179,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   if (!RenderProcessHost::run_renderer_in_process() &&
       base::Contains(webui_schemes, url.scheme())) {
     bool should_be_locked =
-        GetContentClient()->browser()->DoesWebUISchemeRequireProcessLock(
-            url.scheme());
+        GetContentClient()->browser()->DoesWebUIUrlRequireProcessLock(url);
     if (should_be_locked) {
       const ProcessLock lock = GetProcessLock(child_id);
       if (!lock.is_locked_to_site() || !lock.matches_scheme(url.scheme()))
@@ -1550,8 +1579,16 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
     int child_id,
     const url::Origin& origin) {
+  if (ShouldRestrictCanAccessDataForOriginToUIThread()) {
+    // Ensure this is only called on the UI thread, which is the only thread
+    // with sufficient information to do the full set of checks.
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  } else {
+    // For legacy cases, this may be called on multiple threads.
+    DCHECK(IsRunningOnExpectedThread());
+  }
+
   GURL url_to_check;
-  DCHECK(IsRunningOnExpectedThread());
   if (origin.opaque()) {
     auto precursor_tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
     if (!precursor_tuple.IsValid()) {
@@ -1587,7 +1624,15 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForMaybeOpaqueOrigin(
     int child_id,
     const GURL& url,
     bool url_is_precursor_of_opaque_origin) {
-  DCHECK(IsRunningOnExpectedThread());
+  if (ShouldRestrictCanAccessDataForOriginToUIThread()) {
+    // Ensure this is only called on the UI thread, which is the only thread
+    // with sufficient information to do the full set of checks.
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  } else {
+    // For legacy cases, this may be called on multiple threads.
+    DCHECK(IsRunningOnExpectedThread());
+  }
+
   base::AutoLock lock(lock_);
 
   SecurityState* security_state = GetSecurityState(child_id);
@@ -1755,6 +1800,15 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForMaybeOpaqueOrigin(
             // DeclarativeApiTest.PersistRules.
             if (actual_process_lock.matches_scheme(url::kDataScheme))
               return true;
+          }
+
+          // Make an exception to allow most visited tiles to commit in
+          // third-party NTP processes.
+          // TODO(crbug.com/566091): This exception should be removed once
+          // these tiles can be loaded in OOPIFs on the NTP.
+          if (AllowProcessLockMismatchForNTP(expected_process_lock,
+                                             actual_process_lock)) {
+            return true;
           }
 
           // TODO(wjmaclean): We should update the ProcessLock comparison API

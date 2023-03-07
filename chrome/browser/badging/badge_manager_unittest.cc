@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "build/chromeos_buildflags.h"
@@ -75,7 +75,7 @@ class BadgeManagerUnittest : public ::testing::Test {
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
     badge_manager_ = std::make_unique<TestBadgeManager>(
-        profile(), &provider().sync_bridge());
+        profile(), &provider().sync_bridge_unsafe());
 
     // Delegate lifetime is managed by BadgeManager
     auto owned_delegate = std::make_unique<TestBadgeManagerDelegate>(
@@ -138,7 +138,8 @@ TEST_F(BadgeManagerUnittest, SetBadgeForMultipleApps) {
   constexpr uint64_t kOtherContents = 2;
 
   std::vector<web_app::AppId> updated_apps;
-  web_app::WebAppTestRegistryObserverAdapter observer(&provider().registrar());
+  web_app::WebAppTestRegistryObserverAdapter observer(
+      &provider().registrar_unsafe());
   observer.SetWebAppLastBadgingTimeChangedDelegate(base::BindLambdaForTesting(
       [&updated_apps](const web_app::AppId& app_id, const base::Time& time) {
         updated_apps.push_back(app_id);
@@ -202,7 +203,7 @@ TEST_F(BadgeManagerUnittest, BadgingMultipleProfiles) {
   web_app::test::AwaitStartWebAppProviderAndSubsystems(other_profile.get());
 
   auto other_badge_manager = std::make_unique<TestBadgeManager>(
-      other_profile.get(), &new_provider->sync_bridge());
+      other_profile.get(), &new_provider->sync_bridge_unsafe());
 
   auto owned_other_delegate = std::make_unique<TestBadgeManagerDelegate>(
       other_profile.get(), other_badge_manager.get());
@@ -212,14 +213,15 @@ TEST_F(BadgeManagerUnittest, BadgingMultipleProfiles) {
   std::vector<web_app::AppId> updated_apps;
   std::vector<web_app::AppId> other_updated_apps;
   web_app::WebAppTestRegistryObserverAdapter other_observer(
-      &new_provider->registrar());
+      &new_provider->registrar_unsafe());
   other_observer.SetWebAppLastBadgingTimeChangedDelegate(
       base::BindLambdaForTesting(
           [&other_updated_apps](const web_app::AppId& app_id,
                                 const base::Time& time) {
             other_updated_apps.push_back(app_id);
           }));
-  web_app::WebAppTestRegistryObserverAdapter observer(&provider().registrar());
+  web_app::WebAppTestRegistryObserverAdapter observer(
+      &provider().registrar_unsafe());
   observer.SetWebAppLastBadgingTimeChangedDelegate(base::BindLambdaForTesting(
       [&updated_apps](const web_app::AppId& app_id, const base::Time& time) {
         updated_apps.push_back(app_id);

@@ -17,30 +17,41 @@ build_webui("build") {
   # Files holding a Polymer element definition and have an equivalent .html file.
   web_component_files = [
     "app.ts",
-    "shortcuts.ts",
+    "appearance.ts",
+    "button_label.ts",
+    "cards.ts",
     "categories.ts",
     "check_mark_wrapper.ts",
+    "chrome_colors.ts",
     "color.ts",
     "colors.ts",
-    "appearance.ts",
+    "hover_button.ts",
+    "shortcuts.ts",
     "themes.ts",
     "theme_snapshot.ts",
   ]
 
-  non_web_component_files = [ "customize_chrome_api_proxy.ts" ]
+  non_web_component_files = [
+    "chrome_cart_proxy.ts",
+    "color_utils.ts",
+    "customize_chrome_api_proxy.ts",
+  ]
 
-  html_files = []
-  foreach(f, web_component_files) {
-    html_files += [ string_replace(f, ".ts", ".html") ]
-  }
-
-  mojo_files_deps = [ "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings_js__generator" ]
-  mojo_files = [ "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom-webui.js" ]
+  mojo_files_deps = [
+    "//chrome/browser/cart:mojo_bindings_ts__generator",
+    "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings_ts__generator",
+  ]
+  mojo_files = [
+    "$root_gen_dir/chrome/browser/cart/chrome_cart.mojom-webui.ts",
+    "$root_gen_dir/chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom-webui.ts",
+  ]
 
   ts_composite = true
   ts_deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/managed_dialog:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
+  ts_definitions = [ "//tools/typescript/definitions/metrics_private.d.ts" ]
 }

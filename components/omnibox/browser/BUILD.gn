@@ -106,8 +106,14 @@ static_library("browser") {
     "autocomplete_classifier.h",
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
+    "autocomplete_controller_emitter.cc",
+    "autocomplete_controller_emitter.h",
     "autocomplete_controller_metrics.cc",
     "autocomplete_controller_metrics.h",
+    "autocomplete_grouper_groups.cc",
+    "autocomplete_grouper_groups.h",
+    "autocomplete_grouper_sections.cc",
+    "autocomplete_grouper_sections.h",
     "autocomplete_i18n.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
@@ -147,6 +153,8 @@ static_library("browser") {
     "history_provider.h",
     "history_quick_provider.cc",
     "history_quick_provider.h",
+    "history_scoring_signals_annotator.cc",
+    "history_scoring_signals_annotator.h",
     "history_url_provider.cc",
     "history_url_provider.h",
     "in_memory_url_index.cc",
@@ -170,12 +178,9 @@ static_library("browser") {
     "omnibox_client.h",
     "omnibox_controller.cc",
     "omnibox_controller.h",
-    "omnibox_controller_emitter.cc",
-    "omnibox_controller_emitter.h",
-    "omnibox_edit_controller.cc",
-    "omnibox_edit_controller.h",
     "omnibox_edit_model.cc",
     "omnibox_edit_model.h",
+    "omnibox_edit_model_delegate.h",
     "omnibox_event_global_tracker.cc",
     "omnibox_event_global_tracker.h",
     "omnibox_field_trial.cc",
@@ -253,6 +258,12 @@ static_library("browser") {
   ]
   if (build_with_tflite_lib) {
     sources += [
+      "autocomplete_scoring_model_executor.cc",
+      "autocomplete_scoring_model_executor.h",
+      "autocomplete_scoring_model_handler.cc",
+      "autocomplete_scoring_model_handler.h",
+      "autocomplete_scoring_model_service.cc",
+      "autocomplete_scoring_model_service.h",
       "on_device_tail_model_executor.cc",
       "on_device_tail_model_executor.h",
     ]
@@ -563,10 +574,10 @@ static_library("test_support") {
     "test_location_bar_model.h",
     "test_omnibox_client.cc",
     "test_omnibox_client.h",
-    "test_omnibox_edit_controller.cc",
-    "test_omnibox_edit_controller.h",
     "test_omnibox_edit_model.cc",
     "test_omnibox_edit_model.h",
+    "test_omnibox_edit_model_delegate.cc",
+    "test_omnibox_edit_model_delegate.h",
     "test_omnibox_view.cc",
     "test_omnibox_view.h",
     "test_scheme_classifier.cc",
@@ -611,6 +622,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/omnibox/Shortcuts.no_fill_into_edit.sql",
     "//components/test/data/omnibox/Shortcuts.v0.sql",
     "//components/test/data/omnibox/Shortcuts.v1.sql",
+    "//components/test/data/omnibox/adder.tflite",
     "//components/test/data/omnibox/in_memory_url_index_test.sql",
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
     "//components/test/data/omnibox/on_device_head_test_model_index.bin",
@@ -628,6 +640,8 @@ source_set("unit_tests") {
     "actions/omnibox_pedal_unittest.cc",
     "answers_cache_unittest.cc",
     "autocomplete_controller_metrics_unittest.cc",
+    "autocomplete_grouper_groups_unittest.cc",
+    "autocomplete_grouper_sections_unittest.cc",
     "autocomplete_input_unittest.cc",
     "autocomplete_match_type_unittest.cc",
     "autocomplete_match_unittest.cc",
@@ -644,6 +658,7 @@ source_set("unit_tests") {
     "history_fuzzy_provider_unittest.cc",
     "history_provider_unittest.cc",
     "history_quick_provider_unittest.cc",
+    "history_scoring_signals_annotator_unittest.cc",
     "history_url_provider_unittest.cc",
     "in_memory_url_index_types_unittest.cc",
     "in_memory_url_index_unittest.cc",
@@ -685,7 +700,10 @@ source_set("unit_tests") {
     sources += [ "location_bar_model_util_unittest.cc" ]
   }
   if (build_with_tflite_lib) {
-    sources += [ "on_device_tail_model_executor_unittest.cc" ]
+    sources += [
+      "autocomplete_scoring_model_executor_unittest.cc",
+      "on_device_tail_model_executor_unittest.cc",
+    ]
   }
 
   deps = [

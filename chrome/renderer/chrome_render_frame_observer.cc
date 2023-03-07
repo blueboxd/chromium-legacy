@@ -12,8 +12,8 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
@@ -58,6 +58,7 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/libwebp/src/src/webp/decode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -417,7 +418,8 @@ void ChromeRenderFrameObserver::RequestImageForContextNode(
   image_extension = "." + web_element.ImageExtension();
   bool needs_downscale = NeedsDownscale(
       original_size, thumbnail_min_area_pixels, thumbnail_max_size_pixels);
-  bool needs_encode = NeedsEncodeImage(image_extension, image_format);
+  bool needs_encode = NeedsEncodeImage(image_extension, image_format) ||
+                      IsAnimatedWebp(web_element.CopyOfImageData());
   if (!needs_encode && !needs_downscale) {
     image_data = web_element.CopyOfImageData();
     std::move(callback).Run(std::move(image_data), original_size,
@@ -640,7 +642,21 @@ void ChromeRenderFrameObserver::CapturePageText(
   // Language detection should run only once. Parsing finishes before the page
   // loads, so let's pick that timing.
   if (translate_agent_ &&
-      layout_type == blink::WebMeaningfulLayout::kFinishedParsing) {
+      (layout_type == blink::WebMeaningfulLayout::kFinishedParsing)) {
+    // Under kRetryLanguageDetection, do not attempt language detection if no
+    // page content was captured.
+    if (!base::FeatureList::IsEnabled(translate::kRetryLanguageDetection) ||
+        contents.size()) {
+      translate_agent_->PageCaptured(contents);
+    }
+  }
+  // Under kRetryLanguageDetection, language detection may be attempted
+  // later when the page finishes loading if no content was captured at
+  // kFinishedParsing.
+  if (base::FeatureList::IsEnabled(translate::kRetryLanguageDetection) &&
+      translate_agent_ &&
+      (layout_type == blink::WebMeaningfulLayout::kFinishedLoading) &&
+      !translate_agent_->WasPageContentCapturedForUrl()) {
     translate_agent_->PageCaptured(contents);
   }
 
@@ -722,4 +738,13 @@ bool ChromeRenderFrameObserver::NeedsEncodeImage(
   // Should never hit this code since all cases were handled above.
   NOTREACHED();
   return true;
+}
+
+// static
+bool ChromeRenderFrameObserver::IsAnimatedWebp(
+    const std::vector<uint8_t>& image_data) {
+  WebPBitstreamFeatures features{};
+  VP8StatusCode status =
+      WebPGetFeatures(image_data.data(), image_data.size(), &features);
+  return status == VP8_STATUS_OK && features.has_animation;
 }

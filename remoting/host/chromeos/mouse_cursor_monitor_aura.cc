@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "remoting/host/chromeos/skia_bitmap_desktop_frame.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -37,9 +37,7 @@ webrtc::MouseCursor* CreateEmptyMouseCursor() {
 namespace remoting {
 
 MouseCursorMonitorAura::MouseCursorMonitorAura()
-    : callback_(nullptr),
-      mode_(SHAPE_AND_POSITION) {
-}
+    : callback_(nullptr), mode_(SHAPE_AND_POSITION) {}
 
 void MouseCursorMonitorAura::Init(Callback* callback, Mode mode) {
   DCHECK(!callback_);

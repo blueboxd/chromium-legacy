@@ -8,7 +8,7 @@
 
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_impl.h"
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/singleton.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -42,7 +42,7 @@ FastPairHandshake* FastPairHandshakeLookup::Get(scoped_refptr<Device> device) {
 FastPairHandshake* FastPairHandshakeLookup::Get(const std::string& address) {
   for (const auto& pair : fast_pair_handshakes_) {
     if (pair.first->classic_address() == address ||
-        pair.first->ble_address == address) {
+        pair.first->ble_address() == address) {
       return pair.second.get();
     }
   }
@@ -57,7 +57,7 @@ bool FastPairHandshakeLookup::Erase(scoped_refptr<Device> device) {
 bool FastPairHandshakeLookup::Erase(const std::string& address) {
   for (const auto& pair : fast_pair_handshakes_) {
     if (pair.first->classic_address() == address ||
-        pair.first->ble_address == address) {
+        pair.first->ble_address() == address) {
       fast_pair_handshakes_.erase(pair);
       return true;
     }

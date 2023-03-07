@@ -8,6 +8,7 @@
 
 #include "base/cxx17_backports.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -90,12 +91,11 @@ CameraAppDeviceImpl::~CameraAppDeviceImpl() {
 
 void CameraAppDeviceImpl::BindReceiver(
     mojo::PendingReceiver<cros::mojom::CameraAppDevice> receiver) {
+  mojo_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   receivers_.Add(this, std::move(receiver));
   receivers_.set_disconnect_handler(
       base::BindRepeating(&CameraAppDeviceImpl::OnMojoConnectionError,
                           weak_ptr_factory_for_mojo_.GetWeakPtr()));
-  mojo_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
-
   document_scanner_service_ = ash::DocumentScannerServiceClient::Create();
 }
 

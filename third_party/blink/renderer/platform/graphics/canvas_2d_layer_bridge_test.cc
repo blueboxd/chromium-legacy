@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/test/paint_image_matchers.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_decode_cache.h"
 #include "components/viz/common/resources/release_callback.h"
@@ -68,6 +69,10 @@
 
 #include <memory>
 
+namespace blink {
+
+namespace {
+
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -76,10 +81,6 @@ using testing::Pointee;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::Test;
-
-namespace blink {
-
-namespace {
 
 class ImageTrackingDecodeCache : public cc::StubDecodeCache {
  public:
@@ -717,7 +718,7 @@ TEST_F(Canvas2DLayerBridgeTest, ResourceRecycling) {
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+      .gpu_memory_buffer_formats.Put(gfx::BufferFormat::BGRA_8888);
 
   viz::TransferableResource resources[3];
   viz::ReleaseCallback callbacks[3];
@@ -756,7 +757,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoResourceRecyclingWhenPageHidden) {
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+      .gpu_memory_buffer_formats.Put(gfx::BufferFormat::BGRA_8888);
 
   viz::TransferableResource resources[2];
   viz::ReleaseCallback callbacks[2];
@@ -794,7 +795,7 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseResourcesAfterBridgeDestroyed) {
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+      .gpu_memory_buffer_formats.Put(gfx::BufferFormat::BGRA_8888);
 
   viz::TransferableResource resource;
   viz::ReleaseCallback release_callback;
@@ -833,7 +834,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
       SkCanvas::kFast_SrcRectConstraint);
   bridge->NewImageSnapshot();
 
-  EXPECT_EQ(image_decode_cache_.decoded_images(), images);
+  EXPECT_THAT(image_decode_cache_.decoded_images(), cc::ImagesAreSame(images));
 }
 
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
@@ -857,7 +858,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
       SkCanvas::kFast_SrcRectConstraint);
   bridge->NewImageSnapshot();
 
-  EXPECT_EQ(image_decode_cache_.decoded_images(), images);
+  EXPECT_THAT(image_decode_cache_.decoded_images(), cc::ImagesAreSame(images));
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
@@ -972,8 +973,7 @@ TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
   cc::PaintFlags flags;
 
   // MakeBridge() results in a call to restore the matrix. So we already have 1.
-  EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
+  EXPECT_EQ(bridge->GetPaintCanvas()->getLocalToDevice().rc(0, 3), 5);
   // Drawline so WritePixels has something to flush
   bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   bridge->DidDraw();
@@ -981,16 +981,14 @@ TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
   // WritePixels flushes recording. Post flush, a new drawing canvas is created
   // that should have the matrix restored onto it.
   bridge->WritePixels(SkImageInfo::MakeN32Premul(10, 10), nullptr, 10, 0, 0);
-  EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
+  EXPECT_EQ(bridge->GetPaintCanvas()->getLocalToDevice().rc(0, 3), 5);
 
   bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   // Standard flush recording. Post flush, a new drawing canvas is created that
   // should have the matrix restored onto it.
   DrawSomething(bridge.get());
 
-  EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
+  EXPECT_EQ(bridge->GetPaintCanvas()->getLocalToDevice().rc(0, 3), 5);
 }
 
 TEST_F(Canvas2DLayerBridgeTest, DisplayedCanvasIsRateLimited) {

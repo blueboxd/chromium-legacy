@@ -5,8 +5,8 @@
 #include <map>
 #include <string>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -173,6 +173,8 @@ std::vector<WebFeature> AllAddressSpaceFeatures() {
       WebFeature::kAddressSpaceUnknownNonSecureContextNavigatedToPrivate,
       WebFeature::kPrivateNetworkAccessIgnoredPreflightError,
       WebFeature::kPrivateNetworkAccessFetchedWorkerScript,
+      WebFeature::kPrivateNetworkAccessFetchedSubFrame,
+      WebFeature::kPrivateNetworkAccessFetchedTopFrame,
       WebFeature::kPrivateNetworkAccessWithinWorker,
   };
 }
@@ -391,8 +393,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureDisabledBrowserTest,
 // This test verifies that when a preflight request is sent ahead of a private
 // network request, fails, and enforcement is not enabled, the correct
 // WebFeature is use-counted to reflect the suppressed error.
-IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
-                       RecordsAddressSpaceFeatureForFetchWithPreflight) {
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+    RecordsAddressSpaceFeatureForFetchWithPreflightUnreplied) {
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
 
   EXPECT_TRUE(content::NavigateToURL(web_contents(), PublicSecureURL(*server)));
@@ -404,6 +407,34 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   // Instead, a warning is shown in DevTools and a WebFeature use-counted.
   EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
     fetch("/defaultresponse").then(response => response.ok)
+  )"));
+
+  feature_histogram_tester.ExpectCounts(AddFeatureCounts(
+      AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+      {
+          {WebFeature::kAddressSpacePublicSecureContextEmbeddedLocal, 1},
+          {WebFeature::kPrivateNetworkAccessIgnoredPreflightError, 1},
+      }));
+}
+
+// This test verifies that when a preflight request is sent ahead of a private
+// network request, the server replies with Access-Control-Allow-Origins but
+// without Access-Control-Allow-Private-Network, and enforcement is not enabled,
+// the correct WebFeature is use-counted to reflect the suppressed error.
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+    RecordsAddressSpaceFeatureForFetchWithPreflightRepliedWithoutPNAHeaders) {
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), PublicSecureURL(*server)));
+
+  WebFeatureHistogramTester feature_histogram_tester;
+
+  // The server does not reply with valid CORS headers, so the preflight fails.
+  // The enforcement feature is not enabled however, so the error is suppressed.
+  // Instead, a warning is shown in DevTools and a WebFeature use-counted.
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    fetch("/cors-ok.txt").then(response => response.ok)
   )"));
 
   feature_histogram_tester.ExpectCounts(AddFeatureCounts(
@@ -479,6 +510,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
       AllZeroFeatureCounts(AllAddressSpaceFeatures()),
       {
           {WebFeature::kAddressSpacePublicNonSecureContextNavigatedToLocal, 1},
+          {WebFeature::kPrivateNetworkAccessFetchedTopFrame, 1},
       }));
 }
 
@@ -510,6 +542,7 @@ IN_PROC_BROWSER_TEST_F(
       AllZeroFeatureCounts(AllAddressSpaceFeatures()),
       {
           {WebFeature::kAddressSpacePublicNonSecureContextNavigatedToLocal, 1},
+          {WebFeature::kPrivateNetworkAccessFetchedTopFrame, 1},
       }));
 }
 
@@ -569,6 +602,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
       AllZeroFeatureCounts(AllAddressSpaceFeatures()),
       {
           {WebFeature::kAddressSpacePublicNonSecureContextNavigatedToLocal, 1},
+          {WebFeature::kPrivateNetworkAccessFetchedSubFrame, 1},
       }));
 }
 
@@ -610,6 +644,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
       AllZeroFeatureCounts(AllAddressSpaceFeatures()),
       {
           {WebFeature::kAddressSpacePublicNonSecureContextNavigatedToLocal, 1},
+          {WebFeature::kPrivateNetworkAccessFetchedSubFrame, 1},
       }));
 }
 
@@ -641,6 +676,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
       AllZeroFeatureCounts(AllAddressSpaceFeatures()),
       {
           {WebFeature::kAddressSpacePublicNonSecureContextNavigatedToLocal, 1},
+          {WebFeature::kPrivateNetworkAccessFetchedSubFrame, 1},
       }));
 }
 

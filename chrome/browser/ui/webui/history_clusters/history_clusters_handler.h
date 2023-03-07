@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -86,6 +86,8 @@ class HistoryClustersHandler : public mojom::PageHandler,
   void RecordClusterAction(mojom::ClusterAction cluster_action,
                            uint32_t cluster_index) override;
   void RecordToggledVisibility(bool visible) override;
+  void ShowContextMenuForSearchbox(const std::string& query,
+                                   const gfx::Point& point) override;
   void ShowContextMenuForURL(const GURL& url, const gfx::Point& point) override;
 
   // HistoryClustersService::Observer:

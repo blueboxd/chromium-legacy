@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_implementation.h"
@@ -24,6 +25,10 @@ class Presenter;
 
 struct GLContextAttribs;
 struct GLVersionInfo;
+}
+
+namespace gfx {
+class ColorSpace;
 }
 
 namespace ui {
@@ -41,7 +46,9 @@ class COMPONENT_EXPORT(OZONE_BASE) GLOzone {
 
   // Performs any one off initialization for GL implementation.
   virtual gl::GLDisplay* InitializeGLOneOffPlatform(
-      uint64_t system_device_id) = 0;
+      bool supports_angle,
+      std::vector<gl::DisplayType> init_displays,
+      gl::GpuPreference gpu_preference) = 0;
 
   // Disables the specified extensions in the window system bindings,
   // e.g., GLX, EGL, etc. This is part of the GPU driver bug workarounds

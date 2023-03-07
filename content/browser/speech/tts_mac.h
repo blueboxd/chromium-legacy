@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_SPEECH_TTS_MAC_H_
 #define CONTENT_BROWSER_SPEECH_TTS_MAC_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/no_destructor.h"
 #include "content/browser/speech/tts_platform_impl.h"
@@ -28,7 +28,7 @@ class TtsPlatformImplMac;
 // two reasons:
 // 1. To associate delegate callbacks with a particular utterance,
 //    without assuming anything undocumented about the protocol.
-// 2. To work around http://openradar.appspot.com/radar?id=2854403,
+// 2. To work around https://openradar.appspot.com/13425549,
 //    where Nuance voices don't retain the utterance string and
 //    crash when trying to call willSpeakWord.
 @interface SingleUseSpeechSynthesizer : NSSpeechSynthesizer

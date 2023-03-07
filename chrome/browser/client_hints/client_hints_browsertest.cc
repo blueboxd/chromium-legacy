@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
@@ -53,6 +53,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_hints.h"
 #include "content/public/browser/navigation_entry.h"
@@ -78,6 +79,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
@@ -369,6 +371,62 @@ class AlternatingCriticalCHRequestHandler {
   net::HttpStatusCode status_code_ = net::HTTP_TEMPORARY_REDIRECT;
 };
 
+void ExpectUKMSeen(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
+                   const std::vector<network::mojom::WebClientHintsType>& hints,
+                   size_t loads,
+                   const base::StringPiece metric_name,
+                   const base::StringPiece type_name) {
+  auto ukm_entries = ukm_recorder.GetEntriesByName(metric_name);
+  // We expect the same series of `hints` to appear `loads` times.
+  ASSERT_EQ(ukm_entries.size(), hints.size() * loads);
+  for (size_t hint = 0; hint < hints.size(); ++hint) {
+    for (size_t load = 0; load < loads; ++load) {
+      EXPECT_EQ(*ukm_recorder.GetEntryMetric(
+                    ukm_entries[hint + load * hints.size()], type_name),
+                static_cast<int64_t>(hints[hint]));
+    }
+  }
+}
+
+void ExpectAcceptCHHeaderUKMSeen(
+    const ukm::TestAutoSetUkmRecorder& ukm_recorder,
+    const std::vector<network::mojom::WebClientHintsType>& hints,
+    size_t loads) {
+  ExpectUKMSeen(ukm_recorder, hints, loads,
+                ukm::builders::ClientHints_AcceptCHHeaderUsage::kEntryName,
+                ukm::builders::ClientHints_AcceptCHHeaderUsage::kTypeName);
+}
+
+void ExpectCriticalCHHeaderUKMSeen(
+    const ukm::TestAutoSetUkmRecorder& ukm_recorder,
+    const std::vector<network::mojom::WebClientHintsType>& hints,
+    size_t loads) {
+  ExpectUKMSeen(ukm_recorder, hints, loads,
+                ukm::builders::ClientHints_CriticalCHHeaderUsage::kEntryName,
+                ukm::builders::ClientHints_CriticalCHHeaderUsage::kTypeName);
+}
+
+const std::vector<network::mojom::WebClientHintsType> kStandardHTTPHeaderHints(
+    {network::mojom::WebClientHintsType::kDpr_DEPRECATED,
+     network::mojom::WebClientHintsType::kDpr,
+     network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+     network::mojom::WebClientHintsType::kDeviceMemory,
+     network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED,
+     network::mojom::WebClientHintsType::kViewportWidth,
+     network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+     network::mojom::WebClientHintsType::kDownlink_DEPRECATED,
+     network::mojom::WebClientHintsType::kEct_DEPRECATED,
+     network::mojom::WebClientHintsType::kUAArch,
+     network::mojom::WebClientHintsType::kUAPlatformVersion,
+     network::mojom::WebClientHintsType::kUAModel,
+     network::mojom::WebClientHintsType::kUAFullVersion,
+     network::mojom::WebClientHintsType::kPrefersColorScheme,
+     network::mojom::WebClientHintsType::kPrefersReducedMotion,
+     network::mojom::WebClientHintsType::kUABitness,
+     network::mojom::WebClientHintsType::kViewportHeight,
+     network::mojom::WebClientHintsType::kUAFullVersionList,
+     network::mojom::WebClientHintsType::kUAWoW64});
+
 }  // namespace
 
 class ClientHintsBrowserTest : public policy::PolicyTest {
@@ -503,10 +561,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
   virtual std::unique_ptr<base::FeatureList> EnabledFeatures() {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,CriticalClientHint,"
-        "AcceptCHFrame,PrefersColorSchemeClientHintHeader,"
-        "PrefersReducedMotionClientHintHeader",
-        "");
+        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame", "");
     return feature_list;
   }
 
@@ -523,6 +578,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
                          GURL("https://bar.com/non-existing-image.jpg"),
                          GURL("https://bar.com/non-existing-iframe.html")});
     base::RunLoop().RunUntilIdle();
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   void TearDownOnMainThread() override { request_interceptor_.reset(); }
@@ -792,6 +848,9 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
 
     return profiles::testing::CreateProfileSync(profile_manager, new_path);
   }
+
+ protected:
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 
  private:
   // Intercepts only the main frame requests that contain
@@ -1293,6 +1352,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsHttps) {
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
                        ClientHintsHttps) {
@@ -1338,6 +1401,14 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       content::AcceptCHFrameRestart::kNavigationRestarted, 1);
   histogram_tester.ExpectBucketCount("ClientHints.CriticalCHRestart",
                                      2 /*=kNavigationRestarted*/, 0);
+  ExpectAcceptCHHeaderUKMSeen(
+      *ukm_recorder_,
+      {network::mojom::WebClientHintsType::kUAFullVersionList,
+       network::mojom::WebClientHintsType::kDpr},
+      /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(
+      *ukm_recorder_, {network::mojom::WebClientHintsType::kUAFullVersionList},
+      /*loads=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsAlpsRestartLimit) {
@@ -1481,6 +1552,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsClearSession) {
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
   EXPECT_EQ(0u, count_client_hints_headers_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, {},
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 // Test that client hints are attached to subresources only if they belong
@@ -1627,6 +1702,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentVersion) {
   EXPECT_EQ(main_frame_ua_observed(), expected_ua);
   EXPECT_EQ(main_frame_ua_full_version_list_observed(),
             expected_full_version_list);
+  // Two navigations occurred.
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/2);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/2);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
@@ -1788,6 +1868,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, EmptyAcceptCH) {
   // Visiting again should not expect them since we opted out again.
   SetClientHintExpectationsOnMainFrame(false);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, InjectAcceptCH_HttpEquiv) {
@@ -1982,6 +2066,15 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, Default) {
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount",
                                     update_event_count);
 
+  // One fetch when initially add the client hints head, one fetch for look up
+  // commit client hints when navigation commits.
+  histogram_tester.ExpectTotalCount("ClientHints.FetchLatency_Total", 2);
+  histogram_tester.ExpectTotalCount("ClientHints.FetchLatency_PrefRead", 2);
+  histogram_tester.ExpectTotalCount("ClientHints.FetchLatency_PrerenderHost",
+                                    2);
+  histogram_tester.ExpectTotalCount("ClientHints.FetchLatency_OriginTrialCheck",
+                                    2);
+
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
@@ -1994,6 +2087,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, Default) {
   // Client hints should not be sent to the third-party with the exception of
   // the `Sec-CH-UA/-Platform/-Mobile))` hints sent every request.
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes, Default) {
   GURL gurl;
@@ -2056,6 +2153,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // accept_ch() in an iframe. The request to persist client
   // hints from accept_ch() should not be persisted.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, {},
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 // Loads a HTTPS webpage that does not request persisting of client hints.
@@ -2089,6 +2190,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // persist client hints from accept_ch() should be
   // disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, {},
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
                        DisregardPersistenceRequestIframe) {
@@ -2154,6 +2259,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // accept_ch() as a subresource. The request to persist
   // client hints from accept_ch() should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, {},
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
                        DisregardPersistenceRequestSubresource) {
@@ -2216,6 +2325,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // The request to persist client hints from accept_ch() or
   // http_equiv_accept_ch_url() should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, {},
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
                        DisregardPersistenceRequestSubresourceIframe) {
@@ -2261,6 +2374,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, NoClientHintsHttps) {
 
   // no_client_hints_url() does not sets the client hints.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, {},
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
@@ -2308,6 +2425,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // to the main frame request.
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
                        ClientHintsFollowedByNoClientHint) {
@@ -2412,6 +2533,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // to the main frame request.
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 // Ensure that even when cookies are blocked, client hint preferences are
@@ -2439,6 +2564,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
   VerifyContentSettingsNotNotified();
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
@@ -2489,6 +2618,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // to the main frame request.
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2527,6 +2660,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
+  // Three navigations occurred but only two had an Accept-CH header.
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/2);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/2);
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2660,6 +2798,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // to the main frame request.
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2765,6 +2907,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsScriptNotAllowed) {
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->ClearSettingsForOneType(ContentSettingsType::JAVASCRIPT);
+  // Three navigations occurred.
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/3);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/3);
 }
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTestForMetaTagTypes,
                        ClientHintsScriptNotAllowed) {
@@ -2876,6 +3023,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsCookiesNotAllowed) {
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2986,6 +3137,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // No additional hints are sent.
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
+  ExpectAcceptCHHeaderUKMSeen(*ukm_recorder_, kStandardHTTPHeaderHints,
+                              /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_, {},
+                                /*loads=*/1);
 }
 
 class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
@@ -3016,10 +3171,7 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
             ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,PrefersColorSchemeClientHintHeader,"
-        "PrefersReducedMotionClientHintHeader",
-        "");
+    feature_list->InitializeFromCommandLine("UserAgentClientHint", "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
@@ -3122,10 +3274,11 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     std::unique_ptr<base::FeatureList> feature_list =
         std::make_unique<base::FeatureList>();
-    // Don't include PrefersColorSchemeClientHintHeader in the enabled
-    // features; we will verify that PrefersColorScheme is not included.
+    // Don't include ClientHintsDPR in the enabled features; we will verify that
+    // sec-ch-dpr is not included.
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame", "");
+        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame",
+        "ClientHintsDPR");
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     InProcessBrowserTest::SetUp();
@@ -3133,7 +3286,7 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -3141,8 +3294,8 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL("/critical_ch_ua_full_version.html");
   }
 
-  GURL critical_ch_prefers_color_scheme_url() const {
-    return https_server_.GetURL("/critical_ch_prefers-color-scheme.html");
+  GURL critical_ch_dpr_url() const {
+    return https_server_.GetURL("/critical_ch_dpr.html");
   }
 
   GURL critical_ch_ua_full_version_list_url() const {
@@ -3173,9 +3326,9 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return ch_ua_full_version_list_;
   }
 
-  const absl::optional<std::string>& observed_ch_prefers_color_scheme() {
-    base::AutoLock lock(ch_prefers_color_scheme_lock_);
-    return ch_prefers_color_scheme_;
+  const absl::optional<std::string>& observed_ch_dpr() {
+    base::AutoLock lock(ch_dpr_lock_);
+    return ch_dpr_;
   }
 
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
@@ -3187,8 +3340,8 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
         request.headers.end()) {
       SetChUaFullVersionList(request.headers.at("sec-ch-ua-full-version-list"));
     }
-    if (request.headers.find("prefers-color-scheme") != request.headers.end()) {
-      SetChPrefersColorScheme(request.headers.at("prefers-color-scheme"));
+    if (request.headers.find("sec-ch-dpr") != request.headers.end()) {
+      SetChDpr(request.headers.at("sec-ch-dpr"));
     }
   }
 
@@ -3220,6 +3373,9 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return http_response;
   }
 
+ protected:
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
+
  private:
   void SetChUaFullVersion(const std::string& ch_ua_full_version) {
     base::AutoLock lock(ch_ua_full_version_lock_);
@@ -3231,9 +3387,9 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     ch_ua_full_version_list_ = ch_ua_full_version_list;
   }
 
-  void SetChPrefersColorScheme(const std::string& ch_prefers_color_scheme) {
-    base::AutoLock lock(ch_prefers_color_scheme_lock_);
-    ch_prefers_color_scheme_ = ch_prefers_color_scheme;
+  void SetChDpr(const std::string& ch_dpr) {
+    base::AutoLock lock(ch_dpr_lock_);
+    ch_dpr_ = ch_dpr;
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -3244,9 +3400,8 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
   base::Lock ch_ua_full_version_list_lock_;
   absl::optional<std::string> ch_ua_full_version_list_
       GUARDED_BY(ch_ua_full_version_list_lock_);
-  base::Lock ch_prefers_color_scheme_lock_;
-  absl::optional<std::string> ch_prefers_color_scheme_
-      GUARDED_BY(ch_prefers_color_scheme_lock_);
+  base::Lock ch_dpr_lock_;
+  absl::optional<std::string> ch_dpr_ GUARDED_BY(ch_dpr_lock_);
 };
 
 // Verify that setting Critical-CH in the response header causes the request to
@@ -3261,8 +3416,15 @@ IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
   const std::string expected_ch_ua_full_version = "\"" + ua.full_version + "\"";
   EXPECT_THAT(observed_ch_ua_full_version(),
               Optional(Eq(expected_ch_ua_full_version)));
-  EXPECT_EQ(observed_ch_prefers_color_scheme(), absl::nullopt);
+  EXPECT_EQ(observed_ch_dpr(), absl::nullopt);
   EXPECT_EQ(observed_ch_ua_full_version_list(), absl::nullopt);
+  // One navigation occurred but it was restarted.
+  ExpectAcceptCHHeaderUKMSeen(
+      *ukm_recorder_, {network::mojom::WebClientHintsType::kUAFullVersion},
+      /*loads=*/2);
+  ExpectCriticalCHHeaderUKMSeen(
+      *ukm_recorder_, {network::mojom::WebClientHintsType::kUAFullVersion},
+      /*loads=*/2);
 }
 
 // Verify that setting Critical-CH in the response header causes the request to
@@ -3279,10 +3441,19 @@ IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
       ua.SerializeBrandFullVersionList();
   EXPECT_THAT(observed_ch_ua_full_version_list(),
               Optional(Eq(expected_ch_ua_full_version_list)));
-  // The request should not have been resent, so ch-ua-full-version and
-  // prefers-color-schemeshould also not be present.
+  // The request should not have been resent, so ch-ua-full-version and dpr
+  // should also not be present.
   EXPECT_EQ(observed_ch_ua_full_version(), absl::nullopt);
-  EXPECT_EQ(observed_ch_prefers_color_scheme(), absl::nullopt);
+  EXPECT_EQ(observed_ch_dpr(), absl::nullopt);
+  // One navigation occurred but it was restarted.
+  ExpectAcceptCHHeaderUKMSeen(
+      *ukm_recorder_,
+      {network::mojom::WebClientHintsType::kUAFullVersionList,
+       network::mojom::WebClientHintsType::kDpr},
+      /*loads=*/2);
+  ExpectCriticalCHHeaderUKMSeen(
+      *ukm_recorder_, {network::mojom::WebClientHintsType::kUAFullVersionList},
+      /*loads=*/2);
 }
 
 // Verify that setting Critical-CH in the response header with a client hint
@@ -3292,15 +3463,22 @@ IN_PROC_BROWSER_TEST_F(
     CriticalClientHintsBrowserTest,
     CriticalClientHintFilteredOutOfAcceptChNotInRequestHeader) {
   // On the first navigation request, the client hints in the Critical-CH
-  // should be set on the request header, but in this case, the
-  // kPrefersColorSchemeClientHintHeader is not enabled, so the critical client
-  // hint won't be set in the request header.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), critical_ch_prefers_color_scheme_url()));
-  EXPECT_EQ(observed_ch_prefers_color_scheme(), absl::nullopt);
+  // should be set on the request header, but in this case, the kClientHintsDPR
+  // is not enabled, so the critical client hint won't be set in the request
+  // header.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), critical_ch_dpr_url()));
+  EXPECT_EQ(observed_ch_dpr(), absl::nullopt);
   // The request should not have been resent, so ch-ua-full-version should also
   // not be present.
   EXPECT_EQ(observed_ch_ua_full_version(), absl::nullopt);
+  ExpectAcceptCHHeaderUKMSeen(
+      *ukm_recorder_,
+      {network::mojom::WebClientHintsType::kDpr,
+       network::mojom::WebClientHintsType::kUAFullVersion},
+      /*loads=*/1);
+  ExpectCriticalCHHeaderUKMSeen(*ukm_recorder_,
+                                {network::mojom::WebClientHintsType::kDpr},
+                                /*loads=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest, OneRestartSingleOrigin) {
@@ -3370,6 +3548,15 @@ IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
                                     1 /*=kHeaderPresent*/, 1);
   histogram_after.ExpectBucketCount("ClientHints.CriticalCHRestart",
                                     2 /*=kNavigationRestarted*/, 0);
+  // Two navigation occurred but one was restarted.
+  ExpectAcceptCHHeaderUKMSeen(
+      *ukm_recorder_,
+      {network::mojom::WebClientHintsType::kUAFullVersionList,
+       network::mojom::WebClientHintsType::kDpr},
+      /*loads=*/3);
+  ExpectCriticalCHHeaderUKMSeen(
+      *ukm_recorder_, {network::mojom::WebClientHintsType::kUAFullVersionList},
+      /*loads=*/3);
 }
 
 IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
@@ -3388,6 +3575,15 @@ IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
   ASSERT_EQ(1U, client_hints_settings.size());
+  // One navigation occurred but it was restarted.
+  ExpectAcceptCHHeaderUKMSeen(
+      *ukm_recorder_,
+      {network::mojom::WebClientHintsType::kUAFullVersionList,
+       network::mojom::WebClientHintsType::kDpr},
+      /*loads=*/2);
+  ExpectCriticalCHHeaderUKMSeen(
+      *ukm_recorder_, {network::mojom::WebClientHintsType::kUAFullVersionList},
+      /*loads=*/2);
 }
 
 class CriticalClientHintsRedirectBrowserTest
@@ -3538,9 +3734,7 @@ class ClientHintsBrowserTestWithEmulatedMedia
   ClientHintsBrowserTestWithEmulatedMedia()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     scoped_feature_list_.InitFromCommandLine(
-        "UserAgentClientHint,AcceptCHFrame,PrefersColorSchemeClientHintHeader,"
-        "PrefersReducedMotionClientHintHeader",
-        "");
+        "UserAgentClientHint,AcceptCHFrame", "");
 
     https_server_.ServeFilesFromSourceDirectory(
         "chrome/test/data/client_hints");

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ref.h"
 #include "content/public/browser/navigation_handle_user_data.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -96,7 +96,6 @@ class ObjectNavigationFallbackBodyLoader
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::OnceClosure completion_closure);
 
-  void MaybeComplete();
   void BodyLoadFailed();
 
   // URLLoaderClient overrides:
@@ -124,7 +123,6 @@ class ObjectNavigationFallbackBodyLoader
   // `response_body_drainer_` will be reset to null when the response body is
   // completely drained.
   std::unique_ptr<mojo::DataPipeDrainer> response_body_drainer_;
-  absl::optional<network::URLLoaderCompletionStatus> status_;
   blink::mojom::ResourceTimingInfoPtr timing_info_;
   std::string server_timing_value_;
   base::OnceClosure completion_closure_;

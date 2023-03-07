@@ -9,9 +9,11 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_actions_history.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
@@ -109,6 +111,8 @@ RequestTypeForUma GetUmaValueForRequestType(RequestType request_type) {
     case RequestType::kWindowManagement:
       return RequestTypeForUma::PERMISSION_WINDOW_MANAGEMENT;
 #endif
+    case RequestType::kTopLevelStorageAccess:
+      return RequestTypeForUma::PERMISSION_TOP_LEVEL_STORAGE_ACCESS;
   }
 }
 
@@ -150,10 +154,12 @@ std::string GetPermissionRequestString(RequestTypeForUma type) {
       return "AR";
     case RequestTypeForUma::PERMISSION_STORAGE_ACCESS:
       return "StorageAccess";
+    case RequestTypeForUma::PERMISSION_TOP_LEVEL_STORAGE_ACCESS:
+      return "TopLevelStorageAccess";
     case RequestTypeForUma::PERMISSION_CAMERA_PAN_TILT_ZOOM:
       return "CameraPanTiltZoom";
     case RequestTypeForUma::PERMISSION_WINDOW_MANAGEMENT:
-      return "WindowPlacement";
+      return "WindowManagement";
     case RequestTypeForUma::PERMISSION_LOCAL_FONTS:
       return "LocalFonts";
     case RequestTypeForUma::PERMISSION_IDLE_DETECTION:
@@ -566,6 +572,7 @@ void PermissionUmaUtil::PermissionPromptResolved(
     absl::optional<PermissionPromptDispositionReason> ui_reason,
     absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood,
     absl::optional<bool> prediction_decision_held_back,
+    absl::optional<permissions::PermissionIgnoredReason> ignored_reason,
     bool did_show_prompt,
     bool did_click_managed,
     bool did_click_learn_more) {
@@ -578,6 +585,9 @@ void PermissionUmaUtil::PermissionPromptResolved(
       break;
     case PermissionAction::DISMISSED:
     case PermissionAction::IGNORED:
+      RecordIgnoreReason(requests, ui_disposition,
+                         ignored_reason.value_or(
+                             permissions::PermissionIgnoredReason::UNKNOWN));
       break;
     case PermissionAction::GRANTED_ONCE:
       RecordPromptDecided(requests, /*accepted=*/true, /*is_one_time*/ true);
@@ -586,7 +596,6 @@ void PermissionUmaUtil::PermissionPromptResolved(
       NOTREACHED();
       break;
   }
-
   std::string action_string = GetPermissionActionString(permission_action);
   RecordEngagementMetric(requests, web_contents, action_string);
 
@@ -933,6 +942,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       base::UmaHistogramEnumeration("Permissions.Action.StorageAccess", action,
                                     PermissionAction::NUM);
       break;
+    case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
+      base::UmaHistogramEnumeration("Permissions.Action.TopLevelStorageAccess",
+                                    action, PermissionAction::NUM);
+      break;
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       base::UmaHistogramEnumeration("Permissions.Action.CameraPanTiltZoom",
                                     action, PermissionAction::NUM);
@@ -1111,6 +1124,7 @@ void PermissionUmaUtil::RecordPageInfoPermissionChangeWithin1m(
   }
 }
 
+// static
 std::string PermissionUmaUtil::GetPermissionActionString(
     PermissionAction permission_action) {
   switch (permission_action) {
@@ -1234,6 +1248,23 @@ bool PermissionUmaUtil::IsPromptDispositionLoud(
     case PermissionPromptDisposition::NOT_APPLICABLE:
       return false;
   }
+}
+
+// static
+void PermissionUmaUtil::RecordIgnoreReason(
+    const std::vector<PermissionRequest*>& requests,
+    PermissionPromptDisposition prompt_disposition,
+    PermissionIgnoredReason reason) {
+  RequestTypeForUma request_type = RequestTypeForUma::MULTIPLE;
+  if (requests.size() == 1) {
+    request_type = GetUmaValueForRequestType(requests[0]->request_type());
+  }
+
+  std::string histogram_name =
+      "Permissions.Prompt." + GetPermissionRequestString(request_type) + "." +
+      GetPromptDispositionString(prompt_disposition) + ".IgnoredReason";
+  base::UmaHistogramEnumeration(histogram_name, reason,
+                                PermissionIgnoredReason::NUM);
 }
 
 }  // namespace permissions

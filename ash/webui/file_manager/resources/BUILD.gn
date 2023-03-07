@@ -122,6 +122,8 @@ if (!optimize_webui) {
     extra_deps = [ ":copy_labs" ]
 
     in_files = ts_files
+
+    deps = [ "//ui/webui/resources:library" ]
   }
 }
 
@@ -151,7 +153,6 @@ files_webui_bundle("build") {
     ":preprocess",
     ":preprocess_mojo",
     "//ui/file_manager:build_ts",
-    "//ui/webui/resources:preprocess",
   ]
 }
 

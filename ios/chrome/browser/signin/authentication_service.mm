@@ -5,13 +5,13 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 
 #import "base/auto_reset.h"
-#import "base/bind.h"
+#import "base/functional/bind.h"
+#import "base/functional/callback_helpers.h"
 #import "base/location.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/single_thread_task_runner.h"
-#import "base/threading/thread_task_runner_handle.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
@@ -29,8 +29,10 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
+#import "ios/chrome/browser/signin/refresh_access_token_error.h"
 #import "ios/chrome/browser/signin/signin_util.h"
 #import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 
@@ -249,15 +251,14 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
   // Clear signin errors on the accounts that had a specific MDM device status.
   // This will trigger services to fetch data for these accounts again.
   using std::swap;
-  std::map<CoreAccountId, NSDictionary*> cached_mdm_infos;
-  swap(cached_mdm_infos_, cached_mdm_infos);
+  std::map<CoreAccountId, id<RefreshAccessTokenError>> cached_mdm_errors;
+  swap(cached_mdm_errors_, cached_mdm_errors);
 
-  if (!cached_mdm_infos.empty()) {
+  if (!cached_mdm_errors.empty()) {
     signin::DeviceAccountsSynchronizer* device_accounts_synchronizer =
         identity_manager_->GetDeviceAccountsSynchronizer();
-    for (const auto& cached_mdm_info : cached_mdm_infos) {
-      device_accounts_synchronizer->ReloadAccountFromSystem(
-          cached_mdm_info.first);
+    for (const auto& pair : cached_mdm_errors) {
+      device_accounts_synchronizer->ReloadAccountFromSystem(pair.first);
     }
   }
 }
@@ -441,31 +442,31 @@ void AuthenticationService::SignOut(
   account_mutator->ClearPrimaryAccount(
       signout_source, signin_metrics::SignoutDelete::kIgnoreMetric);
   crash_keys::SetCurrentlySignedIn(false);
-  cached_mdm_infos_.clear();
+  cached_mdm_errors_.clear();
 
   // Browsing data for managed account needs to be cleared only if sync has
   // started at least once.
   if (force_clear_browsing_data || (is_managed && is_first_setup_complete)) {
     delegate_->ClearBrowsingData(completion);
   } else if (completion) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::BindOnce(completion));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(completion));
   }
 }
 
-NSDictionary* AuthenticationService::GetCachedMDMInfo(
-    id<SystemIdentity> identity) const {
-  auto it = cached_mdm_infos_.find(
+id<RefreshAccessTokenError> AuthenticationService::GetCachedMDMError(
+    id<SystemIdentity> identity) {
+  auto it = cached_mdm_errors_.find(
       SystemIdentityToAccountID(identity_manager_, identity));
 
-  if (it == cached_mdm_infos_.end()) {
+  if (it == cached_mdm_errors_.end()) {
     return nil;
   }
 
   if (!identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
           it->first)) {
     // Account has no error, invalidate the cache.
-    cached_mdm_infos_.erase(it);
+    cached_mdm_errors_.erase(it);
     return nil;
   }
 
@@ -473,21 +474,20 @@ NSDictionary* AuthenticationService::GetCachedMDMInfo(
 }
 
 bool AuthenticationService::HasCachedMDMErrorForIdentity(
-    id<SystemIdentity> identity) const {
-  return GetCachedMDMInfo(identity) != nil;
+    id<SystemIdentity> identity) {
+  return GetCachedMDMError(identity) != nil;
 }
 
 bool AuthenticationService::ShowMDMErrorDialogForIdentity(
     id<SystemIdentity> identity) {
-  NSDictionary* cached_info = GetCachedMDMInfo(identity);
-  if (!cached_info) {
+  id<RefreshAccessTokenError> cached_error = GetCachedMDMError(identity);
+  if (!cached_error) {
     return false;
   }
 
-  ios::ChromeIdentityService* identity_service =
-      ios::GetChromeBrowserProvider().GetChromeIdentityService();
-  identity_service->HandleMDMNotification(identity, cached_info, ^(bool){
-                                                    });
+  GetApplicationContext()->GetSystemIdentityManager()->HandleMDMNotification(
+      identity, cached_error, base::DoNothing());
+
   return true;
 }
 
@@ -526,59 +526,60 @@ void AuthenticationService::OnIdentityListChanged(bool need_user_approval) {
   // the authenticated user at this time may lead to crashes (e.g.
   // http://crbug.com/398431 ).
   // Handle the change of the identity list on the next message loop cycle.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&AuthenticationService::ReloadCredentialsFromIdentities,
                      GetWeakPtr(), need_user_approval));
 }
 
-void AuthenticationService::OnServiceSupportedChanged() {
-  FireServiceStatusNotification();
-}
-
-bool AuthenticationService::HandleMDMNotification(id<SystemIdentity> identity,
-                                                  NSDictionary* user_info) {
-  ios::ChromeIdentityService* identity_service =
-      ios::GetChromeBrowserProvider().GetChromeIdentityService();
-  ios::MDMDeviceStatus status = identity_service->GetMDMDeviceStatus(user_info);
-  NSDictionary* cached_info = GetCachedMDMInfo(identity);
-
-  if (cached_info &&
-      identity_service->GetMDMDeviceStatus(cached_info) == status) {
+bool AuthenticationService::HandleMDMError(id<SystemIdentity> identity,
+                                           id<RefreshAccessTokenError> error) {
+  id<RefreshAccessTokenError> cached_error = GetCachedMDMError(identity);
+  if (cached_error && [cached_error isEqualToError:error]) {
     // Same status as the last error, ignore it to avoid spamming users.
     return false;
   }
 
-  base::WeakPtr<AuthenticationService> weak_ptr = GetWeakPtr();
-  ios::MDMStatusCallback callback = ^(bool is_blocked) {
-    if (is_blocked && weak_ptr.get()) {
-      // If the identity is blocked, sign out of the account. As only managed
-      // account can be blocked, this will clear the associated browsing data.
-      if ([identity isEqual:weak_ptr->GetPrimaryIdentity(
-                                signin::ConsentLevel::kSignin)]) {
-        weak_ptr->SignOut(signin_metrics::ABORT_SIGNIN,
-                          /*force_clear_browsing_data=*/false, nil);
-      }
-    }
-  };
-  if (identity_service->HandleMDMNotification(identity, user_info, callback)) {
-    cached_mdm_infos_[SystemIdentityToAccountID(identity_manager_, identity)] =
-        user_info;
+  SystemIdentityManager* system_identity_manager =
+      GetApplicationContext()->GetSystemIdentityManager();
+
+  if (system_identity_manager->HandleMDMNotification(
+          identity, error,
+          base::BindOnce(&AuthenticationService::MDMErrorHandled,
+                         weak_pointer_factory_.GetWeakPtr(), identity))) {
+    const CoreAccountId key =
+        SystemIdentityToAccountID(identity_manager_, identity);
+    cached_mdm_errors_[key] = error;
     return true;
   }
+
   return false;
+}
+
+void AuthenticationService::MDMErrorHandled(id<SystemIdentity> identity,
+                                            bool is_blocked) {
+  // If the identity is blocked, sign-out of the account. As only managed
+  // account can be blocked, this will clear the associated browsing data.
+  if (!is_blocked) {
+    return;
+  }
+
+  if (![identity isEqual:GetPrimaryIdentity(signin::ConsentLevel::kSignin)]) {
+    return;
+  }
+
+  SignOut(signin_metrics::ProfileSignout::kAbortSignin,
+          /*force_clear_browsing_data*/ false, nil);
 }
 
 void AuthenticationService::OnAccessTokenRefreshFailed(
     id<SystemIdentity> identity,
-    NSDictionary* user_info) {
-  if (HandleMDMNotification(identity, user_info)) {
+    id<RefreshAccessTokenError> error) {
+  if (HandleMDMError(identity, error)) {
     return;
   }
 
-  ios::ChromeIdentityService* identity_service =
-      ios::GetChromeBrowserProvider().GetChromeIdentityService();
-  if (!identity_service->IsInvalidGrantError(user_info)) {
+  if (!error.isInvalidGrantError) {
     // If the failure is not due to an invalid grant, the identity is not
     // invalid and there is nothing to do.
     return;
@@ -590,7 +591,7 @@ void AuthenticationService::OnAccessTokenRefreshFailed(
   // Note that no reload of the credentials is necessary here, as `identity`
   // might still be accessible in SSO, and `OnIdentityListChanged` will handle
   // this when `identity` will actually disappear from SSO.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&AuthenticationService::HandleForgottenIdentity,
                                 GetWeakPtr(), identity, /*should_prompt=*/true,
                                 /*device_restore=*/false));
@@ -628,15 +629,15 @@ void AuthenticationService::HandleForgottenIdentity(
   signin_metrics::ProfileSignout signout_source;
   if (account_filtered_out) {
     // Account filtered out by enterprise policy.
-    signout_source = signin_metrics::SIGNOUT_PREF_CHANGED;
+    signout_source = signin_metrics::ProfileSignout::kPrefChanged;
   } else if (device_restore) {
     // Account removed from the device after a device restore.
-    signout_source =
-        signin_metrics::IOS_ACCOUNT_REMOVED_FROM_DEVICE_AFTER_RESTORE;
+    signout_source = signin_metrics::ProfileSignout::
+        kIosAccountRemovedFromDeviceAfterRestore;
   } else {
     // Account removed from the device by another app or the token being
     // invalid.
-    signout_source = signin_metrics::ACCOUNT_REMOVED_FROM_DEVICE;
+    signout_source = signin_metrics::ProfileSignout::kAccountRemovedFromDevice;
   }
 
   // Store the pre-device-restore identity in-memory in order to prompt user

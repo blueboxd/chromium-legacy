@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
@@ -171,101 +171,6 @@ class CableLinkingEventHandler : public ProfileObserver {
  private:
   raw_ptr<Profile> profile_;
 };
-
-absl::optional<
-    std::pair<AuthenticatorRequestDialogModel::ExperimentServerLinkSheet,
-              AuthenticatorRequestDialogModel::ExperimentServerLinkTitle>>
-GetServerLinkExperiments(
-    base::span<const device::CableDiscoveryData> pairings_from_extension) {
-  base::span<const uint8_t> experiment_bytes;
-  for (const auto& pairing : pairings_from_extension) {
-    if (pairing.version != device::CableDiscoveryData::Version::V2 ||
-        pairing.v2->experiments.empty()) {
-      continue;
-    }
-
-    base::span<const uint8_t> candidate = pairing.v2->experiments;
-
-    if (experiment_bytes.empty()) {
-      experiment_bytes = candidate;
-      continue;
-    }
-
-    if (candidate.size() != experiment_bytes.size() ||
-        memcmp(candidate.data(), experiment_bytes.data(), candidate.size()) !=
-            0) {
-      FIDO_LOG(ERROR) << "Server-link experiment data inconsistent. Ignoring.";
-      return absl::nullopt;
-    }
-  }
-
-  if (experiment_bytes.empty()) {
-    return absl::nullopt;
-  }
-
-  if (experiment_bytes.size() % sizeof(uint32_t) != 0) {
-    FIDO_LOG(ERROR) << "Server-link experiment data is not a multiple of four "
-                       "bytes. Ignoring.";
-    return absl::nullopt;
-  }
-
-  constexpr AuthenticatorRequestDialogModel::ExperimentServerLinkSheet
-      kSheetArms[] = {
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL,
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2,
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3,
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4,
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5,
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6,
-      };
-
-  constexpr AuthenticatorRequestDialogModel::ExperimentServerLinkTitle
-      kTitleArms[] = {
-          AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::CONTROL,
-          AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::
-              UNLOCK_YOUR_PHONE,
-      };
-
-  absl::optional<AuthenticatorRequestDialogModel::ExperimentServerLinkSheet>
-      sheet_experiment;
-  absl::optional<AuthenticatorRequestDialogModel::ExperimentServerLinkTitle>
-      title_experiment;
-
-  for (size_t i = 0; i < experiment_bytes.size(); i += sizeof(uint32_t)) {
-    uint32_t experiment_id;
-    memcpy(&experiment_id, &experiment_bytes[i], sizeof(experiment_id));
-    experiment_id = base::ByteSwap(experiment_id);
-
-    for (const auto& arm : kSheetArms) {
-      if (experiment_id == static_cast<uint32_t>(arm)) {
-        if (sheet_experiment.has_value()) {
-          LOG(ERROR) << "Duplicate values for sheet experiment.";
-          return absl::nullopt;
-        }
-        sheet_experiment = arm;
-        break;
-      }
-    }
-
-    for (const auto& arm : kTitleArms) {
-      if (experiment_id == static_cast<uint32_t>(arm)) {
-        if (title_experiment.has_value()) {
-          LOG(ERROR) << "Duplicate values for title experiment.";
-          return absl::nullopt;
-        }
-        title_experiment = arm;
-      }
-    }
-
-    FIDO_LOG(DEBUG) << "Ignoring unknown experiment ID " << experiment_id;
-  }
-
-  return std::make_pair(
-      sheet_experiment.value_or(
-          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL),
-      title_experiment.value_or(
-          AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::CONTROL));
-}
 
 }  // namespace
 
@@ -447,9 +352,11 @@ absl::optional<bool> ChromeWebAuthenticationDelegate::
 
 content::WebAuthenticationRequestProxy*
 ChromeWebAuthenticationDelegate::MaybeGetRequestProxy(
-    content::BrowserContext* browser_context) {
-  return extensions::WebAuthenticationProxyServiceFactory::GetForBrowserContext(
-      browser_context);
+    content::BrowserContext* browser_context,
+    const url::Origin& caller_origin) {
+  auto* service = extensions::WebAuthenticationProxyService::GetIfProxyAttached(
+      Profile::FromBrowserContext(browser_context));
+  return service && service->IsActive(caller_origin) ? service : nullptr;
 }
 
 #endif  // !IS_ANDROID
@@ -553,8 +460,9 @@ void ChromeAuthenticatorRequestDelegate::SetRelyingPartyId(
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     InterestingFailureReason reason) {
-  if (!IsWebAuthnUIEnabled())
+  if (!IsWebAuthnUIEnabled()) {
     return false;
+  }
 
   switch (reason) {
     case InterestingFailureReason::kTimeout:
@@ -672,19 +580,10 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   const bool cable_extension_provided =
       cable_extension_permitted && !pairings_from_extension.empty();
 
-  auto experiments = GetServerLinkExperiments(pairings_from_extension);
-  if (experiments.has_value()) {
-    std::tie(dialog_model_->experiment_server_link_sheet_,
-             dialog_model_->experiment_server_link_title_) = *experiments;
-  }
-
   if (g_observer) {
     for (const auto& pairing : pairings_from_extension) {
       if (pairing.version == device::CableDiscoveryData::Version::V2) {
-        g_observer->CableV2ExtensionSeen(
-            pairing.v2->server_link_data, pairing.v2->experiments,
-            dialog_model_->experiment_server_link_sheet_,
-            dialog_model_->experiment_server_link_title_);
+        g_observer->CableV2ExtensionSeen(pairing.v2->server_link_data);
       }
     }
 
@@ -936,16 +835,18 @@ bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
     const device::FidoAuthenticator& authenticator) {
-  if (!IsWebAuthnUIEnabled())
+  if (!IsWebAuthnUIEnabled()) {
     return;
+  }
 
   dialog_model_->AddAuthenticator(authenticator);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
     base::StringPiece authenticator_id) {
-  if (!IsWebAuthnUIEnabled())
+  if (!IsWebAuthnUIEnabled()) {
     return;
+  }
 
   dialog_model_->RemoveAuthenticator(authenticator_id);
 }

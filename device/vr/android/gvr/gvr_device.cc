@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/android/android_hardware_buffer_compat.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
@@ -132,10 +132,7 @@ void GvrDevice::ShutdownSession(
   StopPresenting();
 
   // At this point, the main thread session shutdown is complete, but the GL
-  // thread may still be in the process of finishing shutdown or transitioning
-  // to VR Browser mode. Java VrShell::setWebVrModeEnable calls native
-  // VrShell::setWebVrMode which calls BrowserRenderer::SetWebXrMode on the GL
-  // thread, and that triggers the VRB transition via ui_->SetWebVrMode.
+  // thread may still be in the process of finishing shutdown.
   //
   // Since tasks posted to the GL thread are handled in sequence, any calls
   // related to a new session will be processed after the GL thread transition

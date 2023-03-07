@@ -5,7 +5,7 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {counterfactualLoad, LensUploadDialogElement, Module, ModuleDescriptor, ModuleRegistry} from 'chrome://new-tab-page/lazy_load.js';
-import {$$, AppElement, BackgroundManager, BrowserCommandProxy, CustomizeDialogPage, NewTabPageProxy, NtpElement, VoiceAction, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, AppElement, BackgroundManager, BrowserCommandProxy, CustomizeDialogPage, NewTabPageProxy, NtpCustomizeChromeEntryPoint, NtpElement, VoiceAction, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {PageCallbackRouter, PageHandlerRemote, PageRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
 import {Command, CommandHandlerRemote} from 'chrome://resources/js/browser_command/browser_command.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -487,6 +487,7 @@ suite('NewTabPageAppTest', () => {
       ['cr-most-visited', NtpElement.MOST_VISITED],
       ['ntp-middle-slot-promo', NtpElement.MIDDLE_SLOT_PROMO],
       ['ntp-modules', NtpElement.MODULE],
+      ['#customizeButton', NtpElement.CUSTOMIZE_BUTTON],
     ] as Array<[string, NtpElement]>)
         .forEach(([selector, element]) => {
           test(`clicking '${selector}' records click`, () => {
@@ -507,7 +508,10 @@ suite('NewTabPageAppTest', () => {
 
       // Assert.
       assertEquals(2, metrics.count('NewTabPage.Click'));
-      assertEquals(2, metrics.count('NewTabPage.Click', NtpElement.CUSTOMIZE));
+      assertEquals(
+          1, metrics.count('NewTabPage.Click', NtpElement.CUSTOMIZE_BUTTON));
+      assertEquals(
+          1, metrics.count('NewTabPage.Click', NtpElement.CUSTOMIZE_DIALOG));
     });
 
     test('clicking OGB records click', () => {
@@ -637,28 +641,76 @@ suite('NewTabPageAppTest', () => {
       });
     });
 
-    test('customize chrome button shown initially', () => {
-      // Assert.
-      assertFalse($$(app, '#customizeButtonContainer')!.hasAttribute('hidden'));
-    });
-
-    test('customize chrome button hidden when side panel shown', async () => {
+    test('clicking customize button opens side panel', () => {
       // Act.
       $$<HTMLElement>(app, '#customizeButton')!.click();
-      callbackRouterRemote.customizeChromeSidePanelVisibilityChanged(true);
-      await callbackRouterRemote.$.flushForTesting();
 
       // Assert.
-      assertTrue($$(app, '#customizeButtonContainer')!.hasAttribute('hidden'));
+      assertTrue(handler.getArgs('setCustomizeChromeSidePanelVisible')[0]);
+      assertEquals(
+          1,
+          metrics.count(
+              'NewTabPage.CustomizeChromeOpened',
+              NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON));
     });
 
-    test('customize chrome button shown when side panel hidden', async () => {
+    test('clicking customize button hides side panel', async () => {
       // Act.
-      callbackRouterRemote.customizeChromeSidePanelVisibilityChanged(false);
+      callbackRouterRemote.setCustomizeChromeSidePanelVisibility(true);
+      assertEquals(
+          0,
+          metrics.count(
+              'NewTabPage.CustomizeChromeOpened',
+              NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON));
       await callbackRouterRemote.$.flushForTesting();
+      $$<HTMLElement>(app, '#customizeButton')!.click();
 
       // Assert.
-      assertFalse($$(app, '#customizeButtonContainer')!.hasAttribute('hidden'));
+      assertFalse(handler.getArgs('setCustomizeChromeSidePanelVisible')[0]);
+      assertEquals(
+          0,
+          metrics.count(
+              'NewTabPage.CustomizeChromeOpened',
+              NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON));
+    });
+
+    suite('modules', () => {
+      suiteSetup(() => {
+        loadTimeData.overrideValues({
+          modulesEnabled: true,
+        });
+      });
+
+      test('modules can open side panel', async () => {
+        // Act.
+        $$(app, 'ntp-modules')!.dispatchEvent(new Event('customize-module'));
+
+        // Assert.
+        assertTrue(handler.getArgs('setCustomizeChromeSidePanelVisible')[0]);
+        assertEquals(
+            1,
+            metrics.count(
+                'NewTabPage.CustomizeChromeOpened',
+                NtpCustomizeChromeEntryPoint.MODULE));
+      });
+    });
+
+    suite('customize URL', () => {
+      suiteSetup(() => {
+        // We inject the URL param in this suite setup so that the URL is
+        // updated before the app element gets created.
+        url.searchParams.append('customize', CustomizeDialogPage.THEMES);
+      });
+
+      test('URL opens side panel', () => {
+        // Assert.
+        assertTrue(handler.getArgs('setCustomizeChromeSidePanelVisible')[0]);
+        assertEquals(
+            1,
+            metrics.count(
+                'NewTabPage.CustomizeChromeOpened',
+                NtpCustomizeChromeEntryPoint.URL));
+      });
     });
   });
 

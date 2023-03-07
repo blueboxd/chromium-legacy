@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/values_util.h"
 #include "base/logging.h"
@@ -49,6 +49,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_data/content/fake_browsing_data_model.h"
 #include "components/browsing_data/content/mock_cookie_helper.h"
@@ -711,6 +712,47 @@ class SiteSettingsHandlerTest : public testing::Test,
     return origins;
   }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  scoped_refptr<const extensions::Extension> LoadExtension(
+      const std::string& extension_name) {
+    auto extension = extensions::ExtensionBuilder()
+                         .SetManifest(extensions::DictionaryBuilder()
+                                          .Set("name", kExtensionName)
+                                          .Set("version", "1.0.0")
+                                          .Set("manifest_version", 3)
+                                          .Build())
+                         .Build();
+
+    extensions::TestExtensionSystem* extension_system =
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(profile()));
+    extensions::ExtensionService* extension_service =
+        extension_system->CreateExtensionService(
+            base::CommandLine::ForCurrentProcess(), base::FilePath(),
+            /*autoupdate_enabled=*/false);
+    extension_service->AddExtension(extension.get());
+    return extension;
+  }
+
+  void UnloadExtension(std::string extension_id) {
+    auto* extension_service =
+        extensions::ExtensionSystem::Get(profile())->extension_service();
+    ASSERT_TRUE(extension_service);
+    extension_service->UnloadExtension(
+        extension_id, extensions::UnloadedExtensionReason::DISABLE);
+  }
+#endif  // #if BUILDFLAG(ENABLE_EXTENSIONS)
+
+  void ValidateCallbacksForNotificationPermission(int index) {
+    // When a notification permission is set or reset, there are two consecutive
+    // callbacks. The first one is to notify content setting observers, and
+    // the second one is to update safety check notification permission review.
+    ASSERT_EQ("contentSettingSitePermissionChanged",
+              web_ui()->call_data()[index]->arg1()->GetString());
+    ASSERT_EQ("notification-permission-review-list-maybe-changed",
+              web_ui()->call_data()[index + 1]->arg1()->GetString());
+  }
+
   // Content setting group name for the relevant ContentSettingsType.
   const std::string kNotifications;
   const std::string kCookies;
@@ -943,6 +985,35 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
   }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Same extension url from different content setting types shows only one
+  // extension site group.
+  auto extension = LoadExtension(kExtensionName);
+  map->SetContentSettingDefaultScope(extension->url(), extension->url(),
+                                     ContentSettingsType::NOTIFICATIONS,
+                                     CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(extension->url(), extension->url(),
+                                     ContentSettingsType::GEOLOCATION,
+                                     CONTENT_SETTING_BLOCK);
+  handler()->HandleGetAllSites(get_all_sites_args);
+  {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->GetBool());
+
+    const base::Value::List& site_groups = data.arg3()->GetList();
+    EXPECT_EQ(3UL, site_groups.size());
+    // Extension etldPlus1 string will be in the pattern of
+    // "chrome-extension://<extension_id>" so it is before other site groups in
+    // the list.
+    EXPECT_EQ(extension->url().spec(),
+              site_groups[0].FindKey("etldPlus1")->GetString());
+    EXPECT_EQ("example.com", site_groups[1].FindKey("etldPlus1")->GetString());
+    EXPECT_EQ("example2.net", site_groups[2].FindKey("etldPlus1")->GetString());
+  }
+#endif
 
   // Each call to HandleGetAllSites() above added a callback to the profile's
   // browsing_data::LocalStorageHelper, so make sure these aren't stuck waiting
@@ -1350,7 +1421,11 @@ TEST_F(SiteSettingsHandlerTest, ResetCategoryPermissionForEmbargoedOrigins) {
     set_args.Append(false);  // Incognito.
 
     handler()->HandleSetCategoryPermissionForPattern(set_args);
-    ASSERT_EQ(1U, web_ui()->call_data().size());
+    ASSERT_EQ(2U, web_ui()->call_data().size());
+    // When HandleSetCategoryPermissionForPattern is called for a notification
+    // permission, there are two callbacks that make call_data size increase
+    // by 2 instead of 1.
+    ValidateCallbacksForNotificationPermission(0);
   }
 
   // Add and test 1 embargoed origin.
@@ -1433,7 +1508,11 @@ TEST_F(SiteSettingsHandlerTest, ResetCategoryPermissionForInvalidOrigins) {
   set_args.Append(false);  // Incognito.
 
   handler()->HandleSetCategoryPermissionForPattern(set_args);
-  ASSERT_EQ(1U, web_ui()->call_data().size());
+  ASSERT_EQ(2U, web_ui()->call_data().size());
+  // When HandleSetCategoryPermissionForPattern is called for a notification
+  // permission, there are two callbacks that make call_data size increase
+  // by 2 instead of 1.
+  ValidateCallbacksForNotificationPermission(0);
 
   // Reset blocked origin.
   base::Value::List reset_args;
@@ -1458,7 +1537,11 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
         content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
     set_args.Append(false);  // Incognito.
     handler()->HandleSetCategoryPermissionForPattern(set_args);
-    EXPECT_EQ(1U, web_ui()->call_data().size());
+    EXPECT_EQ(2U, web_ui()->call_data().size());
+    // When HandleSetCategoryPermissionForPattern is called for a notification
+    // permission, there are two callbacks that make call_data size increase
+    // by 2 instead of 1.
+    ValidateCallbacksForNotificationPermission(0);
   }
 
   base::Value::List get_exception_list_args;
@@ -1466,7 +1549,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   get_exception_list_args.Append(kNotifications);
   handler()->HandleGetExceptionList(get_exception_list_args);
   ValidateOrigin(google, "", google, CONTENT_SETTING_BLOCK,
-                 site_settings::SiteSettingSource::kPreference, 2U);
+                 site_settings::SiteSettingSource::kPreference, 3U);
 
   {
     // Reset things back to how they were.
@@ -1476,12 +1559,16 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     reset_args.Append(kNotifications);
     reset_args.Append(false);  // Incognito.
     handler()->HandleResetCategoryPermissionForPattern(reset_args);
-    EXPECT_EQ(3U, web_ui()->call_data().size());
+    EXPECT_EQ(5U, web_ui()->call_data().size());
+    // When HandleResetCategoryPermissionForPattern is called for a notification
+    // permission, there are two callbacks that make call_data size increase
+    // by 2 instead of 1.
+    ValidateCallbacksForNotificationPermission(3);
   }
 
   // Verify the reset was successful.
   handler()->HandleGetExceptionList(get_exception_list_args);
-  ValidateNoOrigin(4U);
+  ValidateNoOrigin(6U);
 }
 
 TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
@@ -1583,10 +1670,15 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_DefaultSettingSource) {
   set_notification_pattern_args.Append(false);
   handler()->HandleSetCategoryPermissionForPattern(
       set_notification_pattern_args);
+  ASSERT_EQ(5U, web_ui()->call_data().size());
+  // When HandleSetCategoryPermissionForPattern is called for a notification
+  // permission, there are two callbacks that make call_data size increase
+  // by 2 instead of 1.
+  ValidateCallbacksForNotificationPermission(3);
   // A user-set pattern should not show up as default.
   handler()->HandleGetOriginPermissions(get_origin_permissions_args);
   ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_ALLOW,
-                 site_settings::SiteSettingSource::kPreference, 5U);
+                 site_settings::SiteSettingSource::kPreference, 6U);
 
   base::Value::List set_notification_origin_args;
   set_notification_origin_args.Append(google);
@@ -1597,16 +1689,21 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_DefaultSettingSource) {
   set_notification_origin_args.Append(false);
   handler()->HandleSetCategoryPermissionForPattern(
       set_notification_origin_args);
+  ASSERT_EQ(8U, web_ui()->call_data().size());
+  // When HandleSetCategoryPermissionForPattern is called for a notification
+  // permission, there are two callbacks that make call_data size increase
+  // by 2 instead of 1.
+  ValidateCallbacksForNotificationPermission(6);
   // A user-set per-origin permission should not show up as default.
   handler()->HandleGetOriginPermissions(get_origin_permissions_args);
   ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_BLOCK,
-                 site_settings::SiteSettingSource::kPreference, 7U);
+                 site_settings::SiteSettingSource::kPreference, 9U);
 
   // Enterprise-policy set defaults should not show up as default.
   source_setter.SetPolicyDefault(CONTENT_SETTING_ALLOW);
   handler()->HandleGetOriginPermissions(get_origin_permissions_args);
   ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_ALLOW,
-                 site_settings::SiteSettingSource::kPolicy, 8U);
+                 site_settings::SiteSettingSource::kPolicy, 10U);
 }
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
@@ -1839,6 +1936,11 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
     window2_ = CreateBrowserWindow();
     browser2_ =
         CreateBrowser(profile(), browser()->type(), false, window2_.get());
+    window3_ = CreateBrowserWindow();
+
+    TestingProfile* profile2_ = CreateProfile2();
+    browser3_ =
+        CreateBrowser(profile2_, browser()->type(), false, window3_.get());
 
     extensions::TestExtensionSystem* extension_system =
         static_cast<extensions::TestExtensionSystem*>(
@@ -1852,10 +1954,16 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
     // make sure that's cleared before BrowserContext / profile destruction.
     handler()->DisallowJavascript();
 
-    // Also destroy |browser2_| before the profile. browser()'s destruction is
-    // handled in BrowserWithTestWindowTest::TearDown().
+    // Also destroy `browser2_` before the profile.
     browser2()->tab_strip_model()->CloseAllTabs();
     browser2_.reset();
+
+    // Destroy `browser3_`.
+    browser3()->tab_strip_model()->CloseAllTabs();
+    browser3_.reset();
+
+    // Browser()'s destruction is handled in
+    // BrowserWithTestWindowTest::TearDown()
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -1875,6 +1983,18 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
 
   Browser* browser2() { return browser2_.get(); }
 
+  // browser3 is from a different profile `profile2_` than
+  // browser2 and browser() which are from profile()
+  Browser* browser3() { return browser3_.get(); }
+
+  // Creates the second profile used by this test. The caller doesn't own the
+  // return value.
+  TestingProfile* CreateProfile2() {
+    return profile_manager()->CreateTestingProfile("testing_profile2@test",
+                                                   nullptr, std::u16string(), 0,
+                                                   GetTestingFactories());
+  }
+
   const std::string kNotifications;
 
  private:
@@ -1882,6 +2002,11 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
   std::unique_ptr<SiteSettingsHandler> handler_;
   std::unique_ptr<BrowserWindow> window2_;
   std::unique_ptr<Browser> browser2_;
+  std::unique_ptr<BrowserWindow> window3_;
+  std::unique_ptr<Browser> browser3_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+#endif
 };
 
 TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
@@ -2022,6 +2147,54 @@ TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
                 ->infobar_at(0)
                 ->delegate()
                 ->GetIdentifier());
+  EXPECT_TRUE(url::IsSameOriginWith(origin, tab_url));
+}
+
+TEST_F(SiteSettingsHandlerInfobarTest,
+       SettingPermissionsDoesNotTriggerInfobarOnDifferentProfile) {
+  // Note all GURLs starting with 'origin' below belong to the same origin.
+  //               _______________
+  //   Window 1:  / origin_anchor \
+  // -------------       -----------------------------------------------------
+  const GURL origin("https://www.example.com/");
+  std::string origin_anchor_string =
+      "https://www.example.com/with/path/blah#heading";
+  const GURL origin_anchor(origin_anchor_string);
+
+  //   Different
+  //   Profile (2) ______________
+  //   Window 3:  / origin_query \
+  // -------------------------------------------------------------------------
+  const GURL origin_query("https://www.example.com/?param=value");
+
+  // Set up. No info bars.
+  AddTab(browser(), origin_anchor);
+  EXPECT_EQ(0u,
+            GetInfoBarManagerForTab(browser(), 0, nullptr)->infobar_count());
+
+  AddTab(browser3(), origin_query);
+  EXPECT_EQ(0u,
+            GetInfoBarManagerForTab(browser3(), 0, nullptr)->infobar_count());
+
+  // Block notifications.
+  base::Value::List set_args;
+  set_args.Append(origin_anchor_string);
+  set_args.Append(kNotifications);
+  set_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleSetOriginPermissions(set_args);
+
+  // Make sure all tabs within the same profile belonging to the same origin
+  // as `origin_anchor` have an infobar shown.
+  GURL tab_url;
+  EXPECT_EQ(1u,
+            GetInfoBarManagerForTab(browser(), 0, &tab_url)->infobar_count());
+  EXPECT_TRUE(url::IsSameOriginWith(origin, tab_url));
+
+  // Make sure all tabs with the same origin as `origin_anchor` that don't
+  // belong to the same profile don't have an infobar shown
+  EXPECT_EQ(0u,
+            GetInfoBarManagerForTab(browser3(), 0, &tab_url)->infobar_count());
   EXPECT_TRUE(url::IsSameOriginWith(origin, tab_url));
 }
 
@@ -2629,7 +2802,6 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   // from the list.
   base::Value::List args;
   args.Append(kUsbChooserGroupName);
-  args.Append("https://unused.com");
   args.Append(kGoogleOriginStr);
   args.Append(UsbChooserContext::DeviceInfoToValue(*persistent_device_info_));
 
@@ -2663,7 +2835,6 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   // be able to be reset.
   args.clear();
   args.Append(kUsbChooserGroupName);
-  args.Append("https://unused.com");
   args.Append(kChromiumOriginStr);
   args.Append(UsbChooserContext::DeviceInfoToValue(*persistent_device_info_));
 
@@ -2715,7 +2886,6 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   // when the exception only has one site exception granted to it..
   args.clear();
   args.Append(kUsbChooserGroupName);
-  args.Append("https://unused.com");
   args.Append(kAndroidOriginStr);
   args.Append(UsbChooserContext::DeviceInfoToValue(*user_granted_device_info_));
 
@@ -3613,4 +3783,44 @@ TEST_F(SiteSettingsHandlerTest,
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+TEST_F(SiteSettingsHandlerTest, HandleGetExtensionName) {
+  auto extension = LoadExtension(kExtensionName);
+
+  // When the extension is loaded, it returns the extension name.
+  {
+    base::Value::List get_extension_name_args;
+    get_extension_name_args.Append(kCallbackId);
+    get_extension_name_args.Append(extension->id());
+    handler()->HandleGetExtensionName(get_extension_name_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->is_bool());
+    EXPECT_TRUE(data.arg2()->GetBool());
+    ASSERT_TRUE(data.arg3()->is_string());
+    EXPECT_EQ(kExtensionName, data.arg3()->GetString());
+  }
+
+  // When the extension is unloaded, the display name is extension's origin as
+  // the extension isn't available for the profile.
+  UnloadExtension(extension->id());
+  {
+    base::Value::List get_extension_name_args;
+    get_extension_name_args.Append(kCallbackId);
+    get_extension_name_args.Append(extension->id());
+    handler()->HandleGetExtensionName(get_extension_name_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->is_bool());
+    EXPECT_TRUE(data.arg2()->GetBool());
+    ASSERT_TRUE(data.arg3()->is_string());
+    EXPECT_EQ("", data.arg3()->GetString());
+  }
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }  // namespace settings

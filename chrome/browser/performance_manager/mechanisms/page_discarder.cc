@@ -4,10 +4,9 @@
 
 #include "chrome/browser/performance_manager/mechanisms/page_discarder.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
-#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -31,14 +30,15 @@ bool disabled_for_testing = false;
 // UrgentlyDiscardMultiplePages can keep reclaiming until the reclaim target is
 // met or there is no discardable page.
 bool DiscardPagesOnUIThread(
-    const std::vector<std::pair<WebContentsProxy, uint64_t>>& proxies_and_rss) {
+    const std::vector<std::pair<WebContentsProxy, uint64_t>>& proxies_and_pmf,
+    resource_coordinator::LifecycleUnitDiscardReason discard_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (disabled_for_testing)
     return false;
 
   bool result = false;
-  for (auto proxy : proxies_and_rss) {
+  for (auto proxy : proxies_and_pmf) {
     content::WebContents* const contents = proxy.first.Get();
     if (!contents)
       continue;
@@ -49,8 +49,8 @@ bool DiscardPagesOnUIThread(
       continue;
 
     if (lifecycle_unit->DiscardTab(
-            resource_coordinator::LifecycleUnitDiscardReason::URGENT,
-            /*resident_set_size_estimate=*/proxy.second)) {
+            discard_reason,
+            /*memory_footprint_estimate=*/proxy.second)) {
       result = true;
     }
   }
@@ -67,16 +67,18 @@ void PageDiscarder::DisableForTesting() {
 
 void PageDiscarder::DiscardPageNodes(
     const std::vector<const PageNode*>& page_nodes,
+    resource_coordinator::LifecycleUnitDiscardReason discard_reason,
     base::OnceCallback<void(bool)> post_discard_cb) {
-  std::vector<std::pair<WebContentsProxy, uint64_t>> proxies_and_rss;
-  proxies_and_rss.reserve(page_nodes.size());
+  std::vector<std::pair<WebContentsProxy, uint64_t>> proxies_and_pmf;
+  proxies_and_pmf.reserve(page_nodes.size());
   for (auto* page_node : page_nodes) {
-    proxies_and_rss.emplace_back(page_node->GetContentsProxy(),
-                                 page_node->EstimateResidentSetSize());
+    proxies_and_pmf.emplace_back(page_node->GetContentsProxy(),
+                                 page_node->EstimatePrivateFootprintSize());
   }
   content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&DiscardPagesOnUIThread, std::move(proxies_and_rss)),
+      base::BindOnce(&DiscardPagesOnUIThread, std::move(proxies_and_pmf),
+                     discard_reason),
       std::move(post_discard_cb));
 }
 

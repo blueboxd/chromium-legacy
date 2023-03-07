@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,10 +29,12 @@
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
+#include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/public/browser/attribution_config.h"
 #include "content/public/browser/navigation_handle.h"
@@ -124,7 +126,8 @@ void MockDataHost::SourceDataAvailable(
 
 void MockDataHost::TriggerDataAvailable(
     attribution_reporting::SuitableOrigin reporting_origin,
-    attribution_reporting::TriggerRegistration data) {
+    attribution_reporting::TriggerRegistration data,
+    absl::optional<attribution_reporting::TriggerAttestation> attestation) {
   trigger_data_.push_back(std::move(data));
   if (trigger_data_.size() < min_trigger_data_count_) {
     return;
@@ -226,8 +229,9 @@ ConfigurableStorageDelegate::GetOfflineReportDelayConfig() const {
 void ConfigurableStorageDelegate::ShuffleReports(
     std::vector<AttributionReport>& reports) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (reverse_reports_on_shuffle_)
+  if (reverse_reports_on_shuffle_) {
     base::ranges::reverse(reports);
+  }
 }
 
 AttributionStorageDelegate::RandomizedResponse
@@ -362,39 +366,44 @@ AttributionDataHostManager* MockAttributionManager::GetDataHostManager() {
 }
 
 void MockAttributionManager::NotifySourcesChanged() {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnSourcesChanged();
+  }
 }
 
 void MockAttributionManager::NotifyReportsChanged(
     AttributionReport::Type report_type) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnReportsChanged(report_type);
+  }
 }
 
 void MockAttributionManager::NotifySourceHandled(
     const StorableSource& source,
     StorableSource::Result result,
     absl::optional<uint64_t> cleared_debug_key) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnSourceHandled(source, cleared_debug_key, result);
+  }
 }
 
 void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
                                               bool is_debug_report,
                                               const SendResult& info) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnReportSent(report, is_debug_report, info);
+  }
 }
 
 void MockAttributionManager::NotifySourceRegistrationFailure(
     const std::string& header_value,
+    const SuitableOrigin& source_origin,
     const SuitableOrigin& reporting_origin,
     attribution_reporting::mojom::SourceRegistrationError error) {
   base::Time source_time = base::Time::Now();
   for (auto& observer : observers_) {
     observer.OnFailedSourceRegistration(header_value, source_time,
-                                        reporting_origin, error);
+                                        source_origin, reporting_origin, error);
   }
 }
 
@@ -402,16 +411,18 @@ void MockAttributionManager::NotifyTriggerHandled(
     const AttributionTrigger& trigger,
     const CreateReportResult& result,
     absl::optional<uint64_t> cleared_debug_key) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnTriggerHandled(trigger, cleared_debug_key, result);
+  }
 }
 
 void MockAttributionManager::NotifyDebugReportSent(
     const AttributionDebugReport& report,
     const int status,
     const base::Time time) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnDebugReportSent(report, status, time);
+  }
 }
 
 void MockAttributionManager::SetDataHostManager(
@@ -428,8 +439,9 @@ SourceObserver::~SourceObserver() = default;
 void SourceObserver::OnDidFinishNavigation(
     NavigationHandle* navigation_handle) {
   if (!navigation_handle->GetImpression()) {
-    if (waiting_for_null_impression_)
+    if (waiting_for_null_impression_) {
       impression_loop_.Quit();
+    }
     return;
   }
 
@@ -445,8 +457,9 @@ void SourceObserver::OnDidFinishNavigation(
 // Waits for |expected_num_impressions_| navigations with impressions, and
 // returns the last impression.
 const blink::Impression& SourceObserver::Wait() {
-  if (num_impressions_ >= expected_num_impressions_)
+  if (num_impressions_ >= expected_num_impressions_) {
     return *last_impression_;
+  }
   impression_loop_.Run();
   return last_impression();
 }
@@ -715,6 +728,12 @@ TriggerBuilder& TriggerBuilder::SetAggregationCoordinator(
   return *this;
 }
 
+TriggerBuilder& TriggerBuilder::SetAttestation(
+    absl::optional<attribution_reporting::TriggerAttestation> attestation) {
+  attestation_ = std::move(attestation);
+  return *this;
+}
+
 AttributionTrigger TriggerBuilder::Build(
     bool generate_event_trigger_data) const {
   std::vector<attribution_reporting::EventTriggerData> event_triggers;
@@ -744,7 +763,7 @@ AttributionTrigger TriggerBuilder::Build(
           *attribution_reporting::AggregatableTriggerDataList::Create(
               aggregatable_trigger_data_),
           aggregatable_values_, debug_reporting_, aggregation_coordinator_),
-      destination_origin_, is_within_fenced_frame_);
+      destination_origin_, attestation_, is_within_fenced_frame_);
 }
 
 AttributionInfoBuilder::AttributionInfoBuilder(StoredSource source)
@@ -825,6 +844,12 @@ ReportBuilder& ReportBuilder::SetAggregationCoordinator(
   return *this;
 }
 
+ReportBuilder& ReportBuilder::SetAttestationToken(
+    absl::optional<std::string> attestation_token) {
+  attestation_token_ = std::move(attestation_token);
+  return *this;
+}
+
 AttributionReport ReportBuilder::Build() const {
   return AttributionReport(
       attribution_info_, report_time_, external_report_id_,
@@ -839,7 +864,7 @@ AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
       /*failed_send_attempts=*/0,
       AttributionReport::AggregatableAttributionData(
           contributions_, aggregatable_attribution_report_id_, report_time_,
-          aggregation_coordinator_));
+          aggregation_coordinator_, attestation_token_));
 }
 
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
@@ -875,7 +900,7 @@ bool operator==(const AttributionInfo& a, const AttributionInfo& b) {
 bool operator==(const AttributionStorageDelegate::FakeReport& a,
                 const AttributionStorageDelegate::FakeReport& b) {
   const auto tie = [](const AttributionStorageDelegate::FakeReport& r) {
-    return std::make_tuple(r.trigger_data, r.report_time);
+    return std::make_tuple(r.trigger_data, r.trigger_time, r.report_time);
   };
   return tie(a) == tie(b);
 }
@@ -883,7 +908,7 @@ bool operator==(const AttributionStorageDelegate::FakeReport& a,
 bool operator<(const AttributionStorageDelegate::FakeReport& a,
                const AttributionStorageDelegate::FakeReport& b) {
   const auto tie = [](const AttributionStorageDelegate::FakeReport& r) {
-    return std::make_tuple(r.trigger_data, r.report_time);
+    return std::make_tuple(r.trigger_data, r.trigger_time, r.report_time);
   };
   return tie(a) < tie(b);
 }
@@ -936,7 +961,8 @@ bool operator==(const AttributionReport::AggregatableAttributionData& a,
                 const AttributionReport::AggregatableAttributionData& b) {
   const auto tie =
       [](const AttributionReport::AggregatableAttributionData& data) {
-        return std::make_tuple(data.contributions, data.initial_report_time);
+        return std::make_tuple(data.contributions, data.initial_report_time,
+                               data.attestation_token);
       };
   return tie(a) == tie(b);
 }
@@ -964,158 +990,122 @@ std::ostream& operator<<(std::ostream& out,
                          AttributionTrigger::EventLevelResult status) {
   switch (status) {
     case AttributionTrigger::EventLevelResult::kSuccess:
-      out << "success";
-      break;
+      return out << "success";
     case AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority:
-      out << "successDroppedLowerPriority";
-      break;
+      return out << "successDroppedLowerPriority";
     case AttributionTrigger::EventLevelResult::kInternalError:
-      out << "internalError";
-      break;
+      return out << "internalError";
     case AttributionTrigger::EventLevelResult::
         kNoCapacityForConversionDestination:
-      out << "insufficientDestinationCapacity";
-      break;
+      return out << "insufficientDestinationCapacity";
     case AttributionTrigger::EventLevelResult::kNoMatchingImpressions:
-      out << "noMatchingSources";
-      break;
+      return out << "noMatchingSources";
     case AttributionTrigger::EventLevelResult::kDeduplicated:
-      out << "deduplicated";
-      break;
+      return out << "deduplicated";
     case AttributionTrigger::EventLevelResult::kExcessiveAttributions:
-      out << "excessiveAttributions";
-      break;
+      return out << "excessiveAttributions";
     case AttributionTrigger::EventLevelResult::kPriorityTooLow:
-      out << "priorityTooLow";
-      break;
+      return out << "priorityTooLow";
     case AttributionTrigger::EventLevelResult::kDroppedForNoise:
-      out << "noised";
-      break;
+      return out << "noised";
     case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
-      out << "excessiveReportingOrigins";
-      break;
+      return out << "excessiveReportingOrigins";
     case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
-      out << "noMatchingSourceFilterData";
-      break;
+      return out << "noMatchingSourceFilterData";
     case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
-      out << "prohibitedByBrowserPolicy";
-      break;
+      return out << "prohibitedByBrowserPolicy";
     case AttributionTrigger::EventLevelResult::kNoMatchingConfigurations:
-      out << "noMatchingConfigurations";
-      break;
+      return out << "noMatchingConfigurations";
     case AttributionTrigger::EventLevelResult::kExcessiveReports:
-      out << "excessiveReports";
-      break;
+      return out << "excessiveReports";
     case AttributionTrigger::EventLevelResult::kFalselyAttributedSource:
-      out << "falselyAttributedSource";
-      break;
+      return out << "falselyAttributedSource";
     case AttributionTrigger::EventLevelResult::kReportWindowPassed:
-      out << "reportWindowPassed";
-      break;
+      return out << "reportWindowPassed";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out,
                          AttributionTrigger::AggregatableResult status) {
   switch (status) {
     case AttributionTrigger::AggregatableResult::kSuccess:
-      out << "success";
-      break;
+      return out << "success";
     case AttributionTrigger::AggregatableResult::kInternalError:
-      out << "internalError";
-      break;
+      return out << "internalError";
     case AttributionTrigger::AggregatableResult::
         kNoCapacityForConversionDestination:
-      out << "insufficientDestinationCapacity";
-      break;
+      return out << "insufficientDestinationCapacity";
     case AttributionTrigger::AggregatableResult::kNoMatchingImpressions:
-      out << "noMatchingSources";
-      break;
+      return out << "noMatchingSources";
     case AttributionTrigger::AggregatableResult::kExcessiveAttributions:
-      out << "excessiveAttributions";
-      break;
+      return out << "excessiveAttributions";
     case AttributionTrigger::AggregatableResult::kExcessiveReportingOrigins:
-      out << "excessiveReportingOrigins";
-      break;
+      return out << "excessiveReportingOrigins";
     case AttributionTrigger::AggregatableResult::kNoHistograms:
-      out << "noHistograms";
-      break;
+      return out << "noHistograms";
     case AttributionTrigger::AggregatableResult::kInsufficientBudget:
-      out << "insufficientBudget";
-      break;
+      return out << "insufficientBudget";
     case AttributionTrigger::AggregatableResult::kNoMatchingSourceFilterData:
-      out << "noMatchingSourceFilterData";
-      break;
+      return out << "noMatchingSourceFilterData";
     case AttributionTrigger::AggregatableResult::kNotRegistered:
-      out << "notRegistered";
-      break;
+      return out << "notRegistered";
     case AttributionTrigger::AggregatableResult::kProhibitedByBrowserPolicy:
-      out << "prohibitedByBrowserPolicy";
-      break;
+      return out << "prohibitedByBrowserPolicy";
     case AttributionTrigger::AggregatableResult::kDeduplicated:
-      out << "deduplicated";
-      break;
+      return out << "deduplicated";
     case AttributionTrigger::AggregatableResult::kReportWindowPassed:
-      out << "reportWindowPassed";
-      break;
+      return out << "reportWindowPassed";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out, RateLimitResult result) {
   switch (result) {
     case RateLimitResult::kAllowed:
-      out << "kAllowed";
-      break;
+      return out << "kAllowed";
     case RateLimitResult::kNotAllowed:
-      out << "kNotAllowed";
-      break;
+      return out << "kNotAllowed";
     case RateLimitResult::kError:
-      out << "kError";
-      break;
+      return out << "kError";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out,
                          StoredSource::AttributionLogic attribution_logic) {
   switch (attribution_logic) {
     case StoredSource::AttributionLogic::kNever:
-      out << "kNever";
-      break;
+      return out << "kNever";
     case StoredSource::AttributionLogic::kTruthfully:
-      out << "kTruthfully";
-      break;
+      return out << "kTruthfully";
     case StoredSource::AttributionLogic::kFalsely:
-      out << "kFalsely";
-      break;
+      return out << "kFalsely";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out,
                          StoredSource::ActiveState active_state) {
   switch (active_state) {
     case StoredSource::ActiveState::kActive:
-      out << "kActive";
-      break;
+      return out << "kActive";
     case StoredSource::ActiveState::kInactive:
-      out << "kInactive";
-      break;
+      return out << "kInactive";
     case StoredSource::ActiveState::kReachedEventLevelAttributionLimit:
-      out << "kReachedEventLevelAttributionLimit";
-      break;
+      return out << "kReachedEventLevelAttributionLimit";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion) {
-  return out << "{registration=" << conversion.registration()
-             << ",destination_origin=" << conversion.destination_origin()
-             << ",is_within_fenced_frame="
-             << conversion.is_within_fenced_frame();
+  out << "{registration=" << conversion.registration()
+      << ",destination_origin=" << conversion.destination_origin()
+      << ",is_within_fenced_frame=" << conversion.is_within_fenced_frame();
+
+  if (conversion.attestation().has_value()) {
+    out << ",attestation=" << conversion.attestation().value();
+  } else {
+    out << ",attestation=(null)";
+  }
+
+  return out << "}";
 }
 
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
@@ -1150,6 +1140,7 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          const AttributionStorageDelegate::FakeReport& r) {
   return out << "{trigger_data=" << r.trigger_data
+             << ",trigger_time=" << r.trigger_time
              << ",report_time=" << r.report_time << "}";
 }
 
@@ -1210,8 +1201,14 @@ std::ostream& operator<<(
     separator = ", ";
   }
 
-  return out << "],id=" << *data.id
-             << ",initial_report_time=" << data.initial_report_time << "}";
+  out << "],id=" << *data.id
+      << ",initial_report_time=" << data.initial_report_time;
+  if (data.attestation_token.has_value()) {
+    out << ",attestation_token=" << data.attestation_token.value();
+  } else {
+    out << ",attestation_token=(null)";
+  }
+  return out << "}";
 }
 
 namespace {
@@ -1237,34 +1234,25 @@ std::ostream& operator<<(std::ostream& out,
                          AttributionReport::Type report_type) {
   switch (report_type) {
     case AttributionReport::Type::kEventLevel:
-      out << "kEventLevel";
-      break;
+      return out << "kEventLevel";
     case AttributionReport::Type::kAggregatableAttribution:
-      out << "kAggregatableAttribution";
-      break;
+      return out << "kAggregatableAttribution";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out, SendResult::Status status) {
   switch (status) {
     case SendResult::Status::kSent:
-      out << "kSent";
-      break;
+      return out << "kSent";
     case SendResult::Status::kTransientFailure:
-      out << "kTransientFailure";
-      break;
+      return out << "kTransientFailure";
     case SendResult::Status::kFailure:
-      out << "kFailure";
-      break;
+      return out << "kFailure";
     case SendResult::Status::kDropped:
-      out << "kDropped";
-      break;
+      return out << "kDropped";
     case SendResult::Status::kFailedToAssemble:
-      out << "kFailedToAssemble";
-      break;
+      return out << "kFailedToAssemble";
   }
-  return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const SendResult& info) {
@@ -1404,7 +1392,9 @@ AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
                cfg.destination_origin),
       Property("is_within_fenced_frame",
                &AttributionTrigger::is_within_fenced_frame,
-               cfg.is_within_fenced_frame));
+               cfg.is_within_fenced_frame),
+      Property("trigger_attestation", &AttributionTrigger::attestation,
+               cfg.attestation));
 }
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(

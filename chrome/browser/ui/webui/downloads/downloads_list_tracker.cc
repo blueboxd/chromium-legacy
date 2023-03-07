@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/unicodestring.h"
 #include "base/strings/string_number_conversions.h"
@@ -282,13 +282,16 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
 
   switch (download_item->GetState()) {
     case download::DownloadItem::IN_PROGRESS: {
-      if (download_item->IsDangerous()) {
-        state = "DANGEROUS";
-      } else if (download_item->IsInsecure()) {
-        state = "INSECURE";
+      if (download_item->GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+        state = "PROMPT_FOR_SCANNING";
       } else if (download_item->GetDangerType() ==
                  download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
         state = "ASYNC_SCANNING";
+      } else if (download_item->IsDangerous()) {
+        state = "DANGEROUS";
+      } else if (download_item->IsInsecure()) {
+        state = "INSECURE";
       } else if (download_item->IsPaused()) {
         state = "PAUSED";
       } else {

@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -22,7 +23,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gl/android/surface_texture.h"
-#include "ui/gl/gl_image.h"
 
 namespace gfx {
 class Size;
@@ -63,24 +63,6 @@ class StreamTexture : public StreamTextureSharedImageInterface,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<StreamTexture> weak_stream_texture);
 
-  // gl::GLImage implementation:
-  gfx::Size GetSize() override;
-  unsigned GetInternalFormat() override;
-  unsigned GetDataType() override;
-  BindOrCopy ShouldBindOrCopy() override;
-  bool BindTexImage(unsigned target) override;
-  void ReleaseTexImage(unsigned target) override;
-  bool CopyTexImage(unsigned target) override;
-  bool CopyTexSubImage(unsigned target,
-                       const gfx::Point& offset,
-                       const gfx::Rect& rect) override;
-  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
-  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                    uint64_t process_tracing_id,
-                    const std::string& dump_name) override;
-  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-  GetAHardwareBuffer() override;
-
   // gpu::StreamTextureSharedImageInterface implementation.
   void ReleaseResources() override {}
   bool IsUsingGpuMemory() const override;
@@ -89,6 +71,8 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   TextureBase* GetTextureBase() const override;
   void NotifyOverlayPromotion(bool promotion, const gfx::Rect& bounds) override;
   bool RenderToOverlay() override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
   bool TextureOwnerBindsTextureOnUpdate() override;
 
   gpu::Mailbox CreateSharedImage(const gfx::Size& coded_size);

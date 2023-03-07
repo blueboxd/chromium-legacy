@@ -8,8 +8,8 @@
 #include <array>
 #include <ostream>
 #include <string>
-#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 
 namespace ash {
 
@@ -58,10 +58,5 @@ std::ostream& COMPONENT_EXPORT(HERMES_CLIENT) operator<<(
     std::ostream& stream,
     HermesResponseStatus status);
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos {
-using ::ash::HermesResponseStatus;
-}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_HERMES_HERMES_RESPONSE_STATUS_H_

@@ -9,11 +9,10 @@
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
-#include "chrome/services/keymaster/public/mojom/cert_store.mojom.h"
 #include "chromeos/ash/components/dbus/arc/arc_keymaster_client.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -115,7 +114,6 @@ void ArcKeymasterBridge::GetServerAfterBootstrap(GetServerCallback callback,
 void ArcKeymasterBridge::OnBootstrapMojoConnection(
     BootstrapMojoConnectionCallback callback,
     bool result) {
-  cert_store_bridge_->OnBootstrapMojoConnection(result);
   if (result) {
     DVLOG(1) << "Success bootstrapping Mojo in arc-keymasterd.";
   } else {

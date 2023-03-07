@@ -17,16 +17,17 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/features.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/platform_file.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -37,6 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
@@ -54,7 +56,11 @@
 #include <tchar.h>
 #include <windows.h>
 #include <winioctl.h>
+#include "base/features.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #endif
@@ -772,6 +778,191 @@ TEST_F(FileUtilTest, CreateWinHardlinkTest) {
   // by CreateWinHardLink.
   EXPECT_FALSE(CreateWinHardLink(temp_dir_.GetPath(), test_dir));
 }
+
+TEST_F(FileUtilTest, PreventExecuteMappingNewFile) {
+  base::test::ScopedFeatureList enforcement_feature;
+  enforcement_feature.InitAndEnableFeature(
+      features::kEnforceNoExecutableFileHandles);
+  FilePath file = temp_dir_.GetPath().Append(FPL("afile.txt"));
+
+  ASSERT_FALSE(PathExists(file));
+  {
+    File new_file(file, File::FLAG_WRITE | File::FLAG_WIN_NO_EXECUTE |
+                            File::FLAG_CREATE_ALWAYS);
+    ASSERT_TRUE(new_file.IsValid());
+  }
+
+  {
+    File open_file(file, File::FLAG_READ | File::FLAG_WIN_EXECUTE |
+                             File::FLAG_OPEN_ALWAYS);
+    EXPECT_FALSE(open_file.IsValid());
+  }
+  // Verify the deny ACL did not prevent deleting the file.
+  EXPECT_TRUE(DeleteFile(file));
+}
+
+TEST_F(FileUtilTest, PreventExecuteMappingExisting) {
+  base::test::ScopedFeatureList enforcement_feature;
+  enforcement_feature.InitAndEnableFeature(
+      features::kEnforceNoExecutableFileHandles);
+  FilePath file = temp_dir_.GetPath().Append(FPL("afile.txt"));
+  CreateTextFile(file, bogus_content);
+  ASSERT_TRUE(PathExists(file));
+  {
+    File open_file(file, File::FLAG_READ | File::FLAG_WIN_EXECUTE |
+                             File::FLAG_OPEN_ALWAYS);
+    EXPECT_TRUE(open_file.IsValid());
+  }
+  EXPECT_TRUE(PreventExecuteMapping(file));
+  {
+    File open_file(file, File::FLAG_READ | File::FLAG_WIN_EXECUTE |
+                             File::FLAG_OPEN_ALWAYS);
+    EXPECT_FALSE(open_file.IsValid());
+  }
+  // Verify the deny ACL did not prevent deleting the file.
+  EXPECT_TRUE(DeleteFile(file));
+}
+
+TEST_F(FileUtilTest, PreventExecuteMappingOpenFile) {
+  base::test::ScopedFeatureList enforcement_feature;
+  enforcement_feature.InitAndEnableFeature(
+      features::kEnforceNoExecutableFileHandles);
+  FilePath file = temp_dir_.GetPath().Append(FPL("afile.txt"));
+  CreateTextFile(file, bogus_content);
+  ASSERT_TRUE(PathExists(file));
+  File open_file(file, File::FLAG_READ | File::FLAG_WRITE |
+                           File::FLAG_WIN_EXECUTE | File::FLAG_OPEN_ALWAYS);
+  EXPECT_TRUE(open_file.IsValid());
+  // Verify ACE can be set even on an open file.
+  EXPECT_TRUE(PreventExecuteMapping(file));
+  {
+    File second_open_file(
+        file, File::FLAG_READ | File::FLAG_WRITE | File::FLAG_OPEN_ALWAYS);
+    EXPECT_TRUE(second_open_file.IsValid());
+  }
+  {
+    File third_open_file(file, File::FLAG_READ | File::FLAG_WIN_EXECUTE |
+                                   File::FLAG_OPEN_ALWAYS);
+    EXPECT_FALSE(third_open_file.IsValid());
+  }
+
+  open_file.Close();
+  // Verify the deny ACL did not prevent deleting the file.
+  EXPECT_TRUE(DeleteFile(file));
+}
+
+TEST(FileUtilDeathTest, DisallowNoExecuteOnUnsafeFile) {
+  base::test::ScopedFeatureList enforcement_feature;
+  enforcement_feature.InitAndEnableFeature(
+      features::kEnforceNoExecutableFileHandles);
+  base::FilePath local_app_data;
+  // This test places a file in %LOCALAPPDATA% to verify that the checks in
+  // IsPathSafeToSetAclOn work correctly.
+  ASSERT_TRUE(
+      base::PathService::Get(base::DIR_LOCAL_APP_DATA, &local_app_data));
+
+  base::FilePath file_path;
+  EXPECT_DCHECK_DEATH_WITH(
+      {
+        {
+          base::File temp_file =
+              base::CreateAndOpenTemporaryFileInDir(local_app_data, &file_path);
+        }
+        File reopen_file(file_path, File::FLAG_READ | File::FLAG_WRITE |
+                                        File::FLAG_WIN_NO_EXECUTE |
+                                        File::FLAG_OPEN_ALWAYS |
+                                        File::FLAG_DELETE_ON_CLOSE);
+      },
+      "Unsafe to deny execute access to path");
+}
+
+MULTIPROCESS_TEST_MAIN(NoExecuteOnSafeFileMain) {
+  base::FilePath temp_file;
+  CHECK(base::CreateTemporaryFile(&temp_file));
+
+  // A file with FLAG_WIN_NO_EXECUTE created in temp dir should always be
+  // permitted.
+  File reopen_file(temp_file, File::FLAG_READ | File::FLAG_WRITE |
+                                  File::FLAG_WIN_NO_EXECUTE |
+                                  File::FLAG_OPEN_ALWAYS |
+                                  File::FLAG_DELETE_ON_CLOSE);
+  return 0;
+}
+
+TEST_F(FileUtilTest, NoExecuteOnSafeFile) {
+  FilePath new_dir;
+  ASSERT_TRUE(CreateTemporaryDirInDir(
+      temp_dir_.GetPath(), FILE_PATH_LITERAL("NoExecuteOnSafeFileLongPath"),
+      &new_dir));
+
+  FilePath short_dir = base::MakeShortFilePath(new_dir);
+
+  // Verify that the path really is 8.3 now.
+  ASSERT_NE(new_dir.value(), short_dir.value());
+
+  LaunchOptions options;
+  options.environment[L"TMP"] = short_dir.value();
+
+  CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
+
+  Process child_process = SpawnMultiProcessTestChild(
+      "NoExecuteOnSafeFileMain", child_command_line, options);
+  ASSERT_TRUE(child_process.IsValid());
+  int rv = -1;
+  ASSERT_TRUE(WaitForMultiprocessTestChildExit(
+      child_process, TestTimeouts::action_timeout(), &rv));
+  ASSERT_EQ(0, rv);
+}
+
+class FileUtilExecuteEnforcementTest
+    : public FileUtilTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  FileUtilExecuteEnforcementTest() {
+    if (IsEnforcementEnabled()) {
+      enforcement_feature_.InitAndEnableFeature(
+          features::kEnforceNoExecutableFileHandles);
+    } else {
+      enforcement_feature_.InitAndDisableFeature(
+          features::kEnforceNoExecutableFileHandles);
+    }
+  }
+
+ protected:
+  bool IsEnforcementEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList enforcement_feature_;
+};
+
+// This test verifies that if a file has been passed to `PreventExecuteMapping`
+// and enforcement is enabled, then it cannot be mapped as executable into
+// memory.
+TEST_P(FileUtilExecuteEnforcementTest, Functional) {
+  FilePath dir_exe;
+  EXPECT_TRUE(PathService::Get(DIR_EXE, &dir_exe));
+  // This DLL is built as part of base_unittests so is guaranteed to be present.
+  FilePath test_dll(dir_exe.Append(FPL("scoped_handle_test_dll.dll")));
+
+  EXPECT_TRUE(base::PathExists(test_dll));
+
+  FilePath dll_copy_path = temp_dir_.GetPath().Append(FPL("test.dll"));
+
+  ASSERT_TRUE(CopyFile(test_dll, dll_copy_path));
+  ASSERT_TRUE(PreventExecuteMapping(dll_copy_path));
+  ScopedNativeLibrary module(dll_copy_path);
+
+  // If enforcement is enabled, then `PreventExecuteMapping` will have prevented
+  // the load, and the module will be invalid.
+  EXPECT_EQ(IsEnforcementEnabled(), !module.is_valid());
+}
+
+INSTANTIATE_TEST_SUITE_P(EnforcementEnabled,
+                         FileUtilExecuteEnforcementTest,
+                         ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(EnforcementDisabled,
+                         FileUtilExecuteEnforcementTest,
+                         ::testing::Values(false));
 
 #endif  // BUILDFLAG(IS_WIN)
 

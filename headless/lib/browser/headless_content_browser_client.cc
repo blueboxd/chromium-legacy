@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,11 +28,11 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "headless/public/switches.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -106,9 +106,7 @@ class HeadlessContentBrowserClient::StubBadgeService
 
 HeadlessContentBrowserClient::HeadlessContentBrowserClient(
     HeadlessBrowserImpl* browser)
-    : browser_(browser),
-      append_command_line_flags_callback_(
-          browser_->options()->append_command_line_flags_callback) {}
+    : browser_(browser) {}
 
 HeadlessContentBrowserClient::~HeadlessContentBrowserClient() = default;
 
@@ -126,12 +124,7 @@ HeadlessContentBrowserClient::CreateBrowserMainParts(
 void HeadlessContentBrowserClient::OverrideWebkitPrefs(
     content::WebContents* web_contents,
     blink::web_pref::WebPreferences* prefs) {
-  auto* browser_context =
-      HeadlessBrowserContextImpl::From(web_contents->GetBrowserContext());
-  base::RepeatingCallback<void(blink::web_pref::WebPreferences*)> callback =
-      browser_context->options()->override_web_preferences_callback();
-  if (callback)
-    callback.Run(prefs);
+  prefs->lazy_load_enabled = browser_->options()->lazy_load_enabled;
 }
 
 void HeadlessContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
@@ -193,13 +186,6 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   // |browser_| may have already been destroyed.
 
   command_line->AppendSwitch(::switches::kHeadless);
-  const base::CommandLine& old_command_line(
-      *base::CommandLine::ForCurrentProcess());
-  if (old_command_line.HasSwitch(switches::kUserAgent)) {
-    command_line->AppendSwitchNative(
-        switches::kUserAgent,
-        old_command_line.GetSwitchValueNative(switches::kUserAgent));
-  }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   int fd;
@@ -211,6 +197,8 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
+  const base::CommandLine& old_command_line(
+      *base::CommandLine::ForCurrentProcess());
   if (old_command_line.HasSwitch(switches::kDisablePDFTagging))
     command_line->AppendSwitch(switches::kDisablePDFTagging);
 
@@ -243,22 +231,6 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     };
     command_line->CopySwitchesFrom(old_command_line, kSwitchNames,
                                    std::size(kSwitchNames));
-  }
-
-  if (append_command_line_flags_callback_) {
-    HeadlessBrowserContextImpl* headless_browser_context_impl = nullptr;
-    if (process_type == ::switches::kRendererProcess) {
-      // Renderer processes are initialized on the UI thread, so this is safe.
-      content::RenderProcessHost* render_process_host =
-          content::RenderProcessHost::FromID(child_process_id);
-      if (render_process_host) {
-        headless_browser_context_impl = HeadlessBrowserContextImpl::From(
-            render_process_host->GetBrowserContext());
-      }
-    }
-    append_command_line_flags_callback_.Run(command_line,
-                                            headless_browser_context_impl,
-                                            process_type, child_process_id);
   }
 }
 
@@ -309,7 +281,7 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // site-per-process setting from //content - this way tools (tests, but also
   // production cases like screenshot or pdf generation) based on //headless
   // will use a mode that is actually shipping in Chrome.
-  return browser_->options()->site_per_process;
+  return false;
 }
 
 void HeadlessContentBrowserClient::ConfigureNetworkContextParams(
@@ -325,7 +297,7 @@ void HeadlessContentBrowserClient::ConfigureNetworkContextParams(
 }
 
 std::string HeadlessContentBrowserClient::GetProduct() {
-  return browser_->options()->product_name_and_version;
+  return HeadlessBrowser::GetProductNameAndVersion();
 }
 
 std::string HeadlessContentBrowserClient::GetUserAgent() {

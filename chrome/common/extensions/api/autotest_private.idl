@@ -40,7 +40,8 @@ namespace autotestPrivate {
     PluginVm,
     StandaloneBrowser,
     Remote,
-    Borealis
+    Borealis,
+    Bruschetta
   };
 
   // A mapping of apps::mojom::InstallSource
@@ -141,6 +142,8 @@ namespace autotestPrivate {
     boolean isOwner;
     // Is the screen locked?
     boolean isScreenLocked;
+    // Is the wallpaper blur layer still animating in?
+    boolean isLockscreenWallpaperAnimating;
     // Is the screen ready for password?
     boolean isReadyForPassword;
 
@@ -700,6 +703,12 @@ namespace autotestPrivate {
   // Collected ui::ThroughputTracker data for one animation. It is based on
   // cc::FrameSequenceMetrics::ThroughputData.
   dictionary ThroughputTrackerAnimationData {
+    // Animation start time in milliseconds, relative to when
+    // `startThroughputTrackerDataCollection` is called.
+    long startOffsetMs;
+    // Animation stop time in milliseconds, relative to when
+    // `startThroughputTrackerDataCollection` is called.
+    long stopOffsetMs;
     // Number of frames expected to be shown for this animation.
     long framesExpected;
     // Number of frames actually shown for this animation.

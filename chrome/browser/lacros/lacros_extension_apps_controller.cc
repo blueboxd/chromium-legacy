@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -161,6 +161,24 @@ void LacrosExtensionAppsController::LoadIcon(const std::string& app_id,
         icon_type, size_hint_in_dip, profile, extension->id(),
         static_cast<apps::IconEffects>(icon_key->icon_effects),
         std::move(callback));
+    return;
+  }
+
+  // On failure, we still run the callback, with the zero IconValue.
+  std::move(callback).Run(std::make_unique<apps::IconValue>());
+}
+
+void LacrosExtensionAppsController::GetCompressedIcon(
+    const std::string& app_id,
+    int32_t size_in_dip,
+    ui::ResourceScaleFactor scale_factor,
+    apps::LoadIconCallback callback) {
+  Profile* profile = nullptr;
+  const extensions::Extension* extension = nullptr;
+  bool success = lacros_extensions_util::DemuxId(app_id, &profile, &extension);
+  if (success) {
+    GetChromeAppCompressedIconData(profile, app_id, size_in_dip, scale_factor,
+                                   std::move(callback));
     return;
   }
 

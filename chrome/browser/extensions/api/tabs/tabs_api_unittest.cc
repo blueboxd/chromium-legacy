@@ -307,8 +307,8 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
                   .Set("name", "Extension with tabs permission")
                   .Set("version", "1.0")
                   .Set("manifest_version", 2)
-                  .Set("permissions", ListBuilder().Append("tabs").BuildList())
-                  .BuildDict())
+                  .Set("permissions", ListBuilder().Append("tabs").Build())
+                  .Build())
           .Build();
   base::Value::List tabs_list_with_permission = RunTabsQueryFunction(
       browser(), extension_with_permission.get(), kTitleAndURLQueryInfo);
@@ -359,8 +359,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
                   .Set("version", "1.0")
                   .Set("manifest_version", 2)
                   .Set("permissions",
-                       ListBuilder().Append("*://www.google.com/*").BuildList())
-                  .BuildDict())
+                       ListBuilder().Append("*://www.google.com/*").Build())
+                  .Build())
           .Build();
 
   {
@@ -410,10 +410,10 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
       .Set("description", "desc")
       .Set("version", "0.1")
       .Set("manifest_version", 2)
-      .Set("permissions", ListBuilder().Append("tabs").BuildList());
+      .Set("permissions", ListBuilder().Append("tabs").Build());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-          .SetManifest(manifest.BuildDict())
+          .SetManifest(manifest.Build())
           .SetID(extension_misc::kPdfExtensionId)
           .Build();
   ASSERT_TRUE(extension);
@@ -520,10 +520,9 @@ TEST_F(TabsApiUnitTest, TabsUpdateJavaScriptUrlNotAllowed) {
                   .Set("name", "Extension with a host permission")
                   .Set("version", "1.0")
                   .Set("manifest_version", 2)
-                  .Set("permissions", ListBuilder()
-                                          .Append("http://www.example.com/*")
-                                          .BuildList())
-                  .BuildDict())
+                  .Set("permissions",
+                       ListBuilder().Append("http://www.example.com/*").Build())
+                  .Build())
           .Build();
   auto function = base::MakeRefCounted<TabsUpdateFunction>();
   function->set_extension(extension);

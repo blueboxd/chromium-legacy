@@ -6,8 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "content/browser/android/java/gin_java_bound_object_delegate.h"
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"
@@ -119,11 +119,9 @@ void GinJavaBridgeDispatcherHost::WebContentsDestroyed() {
       });
 }
 
-void GinJavaBridgeDispatcherHost::RenderViewHostChanged(
-    RenderViewHost* old_host,
-    RenderViewHost* new_host) {
+void GinJavaBridgeDispatcherHost::PrimaryPageChanged(Page& page) {
   AgentSchedulingGroupHost& agent_scheduling_group =
-      static_cast<RenderViewHostImpl*>(new_host)->GetAgentSchedulingGroup();
+      static_cast<PageImpl&>(page).GetMainDocument().GetAgentSchedulingGroup();
   scoped_refptr<GinJavaBridgeMessageFilter> filter =
       GinJavaBridgeMessageFilter::FromHost(agent_scheduling_group,
                                            /*create_if_not_exists=*/false);

@@ -132,14 +132,14 @@ TEST_F(OverlayUserPrefStoreTest, GetAndSet) {
 
 // Check that GetMutableValue does not return the dictionary of the underlay.
 TEST_F(OverlayUserPrefStoreTest, ModifyDictionaries) {
-  underlay_->SetValue(regular_key, DictionaryValue(),
+  underlay_->SetValue(regular_key, base::Value(base::Value::Dict()),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   Value* modify = nullptr;
   EXPECT_TRUE(overlay_->GetMutableValue(regular_key, &modify));
   ASSERT_TRUE(modify);
   ASSERT_TRUE(modify->is_dict());
-  static_cast<DictionaryValue*>(modify)->SetInteger(regular_key, 42);
+  modify->SetIntPath(regular_key, 42);
 
   Value* original_in_underlay = nullptr;
   EXPECT_TRUE(underlay_->GetMutableValue(regular_key, &original_in_underlay));

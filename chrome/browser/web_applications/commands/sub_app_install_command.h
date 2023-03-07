@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/web_app_logging.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "third_party/blink/public/mojom/subapps/sub_apps_service.mojom-shared.h"
 #include "url/gurl.h"
@@ -38,7 +39,7 @@ class WebAppUrlLoader;
 class WebAppDataRetriever;
 
 using AppInstallResults =
-    std::vector<std::pair<AppId, blink::mojom::SubAppsServiceAddResultCode>>;
+    std::vector<std::pair<AppId, blink::mojom::SubAppsServiceResult>>;
 using SubAppInstallResultCallback = base::OnceCallback<void(AppInstallResults)>;
 
 class SubAppInstallCommand
@@ -54,7 +55,7 @@ class SubAppInstallCommand
   SubAppInstallCommand(const SubAppInstallCommand&) = delete;
   SubAppInstallCommand& operator=(const SubAppInstallCommand&) = delete;
 
-  LockDescription& lock_description() const override;
+  const LockDescription& lock_description() const override;
   base::Value ToDebugValue() const override;
   void SetDialogNotAcceptedForTesting();
 
@@ -85,7 +86,7 @@ class SubAppInstallCommand
       blink::mojom::ManifestPtr opt_manifest,
       const GURL& manifest_url,
       bool valid_manifest_for_web_app,
-      bool is_installable);
+      webapps::InstallableStatusCode error_code);
   void OnIconsRetrievedShowDialog(
       const UnhashedAppId& unhashed_app_id,
       std::unique_ptr<WebAppInstallInfo> web_app_info,
@@ -110,11 +111,11 @@ class SubAppInstallCommand
       const UnhashedAppId& unhashed_app_id,
       webapps::InstallResultCode result);
   bool IsWebContentsDestroyed();
-  void AddResultToDebugData(
-      const UnhashedAppId& unhashed_app_id,
-      const GURL& url,
-      const AppId& installed_app_id,
-      const blink::mojom::SubAppsServiceAddResultCode& code);
+  void AddResultToDebugData(const UnhashedAppId& unhashed_app_id,
+                            const GURL& url,
+                            const AppId& installed_app_id,
+                            webapps::InstallResultCode detailed_code,
+                            const blink::mojom::SubAppsServiceResult& code);
 
   std::unique_ptr<SharedWebContentsWithAppLockDescription> lock_description_;
   std::unique_ptr<SharedWebContentsWithAppLock> lock_;

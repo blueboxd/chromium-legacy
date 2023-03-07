@@ -326,9 +326,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1396270): Re-enable.
 IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
-                       DISABLED_ScreenCaptureVideoWithDlp) {
+                       ScreenCaptureVideoWithDlp) {
   if (!test_config_.should_prefer_current_tab &&
       !test_config_.accept_this_tab_capture) {
     GTEST_SKIP();
@@ -620,16 +619,16 @@ class WebRtcAppWindowCaptureBrowserTestWithPicker
 
     // We will restrict all pages to "Tab Capture" only. This should force App
     // Windows to show up in the tabs list, and thus make it selectable.
-    base::Value matchlist(base::Value::Type::LIST);
+    base::Value::List matchlist;
     matchlist.Append("*");
-    browser()->profile()->GetPrefs()->Set(prefs::kTabCaptureAllowedByOrigins,
-                                          matchlist);
+    browser()->profile()->GetPrefs()->SetList(
+        prefs::kTabCaptureAllowedByOrigins, std::move(matchlist));
   }
 
   void TearDownOnMainThread() override {
     extensions::PlatformAppBrowserTest::TearDownOnMainThread();
-    browser()->profile()->GetPrefs()->Set(prefs::kTabCaptureAllowedByOrigins,
-                                          base::Value(base::Value::Type::LIST));
+    browser()->profile()->GetPrefs()->SetList(
+        prefs::kTabCaptureAllowedByOrigins, base::Value::List());
   }
 
   extensions::AppWindow* CreateAppWindowWithTitle(const std::u16string& title) {
@@ -686,17 +685,16 @@ class WebRtcSameOriginPolicyBrowserTest
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // Restrict all origins to SameOrigin tab capture only.
-    base::Value matchlist(base::Value::Type::LIST);
+    base::Value::List matchlist;
     matchlist.Append("*");
-    browser()->profile()->GetPrefs()->Set(
-        prefs::kSameOriginTabCaptureAllowedByOrigins, matchlist);
+    browser()->profile()->GetPrefs()->SetList(
+        prefs::kSameOriginTabCaptureAllowedByOrigins, std::move(matchlist));
   }
 
   void TearDownOnMainThread() override {
     WebRtcScreenCaptureBrowserTest::TearDownOnMainThread();
-    browser()->profile()->GetPrefs()->Set(
-        prefs::kSameOriginTabCaptureAllowedByOrigins,
-        base::Value(base::Value::Type::LIST));
+    browser()->profile()->GetPrefs()->SetList(
+        prefs::kSameOriginTabCaptureAllowedByOrigins, base::Value::List());
   }
 };
 
@@ -981,10 +979,10 @@ class GetDisplayMediaHiDpiBrowserTest
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     // The picker itself shows previews which are unsupported in Lacros tests.
-    base::Value matchlist(base::Value::Type::LIST);
+    base::Value::List matchlist;
     matchlist.Append("*");
-    browser()->profile()->GetPrefs()->Set(prefs::kTabCaptureAllowedByOrigins,
-                                          matchlist);
+    browser()->profile()->GetPrefs()->SetList(
+        prefs::kTabCaptureAllowedByOrigins, std::move(matchlist));
 #endif
 
     // Fire up the page.

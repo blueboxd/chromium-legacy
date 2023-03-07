@@ -63,20 +63,8 @@ enum class PageLoadTrackerPageType {
 };
 
 extern const char kErrorEvents[];
-extern const char kPageLoadCompletedAfterAppBackground[];
 extern const char kPageLoadPrerender2Event[];
-extern const char kPageLoadStartedInForeground[];
-extern const char kPageLoadPrerender2VisibilityAtActivation[];
 extern const char kPageLoadTrackerPageType[];
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class VisibilityAtActivation {
-  kHidden = 0,
-  kOccluded = 1,
-  kVisible = 2,
-  kMaxValue = kVisible
-};
 
 }  // namespace internal
 
@@ -241,6 +229,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const gfx::Rect& main_frame_intersection_rect) override;
   void OnMainFrameViewportRectChanged(
       const gfx::Rect& main_frame_viewport_rect) override;
+  void OnMainFrameImageAdRectsChanged(
+      const base::flat_map<int, gfx::Rect>& main_frame_image_ad_rects) override;
   void SetUpSharedMemoryForSmoothness(
       base::ReadOnlySharedMemoryRegion shared_memory) override;
 
@@ -344,9 +334,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // We may stop tracking a page load if it doesn't meet the criteria for
   // tracking metrics in DidFinishNavigation.
   void StopTracking();
-
-  PageEndReason page_end_reason() const { return page_end_reason_; }
-  base::TimeTicks page_end_time() const { return page_end_time_; }
 
   void AddObserver(std::unique_ptr<PageLoadMetricsObserverInterface> observer);
   base::WeakPtr<PageLoadMetricsObserverInterface> FindObserver(
@@ -475,10 +462,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // metrics in DidFinishNavigation.
   bool did_stop_tracking_;
 
-  // Whether the application went into the background when this PageLoadTracker
-  // was active. This is a temporary boolean for UMA tracking.
-  bool app_entered_background_;
-
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
@@ -543,9 +526,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   // Observer's name pointer to instance map. Can be raw_ptr as the instance is
   // owned `observers` above, and is removed from the map on destruction.
-  base::flat_map<
-      const char*,
-      base::raw_ptr<PageLoadMetricsObserverInterface, DanglingUntriaged>>
+  base::flat_map<const char*, base::raw_ptr<PageLoadMetricsObserverInterface>>
       observers_map_;
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
@@ -567,6 +548,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       experimental_largest_contentful_paint_handler_;
 
   uint32_t soft_navigation_count_ = 0;
+
+  const internal::PageLoadTrackerPageType page_type_;
 
   const base::WeakPtr<PageLoadTracker> parent_tracker_;
 

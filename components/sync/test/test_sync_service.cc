@@ -62,8 +62,6 @@ void TestSyncService::SetHasSyncConsent(bool has_sync_consent) {
 }
 
 void TestSyncService::SetPersistentAuthErrorOtherThanWebSignout() {
-  // This mimics the behavior for the feature toggle
-  // kSyncPauseUponAnyPersistentAuthError being enabled.
   transport_state_ = TransportState::PAUSED;
   auth_error_ = GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
       GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -77,12 +75,6 @@ void TestSyncService::SetPersistentAuthErrorWithWebSignout() {
       GoogleServiceAuthError::InvalidGaiaCredentialsReason::
           CREDENTIALS_REJECTED_BY_CLIENT);
   CHECK(auth_error_.IsPersistentError());
-}
-
-void TestSyncService::SetTransientAuthError() {
-  auth_error_ =
-      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
-  CHECK(auth_error_.IsTransientError());
 }
 
 void TestSyncService::ClearAuthError() {

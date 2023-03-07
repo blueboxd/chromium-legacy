@@ -99,21 +99,12 @@ base::StringPiece GetHistogramPiece(DIPSRedirectType type);
 const char* DIPSRedirectTypeToString(DIPSRedirectType type);
 std::ostream& operator<<(std::ostream& os, DIPSRedirectType type);
 
-struct TimestampRange {
-  absl::optional<base::Time> first;
-  absl::optional<base::Time> last;
-
-  // Expand the range to include `time` if necessary. Returns true iff the range
-  // was modified.
-  bool Update(base::Time time);
-
-  // Checks that `this` range is either null or falls within `other`.
-  bool IsNullOrWithin(TimestampRange other) const;
-};
-
-inline bool operator==(const TimestampRange& lhs, const TimestampRange& rhs) {
-  return std::tie(lhs.first, lhs.last) == std::tie(rhs.first, rhs.last);
-}
+using TimestampRange = absl::optional<std::pair<base::Time, base::Time>>;
+// Expand the range to include `time` if necessary. Returns true iff the range
+// was modified.
+bool UpdateTimestampRange(TimestampRange& range, base::Time time);
+// Checks that `this` range is either null or falls within `other`.
+bool IsNullOrWithin(const TimestampRange& inner, const TimestampRange& outer);
 
 std::ostream& operator<<(std::ostream& os, TimestampRange type);
 
@@ -165,6 +156,22 @@ enum class RedirectCategory {
   kUnknownCookies_NoEngagement = 8,
   kUnknownCookies_HasEngagement = 9,
   kMaxValue = kUnknownCookies_HasEngagement,
+};
+
+// DIPSErrorCode is used in UMA enum histograms to monitor certain errors and
+// verify that they are being fixed.
+//
+// When adding an error to this enum, update the DIPSErrorCode enum in
+// tools/metrics/histograms/enums.xml as well.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DIPSErrorCode {
+  kRead_None = 0,
+  kRead_OpenEndedRange_NullStart = 1,
+  kRead_OpenEndedRange_NullEnd = 2,
+  kRead_BounceTimesIsntSupersetOfStatefulBounces = 3,
+  kMaxValue = kRead_BounceTimesIsntSupersetOfStatefulBounces,
 };
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_UTILS_H_

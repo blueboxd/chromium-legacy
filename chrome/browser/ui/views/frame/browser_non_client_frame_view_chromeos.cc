@@ -13,6 +13,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -190,8 +191,8 @@ void BrowserNonClientFrameViewChromeOS::Init() {
        browser_view()->AppUsesWindowControlsOverlay() ||
        browser_view()->AppUsesBorderlessMode())) {
     // Add the container for extra web app buttons (e.g app menu button).
-    set_web_app_frame_toolbar(AddChildView(
-        std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
+    set_web_app_frame_toolbar(
+        AddChildView(std::make_unique<WebAppFrameToolbarView>(browser_view())));
     if (AppIsBorderlessPwa())
       UpdateBorderlessModeEnabled();
   }

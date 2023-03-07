@@ -9,15 +9,16 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -54,6 +55,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "third_party/blink/public/mojom/parakeet/ad_request.mojom.h"
@@ -815,8 +817,8 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     if (!maybe_config) {
       return absl::nullopt;
     }
-    CHECK(maybe_config->urn().has_value());
-    return maybe_config->urn();
+    CHECK(maybe_config->urn_uuid().has_value());
+    return maybe_config->urn_uuid();
   }
 
   // Like RunAdAuctionAndFlushForFrame(), but uses the RenderFrameHost of the
@@ -5781,6 +5783,7 @@ class AdAuctionServiceImplRestrictedPermissionsPolicyTest
   AdAuctionServiceImplRestrictedPermissionsPolicyTest() {
     feature_list_.InitAndEnableFeature(
         blink::features::kAdInterestGroupAPIRestrictedPolicyByDefault);
+    blink::UpdatePermissionsPolicyFeatureListForTesting();
     old_content_browser_client_ =
         SetBrowserClientForTesting(&content_browser_client_);
   }
@@ -5868,6 +5871,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
                          kNewBiddingUrlPath));
 
   NavigateAndCommit(kUrlC);
+
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.owner = kOriginC;
   interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
@@ -6113,6 +6117,186 @@ function scoreAd(
 
   absl::optional<GURL> auction_result = RunAdAuctionAndFlush(auction_config);
   EXPECT_NE(auction_result, absl::nullopt);
+}
+
+TEST_F(AdAuctionServiceImplPrivateAggregationEnabledTest,
+       PrivateAggregationPermissionsPolicyDisallowsSellerOrigin) {
+  constexpr char kBiddingScript[] = R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    browserSignals) {
+  return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
+}
+)";
+
+  constexpr char kDecisionScript[] = R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, trustedScoringSignals, browserSignals) {
+  privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
+  return bid;
+}
+)";
+
+  network_responder_->RegisterScriptResponse(kBiddingUrlPath, kBiddingScript);
+  network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
+  interest_group.priority = 2;
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group);
+
+  // Allow only (bidder) origin A in the permissions policy. The auction with
+  // seller origin C should fail.
+  {
+    auto simulator =
+        NavigationSimulator::CreateBrowserInitiated(kUrlA, web_contents());
+    blink::ParsedPermissionsPolicy policy;
+    policy.emplace_back(
+        blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
+        /*allowed_origins=*/
+        std::vector<blink::OriginWithPossibleWildcards>{
+            blink::OriginWithPossibleWildcards(
+                kOriginA,
+                /*has_subdomain_wildcard=*/false)},
+        /*matches_all_origins=*/false,
+        /*matches_opaque_src=*/false);
+    simulator->SetPermissionsPolicyHeader(std::move(policy));
+    simulator->Commit();
+
+    blink::AuctionConfig auction_config;
+    auction_config.seller = kOriginC;
+    auction_config.decision_logic_url = kUrlC.Resolve(kDecisionUrlPath);
+    auction_config.non_shared_params.interest_group_buyers = {kOriginA};
+
+    absl::optional<GURL> auction_result = RunAdAuctionAndFlush(auction_config);
+    EXPECT_EQ(auction_result, absl::nullopt);
+  }
+
+  // In contrast to the case above, additionally allow origin C in the
+  // permissions policy. The auction with seller origin C should succeed.
+  {
+    auto simulator =
+        NavigationSimulator::CreateBrowserInitiated(kUrlA, web_contents());
+    blink::ParsedPermissionsPolicy policy;
+    policy.emplace_back(
+        blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
+        /*allowed_origins=*/
+        std::vector<blink::OriginWithPossibleWildcards>{
+            blink::OriginWithPossibleWildcards(
+                kOriginA,
+                /*has_subdomain_wildcard=*/false),
+            blink::OriginWithPossibleWildcards(
+                kOriginC,
+                /*has_subdomain_wildcard=*/false)},
+        /*matches_all_origins=*/false,
+        /*matches_opaque_src=*/false);
+    simulator->SetPermissionsPolicyHeader(std::move(policy));
+    simulator->Commit();
+
+    blink::AuctionConfig auction_config;
+    auction_config.seller = kOriginC;
+    auction_config.decision_logic_url = kUrlC.Resolve(kDecisionUrlPath);
+    auction_config.non_shared_params.interest_group_buyers = {kOriginA};
+
+    absl::optional<GURL> auction_result = RunAdAuctionAndFlush(auction_config);
+    EXPECT_NE(auction_result, absl::nullopt);
+  }
+}
+
+TEST_F(AdAuctionServiceImplPrivateAggregationEnabledTest,
+       PrivateAggregationPermissionsPolicyDisallowsBidderOrigin) {
+  constexpr char kBiddingScript[] = R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    browserSignals) {
+  privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
+  return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
+}
+)";
+
+  constexpr char kDecisionScript[] = R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, trustedScoringSignals, browserSignals) {
+  return bid;
+}
+)";
+
+  network_responder_->RegisterScriptResponse(kBiddingUrlPath, kBiddingScript);
+  network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
+
+  NavigateAndCommit(kUrlC);
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.owner = kOriginC;
+  interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group.priority = 2;
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group);
+
+  // Allow only (seller) origin A in the permissions policy. The auction with
+  // bidder origin C should fail.
+  {
+    auto simulator =
+        NavigationSimulator::CreateBrowserInitiated(kUrlA, web_contents());
+    blink::ParsedPermissionsPolicy policy;
+    policy.emplace_back(
+        blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
+        /*allowed_origins=*/
+        std::vector<blink::OriginWithPossibleWildcards>{
+            blink::OriginWithPossibleWildcards(
+                kOriginA,
+                /*has_subdomain_wildcard=*/false)},
+        /*matches_all_origins=*/false,
+        /*matches_opaque_src=*/false);
+    simulator->SetPermissionsPolicyHeader(std::move(policy));
+    simulator->Commit();
+
+    blink::AuctionConfig auction_config;
+    auction_config.seller = kOriginA;
+    auction_config.decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+    auction_config.non_shared_params.interest_group_buyers = {kOriginC};
+
+    absl::optional<GURL> auction_result = RunAdAuctionAndFlush(auction_config);
+    EXPECT_EQ(auction_result, absl::nullopt);
+  }
+
+  // In contrast to the case above, additionally allow origin C in the
+  // permissions policy. The auction with bidder origin C should succeed.
+  {
+    auto simulator =
+        NavigationSimulator::CreateBrowserInitiated(kUrlA, web_contents());
+    blink::ParsedPermissionsPolicy policy;
+    policy.emplace_back(
+        blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
+        /*allowed_origins=*/
+        std::vector<blink::OriginWithPossibleWildcards>{
+            blink::OriginWithPossibleWildcards(
+                kOriginA,
+                /*has_subdomain_wildcard=*/false),
+            blink::OriginWithPossibleWildcards(
+                kOriginC,
+                /*has_subdomain_wildcard=*/false)},
+        /*matches_all_origins=*/false,
+        /*matches_opaque_src=*/false);
+    simulator->SetPermissionsPolicyHeader(std::move(policy));
+    simulator->Commit();
+
+    blink::AuctionConfig auction_config;
+    auction_config.seller = kOriginA;
+    auction_config.decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+    auction_config.non_shared_params.interest_group_buyers = {kOriginC};
+
+    absl::optional<GURL> auction_result = RunAdAuctionAndFlush(auction_config);
+    EXPECT_NE(auction_result, absl::nullopt);
+  }
 }
 
 class PrivateAggregationUseCounterContentBrowserClient

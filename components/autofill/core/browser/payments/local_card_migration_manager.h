@@ -97,13 +97,13 @@ class LocalCardMigrationManager {
 
   // Returns true if all of the conditions for allowing local credit card
   // migration are satisfied. Initializes the local card list for upload. Stores
-  // a local copy of |credit_card_import_candidate| and
-  // |imported_credit_card_record_type| locally for later check whether the
-  // imported card is supported. |credit_card_import_candidate| might be null if
-  // a user used server card.
+  // a local copy of `credit_card_import_candidate` and
+  // `credit_card_import_type` locally for later check whether
+  // the imported card is supported. `credit_card_import_candidate` might be
+  // null if a user used server card.
   bool ShouldOfferLocalCardMigration(
       const absl::optional<CreditCard>& credit_card_import_candidate,
-      int imported_credit_card_record_type);
+      int credit_card_import_type);
 
   // Called from FormDataImporter or settings page when all migration
   // requirements are met. Fetches legal documents and triggers the
@@ -163,7 +163,7 @@ class LocalCardMigrationManager {
       bool is_from_settings_page,
       AutofillClient::PaymentsRpcResult result,
       const std::u16string& context_token,
-      std::unique_ptr<base::Value> legal_message,
+      std::unique_ptr<base::Value::Dict> legal_message,
       std::vector<std::pair<int, int>> supported_card_bin_ranges);
 
   // Callback after successfully getting the migration save results. Map
@@ -232,10 +232,10 @@ class LocalCardMigrationManager {
   raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // The imported credit card number from the form submission.
-  absl::optional<std::u16string> imported_credit_card_number_;
+  absl::optional<std::u16string> extracted_credit_card_number_;
 
   // The imported credit card record type from the form submission.
-  int imported_credit_card_record_type_;
+  int credit_card_import_type_;
 
   // Collected information about a pending migration request.
   payments::PaymentsClient::MigrationRequestDetails migration_request_;

@@ -25,7 +25,6 @@
 #include "content/public/browser/preloading_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "url/gurl.h"
 
@@ -241,6 +240,10 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   bool IsBrowserInitiated() { return attributes_.IsBrowserInitiated(); }
 
   int frame_tree_node_id() const { return frame_tree_node_id_; }
+
+  base::WeakPtr<WebContents> initiator_web_contents() {
+    return attributes_.initiator_web_contents;
+  }
 
   int initiator_frame_tree_node_id() const {
     return attributes_.initiator_frame_tree_node_id;

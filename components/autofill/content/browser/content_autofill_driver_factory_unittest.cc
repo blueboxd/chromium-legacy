@@ -5,8 +5,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -96,10 +96,6 @@ class MockAutofillAgent : public mojom::AutofillAgent {
               GetElementFormAndFieldDataForDevToolsNodeId,
               (int32_t backend_node_id,
                GetElementFormAndFieldDataForDevToolsNodeIdCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              SetAssistantKeyboardSuppressState,
-              (bool suppress),
               (override));
   MOCK_METHOD(void, EnableHeavyFormDataScraping, (), (override));
   MOCK_METHOD(void,

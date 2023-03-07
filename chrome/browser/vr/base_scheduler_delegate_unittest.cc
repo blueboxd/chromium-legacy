@@ -5,8 +5,8 @@
 #include "chrome/browser/vr/base_scheduler_delegate.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/scheduler_ui_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -26,7 +26,7 @@ class MockSchedulerUi : public SchedulerUiInterface {
 class ConcreteSchedulerDelegate : public BaseSchedulerDelegate {
  public:
   explicit ConcreteSchedulerDelegate(SchedulerUiInterface* ui)
-      : BaseSchedulerDelegate(ui, true, 2, 5) {}
+      : BaseSchedulerDelegate(ui, 2, 5) {}
   ~ConcreteSchedulerDelegate() override = default;
 
   void ScheduleWebXrFrameTimeout() {
@@ -37,7 +37,6 @@ class ConcreteSchedulerDelegate : public BaseSchedulerDelegate {
  private:
   void OnPause() override {}
   void OnResume() override {}
-  void SetShowingVrDialog(bool showing) override {}
   void SetBrowserRenderer(
       SchedulerBrowserRendererInterface* browser_renderer) override {}
   void SubmitDrawnFrame(FrameType frame_type,
@@ -53,7 +52,7 @@ class SchedulerDelegateTest : public testing::Test {
   void SetUp() override {
     test_task_runner_ =
         base::WrapRefCounted(new base::TestMockTimeTaskRunner());
-    task_runner_handle_override_.emplace(test_task_runner_);
+    task_runner_current_handle_override_.emplace(test_task_runner_);
   }
 
   void FastForwardBy(base::TimeDelta delta) {
@@ -62,8 +61,8 @@ class SchedulerDelegateTest : public testing::Test {
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
-  absl::optional<base::ThreadTaskRunnerHandleOverrideForTesting>
-      task_runner_handle_override_;
+  absl::optional<base::SingleThreadTaskRunner::CurrentHandleOverrideForTesting>
+      task_runner_current_handle_override_;
 };
 
 TEST_F(SchedulerDelegateTest, NoTimeoutWhenWebXrFrameArrivesFast) {
@@ -108,17 +107,6 @@ TEST_F(SchedulerDelegateTest, NoTimeoutIfExitPresent) {
   EXPECT_CALL(ui, OnWebXrTimeoutImminent()).Times(0);
   EXPECT_CALL(ui, OnWebXrTimedOut()).Times(0);
   scheduler_delegate.OnExitPresent();
-  FastForwardBy(base::Seconds(10));
-}
-
-TEST_F(SchedulerDelegateTest, NoTimeoutIfUnsetWebXrMode) {
-  MockSchedulerUi ui;
-  ConcreteSchedulerDelegate scheduler_delegate(&ui);
-  scheduler_delegate.ScheduleWebXrFrameTimeout();
-
-  EXPECT_CALL(ui, OnWebXrTimeoutImminent()).Times(0);
-  EXPECT_CALL(ui, OnWebXrTimedOut()).Times(0);
-  scheduler_delegate.SetWebXrMode(false);
   FastForwardBy(base::Seconds(10));
 }
 

@@ -82,6 +82,8 @@ class WaiterMetricsObserver final : public PageLoadMetricsObserver {
       const gfx::Rect& main_frame_intersection_rect) override;
   void OnMainFrameViewportRectChanged(
       const gfx::Rect& main_frame_viewport_rect) override;
+  void OnMainFrameImageAdRectsChanged(
+      const base::flat_map<int, gfx::Rect>& main_frame_image_ad_rects) override;
   void OnV8MemoryChanged(
       const std::vector<MemoryUpdate>& memory_updates) override;
   void OnPageRenderDataUpdate(const mojom::FrameRenderDataUpdate& render_data,
@@ -181,6 +183,10 @@ void PageLoadMetricsTestWaiter::SetMainFrameIntersectionExpectation() {
   expected_.did_set_main_frame_intersection_ = true;
 }
 
+void PageLoadMetricsTestWaiter::SetMainFrameImageAdRectsExpectation() {
+  expected_.did_observed_main_frame_image_ad_rects_ = true;
+}
+
 void PageLoadMetricsTestWaiter::AddMainFrameViewportRectExpectation(
     const gfx::Rect& rect) {
   expected_.main_frame_viewport_rect_ = rect;
@@ -237,11 +243,22 @@ void PageLoadMetricsTestWaiter::AddLoadingBehaviorExpectation(
   expected_.loading_behavior_flags_ |= behavior_flags;
 }
 
+void PageLoadMetricsTestWaiter::
+    AddMinimumLargestContentfulPaintImageExpectation(int expected_minimum) {
+  expected_num_largest_contentful_paint_image_ = expected_minimum;
+}
+
+void PageLoadMetricsTestWaiter::AddMinimumLargestContentfulPaintTextExpectation(
+    int expected_minimum) {
+  expected_num_largest_contentful_paint_text_ = expected_minimum;
+}
+
 void PageLoadMetricsTestWaiter::AddPageLayoutShiftExpectation(
-    ShiftFrame shift_frame) {
-  expected_.layout_shift_ = true;
+    ShiftFrame shift_frame,
+    uint64_t num_layout_shifts) {
+  expected_.num_layout_shifts_ = num_layout_shifts;
   shift_frame_ = shift_frame;
-  observed_.layout_shift_ = false;
+  observed_.num_layout_shifts_ = 0;
 }
 
 bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
@@ -253,6 +270,17 @@ bool PageLoadMetricsTestWaiter::DidObserveWebFeature(
   return observed_.feature_tracker_.Test(
       {blink::mojom::UseCounterFeatureType::kWebFeature,
        static_cast<blink::UseCounterFeature::EnumValue>(feature)});
+}
+
+bool PageLoadMetricsTestWaiter::DidObserveMainFrameImageAdRect(
+    const gfx::Rect& rect) const {
+  for (auto& [id, observed_rect] : main_frame_image_ad_rects_) {
+    if (observed_rect == rect) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void PageLoadMetricsTestWaiter::Wait() {
@@ -389,6 +417,23 @@ void PageLoadMetricsTestWaiter::OnMainFrameViewportRectChanged(
     run_loop_->Quit();
 }
 
+void PageLoadMetricsTestWaiter::OnMainFrameImageAdRectsChanged(
+    const base::flat_map<int, gfx::Rect>& main_frame_image_ad_rects) {
+  if (main_frame_image_ad_rects.empty()) {
+    return;
+  }
+
+  observed_.did_observed_main_frame_image_ad_rects_ = true;
+
+  for (auto& [id, rect] : main_frame_image_ad_rects) {
+    main_frame_image_ad_rects_[id] = rect;
+  }
+
+  if (ExpectationsSatisfied() && run_loop_) {
+    run_loop_->Quit();
+  }
+}
+
 void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   observed_.subframe_navigation_ = true;
@@ -421,24 +466,13 @@ void PageLoadMetricsTestWaiter::OnPageRenderDataUpdate(
   if (!delegate)
     return;
 
-  double layout_shift_score =
-      (&delegate->GetPageRenderData())->layout_shift_score;
-  if (is_main_frame) {
-    if ((shift_frame_ == ShiftFrame::LayoutShiftOnlyInMainFrame ||
-         shift_frame_ == ShiftFrame::LayoutShiftOnlyInBothFrames) &&
-        last_main_frame_layout_shift_score_ < layout_shift_score &&
-        render_data.layout_shift_delta > 0) {
-      observed_.layout_shift_ = true;
-    }
-    last_main_frame_layout_shift_score_ = layout_shift_score;
-  } else {  // subframe
-    if ((shift_frame_ == ShiftFrame::LayoutShiftOnlyInSubFrame ||
-         shift_frame_ == ShiftFrame::LayoutShiftOnlyInBothFrames) &&
-        last_sub_frame_layout_shift_score_ < layout_shift_score &&
-        render_data.layout_shift_delta > 0) {
-      observed_.layout_shift_ = true;
-    }
-    last_sub_frame_layout_shift_score_ = layout_shift_score;
+  bool is_relevant_frame =
+      is_main_frame ? shift_frame_ == ShiftFrame::LayoutShiftOnlyInMainFrame
+                    : shift_frame_ == ShiftFrame::LayoutShiftOnlyInSubFrame;
+  if ((is_relevant_frame ||
+       shift_frame_ == ShiftFrame::LayoutShiftOnlyInBothFrames) &&
+      render_data.layout_shift_delta > 0) {
+    observed_.num_layout_shifts_ += render_data.new_layout_shifts.size();
   }
 
   if (ExpectationsSatisfied() && run_loop_)
@@ -461,12 +495,18 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
   // The largest contentful paint's size can be nonzero while the time can be 0
   // since a time of 0 is sent when the image is still painting. We set
   // LargestContentfulPaint to be observed when its time is non-zero.
-  if ((timing.paint_timing->largest_contentful_paint->largest_image_paint &&
-       !timing.paint_timing->largest_contentful_paint->largest_image_paint
-            ->is_zero()) ||
-      (timing.paint_timing->largest_contentful_paint->largest_text_paint &&
-       !timing.paint_timing->largest_contentful_paint->largest_text_paint
-            ->is_zero())) {
+  if (timing.paint_timing->largest_contentful_paint->largest_image_paint
+          .has_value() &&
+      timing.paint_timing->largest_contentful_paint->largest_image_paint
+          ->is_positive()) {
+    current_num_largest_contentful_paint_image_++;
+    matched_bits.Set(TimingField::kLargestContentfulPaint);
+  }
+  if (timing.paint_timing->largest_contentful_paint->largest_text_paint
+          .has_value() &&
+      timing.paint_timing->largest_contentful_paint->largest_text_paint
+          ->is_positive()) {
+    current_num_largest_contentful_paint_text_++;
     matched_bits.Set(TimingField::kLargestContentfulPaint);
   }
   if (timing.paint_timing->first_input_or_scroll_notified_timestamp)
@@ -503,8 +543,6 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
 
 void PageLoadMetricsTestWaiter::OnTrackerCreated(
     page_load_metrics::PageLoadTracker* tracker) {
-  // A PageLoadMetricsWaiter should only wait for events from a single page
-  // load.
   if (!attach_on_tracker_creation_)
     return;
   AddObserver(tracker);
@@ -512,19 +550,15 @@ void PageLoadMetricsTestWaiter::OnTrackerCreated(
 
 void PageLoadMetricsTestWaiter::OnCommit(
     page_load_metrics::PageLoadTracker* tracker) {
-  // A PageLoadMetricsWaiter should only wait for events from a single page
-  // load.
-  if (attach_on_tracker_creation_)
+  // Prevent double registration of two WaiterMetricsObservers.
+  if (did_add_observer_) {
     return;
+  }
   AddObserver(tracker);
 }
 
 void PageLoadMetricsTestWaiter::OnActivate(
     page_load_metrics::PageLoadTracker* tracker) {
-  // A PageLoadMetricsWaiter should only wait for events from a single page
-  // load.
-  if (attach_on_tracker_creation_)
-    return;
   // Prevent double registration if a test added expectation before
   // prerendering navigation.
   if (did_add_observer_)
@@ -605,6 +639,15 @@ bool PageLoadMetricsTestWaiter::MainFrameViewportRectExpectationsSatisfied()
              expected_.main_frame_viewport_rect_;
 }
 
+bool PageLoadMetricsTestWaiter::MainFrameImageAdRectsExpectationsSatisfied()
+    const {
+  if (!expected_.did_observed_main_frame_image_ad_rects_) {
+    return true;
+  }
+
+  return observed_.did_observed_main_frame_image_ad_rects_;
+}
+
 bool PageLoadMetricsTestWaiter::MemoryUpdateExpectationsSatisfied() const {
   return IsSubset(expected_.memory_update_frame_ids_,
                   observed_.memory_update_frame_ids_);
@@ -617,13 +660,24 @@ bool PageLoadMetricsTestWaiter::TotalInputDelayExpectationsSatisfied() const {
 }
 
 bool PageLoadMetricsTestWaiter::LayoutShiftExpectationsSatisfied() const {
-  return expected_.layout_shift_ == observed_.layout_shift_;
+  return expected_.num_layout_shifts_ <= observed_.num_layout_shifts_;
 }
 
 bool PageLoadMetricsTestWaiter::NumInteractionsExpectationsSatisfied() const {
   if (expected_num_interactions_ == 0)
     return true;
   return current_num_interactions_ == expected_num_interactions_;
+}
+
+bool PageLoadMetricsTestWaiter::NumLargestContentfulPaintImageSatisfied()
+    const {
+  return expected_num_largest_contentful_paint_image_ <=
+         current_num_largest_contentful_paint_image_;
+}
+
+bool PageLoadMetricsTestWaiter::NumLargestContentfulPaintTextSatisfied() const {
+  return expected_num_largest_contentful_paint_text_ <=
+         current_num_largest_contentful_paint_text_;
 }
 
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
@@ -638,10 +692,13 @@ bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
          CpuTimeExpectationsSatisfied() &&
          MainFrameIntersectionExpectationsSatisfied() &&
          MainFrameViewportRectExpectationsSatisfied() &&
+         MainFrameImageAdRectsExpectationsSatisfied() &&
          MemoryUpdateExpectationsSatisfied() &&
          TotalInputDelayExpectationsSatisfied() &&
          LayoutShiftExpectationsSatisfied() &&
-         NumInteractionsExpectationsSatisfied();
+         NumInteractionsExpectationsSatisfied() &&
+         NumLargestContentfulPaintImageSatisfied() &&
+         NumLargestContentfulPaintTextSatisfied();
 }
 
 void PageLoadMetricsTestWaiter::AssertExpectationsSatisfied() const {
@@ -755,6 +812,13 @@ void WaiterMetricsObserver::OnMainFrameViewportRectChanged(
     const gfx::Rect& main_frame_viewport_rect) {
   if (waiter_) {
     waiter_->OnMainFrameViewportRectChanged(main_frame_viewport_rect);
+  }
+}
+
+void WaiterMetricsObserver::OnMainFrameImageAdRectsChanged(
+    const base::flat_map<int, gfx::Rect>& main_frame_image_ad_rects) {
+  if (waiter_) {
+    waiter_->OnMainFrameImageAdRectsChanged(main_frame_image_ad_rects);
   }
 }
 

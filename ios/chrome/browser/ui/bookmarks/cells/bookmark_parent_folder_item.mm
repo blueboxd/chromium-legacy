@@ -65,8 +65,9 @@
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
-  if (!self)
+  if (!self) {
     return nil;
+  }
 
   self.isAccessibilityElement = YES;
   self.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -119,8 +120,9 @@
       initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
   self.accessoryView = navigationChevronImage;
   // TODO(crbug.com/870841): Use default accessory type.
-  if (base::i18n::IsRTL())
+  if (base::i18n::IsRTL()) {
     self.accessoryView.transform = CGAffineTransformMakeRotation(M_PI);
+  }
 
   [self applyContentSizeCategoryStyles];
 

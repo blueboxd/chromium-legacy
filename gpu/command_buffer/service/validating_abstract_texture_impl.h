@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_VALIDATING_ABSTRACT_TEXTURE_IMPL_H_
 #define GPU_COMMAND_BUFFER_SERVICE_VALIDATING_ABSTRACT_TEXTURE_IMPL_H_
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
@@ -53,13 +53,6 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   TextureRef* GetTextureRefForTesting();
 
  private:
-  // Attaches |image| to |texture_ref_|, setting |texture_ref_|
-  // as unbound if |client_managed| is false. Releases any previous
-  // image if *that* image was not client-managed.
-  // NOTE: |client_managed| must be false on Windows/Mac and true on all other
-  // platforms.
-  void BindImageInternal(gl::GLImage* image, bool client_managed);
-
   TextureManager* GetTextureManager() const;
   ContextGroup* GetContextGroup() const;
   ErrorState* GetErrorState() const;
@@ -68,7 +61,6 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   void SetLevelInfo();
 
   scoped_refptr<TextureRef> texture_ref_;
-  bool decoder_managed_image_ = false;
 
   raw_ptr<DecoderContext> decoder_context_ = nullptr;
   DestructionCB destruction_cb_;

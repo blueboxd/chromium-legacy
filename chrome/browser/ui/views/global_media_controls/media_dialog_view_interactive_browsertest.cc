@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -1266,62 +1267,6 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewWithBackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(GetActiveWebContents()));
   EXPECT_NE(content::RenderFrameHost::LifecycleState::kInBackForwardCache,
             rfh2->GetLifecycleState());
-}
-
-class MediaDialogViewWithRemotePlaybackBrowserTest
-    : public MediaDialogViewBrowserTest {
- public:
-  MediaDialogViewWithRemotePlaybackBrowserTest() {
-    feature_list_.InitAndEnableFeature(media::kMediaRemotingWithoutFullscreen);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(MediaDialogViewWithRemotePlaybackBrowserTest,
-                       ShowMediaSessionWithRemotePlayback) {
-  // Open a tab and play media.
-  OpenTestURL();
-  StartPlayback();
-  WaitForStart();
-
-  // Create a Remote Playback route.
-  content::WebContents* web_contents = GetActiveWebContents();
-  SessionID::id_type item_tab_id =
-      sessions::SessionTabHelper::IdForTab(web_contents).id();
-  const std::string route_description = "Casting: Remote Playback";
-  media_router::MediaRoute route("id",
-                                 media_router::MediaSource(base::StringPrintf(
-                                     "remote-playback:media-session?tab_id=%d&"
-                                     "video_codec=hevc&audio_codec=aac",
-                                     item_tab_id)),
-                                 "sink_id", route_description, true);
-  route.set_media_sink_name("My sink");
-  std::vector<media_router::MediaRoute> routes = {route};
-  media_router_->NotifyMediaRoutesChanged(routes);
-  ON_CALL(*media_router_, GetCurrentRoutes())
-      .WillByDefault(testing::Return(routes));
-  base::RunLoop().RunUntilIdle();
-
-  // Open the media dialog. The cast item should be hidden.
-  ui_.ClickToolbarIcon();
-  EXPECT_TRUE(ui_.WaitForDialogOpened());
-  EXPECT_TRUE(ui_.IsDialogVisible());
-  ui_.WaitForItemCount(1);
-  ui_.WaitForDialogToContainText(u"Big Buck Bunny");
-  ui_.WaitForDialogToContainText(u"Blender Foundation");
-
-  // Check that the ui contains a footer view.
-  const auto item_pair =
-      MediaDialogView::GetDialogViewForTesting()->GetItemsForTesting().begin();
-  const global_media_controls::MediaItemUIFooter* view =
-      item_pair->second->footer_view_for_testing();
-  EXPECT_TRUE(view && view->GetVisible());
-
-  // Click on the "Stop Casting button".
-  EXPECT_CALL(*media_router_, TerminateRoute(route.media_route_id()));
-  ui_test_utils::ClickOnView(*view->children().begin());
 }
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)

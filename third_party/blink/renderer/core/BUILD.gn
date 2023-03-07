@@ -312,6 +312,8 @@ component("core") {
     ":generate_eventhandler_names",
     ":generated_settings_macros",
     "//build:chromeos_buildflags",
+    "//components/attribution_reporting",
+    "//components/attribution_reporting:mojom_blink",
     "//components/paint_preview/common",
     "//components/performance_manager/public/mojom:mojom_blink",
     "//components/power_scheduler",
@@ -383,8 +385,16 @@ blink_core_sources("core_hot") {
   # TODO(ajwong) this is of mirror
   # https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/core.gni;l=26
   # to undo the configs which is fragile. Find a better way.
-  if (!is_debug && optimize_for_size) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
+  #
+  # 'Hot' code should always be compiled for speed in non-debug builds.
+  if (!is_debug) {
+    # Only attempt to remove the 'default_optimization' label if it is already
+    # present in 'configs'.
+    if (filter_include(configs,
+                       [ "//build/config/compiler:default_optimization" ]) !=
+        []) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+    }
     configs += [ "//build/config/compiler:optimize_speed" ]
   }
 
@@ -403,6 +413,13 @@ blink_core_sources("core_hot") {
     "//third_party/blink/renderer/core/exported",
     "//third_party/blink/renderer/core/probe",
   ]
+
+  if (use_inner_html_parser_fast_path) {
+    sources += [
+      "html/parser/html_document_parser_fastpath.cc",
+      "html/parser/html_document_parser_fastpath.h",
+    ]
+  }
 }
 
 source_set("testing") {
@@ -530,7 +547,6 @@ generate_event_interfaces("core_event_interfaces") {
     "events/animation_event.idl",
     "events/animation_playback_event.idl",
     "events/before_create_policy_event.idl",
-    "events/before_toggle_event.idl",
     "events/before_unload_event.idl",
     "events/clipboard_event.idl",
     "events/composition_event.idl",
@@ -547,6 +563,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/page_transition_event.idl",
     "events/pointer_event.idl",
     "events/pop_state_event.idl",
+    "events/popover_toggle_event.idl",
     "events/progress_event.idl",
     "events/promise_rejection_event.idl",
     "events/resource_progress_event.idl",
@@ -952,11 +969,6 @@ make_names("make_core_generated_performance_entry_names") {
   output_dir = blink_core_output_dir
 }
 
-make_names("make_core_generated_delivery_type_names") {
-  in_files = [ "timing/delivery_type_names.json5" ]
-  output_dir = blink_core_output_dir
-}
-
 make_names("make_core_generated_pointer_type_names") {
   in_files = [ "events/pointer_type_names.json5" ]
   output_dir = blink_core_output_dir
@@ -1160,11 +1172,11 @@ targets_generating_sources = [
   ":make_core_generated_css_value_id_mappings",
   ":make_core_generated_css_value_keywords",
   ":make_core_generated_cssom_types",
-  ":make_core_generated_delivery_type_names",
   ":make_core_generated_event_factory",
   ":make_core_generated_event_names",
   ":make_core_generated_event_target_names",
   ":make_core_generated_event_type_names",
+  ":make_core_generated_html_attribute_name_lookup_trie",
   ":make_core_generated_html_element_factory",
   ":make_core_generated_html_element_lookup_trie",
   ":make_core_generated_html_element_type_helpers",
@@ -1192,11 +1204,6 @@ targets_generating_sources = [
   ":make_core_generated_xml_names",
   ":make_core_generated_xml_ns_names",
 ]
-
-if (!is_android) {
-  targets_generating_sources +=
-      [ ":make_core_generated_html_attribute_name_lookup_trie" ]
-}
 
 group("all_generators") {
   public_deps = targets_generating_sources
@@ -1442,6 +1449,10 @@ source_set("unit_tests") {
       "//third_party/blink/renderer/platform/media",
       "//ui/gfx/geometry",
     ]
+  }
+
+  if (use_inner_html_parser_fast_path) {
+    sources += [ "html/parser/html_document_parser_fastpath_test.cc" ]
   }
 }
 

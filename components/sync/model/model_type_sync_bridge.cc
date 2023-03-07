@@ -68,11 +68,17 @@ size_t ModelTypeSyncBridge::EstimateSyncOverheadMemoryUsage() const {
   return 0U;
 }
 
-sync_pb::EntitySpecifics ModelTypeSyncBridge::TrimRemoteSpecificsForCaching(
+sync_pb::EntitySpecifics
+ModelTypeSyncBridge::TrimAllSupportedFieldsFromRemoteSpecifics(
     const sync_pb::EntitySpecifics& entity_specifics) const {
   // Clears all fields by default to avoid the memory and I/O overhead of an
   // additional copy of the data.
   return sync_pb::EntitySpecifics();
+}
+
+bool ModelTypeSyncBridge::IsEntityDataValid(
+    const EntityData& entity_data) const {
+  return true;
 }
 
 ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() {

@@ -159,9 +159,23 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
     this.showEnterpriseBadge_ = accountInfo.showEnterpriseBadge;
   }
 
+  private getMainContainerClass_() {
+    return this.isModalDialog_ ? 'dialog-main-container' :
+                                 'window-main-container';
+  }
+
+  private getButtonContainerClass_() {
+    return this.isModalDialog_ ? 'dialog-button-container' :
+                                 'window-button-container';
+  }
+
   private getSigninInterceptDesignClass_(isSigninInterceptFre: boolean):
       string {
     return isSigninInterceptFre ? 'signin-intercept-design' : '';
+  }
+
+  private getAnimationClass_() {
+    return !this.isModalDialog_ ? 'fade-in' : '';
   }
 
   private isModalDialogWithoutTangibleSync_(): boolean {

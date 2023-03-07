@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_forward.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -474,11 +474,6 @@ void AssistantClientV1::SendVoicelessInteraction(
 void AssistantClientV1::RegisterActionModule(
     assistant_client::ActionModule* action_module) {
   assistant_manager_internal()->RegisterActionModule(action_module);
-}
-
-void AssistantClientV1::SendScreenContextRequest(
-    const std::vector<std::string>& context_protos) {
-  assistant_manager_internal()->SendScreenContextRequest(context_protos);
 }
 
 void AssistantClientV1::StartVoiceInteraction() {

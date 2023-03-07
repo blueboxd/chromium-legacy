@@ -12,6 +12,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/creator/CreatorProfileView.java",
     "java/src/org/chromium/chrome/browser/creator/CreatorProfileViewBinder.java",
     "java/src/org/chromium/chrome/browser/creator/CreatorProperties.java",
+    "java/src/org/chromium/chrome/browser/creator/CreatorSnackbarController.java",
     "java/src/org/chromium/chrome/browser/creator/CreatorTabMediator.java",
     "java/src/org/chromium/chrome/browser/creator/CreatorTabSheetContent.java",
     "java/src/org/chromium/chrome/browser/creator/CreatorToolbarView.java",
@@ -91,6 +92,7 @@ robolectric_library("junit") {
   sources = [
     "java/src/org/chromium/chrome/browser/creator/CreatorCoordinatorTest.java",
     "java/src/org/chromium/chrome/browser/creator/CreatorMediatorTest.java",
+    "java/src/org/chromium/chrome/browser/creator/CreatorSnackbarControllerTest.java",
   ]
 
   deps = [
@@ -104,6 +106,7 @@ robolectric_library("junit") {
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/share:java",
     "//chrome/browser/ui/messages/android:java",
+    "//components/feed/core/v2:feedv2_core_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_ext_junit_java",
     "//third_party/androidx:androidx_test_runner_java",

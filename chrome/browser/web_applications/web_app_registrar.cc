@@ -9,12 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "build/chromeos_buildflags.h"
@@ -22,9 +22,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -191,7 +191,7 @@ void WebAppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
 
 void WebAppRegistrar::NotifyWebAppUserDisplayModeChanged(
     const AppId& app_id,
-    UserDisplayMode user_display_mode) {
+    mojom::UserDisplayMode user_display_mode) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUserDisplayModeChanged(app_id, user_display_mode);
 }
@@ -462,7 +462,7 @@ DisplayMode WebAppRegistrar::GetAppEffectiveDisplayMode(
     return DisplayMode::kBrowser;
 
   auto app_display_mode = GetAppDisplayMode(app_id);
-  absl::optional<UserDisplayMode> user_display_mode =
+  absl::optional<mojom::UserDisplayMode> user_display_mode =
       GetAppUserDisplayMode(app_id);
   if (app_display_mode == DisplayMode::kUndefined ||
       !user_display_mode.has_value()) {
@@ -896,8 +896,14 @@ ApiApprovalState WebAppRegistrar::GetAppFileHandlerApprovalState(
 bool WebAppRegistrar::ExpectThatFileHandlersAreRegisteredWithOs(
     const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
-  return web_app && web_app->file_handler_os_integration_state() ==
-                        OsIntegrationState::kEnabled;
+  if (!web_app) {
+    return false;
+  }
+
+  // TODO(dibyapal): Add support for the new `current_os_integration_state()`
+  // when file handlers are added there. https://crbug.com/1404165.
+  return web_app->file_handler_os_integration_state() ==
+         OsIntegrationState::kEnabled;
 }
 
 absl::optional<GURL> WebAppRegistrar::GetAppScopeInternal(
@@ -921,7 +927,7 @@ DisplayMode WebAppRegistrar::GetAppDisplayMode(const AppId& app_id) const {
   return web_app ? web_app->display_mode() : DisplayMode::kUndefined;
 }
 
-absl::optional<UserDisplayMode> WebAppRegistrar::GetAppUserDisplayMode(
+absl::optional<mojom::UserDisplayMode> WebAppRegistrar::GetAppUserDisplayMode(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   if (web_app == nullptr) {

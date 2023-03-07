@@ -46,7 +46,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.AppLaunchResult" enum="CrostiniResult"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -179,6 +179,34 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Crostini.Disk.StatefulReadsDaily" units="KiB"
+    expires_after="2023-12-30">
+  <owner>drmasquatch@google.com</owner>
+  <owner>clumptini@google.com</owner>
+  <summary>Crostini stateful KiB read per day. Reported daily.</summary>
+</histogram>
+
+<histogram name="Crostini.Disk.StatefulWritesDaily" units="KiB"
+    expires_after="2023-12-30">
+  <owner>drmasquatch@google.com</owner>
+  <owner>clumptini@google.com</owner>
+  <summary>Crostini stateful KiB written per day. Reported daily.</summary>
+</histogram>
+
+<histogram name="Crostini.Disk.SwapReadsDaily" units="KiB"
+    expires_after="2023-12-30">
+  <owner>drmasquatch@google.com</owner>
+  <owner>clumptini@google.com</owner>
+  <summary>Crostini swap file KiB read per day. Reported daily.</summary>
+</histogram>
+
+<histogram name="Crostini.Disk.SwapWritesDaily" units="KiB"
+    expires_after="2023-12-30">
+  <owner>drmasquatch@google.com</owner>
+  <owner>clumptini@google.com</owner>
+  <summary>Crostini swap file KiB written per day. Reported daily.</summary>
+</histogram>
+
 <histogram name="Crostini.DiskResize.Result" enum="CrostiniDiskImageStatus"
     expires_after="2023-05-27">
   <owner>davidmunro@google.com</owner>
@@ -202,7 +230,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.DiskType" enum="CrostiniDiskImageType"
-    expires_after="2023-04-24">
+    expires_after="2023-06-25">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -295,7 +323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.Restarter.Started" enum="BooleanAttempted"
-    expires_after="2023-05-01">
+    expires_after="2023-07-02">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -305,7 +333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.RestarterResult" enum="CrostiniResult"
-    expires_after="2023-05-01">
+    expires_after="2023-07-02">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -316,7 +344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.RestarterResult.Installer" enum="CrostiniResult"
-    expires_after="2023-05-01">
+    expires_after="2023-07-02">
   <owner>timloh@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -380,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.Setup.Started" enum="BooleanAttempted"
-    expires_after="2023-05-01">
+    expires_after="2023-07-09">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -483,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.TerminalSettingsChanged"
-    enum="CrostiniTerminalSetting" expires_after="2023-04-17">
+    enum="CrostiniTerminalSetting" expires_after="2023-06-18">
   <owner>joelhockey@chromium.org</owner>
   <owner>lxj@google.com</owner>
   <summary>
@@ -495,7 +523,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.TimeFromDeviceSetupToInstall" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -574,7 +602,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Crostini.UnsupportedNotification.Reason"
-    enum="CrostiniUnsupportedNotificationReason" expires_after="2023-04-17">
+    enum="CrostiniUnsupportedNotificationReason" expires_after="2023-06-25">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>

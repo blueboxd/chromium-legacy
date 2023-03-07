@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/loader/frame_client_hints_preferences_context.h"
+#include "third_party/blink/renderer/core/loader/idna_util.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -519,7 +520,7 @@ void BaseFetchContext::PrintAccessDeniedMessage(const KURL& url) const {
               ". Domains, protocols and ports must match.\n";
   }
 
-  AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+  console_logger_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError, message));
 }
@@ -595,7 +596,7 @@ BaseFetchContext::CanRequestInternal(
   if (request_mode != network::mojom::RequestMode::kNavigate &&
       !resource_request.CanDisplay(url)) {
     if (reporting_disposition == ReportingDisposition::kReport) {
-      AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      console_logger_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kError,
           "Not allowed to load local resource: " + url.GetString()));
@@ -656,6 +657,13 @@ BaseFetchContext::CanRequestInternal(
   if (IsSVGImageChromeClient() && !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
+  // data: URL is deprecated in SVGUseElement.
+  if (RuntimeEnabledFeatures::RemoveDataUrlInSvgUseEnabled() &&
+      options.initiator_info.name.Ascii() == "use" && url.ProtocolIsData()) {
+    PrintAccessDeniedMessage(url);
+    return ResourceRequestBlockedReason::kOrigin;
+  }
+
   // Measure the number of embedded-credential ('http://user:password@...')
   // resources embedded as subresources.
   const FetchClientSettingsObject& fetch_client_settings_object =
@@ -690,6 +698,24 @@ BaseFetchContext::CanRequestInternal(
     }
   }
 
+  // Warn if the resource URL's hostname contains IDNA deviation characters.
+  // Only warn if the resource URL's origin is different than its requestor
+  // (we don't want to warn for <img src="faß.de/image.img"> on faß.de).
+  // TODO(crbug.com/1396475): Remove once Non-Transitional mode is shipped.
+  if (!resource_request.RequestorOrigin()->IsSameOriginWith(
+          SecurityOrigin::Create(url).get()) &&
+      url.HasIDNA2008DeviationCharacter()) {
+    String message = GetConsoleWarningForIDNADeviationCharacters(url);
+    if (!message.empty()) {
+      console_logger_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kSecurity,
+          mojom::ConsoleMessageLevel::kWarning, message));
+      UseCounter::Count(
+          GetExecutionContext(),
+          WebFeature::kIDNA2008DeviationCharacterInHostnameOfSubresource);
+    }
+  }
+
   return absl::nullopt;
 }
 
@@ -715,6 +741,7 @@ bool BaseFetchContext::ShouldSendClientHint(
 
 void BaseFetchContext::Trace(Visitor* visitor) const {
   visitor->Trace(fetcher_properties_);
+  visitor->Trace(console_logger_);
   FetchContext::Trace(visitor);
 }
 

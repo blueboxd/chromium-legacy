@@ -28,6 +28,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "chrome/updater/util/unittest_util_win.h"
 #include "chrome/updater/util/util.h"
 #include "chrome/updater/util/win_util.h"
@@ -188,17 +189,8 @@ TEST_F(LegacyAppCommandWebImplTest, CommandRunningStatus) {
     return;
 
   Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl> app_command_web;
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
-
-  const std::wstring event_name =
-      base::StrCat({kTestProcessExecutableName, L"-",
-                    base::NumberToWString(::GetCurrentProcessId())});
-  NamedObjectAttributes attr =
-      GetNamedObjectAttributes(event_name.c_str(), GetTestScope());
-
-  base::WaitableEvent event(base::win::ScopedHandle(
-      ::CreateEvent(&attr.sa, FALSE, FALSE, attr.name.c_str())));
-  ASSERT_NE(event.handle(), nullptr);
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   command_line.AppendSwitchNative(kTestEventToWaitOn, L"%1");
   command_line.AppendSwitchNative(kTestExitCode, L"%2");
@@ -208,8 +200,10 @@ TEST_F(LegacyAppCommandWebImplTest, CommandRunningStatus) {
       command_line.GetCommandLineStringWithUnsafeInsertSequences(),
       app_command_web));
 
+  test::EventHolder event_holder(test::CreateWaitableEventForTest());
+
   ASSERT_HRESULT_SUCCEEDED(app_command_web->execute(
-      base::win::ScopedVariant(attr.name.c_str()),
+      base::win::ScopedVariant(event_holder.name.c_str()),
       base::win::ScopedVariant(L"999"), base::win::ScopedVariant::kEmptyVariant,
       base::win::ScopedVariant::kEmptyVariant,
       base::win::ScopedVariant::kEmptyVariant,
@@ -222,7 +216,7 @@ TEST_F(LegacyAppCommandWebImplTest, CommandRunningStatus) {
   EXPECT_HRESULT_SUCCEEDED(app_command_web->get_status(&status));
   EXPECT_EQ(status, COMMAND_STATUS_RUNNING);
 
-  event.Signal();
+  event_holder.event.Signal();
 
   WaitForUpdateCompletion(app_command_web);
 
@@ -257,6 +251,8 @@ TEST(LegacyCOMClassesTest, CheckLegacyInterfaceIDs) {
             L"{22181302-A8A6-4F84-A541-E5CBFC70CC43}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(GoogleUpdate3WebSystemClass)),
             L"{8A1D4361-2C08-4700-A351-3EAA9CBFF5E4}");
+  EXPECT_EQ(base::win::WStringFromGUID(__uuidof(GoogleUpdate3WebServiceClass)),
+            L"{534F5323-3569-4F42-919D-1E1CF93E5BF6}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(PolicyStatusUserClass)),
             L"{6DDCE70D-A4AE-4E97-908C-BE7B2DB750AD}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(PolicyStatusSystemClass)),
@@ -290,6 +286,8 @@ TEST(LegacyCOMClassesTest, CheckLegacyInterfaceIDs) {
             L"{75828ED1-7BE8-45D0-8950-AA85CBF74510}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(GoogleUpdate3WebSystemClass)),
             L"{283209B7-C761-41CA-BE8D-B5321CD78FD6}");
+  EXPECT_EQ(base::win::WStringFromGUID(__uuidof(GoogleUpdate3WebServiceClass)),
+            L"{B52C8B56-9541-4B78-9B2F-665366B78A9C}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(PolicyStatusUserClass)),
             L"{4DAC24AB-B340-4B7E-AD01-1504A7F59EEA}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(PolicyStatusSystemClass)),

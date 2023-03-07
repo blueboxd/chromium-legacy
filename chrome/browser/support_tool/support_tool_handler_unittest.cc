@@ -11,13 +11,14 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -133,7 +134,7 @@ class SupportToolHandlerTest : public ::testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // Set serial number for testing.
     fake_statistics_provider_.SetMachineStatistic("serial_number", "000000");
-    chromeos::system::StatisticsProvider::SetTestProvider(
+    ash::system::StatisticsProvider::SetTestProvider(
         &fake_statistics_provider_);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
@@ -180,7 +181,7 @@ class SupportToolHandlerTest : public ::testing::Test {
   // The temporary directory that we'll store the output files.
   base::ScopedTempDir temp_dir_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::system::FakeStatisticsProvider fake_statistics_provider_;
+  ash::system::FakeStatisticsProvider fake_statistics_provider_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   base::test::TaskEnvironment task_environment;
 };

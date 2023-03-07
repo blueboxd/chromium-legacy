@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 
@@ -27,7 +27,7 @@ bool GLSurfaceStub::IsOffscreen() {
 }
 
 gfx::SwapResult GLSurfaceStub::SwapBuffers(PresentationCallback callback,
-                                           FrameData data) {
+                                           gfx::FrameData data) {
   gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
                                      0 /* flags */);
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(

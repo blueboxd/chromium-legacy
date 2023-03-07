@@ -6,9 +6,9 @@
 
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
@@ -25,24 +25,13 @@
 #endif
 
 namespace {
-// Constructs a TabSwitcherItem from a `web_state`.
-TabSwitcherItem* CreateItem(web::WebState* web_state) {
-  TabSwitcherItem* item = [[TabSwitcherItem alloc]
-      initWithIdentifier:web_state->GetStableIdentifier()];
-  // chrome://newtab (NTP) tabs have no title.
-  if (IsURLNtp(web_state->GetVisibleURL())) {
-    item.hidesTitle = YES;
-  }
-  item.title = tab_util::GetTabTitle(web_state);
-  return item;
-}
 
 // Constructs an array of TabSwitcherItems from a `web_state_list`.
 NSArray* CreateItems(WebStateList* web_state_list) {
   NSMutableArray* items = [[NSMutableArray alloc] init];
   for (int i = 0; i < web_state_list->count(); i++) {
     web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    [items addObject:CreateItem(web_state)];
+    [items addObject:GetTabSwitcherItem(web_state)];
   }
   return [items copy];
 }
@@ -56,29 +45,6 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
   if (!web_state)
     return nil;
   return web_state->GetStableIdentifier();
-}
-
-// Returns the WebState with `identifier` in `web_state_list`. Returns `nullptr`
-// if not found.
-web::WebState* GetWebStateWithId(WebStateList* web_state_list,
-                                 NSString* identifier) {
-  for (int i = 0; i < web_state_list->count(); i++) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    if ([identifier isEqualToString:web_state->GetStableIdentifier()])
-      return web_state;
-  }
-  return nullptr;
-}
-
-// Returns the index of the tab with `identifier` in `web_state_list`. Returns
-// -1 if not found.
-int GetIndexOfTabWithId(WebStateList* web_state_list, NSString* identifier) {
-  for (int i = 0; i < web_state_list->count(); i++) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    if ([identifier isEqualToString:web_state->GetStableIdentifier()])
-      return i;
-  }
-  return -1;
 }
 
 }  // namespace
@@ -178,7 +144,8 @@ int GetIndexOfTabWithId(WebStateList* web_state_list, NSString* identifier) {
 
 - (void)faviconForIdentifier:(NSString*)identifier
                   completion:(void (^)(UIImage*))completion {
-  web::WebState* webState = GetWebStateWithId(_webStateList, identifier);
+  web::WebState* webState =
+      GetWebState(_webStateList, identifier, /*pinned=*/NO);
   if (!webState) {
     return;
   }
@@ -231,7 +198,7 @@ int GetIndexOfTabWithId(WebStateList* web_state_list, NSString* identifier) {
 }
 
 - (void)closeItemWithID:(NSString*)itemID {
-  int index = GetIndexOfTabWithId(self.webStateList, itemID);
+  int index = GetTabIndex(self.webStateList, itemID, /*pinned=*/NO);
   if (index >= 0)
     self.webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
 }
@@ -255,7 +222,7 @@ int GetIndexOfTabWithId(WebStateList* web_state_list, NSString* identifier) {
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
   [self.consumer replaceItemID:webState->GetStableIdentifier()
-                      withItem:CreateItem(webState)];
+                      withItem:GetTabSwitcherItem(webState)];
 }
 
 @end

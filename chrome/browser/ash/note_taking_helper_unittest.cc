@@ -19,9 +19,9 @@
 #include "ash/components/arc/test/fake_file_system_instance.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/note_taking_client.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -298,7 +298,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
       const std::string& name,
       absl::optional<base::Value::List> permissions,
       absl::optional<base::Value::List> action_handlers) {
-    std::unique_ptr<base::DictionaryValue> manifest =
+    base::Value::Dict manifest =
         extensions::DictionaryBuilder()
             .Set("name", name)
             .Set("version", "1.0")
@@ -315,10 +315,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
             .Build();
 
     if (action_handlers)
-      manifest->GetDict().Set("action_handlers", std::move(*action_handlers));
+      manifest.Set("action_handlers", std::move(*action_handlers));
 
     if (permissions)
-      manifest->GetDict().Set("permissions", std::move(*permissions));
+      manifest.Set("permissions", std::move(*permissions));
 
     return extensions::ExtensionBuilder()
         .SetManifest(std::move(manifest))
@@ -364,8 +364,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
       const std::string& app_name,
       Profile* profile) {
     return CreateAndInstallLockScreenAppWithPermissions(
-        id, app_name,
-        extensions::ListBuilder().Append("lockScreen").BuildList(), profile);
+        id, app_name, extensions::ListBuilder().Append("lockScreen").Build(),
+        profile);
   }
 
   scoped_refptr<const extensions::Extension>
@@ -381,7 +381,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
                                            app_runtime::ACTION_TYPE_NEW_NOTE))
                         .Set("enabled_on_lock_screen", true)
                         .Build())
-            .BuildList();
+            .Build();
 
     scoped_refptr<const extensions::Extension> keep_extension =
         CreateExtension(id, app_name, std::move(permissions),
@@ -569,7 +569,7 @@ TEST_F(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
   base::Value::List lock_disabled_action_handler =
       extensions::ListBuilder()
           .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
-          .BuildList();
+          .Build();
 
   // Install Keep app that does not support lock screen note taking - it should
   // be reported not to support lock screen note taking.
@@ -719,12 +719,12 @@ TEST_F(NoteTakingHelperTest, CustomChromeApps) {
       kNewNoteId, kName, /*permissions=*/absl::nullopt,
       extensions::ListBuilder()
           .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
-          .BuildList());
+          .Build());
   InstallExtension(has_new_note.get(), profile());
   // "action_handlers": []
   scoped_refptr<const extensions::Extension> empty_array =
       CreateExtension(kEmptyArrayId, kName, /*permissions=*/absl::nullopt,
-                      extensions::ListBuilder().BuildList());
+                      extensions::ListBuilder().Build());
   InstallExtension(empty_array.get(), profile());
   // (no action handler entry)
   scoped_refptr<const extensions::Extension> none =
@@ -870,7 +870,7 @@ TEST_F(NoteTakingHelperTest, AllowlistedAndCustomAppsShowOnlyOnce) {
       kProdKeepExtensionId, "Keep", /*permissions=*/absl::nullopt,
       extensions::ListBuilder()
           .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
-          .BuildList());
+          .Build());
   InstallExtension(extension.get(), profile());
 
   EXPECT_TRUE(AvailableAppsMatch(

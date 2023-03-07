@@ -12,11 +12,11 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/build_time.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -464,8 +464,7 @@ TransportSecurityState::CheckCTRequirements(
     const X509Certificate* served_certificate_chain,
     const SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps,
-    ct::CTPolicyCompliance policy_compliance,
-    const NetworkAnonymizationKey& network_anonymization_key) {
+    ct::CTPolicyCompliance policy_compliance) {
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 

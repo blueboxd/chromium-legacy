@@ -4,14 +4,15 @@
 
 #include "media/remoting/renderer_controller.h"
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/remoting/metrics.h"
+#include "media/remoting/remoting_constants.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -32,11 +33,6 @@ constexpr base::TimeDelta kDelayedStart = base::Seconds(5);
 
 constexpr int kPixelsPerSec4k = 3840 * 2160 * 30;  // 4k 30fps.
 constexpr int kPixelsPerSec2k = 1920 * 1080 * 30;  // 1080p 30fps.
-
-// The minimum media element duration that is allowed for media remoting.
-// Frequent switching into and out of media remoting for short-duration media
-// can feel "janky" to the user.
-constexpr double kMinRemotingMediaDurationInSec = 60;
 
 StopTrigger GetStopTrigger(mojom::RemotingStopReason reason) {
   switch (reason) {
@@ -543,7 +539,11 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
     metrics_recorder_.WillStartSession(start_trigger);
     // |MediaObserverClient::SwitchToRemoteRenderer()| will be called after
     // remoting is started successfully.
-    remoter_->Start();
+    if (is_media_remoting_requested_) {
+      remoter_->StartWithPermissionAlreadyGranted();
+    } else {
+      remoter_->Start();
+    }
   }
 }
 
@@ -557,8 +557,10 @@ void RendererController::OnRendererFatalError(StopTrigger stop_trigger) {
 
   // MOJO_DISCONNECTED means the streaming session has stopped, which is not a
   // fatal error and should not prevent future sessions.
+  // Clean sinks so that `UpdateAndMaybeSwitch` will stop remoting.
   if (stop_trigger != StopTrigger::MOJO_DISCONNECTED) {
     encountered_renderer_fatal_error_ = true;
+    OnSinkGone();
   }
 
   UpdateAndMaybeSwitch(UNKNOWN_START_TRIGGER, stop_trigger);
@@ -568,6 +570,10 @@ void RendererController::SetClient(MediaObserverClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   client_ = client;
+  // Reset `encountered_renderer_fatal_error_` when the media element changes so
+  // that the previous renderer fatal error won't prevent Remoting the new
+  // content.
+  encountered_renderer_fatal_error_ = false;
   if (!client_) {
     pixel_rate_timer_.Stop();
     if (remote_rendering_started_) {

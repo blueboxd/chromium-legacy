@@ -8,8 +8,8 @@
 #include <list>
 #include <set>
 
-#include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/functional/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
 
@@ -41,6 +42,7 @@ const char kLogTypeFidoDesc[] = "FIDO";
 const char kLogTypeSerialDesc[] = "Serial";
 const char kLogTypeCameraDesc[] = "Camera";
 const char kLogTypeGeolocationDesc[] = "Geolocation";
+const char kLogTypeExtensionsDesc[] = "Extensions";
 
 enum class ShowTime {
   kNone,
@@ -74,6 +76,8 @@ std::string GetLogTypeString(LogType type) {
       return kLogTypeCameraDesc;
     case LOG_TYPE_GEOLOCATION:
       return kLogTypeGeolocationDesc;
+    case LOG_TYPE_EXTENSIONS:
+      return kLogTypeExtensionsDesc;
     case LOG_TYPE_UNKNOWN:
       break;
   }

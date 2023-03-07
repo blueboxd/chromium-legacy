@@ -203,8 +203,13 @@ bool ShouldUpdateRecents(
 bool ShouldUpdateLauncher(
     PhoneStatusProcessor::AppListUpdateType app_list_update_type) {
   return app_list_update_type ==
-             PhoneStatusProcessor::AppListUpdateType::kOnlyLauncherApps ||
-         app_list_update_type == PhoneStatusProcessor::AppListUpdateType::kBoth;
+         PhoneStatusProcessor::AppListUpdateType::kOnlyLauncherApps;
+}
+
+bool IsIncrementalAppUpdate(
+    PhoneStatusProcessor::AppListUpdateType app_list_update_type) {
+  return app_list_update_type ==
+         PhoneStatusProcessor::AppListUpdateType::kIncrementalAppUpdate;
 }
 
 }  // namespace
@@ -451,6 +456,29 @@ void PhoneStatusProcessor::OnAppListUpdateReceived(
   }
 }
 
+void PhoneStatusProcessor::OnAppListIncrementalUpdateReceived(
+    const proto::AppListIncrementalUpdate app_incremental_update) {
+  if (!features::IsEcheLauncherEnabled()) {
+    return;
+  }
+
+  if (app_incremental_update.has_removed_apps()) {
+    for (const auto& app : app_incremental_update.removed_apps().apps()) {
+      if (app_stream_launcher_data_model_) {
+        app_stream_launcher_data_model_->RemoveAppFromList(app);
+      }
+      if (recent_apps_interaction_handler_) {
+        recent_apps_interaction_handler_->RemoveStreamableApp(app);
+      }
+    }
+  }
+
+  if (app_incremental_update.has_installed_apps()) {
+    GenerateAppListWithIcons(app_incremental_update.installed_apps(),
+                             AppListUpdateType::kIncrementalAppUpdate);
+  }
+}
+
 void PhoneStatusProcessor::GenerateAppListWithIcons(
     const proto::StreamableApps& streamable_apps,
     AppListUpdateType app_list_update_type) {
@@ -471,9 +499,7 @@ void PhoneStatusProcessor::GenerateAppListWithIcons(
     // let's move it outside of the Notification class.s2
     apps_list.emplace_back(Notification::AppMetadata(
         base::UTF8ToUTF16(app.visible_name()), app.package_name(), image,
-        absl::nullopt,
-        app.icon_styling() ==
-            proto::NotificationIconStyling::ICON_STYLE_MONOCHROME_SMALL_ICON,
+        /* icon_color = */ absl::nullopt, /* icon_is_monochrome = */ false,
         app.user_id(), app.app_streamability_status()));
     std::string key = app.package_name() + base::NumberToString(app.user_id());
     decoding_data_list->emplace_back(
@@ -521,6 +547,13 @@ void PhoneStatusProcessor::IconsDecoded(
         "Eche.AppListUpdate.Latency",
         base::TimeTicks::Now() - connection_initialized_timestamp_);
     has_received_first_app_list_update_ = true;
+  }
+
+  if (features::IsEcheLauncherEnabled() &&
+      IsIncrementalAppUpdate(app_list_update_type)) {
+    if (app_stream_launcher_data_model_) {
+      app_stream_launcher_data_model_->AddAppToList(apps_list.at(0));
+    }
   }
 }
 

@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -86,6 +86,9 @@ class KerberosCredentialsManager : public KeyedService,
 
   // Helper method for ignoring the results of method calls.
   static ResultCallback EmptyResultCallback();
+
+  // Returns the default Kerberos configuration (krb5.conf).
+  static const char* GetDefaultKerberosConfig();
 
   // Returns true if the Kerberos feature is enabled.
   bool IsKerberosEnabled() const;
@@ -168,9 +171,6 @@ class KerberosCredentialsManager : public KeyedService,
   // a managed account.
   void SetAddManagedAccountCallbackForTesting(
       base::RepeatingCallback<void(kerberos::ErrorType)> callback);
-
-  // Used on tests. Returns the default Kerberos configuration (krb5.conf).
-  static const char* GetDefaultKerberosConfigForTesting();
 
  private:
   friend class KerberosAddAccountRunner;

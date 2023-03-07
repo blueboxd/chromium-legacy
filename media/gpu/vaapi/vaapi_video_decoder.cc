@@ -9,11 +9,11 @@
 #include <limits>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
@@ -315,6 +315,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   aspect_ratio_ = config.aspect_ratio();
+  is_rtc_ = config.is_rtc();
 
   output_cb_ = std::move(output_cb);
   waiting_cb_ = std::move(waiting_cb);
@@ -1116,8 +1117,22 @@ VaapiStatus VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
         encryption_scheme_);
     decoder_delegate_ = accelerator.get();
 
-    decoder_ = std::make_unique<VP9Decoder>(std::move(accelerator), profile_,
-                                            color_space_);
+    // The VaapiVideoDecoder can generally deal with larger-to-smaller VP9
+    // resolution changes without re-configuring the VA-API context. However, we
+    // exclude two use cases:
+    //
+    // - WebRTC: resolution changes are only expected to occur on key frames.
+    //   Therefore, if we ignore larger-to-smaller changes, we would be
+    //   introducing a memory usage regression on the common case.
+    //
+    // - Protected content: the scaling logic in
+    //   ApplyResolutionChangeWithScreenSizes() assumes that we have a fresh
+    //   picture size so that we can calculate the correct scaling factor.
+    const bool ignore_resolution_changes_to_smaller =
+        !(cdm_context_ref_ && !transcryption_) && !is_rtc_;
+    decoder_ = std::make_unique<VP9Decoder>(
+        std::move(accelerator), profile_, color_space_,
+        ignore_resolution_changes_to_smaller);
   }
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   else if (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX) {

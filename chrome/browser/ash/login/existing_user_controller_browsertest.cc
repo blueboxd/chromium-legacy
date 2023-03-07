@@ -10,20 +10,18 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -38,7 +36,6 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/ash/login/test/cryptohome_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -66,6 +63,7 @@
 #include "chrome/browser/ui/webui/ash/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
@@ -1022,32 +1020,15 @@ class ExistingUserControllerActiveDirectoryTest
 };
 
 class ExistingUserControllerActiveDirectoryTestCreateProfileDir
-    : public ExistingUserControllerActiveDirectoryTest,
-      public ::testing::WithParamInterface<bool> {
+    : public ExistingUserControllerActiveDirectoryTest {
  public:
   ExistingUserControllerActiveDirectoryTestCreateProfileDir() {
     cryptohome_mixin_.MarkUserAsExisting(ad_account_id_);
-
-    // TODO(b/239422391): This test is run with the feature
-    // kUseAuthFactors enabled and disabled because of a
-    // transitive dependency of AffiliationTestHelper on that feature. Remove
-    // the parameter when kUseAuthFactors is removed.
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
-    }
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   CryptohomeMixin cryptohome_mixin_{&mixin_host_};
 };
-
-INSTANTIATE_TEST_SUITE_P(
-    ActiveDirectory,
-    ExistingUserControllerActiveDirectoryTestCreateProfileDir,
-    ::testing::Bool());
 
 class ExistingUserControllerActiveDirectoryUserAllowlistTest
     : public ExistingUserControllerActiveDirectoryTest {
@@ -1113,7 +1094,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 
 // Tests that Active Directory offline login succeeds on the Active Directory
 // managed device.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     ExistingUserControllerActiveDirectoryTestCreateProfileDir,
     ActiveDirectoryOfflineLogin_Success) {
   ExpectLoginSuccess();
@@ -1178,30 +1159,20 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserAllowlistTest,
 }
 
 class ExistingUserControllerSavePasswordHashTest
-    : public ExistingUserControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public ExistingUserControllerTest {
  public:
-  ExistingUserControllerSavePasswordHashTest() {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
-    }
-  }
+  ExistingUserControllerSavePasswordHashTest() = default;
   ~ExistingUserControllerSavePasswordHashTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
     RefreshDevicePolicy();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that successful GAIA online login saves SyncPasswordData to user
 // profile prefs.
-IN_PROC_BROWSER_TEST_P(ExistingUserControllerSavePasswordHashTest,
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
                        GaiaOnlineLoginSavesPasswordHashToPrefs) {
   UserContext user_context(
       LoginManagerMixin::CreateDefaultUserContext(new_user_));
@@ -1218,7 +1189,7 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerSavePasswordHashTest,
 
 // Tests that successful offline login saves SyncPasswordData to user profile
 // prefs.
-IN_PROC_BROWSER_TEST_P(ExistingUserControllerSavePasswordHashTest,
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
                        OfflineLoginSavesPasswordHashToPrefs) {
   UserContext user_context(
       LoginManagerMixin::CreateDefaultUserContext(existing_user_));
@@ -1482,9 +1453,5 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerProfileTest, NotManagedUserLogin) {
   ASSERT_TRUE(owner.has_value());
   EXPECT_EQ(owner.value(), not_managed_user_.account_id.GetUserEmail());
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ExistingUserControllerSavePasswordHashTest,
-                         testing::Bool());
 
 }  // namespace ash

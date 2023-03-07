@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/net_error_tab_helper.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/dns_probe_service_factory.h"
@@ -169,14 +169,16 @@ void NetErrorTabHelper::ShowPortalSignin() {
   // TODO(b/247618374): Lacros implementation.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!ash::features::IsCaptivePortalErrorPageEnabled()) {
-    mojo::ReportBadMessage("Captive Portal Error Page feature not enabled");
+    net_error_page_support_.ReportBadMessage(
+        "Captive Portal Error Page feature not enabled");
     return;
   }
   if (!portal_signin_controller_) {
     portal_signin_controller_ =
         std::make_unique<ash::NetworkPortalSigninController>();
   }
-  portal_signin_controller_->ShowSignin();
+  portal_signin_controller_->ShowSignin(
+      ash::NetworkPortalSigninController::SigninSource::kErrorPage);
 #endif
 }
 #endif

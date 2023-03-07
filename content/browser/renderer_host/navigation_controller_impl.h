@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -208,6 +208,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const blink::LocalFrameToken* initiator_frame_token,
       int initiator_process_id,
       const absl::optional<url::Origin>& initiator_origin,
+      const absl::optional<GURL>& initiator_base_url,
       bool is_renderer_initiated,
       SiteInstance* source_site_instance,
       const Referrer& referrer,
@@ -403,6 +404,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const GURL& url,
       Referrer referrer,
       absl::optional<url::Origin> initiator_origin,
+      absl::optional<GURL> initiator_base_url,
       SiteInstance* source_site_instance,
       ui::PageTransition transition,
       bool is_renderer_initiated,

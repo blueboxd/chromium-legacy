@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -55,7 +55,7 @@ gfx::VSyncProvider* SoftwareOutputDevice::GetVSyncProvider() {
 }
 
 void SoftwareOutputDevice::OnSwapBuffers(SwapBuffersCallback swap_ack_callback,
-                                         gl::FrameData data) {
+                                         gfx::FrameData data) {
   task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(swap_ack_callback),
                                                    viewport_pixel_size_));
 }

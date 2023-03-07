@@ -16,12 +16,12 @@ import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
+import("//components/supervised_user/buildflags.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_allowlist.gni")
-import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//weblayer/variables.gni")
 
 if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
@@ -506,6 +506,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
+    "java/src/org/chromium/android_webview/AwOriginVerificationSchedulerBridge.java",
     "java/src/org/chromium/android_webview/AwPacProcessor.java",
     "java/src/org/chromium/android_webview/AwPdfExporter.java",
     "java/src/org/chromium/android_webview/AwProxyController.java",
@@ -567,6 +568,9 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
     "java/src/org/chromium/android_webview/AwLayoutSizer.java",
     "java/src/org/chromium/android_webview/AwNetworkChangeNotifierRegistrationPolicy.java",
+    "java/src/org/chromium/android_webview/AwOriginVerificationScheduler.java",
+    "java/src/org/chromium/android_webview/AwOriginVerificationSchedulerBridge.java",
+    "java/src/org/chromium/android_webview/AwOriginVerifier.java",
     "java/src/org/chromium/android_webview/AwPacProcessor.java",
     "java/src/org/chromium/android_webview/AwPdfExporter.java",
     "java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java",
@@ -582,6 +586,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwSupportLibIsomorphic.java",
     "java/src/org/chromium/android_webview/AwThreadUtils.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
+    "java/src/org/chromium/android_webview/AwVerificationResultStore.java",
     "java/src/org/chromium/android_webview/AwViewAndroidDelegate.java",
     "java/src/org/chromium/android_webview/AwViewMethods.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
@@ -661,6 +666,7 @@ android_library("browser_java") {
     "//components/content_capture/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
+    "//components/digital_asset_links/android:java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
@@ -895,7 +901,7 @@ repack("repack_pack") {
     "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
     "$target_gen_dir/components_resources.pak",
     "$target_gen_dir/mojo_bindings_resources.pak",
-    "$target_gen_dir/webui_generated_resources.pak",
+    "$target_gen_dir/webui_resources.pak",
   ]
   deps = [
     ":generate_components_resources",
@@ -959,57 +965,27 @@ android_assets("pak_file_assets") {
   disable_compression = true
 }
 
+java_group("webview_primary_abi_assets") {
+  deps = [ "//gin:v8_snapshot_assets" ]
+}
+
+java_group("monochrome_webview_primary_abi_assets") {
+  deps = [
+    "//gin:v8_snapshot_assets",
+    "//third_party/icu:icu_assets",
+  ]
+}
+
 if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
-  android_assets("v8_snapshot_secondary_abi_assets") {
-    assert(android_64bit_target_cpu,
-           "32-bit targets shouldn't have secondary abi")
-    arch_suffix = "32"
-    renaming_sources = []
-    renaming_destinations = []
-    if (use_v8_context_snapshot) {
-      renaming_sources += [ "$root_out_dir/v8_context_snapshot_32.bin" ]
-      renaming_destinations += [ "v8_context_snapshot_$arch_suffix.bin" ]
-    } else {
-      _secondary_abi_out_dir =
-          get_label_info("//v8($android_secondary_abi_toolchain)",
-                         "root_out_dir")
-      renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
-      renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
-    }
-    disable_compression = true
+  java_group("webview_secondary_abi_assets") {
+    deps = [ "//gin:v8_snapshot_secondary_abi_assets" ]
+  }
+
+  java_group("monochrome_webview_secondary_abi_assets") {
     deps = [
-      "//tools/v8_context_snapshot($android_secondary_abi_toolchain)",
-      "//v8($android_secondary_abi_toolchain)",
+      "//gin:v8_snapshot_secondary_abi_assets",
+      "//third_party/icu:icu_assets",
     ]
-  }
-}
-
-android_assets("webview_primary_abi_assets") {
-  deps = []
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
-}
-
-android_assets("monochrome_webview_primary_abi_assets") {
-  deps = [ "//third_party/icu:icu_assets" ]
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
-}
-
-if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
-  android_assets("webview_secondary_abi_assets") {
-    deps = [ ":v8_snapshot_secondary_abi_assets" ]
-  }
-
-  android_assets("monochrome_webview_secondary_abi_assets") {
-    deps = [ "//third_party/icu:icu_assets" ]
-    deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
 }
 
@@ -1044,14 +1020,14 @@ grit("generate_webui_resources") {
   enable_input_discovery_for_gn_analyze = false
   defines =
       [ "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_gen_dir, root_build_dir) ]
-  source = "$root_gen_dir/ui/webui/resources/webui_generated_resources.grd"
+  source = "$root_gen_dir/ui/webui/resources/webui_resources.grd"
   deps = [ "//ui/webui/resources:build_grd" ]
 
   outputs = [
-    "grit/webui_generated_resources.h",
-    "grit/webui_generated_resources_map.cc",
-    "grit/webui_generated_resources_map.h",
-    "webui_generated_resources.pak",
+    "grit/webui_resources.h",
+    "grit/webui_resources_map.cc",
+    "grit/webui_resources_map.h",
+    "webui_resources.pak",
   ]
 
   # webui/resources has way too many resources. The allowlist is trim this down
@@ -1113,6 +1089,7 @@ grit("generate_components_resources") {
   defines = [
     "enable_printing=$enable_printing",
     "safe_browsing_mode=$safe_browsing_mode",
+    "enable_supervised_users=$enable_supervised_users",
   ]
 
   # See :generate_webui_resources for an explanation of the allowlist
@@ -1145,6 +1122,10 @@ grit("generate_components_resources") {
     deps += [
       "//components/safe_browsing/content/resources:make_file_types_protobuf",
     ]
+  }
+
+  if (safe_browsing_mode == 2) {
+    deps += [ "//components/safe_browsing/content/resources/real_time_url_checks_allowlist:make_real_time_url_allowlist_protobuf" ]
   }
 }
 

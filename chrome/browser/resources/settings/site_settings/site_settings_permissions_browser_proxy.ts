@@ -27,39 +27,61 @@ export interface SiteSettingsPermissionsBrowserProxy {
    * Mark revoked permissions of unused sites as reviewed by the user so they
    * will not be shown again.
    */
-  acknowledgeRevokedUnusedSitePermissionsList(
-      unusedSitePermissionsList: UnusedSitePermissions[]): void;
+  acknowledgeRevokedUnusedSitePermissionsList(): void;
 
   /**
    * Allow permissions again for an unused site where permissions were
    * auto-revoked. The origin will not appear again for the user to review and
    * permissions will not be auto-revoked for this origin in the future.
    */
-  allowPermissionsAgainForUnusedSite(unusedSitePermissions:
-                                         UnusedSitePermissions): void;
+  allowPermissionsAgainForUnusedSite(origin: string): void;
 
   /**
    * Gets the unused origins along with the permissions they have been granted.
    */
   getRevokedUnusedSitePermissionsList(): Promise<UnusedSitePermissions[]>;
+
+  /**
+   * Reverse the changes made by |acknowledgeRevokedUnusedSitePermissionsList|.
+   * The list of sites will be presented again to the user for review.
+   */
+  undoAcknowledgeRevokedUnusedSitePermissionsList(
+      unusedSitePermissionsList: UnusedSitePermissions[]): void;
+
+  /**
+   * Reverse the changes made by |allowPermissionsAgainForUnusedSite|. This will
+   * revoke the origin's permissions, re-enable auto-revocation for this origin,
+   * and the entry will be visible again in the UI.
+   */
+  undoAllowPermissionsAgainForUnusedSite(unusedSitePermissions:
+                                             UnusedSitePermissions): void;
 }
 
 export class SiteSettingsPermissionsBrowserProxyImpl implements
     SiteSettingsPermissionsBrowserProxy {
-  acknowledgeRevokedUnusedSitePermissionsList(unusedSitePermissionsList:
-                                                  UnusedSitePermissions[]) {
-    chrome.send(
-        'acknowledgeRevokedUnusedSitePermissionsList',
-        [unusedSitePermissionsList]);
+  acknowledgeRevokedUnusedSitePermissionsList() {
+    chrome.send('acknowledgeRevokedUnusedSitePermissionsList');
   }
 
-  allowPermissionsAgainForUnusedSite(unusedSitePermissions:
-                                         UnusedSitePermissions) {
-    chrome.send('allowPermissionsAgainForUnusedSite', [unusedSitePermissions]);
+  allowPermissionsAgainForUnusedSite(origin: string) {
+    chrome.send('allowPermissionsAgainForUnusedSite', [origin]);
   }
 
   getRevokedUnusedSitePermissionsList() {
     return sendWithPromise('getRevokedUnusedSitePermissionsList');
+  }
+
+  undoAcknowledgeRevokedUnusedSitePermissionsList(unusedSitePermissionsList:
+                                                      UnusedSitePermissions[]) {
+    chrome.send(
+        'undoAcknowledgeRevokedUnusedSitePermissionsList',
+        [unusedSitePermissionsList]);
+  }
+
+  undoAllowPermissionsAgainForUnusedSite(unusedSitePermissions:
+                                             UnusedSitePermissions) {
+    chrome.send(
+        'undoAllowPermissionsAgainForUnusedSite', [unusedSitePermissions]);
   }
 
   static getInstance(): SiteSettingsPermissionsBrowserProxy {

@@ -21,8 +21,8 @@
 #include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/components/arc/test/fake_arc_session.h"
 #include "ash/components/arc/test/fake_power_instance.h"
-#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
@@ -449,7 +449,7 @@ class ArcInstanceThrottleVMTest : public testing::Test {
 
     run_loop_ = std::make_unique<base::RunLoop>();
 
-    chromeos::ConciergeClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
     DCHECK(GetConciergeClient());
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();

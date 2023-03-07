@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/types/pass_key.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
@@ -47,6 +47,10 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace cc {
 struct ApplyViewportChangesArgs;

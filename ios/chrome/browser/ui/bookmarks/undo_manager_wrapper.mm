@@ -16,7 +16,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface UndoManagerWrapper ()<UndoManagerBridgeObserver> {
+@interface UndoManagerWrapper () <UndoManagerBridgeObserver> {
   std::unique_ptr<bookmarks::UndoManagerBridge> _bridge;
 }
 @property(nonatomic, assign) UndoManager* undoManager;

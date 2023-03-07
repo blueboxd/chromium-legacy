@@ -6,10 +6,11 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -168,18 +169,14 @@ SidePanel::SidePanel(BrowserView* browser_view,
       resize_area_(
           AddChildView(std::make_unique<views::SidePanelResizeArea>(this))),
       horizontal_alignment_(horizontal_alignment) {
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    pref_change_registrar_.Init(browser_view->GetProfile()->GetPrefs());
+  pref_change_registrar_.Init(browser_view->GetProfile()->GetPrefs());
 
-    // base::Unretained is safe since the side panel must be attached to some
-    // BrowserView. Deleting BrowserView will also delete the SidePanel.
-    pref_change_registrar_.Add(
-        prefs::kSidePanelHorizontalAlignment,
-        base::BindRepeating(&BrowserView::UpdateSidePanelHorizontalAlignment,
-                            base::Unretained(browser_view)));
-  } else {
-    resize_area_->SetVisible(false);
-  }
+  // base::Unretained is safe since the side panel must be attached to some
+  // BrowserView. Deleting BrowserView will also delete the SidePanel.
+  pref_change_registrar_.Add(
+      prefs::kSidePanelHorizontalAlignment,
+      base::BindRepeating(&BrowserView::UpdateSidePanelHorizontalAlignment,
+                          base::Unretained(browser_view)));
 
   SetVisible(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());

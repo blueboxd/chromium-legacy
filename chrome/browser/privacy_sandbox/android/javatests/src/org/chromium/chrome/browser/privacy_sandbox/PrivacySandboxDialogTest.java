@@ -156,27 +156,27 @@ public final class PrivacySandboxDialogTest {
     }
 
     private void tryClickOn(Matcher<View> viewMatcher) {
-        try {
-            onView(viewMatcher).perform(click());
-        } catch (PerformException p) {
-            clickMoreButtonUntilFullyScrolledDown();
-            onViewWaiting(viewMatcher).perform(click());
-        }
+        clickMoreButtonUntilFullyScrolledDown();
+        onViewWaiting(viewMatcher).perform(click());
     }
 
     private void clickMoreButtonUntilFullyScrolledDown() {
-        boolean fullyScrolledDown = false;
-        while (!fullyScrolledDown) {
+        while (true) {
             try {
                 onView(withId(R.id.more_button)).perform(click());
+                var promptType = mFakePrivacySandboxBridge.getRequiredPromptType();
+                if (promptType == PromptType.M1_CONSENT) {
+                    assertEquals("Last dialog action", PromptAction.CONSENT_MORE_BUTTON_CLICKED,
+                            (int) mFakePrivacySandboxBridge.getLastPromptAction());
+                } else if (promptType == PromptType.M1_NOTICE_EEA
+                        || promptType == PromptType.M1_NOTICE_ROW) {
+                    assertEquals("Last dialog action", PromptAction.NOTICE_MORE_BUTTON_CLICKED,
+                            (int) mFakePrivacySandboxBridge.getLastPromptAction());
+                }
             } catch (PerformException e) {
-                fullyScrolledDown = true;
+                return;
             }
         }
-    }
-
-    private void clickMoreButton() {
-        onView(withId(R.id.more_button)).perform(click());
     }
 
     @Test

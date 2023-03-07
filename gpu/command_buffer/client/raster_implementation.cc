@@ -18,9 +18,9 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -1389,8 +1389,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
           raster_properties_->can_use_lcd_text,
           capabilities().context_supports_distance_field_text,
           capabilities().max_texture_size));
-  serializer.Serialize(&list->paint_op_buffer_, &temp_raster_offsets_,
-                       preamble);
+  serializer.Serialize(list->paint_op_buffer_, &temp_raster_offsets_, preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();
 }

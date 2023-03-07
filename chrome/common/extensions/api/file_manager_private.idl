@@ -168,6 +168,8 @@ enum DriveSyncErrorType {
   no_server_space_organization,
   // There is no local space to sync a file.
   no_local_space,
+  // There is no space left on a shared drive.
+  no_shared_drive_space,
   // Miscellaneous errors other than listed above.
   misc
 };
@@ -304,6 +306,7 @@ enum IOTaskState {
   queued,
   scanning,
   in_progress,
+  paused,
   success,
   error,
   need_password,
@@ -397,6 +400,9 @@ dictionary FileTask {
   // types: ["*/*"]). Partial wild card (e.g. types: ["image/*"]) is not
   // generic file handler.
   boolean isGenericFileHandler;
+
+  // True if this is task is blocked by Data Leak Prevention (DLP).
+  boolean isDlpBlocked;
 };
 
 // Represents a set of tasks capable of handling file entries.
@@ -710,6 +716,9 @@ dictionary DriveSyncErrorEvent {
 
   // File URL of the entry that the error happens to.
   DOMString fileUrl;
+
+  // Shared drive name if the error relates to a shared drive.
+  DOMString? sharedDrive;
 };
 
 // Confirmation dialog from Drive asking the user to accept or reject an
@@ -789,6 +798,10 @@ dictionary SearchParams {
 };
 
 dictionary SearchMetadataParams {
+  // Optional root directory from which to start the search. If not present,
+  // the search begins at the local root.
+  [instanceof=DirectoryEntry] object? rootDir;
+
   // Search query. It can be empty. Any filename matches to an empty query.
   DOMString query;
 
@@ -797,6 +810,10 @@ dictionary SearchMetadataParams {
 
   // Maximum number of results.
   long maxResults;
+
+  // Modified timestamp. The file must have modified timestamp more recent
+  // than this to be included in results.
+  double? timestamp;
 };
 
 // Entry and Drive-related properties representing a search result.
@@ -1291,9 +1308,11 @@ interface Functions {
 
   // Gets the list of tasks that can be performed over selected files.
   // |entries| Array of selected entries
+  // |dlpSourceUrls| Array of source URLs corresponding to the entries, used to check Data Leak Prevention (DLP) restrictions
   // |callback|
   [nocompile]
   static void getFileTasks([instanceof=Entry] object[] entries,
+                           DOMString[] dlpSourceUrls,
                            GetFileTasksCallback callback);
 
   // Gets the MIME type of an entry.
@@ -1520,6 +1539,7 @@ interface Functions {
                                   SearchFilesByHashesCallback callback);
 
   // Search files in My Files.
+  [nocompile]
   static void searchFiles(SearchMetadataParams searchParams,
                           SearchFilesCallback callback);
 

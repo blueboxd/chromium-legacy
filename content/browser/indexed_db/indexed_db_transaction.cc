@@ -7,15 +7,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/base_tracing.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
@@ -136,8 +135,14 @@ IndexedDBTransaction::IndexedDBTransaction(
                                     "IndexedDBTransaction::lifetime", this);
   callbacks_ = connection_->callbacks();
   database_ = connection_->database();
-  if (database_)
+  if (database_) {
     database_->TransactionCreated();
+
+    for (const PartitionedLockManager::PartitionedLockRequest& lock_request :
+         database_->BuildLockRequestsFromTransaction(this)) {
+      lock_ids_.insert(lock_request.lock_id);
+    }
+  }
 
   diagnostics_.tasks_scheduled = 0;
   diagnostics_.tasks_completed = 0;

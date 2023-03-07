@@ -322,6 +322,22 @@ reviewer.
   </summary>
 </histogram>
 
+<histogram name="Privacy.DIPS.DIPSErrorCodes" enum="DIPSErrorCode"
+    expires_after="2023-04-13">
+  <owner>bcl@chromium.org</owner>
+  <owner>src/chrome/browser/dips/OWNERS</owner>
+  <summary>
+    Tracks certain errors that DIPS may encounter when running on a client.
+
+    This is currently recorded when expected invariants are violated, such as
+    there being an open-ended time range in the database. See `DIPSErrorCode`
+    for all possible codes this histogram can output.
+
+    Since these error codes can be recorded several times by a client, using
+    per-client aggregation when analyzing this metric is recommended.
+  </summary>
+</histogram>
+
 <histogram name="Privacy.DIPS.TimeFromInteractionToStorage{DIPSCookieMode}"
     units="ms" expires_after="2023-05-01">
   <owner>bcl@chromium.org</owner>
@@ -341,7 +357,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.TimeFromNavigationCommitToClientBounce"
-    units="ms" expires_after="2023-04-16">
+    units="ms" expires_after="2023-06-18">
   <owner>bcl@chromium.org</owner>
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
@@ -568,17 +584,6 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram
-    name="PrivacySandbox.AggregationService.Storage.Sql.ClearDataTaskDelay"
-    units="ms" expires_after="2023-05-14">
-  <owner>alexmt@chromium.org</owner>
-  <owner>linnan@chromium.org</owner>
-  <summary>
-    Records how long a ClearDataBetween() task waits in the database task runner
-    queue. Recorded for each ClearDataBetween() call when it starts running.
-  </summary>
-</histogram>
-
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.CreationTime"
     units="ms" expires_after="2023-02-23">
   <obsolete>
@@ -659,7 +664,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.PrivateAggregation.Budgeter.RequestResult"
     enum="PrivacySandboxPrivateAggregationBudgeterRequestResult"
-    expires_after="2023-04-27">
+    expires_after="2023-07-02">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -701,11 +706,39 @@ reviewer.
   <owner>linnan@chromium.org</owner>
   <summary>
     Records whether a call to PrivateAggregationHost::SendHistogramReport()
-    successfully resulted in a report request being forwarded to the manager
-    and, if not, the reason for failure. Note that, even if successfully
-    forwarded, the report may still be rejected by the budgeter or in the
-    aggregation_service layer. Recorded for every call.
+    successfully resulted in the report request being forwarded to the manager
+    and, if not, the reason for failure. Further, breaks out the case of too
+    many contributions, where the request is forwarded but is truncated. Note
+    that, even if successfully forwarded, the report may still be rejected by
+    the budgeter or in the aggregation_service layer. Recorded for every call.
   </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.{ApiType}" enum="PrivacySandboxApiAllowed"
+    expires_after="M117">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>sauski@chromium.org</owner>
+  <summary>
+    Whether or not the {ApiType} operation was allowed by Privacy Sandbox
+    settings and why. Recorded at the time settings are checked when performing
+    the operation.
+  </summary>
+  <token key="ApiType">
+    <variant name="IsAttributionReportingAllowed"
+        summary="IsAttributionReportingAllowed"/>
+    <variant name="IsFledgeAllowed" summary="IsFledgeAllowed"/>
+    <variant name="IsPrivateAggregationAllowed"
+        summary="IsPrivateAggregationAllowed"/>
+    <variant name="IsSharedStorageAllowed" summary="IsSharedStorageAllowed"/>
+    <variant name="IsSharedStorageSelectURLAllowed"
+        summary="IsSharedStorageSelectURLAllowed"/>
+    <variant name="IsTopicsAllowed" summary="IsTopicsAllowed"/>
+    <variant name="IsTopicsAllowedForContext"
+        summary="IsTopicsAllowedForContext"/>
+    <variant name="MaySendAttributionReport"
+        summary="MaySendAttributionReport"/>
+  </token>
 </histogram>
 
 </histograms>

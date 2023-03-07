@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -803,6 +803,23 @@ viz::ResourceFormat VideoResourceUpdater::YuvResourceFormat(
   return viz::LUMINANCE_8;
 }
 
+bool VideoResourceUpdater::ReallocateUploadPixels(size_t needed_size) {
+  // Free the existing data first so that the memory can be reused, if
+  // possible. Note that the new array is purposely not initialized.
+  upload_pixels_.reset();
+  uint8_t* pixel_mem = nullptr;
+  // Fail if we can't support the required memory to upload pixels.
+  if (!base::UncheckedMalloc(needed_size,
+                             reinterpret_cast<void**>(&pixel_mem))) {
+    DLOG(ERROR) << "Unable to allocate enough memory required to "
+                   "upload pixels";
+    return false;
+  }
+  upload_pixels_.reset(pixel_mem);
+  upload_pixels_size_ = needed_size;
+  return true;
+}
+
 VideoResourceUpdater::PlaneResource*
 VideoResourceUpdater::RecycleOrAllocateResource(
     const gfx::Size& resource_size,
@@ -987,9 +1004,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       }
       transfer_resource.ycbcr_info = video_frame->ycbcr_info();
 
+#if BUILDFLAG(ENABLE_VULKAN)
       // Ensure that `ycbcr_info` is provided when necessary.
       // TODO(crbug.com/1399429): Avoid duplicating this logic.
-      if (IsYuvFormat(transfer_resource.format.resource_format()) &&
+      if ((transfer_resource.format.IsLegacyMultiplanar()) &&
           !transfer_resource.ycbcr_info) {
         VkSamplerYcbcrModelConversion ycbcr_conversion =
             (resource_color_space.GetMatrixID() ==
@@ -1004,6 +1022,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
             VK_CHROMA_LOCATION_COSITED_EVEN,
             /*format_features=*/0);
       }
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =
@@ -1208,12 +1227,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           size_t needed_size =
               bytes_per_row * video_frame->coded_size().height();
           if (upload_pixels_size_ < needed_size) {
-            // Free the existing data first so that the memory can be reused,
-            // if possible. Note that the new array is purposely not
-            // initialized.
-            upload_pixels_.reset();
-            upload_pixels_.reset(new uint8_t[needed_size]);
-            upload_pixels_size_ = needed_size;
+            if (!ReallocateUploadPixels(needed_size)) {
+              // Fail here if memory reallocation fails.
+              return VideoFrameExternalResources();
+            }
           }
 
           // PCVR writes to origin, so offset upload pixels by start since
@@ -1362,11 +1379,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       const size_t needed_size =
           upload_image_stride * resource_size_pixels.height();
       if (upload_pixels_size_ < needed_size) {
-        // Free the existing data first so that the memory can be reused,
-        // if possible. Note that the new array is purposely not initialized.
-        upload_pixels_.reset();
-        upload_pixels_.reset(new uint8_t[needed_size]);
-        upload_pixels_size_ = needed_size;
+        if (!ReallocateUploadPixels(needed_size)) {
+          // Fail here if memory reallocation fails.
+          return VideoFrameExternalResources();
+        }
       }
 
       if (plane_resource_format == viz::LUMINANCE_F16) {

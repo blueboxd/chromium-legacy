@@ -8,6 +8,7 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/system_tray_test_api.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -17,11 +18,11 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
@@ -829,6 +831,10 @@ class MinimumVersionKioskAutoLoginTest : public MinimumVersionExistingUserTest {
     ash::KioskAppsMixin::AppendAutoLaunchKioskAccount(&proto);
     helper_.RefreshDevicePolicy();
   }
+
+ private:
+  base::AutoReset<bool> block_kiosk_launcher_exit_on_failure_ =
+      ash::KioskLaunchController::BlockExitOnFailureForTesting();
 };
 
 // Checks kiosk auto launch is not blocked even if immediate update is required
@@ -910,7 +916,7 @@ class MinimumVersionPolicyChildUser : public MinimumVersionPolicyTestBase {
       AccountId::FromUserEmailGaiaId(ash::test::kTestEmail,
                                      ash::test::kTestGaiaId)};
   ash::UserPolicyMixin user_policy_mixin_{&mixin_host_, child_user.account_id};
-  ash::FakeGaiaMixin fake_gaia_{&mixin_host_};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
   ash::LoginManagerMixin login_manager_{&mixin_host_, {}, &fake_gaia_};
 };
 

@@ -16,6 +16,11 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "ui/base/resource/resource_scale_factor.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_source.h"
+
+namespace gfx {
+class ImageSkiaRep;
+}
 
 namespace apps {
 
@@ -39,11 +44,30 @@ class AppIconDecoder {
   void Start();
 
  private:
+  // Initializes the ImageSkia with placeholder bitmaps, decoded from
+  // compiled-into-the-binary resources such as IDR_APP_DEFAULT_ICON.
+  class ImageSource : public gfx::ImageSkiaSource {
+   public:
+    explicit ImageSource(int32_t size_in_dip);
+    ImageSource(const ImageSource&) = delete;
+    ImageSource& operator=(const ImageSource&) = delete;
+    ~ImageSource() override;
+
+   private:
+    // gfx::ImageSkiaSource overrides:
+    gfx::ImageSkiaRep GetImageForScale(float scale) override;
+
+    const int32_t size_in_dip_;
+  };
+
   // Decode images safely in a sandboxed service per ARC app icons' security
   // requests.
   class DecodeRequest : public ImageDecoder::ImageRequest {
    public:
-    DecodeRequest(ui::ResourceScaleFactor scale_factor, AppIconDecoder& host);
+    DecodeRequest(ui::ResourceScaleFactor scale_factor,
+                  AppIconDecoder& host,
+                  gfx::ImageSkia& image_skia,
+                  std::set<ui::ResourceScaleFactor>& incomplete_scale_factors);
 
     DecodeRequest(const DecodeRequest&) = delete;
     DecodeRequest& operator=(const DecodeRequest&) = delete;
@@ -57,14 +81,35 @@ class AppIconDecoder {
    private:
     ui::ResourceScaleFactor scale_factor_;
     AppIconDecoder& host_;
+    gfx::ImageSkia& image_skia_;
+    std::set<ui::ResourceScaleFactor>& incomplete_scale_factors_;
   };
 
-  void OnIconRead(std::map<ui::ResourceScaleFactor, IconValuePtr> icon_data);
+  bool SetScaleFactors(
+      const std::map<ui::ResourceScaleFactor, IconValuePtr>& icon_datas);
 
-  void UpdateImageSkia(ui::ResourceScaleFactor scale_factor,
-                       const SkBitmap& bitmap);
+  void OnIconRead(std::map<ui::ResourceScaleFactor, IconValuePtr> icon_datas);
+
+  void DecodeImage(ui::ResourceScaleFactor scale_factor,
+                   const std::vector<uint8_t>& icon_data,
+                   gfx::ImageSkia& image_skia,
+                   std::set<ui::ResourceScaleFactor>& incomplete_scale_factors);
+
+  void UpdateImageSkia(
+      ui::ResourceScaleFactor scale_factor,
+      const SkBitmap& bitmap,
+      gfx::ImageSkia& image_skia,
+      std::set<ui::ResourceScaleFactor>& incomplete_scale_factors);
 
   void DiscardDecodeRequest();
+
+  void CompleteWithImageSkia(const gfx::ImageSkia& image_skia);
+
+  void DecodeRequestForTesting(
+      ui::ResourceScaleFactor scale_factor,
+      const std::vector<uint8_t>& icon_data,
+      gfx::ImageSkia& image_skia,
+      std::set<ui::ResourceScaleFactor>& incomplete_scale_factors);
 
   const base::FilePath base_path_;
   const std::string app_id_;
@@ -72,9 +117,15 @@ class AppIconDecoder {
   base::OnceCallback<void(AppIconDecoder* decoder, IconValuePtr iv)> callback_;
 
   gfx::ImageSkia image_skia_;
-  std::set<ui::ResourceScaleFactor> incomplete_scale_factors_;
+  gfx::ImageSkia foreground_image_skia_;
+  gfx::ImageSkia background_image_skia_;
 
-  bool is_maskable_icon_;
+  std::set<ui::ResourceScaleFactor> incomplete_scale_factors_;
+  std::set<ui::ResourceScaleFactor> foreground_incomplete_scale_factors_;
+  std::set<ui::ResourceScaleFactor> background_incomplete_scale_factors_;
+
+  bool is_maskable_icon_ = false;
+  bool is_adaptive_icon_ = false;
 
   // Contains pending image decode requests.
   std::vector<std::unique_ptr<DecodeRequest>> decode_requests_;

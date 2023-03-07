@@ -10,9 +10,9 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_split.h"
@@ -604,10 +604,9 @@ void NetworkingPrivateLinux::SelectCellularMobileNetwork(
 
 void NetworkingPrivateLinux::GetEnabledNetworkTypes(
     EnabledNetworkTypesCallback callback) {
-  base::Value network_list(base::Value::Type::LIST);
+  base::Value::List network_list;
   network_list.Append(::onc::network_type::kWiFi);
-  std::move(callback).Run(
-      base::Value::ToUniquePtrValue(std::move(network_list)));
+  std::move(callback).Run(std::move(network_list));
 }
 
 void NetworkingPrivateLinux::GetDeviceStateList(

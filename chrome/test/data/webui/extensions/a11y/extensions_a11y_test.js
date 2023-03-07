@@ -32,6 +32,13 @@ var CrExtensionsA11yTest = class extends PolymerTest {
     ];
   }
 
+  /** @override */
+  setUp() {
+    const runTest = this.deferRunTest(WhenTestDone.DEFAULT);
+    const manager = document.querySelector('extensions-manager');
+    manager.whenPageInitializedForTest().then(runTest);
+  }
+
   // Default accessibility audit options. Specify in test definition to use.
   static get axeOptions() {
     return {

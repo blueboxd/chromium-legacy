@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/passwords/password_breach_view_controller.h"
 
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/ui/passwords/password_constants.h"
+#import "ios/chrome/browser/ui/settings/password/branded_navigation_item_title_view.h"
+#import "ios/chrome/browser/ui/settings/password/create_password_manager_title_view.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -20,17 +21,12 @@
 
 - (void)loadView {
   self.helpButtonAvailable = YES;
+  self.titleView = [self setUpTitleView];
   self.helpButtonAccessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_HELP_ACCESSIBILITY_LABEL);
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::
-              kIOSEnablePasswordManagerBrandingUpdate)) {
-    self.image = [UIImage imageNamed:@"password_breach_illustration"];
-    self.showDismissBarButton = NO;
-  } else {
-    self.image = [UIImage imageNamed:@"legacy_password_breach_illustration"];
-  }
+  self.image = [UIImage imageNamed:@"password_breach_illustration"];
+  self.showDismissBarButton = NO;
 
   [super loadView];
 }
@@ -53,6 +49,14 @@
   self.subtitleString = subtitleString;
   self.primaryActionString = primaryActionString;
   self.secondaryActionString = secondaryActionString;
+}
+
+#pragma mark - Private methods
+
+// Configures the title view of this ViewController.
+- (UIView*)setUpTitleView {
+  NSString* title = l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER);
+  return password_manager::CreatePasswordManagerTitleView(title);
 }
 
 @end

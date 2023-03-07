@@ -512,6 +512,8 @@ static_library("test_support") {
     "test/motion_event_test_utils.h",
     "test/platform_event_source_test_api.cc",
     "test/platform_event_source_test_api.h",
+    "test/scoped_event_waiter.cc",
+    "test/scoped_event_waiter.h",
     "test/test_event.cc",
     "test/test_event.h",
     "test/test_event_handler.cc",
@@ -591,12 +593,8 @@ static_library("test_support") {
 
   if (is_fuchsia) {
     sources += [
-      "fuchsia/fakes/fake_mouse_source.cc",
-      "fuchsia/fakes/fake_mouse_source.h",
-      "fuchsia/fakes/fake_touch_source.cc",
-      "fuchsia/fakes/fake_touch_source.h",
-      "fuchsia/fakes/pointer_event_utility.cc",
-      "fuchsia/fakes/pointer_event_utility.h",
+      "fuchsia/util/pointer_event_utility.cc",
+      "fuchsia/util/pointer_event_utility.h",
     ]
 
     deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.pointer" ]
@@ -635,6 +633,7 @@ if (!is_ios) {
       "mojom/mojom_traits_unittest.cc",
       "platform/platform_event_source_unittest.cc",
       "scoped_target_handler_unittest.cc",
+      "test/scoped_event_waiter_unittest.cc",
     ]
 
     if (is_mac) {
@@ -724,6 +723,7 @@ if (!is_ios) {
         "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input",
         "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3",
         "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.pointer",
+        "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp_testing",
       ]
     }
 

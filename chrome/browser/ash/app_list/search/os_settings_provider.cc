@@ -35,10 +35,9 @@ constexpr char kOsSettingsResultPrefix[] = "os-settings://";
 
 constexpr size_t kNumRequestedResults = 5u;
 
-// Various error states of the OsSettingsProvider. kOk is currently not emitted,
-// but may be used in future. These values persist to logs. Entries should not
-// be renumbered and numeric values should never be reused.
-enum class Error {
+// Various states of the OsSettingsProvider. These values persist to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+enum class Status {
   kOk = 0,
   // No longer used.
   // kAppServiceUnavailable = 1,
@@ -47,11 +46,48 @@ enum class Error {
   kHierarchyEmpty = 4,
   kNoHierarchy = 5,
   kSettingsAppNotReady = 6,
-  kMaxValue = kSettingsAppNotReady,
+  kNoAppServiceProxy = 7,
+  kMaxValue = kNoAppServiceProxy,
 };
 
-void LogError(Error error) {
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.Error", error);
+void LogStatus(Status status) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.Error", status);
+}
+
+// Various icon-related states at different branches of the OsSettingsProvider.
+// These values persist to logs. Entries should not be renumbered and numeric
+// values should never be reused.
+//
+// TODO(b/261867385) this histogram is to investigate the bug that settings
+// search results may not appear in launcher search due to the lack of icon. It
+// can be removed once the associated bug is resolved.
+enum class IconLoadStatus {
+  // Construction
+  kNoAppServiceProxy = 0,
+  kBindOnLoadIconFromConstructor = 1,
+  // On App Update
+  kBindOnLoadIconFromOnAppUpdate = 2,
+  kReadinessUnknown = 3,
+  kIconKeyNotChanged = 4,
+  // On Load Icon (from Constructor)
+  kOkFromConstructor = 5,
+  kNoValueFromConstructor = 6,
+  kNotStandardFromConstructor = 7,
+  // On Load Icon (from OnAppUpdate)
+  kOkFromOnAppUpdate = 8,
+  kNoValueFromOnAppUpdate = 9,
+  kNotStandardFromOnAppUpdate = 10,
+  // On App Registry Cache Will Be Destroyed
+  kIconExistOnDestroyed = 11,
+  kIconNotExistOnDestroyed = 12,
+  // On App Update
+  kOnAppUpdateGetCalled = 13,
+  kMaxValue = kOnAppUpdateGetCalled,
+};
+
+void LogIconLoadStatus(IconLoadStatus icon_load_status) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.IconLoadStatus",
+                            icon_load_status);
 }
 
 bool ContainsBetterAncestor(Subpage subpage,
@@ -126,7 +162,7 @@ OsSettingsResult::OsSettingsResult(Profile* profile,
   // bluetooth), in which case we should leave the details blank.
   const auto& hierarchy = result->settings_page_hierarchy;
   if (hierarchy.empty()) {
-    LogError(Error::kHierarchyEmpty);
+    LogStatus(Status::kHierarchyEmpty);
   } else if (result->type != SettingsResultType::kSection) {
     SetDetails(hierarchy.back());
   }
@@ -168,12 +204,12 @@ OsSettingsProvider::OsSettingsProvider(
   // search chrome flag is disabled. If it is, we should effectively disable the
   // search provider.
   if (!search_handler_) {
-    LogError(Error::kSearchHandlerUnavailable);
+    LogStatus(Status::kSearchHandlerUnavailable);
     return;
   }
 
   if (!hierarchy_) {
-    LogError(Error::kNoHierarchy);
+    LogStatus(Status::kNoHierarchy);
   }
 
   search_handler_->Observe(
@@ -188,7 +224,12 @@ OsSettingsProvider::OsSettingsProvider(
         web_app::kOsSettingsAppId, apps::IconType::kStandard, kAppIconDimension,
         /*allow_placeholder_icon=*/false,
         base::BindOnce(&OsSettingsProvider::OnLoadIcon,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(),
+                       /*is_from_constructor=*/true));
+    LogIconLoadStatus(IconLoadStatus::kBindOnLoadIconFromConstructor);
+  } else {
+    LogStatus(Status::kNoAppServiceProxy);
+    LogIconLoadStatus(IconLoadStatus::kNoAppServiceProxy);
   }
 }
 
@@ -208,7 +249,7 @@ void OsSettingsProvider::Start(const std::u16string& query) {
   if (!search_handler_) {
     return;
   } else if (icon_.isNull()) {
-    LogError(Error::kNoSettingsIcon);
+    LogStatus(Status::kNoSettingsIcon);
     return;
   }
 
@@ -248,12 +289,16 @@ void OsSettingsProvider::OnSearchReturned(
 
   UMA_HISTOGRAM_TIMES("Apps.AppList.OsSettingsProvider.QueryTime",
                       base::TimeTicks::Now() - start_time);
+  // Log the OS setting search has been successfully proceeded.
+  LogStatus(Status::kOk);
   SwapResults(&search_results);
 }
 
 void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.AppId() != web_app::kOsSettingsAppId)
     return;
+
+  LogIconLoadStatus(IconLoadStatus::kOnAppUpdateGetCalled);
 
   // TODO(crbug.com/1068851): We previously disabled this search provider until
   // the app service signalled that the settings app is ready. But this signal
@@ -268,13 +313,27 @@ void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
                                  apps::IconType::kStandard, kAppIconDimension,
                                  /*allow_placeholder_icon=*/false,
                                  base::BindOnce(&OsSettingsProvider::OnLoadIcon,
-                                                weak_factory_.GetWeakPtr()));
+                                                weak_factory_.GetWeakPtr(),
+                                                /*is_from_constructor=*/false));
+    LogIconLoadStatus(IconLoadStatus::kBindOnLoadIconFromOnAppUpdate);
+  } else {
+    if (!update.ReadinessChanged()) {
+      LogIconLoadStatus(IconLoadStatus::kReadinessUnknown);
+    }
+    if (!update.IconKeyChanged()) {
+      LogIconLoadStatus(IconLoadStatus::kIconKeyNotChanged);
+    }
   }
 }
 
 void OsSettingsProvider::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   Observe(nullptr);
+  if (icon_.isNull()) {
+    LogIconLoadStatus(IconLoadStatus::kIconNotExistOnDestroyed);
+  } else {
+    LogIconLoadStatus(IconLoadStatus::kIconExistOnDestroyed);
+  }
 }
 
 void OsSettingsProvider::OnSearchResultsChanged() {
@@ -347,9 +406,20 @@ std::vector<SettingsResultPtr> OsSettingsProvider::FilterResults(
   return clean_results;
 }
 
-void OsSettingsProvider::OnLoadIcon(apps::IconValuePtr icon_value) {
+void OsSettingsProvider::OnLoadIcon(bool is_from_constructor,
+                                    apps::IconValuePtr icon_value) {
   if (icon_value && icon_value->icon_type == apps::IconType::kStandard) {
     icon_ = icon_value->uncompressed;
+    LogIconLoadStatus(is_from_constructor ? IconLoadStatus::kOkFromConstructor
+                                          : IconLoadStatus::kOkFromOnAppUpdate);
+  } else if (!icon_value) {
+    LogIconLoadStatus(is_from_constructor
+                          ? IconLoadStatus::kNoValueFromConstructor
+                          : IconLoadStatus::kNoValueFromOnAppUpdate);
+  } else {
+    LogIconLoadStatus(is_from_constructor
+                          ? IconLoadStatus::kNotStandardFromConstructor
+                          : IconLoadStatus::kNotStandardFromOnAppUpdate);
   }
 }
 

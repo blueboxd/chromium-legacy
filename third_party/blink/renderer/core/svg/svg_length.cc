@@ -164,32 +164,6 @@ static bool IsSupportedCalculationCategory(CalculationCategory category) {
   }
 }
 
-void SVGLength::SetUnitType(CSSPrimitiveValue::UnitType type) {
-  DCHECK(IsSupportedCSSUnitType(type));
-  value_ = CSSNumericLiteralValue::Create(value_->GetFloatValue(), type);
-}
-
-float SVGLength::ValueAsPercentage() const {
-  // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy
-  // but could eventually be changed.
-  if (value_->IsPercentage()) {
-    // Note: This division is a source of floating point inaccuracy.
-    return value_->GetFloatValue() / 100;
-  }
-
-  return value_->GetFloatValue();
-}
-
-float SVGLength::ScaleByPercentage(float input) const {
-  float result = input * value_->GetFloatValue();
-  if (value_->IsPercentage()) {
-    // Delaying division by 100 as long as possible since it introduces floating
-    // point errors.
-    result = result / 100;
-  }
-  return result;
-}
-
 namespace {
 
 const CSSParserContext* GetSVGAttributeParserContext() {

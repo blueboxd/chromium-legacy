@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 
-#include "base/bind.h"
 #include "base/check_is_test.h"
+#include "base/functional/bind.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -72,8 +72,20 @@ ShoppingListUiTabHelper::ShoppingListUiTabHelper(
   } else {
     CHECK_IS_TEST();
   }
-  scoped_observation_.Observe(
-      BookmarkModelFactory::GetForBrowserContext(content->GetBrowserContext()));
+
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(content->GetBrowserContext());
+
+  if (bookmark_model) {
+    scoped_observation_.Observe(BookmarkModelFactory::GetForBrowserContext(
+        content->GetBrowserContext()));
+  } else {
+    CHECK_IS_TEST();
+  }
+
+  if (!shopping_service_) {
+    CHECK_IS_TEST();
+  }
 }
 
 ShoppingListUiTabHelper::~ShoppingListUiTabHelper() = default;
@@ -88,8 +100,10 @@ void ShoppingListUiTabHelper::RegisterProfilePrefs(
 void ShoppingListUiTabHelper::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   if (!load_details.is_in_active_page ||
-      web_contents()->GetLastCommittedURL() ==
-          load_details.previous_main_frame_url) {
+      (web_contents()->GetLastCommittedURL() ==
+           load_details.previous_main_frame_url &&
+       is_initial_navigation_committed_)) {
+    is_initial_navigation_committed_ = true;
     return;
   }
 
@@ -134,7 +148,7 @@ void ShoppingListUiTabHelper::BookmarkMetaInfoChanged(
 }
 
 bool ShoppingListUiTabHelper::ShouldShowPriceTrackingIconView() {
-  return shopping_service_->IsShoppingListEligible() &&
+  return shopping_service_ && shopping_service_->IsShoppingListEligible() &&
          !last_fetched_image_.IsEmpty();
 }
 
@@ -168,6 +182,10 @@ void ShoppingListUiTabHelper::UpdatePriceTrackingStateFromSubscriptions() {
       cluster_id_for_page_.value(),
       base::BindOnce(
           [](base::WeakPtr<ShoppingListUiTabHelper> helper, bool is_tracked) {
+            if (!helper) {
+              return;
+            }
+
             helper->is_cluster_id_tracked_by_user_ = is_tracked;
             helper->UpdatePriceTrackingIconView();
           },

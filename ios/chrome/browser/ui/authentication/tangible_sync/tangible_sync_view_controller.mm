@@ -7,8 +7,8 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/elements/instruction_view.h"
-#import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -69,6 +69,7 @@ UIView* IconViewWithImage(NSString* image_name, BOOL custom_symbol) {
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
+  self.view.accessibilityIdentifier = kTangibleSyncViewAccessibilityIdentifier;
   self.shouldHideBanner = YES;
   self.hasAvatarImage = YES;
   self.scrollToEndMandatory = YES;
@@ -78,42 +79,9 @@ UIView* IconViewWithImage(NSString* image_name, BOOL custom_symbol) {
   self.avatarAccessibilityLabel = self.primaryIdentityAvatarAccessibilityLabel;
   int titleStringID = 0;
   int subtitleStringID = 0;
-  switch (fre_field_trial::GetNewMobileIdentityConsistencyFRE()) {
-    case NewMobileIdentityConsistencyFRE::kTangibleSyncA:
-      titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_TURN_ON_SYNC;
-      subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP;
-      _activateSyncButtonID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
-      break;
-    case NewMobileIdentityConsistencyFRE::kTangibleSyncB:
-      titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_SYNC;
-      subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP;
-      _activateSyncButtonID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
-      break;
-    case NewMobileIdentityConsistencyFRE::kTangibleSyncC:
-      titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_TURN_ON_SYNC;
-      subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_SYNC;
-      _activateSyncButtonID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
-      break;
-    case NewMobileIdentityConsistencyFRE::kTangibleSyncD:
-      titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_TURN_ON_SYNC;
-      subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP;
-      _activateSyncButtonID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
-      break;
-    case NewMobileIdentityConsistencyFRE::kTangibleSyncE:
-      titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_TURN_ON_SYNC;
-      subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP;
-      _activateSyncButtonID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
-      break;
-    case NewMobileIdentityConsistencyFRE::kTangibleSyncF:
-      titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_TURN_ON_SYNC;
-      subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP;
-      _activateSyncButtonID = IDS_IOS_TANGIBLE_SYNC_TURN_ON_SYNC;
-      break;
-    case NewMobileIdentityConsistencyFRE::kTwoSteps:
-    case NewMobileIdentityConsistencyFRE::kOld:
-      NOTREACHED();
-      break;
-  }
+  titleStringID = IDS_IOS_TANGIBLE_SYNC_TITLE_TURN_ON_SYNC;
+  subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP;
+  _activateSyncButtonID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
   DCHECK_NE(0, titleStringID);
   DCHECK_NE(0, subtitleStringID);
   [self.delegate addConsentStringID:titleStringID];

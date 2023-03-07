@@ -5,7 +5,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
@@ -70,11 +70,12 @@ TEST_F(ShillProfileClientTest, PropertyChanged) {
                                 std::vector<std::string>(1, kExampleEntryPath));
 
   // Set expectations.
-  base::ListValue value;
+  base::Value::List value;
   value.Append(kExampleEntryPath);
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
-              OnPropertyChanged(shill::kEntriesProperty, ValueEq(value)))
+              OnPropertyChanged(shill::kEntriesProperty,
+                                ValueEq(base::Value(std::move(value)))))
       .Times(1);
 
   // Add the observer
@@ -109,10 +110,10 @@ TEST_F(ShillProfileClientTest, GetProperties) {
   writer.CloseContainer(&array_writer);
 
   // Create the expected value.
-  base::Value entries(base::Value::Type::LIST);
+  base::Value::List entries;
   entries.Append(kExampleEntryPath);
   base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey(shill::kEntriesProperty, std::move(entries));
+  value.GetDict().Set(shill::kEntriesProperty, std::move(entries));
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::BindRepeating(&ExpectNoArgument), response.get());

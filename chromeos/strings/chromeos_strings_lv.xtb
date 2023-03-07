@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP pieprasījumu kļūmes</translation>
 <translation id="1947737735496445907">Izdrukāts</translation>
 <translation id="1951012854035635156">Asistents</translation>
+<translation id="1962550982027027473">Jānorāda noklusējuma APN.</translation>
 <translation id="1977994649430373166">Google profila fotoattēls</translation>
 <translation id="1979103255016296513">Paroles maiņa ir nokavēta</translation>
 <translation id="1999615961760456652">Caurlaides lapa</translation>
@@ -317,6 +318,7 @@
 <translation id="4060260348856573701">Jauns APN</translation>
 <translation id="4093865285251893588">Profila attēls</translation>
 <translation id="409427325554347132">Saglabāt testa informāciju</translation>
+<translation id="4095829376260267438">WPA2/WPA3</translation>
 <translation id="4110686435123617899">Atlasīt albumu <ph name="TITLE" />: <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB skārienpaliktnis</translation>
 <translation id="4117637339509843559">Tumšais režīms</translation>
@@ -635,6 +637,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6791471867139427246">tastatūras apgaismojuma krāsa</translation>
 <translation id="680983167891198932">Atslēga</translation>
 <translation id="6816797338148849397">Ir pieejama informācija, kas saistīta ar jūsu atlasīto saturu. Lai piekļūtu informācijai, nospiediet augšupvērsto bulttaustiņu.</translation>
+<translation id="6838167112108853532">Nevar atspējot vai noņemt šo APN. Iespējotie pievienotie APN ir jāatspējo vai jānoņem.</translation>
 <translation id="6853312040151791195">Izlādes ātrums</translation>
 <translation id="6889786074662672253">Kamēr notiek restartēšana, neatvienojiet šo ārējo ierīci un neizslēdziet datoru. Varat minimizēt šo logu. Restartēšana var ilgt dažas minūtes, un jūsu ārējā ierīce šajā laikā var nedarboties.</translation>
 <translation id="6905724422583748843">Atpakaļ uz lapu <ph name="PAGE_NAME" /></translation>
@@ -717,6 +720,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7690294790491645610">Apstipriniet jauno paroli</translation>
 <translation id="7701040980221191251">Nav</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7716280709122323042">WPA3</translation>
 <translation id="773153675489693198">Ciklu laiks</translation>
 <translation id="7747039790905080783">Iepriekš kopīgota atslēga</translation>
 <translation id="7762130827864645708">Parole ir sekmīgi nomainīta. Lūdzu, turpmāk izmantojiet jauno paroli.</translation>
@@ -724,6 +728,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7769672763586021400">Modeļa ID</translation>
 <translation id="7778717409420828014">Jūsu atsauksmes palīdz mums uzlabot Chromebook datora lietošanas iespējas, un mūsu komanda tās pārskatīs. Tā kā mēs saņemam ļoti daudz ziņojumu, nevarēsim atbildēt uz tiem visiem.</translation>
 <translation id="7784116172884276937">Neviens DNS serveris nav iestatīts</translation>
+<translation id="7791543448312431591">Pievienot</translation>
 <translation id="779591286616261875">Sūtīt jaunu ziņojumu</translation>
 <translation id="7799817062559422778">Gaišais režīms</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
@@ -799,6 +804,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8503836310948963452">Vēl tikai dažas minūtes...</translation>
 <translation id="8508640263392900755">Informācija par APN</translation>
 <translation id="8528615187455571738">Crosvm</translation>
+<translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Jūsu mobilo sakaru operators var pieprasīt šīs opcijas izmantošanu, lai varētu izveidot savienojumu ar attiecīgā operatora tīklu. Lai iegūtu detalizētu informāciju, sazinieties ar savu mobilo sakaru operatoru.</translation>
 <translation id="8576249514688522074">Pārbaude nav sākta</translation>
 <translation id="8620617069779373398">Viesabonēšanas statuss</translation>

@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -27,6 +27,7 @@ namespace em = enterprise_management;
 namespace policy {
 
 const char kPolicyDescriptionKey[] = "policyDescriptionKey";
+const char kFlexOrgWarningKey[] = "flexOrgWarning";
 
 const char kAssetIdKey[] = "assetId";
 const char kLocationKey[] = "location";

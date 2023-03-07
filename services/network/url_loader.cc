@@ -10,13 +10,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -550,7 +550,6 @@ URLLoader::URLLoader(
       allow_http1_for_streaming_upload_(
           request.request_body &&
           request.request_body->AllowHTTP1ForStreamingUpload()),
-      third_party_cookies_enabled_(third_party_cookies_enabled),
       accept_ch_frame_observer_(std::move(accept_ch_frame_observer)) {
   TRACE_EVENT("loading", "URLLoader::URLLoader",
               perfetto::Flow::FromPointer(this));
@@ -677,7 +676,9 @@ URLLoader::URLLoader(
 
   if (cache_transparency_settings_ &&
       cache_transparency_settings_->cache_transparency_enabled() &&
-      ThirdPartyCookiesEnabled()) {
+      third_party_cookies_enabled &&
+      !(options_ & (mojom::kURLLoadOptionBlockThirdPartyCookies |
+                    mojom::kURLLoadOptionBlockAllCookies))) {
     auto checksum =
         cache_transparency_settings_->GetChecksumForURL(request.url);
     if (checksum.has_value()) {
@@ -701,6 +702,7 @@ URLLoader::URLLoader(
   }
 
   url_request_->SetLoadFlags(request_load_flags);
+  url_request_->SetPriorityIncremental(request.priority_incremental);
   SetRequestCredentials(request.url);
 
   url_request_->SetRequestHeadersCallback(base::BindRepeating(
@@ -920,7 +922,7 @@ void URLLoader::BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(
   // get the corresponding response header. It is okay to cache the results in
   // case subsequent requests are made to the same URL in non-trust-token
   // settings.
-  if (request.trust_token_params->type !=
+  if (request.trust_token_params->operation !=
       mojom::TrustTokenOperationType::kSigning) {
     url_request_->SetLoadFlags(url_request_->load_flags() |
                                net::LOAD_BYPASS_CACHE);
@@ -936,11 +938,11 @@ void URLLoader::BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(
       url_request_->net_log(),
       base::BindOnce(&URLLoader::OnDoneConstructingTrustTokenHelper,
                      weak_ptr_factory_.GetWeakPtr(),
-                     request.trust_token_params->type));
+                     request.trust_token_params->operation));
 }
 
 void URLLoader::OnDoneConstructingTrustTokenHelper(
-    mojom::TrustTokenOperationType type,
+    mojom::TrustTokenOperationType operation,
     TrustTokenStatusOrRequestHelper status_or_helper) {
   if (trust_token_observer_) {
     const net::IsolationInfo& isolation_info = url_request_->isolation_info();
@@ -971,7 +973,7 @@ void URLLoader::OnDoneConstructingTrustTokenHelper(
       mojom::TrustTokenOperationResultPtr operation_result =
           mojom::TrustTokenOperationResult::New();
       operation_result->status = *trust_token_status_;
-      operation_result->type = type;
+      operation_result->operation = operation;
       devtools_observer_->OnTrustTokenOperationDone(
           devtools_request_id().value(), std::move(operation_result));
     }
@@ -1861,7 +1863,7 @@ int URLLoader::OnBeforeStartTransaction(
   // Additional cookies were added to the existing headers, so `callback` must
   // be invoked to ensure that the cookies are included in the request.
   if (!cookies_from_browser_.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), net::OK,
                        AttachCookies(headers, cookies_from_browser_)));
@@ -2396,8 +2398,12 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
         response_->Clone(), std::move(consumer_handle), absl::nullopt);
   }
 
-  CompleteBlockedResponse(blocked_error_code,
-                          corb_analyzer_->ShouldReportBlockedResponse());
+  // At this point, corb_analyzer_ has done its duty. We'll reset it now
+  // to force UMA reporting to happen earlier, to support easier testing.
+  bool should_report_blocked_response =
+      corb_analyzer_->ShouldReportBlockedResponse();
+  corb_analyzer_.reset();
+  CompleteBlockedResponse(blocked_error_code, should_report_blocked_response);
 
   // If the factory is asking to complete requests of this type, then we need to
   // continue processing the response to make sure the network cache is
@@ -2661,12 +2667,6 @@ bool URLLoader::CoepAllowCredentials(const GURL& url) {
 
   // [spec]: 5. Return false.
   return false;
-}
-
-bool URLLoader::ThirdPartyCookiesEnabled() const {
-  return third_party_cookies_enabled_ &&
-         !(options_ & (mojom::kURLLoadOptionBlockThirdPartyCookies |
-                       mojom::kURLLoadOptionBlockAllCookies));
 }
 
 }  // namespace network

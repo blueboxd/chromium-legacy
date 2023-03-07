@@ -14,8 +14,6 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
@@ -23,6 +21,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/posix/eintr_wrapper.h"
@@ -1139,6 +1139,46 @@ class OpenComplexFlagsDelegate final : public BrokerTestDelegate {
 
 TEST(BrokerProcessIntegrationTest, OpenComplexFlags) {
   RunAllBrokerTests<OpenComplexFlagsDelegate>();
+}
+
+class RewriteProcSelfDelegate final : public BrokerTestDelegate {
+ public:
+  BrokerParams ChildSetUpPreSandbox() override {
+    pre_sandbox_status_fd_.reset(HANDLE_EINTR(open(kProcSelfStatus, O_RDONLY)));
+    BPF_ASSERT(pre_sandbox_status_fd_.is_valid());
+
+    struct stat sb;
+    BPF_ASSERT_GE(fstat(pre_sandbox_status_fd_.get(), &sb), 0);
+    pre_sandbox_status_ino_ = sb.st_ino;
+
+    BrokerParams params;
+    params.allowed_command_set = syscall_broker::MakeBrokerCommandSet(
+        {syscall_broker::COMMAND_ACCESS, syscall_broker::COMMAND_OPEN});
+    params.permissions.push_back(
+        BrokerFilePermission::ReadOnly(kProcSelfStatus));
+    return params;
+  }
+
+  void RunTestInSandboxedChild(Syscaller* syscaller) override {
+    base::ScopedFD status_fd(syscaller->Open(kProcSelfStatus, O_RDONLY));
+    BPF_ASSERT(status_fd.is_valid());
+
+    // The fd opened by the broker should have the same inode number as the fd
+    // opened in this process pre-sandbox.
+    struct stat sb;
+    BPF_ASSERT_GE(fstat(status_fd.get(), &sb), 0);
+    BPF_ASSERT_EQ(pre_sandbox_status_ino_, sb.st_ino);
+  }
+
+ private:
+  static constexpr char kProcSelfStatus[] = "/proc/self/status";
+
+  ino_t pre_sandbox_status_ino_ = 0;
+  base::ScopedFD pre_sandbox_status_fd_;
+};
+
+TEST(BrokerProcessIntegrationTest, RewriteProcSelf) {
+  RunAllBrokerTests<RewriteProcSelfDelegate>();
 }
 
 class CreateFileDelegate final : public BrokerTestDelegate {

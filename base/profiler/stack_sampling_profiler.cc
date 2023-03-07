@@ -11,9 +11,9 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/atomicops.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -27,7 +27,6 @@
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
@@ -766,7 +765,11 @@ bool StackSamplingProfiler::IsSupportedForCurrentPlatform() {
 #if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86_64)) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_IOS) && defined(ARCH_CPU_64_BITS)) ||                     \
     (BUILDFLAG(IS_ANDROID) &&                                               \
-     (BUILDFLAG(ENABLE_ARM_CFI_TABLE) || defined(ARCH_CPU_ARM64)))
+     ((defined(ARCH_CPU_ARMEL) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)) ||       \
+      (defined(ARCH_CPU_ARM64) &&                                           \
+       BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)))) ||                      \
+    (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_64) &&                  \
+     BUILDFLAG(IS_CHROMEOS_DEVICE))
 #if BUILDFLAG(IS_WIN)
   // Do not start the profiler when Application Verifier is in use; running them
   // simultaneously can cause crashes and has no known use case.

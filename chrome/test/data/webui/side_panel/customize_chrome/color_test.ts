@@ -28,6 +28,8 @@ suite('ColorTest', () => {
 
   test('color can be checked', () => {
     colorElement.checked = true;
+    colorElement.style.width = '66px';
+    colorElement.style.height = '66px';
 
     const wrapper = colorElement.shadowRoot!.querySelector(
         'customize-chrome-check-mark-wrapper')!;
@@ -35,12 +37,13 @@ suite('ColorTest', () => {
     const svg = colorElement.shadowRoot!.querySelector('svg')!;
     assertStyle(svg, 'width', '46px');
     assertStyle(svg, 'height', '46px');
-    const background = colorElement.shadowRoot!.querySelector('#background')!;
-    assertStyle(background, 'r', '25px');
+    assertStyle(svg, 'border', '0px none rgb(0, 0, 0)');
   });
 
   test('color can be unchecked', () => {
     colorElement.checked = false;
+    colorElement.style.width = '66px';
+    colorElement.style.height = '66px';
 
     const wrapper = colorElement.shadowRoot!.querySelector(
         'customize-chrome-check-mark-wrapper')!;
@@ -48,8 +51,7 @@ suite('ColorTest', () => {
     const svg = colorElement.shadowRoot!.querySelector('svg')!;
     assertStyle(svg, 'width', '50px');
     assertStyle(svg, 'height', '50px');
-    const background = colorElement.shadowRoot!.querySelector('#background')!;
-    assertStyle(background, 'r', '24px');
+    assertStyle(svg, 'border', '1px solid rgba(0, 0, 0, 0)');
   });
 
   test('background color can be hidden', () => {

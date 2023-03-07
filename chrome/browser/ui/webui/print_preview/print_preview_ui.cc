@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_functions.h"
@@ -47,6 +47,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/pdf_resources.h"
+#include "chrome/grit/pdf_resources_map.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
 #include "components/device_event_log/device_event_log.h"
@@ -118,8 +120,6 @@ void StopWorker(int document_cookie) {
       g_browser_process->print_job_manager()->queue();
   std::unique_ptr<PrinterQuery> printer_query =
       queue->PopPrinterQuery(document_cookie);
-  if (printer_query)
-    printer_query->StopWorker();
 }
 
 bool IsValidPageNumber(uint32_t page_number, uint32_t page_count) {
@@ -365,17 +365,17 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
       "object-src chrome-untrusted://print;");
 }
 
-content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
+void CreateAndAddPrintPreviewUISource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIPrintHost);
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kPrintPreviewResources, kPrintPreviewResourcesSize),
       IDR_PRINT_PREVIEW_PRINT_PREVIEW_HTML);
   AddPrintPreviewStrings(source);
+  source->AddResourcePaths(base::make_span(kPdfResources, kPdfResourcesSize));
   SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
-  return source;
 }
 
 PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
@@ -433,12 +433,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
 
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource* source = CreatePrintPreviewUISource(profile);
-#if !BUILDFLAG(OPTIMIZE_WEBUI)
-  // For the Polymer 3 demo page.
-  ManagedUIHandler::Initialize(web_ui, source);
-#endif
-  content::WebUIDataSource::Add(profile, source);
+  CreateAndAddPrintPreviewUISource(profile);
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));

@@ -8,13 +8,14 @@
 
 #import <memory>
 
-#import "base/bind.h"
+#import "base/functional/bind.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
@@ -24,6 +25,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
@@ -32,7 +34,6 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
@@ -44,6 +45,8 @@ using testing::DefaultValue;
 using testing::NiceMock;
 using testing::Return;
 
+namespace {
+
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
   sync_preferences::PrefServiceMockFactory factory;
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
@@ -54,11 +57,12 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
   return prefs;
 }
 
-std::unique_ptr<KeyedService>
-PassphraseTableViewControllerTest::CreateNiceMockSyncService(
+std::unique_ptr<KeyedService> CreateNiceMockSyncService(
     web::BrowserState* context) {
   return std::make_unique<NiceMock<syncer::MockSyncService>>();
 }
+
+}  // anonymous namespace
 
 PassphraseTableViewControllerTest::PassphraseTableViewControllerTest()
     : ChromeTableViewControllerTest(),
@@ -79,11 +83,12 @@ void PassphraseTableViewControllerTest::SetUp() {
       AuthenticationServiceFactory::GetInstance(),
       AuthenticationServiceFactory::GetDefaultFactory());
   test_cbs_builder.AddTestingFactory(
-      SyncServiceFactory::GetInstance(),
-      base::BindRepeating(&CreateMockSyncService));
-  test_cbs_builder.AddTestingFactory(
       SyncSetupServiceFactory::GetInstance(),
       base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
+  test_cbs_builder.AddTestingFactory(
+      SyncServiceFactory::GetInstance(),
+      base::BindRepeating(&CreateNiceMockSyncService));
+  RegisterTestingFactories(test_cbs_builder);
   test_cbs_builder.SetPrefService(CreatePrefService());
   chrome_browser_state_ = test_cbs_builder.Build();
   AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
@@ -97,9 +102,7 @@ void PassphraseTableViewControllerTest::SetUp() {
   SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
   fake_sync_service_ = static_cast<syncer::MockSyncService*>(
-      SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          chrome_browser_state_.get(),
-          base::BindRepeating(&CreateNiceMockSyncService)));
+      SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get()));
 
   // Set up non-default return values for our sync service mock.
   ON_CALL(*fake_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
@@ -107,9 +110,10 @@ void PassphraseTableViewControllerTest::SetUp() {
   ON_CALL(*fake_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
 
-  ios::FakeChromeIdentityService* identityService =
-      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-  identityService->AddIdentities(@[ @"identity1" ]);
+  FakeSystemIdentityManager* system_identity_manager =
+      FakeSystemIdentityManager::FromSystemIdentityManager(
+          GetApplicationContext()->GetSystemIdentityManager());
+  system_identity_manager->AddIdentities(@[ @"identity1" ]);
 
   ChromeAccountManagerService* account_manager_service =
       ChromeAccountManagerServiceFactory::GetForBrowserState(
@@ -126,6 +130,11 @@ void PassphraseTableViewControllerTest::TearDown() {
   [nav_controller_ setViewControllers:@[] animated:NO];
   nav_controller_ = nil;
   ChromeTableViewControllerTest::TearDown();
+}
+
+void PassphraseTableViewControllerTest::RegisterTestingFactories(
+    TestChromeBrowserState::Builder& builder) {
+  // nothing to do, this is for sub-classes to override
 }
 
 void PassphraseTableViewControllerTest::SetUpNavigationController(

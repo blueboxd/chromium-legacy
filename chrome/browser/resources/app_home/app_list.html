@@ -34,33 +34,47 @@
 
 <div id="container">
   <template is="dom-repeat" items="[[apps_]]">
-    <app-item data="[[item]]"></app-item>
+    <app-item app-info="[[item]]"></app-item>
   </template>
 </div>
 
-<cr-action-menu id="menu">
-  <div tabindex="0" class="dropdown-item"
+<cr-action-menu id="menu" hidden="{{!selectedActionMenuModel_}}">
+  <div id="open-in-window" tabindex="0" class="dropdown-item"
+      on-click="onOpenInWindowItemClick_"
+      hidden="[[isOpenInWindowHidden_(selectedActionMenuModel_)]]">
+    <div class="dropdown-item-label">
+      $i18n{appWindowOpenLabel}
+    </div>
+    <cr-checkbox checked="{{selectedActionMenuModel_.appInfo.openInWindow}}"
       on-click="onOpenInWindowItemClick_">
-    <div class="dropdown-item-label">
-      Open in window
-    </div>
-    <cr-checkbox>Enable opening app in window</cr-checkbox>
+      $i18n{appWindowOpenCheckboxLabel}
+    </cr-checkbox>
   </div>
-  <div tabindex="0" class="dropdown-item"
+  <div id="launch-on-startup" tabindex="0" class="dropdown-item"
+      on-click="onLaunchOnStartupItemClick_"
+      hidden="[[isLaunchOnStartupHidden_(selectedActionMenuModel_)]]">
+    <div class="dropdown-item-label">
+      $i18n{appLaunchAtStartupLabel}
+    </div>
+    <cr-checkbox
+      checked="[[isLaunchOnStartUp_(selectedActionMenuModel_)]]"
+      disabled=
+        "[[isLaunchOnStartupDisabled_(selectedActionMenuModel_)]]"
       on-click="onLaunchOnStartupItemClick_">
-    <div class="dropdown-item-label">
-      Launch on startup
-    </div>
-    <cr-checkbox>Enable launching app on startup</cr-checkbox>
+      $i18n{appLaunchAtStartupCheckboxLabel}
+    </cr-checkbox>
   </div>
-  <button class="dropdown-item" on-click="onCreateShortcutItemClick_">
-    Create a shortcut
+  <button id="create-shortcut" class="dropdown-item"
+      on-click="onCreateShortcutItemClick_">
+    $i18n{createShortcutForAppLabel}
   </button>
   <hr>
-  <button class="dropdown-item" on-click="onUninstallItemClick_">
-    Uninstall
+  <button id="uninstall" class="dropdown-item"
+      on-click="onUninstallItemClick_">
+    $i18n{uninstallAppLabel}
   </button>
-  <button class="dropdown-item" on-click="onAppSettingsItemClick_">
-    App settings
+  <button id="app-settings" class="dropdown-item"
+      on-click="onAppSettingsItemClick_">
+    $i18n{appSettingsLabel}
   </button>
 </cr-action-menu>

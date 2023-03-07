@@ -14,11 +14,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
@@ -58,6 +58,7 @@
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
+#include "services/network/public/mojom/restricted_udp_socket.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -326,6 +327,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateUDPSocket(
       mojo::PendingReceiver<mojom::UDPSocket> receiver,
       mojo::PendingRemote<mojom::UDPSocketListener> listener) override;
+  void CreateRestrictedUDPSocket(
+      const net::IPEndPoint& addr,
+      mojom::RestrictedUDPSocketMode mode,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::UDPSocketOptionsPtr options,
+      mojo::PendingReceiver<mojom::RestrictedUDPSocket> receiver,
+      mojo::PendingRemote<mojom::UDPSocketListener> listener,
+      mojom::NetworkContext::CreateRestrictedUDPSocketCallback callback)
+      override;
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       uint32_t backlog,
@@ -677,8 +687,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   int CheckCTComplianceForSignedExchange(
       net::CertVerifyResult& cert_verify_result,
       const net::X509Certificate& certificate,
-      const net::HostPortPair& host_port_pair,
-      const net::NetworkAnonymizationKey& network_anonymization_key);
+      const net::HostPortPair& host_port_pair);
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)

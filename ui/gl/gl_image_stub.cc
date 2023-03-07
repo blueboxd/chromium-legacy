@@ -19,27 +19,6 @@ gfx::Size GLImageStub::GetSize() {
   return gfx::Size(1, 1);
 }
 
-unsigned GLImageStub::GetInternalFormat() { return GL_RGBA; }
-
-unsigned GLImageStub::GetDataType() {
-  return GL_UNSIGNED_BYTE;
-}
-
-GLImageStub::BindOrCopy GLImageStub::ShouldBindOrCopy() {
-  return BIND;
-}
-
 bool GLImageStub::BindTexImage(unsigned target) { return true; }
-
-bool GLImageStub::CopyTexImage(unsigned target) {
-  NOTREACHED();
-  return false;
-}
-
-bool GLImageStub::CopyTexSubImage(unsigned target,
-                                  const gfx::Point& offset,
-                                  const gfx::Rect& rect) {
-  return false;
-}
 
 }  // namespace gl

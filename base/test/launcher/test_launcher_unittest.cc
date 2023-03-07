@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/process/launch.h"
@@ -25,7 +25,6 @@
 #include "base/test/scoped_logging_settings.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time_to_iso8601.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -33,10 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace base {
 namespace {
@@ -1145,13 +1140,6 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   command_line.AppendSwitchPath("test-launcher-summary-output", path);
   command_line.AppendSwitch("gtest_also_run_disabled_tests");
   command_line.AppendSwitchASCII("test-launcher-retry-limit", "0");
-#if BUILDFLAG(IS_WIN)
-  // In Windows versions prior to Windows 8, nested job objects are
-  // not allowed and cause this test to fail.
-  if (win::GetVersion() < win::Version::WIN8) {
-    command_line.AppendSwitch(kDontUseJobObjectFlag);
-  }
-#endif  // BUILDFLAG(IS_WIN)
 
   std::string output;
   GetAppOutputAndError(command_line, &output);
@@ -1260,13 +1248,6 @@ TEST_F(UnitTestLauncherDelegateTester, LeakedChildProcess) {
   command_line.AppendSwitchPath("test-launcher-summary-output", path);
   command_line.AppendSwitch("gtest_also_run_disabled_tests");
   command_line.AppendSwitchASCII("test-launcher-retry-limit", "0");
-#if BUILDFLAG(IS_WIN)
-  // In Windows versions prior to Windows 8, nested job objects are
-  // not allowed and cause this test to fail.
-  if (win::GetVersion() < win::Version::WIN8) {
-    command_line.AppendSwitch(kDontUseJobObjectFlag);
-  }
-#endif  // BUILDFLAG(IS_WIN)
 
   std::string output;
   int exit_code = 0;

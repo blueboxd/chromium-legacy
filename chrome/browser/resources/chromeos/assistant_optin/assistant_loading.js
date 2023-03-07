@@ -12,19 +12,19 @@
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/paper-progress/paper-progress.js';
 import '../components/buttons/oobe_text_button.js';
-import '../components/common_styles/oobe_dialog_host_styles.m.js';
+import '../components/common_styles/oobe_dialog_host_styles.css.js';
 import '../components/dialogs/oobe_adaptive_dialog.js';
 import '../components/dialogs/oobe_content_dialog.js';
-import './assistant_icon.m.js';
-import './assistant_common_styles.m.js';
+import './assistant_icons.html.js';
+import './assistant_common_styles.css.js';
 
 import {afterNextRender, html, mixinBehaviors, Polymer, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {MultiStepBehavior, MultiStepBehaviorInterface} from '../components/behaviors/multi_step_behavior.m.js';
+import {MultiStepBehavior, MultiStepBehaviorInterface} from '../components/behaviors/multi_step_behavior.js';
 import {OobeDialogHostBehavior} from '../components/behaviors/oobe_dialog_host_behavior.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../components/behaviors/oobe_i18n_behavior.js';
 
-import {BrowserProxyImpl} from './browser_proxy.m.js';
+import {BrowserProxyImpl} from './browser_proxy.js';
 
 
 const AssistantLoadingUIState = {

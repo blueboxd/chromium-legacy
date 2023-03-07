@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -105,38 +104,6 @@ void WindowAgentFactory::Trace(Visitor* visitor) const {
   visitor->Trace(origin_keyed_agent_cluster_agents_);
   visitor->Trace(tuple_origin_agents_);
   visitor->Trace(agent_group_scheduler_);
-}
-
-// static
-unsigned WindowAgentFactory::SchemeAndRegistrableDomainHash::GetHash(
-    const SchemeAndRegistrableDomain& value) {
-  return WTF::HashInts(StringHash::GetHash(value.scheme),
-                       StringHash::GetHash(value.registrable_domain));
-}
-
-// static
-bool WindowAgentFactory::SchemeAndRegistrableDomainHash::Equal(
-    const SchemeAndRegistrableDomain& x,
-    const SchemeAndRegistrableDomain& y) {
-  return x.scheme == y.scheme && x.registrable_domain == y.registrable_domain;
-}
-
-// static
-bool WindowAgentFactory::SchemeAndRegistrableDomainTraits::IsEmptyValue(
-    const SchemeAndRegistrableDomain& value) {
-  return HashTraits<String>::IsEmptyValue(value.scheme);
-}
-
-// static
-bool WindowAgentFactory::SchemeAndRegistrableDomainTraits::IsDeletedValue(
-    const SchemeAndRegistrableDomain& value) {
-  return HashTraits<String>::IsDeletedValue(value.scheme);
-}
-
-// static
-void WindowAgentFactory::SchemeAndRegistrableDomainTraits::
-    ConstructDeletedValue(SchemeAndRegistrableDomain& slot, bool zero_value) {
-  HashTraits<String>::ConstructDeletedValue(slot.scheme, zero_value);
 }
 
 }  // namespace blink

@@ -27,7 +27,7 @@ class PaymentRequestState;
 // views shown in the PaymentRequestDialog.
 class PaymentRequestSheetController {
  public:
-  using ButtonCallback = base::RepeatingClosure;
+  using ButtonCallback = views::Button::PressedCallback;
 
   // Objects of this class are owned by |dialog|, so it's a non-owned pointer
   // that should be valid throughout this object's lifetime.
@@ -76,6 +76,9 @@ class PaymentRequestSheetController {
 
   // Called when the back button is pressed on the dialog.
   void BackButtonPressed();
+
+  // Called when the close button is pressed on the dialog.
+  void CloseButtonPressed();
 
  protected:
   // Clears the content part of the view represented by this view controller and
@@ -180,7 +183,11 @@ class PaymentRequestSheetController {
   // Returns true to display dynamic top and bottom border for hidden contents.
   virtual bool DisplayDynamicBorderForHiddenContents();
 
-  void CloseButtonPressed();
+  // Returns true if the subclass wants the 'Enter' key to be accelerated to
+  // always map to performing the primary button action (irregardless of the
+  // currently focused element). If a subclass returns true for this, it must
+  // also return true for ShouldShowPrimaryButton.
+  virtual bool ShouldAccelerateEnterKey();
 
   views::MdTextButton* primary_button() { return primary_button_; }
 
@@ -193,9 +200,11 @@ class PaymentRequestSheetController {
   // Returns whether the controller should be controlling the UI.
   bool is_active() const { return is_active_; }
 
-  base::WeakPtr<PaymentRequestSheetController> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
+  // Provide a base::WeakPtr to the subclass instance. Subclasses must implement
+  // this method as a base::WeakPtrFactory must be the last member in the
+  // concrete (aka leaf) class in order to avoid subtle use-after-destroy
+  // issues.
+  virtual base::WeakPtr<PaymentRequestSheetController> GetWeakPtr() = 0;
 
  private:
   // Add the primary/secondary buttons to |container|.
@@ -207,7 +216,7 @@ class PaymentRequestSheetController {
   // otherwise sets it to false. The |is_enabled| is an out-param to enable
   // binding the method with a base::WeakPtr, which prohibits non-void return
   // values.
-  void PerformPrimaryButtonAction(bool* is_enabled);
+  void PerformPrimaryButtonAction(bool* is_enabled, const ui::Event& event);
 
   base::WeakPtr<PaymentRequestSpec> const spec_;
   base::WeakPtr<PaymentRequestState> const state_;
@@ -231,8 +240,6 @@ class PaymentRequestSheetController {
 
   // Whether the controller should be controlling the UI.
   bool is_active_ = true;
-
-  base::WeakPtrFactory<PaymentRequestSheetController> weak_ptr_factory_{this};
 };
 
 }  // namespace payments

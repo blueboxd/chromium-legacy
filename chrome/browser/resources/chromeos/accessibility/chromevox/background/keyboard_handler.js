@@ -8,11 +8,13 @@
 import {KeyCode} from '../../common/key_code.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+import {Msgs} from '../common/msgs.js';
 import {QueueMode} from '../common/tts_types.js';
 
 import {ChromeVox} from './chromevox.js';
+import {ChromeVoxRange} from './chromevox_range.js';
 import {ChromeVoxState} from './chromevox_state.js';
-import {EventSourceState} from './event_source.js';
+import {EventSource} from './event_source.js';
 import {MathHandler} from './math_handler.js';
 import {Output} from './output/output.js';
 import {ChromeVoxPrefs} from './prefs.js';
@@ -39,11 +41,14 @@ const KeyboardPassThroughState_ = {
 export class BackgroundKeyboardHandler {
   /** @private */
   constructor() {
+    /** @private {Set} */
+    this.eatenKeyDowns_ = new Set();
+
+    /** @private {boolean} */
+    this.passThroughModeEnabled_ = false;
+
     /** @private {!KeyboardPassThroughState_} */
     this.passThroughState_ = KeyboardPassThroughState_.NO_PASS_THROUGH;
-
-    /** @type {Set} @private */
-    this.eatenKeyDowns_ = new Set();
 
     /** @private {Set} */
     this.passedThroughKeyDowns_ = new Set();
@@ -63,6 +68,11 @@ export class BackgroundKeyboardHandler {
     BackgroundKeyboardHandler.instance = new BackgroundKeyboardHandler();
   }
 
+  static enablePassThroughMode() {
+    ChromeVox.tts.speak(Msgs.getMsg('pass_through_key'), QueueMode.QUEUE);
+    BackgroundKeyboardHandler.instance.passThroughModeEnabled_ = true;
+  }
+
   /**
    * Handles key down events.
    * @param {Event} evt The key down event to process.
@@ -70,7 +80,7 @@ export class BackgroundKeyboardHandler {
    *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
   onKeyDown(evt) {
-    EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
+    EventSource.set(EventSourceType.STANDARD_KEYBOARD);
     evt.stickyMode = ChromeVoxPrefs.isStickyModeOn();
 
     // If somehow the user gets into a state where there are dangling key downs
@@ -81,7 +91,7 @@ export class BackgroundKeyboardHandler {
       this.passedThroughKeyDowns_.clear();
     }
 
-    if (ChromeVox.passThroughMode) {
+    if (this.passThroughModeEnabled_) {
       this.passedThroughKeyDowns_.add(evt.keyCode);
       return false;
     }
@@ -93,7 +103,7 @@ export class BackgroundKeyboardHandler {
 
     if (!this.callOnKeyDownHandlers_(evt) ||
         this.shouldConsumeSearchKey_(evt)) {
-      if (ChromeVox.passThroughMode) {
+      if (this.passThroughModeEnabled_) {
         this.passThroughState_ =
             KeyboardPassThroughState_.PENDING_PASS_THROUGH_SHORTCUT_KEYUPS;
       }
@@ -134,7 +144,7 @@ export class BackgroundKeyboardHandler {
     // either eat it here or re-inject it; otherwise, some components, like
     // ARC++ with TalkBack never get it. We only want to re-inject when
     // ChromeVox has no range.
-    if (!ChromeVoxState.instance.currentRange) {
+    if (!ChromeVoxRange.current) {
       return false;
     }
 
@@ -154,7 +164,7 @@ export class BackgroundKeyboardHandler {
       this.eatenKeyDowns_.delete(evt.keyCode);
     }
 
-    if (ChromeVox.passThroughMode) {
+    if (this.passThroughModeEnabled_) {
       this.passedThroughKeyDowns_.delete(evt.keyCode);
       if (this.passThroughState_ ===
               KeyboardPassThroughState_.PENDING_PASS_THROUGH_SHORTCUT_KEYUPS &&
@@ -169,7 +179,7 @@ export class BackgroundKeyboardHandler {
           this.passedThroughKeyDowns_.size === 0) {
         // All keys of the passed through shortcut have been released. Ready to
         // go back to normal processing (aka no pass through).
-        ChromeVox.passThroughMode = false;
+        this.passThroughModeEnabled_ = false;
         this.passThroughState_ = KeyboardPassThroughState_.NO_PASS_THROUGH;
       }
     }

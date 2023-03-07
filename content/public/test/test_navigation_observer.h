@@ -8,10 +8,10 @@
 #include <map>
 #include <memory>
 
-#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "content/public/common/child_process_host.h"
+#include "base/functional/callback.h"
+#include "content/public/browser/child_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"

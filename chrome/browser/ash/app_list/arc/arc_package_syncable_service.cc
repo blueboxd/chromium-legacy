@@ -10,9 +10,11 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/connection_holder.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_list/arc/arc_package_syncable_service_factory.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -89,17 +91,23 @@ ArcSyncItem::SyncItem(const std::string& package_name,
 // ArcPackageSyncableService public
 ArcPackageSyncableService::ArcPackageSyncableService(Profile* profile,
                                                      ArcAppListPrefs* prefs)
-    : profile_(profile),
-      sync_processor_(nullptr),
-      sync_error_handler_(nullptr),
-      prefs_(prefs) {
+    : profile_(profile), sync_processor_(nullptr), prefs_(prefs) {
   if (prefs_)
     prefs_->AddObserver(this);
+
+  auto* arc_session_manager = arc::ArcSessionManager::Get();
+  DCHECK(arc_session_manager);
+  arc_session_manager->AddObserver(this);
 }
 
 ArcPackageSyncableService::~ArcPackageSyncableService() {
   if (prefs_)
     prefs_->RemoveObserver(this);
+
+  // arc::ArcSessionManager may be released first.
+  if (auto* arc_session_manager = ArcSessionManager::Get()) {
+    arc_session_manager->RemoveObserver(this);
+  }
 }
 
 // static
@@ -138,17 +146,16 @@ absl::optional<syncer::ModelError>
 ArcPackageSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) {
   DCHECK(sync_processor.get());
-  DCHECK(error_handler.get());
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
   DCHECK(!sync_processor_.get());
   DCHECK(!IsArcAppSyncFlowDisabled());
   DCHECK(prefs_->package_list_initial_refreshed());
 
   sync_processor_ = std::move(sync_processor);
-  sync_error_handler_ = std::move(error_handler);
+  metrics_helper_.SetTimeSyncStarted();
+  uint64_t num_expected_apps = 0;
 
   const std::vector<std::string> local_packages =
       prefs_->GetPackagesFromPrefs();
@@ -167,10 +174,14 @@ ArcPackageSyncableService::MergeDataAndStartSyncing(
     if (!base::Contains(local_package_set, package_name)) {
       pending_install_items_[package_name] = std::move(sync_item);
       InstallPackage(pending_install_items_[package_name].get());
+      num_expected_apps++;
     } else {
       // TODO(lgcheng@) may need to handle update exsiting package here.
       sync_items_[package_name] = std::move(sync_item);
     }
+  }
+  if (profile_->GetPrefs()->GetBoolean(ash::prefs::kRecordArcAppSyncMetrics)) {
+    metrics_helper_.SetAndRecordNumExpectedApps(num_expected_apps);
   }
 
   // Creates sync items for local unsynced packages.
@@ -196,7 +207,6 @@ void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
 
   sync_processor_.reset();
-  sync_error_handler_.reset();
   flare_.Reset();
 
   sync_items_.clear();
@@ -308,6 +318,7 @@ void ArcPackageSyncableService::OnPackageInstalled(
 
     sync_items_[package_name] = std::move(install_iter->second);
     pending_install_items_.erase(install_iter);
+    MaybeUpdateInstallMetrics(package_info);
     return;
   }
 
@@ -476,6 +487,26 @@ bool ArcPackageSyncableService::ShouldSyncPackage(
 
   // A non default package from remote should be synced.
   return true;
+}
+
+void ArcPackageSyncableService::OnArcSessionStopped(ArcStopReason stop_reason) {
+  if (profile_->GetPrefs()->GetBoolean(ash::prefs::kRecordArcAppSyncMetrics)) {
+    metrics_helper_.RecordMetrics();
+  }
+  profile_->GetPrefs()->ClearPref(ash::prefs::kRecordArcAppSyncMetrics);
+}
+
+void ArcPackageSyncableService::MaybeUpdateInstallMetrics(
+    const mojom::ArcPackageInfo& package_info) {
+  if (profile_->GetPrefs()->GetBoolean(ash::prefs::kRecordArcAppSyncMetrics)) {
+    const std::string app_id =
+        prefs_->GetAppIdByPackageName(package_info.package_name);
+    const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs_->GetApp(app_id);
+    absl::optional<uint64_t> app_size =
+        app_info ? app_info->app_size_in_bytes : absl::nullopt;
+    metrics_helper_.OnAppInstalled(app_size);
+  }
 }
 
 }  // namespace arc

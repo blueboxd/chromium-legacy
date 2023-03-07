@@ -7,13 +7,54 @@
 #include <memory>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/commands/install_from_info_command.h"
+#include "chrome/browser/web_applications/commands/install_from_manifest_command.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+
+namespace {
+
+// Maximum size of the manifest file. 1MB.
+constexpr int kMaxManifestSizeInBytes = 1024 * 1024;
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("app_preload_service_web_installer",
+                                        R"(
+      semantics {
+        sender: "App Preload Service"
+        description:
+          "Sends a request to a Google server to retrieve app installation"
+          "information."
+        trigger:
+          "Requests are sent after the App Preload Service has performed an"
+          "initial request to get a list of apps to install."
+        data: "None"
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "This feature cannot be disabled by settings."
+        policy_exception_justification:
+          "This feature is required to deliver core user experiences and "
+          "cannot be disabled by policy."
+      }
+    )");
+
+int GetResponseCode(network::SimpleURLLoader* simple_loader) {
+  if (simple_loader->ResponseInfo() && simple_loader->ResponseInfo()->headers) {
+    return simple_loader->ResponseInfo()->headers->response_code();
+  } else {
+    return -1;
+  }
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -39,31 +80,65 @@ void WebAppPreloadInstaller::InstallApp(
 std::string WebAppPreloadInstaller::GetAppId(
     const PreloadAppDefinition& app) const {
   // The app's "Web app manifest ID" is the equivalent of the unhashed app ID.
-  return web_app::GenerateAppIdFromUnhashed(app.GetWebAppManifestId());
+  return web_app::GenerateAppIdFromUnhashed(app.GetWebAppManifestId().spec());
 }
 
 void WebAppPreloadInstaller::InstallAppImpl(
     PreloadAppDefinition app,
     WebAppPreloadInstalledCallback callback) {
-  web_app::WebAppInstallParams params;
-  params.add_to_quick_launch_bar = false;
+  // Retrieve web manifest
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(app.GetWebAppManifestUrl());
 
-  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
-
-  std::unique_ptr<WebAppInstallInfo> info = nullptr;
-  if (!info) {
+  if (!resource_request->url.is_valid()) {
+    LOG(ERROR) << "Manifest URL for " << app.GetName()
+               << "is invalid: " << resource_request->url;
     std::move(callback).Run(/*success=*/false);
     return;
   }
 
+  resource_request->method = "GET";
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       kTrafficAnnotation);
+
+  auto* loader_ptr = simple_loader.get();
+
+  loader_ptr->DownloadToString(
+      profile_->GetURLLoaderFactory().get(),
+      base::BindOnce(&WebAppPreloadInstaller::OnManifestRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), app, std::move(callback),
+                     std::move(simple_loader)),
+      kMaxManifestSizeInBytes);
+}
+
+void WebAppPreloadInstaller::OnManifestRetrieved(
+    PreloadAppDefinition app,
+    WebAppPreloadInstalledCallback callback,
+    std::unique_ptr<network::SimpleURLLoader> url_loader,
+    std::unique_ptr<std::string> response) {
+  if (url_loader->NetError() != net::OK || response->empty()) {
+    LOG(ERROR) << "Downloading manifest failed for " << app.GetName()
+               << " with error code: " << GetResponseCode(url_loader.get());
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
+
+  base::flat_set<std::string> host_allowlist = {
+      "meltingpot.googleusercontent.com"};
+
   provider->command_manager().ScheduleCommand(
-      std::make_unique<web_app::InstallFromInfoCommand>(
-          std::move(info),
-          /*overwrite_existing_manifest_fields=*/false,
+      std::make_unique<web_app::InstallFromManifestCommand>(
           webapps::WebappInstallSource::PRELOADED_OEM,
+          /*document_url=*/GURL(app.GetWebAppManifestId()).GetWithEmptyPath(),
+          /*manifest_url=*/app.GetWebAppOriginalManifestUrl(),
+          std::move(*response), GetAppId(app), std::move(host_allowlist),
           base::BindOnce(&WebAppPreloadInstaller::OnAppInstalled,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-          params));
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void WebAppPreloadInstaller::OnAppInstalled(

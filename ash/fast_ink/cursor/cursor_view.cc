@@ -4,7 +4,7 @@
 
 #include "ash/fast_ink/cursor/cursor_view.h"
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -244,14 +244,14 @@ void CursorView::OnTimerTick() {
       sk_canvas->translate(SkIntToScalar(motion_blur_offset_.x()),
                            SkIntToScalar(motion_blur_offset_.y()));
 
-      sk_canvas->concat(motion_blur_inverse_matrix_);
+      sk_canvas->concat(SkM44(motion_blur_inverse_matrix_));
       SkRect blur_rect = SkRect::MakeWH(SkIntToScalar(cursor_size_.width()),
                                         SkIntToScalar(cursor_size_.height()));
       motion_blur_matrix_.mapRect(&blur_rect);
       cc::PaintFlags flags;
       flags.setImageFilter(motion_blur_filter_);
-      sk_canvas->saveLayer(&blur_rect, &flags);
-      sk_canvas->concat(motion_blur_matrix_);
+      sk_canvas->saveLayer(blur_rect, flags);
+      sk_canvas->concat(SkM44(motion_blur_matrix_));
       paint.canvas().DrawImageInt(cursor_image_, 0, 0);
       sk_canvas->restore();
     } else {

@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/callback.h"
 #include "base/check_op.h"
+#include "base/functional/callback.h"
 #include "base/guid.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -105,7 +105,7 @@ absl::optional<GURL> FencedFrameURLMapping::AddFencedFrameURLForTesting(
 
   config.reporting_metadata_.emplace(reporting_metadata,
                                      VisibilityToEmbedder::kOpaque,
-                                     VisibilityToContent::kTransparent);
+                                     VisibilityToContent::kOpaque);
   return urn;
 }
 
@@ -145,7 +145,7 @@ FencedFrameURLMapping::AssignFencedFrameURLAndInterestGroupInfo(
   auto& config = urn_uuid_to_url_map_[urn_uuid];
 
   // Assign mapped URL and interest group info.
-  config.urn_.emplace(urn_uuid);
+  config.urn_uuid_.emplace(urn_uuid);
   config.mapped_url_.emplace(url, VisibilityToEmbedder::kOpaque,
                              VisibilityToContent::kTransparent);
   config.ad_auction_data_.emplace(std::move(ad_auction_data),

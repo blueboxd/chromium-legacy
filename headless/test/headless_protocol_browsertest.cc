@@ -13,8 +13,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "headless/app/headless_shell_switches.h"
+#include "content/public/common/content_switches.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/switches.h"
 #include "headless/test/headless_browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -311,6 +312,9 @@ HEADLESS_PROTOCOL_TEST(DragStarted, "input/dragIntercepted.js")
 #endif
 HEADLESS_PROTOCOL_TEST(MAYBE_InputClipboardOps, "input/input-clipboard-ops.js")
 
+HEADLESS_PROTOCOL_TEST(FocusBlurNotifications,
+                       "input/focus-blur-notifications.js")
+
 HEADLESS_PROTOCOL_TEST(HeadlessSessionBasicsTest,
                        "sessions/headless-session-basics.js")
 
@@ -427,15 +431,9 @@ class HeadlessProtocolBrowserTestWithDataPath
     RunTest();                                                              \
   }
 
-// TODO(crbug.com/1396402)  Re-enable after resolving MSAN flaky failures.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_FileInputDirectoryUpload DISABLED_FileInputDirectoryUpload
-#else
-#define MAYBE_FileInputDirectoryUpload FileInputDirectoryUpload
-#endif
-
+// TODO(crbug.com/1399463)  Re-enable after resolving flaky failures.
 HEADLESS_PROTOCOL_TEST_WITH_DATA_PATH(
-    MAYBE_FileInputDirectoryUpload,
+    FileInputDirectoryUpload,
     "sanity/file-input-directory-upload.js",
     "sanity/resources/file-input-directory-upload")
 

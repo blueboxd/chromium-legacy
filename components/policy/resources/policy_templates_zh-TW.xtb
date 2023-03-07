@@ -33,6 +33,7 @@
       拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="1020006815010587263">這位使用者的垃圾桶已停用。</translation>
+<translation id="1021462144002396313"><ph name="PRIVACY_SANDBOX_NAME" /> 政策</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
 <translation id="102492767056134033">設定螢幕小鍵盤在登入畫面中的預設狀態</translation>
 <translation id="102658870205613876">彈出式視窗設定</translation>
@@ -159,6 +160,7 @@
       只有將 <ph name="CHROME_OS_RELEASE_CHANNEL_DELEGATED_POLICY_NAME" /> 設為 False，<ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" /> 設定才會生效。</translation>
 <translation id="1147732569915511430">顯示圖片的 SHA-256 雜湊值。</translation>
 <translation id="1148415065145333943">停用進階電池充電模式</translation>
+<translation id="1150742937785306405">允許使用者在裝置上開啟或關閉 <ph name="PRIVACY_SANDBOX_NAME" /> 網站建議廣告設定。</translation>
 <translation id="1151353063931113432">允許這些網站的圖片</translation>
 <translation id="1151987132434751822">能夠套用政策憑證的驗證機制。可設為下列其中一個值：
             * basic
@@ -188,8 +190,9 @@
 <translation id="1160479894929412407">允許 QUIC 通訊協定</translation>
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
 <translation id="1163080558183062209">停用拒絕清單上的印表機類型</translation>
+<translation id="1163389598183927209">與 <ph name="PRIVACY_SANDBOX_NAME" /> 相關的一組政策。<ph name="PRODUCT_NAME" /> 致力於淘汰第三方 Cookie，詳情請參閱 <ph name="PRIVACY_SANDBOX_URL" />。</translation>
 <translation id="1165923723751466821">允許透過瀏覽器訪客模式和設定檔登入</translation>
-<translation id="117059611145966538">外部印表機伺服器</translation>
+<translation id="117059611145966538">外部列印伺服器</translation>
 <translation id="117080706484659953">允許 <ph name="MAC_OS_NAME" /> 上的政策範圍偵測</translation>
 <translation id="1171106901454883937">啟用裝置版本資訊回報功能</translation>
 <translation id="1171785618439752042">你可以透過這項政策，指定從 <ph name="MS_AD_NAME" /> 伺服器提出 Kerberos 票證要求時可使用哪些加密類型。
@@ -404,6 +407,7 @@
       在 <ph name="PRODUCT_OS_NAME" /> 中，本政策只會套用至關聯的使用者。
 
       這項政策會覆寫 <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" />、<ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" />、<ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> 和使用者的偏好設定。</translation>
+<translation id="1413768951234456918">清除瀏覽記錄</translation>
 <translation id="1413936351612032792">回報 Linux 應用程式使用情形資訊</translation>
 <translation id="1417888712677507140">封鎖從不同來源子頁框觸發的 JavaScript 對話方塊。</translation>
 <translation id="1418387035898607074">針對從信任的來源下載的檔案略過安全瀏覽檢查</translation>
@@ -505,11 +509,6 @@
       </translation>
 <translation id="1484190167468437592">停用單聲道音訊模式</translation>
 <translation id="1486021504508098388">回報背光資訊</translation>
-<translation id="1486469502848499602">變更手動建立新票證的 <ph name="KRB5_CONFIG" /> 建議設定。
-
-      如果你設定了這項政策，系統就以建議設定的形式來套用政策值，並顯示在驗證對話方塊的「進階設定」部分中。
-
-      如果未設定這項政策，系統會改用建議的 <ph name="PRODUCT_OS_NAME" /> 設定。請注意，這項設定也會顯示在驗證對話方塊的「進階設定」部分中。</translation>
 <translation id="1487722536912664411">允許使用者使用 <ph name="PRODUCT_NAME" /></translation>
 <translation id="1487916040416013623">你可以透過這項政策指定允許整合驗證的伺服器。只有當 Proxy 或這份許可清單中的伺服器傳送驗證要求給 <ph name="PRODUCT_NAME" /> 時，系統才會啟用整合驗證。
 
@@ -570,6 +569,7 @@
 
       如果不設定這項政策，所有網站都將使用全域預設值 (不會自動取得存取權)。</translation>
 <translation id="1530812829012954197">一律在瀏覽器中算繪以下網址模式</translation>
+<translation id="1542491165152947087">允許使用者在裝置上開啟或關閉 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告主題設定。</translation>
 <translation id="1552418937045050762">如果啟用這項設定，使用者將可使用「鄰近分享」功能，與附近的使用者互相傳送檔案。
 
       如果停用這項設定，使用者就無法使用「鄰近分享」功能。
@@ -865,6 +865,7 @@
 
       如果將這項政策設為停用或不設定，則遠端協助主機會以使用者的權限層級執行，且遠端使用者無法在桌面上與權限層級較高的視窗互動。</translation>
 <translation id="1837165432382702436">頁面的高度 (以微米為單位)</translation>
+<translation id="1838910874018595451">Kerberos 票證的預填設定</translation>
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
 <translation id="1844972978764975668">允許向 Google 伺服器傳送查詢，以擷取準確的時間戳記</translation>
@@ -884,6 +885,7 @@
       如果不設定這項政策，在已設定 <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME" /> 政策的情況下，系統將套用該政策，否則系統會套用使用者的個人設定。
 
       這項政策中的網址不得與透過 <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME" /> 政策設定的網址產生衝突。如有衝突情況，這項政策的優先順序高於 <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME" /> 政策。</translation>
+<translation id="1858775210076906272">Kerberos 預填設定</translation>
 <translation id="1861206724856734193">設定防止資料外洩的規則清單。</translation>
 <translation id="1862267110714201519">停用 ghost 視窗功能。</translation>
 <translation id="1865417998205858223">金鑰權限</translation>
@@ -999,6 +1001,11 @@
 <translation id="1962864958436828230">設定防止資料外洩的剪貼簿資料大小最低限制</translation>
 <translation id="1964634611280150550">無痕模式已停用</translation>
 <translation id="1964802606569741174">這項政策對 Android YouTube 應用程式沒有影響。如要強制採用 YouTube 安全模式，則必須禁止下載 Android YouTube 應用程式。</translation>
+<translation id="1964985353230379667">為手動建立的新票證指定 <ph name="KRB5_CONFIG" /> 建議設定。
+
+      如果啟用「KerberosUseCustomPrefilledConfig」政策，這項政策的值就會用於建議設定，並顯示在 Kerberos 驗證對話方塊的「進階」部分中。如果將這項政策留空或未設定，系統將刪除建議的 <ph name="PRODUCT_OS_NAME" /> 設定。
+
+      如果停用「KerberosUseCustomPrefilledConfig」政策，系統就不會使用這項政策的值。</translation>
 <translation id="1969212217917526199">覆寫遠端存取主機的偵錯版本政策。
 
           系統會以政策名稱 JSON 字典形式剖析這個值，以對應政策值。</translation>
@@ -1014,19 +1021,19 @@
       只有當 ARC 處於未執行狀態 (例如 Chrome OS 啟動期間) 時，這項政策的變更才會生效。</translation>
 <translation id="1985598967415986700">使用者代理程式縮減功能可透過 Field-Trials 和 Origin-Trials 功能控管。</translation>
 <translation id="1987789058026551147">啟用裝置資訊站工作階段回報功能</translation>
-<translation id="1988345404999458987">為可用的印表機伺服器提供設定。
+<translation id="1988345404999458987">為可用的列印伺服器提供設定。
 
-      這項政策可讓你使用 JSON 檔案為 <ph name="PRODUCT_OS_NAME" />裝置提供外部印表機伺服器設定。
+      這項政策可讓你使用 JSON 檔案為 <ph name="PRODUCT_OS_NAME" />裝置提供外部列印伺服器設定。
 
       檔案大小不得超過 1 MB，且必須包含記錄陣列 (JSON 物件)。每項記錄都必須包含「id」、「url」和「display_name」欄位，並以字串做為欄位值。「id」欄位的值不得重複。
 
       系統會下載並快取這個檔案，並使用加密編譯雜湊碼來驗證下載內容的完整性。只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
 
-      如果正確設定這項政策的值，裝置會嘗試使用 IPP 通訊協定查詢指定的印表機伺服器，確認是否有可用的印表機。
+      如果正確設定這項政策的值，裝置會嘗試使用 IPP 通訊協定查詢指定的列印伺服器，確認是否有可用的印表機。
 
       如果未設定這項政策或設定的值不正確，使用者就不會看到任何伺服器印表機。
 
-      目前印表機伺服器的數量上限是 16 個，系統只會查詢清單中的前 16 個印表機伺服器。
+      目前列印伺服器的數量上限是 16 個，系統只會查詢清單中的前 16 個列印伺服器。
       這項政策與 <ph name="EXTERNAL_PRINT_SERVERS_POLICY" /> 相似，不過前者是依據裝置所設定。
       </translation>
 <translation id="1988371335297483117">系統可透過 HTTP (而非 HTTPS) 下載 <ph name="PRODUCT_OS_NAME" /> 的自動更新裝載。這可讓 HTTP 廣域快取 HTTP 下載內容。
@@ -1196,7 +1203,7 @@
 
       如果將這項政策設為啟用或不設定，系統會將已造訪的來源回報給 OS，而在「裝置使用時間」設定中設為封鎖的來源會顯示封鎖畫面。
       如果停用這項政策，則系統不會向 OS 回報已造訪的來源，且使用者可以存取在「裝置使用時間」設定中設為封鎖的來源。</translation>
-<translation id="2156755242840687300">已啟用的外部印表機伺服器</translation>
+<translation id="2156755242840687300">已啟用的外部列印伺服器</translation>
 <translation id="2157842368188031417">這項政策僅適用於受管理的訪客工作階段。你必須為 Imprivata 的共用工作站模式啟用此政策，才能讓使用者在工作階段中進行切換。
       如果將此政策設為 True，系統會強制覆寫某些功能的政策，這些功能會保留機密的使用者資料，且不會由清理機制處理 (該機制用於 Imprivata 共用工作站模式下的工作階段中使用者切換作業)。
       如果將這項政策設為 False 或不設定，系統便不會覆寫任何政策。</translation>
@@ -1241,6 +1248,12 @@
       如果將這項政策設為 True 或不予設定，使用者將可以使用 VM 管理 CLI。
       否則系統會停用並隱藏 VM 管理 CLI。
       </translation>
+<translation id="2194051055390000601">這項政策控管是否可停用使用者的 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告主題設定。
+
+如果將這項政策設為停用，系統就會停用使用者的廣告主題設定。
+如果將這項政策設為啟用或未設定，使用者將可開啟或關閉裝置上的 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告主題設定。
+
+如要設定這項政策，必須將 <ph name="PRIVACY_SANDBOX_PROMPT_ENABLED_POLICY_NAME" /> 政策設為停用。</translation>
 <translation id="2195032660890227692">這項政策已在 <ph name="PRODUCT_NAME" /> 68 中遭到移除，並已由 <ph name="ARC_BR_POLICY_NAME" /> 取代。</translation>
 <translation id="2197625019569762163">將這項政策設為 True 時，系統預設會在登入畫面顯示數字鍵盤，方便使用者輸入密碼。使用者仍可切換為普通鍵盤。
 
@@ -1252,6 +1265,7 @@
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
 <translation id="2208976000652006649">使用 POST 的搜尋網址參數</translation>
 <translation id="2213059592185933570">啟用漫遊設定檔建立功能</translation>
+<translation id="2213342458177721585">啟用裝置通用的 Hindi Inscript 鍵盤配置。</translation>
 <translation id="2215238871726750562">如果將這項政策設為 True，系統不會在工作階段開始時啟動瀏覽器視窗。
 
       如果將這項政策設為 False 或不設定，系統將可啟動視窗。
@@ -1311,9 +1325,6 @@
       這項政策會覆寫 <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" />、<ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME" />、<ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" /> 和使用者的偏好設定。
 
       這項政策只會影響透過 Web Serial API 存取 USB 裝置的權限。如要授予透過 WebUSB API 存取 USB 裝置的權限，請參閱 <ph name="WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> 政策。</translation>
-<translation id="2246011554082893079">這項政策可控管 <ph name="BOREALIS_NAME" /> 是否適用於這部裝置。
-
-      如果將這項政策設為 False，<ph name="BOREALIS_NAME" /> 就不適用於此裝置的所有使用者。如果不設定這項政策或設為 True，<ph name="BOREALIS_NAME" /> 只要未遭到其他政策或設定所停用，便適用於這部裝置。</translation>
 <translation id="2246621891161157804">允許 Chrome 封鎖在沙箱 iframe 中瀏覽外部通訊協定的作業</translation>
 <translation id="224750967938323855">不要在登入時顯示同步同意聲明</translation>
 <translation id="2252400912879027343">在 M109 以前，仍可在不安全的環境中使用 WebSQL，自 M110 起則無法使用</translation>
@@ -1721,6 +1732,7 @@
 <translation id="2664682171745499686">禁止在網域上顯示相似網域的警告訊息</translation>
 <translation id="2665422249821137126">在登入畫面上啟用大型游標</translation>
 <translation id="2667894101494585925">啟用最佳化指南擷取功能</translation>
+<translation id="2669157090883237118">不要變更 <ph name="PRODUCT_OS_NAME" /> 建議設定。</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="2673363037046384711">使用者可以啟用或停用高效率模式。</translation>
 <translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>
@@ -1779,6 +1791,7 @@
       如要進一步瞭解有效的網站網址模式，請前往 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。你也可以使用萬用字元 (<ph name="WILDCARD_VALUE" />)。這項政策只會根據來源進行比對，因此會忽略網址模式中的路徑。
 
       如果尚未針對某個網站設定這項政策，該網站就會套用 <ph name="DEFAULT_LOCAL_FONTS_SETTING_POLICY_NAME" /> 已設定的政策；如果已針對某個網站設定這項政策，則網站會依照瀏覽器的預設權限設定，使用者可依網站選擇這項權限。</translation>
+<translation id="2727844239611930002">允許 <ph name="PRODUCT_NAME" /> 決定是否要顯示 <ph name="PRIVACY_SANDBOX_NAME" /> 提示。</translation>
 <translation id="2730200383593984228">允許無關聯使用者使用 Android 應用程式</translation>
 <translation id="2730419309754848345">預設以圖片形式列印 PDF</translation>
 <translation id="2731299561202635374">這項政策可控管即時檢查網址以識別不安全網址的功能。
@@ -1853,15 +1866,6 @@
       如果將這項政策設為停用，電源尖峰轉移功能將保持在關閉狀態。
 
       如果不設定這項政策，電源尖峰轉移功能會預設為關閉。使用者無法變更這項設定。</translation>
-<translation id="2773036462435523078">在電腦閒置時觸發動作。
-
-      如果設定了這項政策，在政策指定的時間 (單位為分鐘) 內沒有任何使用者輸入內容，<ph name="PRODUCT_NAME" /> 就會執行透過 <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" /> 政策設定的動作。
-
-      如果不設定這項政策，系統將不會執行任何動作。
-
-      時間下限為 5 分鐘。
-
-      「使用者輸入內容」是由 Operating System API 定義，包括移動滑鼠或鍵盤輸入等等。</translation>
 <translation id="2773288106548584039">舊版瀏覽器支援</translation>
 <translation id="2780840673734667062">停止使用其他 Google 帳戶登入</translation>
 <translation id="2784880732336446591">在結束時清除瀏覽資料</translation>
@@ -1926,13 +1930,13 @@
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
 <translation id="287474029350993681">停用將內容投放到裝置的功能</translation>
-<translation id="2875192972412983412">指定系統尋找伺服器印表機時，要查詢符合何種條件的印表機伺服器。
+<translation id="2875192972412983412">指定系統尋找伺服器印表機時，要查詢符合何種條件的列印伺服器。
 
       如果使用這項政策，使用者只能使用 ID 符合本政策值的伺服器印表機。
 
       這些 ID 必須與 <ph name="EXTERNAL_PRINT_SERVERS_POLICY" /> 中指定檔案的「id」欄位相符。
 
-      如果不設定這項政策，系統不會進行篩選，並納入所有印表機伺服器。</translation>
+      如果不設定這項政策，系統不會進行篩選，並納入所有列印伺服器。</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
 <translation id="288448261660192095">如果將這項政策設為啟用，在遠端連線期間，系統會停用遠端存取主機的實體輸入和輸出裝置。
 
@@ -2051,9 +2055,6 @@
 <translation id="2960999045613902792">允許使用者新增、設定非企業印表機，以及使用這類印表機列印</translation>
 <translation id="2962972237615992440">停用 <ph name="CLOUD_PRINT_NAME" /> Proxy</translation>
 <translation id="2963292398266537394">停用語音輸入功能</translation>
-<translation id="2964056138564883247">這項政策可控管 <ph name="BOREALIS_NAME" /> 是否適用於這位使用者。
-
-      如果將這項政策設為 False，<ph name="BOREALIS_NAME" /> 就不適用於該使用者。如果不設定這項政策或設為 True，<ph name="BOREALIS_NAME" /> 只要未遭到其他政策或設定所停用，便適用於這位使用者。</translation>
 <translation id="2964373560810620158">禁止使用者使用 <ph name="LACROS_NAME" /> 瀏覽器</translation>
 <translation id="2968177167006045252">允許網站使用 SharedArrayBuffers</translation>
 <translation id="2969489219271682844">偵測到 USB 裝置時不顯示通知</translation>
@@ -2530,6 +2531,7 @@
       如需可使用的變數清單，請參閱 https://support.google.com/chrome/a?p=Supported_directory_variables。
 
       如果不設定這項政策，系統會使用預設的設定檔路徑，且使用者將可使用「--user-data-dir」指令列旗標覆寫這個路徑。</translation>
+<translation id="3380801667330555918">變更 Kerberos 票證的預填設定</translation>
 <translation id="338149029069528354">不要清除本機使用者資料</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
 <translation id="3387211681524224831">如果將這項政策設為啟用，系統不會儲存瀏覽記錄，並會停用分頁同步功能，且使用者無法變更這項設定。
@@ -2564,6 +2566,11 @@
 <translation id="3412937883532015092">如果將這項政策設為數值，<ph name="PRODUCT_NAME" /> 在開啟替代瀏覽器前會先顯示一則等待訊息，並依據該數值 (以毫秒為單位) 來設定這則訊息要顯示多久的時間。
 
       如果未設定這項政策或設為 0，當使用者前往指定網址時，系統會立即在替代瀏覽器中開啟該網址。</translation>
+<translation id="3413763534078822244">這項政策已淘汰，請改用 <ph name="USER_BOREALIS_ALLOWED_NAME" />。
+
+      這項政策會控管是否可在這部裝置上使用 <ph name="BOREALIS_NAME" />。
+
+      如果將這項政策設為 False，這部裝置的所有使用者都將無法使用 <ph name="BOREALIS_NAME" />。如果將政策設為 True 或未設定，只要其他政策或設定未停用 <ph name="BOREALIS_NAME" />，就能在這部裝置上使用這個容器。</translation>
 <translation id="3415954062311826850">ARC 不支援這項政策。</translation>
 <translation id="34160070798637152">控管裝置通用的網路設定。</translation>
 <translation id="3417130629744653218">允許網站查詢可用的付款方式。</translation>
@@ -2688,6 +2695,7 @@
 
       如果不設定這項政策，系統不會套用任何限制。</translation>
 <translation id="3531084733660068324">家長監督設定</translation>
+<translation id="3532827558833318911">清除密碼登入資料</translation>
 <translation id="353611922042274900">一律在登入畫面上顯示系統資訊</translation>
 <translation id="3536263244905016305">停用「網路 Proxy 自動探索」(WPAD) 最佳化功能</translation>
 <translation id="3538869107794555625">在平板電腦模式下啟用螢幕小鍵盤</translation>
@@ -2754,19 +2762,6 @@
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3593905652755912452">系統將使用在已停用表單控制項上傳送事件的舊行為。</translation>
 <translation id="3596112486106491038">啟用虛擬機器指令列存取權</translation>
-<translation id="3596335476793146071">如達到 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策指定的逾時時間，要執行的動作清單。
-
-      如果不設定 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策，這項政策就不會有任何作用。
-
-      達到 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策指定的逾時時間時，<ph name="PRODUCT_NAME" /> 就會執行在這項政策中設定的動作。
-
-      如果將這項政策留白或不予設定，<ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策便不會有任何作用。
-
-      支援的動作為：
-
-      「<ph name="CLOSE_BROWSERS_ACTION" />」：關閉這個設定檔的所有瀏覽器視窗和 PWA。
-
-      「<ph name="SHOW_PROFILE_PICKER_ACTION" />」：顯示設定檔選擇畫面視窗。</translation>
 <translation id="3603469950773500315">在新版 <ph name="CORS" /> 模式中啟用寬鬆檢查機制來放寬 <ph name="CORS" /> 檢查標準，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
 
       如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
@@ -3480,6 +3475,7 @@
 
           如果設為 false 或沒有設定，內容提供者將不會傳回任何資訊。</translation>
 <translation id="435395045087992163">在裝置暫停或蓋上機蓋時不要鎖定裝置</translation>
+<translation id="4354792057099570728">停用使用者的 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告評估設定。</translation>
 <translation id="4357587374229381015">指定網址參數名稱，供系統在 SAML IdP 登入頁面上用於自動填入使用者名稱欄位。
 
       系統會使用與 <ph name="PRODUCT_OS_NAME" /> 設定檔相關聯的使用者電子郵件地址做為網址參數值。因此如果使用者要在 SAML IdP 使用其他電子郵件地址，應停用這項設定。
@@ -3571,6 +3567,7 @@
       雖然以上平台支援政策本身，但這些平台不一定全部支援透過政策啟用的功能。部分已淘汰的網路平台功能無法重新啟用，只有下方明確列出者可在限定時間內啟用，啟用時限則視功能而異。字串標記的通用格式是 &lt;已淘汰的功能名稱&gt;_EffectiveUntil&lt;yyyymmdd&gt;。如需參考資訊，請前往 https://bit.ly/blinkintents 查看網路平台功能變更的意義。
       </translation>
 <translation id="4443711908766051441">啟用恐龍復活節彩蛋遊戲</translation>
+<translation id="4445728642576791607">允許使用者在裝置上開啟或關閉 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告評估設定。</translation>
 <translation id="4447668084338250480">內部網路重新導向行為</translation>
 <translation id="4449469846627734399">設定日間用電尖峰轉移配置</translation>
 <translation id="4449545651113180484">將畫面以順時針方向旋轉 270 度</translation>
@@ -3606,6 +3603,7 @@
 <translation id="4483649828988077221">停用自動更新</translation>
 <translation id="4484515651939984695">針對透過存取碼或 QR 圖碼選取的投放裝置，指定其在 <ph name="PRODUCT_NAME" /> 選單的投放裝置清單中停留的時間 (以秒為單位)。</translation>
 <translation id="4485425108474077672">設定新分頁網址</translation>
+<translation id="4491607814095953976">選擇是否可停用 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告評估設定</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">設定 <ph name="PLUGIN_VM_NAME" /> 的相關政策。</translation>
@@ -3797,13 +3795,13 @@
 <translation id="4663509616441994711">禁止合併使用者層級的雲端政策。</translation>
 <translation id="4663588423815449593">強制 <ph name="PEPPER_NAME" /> 使用舊版影片解碼器。</translation>
 <translation id="4665897631924472251">擴充功能管理設定</translation>
-<translation id="4666930704271463612">指定系統尋找伺服器印表機時，要查詢符合何種條件的印表機伺服器。
+<translation id="4666930704271463612">指定系統尋找伺服器印表機時，要查詢符合何種條件的列印伺服器。
 
       如果使用這項政策，使用者只能使用 ID 符合本政策值的伺服器印表機。
 
       這些 ID 必須與 <ph name="EXTERNAL_PRINT_SERVERS_POLICY" /> 中指定檔案的「id」欄位相符。
 
-      如果不設定這項政策，系統會查詢所有的印表機伺服器，而不會進行篩選。
+      如果不設定這項政策，系統會查詢所有的列印伺服器，而不會進行篩選。
 
       這項政策已遭淘汰，請改用 <ph name="EXTERNAL_PRINT_SERVERS_ALLOWLIST" />。</translation>
 <translation id="4668325077104657568">預設圖片設定</translation>
@@ -3881,6 +3879,11 @@
           如果不設定這項政策，系統預設會停用單聲道音訊，但使用者隨時可以啟用這項功能。</translation>
 <translation id="4768446404233019970">在傳輸層安全標準 (TLS) 中啟用 3DES 加密套件</translation>
 <translation id="4770334626033858263">用於產生及驗證家長存取碼的設定。</translation>
+<translation id="4773997835955617342">為手動建立的新票證變更 <ph name="KRB5_CONFIG" /> 建議設定。
+
+      如果啟用這項政策，「KerberosCustomPrefilledConfig」政策的值就會用於建議設定，並顯示在 Kerberos 驗證對話方塊的「進階」部分中。
+
+      如果停用這項政策或未設定，系統就會改用 <ph name="PRODUCT_OS_NAME" /> 建議設定。請注意，這項設定也會顯示在 Kerberos 驗證對話方塊的「進階」部分中。</translation>
 <translation id="4774030790286815890">如果啟用這項設定，使用者可以選擇開啟 Phone Hub 功能，在搭載 Chrome OS 的裝置上與手機互動。
 
       如果停用這項設定，使用者將無法開啟 Phone Hub 功能。
@@ -4132,6 +4135,7 @@
       如果將這項政策設為停用，系統會禁止 <ph name="PRODUCT_NAME" /> 傳送這類查詢。</translation>
 <translation id="5033070732967197381">允許來自 TLS 憑證無效網站的 WebAuthn API 要求。</translation>
 <translation id="5034504101537897433">啟用裝置當機報告資訊回報功能</translation>
+<translation id="5036013147560568855">憑證佈建通訊協定的版本，預設為 1。1 是「靜態」通訊協定，2 是「動態」通訊協定。</translation>
 <translation id="5039110755072335605">CORS 非萬用字元要求標頭支援</translation>
 <translation id="504116558738617678">只有在裝置未受管理或只有一位使用者時，才顯示磁碟空間不足的警告</translation>
 <translation id="5055474681190962362">每月應重新啟動的日期 [1-31] (根據裝置當地時區)，僅適用於「frequency」設為「MONTHLY」的情況。如果這個值大於指定月份的天數上限，系統會選擇當月的最後一天。</translation>
@@ -4260,6 +4264,17 @@
 <translation id="519247340330463721">設定安全瀏覽相關政策。</translation>
 <translation id="5194683382395300627">允許在網站上使用 <ph name="ASSISTANT_PRODUCT_NAME" /> 執行操作，例如自動變更密碼</translation>
 <translation id="5196630732055960309">允許這些網頁應用程式上的 File Handling API</translation>
+<translation id="5198660575318473544">控制是否可在 <ph name="PRODUCT_OS_NAME" /> 登入畫面上使用 Manifest V2 擴充功能。
+
+系統將停止支援 Manifest V2 擴充功能，日後所有擴充功能都必須遷移至 v3。如要進一步瞭解遷移的資訊和時間表，請前往 https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/。
+
+如果將這項政策設為「<ph name="DEFAULT" />」(0) 或不設定，裝置會根據上述時間表決定是否載入 v2 擴充功能。
+如果將這項政策設為「<ph name="DISABLE" />」(1)，系統將禁止安裝 v2 擴充功能，並停用現有的 v2 擴充功能。如果在預設停止支援 v2 的時間點後選擇這個選項，系統將視為未設定這項政策。
+如果將這項政策設為「<ph name="ENABLE" />」(2)，系統將允許使用 v2 擴充功能。如果在預設停止支援 v2 的時間點前選擇這個選項，系統將視為未設定這項政策。
+如果將這項政策設為 <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3)，系統將允許強制安裝的 v2 擴充功能，包括 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> 或 <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> 政策清單中 <ph name="INSTALLATION_MODE" /> 為「force_installed」或「normal_installed」的擴充功能。系統會停用所有其他 v2 擴充功能。如果在預設停止支援 v2 的時間點前選擇這個選項，系統將視為未設定這項政策。
+
+
+擴充功能可用性仍會受其他政策控制。</translation>
 <translation id="5206454085187851382">如果在 <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" /> 中選擇了 <ph name="PRINTERS_ALLOWLIST" />，系統會根據 <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> 的設定指定使用者可操作的印表機。只有 ID 與這項政策值相符的印表機，才會提供給使用者。印表機 ID 必須與 <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> 政策指定檔案的 <ph name="ID_FIELD" /> 或 <ph name="GUID_FIELD" /> 欄位值相符。</translation>
 <translation id="5207543664699568887">設定 Linux 上的 <ph name="PRODUCT_NAME" /> 是否要使用系統通知。
 
@@ -4272,6 +4287,7 @@
 
       <ph name="DNS_INTERCEPTION_CHECKS_ENABLED_POLICY_NAME" /> 也是可以停用 DNS 攔截檢查功能的相關政策，這項政策是更有彈性的版本，可以個別控管內部網路重新導向資訊列，並且可能會在未來擴大適用範圍。
       如果 <ph name="DNS_INTERCEPTION_CHECKS_ENABLED_POLICY_NAME" /> 或這項政策要求停用攔截檢查功能，系統將停用檢查功能。</translation>
+<translation id="5210133032276211845">清除快取圖片和檔案</translation>
 <translation id="5212118847531454979">你可以設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
 
       在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，系統會根據 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策，在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間結束後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他通知也會遵循相同的時間表。
@@ -4508,6 +4524,7 @@
       設定這項政策後，使用者即無法變更或覆寫。
 
       如果不設定這項政策，使用者可以選擇登入畫面上代表自己的顯示圖片。</translation>
+<translation id="5428716437928918274">Privacy Sandbox 設定控制選項</translation>
 <translation id="5431392643649571773">啟用 <ph name="PRODUCT_NAME" /> 功能時，系統會允許使用往返快取。當使用者離開頁面時，系統可能會將網頁的目前狀態 (文件樹狀結構、指令碼等等) 保存在往返快取中。如果瀏覽器返回該頁面，系統可能會透過往返快取還原頁面，以快取前的狀態顯示頁面。
 
           這項功能可能會讓某些並未預期會受到此快取的網站無法正常運作，尤其是瀏覽器離開頁面時，需要傳送「<ph name="UNLOAD_HANDLER_NAME" />」事件的網站。如果頁面進入往返快取，系統就不會傳送「<ph name="UNLOAD_HANDLER_NAME" />」事件。
@@ -4627,6 +4644,7 @@
       如果這份清單未包含任何內容，系統就不會分階段安裝更新，而會依其他裝置政策套用更新。
 
       版本切換不適用這項政策。</translation>
+<translation id="5517825566262498086">清除代管的應用程式資料</translation>
 <translation id="5519331583722582543">布林值標記，表示螢幕小鍵盤是否能透過手寫辨識技術提供輸入功能。</translation>
 <translation id="5519619299971727565">停用 Linux 應用程式使用情形報告功能</translation>
 <translation id="5521035900165046997">啟用裝置藍牙資訊回報功能</translation>
@@ -4663,13 +4681,13 @@
 這項功能自 <ph name="WIN_NAME" /> 10 起開放使用。
 
 注意：這項政策不適用於無痕或訪客模式。</translation>
-<translation id="5572971233886879856">指定系統尋找伺服器印表機時，要查詢符合何種條件的印表機伺服器。這項設定僅適用於 <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" /> 政策。
+<translation id="5572971233886879856">指定系統尋找伺服器印表機時，要查詢符合何種條件的列印伺服器。這項設定僅適用於 <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" /> 政策。
 
       如果使用這項政策，使用者只能透過裝置政策使用 ID 符合本政策值的伺服器印表機。
 
       這些 ID 必須與 <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" /> 政策中指定檔案的「id」欄位相符。
 
-      如果不設定這項政策，系統不會進行篩選，並且會納入 <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" /> 政策提供的所有印表機伺服器。</translation>
+      如果不設定這項政策，系統不會進行篩選，並且會納入 <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" /> 政策提供的所有列印伺服器。</translation>
 <translation id="5573207364545428684">允許遠端存取使用者向遠端主機傳輸檔案，或從遠端主機接收檔案</translation>
 <translation id="557360560705413259">啟用這項設定後，即使憑證缺少 subjectAlternativeName 延伸，只要能順利驗證並鏈結至本機上安裝的 CA 憑證，<ph name="PRODUCT_NAME" /> 仍會使用伺服器憑證的 commonName 比對主機名稱。
 
@@ -4703,6 +4721,7 @@
 <translation id="5599461642204007579"><ph name="MS_AD_NAME" /> 管理設定</translation>
 <translation id="5601503069213153581">PIN 碼</translation>
 <translation id="5607021831414604820">啟用裝置儲存空間狀態回報功能</translation>
+<translation id="5608114828230655271">預設裝置行為</translation>
 <translation id="5614865701790130558">記錄以政策為根據的擴充功能安裝事件</translation>
 <translation id="5618398258385745432">我們先前曾以類似設定來控管使用者是否可查看密碼，但在新增重新驗證功能後，該設定與這項政策已不再適用於 Chrome 的運作方式。目前 Chrome 的運作方式，相當於這項政策禁止在密碼管理員設定頁面以純文字顯示密碼。也就是說，設定頁面只會顯示預留位置，使用者必須點選 [顯示] 並重新驗證 (如果適用)，Chrome 才會顯示密碼。這項政策的原始說明如下：
 
@@ -4877,6 +4896,7 @@
 
       如果安全瀏覽功能的設定為停用 (無論是根據政策設定或使用者自行停用)，則一律不會觸發這個行為。如要強制啟用安全瀏覽功能，請使用 <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME" /> 政策或 <ph name="SAFE_BROWSING_PROTETION_LEVEL_POLICY_NAME" /> 政策。</translation>
 <translation id="5835312413892670446">螢幕畫面擷取設定</translation>
+<translation id="5835674781974810379">清除 Cookie 和其他網站資料</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 連接埠範圍</translation>
 <translation id="583627479140113555">允許在第一次執行時匯入儲存的密碼</translation>
 <translation id="5837898601525273156">如果已設定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_POLICY_NAME" />，你可以將 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_POLICY_NAME" /> 設為啟用，以在支援的裝置上，將進階充電模式電源管理政策保持啟用。這個模式會在非工作時間採用標準充電演算法和其他技術，讓使用者盡可能延長電池壽命。系統在工作時間會使用快速充電模式，加快充電的速度。請設定開始時間和持續期間，指定每天最常使用系統的時間。
@@ -5027,6 +5047,7 @@
 <translation id="5997543603646547632">預設使用 24 小時制時鐘</translation>
 <translation id="5997846976342452720">指定是否要停用外掛程式尋找工具 (已淘汰)</translation>
 <translation id="5998198091336830580">這項政策屬於下列不可部分完成的群組 (系統僅會套用群組中最高優先來源所設定的政策)：</translation>
+<translation id="6001621991816939414">清除下載記錄</translation>
 <translation id="600402562436559989">允許在 <ph name="PRODUCT_OS_NAME" /> 裝置和已連結的 Android 手機間同步 Wi-Fi 網路設定</translation>
 <translation id="6004575267180297869">
       指定是否可以跨來源傳送 WebAssembly 模組至其他視窗或工作站。跨來源 WebAssembly 模組分享功能將隨著 document.domain 一併淘汰，詳情請參閱 https://github.com/mikewest/deprecating-document-domain。這項政策可以重新啟用跨來源 WebAssembly 模組分享功能，藉此延長淘汰過程中的過渡期。
@@ -5267,7 +5288,6 @@
       如果不設定這項政策，系統會使用音訊沙箱的預設設定 (視不同平台而定)。
      這項政策的用途是讓企業能彈性停用音訊沙箱，避免安全性軟體的設定干擾沙箱運作。</translation>
 <translation id="624818583115864448">通訊埠 554 (2021 年 10 月 15 日前可解除封鎖)</translation>
-<translation id="6252773211180267325">允許使用者執行 <ph name="BOREALIS_NAME" /></translation>
 <translation id="6254498834449523938">不允許使用者略過安全瀏覽警告</translation>
 <translation id="625580680776945310">系統將啟用高效率模式。</translation>
 <translation id="6258658183356534534">控制 User-Agent Client Hints GREASE Update 功能。</translation>
@@ -5975,6 +5995,8 @@
 
       指定要在 <ph name="PRODUCT_NAME" /> 啟動時套用的設定。系統僅會在進入登入畫面時套用指定的設定。透過這個政策所指定的設定不會反映在使用者工作階段中。</translation>
 <translation id="6857240169209507953">禁止在裝置上執行 <ph name="BOREALIS_NAME" /></translation>
+<translation id="6857372417233723544">設定這項政策後，系統就會在 <ph name="PRODUCT_OS_NAME" /> 上啟用北印度文 InScript 鍵盤配置。
+如果設為 False 或未設定，就無法使用該鍵盤配置。裝置必須重新啟動，政策設定才會生效。</translation>
 <translation id="685769593149966548">強制執行 YouTube 高度嚴格篩選模式</translation>
 <translation id="686079137349561371">Microsoft Windows 7 以上版本</translation>
 <translation id="68818134518270542">你可以透過這項政策指定應用程式，允許使用者在 <ph name="PRODUCT_OS_NAME" />螢幕鎖定畫面上以筆記應用程式的形式開啟。
@@ -5989,19 +6011,19 @@
 <translation id="6894178810167845842">新分頁網址</translation>
 <translation id="6897730193187922386">禁止顯示 <ph name="CLOUD_PRINT_NAME" />淘汰訊息</translation>
 <translation id="6899705656741990703">自動偵測 Proxy 設定</translation>
-<translation id="6902561336084511004">為可用的印表機伺服器提供設定。
+<translation id="6902561336084511004">為可用的列印伺服器提供設定。
 
-      這項政策可讓你使用 JSON 檔案為 <ph name="PRODUCT_OS_NAME" />裝置提供外部印表機伺服器設定。
+      這項政策可讓你使用 JSON 檔案為 <ph name="PRODUCT_OS_NAME" />裝置提供外部列印伺服器設定。
 
       檔案大小不得超過 1 MB，且必須包含記錄陣列 (JSON 物件)。每項記錄都必須包含「id」、「url」和「display_name」欄位，並以字串做為欄位值。「id」欄位的值不得重複。
 
       系統會下載並快取這個檔案，並使用加密編譯雜湊碼來驗證下載內容的完整性。只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
 
-      如果正確設定這項政策的值，裝置會嘗試使用 IPP 通訊協定查詢指定的印表機伺服器，確認是否有可用的印表機。
+      如果正確設定這項政策的值，裝置會嘗試使用 IPP 通訊協定查詢指定的列印伺服器，確認是否有可用的印表機。
 
       如果未設定這項政策或設定的值不正確，使用者就不會看到任何伺服器印表機。
 
-      目前印表機伺服器的數量上限是 16 個，系統只會查詢清單中的前 16 個印表機伺服器。
+      目前列印伺服器的數量上限是 16 個，系統只會查詢清單中的前 16 個列印伺服器。
       </translation>
 <translation id="6903814433019432303">僅在零售模式下啟用這項政策。
 
@@ -6026,7 +6048,6 @@
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 和 <ph name="LACROS_NAME" /> 將不允許啟用訪客設定檔。
 
       但請注意，如果不設定這項政策或將其設為 True，但將 <ph name="LACROS_SECONDARY_PROFILES_ALLOWED_POLICY_NAME" /> 設為 False，<ph name="LACROS_NAME" /> 將不允許啟用訪客設定檔。</translation>
-<translation id="6920640961852058581">變更 Kerberos 票證的預設設定</translation>
 <translation id="692096803256767290">將 OS 復原至目標版本</translation>
 <translation id="6921544339867564740">允許裝置在 Chrome OS 上執行虛擬機器</translation>
 <translation id="6922884955650325312">封鎖 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
@@ -6541,6 +6562,7 @@
       </translation>
 <translation id="7459601923199346224">控管憑證管理的使用者和裝置政策。</translation>
 <translation id="7459633275230216698">允許顯示檔案選取對話方塊</translation>
+<translation id="7462256705280836453">選擇是否可停用 <ph name="PRIVACY_SANDBOX_NAME" /> 網站建議廣告設定</translation>
 <translation id="7463055558720530430">允許使用者記住 Kerberos 密碼</translation>
 <translation id="7464058117970792805">啟用列印預覽</translation>
 <translation id="7464991223784276288">將來自相符網址的 Cookie 限制在目前的工作階段中</translation>
@@ -6634,6 +6656,7 @@
 <translation id="7519218194072744342">通訊協定處理常式的網址。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
 <translation id="7521864460386999758">不允許在 Chrome 中插入第三方程式碼</translation>
+<translation id="7524983116584990314">清除自動填入資料</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
 <translation id="7529332889403151669">指定當裝置從休眠或全黑螢幕回到一般使用狀態時，是否要顯示全螢幕警示。
 
@@ -6743,6 +6766,12 @@
       如果將這項政策設為停用，只要使用者執行會開啟檔案選取對話方塊的動作 (例如匯入書籤、上傳檔案、儲存連結等)，螢幕上就會改為顯示訊息。系統會視同使用者已按下檔案選取對話方塊上的 [取消]。</translation>
 <translation id="7638300388094655454">Google Cast</translation>
 <translation id="7638764766629234761">允許使用系統通知</translation>
+<translation id="7643151458117317518">這項政策控管是否可停用使用者的 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告評估設定。
+
+如果將這項政策設為停用，系統就會停用使用者的廣告評估設定。
+如果將這項政策設為啟用或未設定，使用者將可開啟或關閉裝置上的 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告評估設定。
+
+如要設定這項政策，必須將 <ph name="PRIVACY_SANDBOX_PROMPT_ENABLED_POLICY_NAME" /> 政策設為停用。</translation>
 <translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>
 <translation id="7648664871086956188">這項政策可用來開啟或關閉 DataLeakPreventionRulesList 政策中定義的所有規則。
       如果將這項政策設為 True，系統會開啟資料外洩防護事件的即時回報功能；
@@ -6887,6 +6916,7 @@
 
            如果不設定這項政策，系統會在登入畫面上預設啟用無障礙功能快速鍵。</translation>
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
+<translation id="7781452670568828399">變更 <ph name="PRODUCT_OS_NAME" /> 建議設定。</translation>
 <translation id="7784062550705119230">如果在 <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" /> 中選擇了 <ph name="PRINTERS_ALLOWLIST" />，系統會根據 <ph name="DEVICE_PRINTERS_ALLOWLIST_POLICY_NAME" /> 的設定指定使用者可操作的印表機。只有 ID 與這項政策值相符的印表機，才會提供給使用者。印表機 ID 必須與 <ph name="DEVICE_PRINTERS_POLICY_NAME" /> 政策指定檔案的 <ph name="ID_FIELD" /> 或 <ph name="GUID_FIELD" /> 欄位值相符。</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
 <translation id="7788632499792081231">你可以透過這項政策設定網址模式清單，指定哪些網站可以使用剪貼簿網站權限。這不包含在符合網址模式的來源網站上執行的所有剪貼簿作業。比方說，使用者仍可使用鍵盤快速鍵貼上內容，因為這項操作並未受到剪貼簿網站權限管制。
@@ -7337,6 +7367,16 @@
 這些設定不需手動配置！你可以在 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> 下載簡單易用的範本，直接在 Windows、Mac 和 Linux 系統中使用。
 
 你仍可在已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體透過登錄檔佈建政策，但我們建議你在 Windows 透過 GPO 設定政策。</translation>
+<translation id="8261008508574620157">這項政策控管是否向使用者顯示 <ph name="PRIVACY_SANDBOX_NAME" /> 提示。
+這個提示是一個使用者封鎖流程，可以向使用者告知 <ph name="PRIVACY_SANDBOX_NAME" /> 設定。Chrome 致力於淘汰第三方 Cookie，詳情請參閱 <ph name="PRIVACY_SANDBOX_URL" />。
+
+如果將這項政策設為停用，<ph name="PRODUCT_NAME" /> 將不會顯示 <ph name="PRIVACY_SANDBOX_NAME" /> 提示。
+如果將這項政策設為啟用或未設定，<ph name="PRODUCT_NAME" /> 將決定是否顯示 <ph name="PRIVACY_SANDBOX_NAME" /> 提示 (系統會在適用的情況下顯示提示)。
+
+如果你設定了下方任一政策，請務必將這項政策設為停用：
+<ph name="PRIVACY_SANDBOX_AD_TOPICS_ENABLED_POLICY_NAME" />
+<ph name="PRIVACY_SANDBOX_SITE_ENABLED_ADS_ENABLED_POLICY_NAME" />
+<ph name="PRIVACY_SANDBOX_AD_MEASUREMENT_ENABLED_POLICY_NAME" /></translation>
 <translation id="8266778278542911985">如果將這項政策設為 3，網站將可要求存取序列埠。如果將這項政策設為 2，網站將無法存取序列埠。
 
       如果不設定，網站可要求存取序列埠，但使用者可以變更這項設定。</translation>
@@ -7365,6 +7405,7 @@
       如果不設定這項政策，系統會使用預設的延長比例係數。
 
       注意：延長比例係數必須為 100% 以上的值。</translation>
+<translation id="8284621384813278750">選擇是否可停用 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告主題設定</translation>
 <translation id="8285435910062771358">已啟用全螢幕放大鏡</translation>
 <translation id="828566872219880247">你可以設定網址模式清單，指定可使用金鑰產生功能的網站。如果網址模式符合「KeygenBlockedForUrls」的設定，這項政策會覆寫這類例外狀況。
 
@@ -7550,6 +7591,7 @@
 
       注意：如果是尚未加入 <ph name="MS_AD_NAME" /> 網域的 <ph name="MS_WIN_NAME" /> 執行個體，以及尚未透過行動裝置管理 (MDM) 軟體進行管理或透過 MCX 加入網域的 <ph name="MAC_OS_NAME" /> 執行個體，系統只會針對 Chrome 線上應用程式商店中的應用程式和擴充功能執行強制安裝作業。</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
+<translation id="8453218444172088993">停用使用者的 <ph name="PRIVACY_SANDBOX_NAME" /> 廣告主題設定。</translation>
 <translation id="8455529558077979314">隱私保護畫面設定</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
@@ -7633,7 +7675,7 @@
       警告：我們不建議設定版本限制，因為這可能導致使用者無法接收軟體更新和重大安全性修正項目。限制裝置更新至特定版本可能會讓使用者面臨風險。</translation>
 <translation id="8519617069657262768">啟用 Google 雲端硬碟同步功能</translation>
 <translation id="8520064498689833152">強制啟用 Google 搜尋的安全搜尋功能和中度以上的 YouTube 嚴格篩選模式</translation>
-<translation id="8524334245528364388">含有印表機伺服器清單的 JSON 檔案的網址。</translation>
+<translation id="8524334245528364388">含有列印伺服器清單的 JSON 檔案的網址。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8526745614158856826">你可以透過這項政策設定網站清單，指定哪些網站會自動取得權限，能夠存取所有可用裝置。
 
@@ -7674,6 +7716,12 @@
       網址模式不得與 <ph name="WEB_HID_ASK_FOR_URLS_POLICY_NAME" /> 政策衝突。如果網址同時符合兩項政策，系統不會優先採用任何一項政策。
 
       想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。<ph name="WILDCARD_VALUE" /> 不是這項政策許可的值。</translation>
+<translation id="8554750769356971993">這項政策控管是否可停用使用者的 <ph name="PRIVACY_SANDBOX_NAME" /> 網站建議廣告設定。
+
+如果將這項政策設為停用，系統就會停用使用者的網站建議廣告設定。
+如果將這項政策設為啟用或未設定，使用者將可開啟或關閉裝置上的 <ph name="PRIVACY_SANDBOX_NAME" /> 網站建議廣告設定。
+
+如要設定這項政策，必須將 <ph name="PRIVACY_SANDBOX_PROMPT_ENABLED_POLICY_NAME" /> 政策設為停用。</translation>
 <translation id="8559221882677768248">在登入畫面上停用隨選朗讀功能</translation>
 <translation id="8566842294717252664">在新分頁和應用程式啟動畫面中隱藏線上應用程式商店</translation>
 <translation id="8571314270766672278">在版本降級時復原和重設裝置，並嘗試保留註冊狀態</translation>
@@ -7703,6 +7751,7 @@
           如果不設定這項政策，系統會使用預設時間長度。
 
           指定政策值時需以毫秒為單位。</translation>
+<translation id="859579553230883285">停用使用者的 <ph name="PRIVACY_SANDBOX_NAME" /> 網站建議廣告設定。</translation>
 <translation id="8598786284856179541">啟用版本資訊報告功能</translation>
 <translation id="859937827887158048">不允許自動點對點下載更新</translation>
 <translation id="8603454805657060638">你可以透過這項政策，讓系統管理員變更將裝置連結至座架時的 MAC (媒體存取權控管) 位址。將座架連結至部分裝置型號時，根據預設，裝置的指定座架 MAC 位址可協助在乙太網路上識別裝置。
@@ -7732,7 +7781,7 @@
 <translation id="8619748440665904084">不允許在第一次執行時匯入自動填入表單資料</translation>
 <translation id="8623672932476443039">如果將這項政策設為啟用，使用者可以存取「已隔離應用程式的開發人員模式」。
       如果將這項政策設為停用，使用者將無法存取這些功能。
-      如果不設定這項政策，在預設情況下，Chrome OS 上受企業管理的使用者將無法存取這個模式，其他 OS 上的一般使用者則可存取這個模式。</translation>
+      如果不設定這項政策，在預設情況下，Chrome OS 上受企業管理的使用者將無法存取這個模式，其他作業系統上的一般使用者則可存取這個模式。</translation>
 <translation id="8626826495474944836">要求針對所有網站啟用網站隔離功能</translation>
 <translation id="8631314130868563649">停用尖峰轉移電源管理</translation>
 <translation id="8631434304112909927">到第 <ph name="UNTIL_VERSION" /> 版為止</translation>
@@ -7755,6 +7804,7 @@
 <translation id="8657543427358173663">允許從 Google 服務收集 WebRTC 事件記錄</translation>
 <translation id="8659843732895043951">允許這些網站使用剪貼簿</translation>
 <translation id="8661297125441579970">不允許資料遷移功能和 ARC。</translation>
+<translation id="8661538142776716004">清除網站設定</translation>
 <translation id="8661980316738569557">啟用高對比模式</translation>
 <translation id="8664285601317301180">這項政策可控管列印工作中的 <ph name="CLIENT_INFO_IPP_ATTRIBUTE" /> <ph name="IPP_PROTOCOL" /> (<ph name="INTERNET_PRINTING_PROTOCOL" />) <ph name="IPP_ATTRIBUTE" />值。
 
@@ -7955,6 +8005,7 @@
       設置這項政策是為了讓企業能彈性停用網路沙箱，避免第三方軟體干擾網路服務沙箱運作。</translation>
 <translation id="8840243776706727185">NewBaseUrlInheritanceBehavior 功能已停用</translation>
 <translation id="8842208363354615697">允許啟用僅限 HTTPS 模式</translation>
+<translation id="8843331294082716286">不要向使用者顯示 <ph name="PRIVACY_SANDBOX_NAME" /> 提示。</translation>
 <translation id="885147810817138322">向使用者顯示媒體推薦內容</translation>
 <translation id="8852579753940989645">啟用轉譯器程式碼完整性功能</translation>
 <translation id="8854571659927427063">如果將這項政策設為啟用，瀏覽器會在首次執行時，從先前的預設瀏覽器中匯入書籤。如果將這項政策設為停用或不設定，瀏覽器首次執行時不會匯入任何書籤。
@@ -8075,6 +8126,7 @@
 <translation id="8955719471735800169">返回頁首</translation>
 <translation id="8956312248048980644">在預設情況下，允許使用 origin-keyed 代理程式叢集。</translation>
 <translation id="8970205333161758602">隱藏停止支援 <ph name="PRODUCT_FRAME_NAME" />的提示</translation>
+<translation id="8973579598359969188">選擇是否可向使用者顯示 <ph name="PRIVACY_SANDBOX_NAME" /> 提示</translation>
 <translation id="8974588819713914715">這項政策已淘汰，因此系統不再支援，請改用「<ph name="URL_ALLOWLIST_POLICY_NAME" />」政策。</translation>
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>

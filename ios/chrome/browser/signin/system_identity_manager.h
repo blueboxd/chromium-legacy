@@ -11,11 +11,12 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "ios/chrome/browser/signin/capabilities_types.h"
 #include "ios/chrome/browser/signin/system_identity_manager_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -27,19 +28,13 @@ class SystemIdentityManagerObserver;
 // SystemIdentityManager abstracts the signin flow on iOS.
 class SystemIdentityManager {
  public:
+  // Alias SystemIdentityCapabilityResult.
+  using CapabilityResult = SystemIdentityCapabilityResult;
+
   // Value returned by IdentityIteratorCallback.
   enum class IteratorResult {
     kContinueIteration,
     kInterruptIteration,
-  };
-
-  // Value representing account capabilities. The enumerator values must not
-  // be changed as they correspond to the value exchanged on the wire with
-  // the server.
-  enum class CapabilityResult {
-    kFalse = 0,    // Capability not allowed for identity.
-    kTrue = 1,     // Capability allowed for identity.
-    kUnknown = 2,  // Capability not set for identity.
   };
 
   // Value representing a refresh access token.
@@ -111,6 +106,9 @@ class SystemIdentityManager {
   // Adds/removes observers.
   void AddObserver(SystemIdentityManagerObserver* observer);
   void RemoveObserver(SystemIdentityManagerObserver* observer);
+
+  // Returns whether signin is supported by the provider.
+  virtual bool IsSigninSupported() = 0;
 
   // Handles open URL authentication callback. Should be called within
   // `-[UISceneDelegate application:openURLContexts:]` context. Returns

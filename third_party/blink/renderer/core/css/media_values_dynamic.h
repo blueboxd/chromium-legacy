@@ -34,7 +34,6 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   mojom::blink::HoverType PrimaryHoverType() const override;
   int AvailableHoverTypes() const override;
   bool ThreeDEnabled() const override;
-  bool InImmersiveMode() const override;
   bool StrictMode() const override;
   const String MediaType() const override;
   blink::mojom::DisplayMode DisplayMode() const override;
@@ -58,9 +57,13 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   float EmFontSize(float zoom) const override;
   float RemFontSize(float zoom) const override;
   float ExFontSize(float zoom) const override;
+  float RexFontSize(float zoom) const override;
   float ChFontSize(float zoom) const override;
+  float RchFontSize(float zoom) const override;
   float IcFontSize(float zoom) const override;
+  float RicFontSize(float zoom) const override;
   float LineHeight(float zoom) const override;
+  float RootLineHeight(float zoom) const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
   double SmallViewportWidth() const override;

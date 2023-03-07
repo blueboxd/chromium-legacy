@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_SUB_APPS_SERVICE_IMPL_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_SUB_APPS_SERVICE_IMPL_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -21,11 +22,9 @@ namespace web_app {
 class SubAppsServiceImpl
     : public content::DocumentService<blink::mojom::SubAppsService> {
  public:
-  using AddResults = std::vector<
-      std::pair<UnhashedAppId, blink::mojom::SubAppsServiceAddResultCode>>;
+  using AddResults =
+      std::vector<std::pair<UnhashedAppId, blink::mojom::SubAppsServiceResult>>;
   using AddResultsMojo = std::vector<blink::mojom::SubAppsServiceAddResultPtr>;
-
-  static AddResultsMojo AddResultsToMojo(AddResults add_results);
 
   SubAppsServiceImpl(const SubAppsServiceImpl&) = delete;
   SubAppsServiceImpl& operator=(const SubAppsServiceImpl&) = delete;
@@ -38,17 +37,17 @@ class SubAppsServiceImpl
       mojo::PendingReceiver<blink::mojom::SubAppsService> receiver);
 
   // blink::mojom::SubAppsService
-  void Add(std::vector<blink::mojom::SubAppsServiceAddInfoPtr> sub_apps,
+  void Add(std::vector<blink::mojom::SubAppsServiceAddInfoPtr> sub_apps_to_add,
            AddCallback result_callback) override;
-
   void List(ListCallback result_callback) override;
-  void Remove(const UnhashedAppId& unhashed_app_id,
+  void Remove(const UnhashedAppId& unhashed_app_id_path,
               RemoveCallback result_callback) override;
 
  private:
   SubAppsServiceImpl(
       content::RenderFrameHost& render_frame_host,
       mojo::PendingReceiver<blink::mojom::SubAppsService> receiver);
+
   base::WeakPtrFactory<SubAppsServiceImpl> weak_ptr_factory_{this};
 };
 

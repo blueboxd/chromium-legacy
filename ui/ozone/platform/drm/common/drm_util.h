@@ -140,7 +140,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     int fd,
     const base::FilePath& sys_path,
     uint8_t device_index,
-    const gfx::Point& origin);
+    const gfx::Point& origin,
+    const display::DrmFormatsAndModifiers& drm_formats_and_modifiers);
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 

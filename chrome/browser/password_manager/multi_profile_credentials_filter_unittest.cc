@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -197,6 +197,40 @@ TEST_F(MultiProfileCredentialsFilterTest, NonGaia) {
   password_manager::PasswordForm form =
       password_manager::SyncUsernameTestBase::SimpleNonGaiaForm(
           "user@example.org");
+  ASSERT_TRUE(sync_filter_.ShouldSave(form));
+
+  MultiProfileCredentialsFilter multi_profile_filter(
+      password_manager_client(), GetSyncServiceCallback(),
+      dice_web_signin_interceptor());
+  EXPECT_TRUE(multi_profile_filter.ShouldSave(form));
+}
+
+// Returns false for an invalid email address.
+// Regression test for https://crbug.com/1401924
+TEST_F(MultiProfileCredentialsFilterTest, InvalidEmail) {
+  // Disallow profile creation to prevent the intercept.
+  g_browser_process->local_state()->SetBoolean(prefs::kBrowserAddPersonEnabled,
+                                               false);
+
+  password_manager::PasswordForm form =
+      password_manager::SyncUsernameTestBase::SimpleGaiaForm("user@");
+  ASSERT_TRUE(sync_filter_.ShouldSave(form));
+
+  MultiProfileCredentialsFilter multi_profile_filter(
+      password_manager_client(), GetSyncServiceCallback(),
+      dice_web_signin_interceptor());
+  EXPECT_FALSE(multi_profile_filter.ShouldSave(form));
+}
+
+// Returns true for email addresses with no domain part when sign-in is not
+// intercepted.
+TEST_F(MultiProfileCredentialsFilterTest, UsernameWithNoDomain) {
+  // Disallow profile creation to prevent the intercept.
+  g_browser_process->local_state()->SetBoolean(prefs::kBrowserAddPersonEnabled,
+                                               false);
+
+  password_manager::PasswordForm form =
+      password_manager::SyncUsernameTestBase::SimpleGaiaForm("user");
   ASSERT_TRUE(sync_filter_.ShouldSave(form));
 
   MultiProfileCredentialsFilter multi_profile_filter(

@@ -177,7 +177,8 @@ enum class NotificationCatalogName {
   kDictationNoDlcsDownloaded = 162,
   kDicationOnlyPumpkinDownloaded = 163,
   kDictationOnlySodaDownloaded = 164,
-  kMaxValue = kDictationOnlySodaDownloaded
+  kIPHGoogleOneOffer = 165,
+  kMaxValue = kIPHGoogleOneOffer
 };
 
 // A living catalog that registers system nudges.
@@ -191,7 +192,8 @@ enum class NudgeCatalogName {
   kDarkLightMode = 3,
   kAutozoom = 4,
   kAdaptiveCharging = 5,
-  kMaxValue = kAdaptiveCharging,
+  kPhoneHub = 6,
+  kMaxValue = kPhoneHub,
 };
 
 // A living catalog that registers toasts.
@@ -235,11 +237,13 @@ enum class ToastCatalogName {
   kDeskTemplateTooLarge = 33,
   kUndoCloseAll = 34,
   kEcheAppToast = 35,
-  kDeprecateAssistantStylus = 36,
+  // [Deprecated] kDeprecateAssistantStylus = 36,
   kEcheTrayCopyPasteNotImplemented = 37,
   kEcheTrayTabletModeNotSupported = 38,
   kNotificationCenterTrayNoNotifications = 39,
-  kMaxValue = kNotificationCenterTrayNoNotifications,
+  kCopyToClipboardAction = 40,
+  kVideoConferenceTraySpeakOnMuteDetected = 41,
+  kMaxValue = kVideoConferenceTraySpeakOnMuteDetected,
 };
 
 }  // namespace ash

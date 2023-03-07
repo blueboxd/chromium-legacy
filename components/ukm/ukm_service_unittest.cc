@@ -11,19 +11,19 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/metrics/log_decoder.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -168,7 +168,7 @@ class UkmServiceTest : public testing::Test,
  public:
   UkmServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_) {
+        task_runner_current_default_handle_(task_runner_) {
     UkmService::RegisterPrefs(prefs_.registry());
     ClearPrefs();
   }
@@ -203,7 +203,8 @@ class UkmServiceTest : public testing::Test,
   metrics::TestMetricsServiceClient client_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  base::SingleThreadTaskRunner::CurrentDefaultHandle
+      task_runner_current_default_handle_;
 };
 
 }  // namespace
@@ -1439,9 +1440,11 @@ TEST_F(UkmServiceTest, PurgeNonCarriedOverSources) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.UpdateRecording(
-      UkmConsentState(UkmConsentType::MSBB, UkmConsentType::APPS));
+  service.UpdateRecording(UkmConsentState(
+      UkmConsentType::MSBB, UkmConsentType::APPS, UkmConsentType::EXTENSIONS));
   service.EnableReporting();
+  service.SetIsWebstoreExtensionCallback(
+      base::BindRepeating(&TestIsWebstoreExtension));
 
   // Seed some fake sources.
   SourceId ukm_id = ConvertToSourceId(0, SourceIdType::DEFAULT);
@@ -1463,6 +1466,11 @@ TEST_F(UkmServiceTest, PurgeNonCarriedOverSources) {
   SourceId web_identity_id =
       ConvertSourceIdToAllowlistedType(6, SourceIdType::WEB_IDENTITY_ID);
   recorder.UpdateSourceURL(web_identity_id, GURL("https://www.example6.com/"));
+  SourceId extension_id =
+      ConvertSourceIdToAllowlistedType(7, SourceIdType::EXTENSION_ID);
+  recorder.UpdateSourceURL(
+      extension_id,
+      GURL("chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj"));
 
   service.Flush();
   int logs_count = 0;
@@ -1470,19 +1478,21 @@ TEST_F(UkmServiceTest, PurgeNonCarriedOverSources) {
 
   // All sources are present except ukm_id of non-allowlisted UKM type.
   Report proto_report = GetPersistedReport();
-  ASSERT_EQ(6, proto_report.sources_size());
+  ASSERT_EQ(7, proto_report.sources_size());
   EXPECT_EQ(navigation_id, proto_report.sources(0).id());
   EXPECT_EQ(app_id, proto_report.sources(1).id());
   EXPECT_EQ(history_id, proto_report.sources(2).id());
   EXPECT_EQ(webapk_id, proto_report.sources(3).id());
   EXPECT_EQ(payment_app_id, proto_report.sources(4).id());
   EXPECT_EQ(web_identity_id, proto_report.sources(5).id());
+  EXPECT_EQ(extension_id, proto_report.sources(6).id());
 
   service.Flush();
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
-  // Sources of HISTORY_ID, WEBAPK_ID, PAYMENT_APP_ID, and WEB_IDENTITY_ID types
-  // are not kept between reporting cycles, thus only 2 sources remain.
+  // Sources of HISTORY_ID, WEBAPK_ID, PAYMENT_APP_ID, WEB_IDENTITY_ID,and
+  // EXTENSION_ID types are not kept between reporting cycles, thus only 2
+  // sources remain.
   proto_report = GetPersistedReport();
   ASSERT_EQ(2, proto_report.sources_size());
   EXPECT_EQ(navigation_id, proto_report.sources(0).id());
@@ -1842,7 +1852,7 @@ class UkmServiceTestWithIndependentAppKM
  public:
   UkmServiceTestWithIndependentAppKM()
       : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_) {
+        task_runner_current_default_handle_(task_runner_) {
     UkmService::RegisterPrefs(prefs_.registry());
 
     prefs_.ClearPref(prefs::kUkmClientId);
@@ -1860,7 +1870,8 @@ class UkmServiceTestWithIndependentAppKM
   TestingPrefServiceSimple prefs_;
   metrics::TestMetricsServiceClient client_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  base::SingleThreadTaskRunner::CurrentDefaultHandle
+      task_runner_current_default_handle_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -1936,7 +1947,7 @@ class UkmServiceTestWithIndependentAppKMFullConsent
  public:
   UkmServiceTestWithIndependentAppKMFullConsent()
       : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_) {
+        task_runner_current_default_handle_(task_runner_) {
     UkmService::RegisterPrefs(prefs_.registry());
 
     prefs_.ClearPref(prefs::kUkmClientId);
@@ -1954,7 +1965,8 @@ class UkmServiceTestWithIndependentAppKMFullConsent
   TestingPrefServiceSimple prefs_;
   metrics::TestMetricsServiceClient client_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  base::SingleThreadTaskRunner::CurrentDefaultHandle
+      task_runner_current_default_handle_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

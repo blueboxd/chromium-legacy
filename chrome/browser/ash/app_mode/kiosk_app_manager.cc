@@ -11,10 +11,10 @@
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "base/barrier_closure.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
@@ -179,53 +179,26 @@ const char kKioskPrimaryAppUpdateResultHistogram[] =
 const char kKioskExternalUpdateSuccessHistogram[] =
     "Kiosk.ChromeApp.ExternalUpdateSuccess";
 
-class GlobalManager : public KioskAppManager {
- public:
-  GlobalManager() = default;
-  GlobalManager(const GlobalManager&) = delete;
-  GlobalManager& operator=(const GlobalManager&) = delete;
-  ~GlobalManager() override = default;
-};
-
-static_assert(sizeof(GlobalManager) == sizeof(KioskAppManager),
-              "Global manager is intended to provide constructor visibility to "
-              "absl::optional, nothing more.");
-
-absl::optional<GlobalManager>& GetGlobalManager() {
-  static base::NoDestructor<absl::optional<GlobalManager>> manager;
-  return *manager;
-}
+namespace {
+// This class is owned by `ChromeBrowserMainPartsAsh`.
+static KioskAppManager* g_kiosk_app_manager = nullptr;
+}  // namespace
 
 // static
 KioskAppManager* KioskAppManager::Get() {
-  absl::optional<GlobalManager>& manager = GetGlobalManager();
-  if (!manager.has_value())
-    manager.emplace();
+  CHECK(g_kiosk_app_manager);
+  return g_kiosk_app_manager;
+}
 
-  return &manager.value();
+// static
+bool KioskAppManager::IsInitialized() {
+  return g_kiosk_app_manager;
 }
 
 // static
 void KioskAppManager::InitializeForTesting(Overrides* overrides) {
-  DCHECK(!GetGlobalManager().has_value());
+  DCHECK(!g_kiosk_app_manager);
   g_test_overrides = overrides;
-}
-
-// static
-void KioskAppManager::Shutdown() {
-  if (!GetGlobalManager().has_value())
-    return;
-
-  ChromeKioskExternalLoaderBroker::Shutdown();
-
-  KioskAppManager::Get()->CleanUp();
-  g_test_overrides = nullptr;
-}
-
-// static
-void KioskAppManager::ResetForTesting() {
-  GetGlobalManager().reset();
-  g_test_overrides = nullptr;
 }
 
 // static
@@ -271,6 +244,16 @@ void KioskAppManager::SetAppWasAutoLaunchedWithZeroDelay(
   DCHECK_EQ(auto_launch_app_id_, app_id);
   currently_auto_launched_with_zero_delay_app_ = app_id;
   auto_launched_with_zero_delay_ = true;
+}
+
+void KioskAppManager::SetExtensionDownloaderBackoffPolicy(
+    absl::optional<net::BackoffEntry::Policy> backoff_policy) {
+  // In browser tests `external_cache_` is reset before `StartupAppLauncher`.
+  // Check before trying to set backoff policy here.
+  if (!external_cache_) {
+    return;
+  }
+  external_cache_->SetBackoffPolicy(backoff_policy);
 }
 
 void KioskAppManager::InitSession(Profile* profile, const std::string& app_id) {
@@ -724,27 +707,22 @@ bool KioskAppManager::IsPlatformCompliantWithApp(
 }
 
 KioskAppManager::KioskAppManager() {
+  CHECK(!g_kiosk_app_manager);  // Only one instance is allowed.
   external_cache_ = CreateExternalCache(this);
+  g_kiosk_app_manager = this;
   UpdateAppsFromPolicy();
 }
 
-KioskAppManager::~KioskAppManager() {}
+KioskAppManager::~KioskAppManager() {
+  ChromeKioskExternalLoaderBroker::Shutdown();
+  observers_.Clear();
+  g_test_overrides = nullptr;
+  g_kiosk_app_manager = nullptr;
+}
 
 void KioskAppManager::MonitorKioskExternalUpdate() {
   usb_stick_updater_ = std::make_unique<KioskExternalUpdater>(
       GetBackgroundTaskRunner(), GetCrxCacheDir(), GetCrxUnpackDir());
-}
-
-void KioskAppManager::CleanUp() {
-  local_accounts_subscription_ = {};
-  local_account_auto_login_id_subscription_ = {};
-  apps_.clear();
-  usb_stick_updater_.reset();
-  external_cache_.reset();
-
-  if (!app_session_)
-    return;
-  app_session_->ShuttingDown();
 }
 
 const KioskAppData* KioskAppManager::GetAppData(

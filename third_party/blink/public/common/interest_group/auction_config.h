@@ -14,9 +14,11 @@
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -82,6 +84,7 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   // - kJson, meaning a JSON value is passed in.
   class BLINK_COMMON_EXPORT MaybePromiseJson {
    public:
+    // TODO(morlovich): Switch this to match simpler scheme of others like this?
     enum class Tag { kNothing, kPromise, kJson };
 
     MaybePromiseJson();
@@ -130,6 +133,88 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
     std::string json_payload_;
   };
 
+  // Representation of per_buyer_signals field in auction configuration, either
+  // as its value (tag() == kPerBuyerSignals) or a promise to deliver it later
+  // via ResolvedPerBuyerSignalsPromise.
+  //
+  // Typemapped to blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignals.
+  class BLINK_COMMON_EXPORT MaybePromisePerBuyerSignals {
+   public:
+    enum class Tag { kPromise, kPerBuyerSignals };
+
+    bool is_promise() const { return tag_ == Tag::kPromise; }
+
+    static MaybePromisePerBuyerSignals FromPromise() {
+      MaybePromisePerBuyerSignals result;
+      result.tag_ = Tag::kPromise;
+      return result;
+    }
+
+    static MaybePromisePerBuyerSignals FromValue(
+        absl::optional<base::flat_map<url::Origin, std::string>> value_in) {
+      MaybePromisePerBuyerSignals result;
+      result.value_ = std::move(value_in);
+      result.tag_ = Tag::kPerBuyerSignals;
+      return result;
+    }
+
+    Tag tag() const { return tag_; }
+    const absl::optional<base::flat_map<url::Origin, std::string>>& value()
+        const {
+      return value_;
+    }
+
+   private:
+    Tag tag_ = Tag::kPerBuyerSignals;
+    absl::optional<base::flat_map<url::Origin, std::string>> value_;
+  };
+
+  // Representation of bidder timeouts, including optional global and per-origin
+  // timeouts.
+  //
+  // Typemapped to blink::mojom::AuctionAdConfigBuyerTimeouts.
+  struct BuyerTimeouts {
+    // The value restricts generateBid() script's runtime of all buyers with
+    // unspecified timeouts, if present.
+    absl::optional<base::TimeDelta> all_buyers_timeout;
+
+    // Values restrict the runtime of particular buyer's generateBid() scripts.
+    absl::optional<base::flat_map<url::Origin, base::TimeDelta>>
+        per_buyer_timeouts;
+  };
+
+  // Representation of per_buyer_timeouts field in auction configuration, either
+  // as its value (tag() == kValue) or a promise to deliver it later
+  // via ResolvedBuyerTimeoutsPromise.
+  //
+  // Typemapped to blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeouts
+  class BLINK_COMMON_EXPORT MaybePromiseBuyerTimeouts {
+   public:
+    enum class Tag { kPromise, kValue };
+
+    bool is_promise() const { return tag_ == Tag::kPromise; }
+
+    static MaybePromiseBuyerTimeouts FromPromise() {
+      MaybePromiseBuyerTimeouts result;
+      result.tag_ = Tag::kPromise;
+      return result;
+    }
+
+    static MaybePromiseBuyerTimeouts FromValue(BuyerTimeouts value_in) {
+      MaybePromiseBuyerTimeouts result;
+      result.value_ = std::move(value_in);
+      result.tag_ = Tag::kValue;
+      return result;
+    }
+
+    Tag tag() const { return tag_; }
+    const BuyerTimeouts& value() const { return value_; }
+
+   private:
+    Tag tag_ = Tag::kValue;
+    BuyerTimeouts value_;
+  };
+
   // Subset of AuctionConfig that is not shared by all auctions that are
   // using the same SellerWorklet object (so it's "not shared" between
   // AuctionConfigs that share the same SellerWorklet). Other AuctionConfig
@@ -137,6 +222,27 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   //
   // Typemapped to blink::mojom::AuctionAdConfigNonSharedParams.
   struct BLINK_COMMON_EXPORT NonSharedParams {
+    // For each report requested by the seller, this enum specifies the type of
+    // the report.
+    using BuyerReportType =
+        blink::mojom::AuctionAdConfigNonSharedParams_BuyerReportType;
+
+    // For each report type, provides the bucket offset and scalar multiplier
+    // for that report.
+    //
+    // Typemapped to blink::mojom::AuctionReportBuyersConfig.
+    struct BLINK_COMMON_EXPORT AuctionReportBuyersConfig {
+      // The bucket offset, added to the base per-buyer bucket value to obtain
+      // the actual bucket number used for reporting.
+      absl::uint128 bucket;
+
+      // A scalar multiplier multiplied by the reported value, to control the
+      // amount of noise added by the aggregation service. (Reading aggreaged
+      // reported values is subject to a privacy budget, so this controls how
+      // much budget is spent on each report).
+      double scale;
+    };
+
     NonSharedParams();
     NonSharedParams(const NonSharedParams&);
     NonSharedParams(NonSharedParams&&);
@@ -165,15 +271,10 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
     absl::optional<base::TimeDelta> seller_timeout;
 
     // Value is opaque JSON data, passed as object to particular buyers.
-    absl::optional<base::flat_map<url::Origin, std::string>> per_buyer_signals;
+    MaybePromisePerBuyerSignals per_buyer_signals;
 
-    // Values restrict the runtime of particular buyer's generateBid() scripts.
-    absl::optional<base::flat_map<url::Origin, base::TimeDelta>>
-        per_buyer_timeouts;
-
-    // The value restricts generateBid() script's runtime of all buyers with
-    // unspecified timeouts, if present.
-    absl::optional<base::TimeDelta> all_buyers_timeout;
+    // Values restrict the runtime of generateBid() scripts.
+    MaybePromiseBuyerTimeouts buyer_timeouts;
 
     // Values restrict the number of bidding interest groups for a particular
     // buyer that can participate in an auction. Values must be greater than 0.
@@ -197,6 +298,18 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
     // same key, the entry in `per_buyer_priority_signals` takes precedence.
     absl::optional<base::flat_map<std::string, double>>
         all_buyers_priority_signals;
+
+    // For each buyer in `interest_group_buyers`, specifies the base bucket ID
+    // number for that buyer. To be used in conjunction with
+    // `auction_report_buyers`; for each buyer, for each report type, the
+    // base bucket ID is added to the `auction_report_buyers` bucket offset to
+    // obtain the actual bucket numbers used for reporting.
+    absl::optional<std::vector<absl::uint128>> auction_report_buyer_keys;
+
+    // For each type of bidder extended private aggregation reporting event,
+    // provides the bucket offset and scalar multiplier for that event.
+    absl::optional<base::flat_map<BuyerReportType, AuctionReportBuyersConfig>>
+        auction_report_buyers;
 
     // Nested auctions whose results will also be fed to `seller`. Only the top
     // level auction config can have component auctions.
@@ -231,9 +344,6 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   absl::optional<uint16_t> all_buyer_experiment_group_id;
   base::flat_map<url::Origin, uint16_t> per_buyer_experiment_group_ids;
 };
-
-bool BLINK_COMMON_EXPORT operator==(const AuctionConfig::MaybePromiseJson& a,
-                                    const AuctionConfig::MaybePromiseJson& b);
 
 }  // namespace blink
 

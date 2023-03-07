@@ -9,7 +9,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -138,7 +137,7 @@ DCLayerResult ValidateYUVQuad(
 
 void FromYUVQuad(const YUVVideoDrawQuad* quad,
                  const gfx::Transform& transform_to_root_target,
-                 DCLayerOverlay* dc_layer) {
+                 DCLayerOverlayCandidate* dc_layer) {
   // Direct composition path only supports single NV12 buffer, or two buffers
   // one each for Y and UV planes.
   DCHECK(quad->y_plane_resource_id() && quad->u_plane_resource_id());
@@ -200,7 +199,7 @@ DCLayerResult ValidateTextureQuad(
 
 void FromTextureQuad(const TextureDrawQuad* quad,
                      const gfx::Transform& transform_to_root_target,
-                     DCLayerOverlay* dc_layer) {
+                     DCLayerOverlayCandidate* dc_layer) {
   dc_layer->resources[kTextureResourceIndex] = quad->resource_id();
   dc_layer->z_order = 1;
   dc_layer->content_rect = gfx::Rect(quad->resource_size_in_pixels());
@@ -315,12 +314,12 @@ bool IsOccluded(
   return false;
 }
 
-gfx::Rect CalculateOccludingDamageRect(
+bool HasOccludingDamageRect(
     const SharedQuadState* shared_quad_state,
     const SurfaceDamageRectList& surface_damage_rect_list,
-    const gfx::Rect& quad_rect_in_root_target_space) {
+    const gfx::Rect& quad_rect_in_root_space) {
   if (!shared_quad_state->overlay_damage_index.has_value())
-    return quad_rect_in_root_target_space;
+    return !quad_rect_in_root_space.IsEmpty();
 
   size_t overlay_damage_index = shared_quad_state->overlay_damage_index.value();
   if (overlay_damage_index >= surface_damage_rect_list.size()) {
@@ -335,9 +334,9 @@ gfx::Rect CalculateOccludingDamageRect(
   for (size_t i = 0; i < overlay_damage_index; ++i) {
     occluding_damage_rect.Union(surface_damage_rect_list[i]);
   }
-  occluding_damage_rect.Intersect(quad_rect_in_root_target_space);
+  occluding_damage_rect.Intersect(quad_rect_in_root_space);
 
-  return occluding_damage_rect;
+  return !occluding_damage_rect.IsEmpty();
 }
 
 bool IsFullScreenLetterboxing(const QuadList::Iterator& it,
@@ -422,9 +421,10 @@ void RecordDCLayerResult(DCLayerResult result, QuadList::ConstIterator it) {
 }
 
 // This function records the damage rect rect of the current frame.
-void RecordOverlayHistograms(DCLayerOverlayList* dc_layer_overlays,
-                             bool has_occluding_surface_damage,
-                             const gfx::Rect* damage_rect) {
+void RecordOverlayHistograms(
+    std::vector<DCLayerOverlayCandidate>* dc_layer_overlays,
+    bool has_occluding_surface_damage,
+    const gfx::Rect* damage_rect) {
   // If an underlay is found, we record the damage rect of this frame as an
   // underlay.
   bool is_overlay = true;
@@ -472,11 +472,12 @@ bool IsClearVideoQuad(const QuadList::ConstIterator& it) {
 
 }  // namespace
 
-DCLayerOverlay::DCLayerOverlay() = default;
-DCLayerOverlay::DCLayerOverlay(const DCLayerOverlay& other) = default;
-DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
-    default;
-DCLayerOverlay::~DCLayerOverlay() = default;
+DCLayerOverlayCandidate::DCLayerOverlayCandidate() = default;
+DCLayerOverlayCandidate::DCLayerOverlayCandidate(
+    const DCLayerOverlayCandidate& other) = default;
+DCLayerOverlayCandidate& DCLayerOverlayCandidate::operator=(
+    const DCLayerOverlayCandidate& other) = default;
+DCLayerOverlayCandidate::~DCLayerOverlayCandidate() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
     const DebugRendererSettings* debug_settings,
@@ -531,10 +532,7 @@ gfx::Rect DCLayerOverlayProcessor::PreviousFrameOverlayDamageContribution() {
 }
 
 void DCLayerOverlayProcessor::RemoveOverlayDamageRect(
-    const QuadList::Iterator& it,
-    const gfx::Rect& quad_rectangle,
-    const gfx::Rect& occluding_damage_rect,
-    gfx::Rect* damage_rect) {
+    const QuadList::Iterator& it) {
   // This is done by setting the overlay surface damage rect in the
   // |surface_damage_rect_list_| to zero.
   if (it->shared_quad_state->overlay_damage_index.has_value()) {
@@ -614,7 +612,7 @@ void DCLayerOverlayProcessor::UpdateRootDamageRect(
 }
 
 void DCLayerOverlayProcessor::InsertDebugBorderDrawQuad(
-    const DCLayerOverlayList* dc_layer_overlays,
+    const std::vector<DCLayerOverlayCandidate>* dc_layer_overlays,
     AggregatedRenderPass* render_pass,
     const gfx::RectF& display_rect,
     gfx::Rect* damage_rect) {
@@ -732,7 +730,7 @@ void DCLayerOverlayProcessor::Process(
     AggregatedRenderPass* render_pass,
     gfx::Rect* damage_rect,
     SurfaceDamageRectList surface_damage_rect_list,
-    DCLayerOverlayList* dc_layer_overlays,
+    std::vector<DCLayerOverlayCandidate>* dc_layer_overlays,
     bool is_video_capture_enabled,
     bool is_page_fullscreen_mode) {
   bool this_frame_has_occluding_damage_rect = false;
@@ -948,22 +946,21 @@ void DCLayerOverlayProcessor::Process(
       }
     }
 
-    // Get the occluding damage rect for underlay.
-    gfx::Rect occluding_damage_rect;
-    if (!is_overlay) {
-      occluding_damage_rect = CalculateOccludingDamageRect(
-          it->shared_quad_state, surface_damage_rect_list_,
-          quad_rectangle_in_target_space);
+    gfx::Rect quad_rectangle_in_root_space =
+        cc::MathUtil::MapEnclosingClippedRect(
+            render_pass->transform_to_root_target,
+            quad_rectangle_in_target_space);
 
-      // Used by a histogram.
-      if (!occluding_damage_rect.IsEmpty())
-        this_frame_has_occluding_damage_rect = true;
-    }
+    // Used by a histogram.
+    this_frame_has_occluding_damage_rect =
+        !is_overlay &&
+        HasOccludingDamageRect(it->shared_quad_state, surface_damage_rect_list_,
+                               quad_rectangle_in_root_space);
 
     UpdateDCLayerOverlays(display_rect, render_pass, it,
-                          quad_rectangle_in_target_space, occluding_damage_rect,
-                          is_overlay, &prev_it, &prev_index, damage_rect,
-                          dc_layer_overlays, is_page_fullscreen_mode);
+                          quad_rectangle_in_root_space, is_overlay, &prev_it,
+                          &prev_index, damage_rect, dc_layer_overlays,
+                          is_page_fullscreen_mode);
   }
 
   // Update previous frame state after processing root pass. If there is no
@@ -1049,18 +1046,17 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
     const gfx::RectF& display_rect,
     AggregatedRenderPass* render_pass,
     const QuadList::Iterator& it,
-    const gfx::Rect& quad_rectangle_in_target_space,
-    const gfx::Rect& occluding_damage_rect,
+    const gfx::Rect& quad_rectangle_in_root_space,
     bool is_overlay,
     QuadList::Iterator* new_it,
     size_t* new_index,
     gfx::Rect* damage_rect,
-    DCLayerOverlayList* dc_layer_overlays,
+    std::vector<DCLayerOverlayCandidate>* dc_layer_overlays,
     bool is_page_fullscreen_mode) {
   // Record the result first before ProcessForOverlay().
   RecordDCLayerResult(DC_LAYER_SUCCESS, it);
 
-  DCLayerOverlay dc_layer;
+  DCLayerOverlayCandidate dc_layer;
   dc_layer.is_video_fullscreen_letterboxing =
       is_page_fullscreen_mode
           ? IsFullScreenLetterboxing(it, render_pass->quad_list.end(),
@@ -1080,23 +1076,18 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
       NOTREACHED();
   }
 
-  // Underlays are less efficient, so attempt regular overlays first. Only
-  // check root render pass because we can only check for occlusion within a
-  // render pass.
+  // Underlays are less efficient, so attempt regular overlays first. We can
+  // only check for occlusion within a render pass.
   if (is_overlay) {
-    *new_it =
-        ProcessForOverlay(display_rect, render_pass,
-                          quad_rectangle_in_target_space, it, damage_rect);
+    *new_it = ProcessForOverlay(display_rect, render_pass, it);
     (*new_index)++;
   } else {
-    ProcessForUnderlay(display_rect, render_pass,
-                       quad_rectangle_in_target_space, occluding_damage_rect,
+    ProcessForUnderlay(display_rect, render_pass, quad_rectangle_in_root_space,
                        it, dc_layer_overlays->size(), damage_rect, &dc_layer);
   }
 
-  gfx::Rect rect_in_root = cc::MathUtil::MapEnclosingClippedRect(
-      render_pass->transform_to_root_target, quad_rectangle_in_target_space);
-  current_frame_overlay_rects_.push_back({rect_in_root, is_overlay});
+  current_frame_overlay_rects_.push_back(
+      {quad_rectangle_in_root_space, is_overlay});
 
   dc_layer_overlays->push_back(dc_layer);
 
@@ -1107,9 +1098,7 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
 QuadList::Iterator DCLayerOverlayProcessor::ProcessForOverlay(
     const gfx::RectF& display_rect,
     AggregatedRenderPass* render_pass,
-    const gfx::Rect& quad_rectangle,
-    const QuadList::Iterator& it,
-    gfx::Rect* damage_rect) {
+    const QuadList::Iterator& it) {
   // The quad is on top, so promote it to an overlay and remove all damage
   // underneath it.
   const bool display_rect_changed = (display_rect != previous_display_rect_);
@@ -1118,8 +1107,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessForOverlay(
   const bool needs_blending = it->ShouldDrawWithBlending();
 
   if (is_axis_aligned && !display_rect_changed && !needs_blending) {
-    RemoveOverlayDamageRect(it, quad_rectangle,
-                            /*occluding_damage_rect=*/gfx::Rect(), damage_rect);
+    RemoveOverlayDamageRect(it);
   }
 
   return render_pass->quad_list.EraseAndInvalidateAllPointers(it);
@@ -1129,11 +1117,10 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     const gfx::RectF& display_rect,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& quad_rectangle,
-    const gfx::Rect& occluding_damage_rect,
     const QuadList::Iterator& it,
     size_t processed_overlay_count,
     gfx::Rect* damage_rect,
-    DCLayerOverlay* dc_layer) {
+    DCLayerOverlayCandidate* dc_layer) {
   // Assign decreasing z-order so that underlays processed earlier, and hence
   // which are above the subsequent underlays, are placed above in the direct
   // composition visual tree.
@@ -1185,8 +1172,7 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     // these quads. The output root damage rect might be empty after we remove
     // the damage from the video quad. We can save power if the root damage
     // rect is empty.
-    RemoveOverlayDamageRect(it, quad_rectangle, occluding_damage_rect,
-                            damage_rect);
+    RemoveOverlayDamageRect(it);
   } else {
     // Entire replacement quad must be redrawn.
     damage_rect->Union(quad_rectangle);

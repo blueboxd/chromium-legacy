@@ -88,7 +88,8 @@ TEST(ProtoUtilTest, DefaultCapabilities) {
            feedwire::Capability::UI_THEME_V2,
            feedwire::Capability::UNDO_FOR_DISMISS_COMMAND,
            feedwire::Capability::PREFETCH_METADATA, feedwire::Capability::SHARE,
-           feedwire::Capability::CONTENT_LIFETIME}));
+           feedwire::Capability::CONTENT_LIFETIME,
+           feedwire::Capability::INFO_CARD_ACKNOWLEDGEMENT_TRACKING}));
 }
 
 TEST(ProtoUtilTest, HeartsEnabled) {
@@ -270,9 +271,9 @@ TEST(ProtoUtilTest, CrowButtonEnabled) {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-TEST(ProtoUtilTest, InfoCardAcknowledgementTrackingEnabled) {
+TEST(ProtoUtilTest, InfoCardAcknowledgementTrackingDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kInfoCardAcknowledgementTracking}, {});
+  scoped_feature_list.InitWithFeatures({}, {kInfoCardAcknowledgementTracking});
   feedwire::FeedRequest request =
       CreateFeedQueryRefreshRequest(StreamType(StreamKind::kForYou),
                                     feedwire::FeedQuery::MANUAL_REFRESH,
@@ -282,7 +283,7 @@ TEST(ProtoUtilTest, InfoCardAcknowledgementTrackingEnabled) {
 
   ASSERT_THAT(
       request.client_capability(),
-      Contains(feedwire::Capability::INFO_CARD_ACKNOWLEDGEMENT_TRACKING));
+      Not(Contains(feedwire::Capability::INFO_CARD_ACKNOWLEDGEMENT_TRACKING)));
 }
 
 TEST(ProtoUtilTest, TabGroupsEnabledForReplaced) {
@@ -331,6 +332,24 @@ TEST(ProtoUtilTest, InlinePlayback) {
 
   ASSERT_THAT(request.client_capability(),
               Contains(feedwire::Capability::OPEN_VIDEO_COMMAND));
+}
+
+TEST(ProtoUtilTest, SignInStatusSetOnRequest) {
+  RequestMetadata request_metadata;
+  request_metadata.sign_in_status = feedwire::ChromeSignInStatus::NOT_SIGNED_IN;
+
+  feedwire::Request request = CreateFeedQueryRefreshRequest(
+      StreamType(StreamKind::kForYou), feedwire::FeedQuery::MANUAL_REFRESH,
+      request_metadata,
+      /*consistency_token=*/std::string());
+
+  feedwire::ChromeSignInStatus::SignInStatus status =
+      request.feed_request()
+          .feed_query()
+          .chrome_fulfillment_info()
+          .sign_in_status()
+          .sign_in_status();
+  ASSERT_EQ(status, request_metadata.sign_in_status);
 }
 
 }  // namespace

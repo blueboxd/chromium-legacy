@@ -1,0 +1,46 @@
+# Copyright 2022 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("credential_provider_promo") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "credential_provider_promo_coordinator.h",
+    "credential_provider_promo_coordinator.mm",
+    "credential_provider_promo_display_handler.h",
+    "credential_provider_promo_display_handler.mm",
+    "credential_provider_promo_mediator.h",
+    "credential_provider_promo_mediator.mm",
+  ]
+  deps = [
+    ":credential_provider_promo_ui",
+    "//base",
+    "//components/prefs",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/credential_provider_promo:features",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/promos_manager:promos",
+  ]
+}
+
+source_set("credential_provider_promo_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "credential_provider_promo_constants.h",
+    "credential_provider_promo_consumer.h",
+    "credential_provider_promo_view_controller.h",
+    "credential_provider_promo_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/password_manager/core/browser",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/common/ui/confirmation_alert",
+  ]
+  frameworks = [
+    "Foundation.framework",
+    "UIKit.framework",
+  ]
+}

@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
@@ -199,13 +199,13 @@ void PopulateEntriesAsync(std::unique_ptr<SystemLogsResponse> response,
   auto populate_entries = [](SystemLogsResponse* response) {
     DCHECK(response);
 
-    chromeos::system::StatisticsProvider* stats =
-        chromeos::system::StatisticsProvider::GetInstance();
+    ash::system::StatisticsProvider* stats =
+        ash::system::StatisticsProvider::GetInstance();
     DCHECK(stats);
 
     // Get the HWID.
     absl::optional<base::StringPiece> hwid =
-        stats->GetMachineStatistic(chromeos::system::kHardwareClassKey);
+        stats->GetMachineStatistic(ash::system::kHardwareClassKey);
     if (!hwid) {
       VLOG(1) << "Couldn't get machine statistic 'hardware_class'.";
     } else {

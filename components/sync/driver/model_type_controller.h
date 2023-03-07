@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_mode.h"
@@ -74,6 +74,7 @@ class ModelTypeController : public DataTypeController {
   void OnDelegateStarted(
       std::unique_ptr<DataTypeActivationResponse> activation_response);
   void TriggerCompletionCallbacks(const SyncError& error);
+  void ClearMetadataWhileStopped();
 
   base::flat_map<SyncMode, std::unique_ptr<ModelTypeControllerDelegate>>
       delegate_map_;

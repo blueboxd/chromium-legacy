@@ -8,11 +8,12 @@
 #include <lib/zx/event.h>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "third_party/angle/src/common/fuchsia_egl/fuchsia_egl.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -54,8 +55,9 @@ class GLOzoneEGLFlatland : public GLOzoneEGL {
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       gl::GLDisplay* display,
       const gfx::Size& size) override {
-    return gl::InitializeGLSurface(base::MakeRefCounted<gl::SurfacelessEGL>(
-        display->GetAs<gl::GLDisplayEGL>(), size));
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(
+            display->GetAs<gl::GLDisplayEGL>(), size));
   }
 
   gl::EGLDisplayPlatform GetNativeDisplay() override {
@@ -121,7 +123,6 @@ std::vector<gl::GLImplementationParts>
 FlatlandSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementationParts>{
       gl::GLImplementationParts(gl::kGLImplementationEGLANGLE),
-      gl::GLImplementationParts(gl::ANGLEImplementation::kSwiftShader),
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
       gl::GLImplementationParts(gl::kGLImplementationStubGL),
   };

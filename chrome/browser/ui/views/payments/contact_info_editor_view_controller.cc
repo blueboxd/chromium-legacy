@@ -134,13 +134,18 @@ std::u16string ContactInfoEditorViewController::GetSheetTitle() {
                                 IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
 }
 
+base::WeakPtr<PaymentRequestSheetController>
+ContactInfoEditorViewController::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void ContactInfoEditorViewController::PopulateProfile(
     autofill::AutofillProfile* profile) {
   for (const auto& field : text_fields()) {
     profile->SetInfoWithVerificationStatus(
         autofill::AutofillType(field.second.type), field.first->GetText(),
         state()->GetApplicationLocale(),
-        autofill::structured_address::VerificationStatus::kUserVerified);
+        autofill::VerificationStatus::kUserVerified);
   }
   profile->set_origin(autofill::kSettingsOrigin);
 }

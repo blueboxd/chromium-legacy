@@ -20,7 +20,7 @@
 #include <string>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/threading/thread.h"
@@ -101,6 +101,10 @@ class BrowserTestBase : public ::testing::Test {
   // trigger crashes. Note that calling IgnoreNetworkServiceCrashes is *not*
   // needed when triggering the crash via SimulateNetworkServiceCrash method.
   void IgnoreNetworkServiceCrashes();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void StartAshChrome();
+#endif
 
   // Returns the host resolver being used for the tests. Subclasses might want
   // to configure it inside tests.

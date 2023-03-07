@@ -2,27 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './emoji_button.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import './emoji_variants.js';
 
 import {assertInstanceof} from 'chrome://resources/js/assert_ts.js';
 import {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {VISUAL_CONTENT_WIDTH} from './constants.js';
 import {getTemplate} from './emoji_group.html.js';
-import {createCustomEvent, EMOJI_BUTTON_CLICK, EMOJI_CLEAR_RECENTS_CLICK, EMOJI_VARIANTS_SHOWN, EmojiClearRecentClickEvent} from './events.js';
+import {createCustomEvent, EMOJI_CLEAR_RECENTS_CLICK, EMOJI_IMG_BUTTON_CLICK, EMOJI_TEXT_BUTTON_CLICK, EMOJI_VARIANTS_SHOWN, EmojiClearRecentClickEvent, EmojiTextButtonClickEvent} from './events.js';
 import {CategoryEnum, EmojiVariants} from './types.js';
 
-// Note - these names are used directly in CSS.
+// Note - grid-layout and flex-layout names are used directly in CSS.
 export enum EmojiGroupLayoutType {
   GRID_LAYOUT = 'grid-layout',
   FLEX_LAYOUT = 'flex-layout',
+  TWO_COLUMN_LAYOUT = 'two-column-layout',
+}
+
+enum SideEnum {
+  LEFT = 'left',
+  RIGHT = 'right',
 }
 
 const DEFAULT_CATEGORY_LAYOUTS = {
   [CategoryEnum.EMOJI]: EmojiGroupLayoutType.GRID_LAYOUT,
   [CategoryEnum.EMOTICON]: EmojiGroupLayoutType.FLEX_LAYOUT,
   [CategoryEnum.SYMBOL]: EmojiGroupLayoutType.GRID_LAYOUT,
+  [CategoryEnum.GIF]: EmojiGroupLayoutType.TWO_COLUMN_LAYOUT,
 };
 
 export interface EmojiGroupComponent {
@@ -145,16 +154,26 @@ export class EmojiGroupComponent extends PolymerElement {
       return;
     }
 
-    const text = this.getDisplayEmojiForEmoji(emoji.base.string);
+    // Text-based emoji clicked
+    if (emoji.base.string) {
+      const text = this.getDisplayEmojiForEmoji(emoji.base.string);
 
-    this.dispatchEvent(createCustomEvent(EMOJI_BUTTON_CLICK, {
-      text: text,
-      isVariant: text !== emoji.base.string,
-      baseEmoji: emoji.base.string,
-      allVariants: emoji.alternates,
-      name: emoji.base.name,
-      category: this.category,
-    }));
+      this.dispatchEvent(createCustomEvent(EMOJI_TEXT_BUTTON_CLICK, {
+        text: text,
+        isVariant: text !== emoji.base.string,
+        baseEmoji: emoji.base.string,
+        allVariants: emoji.alternates,
+        name: emoji.base.name,
+        category: this.category,
+      }));
+    } else {
+      // Visual-based emoji clicked
+      this.dispatchEvent(createCustomEvent(EMOJI_IMG_BUTTON_CLICK, {
+        name: emoji.base.name,
+        visualContent: emoji.base.visualContent,
+        category: this.category,
+      }));
+    }
   }
 
   /**
@@ -234,14 +253,17 @@ export class EmojiGroupComponent extends PolymerElement {
   private getEmojiAriaLabel(emoji: EmojiVariants): string {
     // TODO(crbug/1227852): Just use emoji as the tooltip once ChromeVox can
     // announce them properly.
-    const emojiLabel = this.isLangEnglish ?
-        emoji.base.name :
-        this.getDisplayEmojiForEmoji(emoji.base.string);
-    if (emoji.alternates && emoji.alternates.length > 0) {
-      return emojiLabel + ' with variants.';
-    } else {
-      return emojiLabel;
+    if (emoji.base.string) {
+      const emojiLabel = this.isLangEnglish ?
+          emoji.base.name :
+          this.getDisplayEmojiForEmoji(emoji.base.string);
+      if (emoji.alternates && emoji.alternates.length > 0) {
+        return emojiLabel + ' with variants.';
+      } else {
+        return emojiLabel;
+      }
     }
+    return '';
   }
 
   /**
@@ -276,7 +298,8 @@ export class EmojiGroupComponent extends PolymerElement {
       |undefined {
     const dataIndex = target?.getAttribute('data-index');
 
-    if (target?.nodeName !== 'BUTTON' || !dataIndex) {
+    if (!(target?.nodeName === 'BUTTON' || target?.nodeName === 'IMG') ||
+        !dataIndex) {
       return undefined;
     }
     return this.data[Number(dataIndex)];
@@ -289,6 +312,64 @@ export class EmojiGroupComponent extends PolymerElement {
     // !. is safe for shadowRoot as it always exists
     return this.shadowRoot!.querySelector<HTMLElement>('.emoji-button');
   }
+
+  /**
+   * Returns whether the given element group is visual or not.
+   */
+  isVisual(category: CategoryEnum): boolean {
+    return category === CategoryEnum.GIF;
+  }
+
+  /**
+   * Filters visual content to be displayed in the given column based on '
+   * the height of the given column.
+   */
+  // TODO(b/264493836) This function works with displaying one set of GIFs.
+  // It may need to be changed when loading and displaying several sets of
+  // GIFs (i.e. when infinite scrolling is implemented).
+  filterColumn(data: EmojiVariants[], columnSide: SideEnum): EmojiVariants[] {
+    let leftColHeight = 0;
+    let rightColHeight = 0;
+
+    const colData = data.filter((item) => {
+      if (item.base.visualContent) {
+        const contentHeight = item.base.visualContent.previewSize.height *
+            VISUAL_CONTENT_WIDTH / item.base.visualContent.previewSize.width;
+
+        // Filter visual content to be displayed in the given column if it's
+        // currently the shortest
+        if (leftColHeight <= rightColHeight) {
+          leftColHeight += contentHeight;
+          return columnSide === SideEnum.LEFT;
+        } else {
+          rightColHeight += contentHeight;
+          return columnSide === SideEnum.RIGHT;
+        }
+      }
+
+      return false;
+    });
+
+    return colData;
+  }
+
+  /**
+   * Returns visual content preview url.
+   */
+  getUrl(item: EmojiVariants): string|undefined {
+    return item.base.visualContent?.url.preview.url;
+  }
+
+  /**
+   * Returns the index of a visual based EmojiVariant.
+   */
+  getIndex(item: EmojiVariants): number {
+    return this.data.indexOf(item);
+  }
+
+  formatCategory(category: CategoryEnum): string {
+    return category === CategoryEnum.GIF ? 'GIF' : category;
+  }
 }
 
 declare global {
@@ -297,6 +378,7 @@ declare global {
   }
   interface HTMLElementEventMap {
     [EMOJI_CLEAR_RECENTS_CLICK]: EmojiClearRecentClickEvent;
+    [EMOJI_TEXT_BUTTON_CLICK]: EmojiTextButtonClickEvent;
   }
 }
 

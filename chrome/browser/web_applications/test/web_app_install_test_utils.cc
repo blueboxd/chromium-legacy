@@ -11,8 +11,8 @@
 #include "base/test/bind.h"
 #include "base/test/test_future.h"
 #include "build/build_config.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -78,7 +78,7 @@ AppId InstallDummyWebApp(Profile* profile,
   web_app_info->scope = start_url;
   web_app_info->title = base::UTF8ToUTF16(app_name);
   web_app_info->description = base::UTF8ToUTF16(app_name);
-  web_app_info->user_display_mode = UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
   web_app_info->install_url = start_url;
 
   return InstallWebApp(profile, std::move(web_app_info),
@@ -140,9 +140,9 @@ bool UninstallAllWebApps(Profile* profile) {
   auto* provider = WebAppProvider::GetForTest(profile);
   if (!provider)
     return false;
-  std::vector<AppId> app_ids = provider->registrar().GetAppIds();
+  std::vector<AppId> app_ids = provider->registrar_unsafe().GetAppIds();
   for (auto& app_id : app_ids) {
-    const WebApp* app = provider->registrar().GetAppById(app_id);
+    const WebApp* app = provider->registrar_unsafe().GetAppById(app_id);
     WebAppSourcesSet sources =
         WebAppSourcesSet::FromEnumBitmask(app->GetSources().to_ullong());
 

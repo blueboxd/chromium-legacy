@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/mock_callback.h"
@@ -58,7 +58,7 @@ class CodecImageTest : public testing::Test {
         /*fallback_to_software_gl=*/false,
         /*disable_gl_drawing=*/false,
         /*init_extensions=*/false,
-        /*system_device_id=*/0);
+        /*gpu_preference=*/gl::GpuPreference::kDefault);
 
     surface_ = new gl::PbufferGLSurfaceEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
                                            gfx::Size(320, 240));
@@ -179,42 +179,6 @@ TEST_F(CodecImageTest, UnusedCBRunsOnNotifyUnused) {
 TEST_F(CodecImageTest, ImageStartsUnrendered) {
   auto i = NewImage(kTextureOwner);
   ASSERT_FALSE(i->was_rendered_to_front_buffer());
-}
-
-TEST_F(CodecImageTest, CopyTexImageIsInvalidForOverlayImages) {
-  auto i = NewImage(kOverlay);
-  ASSERT_NE(gl::GLImage::COPY, i->ShouldBindOrCopy());
-}
-
-TEST_F(CodecImageTest, CopyTexImageFailsIfTargetIsNotOES) {
-  auto i = NewImage(kTextureOwner);
-  ASSERT_FALSE(i->CopyTexImage(GL_TEXTURE_2D));
-}
-
-TEST_F(CodecImageTest, CopyTexImageFailsIfTheWrongTextureIsBound) {
-  auto i = NewImage(kTextureOwner);
-  GLuint wrong_texture_id;
-  glGenTextures(1, &wrong_texture_id);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, wrong_texture_id);
-  ASSERT_FALSE(i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES));
-}
-
-TEST_F(CodecImageTest, CopyTexImageCanBeCalledRepeatedly) {
-  auto i = NewImage(kTextureOwner);
-  ASSERT_TRUE(i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES));
-  ASSERT_TRUE(i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES));
-}
-
-TEST_F(CodecImageTest, CopyTexImageTriggersFrontBufferRendering) {
-  auto i = NewImage(kTextureOwner);
-  // Verify that the release comes before the wait.
-  InSequence s;
-  EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
-  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
-              UpdateTexImage());
-  i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES);
-  ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
 
 TEST_F(CodecImageTest, CanRenderTextureOwnerImageToBackBuffer) {
@@ -343,29 +307,6 @@ TEST_F(CodecImageTest, RenderAfterUnusedDoesntCrash) {
   EXPECT_FALSE(i->RenderToTextureOwnerFrontBuffer(
       CodecImage::BindingsMode::kBindImage,
       codec_buffer_wait_coordinator_->texture_owner()->GetTextureId()));
-}
-
-TEST_F(CodecImageTest, CodedSizeVsVisibleSize) {
-  const gfx::Size coded_size(128, 128);
-  const gfx::Size visible_size(100, 100);
-  auto buffer = CodecOutputBuffer::CreateForTesting(
-      0, visible_size, gfx::ColorSpace::CreateSRGB());
-  auto buffer_renderer = std::make_unique<CodecOutputBufferRenderer>(
-      std::move(buffer), nullptr,
-      features::NeedThreadSafeAndroidMedia()
-          ? base::MakeRefCounted<gpu::RefCountedLockForTest>()
-          : nullptr);
-
-  scoped_refptr<CodecImage> image = new CodecImage(
-      coded_size, features::NeedThreadSafeAndroidMedia()
-                      ? base::MakeRefCounted<gpu::RefCountedLockForTest>()
-                      : nullptr);
-  image->Initialize(std::move(buffer_renderer), false,
-                    PromotionHintAggregator::NotifyPromotionHintCB());
-
-  // Verify that CodecImage::GetSize returns coded_size and not visible_size
-  // that comes in CodecOutputBuffer size.
-  EXPECT_EQ(image->GetSize(), coded_size);
 }
 
 }  // namespace media

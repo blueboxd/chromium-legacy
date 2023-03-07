@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
@@ -28,35 +27,21 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/constants/ash_features.h"
-#include "ash/controls/gradient_layer_delegate.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_model_delegate.h"
-#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/style/color_provider.h"
-#include "ash/search_box/search_box_constants.h"
-#include "ash/strings/grit/ash_strings.h"
-#include "base/bind.h"
 #include "base/check.h"
-#include "base/command_line.h"
-#include "base/cxx17_backports.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/button/label_button.h"
@@ -64,8 +49,8 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/views/view_utils.h"
 
 namespace ash {
 
@@ -470,10 +455,16 @@ void AppsContainerView::ShowApps(AppListItemView* folder_item_view,
 
 void AppsContainerView::ResetForShowApps() {
   DVLOG(1) << __FUNCTION__;
-  UpdateRecentApps(/*needs_layout=*/false);
+  UpdateRecentApps();
   SetShowState(SHOW_APPS, false);
   apps_grid_view_->MaybeAbortWholeGridAnimation();
   DisableFocusForShowingActiveFolder(false);
+
+  if (needs_layout()) {
+    // Layout might be needed if `ResetForShowApps` was called during animation
+    // (specifically, during tablet ->(aborted) clamshell -> tablet transition).
+    Layout();
+  }
 }
 
 void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
@@ -505,22 +496,16 @@ void AppsContainerView::ReparentDragEnded() {
 }
 
 void AppsContainerView::OnAppListVisibilityWillChange(bool visible) {
+  if (!visible) {
+    return;
+  }
+
   // Start zero state search to refresh contents of the continue section and
   // recent apps.
-  // NOTE: Request another layout after recent apps get updated to handle the
-  // case when recent apps get updated during app list state change animation.
-  // The apps container layout may get dropped by the app list  contents view,
-  // so invalidating recent apps layout when recent apps visibiltiy changes
-  // will not work well).
-  // TODO(https://crbug.com/1306613): Remove explicit layout once the linked
-  // issue is fixed.
-  if (visible) {
-    contents_view_->GetAppListMainView()->view_delegate()->StartZeroStateSearch(
-        base::BindOnce(&AppsContainerView::UpdateRecentApps,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       /*needs_layout=*/true),
-        kZeroStateSearchTimeout);
-  }
+  contents_view_->GetAppListMainView()->view_delegate()->StartZeroStateSearch(
+      base::BindOnce(&AppsContainerView::OnZeroStateSearchDone,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kZeroStateSearchTimeout);
 }
 
 void AppsContainerView::OnAppListVisibilityChanged(bool shown) {
@@ -642,23 +627,18 @@ bool AppsContainerView::IsPointWithinBottomDragBuffer(
 }
 
 void AppsContainerView::MaybeCreateGradientMask() {
-  if (features::IsBackgroundBlurEnabled()) {
-    if (!layer()->layer_mask_layer() && !gradient_layer_delegate_) {
-      gradient_layer_delegate_ =
-          std::make_unique<GradientLayerDelegate>(/*animate_in=*/false);
-      UpdateGradientMaskBounds();
-    }
-    if (gradient_layer_delegate_) {
-      scrollable_container_->layer()->SetMaskLayer(
-          gradient_layer_delegate_->layer());
-    }
-  }
+  if (!features::IsBackgroundBlurEnabled())
+    return;
+
+  if (!scrollable_container_->layer()->HasGradientMask())
+    UpdateGradientMaskBounds();
 }
 
 void AppsContainerView::MaybeRemoveGradientMask() {
-  if (scrollable_container_->layer()->layer_mask_layer() &&
+  if (scrollable_container_->layer()->HasGradientMask() &&
       !keep_gradient_mask_for_cardified_state_) {
-    scrollable_container_->layer()->SetMaskLayer(nullptr);
+    scrollable_container_->layer()->SetGradientMask(
+        gfx::LinearGradient::GetEmpty());
   }
 }
 
@@ -837,38 +817,12 @@ void AppsContainerView::UpdateControlVisibility(
       app_list_state == AppListViewState::kFullscreenSearch);
 }
 
-void AppsContainerView::AnimateOpacity(AppListViewState current_view_state,
-                                       AppListViewState target_view_state,
-                                       const OpacityAnimator& animator) {
-  if (!apps_grid_view_->layer()->GetAnimator()->IsAnimatingProperty(
-          ui::LayerAnimationElement::OPACITY)) {
-    apps_grid_view_->layer()->SetOpacity(
-        current_view_state != AppListViewState::kClosed ? 1.0f : 0.0f);
-  }
-
-  const bool target_grid_visibility =
-      target_view_state == AppListViewState::kFullscreenAllApps ||
-      target_view_state == AppListViewState::kFullscreenSearch;
-  animator.Run(apps_grid_view_, target_grid_visibility);
-  animator.Run(page_switcher_, target_grid_visibility);
-}
-
-void AppsContainerView::AnimateYPosition(AppListViewState target_view_state,
-                                         const TransformAnimator& animator,
-                                         float default_offset) {
-  const int target_app_list_y = GetAppListY(target_view_state);
-
-  scrollable_container_->SetY(target_app_list_y +
-                              scrollable_container_y_distance_);
-  animator.Run(default_offset, scrollable_container_->layer());
-  page_switcher_->SetY(target_app_list_y + scrollable_container_y_distance_);
-  animator.Run(default_offset, page_switcher_->layer());
-}
-
 void AppsContainerView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;
+
+  views::View::Layout();
 
   const int app_list_y =
       GetAppListY(contents_view_->app_list_view()->app_list_state());
@@ -915,7 +869,7 @@ void AppsContainerView::Layout() {
       gfx::Insets::TLBR(-kDefaultFadeoutMaskHeight, 0, 0, 0));
   scrollable_container_->SetBoundsRect(scrollable_bounds);
 
-  if (gradient_layer_delegate_)
+  if (scrollable_container_->layer()->HasGradientMask())
     UpdateGradientMaskBounds();
 
   bool separator_need_centering = false;
@@ -1286,7 +1240,7 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
   return cached_container_margins_.margins;
 }
 
-void AppsContainerView::UpdateRecentApps(bool needs_layout) {
+void AppsContainerView::UpdateRecentApps() {
   RecentAppsView* recent_apps = GetRecentAppsView();
   if (!recent_apps || !app_list_config_)
     return;
@@ -1294,8 +1248,6 @@ void AppsContainerView::UpdateRecentApps(bool needs_layout) {
   AppListModelProvider* const model_provider = AppListModelProvider::Get();
   recent_apps->SetModels(model_provider->search_model(),
                          model_provider->model());
-  if (needs_layout)
-    Layout();
 }
 
 void AppsContainerView::SetShowState(ShowState show_state,
@@ -1368,8 +1320,7 @@ void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
 
 int AppsContainerView::GetAppListY(AppListViewState state) {
   const gfx::Rect search_box_bounds =
-      contents_view_->GetSearchBoxBoundsForViewState(AppListState::kStateApps,
-                                                     state);
+      contents_view_->GetSearchBoxBounds(AppListState::kStateApps);
   return search_box_bounds.bottom();
 }
 
@@ -1419,7 +1370,7 @@ void AppsContainerView::UpdateForActiveAppListModel() {
   AppListModel* const model = AppListModelProvider::Get()->model();
   apps_grid_view_->SetModel(model);
   apps_grid_view_->SetItemList(model->top_level_item_list());
-  UpdateRecentApps(/*needs_layout=*/false);
+  UpdateRecentApps();
 
   // If model changes, close the folder view if it's open, as the associated
   // item list is about to go away.
@@ -1427,20 +1378,22 @@ void AppsContainerView::UpdateForActiveAppListModel() {
 }
 
 void AppsContainerView::UpdateGradientMaskBounds() {
-  const gfx::Rect container_bounds = scrollable_container_->bounds();
-  const gfx::Rect top_gradient_bounds(0, 0, container_bounds.width(),
-                                      kDefaultFadeoutMaskHeight);
-  const gfx::Rect bottom_gradient_bounds(
-      0, container_bounds.height() - kDefaultFadeoutMaskHeight,
-      container_bounds.width(), kDefaultFadeoutMaskHeight);
+  if (scrollable_container_->bounds().IsEmpty())
+    return;
 
-  gradient_layer_delegate_->set_start_fade_zone({top_gradient_bounds,
-                                                 /*fade_in=*/true,
-                                                 /*is_horizontal=*/false});
-  gradient_layer_delegate_->set_end_fade_zone({bottom_gradient_bounds,
-                                               /*fade_in=*/false,
-                                               /*is_horizonal=*/false});
-  gradient_layer_delegate_->layer()->SetBounds(container_bounds);
+  // Vertical linear gradient from top to bottom.
+  gfx::LinearGradient gradient_mask(/*angle=*/-90);
+  float fade_in_out_fraction = static_cast<float>(kDefaultFadeoutMaskHeight) /
+                               scrollable_container_->bounds().height();
+  // Fade in section.
+  gradient_mask.AddStep(/*fraction=*/0, /*alpha=*/0);
+  gradient_mask.AddStep(fade_in_out_fraction, 255);
+  // Fade out section
+  gradient_mask.AddStep((1 - fade_in_out_fraction), 255);
+  gradient_mask.AddStep(1, 0);
+
+  if (gradient_mask != scrollable_container_->layer()->gradient_mask())
+    scrollable_container_->layer()->SetGradientMask(gradient_mask);
 }
 
 void AppsContainerView::OnAppsGridViewFadeOutAnimationEnded(
@@ -1561,6 +1514,19 @@ int AppsContainerView::GetSeparatorHeight() {
     return 0;
   return separator_->GetProperty(views::kMarginsKey)->height() +
          views::Separator::kThickness;
+}
+
+void AppsContainerView::OnZeroStateSearchDone() {
+  UpdateRecentApps();
+  if (needs_layout()) {
+    // NOTE: Request another layout after recent apps get updated to handle the
+    // case when recent apps get updated during app list state change animation.
+    // The apps container layout may get dropped by the app list contents view,
+    // so invalidating recent apps layout when recent apps visibiltiy changes
+    // will not work well).
+    // TODO(b/261662349): Remove explicit layout once the linked issue is fixed.
+    Layout();
+  }
 }
 
 }  // namespace ash

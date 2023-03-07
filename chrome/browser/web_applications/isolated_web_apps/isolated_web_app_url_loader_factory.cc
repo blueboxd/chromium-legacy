@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_reader_registry.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_reader_registry_factory.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
 #include "chrome/browser/web_applications/isolation_data.h"
@@ -207,11 +208,12 @@ class IsolatedWebAppURLLoader : public network::mojom::URLLoader {
 
  private:
   void OnResponseRead(
-      base::expected<IsolatedWebAppReaderRegistry::Response,
+      base::expected<IsolatedWebAppResponseReader::Response,
                      IsolatedWebAppReaderRegistry::ReadResponseError>
           response) {
-    if (!loader_client_.is_connected())
+    if (!loader_client_.is_connected()) {
       return;
+    }
 
     if (!response.has_value()) {
       LogErrorMessageToConsole(
@@ -283,8 +285,9 @@ class IsolatedWebAppURLLoader : public network::mojom::URLLoader {
   }
 
   void FinishReadingBody(net::Error net_error) {
-    if (!loader_client_.is_connected())
+    if (!loader_client_.is_connected()) {
       return;
+    }
 
     network::URLLoaderCompletionStatus status(net_error);
     // For these values we use the same `body_length_` as we don't currently

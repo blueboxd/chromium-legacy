@@ -61,9 +61,10 @@ static void VerifyCSSCalc(String text,
   CSSToLengthConversionData::ViewportSize viewport_size(viewport_width,
                                                         viewport_height);
   CSSToLengthConversionData::ContainerSizes container_sizes;
+  CSSToLengthConversionData::Flags ignored_flags = 0;
   CSSToLengthConversionData conversion_data(
-      nullptr, WritingMode::kHorizontalTb, font_sizes, line_height_size,
-      viewport_size, container_sizes, 1.0);
+      WritingMode::kHorizontalTb, font_sizes, line_height_size, viewport_size,
+      container_sizes, 1.0, ignored_flags);
   EXPECT_APPROX_EQ(value, math_value->ComputeLength<float>(conversion_data));
 }
 
@@ -196,13 +197,15 @@ TEST(SizesMathFunctionParserTest, Basic) {
         CSSParserTokenRange(CSSTokenizer(test_cases[i].input).TokenizeToEOF()),
         media_values);
     ASSERT_EQ(test_cases[i].valid, calc_parser.IsValid());
-    if (calc_parser.IsValid())
+    if (calc_parser.IsValid()) {
       EXPECT_APPROX_EQ(test_cases[i].output, calc_parser.Result());
+    }
   }
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
-    if (test_cases[i].dont_run_in_css_calc)
+    if (test_cases[i].dont_run_in_css_calc) {
       continue;
+    }
     VerifyCSSCalc(test_cases[i].input, test_cases[i].output,
                   test_cases[i].valid, data.em_size, data.viewport_width,
                   data.viewport_height);

@@ -833,22 +833,25 @@
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_NEXT_BUTTON_LABEL" desc="The label of the button that is shown on preferences screen and that confirms chosen configuration and shows next demo setup screen.">
     Continue
   </message>
-  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_LABEL" desc="Label for retailer id input field on the demo mode setup screen. User should provide the retailer id if assigned.">
-    Retailer-store ID code (optional)
+  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_NAME_INPUT_LABEL" desc="Label for required retailer name input field on the demo mode setup screen.">
+    Retailer Name
   </message>
-  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_PLACEHOLDER" desc="Placeholder for retailer id input field on the demo mode setup screen.">
-    Retailer-store ID code
+  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_NAME_INPUT_PLACEHOLDER" desc="Placeholder for retailer name input field on the demo mode setup screen.">
+    Retailer Name
   </message>
-  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_ERROR_TEXT" desc="Help text for retailer id input field on the demo mode setup screen.">
-    Invalid ID. The format you entered is incorrect. Please check the instructions you received to ensure you are entering the ID in the correct format. If you’re unable to resolve this issue, please leave the field blank and continue with installation.
+  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_PRIVACY_DISCLAIMER" desc="Instructions and privacy disclaimer text for the retailer and store number input fields on the demo mode setup screen.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Enter the name of the retailer and the store number that this demo device is being configured for*. <ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>If you don't know the store number, you can enter "0000" to continue with Demo Mode installation. <ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>*Note: Google uses this information to identify which version of Demo Mode the device should receive and to measure usage of Demo Mode.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_INPUT_HELP_TEXT" desc="Help text for retailer id input field on the demo mode setup screen.">
-    The retailer-store ID format is ABC-1234
+  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_STORE_NUMBER_INPUT_LABEL" desc="Label for store number input field on the demo mode setup screen. Input is required.">
+  Store Number
   </message>
-  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_RETAILER_ID_PRIVACY_DISCLAIMER" desc="Privacy disclaimer text for retailer id input field on the demo mode setup screen.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>If you received instructions to enter a retailer-store ID code during Demo Mode installation, please enter it on the right*.  Otherwise, you can leave this field blank and continue.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You will still be able to install Demo Mode without a code, but it’s important to enter this code if it’s applicable to your store.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>*Note: Google uses these codes to identify which version of Demo Mode the device should receive and to measure usage of Demo Mode.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_STORE_NUMBER_INPUT_PLACEHOLDER" desc="Placeholder for store number input field on the demo mode setup screen">
+  Store Number
+  </message>
+  <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_STORE_NUMBER_INPUT_HELP_TEXT" desc="Help text for store number input field on the demo mode setup screen">
+  Use numerical digits only
   </message>
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_COUNTRY_NOT_SELECTED_TITLE" desc="The title of country not selected option for demo mode preference screen.">
     Please select a country
@@ -1379,6 +1382,27 @@
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_CONTINUE_WITHOUT_LOCAL_DATA_BUTTON" desc="Button to confirm continue without local data on the recover local data dialog.">
     Continue without local data
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SUCCESS_TITLE" desc="The title message when Cryptohome recovery succeeded.">
+    Your password has been updated
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_ERROR_TITLE" desc="The title message when Cryptohome recovery failed.">
+    Failed to recover local data
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_REAUTH_NOTIFICATION_TITLE" desc="The title message when reauth is required during Cryptohome recovery.">
+    Your password has changed since the last time you signed in
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_REAUTH_NOTIFICATION_SUBTITLE" desc="The subtitle message when reauth is required during Cryptohome recovery.">
+    Enter your Google Account password again on the next screen to finish recovery
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_MANUAL_RECOVERY_BUTTON" desc="Label for the button to enter old password when Cryptohome recovery failed.">
+    Enter the old password
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_RETRY_BUTTON" desc="Label for the button to retry when Cryptohome recovery failed.">
+    Retry
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_DONE_BUTTON" desc="Label for the done button to finish the Cryptohome recovery flow.">
+    Done
   </message>
   <message name="IDS_LOGIN_SAML_NOTICE_SHORT" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     Sign-in hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
@@ -4936,6 +4960,30 @@
   <message name="IDS_BRUSCHETTA_NAME" desc="Bruschetta" translateable="false">
     Bruschetta
   </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Bruschetta (codename) installer dialog to begin installing.">
+    Install
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_CONFIRMATION_TITLE" desc="Title for the installer for Bruschetta (codename_).">
+    Welcome
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_ONGOING_TITLE" desc="Title for the installer while Bruschetta (codename) is installing.">
+    Installing
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE" desc="Title for the installer when Bruschetta (codename) fails to install.">
+    Sorry, an error occurred
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta (codename, do not translate) fails to install.">
+    Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_INSTALLING_DLC_MESSAGE" desc="Message while DLC (DownLoadable Content - codename) to support Bruschetta is being installed.">
+    Configuring DLC.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_DOWNLOADING_MESSAGE" desc="Message while the installer is downloading files.">
+    This process may take a few minutes. Downloading files.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_STARTING_VM_MESSAGE" desc="Message while the installer is launching the Virtual Machine (VM).">
+    This process may take a few minutes. Starting the virtual machine.
+  </message>
 
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
@@ -5992,17 +6040,22 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_PARENT_ACCESS_WEBVIEW_LOADING_MESSAGE" desc="Message shown while the parent access screen is loading.">
     Please wait...
   </message>
-  <message name="IDS_PARENT_ACCESS_ERROR_TITLE" desc="Title for the parent access dialog when an error has occurred.">
+
+  <!-- Strings shared among supervised user experiences -->
+  <message name="IDS_SUPERVISED_USER_ERROR_TITLE" desc="Title for the UI shown to supervised users when an error has occurred.">
     An error occurred
   </message>
-  <message name="IDS_PARENT_ACCESS_ERROR_DESCRIPTION" desc="Message shown if the parent access dialog has failed to load for any reason.">
+  <message name="IDS_SUPERVISED_USER_ERROR_DESCRIPTION" desc="Message shown if UI shown to supervised users has failed to load for any reason.">
     Please try again later
   </message>
-  <message name="IDS_PARENT_ACCESS_OFFLINE_HEADING" desc="Heading string shown in the parent access flow when the network is not available.">
+  <message name="IDS_SUPERVISED_USER_OFFLINE_TITLE" desc="Heading string shown in the UI shown to supervised users when the network is not available.">
     Can’t connect to the internet
   </message>
-  <message name="IDS_PARENT_ACCESS_OFFLINE_DESCRIPTION" desc="Description shown in the parent access flow when the network is not available.">
+  <message name="IDS_SUPERVISED_USER_OFFLINE_DESCRIPTION" desc="Description shown in the UI shown to supervised users when the network is not available.">
     Check your internet connection
+  </message>
+  <message name="IDS_PARENT_ACCESS_ASK_IN_PERSON_BUTTON" desc="Button shown on the parent access dialog to ask a parent for approval in person.">
+    Ask in person
   </message>
 
   <!-- Strings for gnubby U2FD authentication UI -->
@@ -6317,6 +6370,41 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_THEME_AUTO_DESCRIPTION" desc="Description of the auto theme button">
     Switch themes at sunrise and sunset
+  </message>
+
+  <!-- Touchpad Scroll -->
+  <!-- TODO(b/265107054): Remove translateable tags when strings are finalized. -->
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TITLE" desc="Title of the touchpad scroll direction screen." translateable="false">
+    Change touchpad scrolling direction
+  </message>
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION" desc="Description of the touchpad scroll direction screen." translateable="false">
+    Try it out. Turn the setting on or off, then scroll with two fingers on your touchpad in the test area.
+  </message>
+   <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION_ADDITIONAL" desc="Additional description of the touchpad scroll direction screen." translateable="false">
+    You can also find this later in Settings > Device > Mouse and touchpad.
+  </message>
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_TITLE" desc="Title for a toggle that allows reversing the scrolling directions." translateable="false">
+    Reverse scrolling
+  </message>
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_DESC" desc="Description for a toggle that allows reversing the scrolling directions" translateable="false">
+    Swipe up to move the page down
+  </message>
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_AREA_DESC" desc="Description for a scroll area that allows user to try the selected scrolling directions" translateable="false">
+    Scroll with two fingers on your touchpad in this area
+  </message>
+
+  <!-- Strings for the locale switch notification inside the OOBE. -->
+  <message name="IDS_LOCALE_SWITCH_NOTIFICATION_TITLE" desc="Title of the notification that is displayed at the bottom-right corner of the screen.">
+    Switch device language?
+  </message>
+  <message name="IDS_LOCALE_SWITCH_NOTIFICATION_TEXT" desc="Message that proposes users to change their locale inside a notification that is displayed at the bottom-right corner of the screen.">
+    You can use your preferred Google Account language (<ph name="NEW_LOCALE_FROM_GAIA">$1<ex>Spanish (Latin America)</ex></ph>)
+  </message>
+  <message name="IDS_LOCALE_SWITCH_NOTIFICATION_CONFIRM_BUTTON_LABEL" desc="Label of a button that user will use to accept the locale sync. Displayed inside a notification at the bottom-right corner of the screen.">
+    Switch
+  </message>
+  <message name="IDS_LOCALE_SWITCH_NOTIFICATION_CANCEL_BUTTON_LABEL" desc="Label of a button that user will use to cancel the locale sync. Displayed inside a notification at the bottom-right corner of the screen.">
+    Don't switch
   </message>
 
   <!-- CHOOBE Screen -->

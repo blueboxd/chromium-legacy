@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/auth_token_requester.h"
@@ -142,8 +142,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
 
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
-  CtapGetAssertionRequest request_;
-  CtapGetAssertionOptions options_;
+  const CtapGetAssertionRequest request_;
+  const CtapGetAssertionOptions options_;
   absl::optional<pin::TokenResponse> pin_token_;
 
   // If true, and if at the time the request is dispatched to the first

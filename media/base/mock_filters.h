@@ -11,7 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/functional/callback.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/audio_decoder.h"
@@ -168,31 +169,43 @@ class MockDemuxer : public Demuxer {
   void Initialize(DemuxerHost* host, PipelineStatusCallback cb) override {
     OnInitialize(host, cb);
   }
-  MOCK_METHOD2(OnInitialize,
-               void(DemuxerHost* host, PipelineStatusCallback& cb));
-  MOCK_METHOD1(StartWaitingForSeek, void(base::TimeDelta));
-  MOCK_METHOD1(CancelPendingSeek, void(base::TimeDelta));
+  MOCK_METHOD(void,
+              OnInitialize,
+              (DemuxerHost * host, PipelineStatusCallback& cb),
+              ());
+  MOCK_METHOD(void, StartWaitingForSeek, (base::TimeDelta), (override));
+  MOCK_METHOD(void, CancelPendingSeek, (base::TimeDelta), (override));
   void Seek(base::TimeDelta time, PipelineStatusCallback cb) override {
     OnSeek(time, cb);
   }
-  MOCK_METHOD2(OnSeek, void(base::TimeDelta time, PipelineStatusCallback& cb));
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD0(AbortPendingReads, void());
-  MOCK_METHOD0(GetAllStreams, std::vector<DemuxerStream*>());
+  MOCK_METHOD(bool, IsSeekable, (), (const override));
+  MOCK_METHOD(void,
+              OnSeek,
+              (base::TimeDelta time, PipelineStatusCallback& cb),
+              ());
+  MOCK_METHOD(void, Stop, (), (override));
+  MOCK_METHOD(void, AbortPendingReads, (), (override));
+  MOCK_METHOD(std::vector<DemuxerStream*>, GetAllStreams, (), (override));
 
-  MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
-  MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
-  MOCK_CONST_METHOD0(GetMemoryUsage, int64_t());
-  MOCK_CONST_METHOD0(GetContainerForMetrics,
-                     absl::optional<container_names::MediaContainerName>());
-  MOCK_METHOD3(OnEnabledAudioTracksChanged,
-               void(const std::vector<MediaTrack::Id>&,
-                    base::TimeDelta,
-                    TrackChangeCB));
-  MOCK_METHOD3(OnSelectedVideoTrackChanged,
-               void(const std::vector<MediaTrack::Id>&,
-                    base::TimeDelta,
-                    TrackChangeCB));
+  MOCK_METHOD(base::TimeDelta, GetStartTime, (), (const, override));
+  MOCK_METHOD(base::Time, GetTimelineOffset, (), (const, override));
+  MOCK_METHOD(int64_t, GetMemoryUsage, (), (const, override));
+  MOCK_METHOD(absl::optional<container_names::MediaContainerName>,
+              GetContainerForMetrics,
+              (),
+              (const, override));
+  MOCK_METHOD(void,
+              OnEnabledAudioTracksChanged,
+              (const std::vector<MediaTrack::Id>&,
+               base::TimeDelta,
+               TrackChangeCB),
+              (override));
+  MOCK_METHOD(void,
+              OnSelectedVideoTrackChanged,
+              (const std::vector<MediaTrack::Id>&,
+               base::TimeDelta,
+               TrackChangeCB),
+              (override));
 };
 
 class MockDemuxerStream : public DemuxerStream {
@@ -207,7 +220,7 @@ class MockDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   Type type() const override;
   StreamLiveness liveness() const override;
-  void Read(ReadCB read_cb) override { OnRead(read_cb); }
+  void Read(uint32_t count, ReadCB read_cb) override { OnRead(read_cb); }
   MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
@@ -296,19 +309,19 @@ class MockAudioEncoder : public AudioEncoder {
   // AudioEncoder implementation.
   MOCK_METHOD(void,
               Initialize,
-              (const AudioEncoder::Options& options,
-               AudioEncoder::OutputCB output_cb,
-               AudioEncoder::EncoderStatusCB done_cb),
+              (const Options& options,
+               OutputCB output_cb,
+               EncoderStatusCB done_cb),
               (override));
 
   MOCK_METHOD(void,
               Encode,
               (std::unique_ptr<AudioBus> audio_bus,
                base::TimeTicks capture_time,
-               AudioEncoder::EncoderStatusCB done_cb),
+               EncoderStatusCB done_cb),
               (override));
 
-  MOCK_METHOD(void, Flush, (AudioEncoder::EncoderStatusCB done_cb), (override));
+  MOCK_METHOD(void, Flush, (EncoderStatusCB done_cb), (override));
   MOCK_METHOD(void, DisablePostedCallbacks, (), (override));
 
   // A function for mocking destructor calls
@@ -328,26 +341,27 @@ class MockVideoEncoder : public VideoEncoder {
   MOCK_METHOD(void,
               Initialize,
               (VideoCodecProfile profile,
-               const VideoEncoder::Options& options,
-               VideoEncoder::OutputCB output_cb,
-               VideoEncoder::EncoderStatusCB done_cb),
+               const Options& options,
+               EncoderInfoCB info_cb,
+               OutputCB output_cb,
+               EncoderStatusCB done_cb),
               (override));
 
   MOCK_METHOD(void,
               Encode,
               (scoped_refptr<VideoFrame> frame,
                bool key_frame,
-               VideoEncoder::EncoderStatusCB done_cb),
+               EncoderStatusCB done_cb),
               (override));
 
   MOCK_METHOD(void,
               ChangeOptions,
-              (const VideoEncoder::Options& options,
-               VideoEncoder::OutputCB output_cb,
-               VideoEncoder::EncoderStatusCB done_cb),
+              (const Options& options,
+               OutputCB output_cb,
+               EncoderStatusCB done_cb),
               (override));
 
-  MOCK_METHOD(void, Flush, (VideoEncoder::EncoderStatusCB done_cb), (override));
+  MOCK_METHOD(void, Flush, (EncoderStatusCB done_cb), (override));
   MOCK_METHOD(void, DisablePostedCallbacks, (), (override));
 
   // A function for mocking destructor calls

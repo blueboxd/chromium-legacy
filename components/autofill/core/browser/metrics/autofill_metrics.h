@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
+#include "components/autofill/core/browser/metrics/log_event.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -471,113 +472,24 @@ class AutofillMetrics {
     // UNMASK_PROMPT_SAVED_CARD_LOCALLY = 6,
     // User chose to opt in (checked the checkbox when it was empty).
     // Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN = 7,
+    // Deprecated.
+    // UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN = 7,
     // User did not opt in when they had the chance (left the checkbox
     // unchecked).  Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN = 8,
+    // Deprecated.
+    // UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN = 8,
     // User chose to opt out (unchecked the checkbox when it was check).
     // Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT = 9,
+    // Deprecated.
+    // UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT = 9,
     // User did not opt out when they had a chance (left the checkbox checked).
     // Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT = 10,
+    // Deprecated.
+    // UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT = 10,
     // The prompt was closed while chrome was unmasking the card (user pressed
     // verify and we were waiting for the server response).
     UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING = 11,
     NUM_UNMASK_PROMPT_EVENTS,
-  };
-
-  // Events related to user-perceived latency due to GetDetailsForGetRealPan
-  // call.
-  enum class PreflightCallEvent {
-    // Returned before card chosen.
-    kPreflightCallReturnedBeforeCardChosen = 0,
-    // Did not return before card was chosen. When opted-in, this means
-    // the UI had to wait for the call to return. When opted-out, this means we
-    // did not offer to opt-in.
-    kCardChosenBeforePreflightCallReturned = 1,
-    // Preflight call was irrelevant; skipped waiting.
-    kDidNotChooseMaskedCard = 2,
-    kMaxValue = kDidNotChooseMaskedCard,
-  };
-
-  // Metric for tracking which authentication method was used for a user with
-  // FIDO authentication enabled.
-  enum class CardUnmaskTypeDecisionMetric {
-    // Only WebAuthn prompt was shown.
-    kFidoOnly = 0,
-    // CVC authentication was required in addition to WebAuthn.
-    kCvcThenFido = 1,
-    kMaxValue = kCvcThenFido,
-  };
-
-  // TODO(crbug.com/1263302): Right now this is only used for virtual cards.
-  // Extend it for masked server cards in the future too. Tracks the flow type
-  // used in a virtual card unmasking.
-  enum class VirtualCardUnmaskFlowType {
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-
-    // Flow type was not specified because of no option was provided, or was
-    // unknown at time of logging.
-    kUnspecified = 0,
-    // Only FIDO auth was offered.
-    kFidoOnly = 1,
-    // Only OTP auth was offered.
-    kOtpOnly = 2,
-    // FIDO auth was offered first but was cancelled or failed. OTP auth was
-    // offered as a fallback.
-    kOtpFallbackFromFido = 3,
-    kMaxValue = kOtpFallbackFromFido,
-  };
-
-  // Possible scenarios where a WebAuthn prompt may show.
-  enum class WebauthnFlowEvent {
-    // WebAuthn is immediately prompted for unmasking.
-    kImmediateAuthentication = 0,
-    // WebAuthn is prompted after a CVC check.
-    kAuthenticationAfterCvc = 1,
-    // WebAuthn is prompted after being offered to opt-in from a checkout flow.
-    kCheckoutOptIn = 2,
-    // WebAuthn is prompted after being offered to opt-in from the settings
-    // page.
-    kSettingsPageOptIn = 3,
-    kMaxValue = kSettingsPageOptIn,
-  };
-
-  // The result of a WebAuthn user-verification prompt.
-  enum class WebauthnResultMetric {
-    // User-verification succeeded.
-    kSuccess = 0,
-    // Other checks failed (e.g. invalid domain, algorithm unsupported, etc.)
-    kOtherError = 1,
-    // User either failed verification or cancelled.
-    kNotAllowedError = 2,
-    kMaxValue = kNotAllowedError,
-  };
-
-  // The user decision for the WebAuthn opt-in promo.
-  enum class WebauthnOptInPromoUserDecisionMetric {
-    // User accepted promo.
-    kAccepted = 0,
-    // User immediately declined promo.
-    kDeclinedImmediately = 1,
-    // Once user accepts the dialog, a round-trip call to Payments is sent,
-    // which is required for user authentication. The user has the option to
-    // cancel the dialog before the round-trip call is returned.
-    kDeclinedAfterAccepting = 2,
-    kMaxValue = kDeclinedAfterAccepting,
-  };
-
-  // The parameters with which opt change was called.
-  enum class WebauthnOptInParameters {
-    // Call made to fetch a challenge.
-    kFetchingChallenge = 0,
-    // Call made with signature of creation challenge.
-    kWithCreationChallenge = 1,
-    // Call made with signature of request challenge.
-    kWithRequestChallenge = 2,
-    kMaxValue = kWithRequestChallenge,
   };
 
   // Possible results of Payments RPCs.
@@ -769,109 +681,6 @@ class AutofillMetrics {
     kMaxValue = SECTION_UNION_IMPORT,
   };
 
-  // To record the source of the autofilled state field.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class AutofilledSourceMetricForStateSelectionField {
-    // Indicates that the filling was done by state value stored in the profile.
-    AUTOFILL_BY_VALUE = 0,
-    // Indicates that the filling was done by the |AlternativeStateNameMap|.
-    AUTOFILL_BY_ALTERNATIVE_STATE_NAME_MAP = 1,
-    kMaxValue = AUTOFILL_BY_ALTERNATIVE_STATE_NAME_MAP,
-  };
-
-  // OTP authentication-related events.
-  enum class OtpAuthEvent {
-    // Unknown results. Should not happen.
-    kUnknown = 0,
-    // The OTP auth succeeded.
-    kSuccess = 1,
-    // The OTP auth failed because the flow was cancelled.
-    kFlowCancelled = 2,
-    // The OTP auth failed because the SelectedChallengeOption request failed
-    // due to generic errors.
-    kSelectedChallengeOptionGenericError = 3,
-    // The OTP auth failed because the SelectedChallengeOption request failed
-    // due to virtual card retrieval errors.
-    kSelectedChallengeOptionVirtualCardRetrievalError = 4,
-    // The OTP auth failed because the UnmaskCard request failed due to
-    // authentication errors.
-    kUnmaskCardAuthError = 5,
-    // The OTP auth failed because the UnmaskCard request failed due to virtual
-    // card retrieval errors.
-    kUnmaskCardVirtualCardRetrievalError = 6,
-    // The OTP auth failed temporarily because the OTP was expired.
-    kOtpExpired = 7,
-    // The OTP auth failed temporarily because the OTP didn't match the expected
-    // value.
-    kOtpMismatch = 8,
-    kMaxValue = kOtpMismatch
-  };
-
-  // All possible results of the card unmask flow.
-  enum class ServerCardUnmaskResult {
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-
-    // Default value, should never be used in logging.
-    kUnknown = 0,
-    // Card unmask completed successfully because the data had already been
-    // cached locally.
-    kLocalCacheHit = 1,
-    // Card unmask completed successfully without further authentication steps.
-    kRiskBasedUnmasked = 2,
-    // Card unmask completed successfully via explicit authentication method,
-    // such as FIDO, OTP, etc.
-    kAuthenticationUnmasked = 3,
-    // Card unmask failed due to some generic authentication errors.
-    kAuthenticationError = 4,
-    // Card unmask failed due to specific virtual card retrieval errors. Only
-    // applies for virtual cards.
-    kVirtualCardRetrievalError = 5,
-    // Card unmask was aborted due to user cancellation.
-    kFlowCancelled = 6,
-    // Card unmask failed because only FIDO authentication was provided as an
-    // option but the user has not opted in.
-    kOnlyFidoAvailableButNotOptedIn = 7,
-    // Card unmask failed due to unexpected errors.
-    kUnexpectedError = 8,
-    kMaxValue = kUnexpectedError,
-  };
-
-  // The result of how the OTP input dialog was closed. This dialog is used for
-  // users to type in the received OTP value for card verification.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class OtpInputDialogResult {
-    // Unknown event, should not happen.
-    kUnknown = 0,
-    // The dialog was closed before the user entered any OTP and clicked the OK
-    // button. This includes closing the dialog in an error state after a failed
-    // unmask attempt.
-    kDialogCancelledByUserBeforeConfirmation = 1,
-    // The dialog was closed after the user entered a valid OTP and clicked the
-    // OK button, and when the dialog was in a pending state.
-    kDialogCancelledByUserAfterConfirmation = 2,
-    // The dialog closed automatically after the OTP verification succeeded.
-    kDialogClosedAfterVerificationSucceeded = 3,
-    // The dialog closed automatically after a server failure response.
-    kDialogClosedAfterVerificationFailed = 4,
-    kMaxValue = kDialogClosedAfterVerificationFailed,
-  };
-
-  // The type of error message shown in the card unmask OTP input dialog.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class OtpInputDialogError {
-    // Unknown type, should not be used.
-    kUnknown = 0,
-    // The error indicating that the OTP is expired.
-    kOtpExpiredError = 1,
-    // The error indicating that the OTP is incorrect.
-    kOtpMismatchError = 2,
-    kMaxValue = kOtpMismatchError,
-  };
-
   // The filling status of an autofilled field.
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -993,6 +802,8 @@ class AutofillMetrics {
                       QualityMetricType metric_type,
                       ServerFieldType predicted_type,
                       ServerFieldType actual_type);
+    void LogAutofillFieldInfoAtFormRemove(const FormStructure& form,
+                                          const AutofillField& field);
     void LogFormSubmitted(bool is_for_credit_card,
                           bool has_upi_vpa_field,
                           const DenseSet<FormType>& form_types,
@@ -1172,77 +983,6 @@ class AutofillMetrics {
   static void LogUserHappinessByProfileFormType(UserHappinessMetric metric,
                                                 uint32_t profile_form_bitmask);
 
-  // Logs the card fetch latency |duration| after a WebAuthn prompt. |result|
-  // indicates whether the unmasking request was successful or not. |card_type|
-  // indicates the type of the credit card that the request fetched.
-  static void LogCardUnmaskDurationAfterWebauthn(
-      const base::TimeDelta& duration,
-      AutofillClient::PaymentsRpcResult result,
-      AutofillClient::PaymentsRpcCardType card_type);
-
-  // Logs the count of calls to PaymentsClient::GetUnmaskDetails() (aka
-  // GetDetailsForGetRealPan).
-  static void LogCardUnmaskPreflightCalled();
-
-  // Logs the duration of the PaymentsClient::GetUnmaskDetails() call (aka
-  // GetDetailsForGetRealPan).
-  static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
-
-  // TODO(crbug.com/1263302): These functions are used for only virtual cards
-  // now. Consider integrating with other masked server cards logging below.
-  static void LogServerCardUnmaskAttempt(
-      AutofillClient::PaymentsRpcCardType card_type);
-  static void LogServerCardUnmaskResult(
-      ServerCardUnmaskResult unmask_result,
-      AutofillClient::PaymentsRpcCardType card_type,
-      VirtualCardUnmaskFlowType flow_type);
-  static void LogServerCardUnmaskFormSubmission(
-      AutofillClient::PaymentsRpcCardType card_type);
-
-  // Logs the count of calls to PaymentsClient::OptChange() (aka
-  // UpdateAutofillUserPreference).
-  static void LogWebauthnOptChangeCalled(bool request_to_opt_in,
-                                         bool is_checkout_flow,
-                                         WebauthnOptInParameters metric);
-
-  // Logs the number of times the opt-in promo for enabling FIDO authentication
-  // for card unmasking has been shown.
-  static void LogWebauthnOptInPromoShown(bool is_checkout_flow);
-
-  // Logs the user response to the opt-in promo for enabling FIDO authentication
-  // for card unmasking.
-  static void LogWebauthnOptInPromoUserDecision(
-      bool is_checkout_flow,
-      WebauthnOptInPromoUserDecisionMetric metric);
-
-  // Logs which unmask type was used for a user with FIDO authentication
-  // enabled.
-  static void LogCardUnmaskTypeDecision(CardUnmaskTypeDecisionMetric metric);
-
-  // Logs the existence of any user-perceived latency between selecting a Google
-  // Payments server card and seeing a card unmask prompt.
-  static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
-                                                     bool fido_auth_enabled);
-
-  // Logs the duration of any user-perceived latency between selecting a Google
-  // Payments server card and seeing a card unmask prompt (CVC or FIDO).
-  static void LogUserPerceivedLatencyOnCardSelectionDuration(
-      const base::TimeDelta duration);
-
-  // Logs whether or not the verifying pending dialog timed out between
-  // selecting a Google Payments server card and seeing a card unmask prompt.
-  static void LogUserPerceivedLatencyOnCardSelectionTimedOut(bool did_time_out);
-
-  // Logs the duration of WebAuthn's
-  // IsUserVerifiablePlatformAuthenticatorAvailable() call. It is supposedly an
-  // extremely quick IPC.
-  static void LogUserVerifiabilityCheckDuration(
-      const base::TimeDelta& duration);
-
-  // Logs the result of a WebAuthn prompt.
-  static void LogWebauthnResult(WebauthnFlowEvent event,
-                                WebauthnResultMetric metric);
-
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event,
                                    bool has_valid_nickname,
@@ -1399,11 +1139,6 @@ class AutofillMetrics {
   // filling a form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
 
-  // Log the index of the selected Autofill suggestion in the popup.
-  static void LogAutofillSuggestionAcceptedIndex(int index,
-                                                 PopupType popup_type,
-                                                 bool off_the_record);
-
   // Log the reason for which the Autofill popup disappeared.
   static void LogAutofillPopupHidingReason(PopupHidingReason reason);
 
@@ -1458,6 +1193,10 @@ class AutofillMetrics {
   // Logs if every non-empty field in a submitted form was filled by Autofill.
   // If |is_address| an address was filled, otherwise it was a credit card.
   static void LogAutofillPerfectFilling(bool is_address, bool perfect_filling);
+
+  // Logs if every non-empty field in a submitted credit card form was filled by
+  // Touch To Fill bottom sheet suggestion selected by user.
+  static void LogTouchToFillCreditCardPerfectFilling(bool perfect_filling);
 
   struct LogCreditCardSeamlessnessParam {
     const raw_ref<const FormEventLoggerBase> event_logger;
@@ -1624,19 +1363,8 @@ class AutofillMetrics {
   static void LogSilentUpdatesProfileImportType(
       AutofillProfileImportType import_type);
 
-  // Logs the type of profile import used for a silent update, which was only
-  // possible after an invalid phone number was removed.
-  // TODO(crbug.com/1298424): Cleanup when launched.
-  static void LogSilentUpdatesWithRemovedPhoneNumberProfileImportType(
-      AutofillProfileImportType import_type);
-
   // Logs the user decision for importing a new profile.
   static void LogNewProfileImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
-  // Logs the user decision for importing a new profile with a complemented
-  // country.
-  static void LogNewProfileWithComplementedCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs the user decision for importing a new profile, which could only
@@ -1644,17 +1372,8 @@ class AutofillMetrics {
   static void LogNewProfileWithIgnoredCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs the user decision for importing a new profile, which was only possible
-  // after an invalid phone number was removed.
-  // TODO(crbug.com/1298424): Cleanup when launched.
-  static void LogNewProfileWithRemovedPhoneNumberImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
   // Logs that a specific type was edited in a save prompt.
   static void LogNewProfileEditedType(ServerFieldType edited_type);
-
-  // Logs that the auto complemented country was edited in a save prompt.
-  static void LogNewProfileEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile save.
   static void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
@@ -1663,20 +1382,9 @@ class AutofillMetrics {
   static void LogProfileUpdateImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs the user decision for updating an exiting profile with a complemented
-  // country.
-  static void LogProfileUpdateWithComplementedCountryImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
   // Logs the user decision for updating an exiting profile, which could only
   // be imported after an invalid country was ignored.
   static void LogProfileUpdateWithIgnoredCountryImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
-  // Logs the user decision for updating an existing profile, which was only
-  // possible after an invalid phone number was removed.
-  // TODO(crbug.com/1298424): Cleanup when launched.
-  static void LogProfileUpdateWithRemovedPhoneNumberImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type changed in a profile update that received the
@@ -1688,9 +1396,6 @@ class AutofillMetrics {
 
   // Logs that a specific type was edited in an update prompt.
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
-
-  // Logs that the auto complemented country was edited in an update prompt.
-  static void LogProfileUpdateEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile update.
   static void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);
@@ -1741,41 +1446,6 @@ class AutofillMetrics {
   // Logs the roundtrip latency for fetching an image in AutofillImageFetcher.
   static void LogImageFetcherRequestLatency(const base::TimeDelta& latency);
 
-  // Records the source of the state selection field if autofilled, when the
-  // form is submitted.
-  static void LogAutofillingSourceForStateSelectionFieldAtSubmission(
-      AutofilledSourceMetricForStateSelectionField
-          autofilled_source_metric_for_state_selection_field);
-
-  /* Card unmasking OTP authentication-related metrics. */
-  // Logs when an OTP authentication starts.
-  static void LogOtpAuthAttempt();
-  // Logs the final reason the OTP authentication dialog is closed, even if
-  // there were prior failures like OTP mismatch, and is done once per Attempt.
-  static void LogOtpAuthResult(OtpAuthEvent event);
-  // Logged every time a retriable error occurs, which could potentially be
-  // several times in the same flow (mismatch then mismatch then cancel, etc.).
-  static void LogOtpAuthRetriableError(OtpAuthEvent event);
-  // Logs the roundtrip latency for UnmaskCardRequest sent by OTP
-  // authentication.
-  static void LogOtpAuthUnmaskCardRequestLatency(
-      const base::TimeDelta& latency);
-  // Logs the roundtrip latency for SelectChallengeOptionRequest sent by OTP
-  // authentication.
-  static void LogOtpAuthSelectChallengeOptionRequestLatency(
-      const base::TimeDelta& latency);
-
-  // Logs whenever the OTP input dialog is triggered and it is shown.
-  static void LogOtpInputDialogShown();
-  // Logs the result of how the dialog is dismissed.
-  static void LogOtpInputDialogResult(OtpInputDialogResult result,
-                                      bool temporary_error_shown);
-  // Logs when the temporary error shown in the dialog.
-  static void LogOtpInputDialogErrorMessageShown(OtpInputDialogError error);
-  // Logs when the "Get New Code" button in the dialog is clicked and user is
-  // requesting a new OTP.
-  static void LogOtpInputDialogNewOtpRequested();
-
   // Logs whether the submitted field value is same as the non-empty value
   // to be autofilled in the field, when the field had a different prefilled
   // value.
@@ -1816,6 +1486,14 @@ class AutofillMetrics {
   static void LogContextMenuImpressions(ServerFieldType field_type,
                                         AutocompleteState autocomplete_state);
 
+  // Returns 64-bit hash of the string of form global id, which consists of
+  // |frame_token| and |renderer_id|.
+  static uint64_t FormGlobalIdToHash64Bit(const FormGlobalId& form_global_id);
+  // Returns 64-bit hash of the string of field global id, which consists of
+  // |frame_token| and |renderer_id|.
+  static uint64_t FieldGlobalIdToHash64Bit(
+      const FieldGlobalId& field_global_id);
+
  private:
   static void Log(AutocompleteEvent event);
 };
@@ -1825,6 +1503,9 @@ int GetFieldTypeUserEditStatusMetric(
     ServerFieldType server_type,
     AutofillMetrics::AutofilledFieldUserEditingStatusMetric metric);
 #endif
+
+std::string GetCreditCardTypeSuffix(
+    AutofillClient::PaymentsRpcCardType card_type);
 
 const std::string PaymentsRpcResultToMetricsSuffix(
     AutofillClient::PaymentsRpcResult result);

@@ -397,7 +397,7 @@ general rules of thumb can be helpful in navigating how to structure changes:
   Reducing the number of languages eases toolchain and infrastructure
   requirements, and minimizes the learning hurdles for developers to be
   successful contributing across the codebase. Additions of new languages must
-  be approved by [//ENG_REVIEW_OWNERS](../ENG_REVIEW_OWNERS).
+  be approved by [//ATL_OWNERS](../ATL_OWNERS).
 
 - **When your team is making API changes or migrating between services, the
   team mandating the change needs to do at least 80% of the work.** The
@@ -462,9 +462,6 @@ formats.
     `-r foo@example.com` when running `git cl upload`.
   * A comma-separated list of reviewer email addresses (e.g.
     foo@example.com, bar@example.com).
-* **Tbr:** The same format as the `R` footer, but indicates to the
-  commit queue that it can skip checking that all files in the change
-  have been approved by their respective `OWNERS`.
 * **Cq-Include-Trybots:**
   * A comma-separated list of trybots which should be triggered and
     checked by the CQ in addition to the normal set.

@@ -29,7 +29,7 @@
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
@@ -52,7 +52,7 @@ void AddResources(content::WebUIDataSource* source) {
   source->AddResourcePath("", IDR_ASH_PERSONALIZATION_APP_INDEX_HTML);
   source->AddResourcePaths(base::make_span(
       kAshPersonalizationAppResources, kAshPersonalizationAppResourcesSize));
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_TEST_LOADER_HTML);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
   source->AddResourcePath("test_loader_util.js",
                           IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
@@ -147,6 +147,10 @@ void AddStrings(content::WebUIDataSource* source) {
 
       // Ambient mode related string.
       {"screensaverLabel", IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL},
+      {"screenSaverPreviewButton",
+       IDS_PERSONALIZATION_APP_SCREENSAVER_PREVIEW_BUTTON},
+      {"screenSaverPreviewDownloading",
+       IDS_PERSONALIZATION_APP_SCREENSAVER_PREVIEW_DOWNLOADING},
       {"ambientModePageDescription",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_PAGE_DESCRIPTION},
       {"ambientModeOn", IDS_PERSONALIZATION_APP_AMBIENT_MODE_ON},
@@ -359,6 +363,9 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("isGooglePhotosIntegrationEnabled",
                      wallpaper_provider_->IsEligibleForGooglePhotos());
 
+  source->AddBoolean("isGooglePhotosSharedAlbumsEnabled",
+                     features::IsWallpaperGooglePhotosSharedAlbumsEnabled());
+
   source->AddBoolean("isDarkLightModeEnabled",
                      features::IsDarkLightModeEnabled());
 
@@ -377,7 +384,7 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("isScreenSaverPreviewEnabled",
                      features::IsScreenSaverPreviewEnabled());
 
-  source->AddBoolean("isAmbientSubpageUIChangeEnabled",
+  source->AddBoolean("isAmbientSubpageUiChangeEnabled",
                      features::IsAmbientSubpageUIChangeEnabled());
 
   // TODO(b/258838122): update when the screen saver policy code is ready.

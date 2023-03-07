@@ -4,7 +4,8 @@
 
 #include "components/power_bookmarks/storage/power_bookmark_backend.h"
 
-#include "components/power_bookmarks/core/powers/search_params.h"
+#include "components/power_bookmarks/common/power_bookmark_metrics.h"
+#include "components/power_bookmarks/common/search_params.h"
 #include "components/power_bookmarks/storage/empty_power_bookmark_database.h"
 #include "components/power_bookmarks/storage/power_bookmark_database_impl.h"
 #include "components/power_bookmarks/storage/power_bookmark_sync_bridge.h"
@@ -13,8 +14,13 @@
 
 namespace power_bookmarks {
 
-PowerBookmarkBackend::PowerBookmarkBackend(const base::FilePath& database_dir)
-    : database_dir_(database_dir) {
+PowerBookmarkBackend::PowerBookmarkBackend(
+    const base::FilePath& database_dir,
+    scoped_refptr<base::SequencedTaskRunner> frontend_task_runner,
+    PowerBookmarkObserver* service_observer)
+    : database_dir_(database_dir),
+      frontend_task_runner_(frontend_task_runner),
+      service_observer_(service_observer) {
   // This is constructed on the browser thread, but all other interactions
   // happen on a background thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -39,8 +45,7 @@ void PowerBookmarkBackend::Init(bool use_database) {
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
             syncer::POWER_BOOKMARK, /*dump_stack=*/base::RepeatingClosure());
     bridge_ = std::make_unique<PowerBookmarkSyncBridge>(
-        database->GetSyncMetadataDatabase(), database.get(),
-        std::move(change_processor));
+        database->GetSyncMetadataDatabase(), this, std::move(change_processor));
     db_ = std::move(database);
   } else {
     db_ = std::make_unique<EmptyPowerBookmarkDatabase>();
@@ -70,32 +75,156 @@ PowerBookmarkBackend::GetPowerOverviewsForType(
   return db_->GetPowerOverviewsForType(power_type);
 }
 
-std::vector<std::unique_ptr<Power>> PowerBookmarkBackend::Search(
+std::vector<std::unique_ptr<Power>> PowerBookmarkBackend::SearchPowers(
     const SearchParams& search_params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return db_->GetPowersForSearchParams(search_params);
 }
 
+std::vector<std::unique_ptr<PowerOverview>>
+PowerBookmarkBackend::SearchPowerOverviews(const SearchParams& search_params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetPowerOverviewsForSearchParams(search_params);
+}
+
 bool PowerBookmarkBackend::CreatePower(std::unique_ptr<Power> power) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return db_->CreatePower(std::move(power));
+
+  auto transaction = db_->BeginTransaction();
+  if (!transaction) {
+    return false;
+  }
+  sync_pb::PowerBookmarkSpecifics::PowerType power_type = power->power_type();
+  bool success = db_->CreatePower(power->Clone());
+  metrics::RecordPowerCreated(power_type, success);
+  if (!success) {
+    return false;
+  }
+  if (bridge_) {
+    bridge_->SendPowerToSync(*power);
+  }
+  return CommitAndNotify(*transaction);
 }
 
 bool PowerBookmarkBackend::UpdatePower(std::unique_ptr<Power> power) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return db_->UpdatePower(std::move(power));
+
+  auto transaction = db_->BeginTransaction();
+  if (!transaction) {
+    return false;
+  }
+  sync_pb::PowerBookmarkSpecifics::PowerType power_type = power->power_type();
+  auto updated_power = db_->UpdatePower(std::move(power));
+  bool success = updated_power != nullptr;
+  metrics::RecordPowerUpdated(power_type, success);
+  if (!success) {
+    return false;
+  }
+  if (bridge_) {
+    bridge_->SendPowerToSync(*updated_power);
+  }
+  return CommitAndNotify(*transaction);
 }
 
 bool PowerBookmarkBackend::DeletePower(const base::GUID& guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return db_->DeletePower(guid);
+
+  auto transaction = db_->BeginTransaction();
+  if (!transaction) {
+    return false;
+  }
+  bool success = db_->DeletePower(guid);
+  metrics::RecordPowerDeleted(success);
+  if (!success) {
+    return false;
+  }
+  if (bridge_) {
+    bridge_->NotifySyncForDeletion(guid.AsLowercaseString());
+  }
+  return CommitAndNotify(*transaction);
 }
 
 bool PowerBookmarkBackend::DeletePowersForURL(
     const GURL& url,
     const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return db_->DeletePowersForURL(url, power_type);
+
+  auto transaction = db_->BeginTransaction();
+  if (!transaction) {
+    return false;
+  }
+  std::vector<std::string> deleted_guids;
+  bool success = db_->DeletePowersForURL(url, power_type, &deleted_guids);
+  metrics::RecordPowersDeletedForURL(power_type, success);
+  if (!success) {
+    return false;
+  }
+  if (bridge_) {
+    for (auto const& guid : deleted_guids) {
+      bridge_->NotifySyncForDeletion(guid);
+    }
+  }
+  return CommitAndNotify(*transaction);
+}
+
+std::vector<std::unique_ptr<Power>> PowerBookmarkBackend::GetAllPowers() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetAllPowers();
+}
+
+std::vector<std::unique_ptr<Power>> PowerBookmarkBackend::GetPowersForGUIDs(
+    const std::vector<std::string>& guids) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetPowersForGUIDs(guids);
+}
+
+std::unique_ptr<Power> PowerBookmarkBackend::GetPowerForGUID(
+    const std::string& guid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetPowerForGUID(guid);
+}
+
+bool PowerBookmarkBackend::CreateOrMergePowerFromSync(const Power& power) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->CreateOrMergePowerFromSync(power);
+}
+
+bool PowerBookmarkBackend::DeletePowerFromSync(const std::string& guid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->DeletePowerFromSync(guid);
+}
+
+syncer::SyncMetadataStore* PowerBookmarkBackend::GetSyncMetadataDatabase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetSyncMetadataDatabase();
+}
+
+std::unique_ptr<Transaction> PowerBookmarkBackend::BeginTransaction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->BeginTransaction();
+}
+
+bool PowerBookmarkBackend::CommitAndNotify(Transaction& transaction) {
+  if (transaction.Commit()) {
+    NotifyPowersChanged();
+    return true;
+  } else {
+    if (bridge_) {
+      bridge_->change_processor()->ReportError(syncer::ModelError(
+          FROM_HERE, "PowerBookmark database fails to persist data."));
+    }
+    return false;
+  }
+}
+
+void PowerBookmarkBackend::NotifyPowersChanged() {
+  // TODO(crbug.com/1406371): Posting a task here causes the observer method
+  // to be called before the callback. This behavior is pretty strange, but
+  // not a problem right now. Eventually we should stop using SequenceBound
+  // for the backend and post tasks directly to ensure proper ordering.
+  frontend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PowerBookmarkObserver::OnPowersChanged,
+                                base::Unretained(service_observer_)));
 }
 
 }  // namespace power_bookmarks

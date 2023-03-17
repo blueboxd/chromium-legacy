@@ -73,6 +73,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -84,7 +85,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -672,12 +672,6 @@ bool LockContentsView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
   PerformAction(entry->second);
   return true;
-}
-
-void LockContentsView::OnThemeChanged() {
-  NonAccessibleView::OnThemeChanged();
-  UpdateBottomStatusIndicatorColors();
-  UpdateSystemInfoColors();
 }
 
 void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
@@ -2493,8 +2487,7 @@ bool LockContentsView::GetSystemInfoVisibility() const {
 void LockContentsView::UpdateSystemInfoColors() {
   for (auto* child : system_info_->children()) {
     views::Label* label = static_cast<views::Label*>(child);
-    label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
+    label->SetEnabledColorId(kColorAshTextColorPrimary);
   }
 }
 
@@ -2503,21 +2496,16 @@ void LockContentsView::UpdateBottomStatusIndicatorColors() {
     case BottomIndicatorState::kNone:
       return;
     case BottomIndicatorState::kManagedDevice: {
-      bottom_status_indicator_->SetIcon(
-          chromeos::kEnterpriseIcon,
-          AshColorProvider::ContentLayerType::kIconColorPrimary);
-      bottom_status_indicator_->SetEnabledTextColors(
-          AshColorProvider::Get()->GetContentLayerColor(
-              AshColorProvider::ContentLayerType::kTextColorPrimary));
+      bottom_status_indicator_->SetIcon(chromeos::kEnterpriseIcon,
+                                        kColorAshIconColorPrimary);
+      bottom_status_indicator_->SetEnabledTextColorIds(
+          kColorAshTextColorPrimary);
       break;
     }
     case BottomIndicatorState::kAdbSideLoadingEnabled: {
-      bottom_status_indicator_->SetIcon(
-          kLockScreenAlertIcon,
-          AshColorProvider::ContentLayerType::kIconColorAlert);
-      bottom_status_indicator_->SetEnabledTextColors(
-          AshColorProvider::Get()->GetContentLayerColor(
-              AshColorProvider::ContentLayerType::kTextColorAlert));
+      bottom_status_indicator_->SetIcon(kLockScreenAlertIcon,
+                                        kColorAshIconColorAlert);
+      bottom_status_indicator_->SetEnabledTextColorIds(kColorAshTextColorAlert);
       break;
     }
   }

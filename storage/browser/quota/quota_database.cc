@@ -115,8 +115,7 @@ mojom::BucketTableEntryPtr BucketTableEntryFromSqlStatement(
   mojom::BucketTableEntryPtr entry = mojom::BucketTableEntry::New();
   entry->bucket_id = statement.ColumnInt64(0);
   entry->storage_key = statement.ColumnString(1);
-  entry->type =
-      static_cast<storage::mojom::StorageType>(statement.ColumnInt(2));
+  entry->type = static_cast<blink::mojom::StorageType>(statement.ColumnInt(2));
   entry->name = statement.ColumnString(3);
   entry->use_count = statement.ColumnInt(4);
   entry->last_accessed = statement.ColumnTime(5);
@@ -1114,8 +1113,8 @@ bool QuotaDatabase::ResetStorage() {
   DCHECK(!db_ || !db_->transaction_nesting());
   VLOG(1) << "Deleting existing quota data and starting over.";
 
-  db_.reset();
   meta_table_.reset();
+  db_.reset();
 
   sql::Database::Delete(legacy_db_file_path_);
   sql::Database::Delete(db_file_path_);

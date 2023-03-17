@@ -13,10 +13,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/repeating_test_future.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
+#include "chromeos/ash/components/network/tether_constants.h"
 #include "chromeos/services/network_health/public/mojom/network_health_types.mojom.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,47 +44,27 @@ constexpr char kWifiConfig[] =
 constexpr char kWifiGuid[] = "wifi-guid";
 constexpr char kWifiIdleGuid[] = "wifi-idle-guid";
 constexpr char kCellularGuid[] = "cellular-guid";
+constexpr char kVpnGuid[] = "vpn-guid";
+constexpr char kTetherGuid[] = "tether-guid";
 // Service paths.
 constexpr char kWifiServicePath[] = "/service/wlan";
 constexpr char kWifiIdleServicePath[] = "/service/wifi-idle";
 constexpr char kCellularServicePath[] = "/service/cellular";
+constexpr char kVpnServicePath[] = "/service/vpn";
+constexpr char kTetherServicePath[] = "/service/tether";
 
-struct NetworkConnectionStateTestCase {
-  std::string test_name;
-  NetworkState input_state;
-  NetworkConnectionState expected_state;
-};
-
-void VerifyConnectionState(const MetricData& result_metric_data,
-                           base::StringPiece guid,
-                           NetworkConnectionState expected_connection_state) {
-  ASSERT_TRUE(result_metric_data.has_event_data());
-  EXPECT_THAT(result_metric_data.event_data().type(),
-              Eq(MetricEventType::NETWORK_STATE_CHANGE));
-  ASSERT_TRUE(result_metric_data.telemetry_data()
-                  .networks_telemetry()
-                  .has_network_connection_change_event_data());
-  const auto& connection_change_event_data =
-      result_metric_data.telemetry_data()
-          .networks_telemetry()
-          .network_connection_change_event_data();
-  EXPECT_THAT(connection_change_event_data.guid(), Eq(guid));
-  EXPECT_THAT(connection_change_event_data.connection_state(),
-              Eq(expected_connection_state));
-}
-
-class NetworkEventsObserverTest
-    : public ::testing::TestWithParam<NetworkConnectionStateTestCase> {
+class NetworkEventsObserverTestHelper {
  public:
-  NetworkEventsObserverTest() = default;
+  NetworkEventsObserverTestHelper() = default;
 
-  NetworkEventsObserverTest(const NetworkEventsObserverTest&) = delete;
-  NetworkEventsObserverTest& operator=(const NetworkEventsObserverTest&) =
+  NetworkEventsObserverTestHelper(const NetworkEventsObserverTestHelper&) =
       delete;
+  NetworkEventsObserverTestHelper& operator=(
+      const NetworkEventsObserverTestHelper&) = delete;
 
-  ~NetworkEventsObserverTest() override = default;
+  ~NetworkEventsObserverTestHelper() = default;
 
-  void SetUp() override {
+  void SetUp() {
     ash::DebugDaemonClient::InitializeFake();
 
     ash::LoginState::Initialize();
@@ -93,16 +75,22 @@ class NetworkEventsObserverTest
 
     network_handler_test_helper_.AddDefaultProfiles();
     network_handler_test_helper_.ResetDevicesAndServices();
-    auto* const service_client = network_handler_test_helper_.service_test();
+    network_handler_test_helper_.manager_test()->AddTechnology(
+        ::ash::kTypeTether, true);
 
+    auto* const service_client = network_handler_test_helper_.service_test();
     service_client->AddService(kWifiServicePath, kWifiGuid, "wifi-name",
                                shill::kTypeWifi, shill::kStateReady,
                                /*visible=*/true);
-
     service_client->AddService(kWifiIdleServicePath, kWifiIdleGuid,
                                "wifi-idle-name", shill::kTypeWifi,
                                shill::kStateIdle, /*visible=*/true);
-
+    service_client->AddService(kVpnServicePath, kVpnGuid, "vpn-name",
+                               shill::kTypeVPN, shill::kStateReady,
+                               /*visible=*/true);
+    service_client->AddService(kTetherServicePath, kTetherGuid, "tether-name",
+                               ash::kTypeTether, shill::kStateReady,
+                               /*visible=*/true);
     service_client->AddService(kCellularServicePath, kCellularGuid,
                                "cellular-network-name", shill::kTypeCellular,
                                shill::kStateReady, /*visible=*/true);
@@ -111,21 +99,48 @@ class NetworkEventsObserverTest
     task_environment_.RunUntilIdle();
   }
 
-  void TearDown() override {
+  void TearDown() {
     ash::LoginState::Shutdown();
     ash::DebugDaemonClient::Shutdown();
   }
 
+  ash::NetworkHandlerTestHelper* network_handler_test_helper() {
+    return &network_handler_test_helper_;
+  }
+
+ private:
   base::test::TaskEnvironment task_environment_;
 
   ash::NetworkHandlerTestHelper network_handler_test_helper_;
 };
 
-TEST_F(NetworkEventsObserverTest, WifiSignalStrength_InitiallyLowSignal) {
+class NetworkEventsObserverSignalStrengthTest : public ::testing::Test {
+ protected:
+  void SetUp() override { network_events_observer_test_helper_.SetUp(); }
+
+  void TearDown() override { network_events_observer_test_helper_.TearDown(); }
+
+  ash::NetworkHandlerTestHelper* network_handler_test_helper() {
+    return network_events_observer_test_helper_.network_handler_test_helper();
+  }
+
+  void SetFeatureEnabled(bool enabled) {
+    scoped_feature_list_.InitWithFeatureState(kEnableWifiSignalEventsReporting,
+                                              enabled);
+  }
+
+ private:
+  NetworkEventsObserverTestHelper network_events_observer_test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(NetworkEventsObserverSignalStrengthTest, InitiallyLowSignal) {
+  SetFeatureEnabled(true);
+
   const std::string service_config_low_signal = base::StringPrintf(
       kWifiConfig, kWifiGuid, shill::kStateReady, kLowSignalStrengthRssi);
-  std::string service_path =
-      network_handler_test_helper_.ConfigureService(service_config_low_signal);
+  std::string service_path = network_handler_test_helper()->ConfigureService(
+      service_config_low_signal);
   ASSERT_THAT(service_path, Eq(kWifiServicePath));
 
   NetworkEventsObserver network_events_observer;
@@ -157,7 +172,7 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_InitiallyLowSignal) {
 
   std::string service_config_very_low_signal = base::StringPrintf(
       kWifiConfig, kWifiGuid, shill::kStateReady, kVeryLowSignalStrengthRssi);
-  service_path = network_handler_test_helper_.ConfigureService(
+  service_path = network_handler_test_helper()->ConfigureService(
       service_config_very_low_signal);
   ASSERT_THAT(service_path, Eq(kWifiServicePath));
 
@@ -171,8 +186,8 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_InitiallyLowSignal) {
 
   std::string service_config_good_signal = base::StringPrintf(
       kWifiConfig, kWifiGuid, shill::kStateReady, kGoodSignalStrengthRssi);
-  service_path =
-      network_handler_test_helper_.ConfigureService(service_config_good_signal);
+  service_path = network_handler_test_helper()->ConfigureService(
+      service_config_good_signal);
   ASSERT_THAT(service_path, Eq(kWifiServicePath));
 
   network_events_observer.OnSignalStrengthChanged(
@@ -200,9 +215,11 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_InitiallyLowSignal) {
               Eq(kGoodSignalStrengthRssi));
 }
 
-TEST_F(NetworkEventsObserverTest, WifiSignalStrength_NotConnected) {
-  network_handler_test_helper_.ResetDevicesAndServices();
-  auto* const service_client = network_handler_test_helper_.service_test();
+TEST_F(NetworkEventsObserverSignalStrengthTest, WifiNotConnected) {
+  SetFeatureEnabled(true);
+
+  network_handler_test_helper()->ResetDevicesAndServices();
+  auto* const service_client = network_handler_test_helper()->service_test();
   service_client->AddService(kWifiIdleServicePath, kWifiIdleGuid,
                              "wifi-idle-name", shill::kTypeWifi,
                              shill::kStateIdle, /*visible=*/true);
@@ -211,7 +228,7 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_NotConnected) {
   std::string idle_service_config = base::StringPrintf(
       kWifiConfig, kWifiIdleGuid, shill::kStateIdle, kLowSignalStrengthRssi);
   std::string idle_service_path =
-      network_handler_test_helper_.ConfigureService(idle_service_config);
+      network_handler_test_helper()->ConfigureService(idle_service_config);
   ASSERT_THAT(idle_service_path, Eq(kWifiIdleServicePath));
 
   NetworkEventsObserver network_events_observer;
@@ -229,9 +246,11 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_NotConnected) {
   ASSERT_TRUE(test_future.IsEmpty());
 }
 
-TEST_F(NetworkEventsObserverTest, WifiSignalStrength_Connecting) {
-  network_handler_test_helper_.ResetDevicesAndServices();
-  auto* const service_client = network_handler_test_helper_.service_test();
+TEST_F(NetworkEventsObserverSignalStrengthTest, WifiConnecting) {
+  SetFeatureEnabled(true);
+
+  network_handler_test_helper()->ResetDevicesAndServices();
+  auto* const service_client = network_handler_test_helper()->service_test();
   service_client->AddService(kWifiServicePath, kWifiGuid, "wifi-name",
                              shill::kTypeWifi, shill::kStateAssociation,
                              /*visible=*/true);
@@ -239,8 +258,8 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_Connecting) {
 
   const std::string service_config_low_signal = base::StringPrintf(
       kWifiConfig, kWifiGuid, shill::kStateAssociation, kLowSignalStrengthRssi);
-  std::string service_path =
-      network_handler_test_helper_.ConfigureService(service_config_low_signal);
+  std::string service_path = network_handler_test_helper()->ConfigureService(
+      service_config_low_signal);
   ASSERT_THAT(service_path, Eq(kWifiServicePath));
 
   NetworkEventsObserver network_events_observer;
@@ -258,11 +277,13 @@ TEST_F(NetworkEventsObserverTest, WifiSignalStrength_Connecting) {
   ASSERT_TRUE(test_future.IsEmpty());
 }
 
-TEST_F(NetworkEventsObserverTest, CellularSignalStrength) {
+TEST_F(NetworkEventsObserverSignalStrengthTest, Cellular) {
+  SetFeatureEnabled(true);
+
   std::string service_config_good_signal = base::StringPrintf(
       kWifiConfig, kWifiGuid, shill::kStateReady, kGoodSignalStrengthRssi);
-  std::string service_path =
-      network_handler_test_helper_.ConfigureService(service_config_good_signal);
+  std::string service_path = network_handler_test_helper()->ConfigureService(
+      service_config_good_signal);
   ASSERT_THAT(service_path, Eq(kWifiServicePath));
 
   NetworkEventsObserver network_events_observer;
@@ -280,7 +301,9 @@ TEST_F(NetworkEventsObserverTest, CellularSignalStrength) {
   ASSERT_TRUE(test_future.IsEmpty());
 }
 
-TEST_F(NetworkEventsObserverTest, SignalStrengthInvalidGuid) {
+TEST_F(NetworkEventsObserverSignalStrengthTest, InvalidGuid) {
+  SetFeatureEnabled(true);
+
   NetworkEventsObserver network_events_observer;
   bool event_reported = false;
   auto cb =
@@ -296,7 +319,110 @@ TEST_F(NetworkEventsObserverTest, SignalStrengthInvalidGuid) {
   ASSERT_FALSE(event_reported);
 }
 
-TEST_F(NetworkEventsObserverTest, ConnectionState_MultipleEvents) {
+TEST_F(NetworkEventsObserverSignalStrengthTest, FeatureDisabled) {
+  SetFeatureEnabled(false);
+
+  const std::string service_config_low_signal = base::StringPrintf(
+      kWifiConfig, kWifiGuid, shill::kStateReady, kLowSignalStrengthRssi);
+  std::string service_path = network_handler_test_helper()->ConfigureService(
+      service_config_low_signal);
+  ASSERT_THAT(service_path, Eq(kWifiServicePath));
+
+  NetworkEventsObserver network_events_observer;
+  bool event_reported = false;
+  auto cb =
+      base::BindLambdaForTesting([&](MetricData) { event_reported = true; });
+
+  network_events_observer.SetOnEventObservedCallback(std::move(cb));
+  network_events_observer.SetReportingEnabled(/*is_enabled=*/true);
+  network_events_observer.OnSignalStrengthChanged(
+      kWifiGuid,
+      ::chromeos::network_health::mojom::UInt32Value::New(kSignalStrength));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(event_reported);
+}
+
+struct NetworkConnectionStateTestCase {
+  std::string test_name;
+  NetworkState input_state;
+  NetworkConnectionState expected_state;
+};
+
+class NetworkEventsObserverConnectionStateTest
+    : public ::testing::TestWithParam<NetworkConnectionStateTestCase> {
+ protected:
+  void SetUp() override { network_events_observer_test_helper_.SetUp(); }
+
+  void TearDown() override { network_events_observer_test_helper_.TearDown(); }
+
+  void VerifyConnectionState(const MetricData& result_metric_data,
+                             base::StringPiece guid,
+                             NetworkConnectionState expected_connection_state) {
+    ASSERT_TRUE(result_metric_data.has_event_data());
+    EXPECT_THAT(result_metric_data.event_data().type(),
+                Eq(MetricEventType::NETWORK_STATE_CHANGE));
+    ASSERT_TRUE(result_metric_data.telemetry_data()
+                    .networks_telemetry()
+                    .has_network_connection_change_event_data());
+    const auto& connection_change_event_data =
+        result_metric_data.telemetry_data()
+            .networks_telemetry()
+            .network_connection_change_event_data();
+    EXPECT_THAT(connection_change_event_data.guid(), Eq(guid));
+    EXPECT_THAT(connection_change_event_data.connection_state(),
+                Eq(expected_connection_state));
+  }
+
+  void SetFeatureEnabled(bool enabled) {
+    scoped_feature_list_.InitWithFeatureState(
+        kEnableNetworkConnectionStateEventsReporting, enabled);
+  }
+
+ private:
+  NetworkEventsObserverTestHelper network_events_observer_test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(NetworkEventsObserverConnectionStateTest, FeatureDisabled) {
+  SetFeatureEnabled(false);
+
+  bool event_reported = false;
+
+  NetworkEventsObserver network_events_observer;
+  MetricData result_metric_data;
+  auto cb =
+      base::BindLambdaForTesting([&](MetricData) { event_reported = true; });
+
+  network_events_observer.SetOnEventObservedCallback(std::move(cb));
+  network_events_observer.OnConnectionStateChanged(kWifiGuid,
+                                                   NetworkState::kNotConnected);
+
+  EXPECT_FALSE(event_reported);
+}
+
+TEST_F(NetworkEventsObserverConnectionStateTest, VirtualConnection) {
+  SetFeatureEnabled(true);
+
+  bool event_reported = false;
+
+  NetworkEventsObserver network_events_observer;
+  MetricData result_metric_data;
+  auto cb =
+      base::BindLambdaForTesting([&](MetricData) { event_reported = true; });
+
+  network_events_observer.SetOnEventObservedCallback(std::move(cb));
+  network_events_observer.OnConnectionStateChanged(kVpnGuid,
+                                                   NetworkState::kNotConnected);
+  network_events_observer.OnConnectionStateChanged(kTetherGuid,
+                                                   NetworkState::kConnected);
+
+  EXPECT_FALSE(event_reported);
+}
+
+TEST_F(NetworkEventsObserverConnectionStateTest, MultipleEvents) {
+  SetFeatureEnabled(true);
+
   bool event_reported = false;
 
   NetworkEventsObserver network_events_observer;
@@ -328,6 +454,14 @@ TEST_F(NetworkEventsObserverTest, ConnectionState_MultipleEvents) {
   ASSERT_TRUE(event_reported);
   VerifyConnectionState(result_metric_data, kWifiGuid, NOT_CONNECTED);
 
+  // Duplicate events should not be reported even if another connection event
+  // was observed in between.
+  event_reported = false;
+  network_events_observer.OnConnectionStateChanged(kWifiIdleGuid,
+                                                   NetworkState::kNotConnected);
+
+  ASSERT_FALSE(event_reported);
+
   // Different event with same guid should be reported.
   event_reported = false;
   network_events_observer.OnConnectionStateChanged(kWifiGuid,
@@ -348,7 +482,9 @@ TEST_F(NetworkEventsObserverTest, ConnectionState_MultipleEvents) {
   VerifyConnectionState(result_metric_data, kWifiGuid, CONNECTING);
 }
 
-TEST_P(NetworkEventsObserverTest, ConnectionState) {
+TEST_P(NetworkEventsObserverConnectionStateTest, Default) {
+  SetFeatureEnabled(true);
+
   const NetworkConnectionStateTestCase& test_case = GetParam();
   bool event_reported = false;
 
@@ -393,7 +529,7 @@ TEST_P(NetworkEventsObserverTest, ConnectionState) {
 
 INSTANTIATE_TEST_SUITE_P(
     NetworkEventsObserverConnectionStateTest,
-    NetworkEventsObserverTest,
+    NetworkEventsObserverConnectionStateTest,
     ::testing::ValuesIn<NetworkConnectionStateTestCase>(
         {{"Online", NetworkState::kOnline, NetworkConnectionState::ONLINE},
          {"Connected", NetworkState::kConnected,
@@ -403,7 +539,9 @@ INSTANTIATE_TEST_SUITE_P(
           NetworkConnectionState::CONNECTING},
          {"NotConnected", NetworkState::kNotConnected,
           NetworkConnectionState::NOT_CONNECTED}}),
-    [](const testing::TestParamInfo<NetworkEventsObserverTest::ParamType>&
-           info) { return info.param.test_name; });
+    [](const testing::TestParamInfo<
+        NetworkEventsObserverConnectionStateTest::ParamType>& info) {
+      return info.param.test_name;
+    });
 }  // namespace
 }  // namespace reporting

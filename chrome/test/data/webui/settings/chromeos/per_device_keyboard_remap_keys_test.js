@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FakeInputDeviceSettingsProvider, fakeKeyboards, getInputDeviceSettingsProvider, KeyboardRemapModifierKeyRowElement, MetaKey, ModifierKey, Router, routes, SettingsPerDeviceKeyboardRemapKeysElement} from 'chrome://os-settings/chromeos/os_settings.js';
+import {FakeInputDeviceSettingsProvider, fakeKeyboards, KeyboardRemapModifierKeyRowElement, MetaKey, ModifierKey, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsPerDeviceKeyboardRemapKeysElement} from 'chrome://os-settings/chromeos/os_settings.js';
 import {assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -17,7 +17,9 @@ suite('PerDeviceKeyboardRemapKeys', function() {
    */
   let provider = null;
   setup(() => {
-    provider = getInputDeviceSettingsProvider();
+    provider = new FakeInputDeviceSettingsProvider();
+    provider.setFakeKeyboards(fakeKeyboards);
+    setInputDeviceSettingsProviderForTesting(provider);
     PolymerTest.clearBody();
   });
 
@@ -46,19 +48,24 @@ suite('PerDeviceKeyboardRemapKeys', function() {
    * Check that all the prefs are set to default keyboard value.
    */
   function checkPrefsSetToDefault() {
-    const ctrlDefaultMapping = page.keyboard.metaKey === MetaKey.COMMAND ?
-        ModifierKey.META :
-        ModifierKey.CONTROL;
-    const metaDefaultMapping = page.keyboard.metaKey === MetaKey.COMMAND ?
-        ModifierKey.CONTROL :
-        ModifierKey.META;
-    assertEquals(page.fakeAltPref.value, ModifierKey.ALT);
-    assertEquals(page.fakeAssistantPref.value, ModifierKey.ASSISTANT);
-    assertEquals(page.fakeBackspacePref.value, ModifierKey.BACKSPACE);
-    assertEquals(page.fakeCapsLockPref.value, ModifierKey.CAPS_LOCK);
+    const ctrlDefaultMapping = page.keyboard.metaKey === MetaKey.kCommand ?
+        ModifierKey.kMeta :
+        ModifierKey.kControl;
+    const metaDefaultMapping = page.keyboard.metaKey === MetaKey.kCommand ?
+        ModifierKey.kControl :
+        ModifierKey.kMeta;
+    assertEquals(page.fakeAltPref.value, ModifierKey.kAlt);
+    assertEquals(page.fakeAssistantPref.value, ModifierKey.kAssistant);
+    assertEquals(page.fakeBackspacePref.value, ModifierKey.kBackspace);
+    assertEquals(page.fakeCapsLockPref.value, ModifierKey.kCapsLock);
     assertEquals(page.fakeCtrlPref.value, ctrlDefaultMapping);
-    assertEquals(page.fakeEscPref.value, ModifierKey.ESC);
+    assertEquals(page.fakeEscPref.value, ModifierKey.kEscape);
     assertEquals(page.fakeMetaPref.value, metaDefaultMapping);
+  }
+
+  async function getConnectedKeyboardSettings() {
+    const keyboards = await provider.getConnectedKeyboardSettings();
+    return keyboards;
   }
 
   /**
@@ -72,7 +79,7 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     /**  @type {?KeyboardRemapModifierKeyRowElement} */
     const altKeyRow = page.shadowRoot.querySelector('#altKey');
     const altKeyDropdown = altKeyRow.shadowRoot.querySelector('#keyDropdown');
-    const altKeyMappedTo = ModifierKey.ALT.toString();
+    const altKeyMappedTo = ModifierKey.kAlt.toString();
     assertTrue(!!altKeyDropdown);
     assertEquals(
         altKeyDropdown.shadowRoot.querySelector('select').value,
@@ -87,7 +94,7 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     const ctrlKeyRow = page.shadowRoot.querySelector('#ctrlKey');
     const ctrlKeyMappedTo =
         fakeKeyboards[0]
-            .settings.modifierRemappings.get(ModifierKey.CONTROL)
+            .settings.modifierRemappings[ModifierKey.kControl]
             .toString();
     const ctrlKeyDropdown = ctrlKeyRow.shadowRoot.querySelector('#keyDropdown');
     assertTrue(!!ctrlKeyDropdown);
@@ -103,6 +110,10 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     const metaKeyRow = page.shadowRoot.querySelector('#metaKey');
     assertTrue(!!metaKeyRow);
     assertEquals(metaKeyRow.keyLabel, 'Command');
+
+    // Verify that the icon is hidden.
+    const commandKeyIcon = metaKeyRow.shadowRoot.querySelector('iron-icon');
+    assertFalse(!!commandKeyIcon);
   });
 
   /**
@@ -126,7 +137,7 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     /**  @type {?KeyboardRemapModifierKeyRowElement} */
     const ctrlKeyRow = page.shadowRoot.querySelector('#ctrlKey');
     const ctrlKeyDropdown = ctrlKeyRow.shadowRoot.querySelector('#keyDropdown');
-    const ctrlKeyMappedTo = ModifierKey.CONTROL.toString();
+    const ctrlKeyMappedTo = ModifierKey.kControl.toString();
     assertTrue(!!ctrlKeyDropdown);
     assertEquals(
         ctrlKeyDropdown.shadowRoot.querySelector('select').value,
@@ -139,7 +150,7 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     const altKeyRow = page.shadowRoot.querySelector('#altKey');
     const altKeyDropDown = altKeyRow.shadowRoot.querySelector('#keyDropdown');
     const altKeyMappedTo = fakeKeyboards[2]
-                               .settings.modifierRemappings.get(ModifierKey.ALT)
+                               .settings.modifierRemappings[ModifierKey.kAlt]
                                .toString();
     assertTrue(!!altKeyDropDown);
     assertEquals(
@@ -154,6 +165,10 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     const metaKeyRow = page.shadowRoot.querySelector('#metaKey');
     assertTrue(!!metaKeyRow);
     assertEquals(metaKeyRow.keyLabel, 'Launcher');
+
+    const launcherKeyIcon = metaKeyRow.shadowRoot.querySelector('iron-icon');
+    assertTrue(!!launcherKeyIcon);
+    assertEquals('os-settings:launcher', launcherKeyIcon.icon);
   });
 
   /**
@@ -175,13 +190,13 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     const ctrlKeyRow = page.shadowRoot.querySelector('#ctrlKey');
     const ctrlKeyDropdown = ctrlKeyRow.shadowRoot.querySelector('#keyDropdown');
     assertTrue(!!ctrlKeyDropdown);
-    const metaKeyValue = ModifierKey.META.toString();
+    const metaKeyValue = ModifierKey.kMeta.toString();
     assertEquals(
         ctrlKeyDropdown.shadowRoot.querySelector('select').value, metaKeyValue);
     // Verify that the restored key icon is not highlighted.
     assertEquals(ctrlKeyRow.keyState, 'default-remapping');
 
-    const ctrlKeyValue = ModifierKey.CONTROL.toString();
+    const ctrlKeyValue = ModifierKey.kControl.toString();
     /**  @type {?KeyboardRemapModifierKeyRowElement} */
     const metaKeyRow = page.shadowRoot.querySelector('#metaKey');
     const metaKeyDropdown = metaKeyRow.shadowRoot.querySelector('#keyDropdown');
@@ -203,7 +218,7 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     await flushTasks();
     // The keyboard has "Launcher" as metaKey, meta key should be restored to
     // default metaKey mappings.
-    const altKeyValue = ModifierKey.ALT.toString();
+    const altKeyValue = ModifierKey.kAlt.toString();
     /**  @type {?KeyboardRemapModifierKeyRowElement} */
     const altKeyRow = page.shadowRoot.querySelector('#altKey');
     const altKeyDropDown = altKeyRow.shadowRoot.querySelector('#keyDropdown');
@@ -246,19 +261,19 @@ suite('PerDeviceKeyboardRemapKeys', function() {
     checkPrefsSetToDefault();
 
     // Change several key remappings in the page.
-    page.set('fakeAltPref.value', ModifierKey.ASSISTANT);
-    page.set('fakeBackspacePref.value', ModifierKey.CONTROL);
-    page.set('fakeEscPref.value', ModifierKey.VOID);
+    page.set('fakeAltPref.value', ModifierKey.kAssistant);
+    page.set('fakeBackspacePref.value', ModifierKey.kControl);
+    page.set('fakeEscPref.value', ModifierKey.kVoid);
 
     // Verify that the keyboard settings in the provider are updated.
-    const updatedKeyboards = await provider.getConnectedKeyboardSettings();
-    assertTrue(!!updatedKeyboards);
-    const updatedRemapping = updatedKeyboards[0].settings.modifierRemappings;
+    const keyboards = await getConnectedKeyboardSettings();
+    assertTrue(!!keyboards);
+    const updatedRemapping = keyboards[0].settings.modifierRemappings;
     assertTrue(!!updatedRemapping);
-    assertEquals(updatedRemapping.size, 3);
-    assertEquals(updatedRemapping.get(ModifierKey.ALT), ModifierKey.ASSISTANT);
+    assertEquals(Object.keys(updatedRemapping).length, 3);
+    assertEquals(updatedRemapping[ModifierKey.kAlt], ModifierKey.kAssistant);
     assertEquals(
-        updatedRemapping.get(ModifierKey.BACKSPACE), ModifierKey.CONTROL);
-    assertEquals(updatedRemapping.get(ModifierKey.ESC), ModifierKey.VOID);
+        updatedRemapping[ModifierKey.kBackspace], ModifierKey.kControl);
+    assertEquals(updatedRemapping[ModifierKey.kEscape], ModifierKey.kVoid);
   });
 });

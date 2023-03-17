@@ -33,6 +33,23 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_util.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_illustrated_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_tabs_search_suggested_history_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_button_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_favicon_data_source.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
@@ -48,9 +65,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
@@ -61,20 +75,6 @@
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_illustrated_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_tabs_search_suggested_history_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -1504,7 +1504,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       self.searchTerms = @"";
     }
     new_tab_page_uma::RecordAction(
-        self.browserState, self.webStateList->GetActiveWebState(),
+        self.browserState->IsOffTheRecord(),
+        self.webStateList->GetActiveWebState(),
         new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     std::unique_ptr<web::WebState> web_state =
         session_util::CreateWebStateWithNavigationEntries(
@@ -1549,7 +1550,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         "MobileRecentTabManagerRecentTabOpenedSearchResult"));
   }
   new_tab_page_uma::RecordAction(
-      self.browserState, self.webStateList->GetActiveWebState(),
+      self.browserState->IsOffTheRecord(),
+      self.webStateList->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 
   // If RecentTabs is being displayed from incognito, the resulting tab will

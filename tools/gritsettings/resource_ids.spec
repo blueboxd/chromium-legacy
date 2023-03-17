@@ -129,7 +129,7 @@
     "includes": [1340],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/cloud_upload/resources.grd": {
-    "META": {"sizes": {"includes": [40]}},
+    "META": {"sizes": {"includes": [50]}},
     "includes": [1345],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/desk_api/resources.grd": {
@@ -577,12 +577,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/test/data/webui/resources.grd": {
     "META": {"sizes": {"includes": [1400],}},
     "includes": [2810],
-  },
-  "chrome/test/data/webui_test_resources.grd": {
-    "includes": [2820],
-  },
-  "chrome/test/data/chrome_test_resources.grd": {
-    "messages": [2840],
   },
   # END chrome/ miscellaneous section.
 

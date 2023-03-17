@@ -1964,18 +1964,6 @@ bool LocalDOMWindow::originAgentCluster() const {
   return GetAgent()->IsOriginKeyed();
 }
 
-int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
-                                        const IdleRequestOptions* options) {
-  SetCurrentTaskAsCallbackParent(callback);
-  if (!GetFrame())
-    return 0;
-  return document_->RequestIdleCallback(V8IdleTask::Create(callback), options);
-}
-
-void LocalDOMWindow::cancelIdleCallback(int id) {
-  document()->CancelIdleCallback(id);
-}
-
 CustomElementRegistry* LocalDOMWindow::customElements(
     ScriptState* script_state) const {
   if (!script_state->World().IsMainWorld())
@@ -2476,7 +2464,12 @@ Fence* LocalDOMWindow::fence() {
     // metadata (navigated by urn:uuids).
     // If we are in an iframe that doesn't qualify, return nullptr.
     if (!blink::features::IsAllowURNsInIframeEnabled() ||
-        !GetFrame()->GetDocument()->Loader()->HasFencedFrameReporting()) {
+        !GetFrame()->GetDocument()->Loader()->FencedFrameProperties() ||
+        !GetFrame()
+             ->GetDocument()
+             ->Loader()
+             ->FencedFrameProperties()
+             ->has_fenced_frame_reporting()) {
       return nullptr;
     }
   }

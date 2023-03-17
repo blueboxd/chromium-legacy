@@ -1321,7 +1321,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
                                                  &line_opportunity);
     }
 
-    STACK_UNINITIALIZED NGLineInfo line_info;
+    NGLineInfo line_info;
     NGLineBreaker line_breaker(
         Node(), NGLineBreakerMode::kContent, ConstraintSpace(),
         line_opportunity, leading_floats, handled_leading_floats_index,
@@ -1491,7 +1491,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
     }
 
     // Success!
-    container_builder_.SetBreakToken(line_breaker.CreateBreakToken(line_info));
+    container_builder_.SetBreakToken(line_info.BreakToken());
     container_builder_.SetBaseDirection(line_info.BaseDirection());
 
     // Propagate any break tokens for floats that we fragmented before or inside

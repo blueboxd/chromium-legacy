@@ -2,12 +2,6 @@
   :host {
     --banner-size: auto;
     --footer-margin: 24px;
-    --tangible-sync-dialog-illustration-url:
-        url(./images/tangible_sync_dialog_illustration.svg);
-    --tangible-sync-style-left-banner-url:
-        url(./images/tangible_sync_window_left_illustration.svg);
-    --tangible-sync-style-right-banner-url:
-        url(./images/tangible_sync_window_right_illustration.svg);
     --sync-benefits-list-color: var(--google-grey-50);
     --sync-benefit-icon-color: var(--google-blue-600);
     color: var(--cr-primary-text-color);
@@ -215,7 +209,7 @@
   }
 
   #contentContainer {
-    margin-bottom:  calc(32px + 2 * var(--footer-margin));
+    margin-bottom: calc(32px + 2 * var(--footer-margin));
     margin-top: 72px;
     text-align: center;
   }
@@ -338,14 +332,15 @@
     --work-icon-size: 14px;
   }
 
-  .dialog-main-container.tangible-sync-style #title {
+  .dialog-main-container.tangible-sync-style .title {
     font-size: 1.25rem;
     line-height: 24px;
     margin: 16px 0 12px
   }
 
-  .dialog-main-container.tangible-sync-style #subtitle {
+  .dialog-main-container.tangible-sync-style .subtitle {
     font-size: 0.94rem;
+    line-height: 24px;
   }
 
   #syncBenefitsList {
@@ -390,7 +385,7 @@
   }
 
   #tangible-sync-dialog-illustration {
-    content: var(--tangible-sync-dialog-illustration-url);
+    content: url(./images/tangible_sync_dialog_illustration.svg);
     height: 68px;
     left: 50%;
     position: absolute;
@@ -399,17 +394,17 @@
     width: 328px;
   }
 
-  #tangible-sync-style-left-banner {
+  .tangible-sync-style-left-banner {
     animation-duration: 500ms;
     animation-name: left-illustration-slide-animation, fade-in-animation;
-    content: var(--tangible-sync-style-left-banner-url);
+    content: url(./images/tangible_sync_window_left_illustration.svg);
     transition-timing-function: ease-in-out;
   }
 
-  #tangible-sync-style-right-banner {
+  .tangible-sync-style-right-banner {
     animation-duration: 500ms;
     animation-name: right-illustration-slide-animation, fade-in-animation;
-    content: var(--tangible-sync-style-right-banner-url);
+    content: url(./images/tangible_sync_window_right_illustration.svg);
     transition-timing-function: ease-in-out;
   }
 
@@ -424,12 +419,6 @@
 
   @media (prefers-color-scheme: dark) {
     :host {
-      --tangible-sync-dialog-illustration-url:
-          url(./images/tangible_sync_dialog_illustration_dark.svg);
-      --tangible-sync-style-left-banner-url:
-          url(./images/tangible_sync_window_left_illustration_dark.svg);
-      --tangible-sync-style-right-banner-url:
-          url(./images/tangible_sync_window_right_illustration_dark.svg);
       --sync-benefits-list-color: var(--google-grey-800);
       --sync-benefit-icon-color: var(--google-blue-300);
     }
@@ -440,10 +429,22 @@
           url(./images/sync_confirmation_illustration_dark.svg);
     }
 
+    #tangible-sync-dialog-illustration {
+      content: url(./images/tangible_sync_dialog_illustration_dark.svg);
+    }
+
     /* Non-modal design */
     #syncPromoBanner {
       background-image:
-          url(images/sync_confirmation_refreshed_illustration_dark.svg);
+        url(images/sync_confirmation_refreshed_illustration_dark.svg);
+    }
+
+    .tangible-sync-style-left-banner {
+      content: url(./images/tangible_sync_window_left_illustration_dark.svg);
+    }
+
+    .tangible-sync-style-right-banner {
+      content: url(./images/tangible_sync_window_right_illustration_dark.svg);
     }
 
     #headerContainer.signin-intercept-design {
@@ -457,18 +458,6 @@
 
     .signin-intercept-design .work-badge {
       border-color: var(--google-grey-500);
-    }
-  }
-
-  @media screen and ((max-width: 780px) or (max-height: 600px)) {
-    .window-main-container.tangible-sync-style #title {
-      font-size: 1.5rem;
-      line-height: 32px;
-    }
-
-    .window-main-container.tangible-sync-style #subtitle {
-      font-size: 0.94rem;
-      line-height: 22px;
     }
   }
 </style>
@@ -498,8 +487,7 @@
       </div>
     </div>
   </template>
-  <div id="content-container"
-      class$="[[getSigninInterceptDesignClass_(isSigninInterceptFre_)]]">
+  <div id="content-container" class$="[[getSigninInterceptDesignClass_(isSigninInterceptFre_)]]">
     <h1 id="syncConfirmationHeading" class="heading" consent-description>
       $i18n{syncConfirmationTitle}
     </h1>
@@ -584,7 +572,7 @@
           </cr-button>
         </if>
         <cr-button id="notNowButton" on-click="onUndo_"
-          disabled="[[anyButtonClicked_]]">
+            disabled="[[anyButtonClicked_]]">
           $i18n{syncConfirmationUndoLabel}
         </cr-button>
         <if expr="not (is_macosx or is_linux or chromeos_ash or chromeos_lacros)">
@@ -600,26 +588,30 @@
 
 <template is="dom-if" if="[[isTangibleSync_]]">
   <div class$="tangible-sync-style [[getMainContainerClass_()]]">
-    <img id="tangible-sync-dialog-illustration" hidden="[[!isModalDialog_]]">
-    <img id="tangible-sync-style-left-banner" hidden="[[isModalDialog_]]">
-    <img id="tangible-sync-style-right-banner" hidden="[[isModalDialog_]]">
+    <img id="tangible-sync-dialog-illustration" alt=""
+        hidden="[[!isModalDialog_]]">
+    <img class="tangible-sync-style-left-banner" alt=""
+        hidden="[[isModalDialog_]]">
+    <img class="tangible-sync-style-right-banner" alt=""
+        hidden="[[isModalDialog_]]">
     <div id="contentContainer" class$="[[getAnimationClass_()]]">
       <div id="avatarContainer">
         <img id="avatar" alt="" src="[[accountImageSrc_]]">
         <div id="badge" class="work-badge" hidden="[[!showEnterpriseBadge_]]">
-          <iron-icon icon="cr:domain"></iron-icon>
+          <iron-icon icon="cr:domain" alt=""></iron-icon>
         </div>
       </div>
-      <h1 id="title" consent-description>
+      <h1 class="title" consent-description>
         $i18n{syncConfirmationTitle}
       </h1>
-      <div id="subtitle" consent-description>
+      <div class="subtitle" consent-description>
         $i18n{syncConfirmationSyncInfoTitle}
       </div>
       <div id="syncBenefitsList">
         <template is="dom-repeat" items="[[syncBenefitsList_]]">
           <div class="sync-benefit">
-            <iron-icon class="sync-benefit-icon" icon="[[item.iconName]]">
+            <iron-icon class="sync-benefit-icon" icon="[[item.iconName]]"
+                alt="">
             </iron-icon>
             <div class="sync-benefit-text" consent-description>
               [[i18n(item.title)]]
@@ -646,8 +638,7 @@
           $i18n{syncConfirmationSettingsLabel}
         </cr-button>
       </if>
-      <cr-button id="notNowButton" on-click="onUndo_"
-          disabled="[[anyButtonClicked_]]">
+      <cr-button id="notNowButton" on-click="onUndo_" disabled="[[anyButtonClicked_]]">
         $i18n{syncConfirmationUndoLabel}
       </cr-button>
       <if expr="not (is_macosx or is_linux or chromeos_ash or chromeos_lacros)">

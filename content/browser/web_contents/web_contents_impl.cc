@@ -2201,11 +2201,6 @@ void WebContentsImpl::SetHasPictureInPictureCommon(
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
   observers_.NotifyObservers(&WebContentsObserver::MediaPictureInPictureChanged,
                              has_picture_in_picture);
-  if (has_picture_in_picture) {
-    pip_capture_handle_ = IncrementCapturerCount({}, true, false);
-  } else {
-    pip_capture_handle_.RunAndReset();
-  }
 
   // Picture-in-picture state can affect how we notify visibility for non-
   // visible pages.
@@ -3695,7 +3690,8 @@ PageVisibilityState WebContentsImpl::CalculatePageVisibilityState(
   if (visibility == Visibility::VISIBLE || visible_capturer_count_ > 0 ||
       web_contents_visible_in_vr) {
     return PageVisibilityState::kVisible;
-  } else if (hidden_capturer_count_ > 0) {
+  } else if (hidden_capturer_count_ > 0 || has_picture_in_picture_video_ ||
+             has_picture_in_picture_document_) {
     return PageVisibilityState::kHiddenButPainting;
   }
   return PageVisibilityState::kHidden;
@@ -4980,6 +4976,19 @@ void WebContentsImpl::CopyToFindPboard() {
   // Windows/Linux don't have the concept of a find pasteboard.
   input_handler->CopyToFindPboard();
   RecordAction(base::UserMetricsAction("CopyToFindPboard"));
+#endif
+}
+
+void WebContentsImpl::CenterSelection() {
+  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::CenterSelection");
+#if BUILDFLAG(IS_MAC)
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
+  if (!input_handler) {
+    return;
+  }
+
+  last_interaction_time_ = ui::EventTimeForNow();
+  input_handler->CenterSelection();
 #endif
 }
 
@@ -7262,8 +7271,14 @@ double WebContentsImpl::GetPendingPageZoomLevel() {
     return HostZoomMap::GetZoomLevel(this);
 
   GURL url = pending_entry->GetURL();
+#if BUILDFLAG(IS_ANDROID)
+  return HostZoomMap::GetForWebContents(this)->GetZoomLevelForHostAndScheme(
+      url.scheme(), net::GetHostOrSpecFromURL(url),
+      pending_entry->GetIsOverridingUserAgent());
+#else
   return HostZoomMap::GetForWebContents(this)->GetZoomLevelForHostAndScheme(
       url.scheme(), net::GetHostOrSpecFromURL(url));
+#endif
 }
 
 bool WebContentsImpl::IsPictureInPictureAllowedForFullscreenVideo() const {
@@ -9635,11 +9650,19 @@ void WebContentsImpl::AboutToBeDiscarded(WebContents* new_contents) {
 }
 
 base::ScopedClosureRunner WebContentsImpl::CreateDisallowCustomCursorScope() {
-  CursorManager* manager = GetPrimaryMainFrame()
-                               ->GetRenderWidgetHost()
-                               ->GetRenderWidgetHostViewBase()
-                               ->GetCursorManager();
-  return manager->CreateDisallowCustomCursorScope();
+  auto* render_widget_host_base = GetPrimaryMainFrame()
+                                      ->GetRenderWidgetHost()
+                                      ->GetRenderWidgetHostViewBase();
+
+  // It's possible for |render_widget_host_base| to be null if the renderer
+  // crashed. To avoid race conditions, null-check here. See crbug.com/1421552
+  // as well.
+  if (!render_widget_host_base) {
+    return base::ScopedClosureRunner();
+  }
+
+  auto* cursor_manager = render_widget_host_base->GetCursorManager();
+  return cursor_manager->CreateDisallowCustomCursorScope();
 }
 
 bool WebContentsImpl::CancelPrerendering(FrameTreeNode* frame_tree_node,

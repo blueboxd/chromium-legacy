@@ -1311,7 +1311,7 @@ bool ContentBrowserClient::ShouldServiceWorkerInheritPolicyContainerFromCreator(
   return url.SchemeIsLocal();
 }
 
-bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
+bool ContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
     BrowserContext* browser_context,
     const url::Origin& origin) {
   return false;
@@ -1439,6 +1439,12 @@ bool ContentBrowserClient::AreIsolatedWebAppsEnabled(
   // The whole logic of the IWAs lives in //chrome. So IWAs should be
   // enabled at that layer.
   return false;
+}
+
+bool ContentBrowserClient::IsThirdPartyStoragePartitioningAllowed(
+    content::BrowserContext*,
+    const url::Origin&) {
+  return true;
 }
 
 }  // namespace content

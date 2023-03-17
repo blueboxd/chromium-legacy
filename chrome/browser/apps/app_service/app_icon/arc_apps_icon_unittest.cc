@@ -4,6 +4,8 @@
 
 #include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/components/arc/test/fake_app_instance.h"
+#include "base/containers/flat_map.h"
+#include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_decoder.h"
@@ -11,12 +13,14 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_test_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_test.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "content/public/test/browser_task_environment.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
 #include "ui/base/layout.h"
@@ -97,14 +101,13 @@ TEST_F(ArcAppsIconFactoryTest, GetArcAppCompressedIconData) {
             iv->background_icon_png_data);
 }
 
-class AppServiceArcAppIconTest : public ArcAppsIconFactoryTest {
+class AppServiceArcAppIconTest : public ArcAppsIconFactoryTest,
+                                 public ArcAppListPrefs::Observer {
  public:
   void SetUp() override {
     ArcAppsIconFactoryTest::SetUp();
 
     proxy_ = AppServiceProxyFactory::GetForProfile(profile());
-    scoped_decode_request_for_testing_ =
-        std::make_unique<ScopedDecodeRequestForTesting>();
   }
 
   void GenerateArcAppUncompressedIcon(const std::string app_id,
@@ -177,10 +180,26 @@ class AppServiceArcAppIconTest : public ArcAppsIconFactoryTest {
 
   AppServiceProxy& app_service_proxy() { return *proxy_; }
 
+  // Calls `closure` once any update is made to `app_id`'s icons in
+  // ArcAppListPrefs.
+  void AwaitIconUpdate(const std::string& app_id, base::OnceClosure closure) {
+    waiting_icon_updates_[app_id] = std::move(closure);
+  }
+
+  // ArcAppListPrefs::Observer:
+  void OnAppIconUpdated(const std::string& app_id,
+                        const ArcAppIconDescriptor& descriptor) override {
+    if (base::Contains(waiting_icon_updates_, app_id)) {
+      std::move(waiting_icon_updates_[app_id]).Run();
+      waiting_icon_updates_.erase(app_id);
+    }
+  }
+
  private:
   raw_ptr<AppServiceProxy> proxy_;
-  std::unique_ptr<ScopedDecodeRequestForTesting>
-      scoped_decode_request_for_testing_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+
+  base::flat_map<std::string, base::OnceClosure> waiting_icon_updates_;
 };
 
 TEST_F(AppServiceArcAppIconTest, GetCompressedIconDataForUncompressedIcon) {
@@ -244,6 +263,38 @@ TEST_F(AppServiceArcAppIconTest, GetCompressedIconDataForStandardIcon) {
 
   ASSERT_EQ(apps::IconType::kStandard, ret->icon_type);
   VerifyIcon(src_image_skia, ret->uncompressed);
+}
+
+TEST_F(AppServiceArcAppIconTest, GetCompressedIconDataFromArcDiskCache) {
+  const auto& fake_apps = arc_test()->fake_apps();
+  std::string package_name = fake_apps[0]->package_name;
+  std::string app_id = ArcAppListPrefs::GetAppId(fake_apps[0]->package_name,
+                                                 fake_apps[0]->activity);
+  arc_test()->app_instance()->SendRefreshAppList(fake_apps);
+
+  // Ensure that app icons are in the ARC disk cache.
+  base::ScopedObservation<ArcAppListPrefs, ArcAppListPrefs::Observer>
+      observation(this);
+  observation.Observe(arc_test()->arc_app_list_prefs());
+  for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
+    base::RunLoop run_loop;
+    AwaitIconUpdate(app_id, run_loop.QuitClosure());
+    arc_test()->arc_app_list_prefs()->MaybeRequestIcon(
+        app_id, ArcAppIconDescriptor(kSizeInDip, scale_factor));
+    run_loop.Run();
+  }
+
+  // Generate the source compressed icon for comparing.
+  std::vector<uint8_t> src_data;
+  GenerateArcAppCompressedIcon(app_id, /*scale=*/1.0, src_data);
+
+  // Stop ARC from running so that LoadIcon requests must load from the disk
+  // cache rather than ARC itself.
+  arc_test()->StopArcInstance();
+
+  // Verify the icon reading and writing function in AppService for the
+  // compressed icon.
+  VerifyCompressedIcon(src_data, *LoadIcon(app_id, IconType::kCompressed));
 }
 
 }  // namespace apps

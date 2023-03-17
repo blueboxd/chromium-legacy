@@ -295,17 +295,19 @@ void ThreadControllerWithMessagePumpImpl::OnBeginWorkItemImpl(
   run_level_tracker_.OnWorkStarted(lazy_now);
 }
 
-void ThreadControllerWithMessagePumpImpl::OnEndWorkItem() {
+void ThreadControllerWithMessagePumpImpl::OnEndWorkItem(int run_level_depth) {
   LazyNow lazy_now(time_source_);
-  OnEndWorkItemImpl(lazy_now);
+  OnEndWorkItemImpl(lazy_now, run_level_depth);
 }
 
-void ThreadControllerWithMessagePumpImpl::OnEndWorkItemImpl(LazyNow& lazy_now) {
+void ThreadControllerWithMessagePumpImpl::OnEndWorkItemImpl(
+    LazyNow& lazy_now,
+    int run_level_depth) {
   // Work completed, begin a new hang watch until the next task (watching the
   // pump's overhead).
   hang_watch_scope_.emplace();
   work_id_provider_->IncrementWorkId();
-  run_level_tracker_.OnWorkEnded(lazy_now);
+  run_level_tracker_.OnWorkEnded(lazy_now, run_level_depth);
 }
 
 void ThreadControllerWithMessagePumpImpl::BeforeWait() {
@@ -437,6 +439,7 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     // wakeup, otherwise the power-inefficient wakeup is invisible in
     // tracing. OnApplicationTaskSelected() assumes this ordering as well.
     OnBeginWorkItemImpl(lazy_now_select_task);
+    int run_depth = static_cast<int>(run_level_tracker_.num_run_levels());
 
     const SequencedTaskSource::SelectTaskOption select_task_option =
         power_monitor_.IsProcessInPowerSuspendState()
@@ -452,7 +455,7 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
             : TimeTicks(),
         lazy_now_task_selected);
     if (!selected_task) {
-      OnEndWorkItemImpl(lazy_now_task_selected);
+      OnEndWorkItemImpl(lazy_now_task_selected, run_depth);
       break;
     }
 
@@ -487,7 +490,7 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     main_thread_only().task_source->DidRunTask(lazy_now_after_run_task);
     // End the work item scope after DidRunTask() as it can process microtasks
     // (which are extensions of the RunTask).
-    OnEndWorkItemImpl(lazy_now_after_run_task);
+    OnEndWorkItemImpl(lazy_now_after_run_task, run_depth);
 
     // If DidRunTask() read the clock (lazy_now_after_run_task.has_value()) or
     // if |batch_duration| > 0, store the clock value in `recent_time` so it can
@@ -602,6 +605,10 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
     Quit();
 
   return false;
+}
+
+int ThreadControllerWithMessagePumpImpl::RunDepth() {
+  return static_cast<int>(run_level_tracker_.num_run_levels());
 }
 
 void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,

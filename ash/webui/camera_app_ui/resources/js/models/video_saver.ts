@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../assert.js';
 import {Intent} from '../intent.js';
 import * as Comlink from '../lib/comlink.js';
 import {
@@ -18,6 +19,7 @@ import {
 import {
   createGifArgs,
   createMp4Args,
+  createTimeLapseArgs,
 } from './ffmpeg/video_processor_args.js';
 import {createPrivateTempVideoFile} from './file_system.js';
 import {FileAccessEntry} from './file_system_access_entry.js';
@@ -52,6 +54,16 @@ async function createGifVideoProcessor(
       Comlink.proxy(output), createGifArgs(resolution));
 }
 
+/*
+ * Creates a VideoProcessor instance for recording time-lapse.
+ */
+async function createTimeLapseProcessor(
+    output: AsyncWriter,
+    resolution: Resolution): Promise<Comlink.Remote<VideoProcessor>> {
+  return new (await FFMpegVideoProcessor)(
+      Comlink.proxy(output), createTimeLapseArgs(resolution));
+}
+
 /**
  * Creates an AsyncWriter that writes to the given intent.
  */
@@ -74,8 +86,8 @@ export class VideoSaver {
   /**
    * Writes video data to result video.
    */
-  write(blob: Blob): void {
-    this.processor.write(blob);
+  async write(blob: Blob): Promise<void> {
+    await this.processor.write(blob);
   }
 
   /**
@@ -97,10 +109,13 @@ export class VideoSaver {
   }
 
   /**
-   * Creates video saver for the given file.
+   * Creates video saver which saves video into a temporary file.
+   * TODO(b/184583382): Saves to the target file directly once the File System
+   * Access API supports cleaning temporary file when leaving the page without
+   * closing the file stream.
    */
-  static async createForFile(file: FileAccessEntry, videoRotation: number):
-      Promise<VideoSaver> {
+  static async create(videoRotation: number): Promise<VideoSaver> {
+    const file = await createPrivateTempVideoFile();
     const writer = await file.getWriter();
     const processor = await createVideoProcessor(writer, videoRotation);
     return new VideoSaver(file, processor);
@@ -128,8 +143,8 @@ export class GifSaver {
       private readonly blobs: Blob[],
       private readonly processor: Comlink.Remote<VideoProcessor>) {}
 
-  write(frame: Uint8ClampedArray): void {
-    this.processor.write(new Blob([frame]));
+  async write(frame: Uint8ClampedArray): Promise<void> {
+    await this.processor.write(new Blob([frame]));
   }
 
   /**
@@ -146,7 +161,7 @@ export class GifSaver {
   static async create(resolution: Resolution): Promise<GifSaver> {
     const blobs: Blob[] = [];
     const writer = new AsyncWriter({
-      async write(blob) {
+      write(blob) {
         blobs.push(blob);
       },
       seek: null,
@@ -154,5 +169,112 @@ export class GifSaver {
     });
     const processor = await createGifVideoProcessor(writer, resolution);
     return new GifSaver(blobs, processor);
+  }
+}
+
+interface FrameInfo {
+  chunk: Blob;
+  frameNo: number;
+}
+
+/**
+ * Used to save time-lapse video.
+ */
+export class TimeLapseSaver {
+  /**
+   * Video encoder used to encode frame.
+   */
+  private readonly encoder: VideoEncoder;
+
+  /**
+   * Map a frame's timestamp with frameNo, only store frame that's being
+   * encoded.
+   */
+  private readonly frameNoMap = new Map<number, number>();
+
+  /**
+   * Store all encoded frames with its frame numbers.
+   * TODO(b/236800499): Investigate if it is OK to store number of blobs in
+   * memory.
+   */
+  private readonly frames: FrameInfo[] = [];
+
+  private speed: number;
+
+  constructor(
+      encoderConfig: VideoEncoderConfig,
+      private readonly resolution: Resolution, initialSpeed: number) {
+    this.speed = initialSpeed;
+    this.encoder = new VideoEncoder({
+      error: (error) => {
+        throw error;
+      },
+      output: (chunk) => this.onFrameEncoded(chunk),
+    });
+    this.encoder.configure(encoderConfig);
+  }
+
+  onFrameEncoded(chunk: EncodedVideoChunk): void {
+    const frameNo = this.frameNoMap.get(chunk.timestamp);
+    assert(frameNo !== undefined);
+    const chunkData = new Uint8Array(chunk.byteLength);
+    chunk.copyTo(chunkData);
+    this.frames.push({
+      chunk: new Blob([chunkData]),
+      frameNo,
+    });
+    this.frameNoMap.delete(chunk.timestamp);
+  }
+
+  write(frame: VideoFrame, frameNo: number): void {
+    if (!frame.timestamp) {
+      return;
+    }
+    this.frameNoMap.set(frame.timestamp, frameNo);
+    this.encoder.encode(frame, {keyFrame: true});
+  }
+
+  updateSpeed(newSpeed: number): void {
+    this.speed = newSpeed;
+  }
+
+  getSpeed(): number {
+    return this.speed;
+  }
+
+  /**
+   * Finishes the write of video data parts and returns result video file.
+   *
+   * @return Result video file.
+   */
+  async endWrite(): Promise<FileAccessEntry> {
+    // TODO(b/236800499): Optimize file writing mechanism to make it faster.
+    const file = await createPrivateTempVideoFile();
+    const writer = await file.getWriter();
+    const processor = await createTimeLapseProcessor(writer, this.resolution);
+
+    const filteredChunk =
+        this.frames.filter(({frameNo}) => frameNo % this.speed === 0);
+    for (const {chunk} of filteredChunk) {
+      processor.write(chunk);
+    }
+    await processor.close();
+    this.encoder.close();
+
+    return file;
+  }
+
+  /**
+   * Creates video saver with encoder using provided |encoderConfig|.
+   */
+  static async create(
+      encoderConfig: VideoEncoderConfig, resolution: Resolution,
+      initialSpeed: number): Promise<TimeLapseSaver> {
+    const encoderSupport = await VideoEncoder.isConfigSupported(encoderConfig);
+    if (!encoderSupport.supported) {
+      throw new Error('Video encoder is not supported.');
+    }
+
+    return new TimeLapseSaver(encoderConfig, resolution, initialSpeed);
   }
 }

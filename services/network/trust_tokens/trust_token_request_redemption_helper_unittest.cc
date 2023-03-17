@@ -311,7 +311,7 @@ class TrustTokenBeginRedemptionPostconditionsTest
         std::move(key_commitment_result));
 
     // The value obtained from the cryptographer should be the exact
-    // Sec-Trust-Token header attached to the request.
+    // Sec-Private-State-Token header attached to the request.
     auto cryptographer = std::make_unique<MockCryptographer>();
     EXPECT_CALL(*cryptographer, Initialize(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*cryptographer, BeginRedemption(_, _))
@@ -339,8 +339,8 @@ class TrustTokenBeginRedemptionPostconditionsTest
 
 }  // namespace
 
-// Check that the redemption helper sets the Sec-Trust-Token and
-// Sec-Trust-Token-Version headers on the outgoing request.
+// Check that the redemption helper sets the Sec-Private-State-Token and
+// Sec-Private-State-Token-Crypto-Version headers on the outgoing request.
 TEST_F(TrustTokenBeginRedemptionPostconditionsTest, SetsHeaders) {
   std::string attached_header;
   EXPECT_TRUE(request_->extra_request_headers().GetHeader(
@@ -412,7 +412,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RecordsEmptyRequestHistogram) {
 }
 
 // Check that the redemption helper rejects responses lacking the
-// Sec-Trust-Token response header.
+// Sec-Private-State-Token response header.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
   // Establish the following state:
   // * One key commitment returned from the key commitment registry, with one
@@ -462,7 +462,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
   ASSERT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
 
   // Add an empty list of response headers. In particular, this is missing the
-  // Sec-Trust-Token redemption response header.
+  // Sec-Private-State-Token redemption response header.
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
@@ -951,6 +951,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   EXPECT_CALL(*cryptographer, ConfirmRedemption(_))
       .WillOnce(Return("a successfully-extracted RR"));
 
+  const int some_arbitrary_time = 12345678;
+  env_.AdvanceClock(base::Seconds(some_arbitrary_time));
+
   TrustTokenRequestRedemptionHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kRefresh, store.get(), &*getter,
@@ -1077,8 +1080,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, CustomKeysSuccess) {
       (one_minute_from_now - base::Time::UnixEpoch()).InMicroseconds();
 
   const std::string basic_key = base::StringPrintf(
-      R"({ "TrustTokenV3PMB": {
-            "protocol_version": "TrustTokenV3PMB", "id": 1, "batchsize": 5,
+      R"({ "PrivateStateTokenV3PMB": {
+            "protocol_version": "PrivateStateTokenV3PMB", "id": 1,
+            "batchsize": 5,
             "keys": {"1": { "Y": "", "expiry": "%s" }}
          }})",
       base::NumberToString(one_minute_from_now_in_micros).c_str());
@@ -1173,8 +1177,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, CustomIssuerSuccess) {
       (one_minute_from_now - base::Time::UnixEpoch()).InMicroseconds();
 
   const std::string basic_key = base::StringPrintf(
-      R"({ "TrustTokenV3PMB": {
-            "protocol_version": "TrustTokenV3PMB", "id": 1, "batchsize": 5,
+      R"({ "PrivateStateTokenV3PMB": {
+            "protocol_version": "PrivateStateTokenV3PMB", "id": 1,
+            "batchsize": 5,
             "keys": {"1": { "Y": "", "expiry": "%s" }}
          }})",
       base::NumberToString(one_minute_from_now_in_micros).c_str());
@@ -1248,7 +1253,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, LimitThirdRedemptionAllowFourth) {
   request->set_initiator(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")));
 
-  const int some_arbitrary_time = 12345;
+  const int some_arbitrary_time = 12345678;
   env_.AdvanceClock(base::Seconds(some_arbitrary_time));
 
   // first redemption
@@ -1329,7 +1334,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   request->set_initiator(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")));
 
-  const int some_arbitrary_time = 12345;
+  const int some_arbitrary_time = 12345678;
   env_.AdvanceClock(base::Seconds(some_arbitrary_time));
 
   // first redemption

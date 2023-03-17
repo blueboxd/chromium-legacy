@@ -572,6 +572,14 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
     const int selected_page = GetSelectedPage(apps_grid_view);
     GridIndex index(selected_page, row * apps_grid_view->cols() + column);
     AppListItemView* view = test_api.GetViewAtIndex(index);
+
+    InitiateDragForView(pointer, view, apps_grid_view);
+    return view;
+  }
+
+  void InitiateDragForView(AppsGridView::Pointer pointer,
+                           AppListItemView* view,
+                           AppsGridView* apps_grid_view) {
     DCHECK(view);
 
     gfx::Point from = view->GetBoundsInScreen().CenterPoint();
@@ -602,7 +610,6 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
     // target OnDragUpdate().
     current_drag_location_ = from + gfx::Vector2d(10, 10);
     UpdateDragInScreen(pointer, current_drag_location_.value(), 2);
-    return view;
   }
 
   void UpdateDragInScreen(AppsGridView::Pointer pointer,
@@ -620,6 +627,7 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
         generator->MoveMouseTo(drag_increment_point);
       }
     }
+    current_drag_location_ = to_in_screen;
   }
 
   // Updates the drag from the current drag location to the destination point
@@ -1866,6 +1874,33 @@ TEST_P(AppsGridViewFolderIconRefreshTest, FolderIconExtendState) {
   animation_waiter.Wait(const_cast<ui::Layer*>(background_layer));
   EXPECT_FALSE(folder_view->is_icon_extended_for_test());
   EXPECT_EQ(background_layer, folder_view->icon_background_layer_for_test());
+}
+
+TEST_P(AppsGridViewFolderIconRefreshTest, FolderIconItemCounter) {
+  if (!folder_icon_refresh()) {
+    return;
+  }
+
+  model_->CreateAndPopulateFolderWithApps(2);
+  model_->CreateAndPopulateFolderWithApps(4);
+  model_->CreateAndPopulateFolderWithApps(10);
+  model_->CreateAndPopulateFolderWithApps(104);
+
+  // The number that will be shown on the folder icon follows the following
+  // rules:
+  // 1. The icon counter will not be showing if the number of items in a folder
+  // is less or equal to 4, where all items can be painted on the icon.
+  // 2. The counter shows how many items are not drawn on the icon, which is
+  // (the number of items - 3).
+  // 3. The maximum number that can be shown is 100.
+  std::vector<absl::optional<size_t>> expected_counts = {absl::nullopt,
+                                                         absl::nullopt, 7, 100};
+  UpdateLayout();
+
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_EQ(GetItemViewInTopLevelGrid(i)->item_counter_count_for_test(),
+              expected_counts[i]);
+  }
 }
 
 TEST_P(AppsGridViewDragTest, MouseDragItemIntoFolder) {
@@ -4228,19 +4263,13 @@ TEST_P(AppsGridViewDragTest, FocusOfReparentedDragViewAfterDrag) {
   EXPECT_FALSE(item_view->HasFocus());
 }
 
-TEST_P(AppsGridViewDragLegacyTest, DragAndPinItemToShelf) {
+TEST_P(AppsGridViewDragTest, DragAndPinItemToShelf) {
   model_->PopulateApps(2);
   UpdateLayout();
 
-  AppListItemView* const item_view = GetItemViewInTopLevelGrid(1);
+  AppListItemView* const item_view = InitiateDragForItemAtCurrentPageAt(
+      AppsGridView::MOUSE, 0, 1, apps_grid_view_);
 
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
   MaybeCheckHaptickEventsCount(1);
 
   // Verify that item drag has started.
@@ -4250,19 +4279,24 @@ TEST_P(AppsGridViewDragLegacyTest, DragAndPinItemToShelf) {
 
   // Shelf should start handling the drag if it moves within its bounds.
   auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
 
   // Releasing drag over shelf should pin the dragged app.
-  generator->ReleaseLeftButton();
+  EndDrag();
   EXPECT_TRUE(ShelfModel::Get()->IsAppPinned("Item 1"));
   EXPECT_EQ("Item 1", ShelfModel::Get()->items()[0].id.app_id);
   MaybeCheckHaptickEventsCount(1);
 }
 
-TEST_P(AppsGridViewDragLegacyTest, DragAndPinNotInitiallyVisibleItemToShelf) {
+TEST_P(AppsGridViewDragTest, DragAndPinNotInitiallyVisibleItemToShelf) {
   // Add more apps to the root apps grid.
   model_->PopulateApps(50);
   UpdateLayout();
@@ -4280,13 +4314,7 @@ TEST_P(AppsGridViewDragLegacyTest, DragAndPinNotInitiallyVisibleItemToShelf) {
   ASSERT_TRUE(apps_grid_view_->GetWidget()->GetWindowBoundsInScreen().Contains(
       item_view->GetBoundsInScreen()));
 
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
+  InitiateDragForView(AppsGridView::MOUSE, item_view, apps_grid_view_);
   MaybeCheckHaptickEventsCount(1);
 
   // Verify app list item drag has started.
@@ -4296,19 +4324,24 @@ TEST_P(AppsGridViewDragLegacyTest, DragAndPinNotInitiallyVisibleItemToShelf) {
 
   // Shelf should start handling the drag if it moves within its bounds.
   auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 40", shelf_view->drag_and_drop_shelf_id().app_id);
 
   // Releasing drag over shelf should pin the dragged app.
-  generator->ReleaseLeftButton();
+  EndDrag();
   MaybeCheckHaptickEventsCount(1);
   EXPECT_TRUE(ShelfModel::Get()->IsAppPinned("Item 40"));
   EXPECT_EQ("Item 40", ShelfModel::Get()->items()[0].id.app_id);
 }
 
-TEST_P(AppsGridViewDragLegacyTest, DragItemToAndFromShelf) {
+TEST_P(AppsGridViewDragTest, DragItemToAndFromShelf) {
   model_->PopulateApps(2);
   UpdateLayout();
 
@@ -4324,9 +4357,13 @@ TEST_P(AppsGridViewDragLegacyTest, DragItemToAndFromShelf) {
 
   // Shelf should start handling the drag if it moves within its bounds.
   auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-  UpdateDragInScreen(AppsGridView::MOUSE,
-                     shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
 
@@ -4341,7 +4378,7 @@ TEST_P(AppsGridViewDragLegacyTest, DragItemToAndFromShelf) {
   EXPECT_TRUE(ShelfModel::Get()->items().empty());
 }
 
-TEST_P(AppsGridViewDragLegacyTest, DragAndPinItemFromFolderToShelf) {
+TEST_P(AppsGridViewDragTest, DragAndPinItemFromFolderToShelf) {
   // Creates a folder item - the folder size was chosen arbitrarily.
   model_->CreateAndPopulateFolderWithApps(5);
   // Add more apps to the root apps grid.
@@ -4351,16 +4388,9 @@ TEST_P(AppsGridViewDragLegacyTest, DragAndPinItemFromFolderToShelf) {
   // Open the folder.
   test_api_->PressItemAt(0);
 
-  AppListItemView* const item_view =
-      GetItemViewInAppsGridAt(1, folder_apps_grid_view());
+  AppListItemView* const item_view = InitiateDragForItemAtCurrentPageAt(
+      AppsGridView::MOUSE, 0, 1, folder_apps_grid_view());
 
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
   MaybeCheckHaptickEventsCount(1);
 
   // Verify app list item drag has started.
@@ -4368,9 +4398,11 @@ TEST_P(AppsGridViewDragLegacyTest, DragAndPinItemFromFolderToShelf) {
   ASSERT_TRUE(folder_apps_grid_view()->IsDragging());
   ASSERT_EQ(item_view->item(), folder_apps_grid_view()->drag_item());
 
-  generator->MoveMouseTo(
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
       app_list_folder_view()->GetBoundsInScreen().right_center() +
-      gfx::Vector2d(20, 0));
+          gfx::Vector2d(20, 0),
+      /*steps=*/1);
 
   // Fire the reparent timer that should be started when an item is dragged out
   // of folder bounds.
@@ -4378,20 +4410,24 @@ TEST_P(AppsGridViewDragLegacyTest, DragAndPinItemFromFolderToShelf) {
 
   // Shelf should start handling the drag if it moves within its bounds.
   auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
 
   // Releasing drag over shelf should pin the dragged app.
-  generator->ReleaseLeftButton();
+  EndDrag();
   MaybeCheckHaptickEventsCount(1);
   EXPECT_TRUE(ShelfModel::Get()->IsAppPinned("Item 1"));
   EXPECT_EQ("Item 1", ShelfModel::Get()->items()[0].id.app_id);
 }
 
-TEST_P(AppsGridViewDragLegacyTest,
-       DragAndPinNotInitiallyVisibleFolderItemToShelf) {
+TEST_P(AppsGridViewDragTest, DragAndPinNotInitiallyVisibleFolderItemToShelf) {
   model_->CreateAndPopulateFolderWithApps(kMaxItemsInFolder);
   UpdateLayout();
 
@@ -4413,13 +4449,7 @@ TEST_P(AppsGridViewDragLegacyTest,
   ASSERT_TRUE(app_list_folder_view()->GetBoundsInScreen().Contains(
       item_view->GetBoundsInScreen()));
 
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
+  InitiateDragForView(AppsGridView::MOUSE, item_view, apps_grid_view_);
   MaybeCheckHaptickEventsCount(1);
 
   // Verify app list item drag has started.
@@ -4427,9 +4457,11 @@ TEST_P(AppsGridViewDragLegacyTest,
   ASSERT_TRUE(folder_apps_grid_view()->IsDragging());
   ASSERT_EQ(item_view->item(), folder_apps_grid_view()->drag_item());
 
-  generator->MoveMouseTo(
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
       app_list_folder_view()->GetBoundsInScreen().right_center() +
-      gfx::Vector2d(20, 0));
+          gfx::Vector2d(20, 0),
+      /*steps=*/1);
 
   // Fire the reparent timer that should be started when an item is dragged out
   // of folder bounds.
@@ -4437,20 +4469,25 @@ TEST_P(AppsGridViewDragLegacyTest,
 
   // Shelf should start handling the drag if it moves within its bounds.
   auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 30", shelf_view->drag_and_drop_shelf_id().app_id);
 
   // Releasing drag over shelf should pin the dragged app.
-  generator->ReleaseLeftButton();
+  EndDrag();
   MaybeCheckHaptickEventsCount(1);
 
   EXPECT_TRUE(ShelfModel::Get()->IsAppPinned("Item 30"));
   EXPECT_EQ("Item 30", ShelfModel::Get()->items()[0].id.app_id);
 }
 
-TEST_P(AppsGridViewDragLegacyTest, DragAnItemFromFolderToAndFromShelf) {
+TEST_P(AppsGridViewDragTest, DragAnItemFromFolderToAndFromShelf) {
   // Creates a folder item - the folder size was chosen arbitrarily.
   model_->CreateAndPopulateFolderWithApps(5);
   // Add more apps to the root apps grid.
@@ -4460,16 +4497,8 @@ TEST_P(AppsGridViewDragLegacyTest, DragAnItemFromFolderToAndFromShelf) {
   // Open the folder.
   test_api_->PressItemAt(0);
 
-  AppListItemView* const item_view =
-      GetItemViewInAppsGridAt(1, folder_apps_grid_view());
-
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
+  AppListItemView* const item_view = InitiateDragForItemAtCurrentPageAt(
+      AppsGridView::MOUSE, 0, 1, folder_apps_grid_view());
   MaybeCheckHaptickEventsCount(1);
 
   // Verify app list item drag has started.
@@ -4477,9 +4506,11 @@ TEST_P(AppsGridViewDragLegacyTest, DragAnItemFromFolderToAndFromShelf) {
   ASSERT_TRUE(folder_apps_grid_view()->IsDragging());
   ASSERT_EQ(item_view->item(), folder_apps_grid_view()->drag_item());
 
-  generator->MoveMouseTo(
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
       app_list_folder_view()->GetBoundsInScreen().right_center() +
-      gfx::Vector2d(20, 0));
+          gfx::Vector2d(20, 0),
+      /*steps=*/1);
 
   // Fire the reparent timer that should be started when an item is dragged out
   // of folder bounds.
@@ -4487,22 +4518,29 @@ TEST_P(AppsGridViewDragLegacyTest, DragAnItemFromFolderToAndFromShelf) {
 
   // Shelf should start handling the drag if it moves within its bounds.
   auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
 
   // Move the app away from shelf, and verify the app doesn't get pinned when
   // the drag ends.
-  generator->MoveMouseTo(apps_grid_view_->GetBoundsInScreen().origin());
-  generator->ReleaseLeftButton();
+  UpdateDragInScreen(AppsGridView::MOUSE,
+                     apps_grid_view_->GetBoundsInScreen().origin(),
+                     /*steps=*/1);
+  EndDrag();
   MaybeCheckHaptickEventsCount(1);
 
   EXPECT_FALSE(ShelfModel::Get()->IsAppPinned("Item 1"));
   EXPECT_TRUE(ShelfModel::Get()->items().empty());
 }
 
-TEST_P(AppsGridViewDragLegacyTest, RemoveDisplayWhileDraggingItemOntoShelf) {
+TEST_P(AppsGridViewDragTest, RemoveDisplayWhileDraggingItemOntoShelf) {
   UpdateDisplay("1024x768,1024x768");
   model_->PopulateApps(3);
 
@@ -4512,13 +4550,7 @@ TEST_P(AppsGridViewDragLegacyTest, RemoveDisplayWhileDraggingItemOntoShelf) {
 
   AppListItemView* const item_view = GetItemViewInTopLevelGrid(1);
 
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
+  InitiateDragForView(AppsGridView::MOUSE, item_view, apps_grid_view_);
   MaybeCheckHaptickEventsCount(1);
 
   // Verify that item drag has started.
@@ -4532,8 +4564,13 @@ TEST_P(AppsGridViewDragLegacyTest, RemoveDisplayWhileDraggingItemOntoShelf) {
 
   // Shelf should start handling the drag if it moves within its bounds.
   ShelfView* shelf_view = secondary_shelf->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
 
@@ -4548,8 +4585,7 @@ TEST_P(AppsGridViewDragLegacyTest, RemoveDisplayWhileDraggingItemOntoShelf) {
   EXPECT_TRUE(ShelfModel::Get()->items().empty());
 }
 
-TEST_P(AppsGridViewDragLegacyTest,
-       RemoveDisplayWhileDraggingFolderItemOntoShelf) {
+TEST_P(AppsGridViewDragTest, RemoveDisplayWhileDraggingFolderItemOntoShelf) {
   UpdateDisplay("1024x768,1024x768");
 
   // Creates a folder item - the folder size was chosen arbitrarily.
@@ -4566,14 +4602,7 @@ TEST_P(AppsGridViewDragLegacyTest,
 
   AppListItemView* const item_view =
       GetItemViewInAppsGridAt(1, folder_apps_grid_view());
-
-  auto* generator = GetEventGenerator();
-  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
-  generator->PressLeftButton();
-  if (!use_drag_drop_refactor()) {
-    item_view->FireMouseDragTimerForTest();
-  }
-  generator->MoveMouseBy(10, 10);
+  InitiateDragForView(AppsGridView::MOUSE, item_view, folder_apps_grid_view());
   MaybeCheckHaptickEventsCount(1);
 
   // Verify app list item drag has started.
@@ -4581,9 +4610,11 @@ TEST_P(AppsGridViewDragLegacyTest,
   ASSERT_TRUE(folder_apps_grid_view()->IsDragging());
   ASSERT_EQ(item_view->item(), folder_apps_grid_view()->drag_item());
 
-  generator->MoveMouseTo(
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
       app_list_folder_view()->GetBoundsInScreen().right_center() +
-      gfx::Vector2d(20, 0));
+          gfx::Vector2d(20, 0),
+      /*steps=*/1);
 
   // Fire the reparent timer that should be started when an item is dragged out
   // of folder bounds.
@@ -4595,8 +4626,13 @@ TEST_P(AppsGridViewDragLegacyTest,
 
   // Shelf should start handling the drag if it moves within its bounds.
   ShelfView* shelf_view = secondary_shelf->GetShelfViewForTesting();
-  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
-  ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  UpdateDragInScreen(
+      AppsGridView::MOUSE,
+      shelf_view->GetBoundsInScreen().left_center() + gfx::Vector2d(5, 5),
+      /*steps=*/1);
+  if (!use_drag_drop_refactor()) {
+    ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+  }
 
   EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
 

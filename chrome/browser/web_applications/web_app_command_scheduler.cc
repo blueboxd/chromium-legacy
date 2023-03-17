@@ -31,6 +31,7 @@
 #include "chrome/browser/web_applications/commands/update_file_handler_command.h"
 #include "chrome/browser/web_applications/commands/update_protocol_handler_approval_command.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/get_isolated_web_app_browsing_data_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
@@ -40,10 +41,10 @@
 #include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -327,6 +328,22 @@ void WebAppCommandScheduler::InstallIsolatedWebApp(
       std::make_unique<InstallIsolatedWebAppCommand>(
           url_info, location, CreateIsolatedWebAppWebContents(*profile_),
           std::make_unique<WebAppUrlLoader>(), *profile_, std::move(callback)),
+      call_location);
+}
+
+void WebAppCommandScheduler::GetIsolatedWebAppBrowsingData(
+    base::OnceCallback<void(base::flat_map<url::Origin, int64_t>)> callback,
+    const base::Location& call_location) {
+  if (IsShuttingDown()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::flat_map<url::Origin, int64_t>()));
+    return;
+  }
+
+  provider_->command_manager().ScheduleCommand(
+      std::make_unique<GetIsolatedWebAppBrowsingDataCommand>(
+          &profile_.get(), std::move(callback)),
       call_location);
 }
 

@@ -424,7 +424,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
                       WebFeature::kCSSAnimationsStackedNeutralKeyframe);
   }
   if (has_named_range_keyframes) {
-    model->SetViewTimeline(DynamicTo<ViewTimeline>(timeline));
+    model->SetViewTimelineIfRequired(DynamicTo<ViewTimeline>(timeline));
   }
 
   return model;
@@ -1068,12 +1068,14 @@ void CSSAnimations::CalculateAnimationUpdate(
     Element& element,
     const ComputedStyleBuilder& style_builder,
     const ComputedStyle* parent_style,
-    StyleResolver* resolver) {
+    StyleResolver* resolver,
+    bool can_trigger_animations) {
   ElementAnimations* element_animations =
       animating_element.GetElementAnimations();
 
   bool is_animation_style_change =
-      element_animations && element_animations->IsAnimationStyleChange();
+      !can_trigger_animations ||
+      (element_animations && element_animations->IsAnimationStyleChange());
 
 #if !DCHECK_IS_ON()
   // If we're in an animation style change, no animations can have started, been
@@ -1599,11 +1601,11 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       entry.animation->setTimeline(entry.timeline);
       To<CSSAnimation>(*entry.animation).ResetIgnoreCSSTimeline();
     }
-    if (entry.animation->GetRangeStart() != entry.range_start) {
-      entry.animation->SetRangeStart(entry.range_start);
+    if (entry.animation->GetRangeStartInternal() != entry.range_start) {
+      entry.animation->SetRangeStartInternal(entry.range_start);
     }
-    if (entry.animation->GetRangeEnd() != entry.range_end) {
-      entry.animation->SetRangeEnd(entry.range_end);
+    if (entry.animation->GetRangeEndInternal() != entry.range_end) {
+      entry.animation->SetRangeEndInternal(entry.range_end);
     }
 
     running_animations_[entry.index]->Update(entry);
@@ -1639,8 +1641,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     if (inert_animation->Paused())
       animation->pause();
     animation->resetIgnoreCSSPlayState();
-    animation->SetRangeStart(entry.range_start);
-    animation->SetRangeEnd(entry.range_end);
+    animation->SetRangeStartInternal(entry.range_start);
+    animation->SetRangeEndInternal(entry.range_end);
     animation->Update(kTimingUpdateOnDemand);
 
     running_animations_.push_back(
@@ -2064,7 +2066,8 @@ void CSSAnimations::CalculateTransitionUpdate(
     CSSAnimationUpdate& update,
     Element& animating_element,
     const ComputedStyleBuilder& style_builder,
-    const ComputedStyle* old_style) {
+    const ComputedStyle* old_style,
+    bool can_trigger_animations) {
   if (animating_element.GetDocument().FinishingOrIsPrinting())
     return;
 
@@ -2078,7 +2081,8 @@ void CSSAnimations::CalculateTransitionUpdate(
       style_builder.GetWritingDirection();
 
   const bool animation_style_recalc =
-      element_animations && element_animations->IsAnimationStyleChange();
+      !can_trigger_animations ||
+      (element_animations && element_animations->IsAnimationStyleChange());
 
   HashSet<PropertyHandle> listed_properties;
   bool any_transition_had_transition_all = false;
@@ -2586,7 +2590,8 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
 bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kAnimation:
-    case CSSPropertyID::kAlternativeAnimation:
+    case CSSPropertyID::kAlternativeAnimationWithTimeline:
+    case CSSPropertyID::kAlternativeAnimationWithDelayStartEnd:
     case CSSPropertyID::kAnimationDelay:
     case CSSPropertyID::kAlternativeAnimationDelay:
     case CSSPropertyID::kAnimationComposition:

@@ -79,6 +79,7 @@
 <translation id="1641857168437328880">Hujjat tasmasi (bir tomonlama)</translation>
 <translation id="1643449475550628585">Fon rasmi har kuni almashtirilsin</translation>
 <translation id="1644574205037202324">Tarix</translation>
+<translation id="1651925268237749928">Umumiy albomni tanladingiz. Boshqalar rasm kiritishi yoki yangilashi mumkin. Fon rasmi bu albomdan tashqari rasmlarni ishlatishi mumkin.</translation>
 <translation id="1662989795263954667">Toʻxtatildi – Siyoh tugadi</translation>
 <translation id="1664796644829245314">Razm solish: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Ichki oʻrnatilgan VPN</translation>
@@ -236,12 +237,12 @@
 <translation id="319101249942218879">Avatar rasmi oʻzgardi</translation>
 <translation id="3192947282887913208">Audio fayllar</translation>
 <translation id="3199982728237701504">Hujjat tasmasi (Ikki tomonlama)</translation>
+<translation id="3201315366910775591">Umumiy albomlar boshqalar tomonidan yangilanishi mumkin</translation>
 <translation id="3211671540163313381">Tugma tayinlash: Strelkali tugmalar</translation>
 <translation id="3226405216343213872">Skanerlar qidirilmoqda</translation>
 <translation id="3226657629376379887">Interfeys amallari menyusi</translation>
 <translation id="3246869037381808805">1 kundan eski chop etish vazifalari avtomatik tozalanadi</translation>
 <translation id="3268178239013324452">Bajarilmadi - Eshikchasi ochiq</translation>
-<translation id="3275506277319227640"><ph name="DIRECTION" /> mahkamlash</translation>
 <translation id="3275729367986477355">Avatar rasmi</translation>
 <translation id="3283504360622356314">{0,plural, =1{Faylni tahrirlash}other{Fayllarni tahrirlash}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">Batareya to‘ldi</translation>
 <translation id="3600339377155080675">Ekran aksi</translation>
 <translation id="3602290021589620013">Razm solish</translation>
-<translation id="360282891121575443">Umumiy albomlardagi suratlar boshqa foydalanuvchilar tomonidan yangilanishi mumkin. Kundalik yangilash albomda boʻlmagan fon rasmlarini chiqarishi mumkin.</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Fon rasmini almashtirish</translation>
 <translation id="360565022852130722">WiFi tarmoq zaif WEP 802.1x protokoli bilan himoyalangan</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">Toʻliq</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> tugmasi bosildi</translation>
 <translation id="435692326371619097">Tarmoq APN sozlamalarini boshqarish. APN sozlamalari mobil tarmoq va internet orasida aloqani taʼminlaydi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Kichik qismiga mahkamlash</translation>
 <translation id="4378373042927530923">Ishga tushmadi</translation>
 <translation id="4378551569595875038">Ulanmoqda...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -639,7 +638,6 @@
 <translation id="6657585470893396449">Parol</translation>
 <translation id="6659594942844771486">Varaq</translation>
 <translation id="6692996468359469499">Tanlovingizga aloqador axborot olish</translation>
-<translation id="6698459586333070823">Umumiy albomlar boshqa foydalanuvchilar tomonidan yangilanishi mumkin</translation>
 <translation id="6704062477274546131">DNS parametrlari</translation>
 <translation id="6723839937902243910">Quvvat</translation>
 <translation id="6723847290197874913">Klaviatura orqa chirogʻi</translation>
@@ -657,6 +655,7 @@
 <translation id="6838167112108853532">Bu APN faoliszlantirilmadi yoki olib tashlanmadi. Unga ulangan APN nuqtalari faolsizlantirilishi yoki olib tashlanishi kerak</translation>
 <translation id="6853312040151791195">Quvvat sarflanishi tezligi</translation>
 <translation id="6889786074662672253">Oʻchib yonayotganda tashqi qurilmani uzmay va kompyuterni oʻchirmay turing. Bu oynani yigʻish mumkin. Bu bir necha daqiqa vaqt oladi va bu vaqtda tashqi qurilma ishlamay turishi mumkin.</translation>
+<translation id="6900701049656042631">Bu albomda hech qanday rasm mavjud emas. Suratlar kiritish uchun <ph name="LINK" /> sahifasini oching.</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> sahifasiga qaytish</translation>
 <translation id="6910312834584889076">Skaner qopqogʻi yopilmagan. Qopqogʻini toping va qaytadan urining.</translation>
 <translation id="6911383237894364323">Media serverlarga ulana olmadi</translation>
@@ -795,7 +794,6 @@
 <translation id="8226628635270268143">Sevimli suratlar va albomlaringizni tanlang</translation>
 <translation id="8227119283605456246">Fayl biriktirish</translation>
 <translation id="8230672074305416752">Birlamchi tarmoq shlyuzi ping qilinmadi</translation>
-<translation id="8242426110754782860">Davom etish</translation>
 <translation id="8246209727385807362">Noma’lum provayder</translation>
 <translation id="827422111966801947">Toʻq siyohrang</translation>
 <translation id="8286154143153872371">Fon rasmini koʻrish uchun tarmoqqa ulaning va sahifani yangilang.</translation>
@@ -903,7 +901,6 @@
 <translation id="9137526406337347448">Google xizmatlari</translation>
 <translation id="9138630967333032450">Chap shift</translation>
 <translation id="9149391708638971077">Xotirani tekshirish</translation>
-<translation id="9157515863513902090">Katta qismiga mahkamlash</translation>
 <translation id="9161276708550942948">probel</translation>
 <translation id="9173638680043580060">Bir daqiqadan kamroq vaqt qoldi</translation>
 <translation id="917720651393141712">Test</translation>

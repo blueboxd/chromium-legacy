@@ -307,6 +307,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "chrome/browser/apps/app_deduplication_service/app_deduplication_service.h"
 #include "chrome/browser/apps/app_preload_service/app_preload_service.h"
@@ -457,7 +458,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
@@ -817,6 +818,11 @@ const char kGlanceablesSignoutScreenshotDuration[] =
     "ash.signout_screenshot.duration";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 03/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -908,6 +914,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterTimeDeltaPref(kGlanceablesSignoutScreenshotDuration,
                                   base::TimeDelta());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 03/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterDictionaryPref(kEasyUnlockLocalStateUserPrefs);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -1280,6 +1291,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::ActiveDirectoryDeviceStateUploader::RegisterLocalStatePrefs(registry);
   policy::ActiveDirectoryMigrationManager::RegisterLocalStatePrefs(registry);
   policy::AdbSideloadingAllowanceModePolicyHandler::RegisterPrefs(registry);
+  // TODO(b/265923216): Replace with EnrollmentStateFetcher::RegisterPrefs.
   policy::AutoEnrollmentClientImpl::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorAsh::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerAsh::RegisterPrefs(registry);
@@ -1880,6 +1892,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kGlanceablesSignoutScreenshotDuration);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Added 03/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  local_state->ClearPref(kEasyUnlockLocalStateUserPrefs);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
 
@@ -2145,6 +2162,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 // Added 02/2023.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   profile_prefs->ClearPref(kHasSeenSmartLockSignInRemovedNotification);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Added 03/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::ambient::prefs::MigrateDeprecatedPrefs(*profile_prefs);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Added 03/2023

@@ -10,6 +10,7 @@
 #include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
@@ -117,16 +118,18 @@ bool AshNotificationDragController::CanStartDragForView(
     if (drag_in_progress_) {
       CleanUp();
     }
-
-    OnNotificationDragWillStart(notification_view);
   }
 
   return can_start_drag;
 }
 
+void AshNotificationDragController::OnWillStartDragForView(
+    views::View* dragged_view) {
+  OnNotificationDragWillStart(static_cast<AshNotificationView*>(dragged_view));
+}
+
 void AshNotificationDragController::OnNotificationDragWillStart(
     AshNotificationView* dragged_view) {
-  DCHECK(dragged_view);
   DCHECK(!drag_in_progress_);
   dragged_notification_id_ = dragged_view->notification_id();
 
@@ -135,9 +138,14 @@ void AshNotificationDragController::OnNotificationDragWillStart(
   drag_drop_client_observer_.Observe(
       aura::client::GetDragDropClient(Shell::GetPrimaryRootWindow()));
 
-  // Hide the message center bubble if it is open.
   message_center::MessageCenter* message_center_ptr =
       message_center::MessageCenter::Get();
+  message_center::Notification* notification =
+      message_center_ptr->FindNotificationById(*dragged_notification_id_);
+  base::UmaHistogramEnumeration("Ash.NotificationView.ImageDrag.Start",
+                                notification->notifier_id().catalog_name);
+
+  // Hide the message center bubble if it is open.
   if (message_center_ptr->IsMessageCenterVisible()) {
     StatusAreaWidget* status_area_widget =
         RootWindowController::ForWindow(
@@ -173,8 +181,6 @@ void AshNotificationDragController::OnNotificationDragWillStart(
   // popup only shows when the message center is hidden.
   // NOTE: if the dragged notification is a child of a notification group, hide
   // the group notification popup.
-  message_center::Notification* notification =
-      message_center_ptr->FindNotificationById(*dragged_notification_id_);
   message_center_ptr->MarkSinglePopupAsShown(
       notification->group_child()
           ? message_center_ptr->FindParentNotification(notification)->id()

@@ -631,6 +631,29 @@ TEST_F(CaptureModeTest, VideoRecordingUiBehavior) {
       EndRecordingReason::kStopRecordingButton, 1);
 }
 
+TEST_F(CaptureModeTest, NoCrashOnMultipleClicksOnStopRecordingButton) {
+  ash::CaptureModeTestApi test_api;
+  test_api.StartForFullscreen(/*for_video=*/true);
+  test_api.PerformCapture();
+  test_api.FlushRecordingServiceForTesting();
+
+  auto* stop_recording_button = Shell::GetPrimaryRootWindowController()
+                                    ->GetStatusAreaWidget()
+                                    ->stop_recording_button_tray();
+  EXPECT_TRUE(stop_recording_button->visible_preferred());
+
+  // Use slow animations so that the stop recording button takes much longer to
+  // hide, so it's easier to repro the crash at http://b/270625738.
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+
+  LeftClickOn(stop_recording_button);
+  test_api.FlushRecordingServiceForTesting();
+
+  // There should be no crash on the second click.
+  LeftClickOn(stop_recording_button);
+}
+
 // Tests the behavior of repositioning a region with capture mode.
 TEST_F(CaptureModeTest, CaptureRegionRepositionBehavior) {
   // Use a set display size as we will be choosing points in this test.
@@ -6986,7 +7009,7 @@ class CaptureModeHistogramTest : public CaptureModeSettingsTest,
   }
 };
 
-TEST_P(CaptureModeHistogramTest, VideoRecordingAudioMetric) {
+TEST_P(CaptureModeHistogramTest, VideoRecordingAudioVideoMetrics) {
   constexpr char kHistogramNameBase[] =
       "Ash.CaptureModeController.CaptureAudioOnMetric";
   base::HistogramTester histogram_tester;
@@ -7002,8 +7025,18 @@ TEST_P(CaptureModeHistogramTest, VideoRecordingAudioMetric) {
       GetCaptureModeHistogramName(kHistogramNameBase), false, 1);
   histogram_tester.ExpectBucketCount(
       GetCaptureModeHistogramName(kHistogramNameBase), true, 0);
+  WaitForSeconds(1);
   StopRecording();
   WaitForCaptureFileToBeSaved();
+
+  // Since getting the file size is an async operation, we have to run a loop
+  // until the task that records the file size is done.
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount(
+      GetCaptureModeHistogramName(
+          "Ash.CaptureModeController.ScreenRecordingFileSize"),
+      /*expected_count=*/1);
+
   // Perform a video recording with audio on. A true should be recorded.
   StartSessionForVideo();
   CaptureModeTestApi().SetAudioRecordingEnabled(true);

@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">फायरवॉल डिटेक्ट केली</translation>
 <translation id="1075811647922107217">पेजचा आकार</translation>
+<translation id="1082009148392559545">स्क्रीन सेव्हर डाउनलोड करत आहे</translation>
 <translation id="1094693127011229778">आयपी अ‍ॅड्रेस उपलब्ध नाही</translation>
 <translation id="1113892970288677790">निवडक कलाकृती आणि इमेज निवडा</translation>
 <translation id="1119447706177454957">अंतर्गत एरर</translation>
@@ -90,6 +91,7 @@
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> आणि <ph name="SECOND_MANAGER" /> द्वारे व्यवस्थापित</translation>
 <translation id="1726100011689679555">नाव सर्व्हर</translation>
 <translation id="1731082422893354635">ब्लूटूथ टचपॅड</translation>
+<translation id="1738949837603788263">झोन <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">इमेज लोड करता आल्या नाहीत. तुमचे नेटवर्क कनेक्शन तपासा किंवा इमेज पुन्हा लोड करून पहा.</translation>
 <translation id="1751249301761991853">वैयक्तिक</translation>
 <translation id="1753496554272155572">वॉलपेपर पूर्वावलोकनामधून बाहेर पडा</translation>
@@ -241,7 +243,6 @@
 <translation id="3226657629376379887">लेआउट अ‍ॅक्‍शन मेनू</translation>
 <translation id="3246869037381808805">एक दिवसापेक्षा जुने प्रिंट जॉब काढून टाकले जातील</translation>
 <translation id="3268178239013324452">अयशस्वी झाले - दार उघडे आहे</translation>
-<translation id="3275506277319227640"><ph name="DIRECTION" /> कडे डॉक करा</translation>
 <translation id="3275729367986477355">अवतार इमेज</translation>
 <translation id="3283504360622356314">{0,plural, =1{फाइल संपादित करा}other{फाइल संपादित करा}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="3600339377155080675">स्क्रीन मिरर करा</translation>
 <translation id="3602290021589620013">पूर्वावलोकन</translation>
-<translation id="360282891121575443">शेअर केलेल्या अल्बममधील फोटो हे इतर वापरकर्ते अपडेट करू शकतात. दररोज बदला हे सध्या अल्बममध्ये नसलेले वॉलपेपर दाखवू शकते.</translation>
 <translation id="3603829704940252505">अवतार</translation>
 <translation id="3604713164406837697">वॉलपेपर बदला</translation>
 <translation id="360565022852130722">वायफाय नेटवर्क कमकुवत प्रोटोकॉल WEP 802.1x सह सुरक्षित केले गेले आहे</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">पूर्ण</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> की दाबली</translation>
 <translation id="435692326371619097">नेटवर्क APN सेटिंग्ज व्यवस्थापित करा. APN हे मोबाइल नेटवर्क आणि इंटरनेट यांदरम्यान कनेक्शन जोडतात. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">आणखी लहान बाजूला डॉक करा</translation>
 <translation id="4378373042927530923">रन झाले नाही</translation>
 <translation id="4378551569595875038">कनेक्ट होतय...</translation>
 <translation id="4382484599443659549">पीडीएफ</translation>
@@ -601,6 +600,7 @@
 <translation id="636850387210749493">Enterprise नावनोंदणी</translation>
 <translation id="6379086450106841622">टचस्क्रीन</translation>
 <translation id="6381741036071372448">तुमच्या कीबोर्डची चाचणी करा</translation>
+<translation id="6382182670717268353">स्क्रीन सेव्हरचे पूर्वावलोकन</translation>
 <translation id="6388847657025262518">स्कॅनरचा दस्तऐवज फीडर अडकला आहे. फीडर तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6394634179843537518">फाइल जोडा</translation>
 <translation id="6410257289063177456">इमेज फाइल</translation>
@@ -639,7 +639,6 @@
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">ब्राउझर टॅब</translation>
 <translation id="6692996468359469499">तुमच्या निवडीशी संबंधित माहिती मिळवा</translation>
-<translation id="6698459586333070823">शेअर केलेले अल्बम हे इतर वापरकर्ते अपडेट करू शकतात</translation>
 <translation id="6704062477274546131">DNS रिझोल्युशन</translation>
 <translation id="6723839937902243910">सामर्थ्य</translation>
 <translation id="6723847290197874913">कीबोर्ड बॅकलाइट</translation>
@@ -691,6 +690,7 @@
 <translation id="7177485034254901881">हे <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे. अ‍ॅडमिनिस्ट्रेटर रिमोट पद्धतीने डिव्हाइस काँफिगर करू शकतात.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
 <translation id="7180865173735832675">कस्टमाइझ करा</translation>
+<translation id="7184043045742675738">तुमचे बटण कस्टमाइझ करण्यासाठी कोणत्याही कीवर क्लिक करा. माउस आणि अ‍ॅरो की वापरून कीची स्थिती पुन्हा बदला.</translation>
 <translation id="7212734716605298123">बाह्य डिव्हाइससाठी फर्मवेअर अपडेट</translation>
 <translation id="7216409898977639127">सेल्युलर सेवा देणारा</translation>
 <translation id="725133483556299729">ईमेल निवडा</translation>
@@ -732,6 +732,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB टचस्क्रीन</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> शिल्लक</translation>
+<translation id="7613724632293948900">माउस आणि अ‍ॅरो की वापरून स्थिती पुन्हा बदला.</translation>
 <translation id="7620771111601174153">मदत केंद्र मध्ये अधिक जाणून घ्या</translation>
 <translation id="763165478673169849">अंतिम रीसेट केल्याची वेळ</translation>
 <translation id="7648838807254605802">उच्च HTTPS लेटन्सी</translation>
@@ -795,7 +796,6 @@
 <translation id="8226628635270268143">तुमचे आवडते फोटो आणि अल्बम निवडा</translation>
 <translation id="8227119283605456246">फाईल संलग्न करा</translation>
 <translation id="8230672074305416752">डीफॉल्ट नेटवर्क गेटवे पिंग करता आला नाही</translation>
-<translation id="8242426110754782860">पुढे जा</translation>
 <translation id="8246209727385807362">माहीत नसलेला वाहक</translation>
 <translation id="827422111966801947">नीळ</translation>
 <translation id="8286154143153872371">कृपया वॉलपेपर पाहण्यासाठी नेटवर्कशी कनेक्ट करा आणि पेज रीलोड करा.</translation>
@@ -855,6 +855,7 @@
 <translation id="8798441408945964110">प्रदात्याचे नाव</translation>
 <translation id="8814190375133053267">वाय-फाय</translation>
 <translation id="8818152010000655963">वॉलपेपर</translation>
+<translation id="8820457400746201697">निळा टच पॉइंट कृतीवर हलवा. कस्टमाइझ करण्यासाठी सहयोगी की निवडा.</translation>
 <translation id="8834539327799336565">सध्या कनेक्ट केलेली</translation>
 <translation id="8845001906332463065">मदत मिळवा</translation>
 <translation id="8855781559874488009">फायरवॉलद्वारे HTTP वेबसाइटशी कनेक्ट करू शकत नाही</translation>
@@ -903,7 +904,6 @@
 <translation id="9137526406337347448">Google सेवा</translation>
 <translation id="9138630967333032450">डावीकडे शिफ्ट करा</translation>
 <translation id="9149391708638971077">मेमरी चाचणी रन करा</translation>
-<translation id="9157515863513902090">मोठ्या बाजूला डॉक करा</translation>
 <translation id="9161276708550942948">स्पेस</translation>
 <translation id="9173638680043580060">एका मिनिटापेक्षा कमी वेळ शिल्लक आहे</translation>
 <translation id="917720651393141712">चाचणी करा</translation>

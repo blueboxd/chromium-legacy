@@ -42,7 +42,6 @@ uparivanjem. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" />
 <translation id="1682634494516646069">Google Chrome ne može čitati i pisati u svoj direktorij podataka:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1691802391966922744">{COUNT,plural, =1{Administrator je konfigurirao Chrom tako da se zatvori ako je neaktivan duže od 1 minute.}one{Administrator je konfigurirao Chrom tako da se zatvori ako je neaktivan duže od # minute.}few{Administrator je konfigurirao Chrom tako da se zatvori ako je neaktivan duže od # minute.}other{Administrator je konfigurirao Chrom tako da se zatvori ako je neaktivan duže od # minuta.}}</translation>
 <translation id="1698376642261615901">Google Chrome je web preglednik koji pokreće web stranice i aplikacije munjevitom brzinom. Brz je, stabilan i jednostavan za upotrebu. Pregledajte web u sigurnijem okruženju, zaštićeni od zlonamjernih softvera i krađe identiteta zahvaljujući elementima ugrađenim u Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome će se ponovo pokrenuti za sat vremena}one{Chrome će se ponovo pokrenuti za # sat}few{Chrome će se ponovo pokrenuti za # sata}other{Chrome će se ponovo pokrenuti za # sati}}</translation>
 <translation id="1734234790201236882">Chrome će sačuvati ovu lozinku u vašem Google računu. Nećete morati da je pamtite.</translation>
@@ -259,8 +258,8 @@ Google Chrome ne može vratiti vaše postavke.</translation>
 <translation id="5941830788786076944">Postavite Google Chrome kao zadani preglednik</translation>
 <translation id="6003112304606738118">Preuzimanje… Preostalo je <ph name="HOURS" /> h</translation>
 <translation id="6010556343189461180">Da primate buduća ažuriranja za Google Chrome, trebat će vam macOS 10.15 ili novija verzija. Ovaj računar koristi macOS 10.14.</translation>
-<translation id="6022388122721048220">{0,plural, =0{Chrome će se zatvoriti odmah.}=1{Chrome će se zatvoriti za 1 sekundu.}one{Chrome će se zatvoriti za # sekundu.}few{Chrome će se zatvoriti za # sekunde.}other{Chrome će se zatvoriti za # sekundi.}}</translation>
 <translation id="6022659036123304283">Prilagodite Chrome svojim potrebama</translation>
+<translation id="6025087594896450715">Google Chrome će se ponovo pokrenuti za <ph name="REMAINING_TIME" /></translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6070348360322141662">Za dodatnu sigurnost, Google Chrome će šifrirati vaše podatke</translation>
 <translation id="608006075545470555">Dodajte radni profil na ovaj preglednik</translation>
@@ -278,7 +277,7 @@ Google Chrome ne može vratiti vaše postavke.</translation>
 <translation id="6327105987658262776">Ažuriranje nije dostupno.</translation>
 <translation id="6412673304250309937">Provjerava URL-ove s listom nesigurnih web lokacija pohranjenih u Chromeu. Ako web lokacija pokuša ukrasti vašu lozinku, ili kada preuzimate štetan fajl, Chrome može slati i URL-ove, uključujući dijelove sadržaja stranice, u Sigurno pregledanje.</translation>
 <translation id="6418662306461808273">Želite li se prebaciti na postojeći Chrome profil?</translation>
-<translation id="6493527311031785448">Google Chrome pokušava sljedeće: <ph name="AUTHENTICATION_PURPOSE" /></translation>
+<translation id="6493527311031785448">Google Chrome pokušava <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chromeu je potrebno odobrenje za kameru radi kreiranja 3D mape vašeg okruženja</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="659498884637196217">U Googleovom Upravitelju lozinki na ovom uređaju</translation>
@@ -319,9 +318,6 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="7296210096911315575">Važne informacije o korištenju i sigurnosti</translation>
 <translation id="7308322188646931570">Chrome treba pristup pohrani da preuzme fajlove</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
-<translation id="7388770099345495132">Ako želite koristiti ovaj račun samo jednom, možete koristiti Način rada za gosta u pregledniku Chrome. Ako želite dodati račun za nekog drugog, <ph name="LINK_BEGIN" />dodajte novu osobu<ph name="LINK_END" /> na uređaj <ph name="DEVICE_TYPE" />.
-
-Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati na ovaj račun. Google računima možete upravljati u <ph name="SETTINGS_LINK_BEGIN" />Postavkama<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Prijavljeni ste na Chrome kao <ph name="USER_EMAIL_ADDRESS" />. Ponovo upotrijebite isti račun za prijavu.</translation>
 <translation id="7410958280246779049">Chrome je blokirao ovaj fajl jer je opasan</translation>
 <translation id="7426611252293106642">Google Chrome možda neće ispravno raditi jer više nije podržan na ovoj Linux distribuciji</translation>
@@ -402,11 +398,9 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="8825634023950448068">Da zaštitimo vašu privatnost, automatski brišemo interesovanja koja su starija od 4 sedmice. Kada nastavite koristiti preglednik, interesovanje se može ponovo pojaviti na listi. Ako Chrome pogriješi ili ako ne želite gledati određene oglase, možete ukloniti interesovanje.</translation>
 <translation id="8834965163890861871">Google Chrome pokušava urediti lozinke. Unesite Windows lozinku da ovo omogućite.</translation>
 <translation id="884296878221830158">Također kontrolira koja stranica se prikazuje kada pokrenete Chrome ili kada kliknete na dugme za početnu stranicu.</translation>
-<translation id="8847000024471094355">Chrome je neaktivan</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instalaciju na nivou sistema. Pokušajte ponovo pokrenuti instalaciju kao administrator.</translation>
 <translation id="8914504000324227558">Ponovo pokreni Chrome</translation>
 <translation id="8922193594870374009">Da pošaljete broj s uređaja <ph name="ORIGIN" /> na svoj Android telefon, prijavite se u Chrome na oba uređaja.</translation>
-<translation id="8983720963221508955">Uključili ste poboljšano Sigurno pregledanje na svom računu. Sada ga omogućite za Chrome.</translation>
 <translation id="8986207147630327271">Dodajete radni profil na ovaj preglednik i dajte administratoru kontrolu samo nad radnim profilom.</translation>
 <translation id="8989968390305463310">Vaša historija pregledanja utiče na oglase koje vidite i interesovanja, kao što je procijenjeno u nastavku. Da zaštiti vašu privatnost, Chrome automatski briše vaša interesovanja na mjesečnoj osnovi. Interesovanja se mogu osvježiti ukoliko ih ne uklonite.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Dostupno je ažuriranje Chromea}=1{Dostupno je ažuriranje Chromea}one{Ažuriranje Chromea je dostupno # dan}few{Ažuriranje Chromea je dostupno # dana}other{Ažuriranje Chromea je dostupno # dana}}</translation>

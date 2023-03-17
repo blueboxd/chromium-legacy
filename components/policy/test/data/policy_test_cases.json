@@ -16399,7 +16399,8 @@
       "mac",
       "chromeos_ash",
       "chromeos_lacros",
-      "fuchsia"
+      "fuchsia",
+      "android"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -20829,27 +20830,7 @@
     "reason_for_missing_test": "Policy was removed"
   },
   "UnthrottledNestedTimeoutEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "UnthrottledNestedTimeoutEnabled": true
-        },
-        "prefs": {
-          "policy.unthrottled_nested_timeout": {
-            "location": "user_profile"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "WarnBeforeQuittingEnabled": {
     "os": [
@@ -21243,12 +21224,12 @@
       {
         "policies": {
           "IdleTimeout": 10,
-          "IdleTimeoutActions": ["clear_browsing_history",
-                                 "clear_download_history"]
+          "IdleTimeoutActions": ["clear_cookies_and_other_site_data",
+                                 "clear_cached_images_and_files"]
         },
         "prefs": {
           "idle_timeout_actions": {
-            "value": [2, 3]
+            "value": [4, 5]
           }
         }
       }
@@ -22306,28 +22287,200 @@
       }
     ]
   },
-  "ScreensaverEnabled" : {
+  "ScreensaverLockScreenEnabled" : {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.ambient.managed_screensaver.enabled": {
+            "location": "user_profile",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ScreensaverLockScreenEnabled": true
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ScreensaverLockScreenEnabled": false
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.enabled": {
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "ScreensaverLockScreenIdleTimeoutSeconds" : {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.ambient.managed_screensaver.idle_timeout_seconds": {
+            "location": "user_profile",
+            "default_value": 7
+          }
+        }
+      },
+      {
+        "policies": {
+          "ScreensaverLockScreenIdleTimeoutSeconds": 42
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.idle_timeout_seconds": {
+            "location": "user_profile",
+            "value": 42
+          }
+        }
+      }
+    ]
+  },
+  "ScreensaverLockScreenImageDisplayIntervalSeconds" : {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.ambient.managed_screensaver.image_display_interval_seconds": {
+            "location": "user_profile",
+            "default_value": 60
+          }
+        }
+      },
+      {
+        "policies": {
+          "ScreensaverLockScreenImageDisplayIntervalSeconds": 128
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.image_display_interval_seconds": {
+            "location": "user_profile",
+            "value": 128
+          }
+        }
+      }
+    ]
+  },
+  "ScreensaverLockScreenImages" : {
     "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
   },
-  "ScreensaverIdleTimeoutSeconds" : {
-    "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
+  "DeviceScreensaverLoginScreenEnabled" : {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.ambient.managed_screensaver.enabled": {
+            "location": "signin_profile",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceScreensaverLoginScreenEnabled": true
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.enabled": {
+            "location": "signin_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceScreensaverLoginScreenEnabled": false
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.enabled": {
+            "location": "signin_profile",
+            "value": false
+          }
+        }
+      }
+    ]
   },
-  "ScreensaverImageDisplayIntervalSeconds" : {
-    "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
+  "DeviceScreensaverLoginScreenIdleTimeoutSeconds" : {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.ambient.managed_screensaver.idle_timeout_seconds": {
+            "location": "signin_profile",
+            "default_value": 7
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceScreensaverLoginScreenIdleTimeoutSeconds": 42
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.idle_timeout_seconds": {
+            "location": "signin_profile",
+            "value": 42
+          }
+        }
+      }
+    ]
   },
-  "ScreensaverImages" : {
-    "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
+  "DeviceScreensaverLoginScreenImageDisplayIntervalSeconds" : {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.ambient.managed_screensaver.image_display_interval_seconds": {
+            "location": "signin_profile",
+            "default_value": 60
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceScreensaverLoginScreenImageDisplayIntervalSeconds": 128
+        },
+        "prefs": {
+          "ash.ambient.managed_screensaver.image_display_interval_seconds": {
+            "location": "signin_profile",
+            "value": 128
+          }
+        }
+      }
+    ]
   },
-  "DeviceScreensaverEnabled" : {
-    "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
-  },
-  "DeviceScreensaverIdleTimeoutSeconds" : {
-    "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
-  },
-  "DeviceScreensaverImageDisplayIntervalSeconds" : {
-    "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
-  },
-  "DeviceScreensaverImages" : {
+  "DeviceScreensaverLoginScreenImages" : {
     "reason_for_missing_test": "TODO(b/175142676): Feature not yet implemented"
   },
   "MixedContentAutoupgradeEnabled": {
@@ -22485,5 +22638,127 @@
   },
   "CredentialProviderPromoEnabled" : {
     "reason_for_missing_test": "Maps into an iOS-specific pref"
+  },
+  "ClientSidePhishingProtectionAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.csd_phishing_protection_allowed_by_policy": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ClientSidePhishingProtectionAllowed": true
+        },
+        "prefs": {
+          "safebrowsing.csd_phishing_protection_allowed_by_policy": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ClientSidePhishingProtectionAllowed": false
+        },
+        "prefs": {
+          "safebrowsing.csd_phishing_protection_allowed_by_policy": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "UserAvatarCustomizationSelectorsEnabled": {
+    "reason_for_missing_test": "TODO(b/271606439): Feature not yet implemented"
+  },
+  "DefaultThirdPartyStoragePartitioningSetting": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "profile.managed_default_content_settings.third_party_storage_partitioning": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "DefaultThirdPartyStoragePartitioningSetting": 1
+        },
+        "prefs": {
+          "profile.managed_default_content_settings.third_party_storage_partitioning": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "DefaultThirdPartyStoragePartitioningSetting": 2
+        },
+        "prefs": {
+          "profile.managed_default_content_settings.third_party_storage_partitioning": {
+            "value": 2
+          }
+        }
+      }
+    ]
+  },
+  "ThirdPartyStoragePartitioningBlockedForOrigins": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "profile.managed_third_party_storage_partitioning_blocked_for_origins": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "policies": {
+          "ThirdPartyStoragePartitioningBlockedForOrigins": [
+            "google.com",
+            "[*.]example.edu"
+          ]
+        },
+        "prefs": {
+          "profile.managed_third_party_storage_partitioning_blocked_for_origins": {
+            "value": [
+              "google.com",
+              "[*.]example.edu"
+            ]
+          }
+        }
+      }
+    ]
   }
 }

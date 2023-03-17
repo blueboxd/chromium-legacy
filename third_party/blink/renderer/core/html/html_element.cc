@@ -28,6 +28,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_stringtreatnullasemptystring_trustedscript.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -1380,6 +1381,25 @@ void HTMLElement::togglePopover(ExceptionState& exception_state) {
   }
 }
 
+namespace {
+// We have to mark *all* invokers for the given popover dirty in the
+// ax tree, since they all should now have an updated expanded state.
+void MarkPopoverInvokersDirty(const HTMLElement& popover) {
+  DCHECK(popover.HasPopoverAttribute());
+  auto& document = popover.GetDocument();
+  AXObjectCache* cache = document.ExistingAXObjectCache();
+  if (!cache) {
+    return;
+  }
+  for (auto* invoker_candidate : *document.PopoverInvokers()) {
+    auto* invoker = To<HTMLFormControlElement>(invoker_candidate);
+    if (popover == invoker->popoverTargetElement().popover) {
+      cache->MarkElementDirty(invoker);
+    }
+  }
+}
+}  // namespace
+
 void HTMLElement::togglePopover(bool force, ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
@@ -1495,6 +1515,7 @@ void HTMLElement::ShowPopoverInternal(ExceptionState* exception_state) {
     }
   }
 
+  MarkPopoverInvokersDirty(*this);
   GetPopoverData()->setPreviouslyFocusedElement(nullptr);
   Element* originally_focused_element = document.FocusedElement();
   document.AddToTopLayer(this);
@@ -1709,6 +1730,7 @@ void HTMLElement::HidePopoverInternal(
     }
   }
 
+  MarkPopoverInvokersDirty(*this);
   GetPopoverData()->setInvoker(nullptr);
   // Events are only fired in the case that the popover is not being removed
   // from the document.
@@ -1778,7 +1800,8 @@ void HTMLElement::HidePopoverInternal(
       GetPopoverData()->previouslyFocusedElement();
   if (previously_focused_element) {
     GetPopoverData()->setPreviouslyFocusedElement(nullptr);
-    if (focus_behavior == HidePopoverFocusBehavior::kFocusPreviousElement) {
+    if (focus_behavior == HidePopoverFocusBehavior::kFocusPreviousElement &&
+        contains(GetDocument().AdjustedFocusedElement())) {
       FocusOptions* focus_options = FocusOptions::Create();
       focus_options->setPreventScroll(true);
       previously_focused_element->Focus(FocusParams(
@@ -2437,8 +2460,9 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
   Node* stay_within = nullptr;
   bool has_strong_directionality;
   if (change.type == ChildrenChangeType::kTextChanged) {
+    CHECK(change.old_text);
     TextDirection old_text_direction =
-        DetermineDirectionality(change.old_text, &has_strong_directionality);
+        DetermineDirectionality(*change.old_text, &has_strong_directionality);
     auto* character_data = DynamicTo<CharacterData>(change.sibling_changed);
     DCHECK(character_data);
     TextDirection new_text_direction = DetermineDirectionality(

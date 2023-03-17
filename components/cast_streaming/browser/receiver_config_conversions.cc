@@ -7,10 +7,10 @@
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "components/cast_streaming/browser/public/receiver_config.h"
-#include "components/cast_streaming/common/config_conversions.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/channel_layout.h"
 #include "media/base/video_codecs.h"
+#include "media/cast/openscreen/config_conversions.h"
 #include "third_party/openscreen/src/cast/streaming/constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -74,18 +74,24 @@ openscreen::cast::VideoLimits ToOpenscreenVideoLimitsType(
 
   if (limits.codec) {
     osp_limits.applies_to_all_codecs = false;
-    osp_limits.codec = ToVideoCaptureConfigCodec(limits.codec.value());
+    osp_limits.codec =
+        media::cast::ToVideoCaptureConfigCodec(limits.codec.value());
   } else {
     osp_limits.applies_to_all_codecs = true;
   }
 
-  osp_limits.max_dimensions =
-      ToOpenscreenType(limits.max_dimensions, limits.max_frame_rate);
+  osp_limits.max_dimensions = ToOpenscreenType(
+      limits.max_dimensions,
+      limits.max_frame_rate.value_or(openscreen::cast::kDefaultFrameRate));
   osp_limits.max_delay =
       std::chrono::milliseconds(limits.max_delay.InMilliseconds());
   osp_limits.max_pixels_per_second = limits.max_pixels_per_second;
-  osp_limits.min_bit_rate = limits.min_bit_rate;
-  osp_limits.max_bit_rate = limits.max_bit_rate;
+  if (limits.min_bit_rate) {
+    osp_limits.min_bit_rate = limits.min_bit_rate.value();
+  }
+  if (limits.max_bit_rate) {
+    osp_limits.max_bit_rate = limits.max_bit_rate.value();
+  }
 
   return osp_limits;
 }
@@ -96,7 +102,8 @@ openscreen::cast::AudioLimits ToOpenscreenAudioLimitsType(
 
   if (limits.codec) {
     osp_limits.applies_to_all_codecs = false;
-    osp_limits.codec = ToAudioCaptureConfigCodec(limits.codec.value());
+    osp_limits.codec =
+        media::cast::ToAudioCaptureConfigCodec(limits.codec.value());
   } else {
     osp_limits.applies_to_all_codecs = true;
   }
@@ -104,9 +111,15 @@ openscreen::cast::AudioLimits ToOpenscreenAudioLimitsType(
   osp_limits.max_channels = GetMaxChannelCount(limits.channel_layout);
   osp_limits.max_delay =
       std::chrono::milliseconds(limits.max_delay.InMilliseconds());
-  osp_limits.max_sample_rate = limits.max_sample_rate;
-  osp_limits.min_bit_rate = limits.min_bit_rate;
-  osp_limits.max_bit_rate = limits.max_bit_rate;
+  if (limits.max_sample_rate) {
+    osp_limits.max_sample_rate = limits.max_sample_rate.value();
+  }
+  if (limits.min_bit_rate) {
+    osp_limits.min_bit_rate = limits.min_bit_rate.value();
+  }
+  if (limits.max_bit_rate) {
+    osp_limits.max_bit_rate = limits.max_bit_rate.value();
+  }
 
   return osp_limits;
 }
@@ -114,8 +127,9 @@ openscreen::cast::AudioLimits ToOpenscreenAudioLimitsType(
 openscreen::cast::Display ToOpenscreenDisplayType(
     const ReceiverConfig::Display& display) {
   openscreen::cast::Display osp_display;
-  osp_display.dimensions =
-      ToOpenscreenType(display.dimensions, display.max_frame_rate);
+  osp_display.dimensions = ToOpenscreenType(
+      display.dimensions,
+      display.max_frame_rate.value_or(openscreen::cast::kDefaultFrameRate));
   osp_display.can_scale_content = display.can_scale_content;
   return osp_display;
 }
@@ -137,13 +151,13 @@ openscreen::cast::ReceiverConstraints ToOpenscreenConstraints(
   audio_codecs.reserve(config.audio_codecs.size());
   base::ranges::transform(
       config.audio_codecs.begin(), config.audio_codecs.end(),
-      std::back_inserter(audio_codecs), ToAudioCaptureConfigCodec);
+      std::back_inserter(audio_codecs), media::cast::ToAudioCaptureConfigCodec);
 
   std::vector<openscreen::cast::VideoCodec> video_codecs;
   video_codecs.reserve(config.video_codecs.size());
   base::ranges::transform(
       config.video_codecs.begin(), config.video_codecs.end(),
-      std::back_inserter(video_codecs), ToVideoCaptureConfigCodec);
+      std::back_inserter(video_codecs), media::cast::ToVideoCaptureConfigCodec);
 
   openscreen::cast::ReceiverConstraints constraints(std::move(video_codecs),
                                                     std::move(audio_codecs));

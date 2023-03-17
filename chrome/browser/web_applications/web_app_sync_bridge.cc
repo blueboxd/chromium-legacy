@@ -455,9 +455,6 @@ void WebAppSyncBridge::UpdateSync(
     // Include the app in the sync "view" if IsSynced flag becomes true. Update
     // the app if IsSynced flag stays true. Exclude the app from the sync "view"
     // if IsSynced flag becomes false.
-    //
-    // TODO(loyso): Send an update to sync server only if any sync-specific
-    // data was changed. Implement some dirty flags in WebApp setter methods.
     if (new_state->IsSynced()) {
       change_processor()->Put(app_id, CreateSyncEntityData(*new_state),
                               metadata_change_list);
@@ -486,6 +483,13 @@ void WebAppSyncBridge::OnDatabaseOpened(
 
   registrar_->InitRegistry(std::move(registry));
   std::move(callback).Run();
+
+  // Already have data stored in web app system and shouldn't expect further
+  // callbacks once `IsTrackingMetadata` is true.
+  if (!on_sync_connected_.is_signaled() &&
+      change_processor()->IsTrackingMetadata()) {
+    on_sync_connected_.Signal();
+  }
 
   MaybeUninstallAppsPendingUninstall();
   MaybeInstallAppsFromSyncAndPendingInstallation();
@@ -531,7 +535,8 @@ void WebAppSyncBridge::MergeLocalAppsToSync(
 
 void WebAppSyncBridge::PrepareLocalUpdateFromSyncChange(
     const syncer::EntityChange& change,
-    RegistryUpdateData* update_local_data) {
+    RegistryUpdateData* update_local_data,
+    std::vector<AppId>& apps_display_mode_changed) {
   // app_id is storage key.
   const AppId& app_id = change.storage_key();
 
@@ -562,6 +567,12 @@ void WebAppSyncBridge::PrepareLocalUpdateFromSyncChange(
   const sync_pb::WebAppSpecifics& specifics = change.data().specifics.web_app();
 
   if (existing_web_app) {
+    if (specifics.has_user_display_mode() &&
+        specifics.user_display_mode() !=
+            ConvertUserDisplayModeToWebAppSpecificsUserDisplayMode(
+                existing_web_app->user_display_mode().value())) {
+      apps_display_mode_changed.push_back(app_id);
+    }
     // Any entities that appear in both sets must be merged.
     // Do copy on write:
     auto app_copy = std::make_unique<WebApp>(*existing_web_app);
@@ -595,7 +606,8 @@ void WebAppSyncBridge::PrepareLocalUpdateFromSyncChange(
 }
 
 void WebAppSyncBridge::ApplySyncChangesToRegistrar(
-    std::unique_ptr<RegistryUpdateData> update_local_data) {
+    std::unique_ptr<RegistryUpdateData> update_local_data,
+    const std::vector<AppId>& apps_display_mode_changed) {
   if (update_local_data->IsEmpty())
     return;
 
@@ -617,6 +629,13 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
     apps_to_install.push_back(web_app.get());
 
   UpdateRegistrar(std::move(update_local_data));
+
+  for (const AppId& app_id : apps_display_mode_changed) {
+    const WebApp* app = registrar_->GetAppById(app_id);
+    DCHECK(app->user_display_mode().has_value());
+    registrar_->NotifyWebAppUserDisplayModeChanged(
+        app_id, app->user_display_mode().value());
+  }
 
   std::vector<AppId> apps_to_delete;
   for (const WebApp& app : registrar_->GetAppsIncludingStubsMutable()) {
@@ -662,10 +681,12 @@ absl::optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
   CHECK(change_processor()->IsTrackingMetadata());
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
+  std::vector<AppId> apps_display_mode_changed;
 
   for (const auto& change : entity_data) {
     DCHECK_NE(change->type(), syncer::EntityChange::ACTION_DELETE);
-    PrepareLocalUpdateFromSyncChange(*change, update_local_data.get());
+    PrepareLocalUpdateFromSyncChange(*change, update_local_data.get(),
+                                     apps_display_mode_changed);
   }
 
   MergeLocalAppsToSync(entity_data, metadata_change_list.get());
@@ -675,7 +696,13 @@ absl::optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
       base::BindOnce(&WebAppSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
 
-  ApplySyncChangesToRegistrar(std::move(update_local_data));
+  ApplySyncChangesToRegistrar(std::move(update_local_data),
+                              apps_display_mode_changed);
+
+  if (!on_sync_connected_.is_signaled()) {
+    on_sync_connected_.Signal();
+  }
+
   return absl::nullopt;
 }
 
@@ -687,16 +714,25 @@ absl::optional<syncer::ModelError> WebAppSyncBridge::ApplySyncChanges(
   // is resetting it.
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
+  std::vector<AppId> apps_display_mode_changed;
 
-  for (const auto& change : entity_changes)
-    PrepareLocalUpdateFromSyncChange(*change, update_local_data.get());
+  for (const auto& change : entity_changes) {
+    PrepareLocalUpdateFromSyncChange(*change, update_local_data.get(),
+                                     apps_display_mode_changed);
+  }
 
   database_->Write(
       *update_local_data, std::move(metadata_change_list),
       base::BindOnce(&WebAppSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
 
-  ApplySyncChangesToRegistrar(std::move(update_local_data));
+  ApplySyncChangesToRegistrar(std::move(update_local_data),
+                              apps_display_mode_changed);
+
+  if (!on_sync_connected_.is_signaled()) {
+    on_sync_connected_.Signal();
+  }
+
   return absl::nullopt;
 }
 

@@ -36,8 +36,6 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -353,8 +351,12 @@ public class ToolbarTablet
         if (mHomeButton == v) {
             openHomepage();
         } else if (mBackButton == v) {
-            if (!back()) return;
-            RecordUserAction.record("MobileToolbarBack");
+            boolean isEnabled = mBackButton.isEnabled();
+            boolean success = back();
+            assert success
+                    && isEnabled
+                : "Back button should not be enabled if page can no longer be navigated back.";
+            if (success) RecordUserAction.record("MobileToolbarBack");
         } else if (mForwardButton == v) {
             forward();
             RecordUserAction.record("MobileToolbarForward");
@@ -808,20 +810,6 @@ public class ToolbarTablet
         });
 
         return set;
-    }
-
-    private boolean isAccessibilityTabSwitcherPreferenceEnabled() {
-        return SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER, true);
-    }
-
-    private boolean isGridTabSwitcherEnabled() {
-        return ChromeFeatureList.sGridTabSwitcherForTablets.isEnabled();
-    }
-
-    private boolean isTabletGridTabSwitcherPolishEnabled() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS, "enable_launch_polish", false);
     }
 
     @VisibleForTesting

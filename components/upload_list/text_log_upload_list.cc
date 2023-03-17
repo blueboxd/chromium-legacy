@@ -30,11 +30,6 @@ constexpr char kJsonLogKeyState[] = "state";
 constexpr char kJsonLogKeySource[] = "source";
 constexpr char kJsonLogKeyPathHash[] = "path_hash";
 
-std::vector<std::string> SplitIntoLines(const std::string& file_contents) {
-  return base::SplitString(file_contents, base::kWhitespaceASCII,
-                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-}
-
 std::vector<std::string> SplitIntoComponents(const std::string& line) {
   return base::SplitString(line, ",", base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_ALL);
@@ -80,19 +75,26 @@ bool CheckFieldOutOfRange(const std::string* time_string,
   return true;
 }
 
-bool CheckJsonUploadListOutOfRange(const base::Value& dict,
+bool CheckJsonUploadListOutOfRange(const base::Value::Dict& dict,
                                    const base::Time& begin,
                                    const base::Time& end) {
   const std::string* upload_time_string =
-      dict.FindStringKey(kJsonLogKeyUploadTime);
+      dict.FindString(kJsonLogKeyUploadTime);
 
   const std::string* capture_time_string =
-      dict.FindStringKey(kJsonLogKeyCaptureTime);
+      dict.FindString(kJsonLogKeyCaptureTime);
 
   return CheckFieldOutOfRange(upload_time_string, begin, end) &&
          CheckFieldOutOfRange(capture_time_string, begin, end);
 }
 }  // namespace
+
+// static
+std::vector<std::string> TextLogUploadList::SplitIntoLines(
+    const std::string& file_contents) {
+  return base::SplitString(file_contents, base::kWhitespaceASCII,
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+}
 
 TextLogUploadList::TextLogUploadList(const base::FilePath& upload_log_path)
     : upload_log_path_(upload_log_path) {}
@@ -128,8 +130,8 @@ void TextLogUploadList::ClearUploadList(const base::Time& begin,
     bool should_copy = false;
 
     if (json.has_value()) {
-      should_copy = json->is_dict() &&
-                    CheckJsonUploadListOutOfRange(json.value(), begin, end);
+      should_copy = json->is_dict() && CheckJsonUploadListOutOfRange(
+                                           json.value().GetDict(), begin, end);
     } else {
       should_copy = CheckCsvUploadListOutOfRange(line, begin, end);
     }
@@ -186,15 +188,15 @@ std::unique_ptr<UploadList::UploadInfo> TextLogUploadList::TryParseCsvLogEntry(
 }
 
 std::unique_ptr<UploadList::UploadInfo> TextLogUploadList::TryParseJsonLogEntry(
-    const base::Value& dict) {
+    const base::Value::Dict& dict) {
   // Parse upload_id.
-  const base::Value* upload_id_value = dict.GetDict().Find(kJsonLogKeyUploadId);
+  const base::Value* upload_id_value = dict.Find(kJsonLogKeyUploadId);
   if (upload_id_value && !upload_id_value->is_string())
     return nullptr;
 
   // Parse upload_time.
   const std::string* upload_time_string =
-      dict.FindStringKey(kJsonLogKeyUploadTime);
+      dict.FindString(kJsonLogKeyUploadTime);
   double upload_time_double = 0.0;
   if (upload_time_string &&
       !base::StringToDouble(*upload_time_string, &upload_time_double))
@@ -205,31 +207,30 @@ std::unique_ptr<UploadList::UploadInfo> TextLogUploadList::TryParseJsonLogEntry(
       base::Time::FromDoubleT(upload_time_double));
 
   // Parse local_id.
-  const std::string* local_id = dict.FindStringKey(kJsonLogKeyLocalId);
+  const std::string* local_id = dict.FindString(kJsonLogKeyLocalId);
   if (local_id)
     info->local_id = *local_id;
 
   // Parse capture_time.
   const std::string* capture_time_string =
-      dict.FindStringKey(kJsonLogKeyCaptureTime);
+      dict.FindString(kJsonLogKeyCaptureTime);
   double capture_time_double = 0.0;
   if (capture_time_string &&
       base::StringToDouble(*capture_time_string, &capture_time_double))
     info->capture_time = base::Time::FromDoubleT(capture_time_double);
 
   // Parse state.
-  absl::optional<int> state = dict.FindIntKey(kJsonLogKeyState);
+  absl::optional<int> state = dict.FindInt(kJsonLogKeyState);
   if (state.has_value())
     info->state = static_cast<UploadList::UploadInfo::State>(state.value());
 
   // Parse source.
-  if (const std::string* source = dict.FindStringKey(kJsonLogKeySource);
-      source) {
+  if (const std::string* source = dict.FindString(kJsonLogKeySource); source) {
     info->source = *source;
   }
 
   // Parse path hash.
-  if (const std::string* path_hash = dict.FindStringKey(kJsonLogKeyPathHash);
+  if (const std::string* path_hash = dict.FindString(kJsonLogKeyPathHash);
       path_hash) {
     info->path_hash = *path_hash;
   }
@@ -245,7 +246,7 @@ void TextLogUploadList::ParseLogEntries(
     absl::optional<base::Value> json = base::JSONReader::Read(line);
 
     if (json.has_value() && json->is_dict())
-      info = TryParseJsonLogEntry(json.value());
+      info = TryParseJsonLogEntry(json.value().GetDict());
     else
       info = TryParseCsvLogEntry(line);
 

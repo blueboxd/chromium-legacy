@@ -30,6 +30,7 @@ std::unique_ptr<APIPermission> CreateAPIPermission(
 // add the corresponding permission message rule to
 // ChromePermissionMessageRule::GetAllRules as well.
 constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
+    {APIPermissionID::kActiveTab, "activeTab"},
     {APIPermissionID::kAlarms, "alarms",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {APIPermissionID::kAlphaEnabled, "app.window.alpha",
@@ -113,7 +114,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermissionID::kNetworkingPrivate, "networkingPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermissionID::kNewTabPageOverride, "newTabPageOverride",
-     APIPermissionInfo::kFlagCannotBeOptional |
+     APIPermissionInfo::kFlagInternal |
+         APIPermissionInfo::kFlagCannotBeOptional |
          APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermissionID::kOffscreen, "offscreen",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},

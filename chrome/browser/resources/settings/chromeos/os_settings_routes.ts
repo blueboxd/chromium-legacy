@@ -5,7 +5,7 @@
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
-import * as routesMojom from '../mojom-webui/routes.mojom-webui.js';
+import * as routesMojom from './mojom-webui/routes.mojom-webui.js';
 
 /** Class for navigable routes. */
 export class Route {
@@ -150,6 +150,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   FINGERPRINT: Route;
   FILES: Route;
   GOOGLE_ASSISTANT: Route;
+  GOOGLE_DRIVE: Route;
   HOTSPOT_DETAIL: Route;
   INTERNET: Route;
   INTERNET_NETWORKS: Route;
@@ -541,6 +542,10 @@ function createOsSettingsRoutes(): OsSettingsRoutes {
     r.SMB_SHARES = createSubpage(
         r.FILES, routesMojom.NETWORK_FILE_SHARES_SUBPAGE_PATH,
         Subpage.kNetworkFileShares);
+    if (loadTimeData.getBoolean('enableDriveFsBulkPinning')) {
+      r.GOOGLE_DRIVE = createSubpage(
+          r.FILES, routesMojom.GOOGLE_DRIVE_SUBPAGE_PATH, Subpage.kGoogleDrive);
+    }
     r.OFFICE = createSubpage(
         r.FILES, routesMojom.OFFICE_FILES_SUBPAGE_PATH, Subpage.kOfficeFiles);
   }

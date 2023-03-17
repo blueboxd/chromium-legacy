@@ -80,9 +80,9 @@ PersonalizationAppAmbientProviderImpl::PersonalizationAppAmbientProviderImpl(
           &PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged,
           base::Unretained(this)));
   pref_change_registrar_.Add(
-      ash::ambient::prefs::kAmbientTheme,
+      ash::ambient::prefs::kAmbientUiSettings,
       base::BindRepeating(
-          &PersonalizationAppAmbientProviderImpl::OnAnimationThemeChanged,
+          &PersonalizationAppAmbientProviderImpl::OnAmbientUiSettingsChanged,
           base::Unretained(this)));
   ambient_ui_model_observer_.Observe(
       Shell::Get()->ambient_controller()->ambient_ui_model());
@@ -128,8 +128,8 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientObserver(
   // Call it once to get the current ambient mode enabled status.
   OnAmbientModeEnabledChanged();
 
-  // Call it once to get the current animation theme.
-  OnAnimationThemeChanged();
+  // Call it once to get the current ambient ui settings.
+  OnAmbientUiSettingsChanged();
 
   ResetLocalSettings();
 }
@@ -146,8 +146,7 @@ void PersonalizationAppAmbientProviderImpl::SetAnimationTheme(
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
   LogAmbientModeTheme(animation_theme);
-  pref_service->SetInteger(ash::ambient::prefs::kAmbientTheme,
-                           static_cast<int>(animation_theme));
+  AmbientUiSettings(animation_theme).WriteToPrefService(*pref_service);
 }
 
 void PersonalizationAppAmbientProviderImpl::SetTopicSource(
@@ -266,11 +265,12 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged() {
   }
 }
 
-void PersonalizationAppAmbientProviderImpl::OnAnimationThemeChanged() {
+void PersonalizationAppAmbientProviderImpl::OnAmbientUiSettingsChanged() {
   if (!ambient_observer_remote_.is_bound())
     return;
 
-  ambient_observer_remote_->OnAnimationThemeChanged(GetCurrentAnimationTheme());
+  ambient_observer_remote_->OnAnimationThemeChanged(
+      GetCurrentUiSettings().theme());
 }
 
 void PersonalizationAppAmbientProviderImpl::OnTemperatureUnitChanged() {
@@ -288,7 +288,8 @@ void PersonalizationAppAmbientProviderImpl::OnTopicSourceChanged() {
   // Empty the WebUI store so it doesn't show the previously selected albums'
   // previews.
   OnPreviewsFetched(std::vector<GURL>());
-  if (features::IsPersonalizationJellyEnabled()) {
+  if (features::IsPersonalizationJellyEnabled() ||
+      settings_->topic_source == ash::AmbientModeTopicSource::kGooglePhotos) {
     if (is_updating_backend_) {
       // Once settings updated, fetch preview images.
       needs_update_previews_ = true;
@@ -296,10 +297,6 @@ void PersonalizationAppAmbientProviderImpl::OnTopicSourceChanged() {
       // Fetch preview images if settings have been updated.
       FetchPreviewImages();
     }
-  } else if (settings_->topic_source ==
-             ash::AmbientModeTopicSource::kGooglePhotos) {
-    // When Jelly is not enabled, only fetch google photos albums previews.
-    FetchGooglePhotosAlbumsPreviews(settings_->selected_album_ids);
   }
 
   ambient_observer_remote_->OnTopicSourceChanged(settings_->topic_source);
@@ -356,12 +353,11 @@ bool PersonalizationAppAmbientProviderImpl::IsAmbientModeEnabled() {
   return pref_service->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled);
 }
 
-ash::AmbientTheme
-PersonalizationAppAmbientProviderImpl::GetCurrentAnimationTheme() {
+AmbientUiSettings
+PersonalizationAppAmbientProviderImpl::GetCurrentUiSettings() {
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
-  return static_cast<ash::AmbientTheme>(
-      pref_service->GetInteger(ash::ambient::prefs::kAmbientTheme));
+  return AmbientUiSettings::ReadFromPrefService(*pref_service);
 }
 
 void PersonalizationAppAmbientProviderImpl::UpdateSettings() {
@@ -537,20 +533,12 @@ void PersonalizationAppAmbientProviderImpl::MaybeUpdateTopicSource(
 void PersonalizationAppAmbientProviderImpl::FetchPreviewImages() {
   needs_update_previews_ = false;
   previews_weak_factory_.InvalidateWeakPtrs();
+  const gfx::Size image_size =
+      features::IsPersonalizationJellyEnabled()
+          ? gfx::Size(kJellyBannerWidthPx, kJellyBannerHeightPx)
+          : gfx::Size(kBannerWidthPx, kBannerHeightPx);
   ash::AmbientBackendController::Get()->FetchPreviewImages(
-      gfx::Size(kJellyBannerWidthPx, kJellyBannerHeightPx),
-      base::BindOnce(&PersonalizationAppAmbientProviderImpl::OnPreviewsFetched,
-                     previews_weak_factory_.GetWeakPtr()));
-}
-
-// TODO(b/270434334): Remove when Jelly is enabled by default.
-void PersonalizationAppAmbientProviderImpl::FetchGooglePhotosAlbumsPreviews(
-    const std::vector<std::string>& album_ids) {
-  const int num_previews = features::IsPersonalizationJellyEnabled() ? 3 : 4;
-  DCHECK(!album_ids.empty());
-  previews_weak_factory_.InvalidateWeakPtrs();
-  ash::AmbientBackendController::Get()->GetGooglePhotosAlbumsPreview(
-      album_ids, kBannerWidthPx, kBannerHeightPx, num_previews,
+      image_size,
       base::BindOnce(&PersonalizationAppAmbientProviderImpl::OnPreviewsFetched,
                      previews_weak_factory_.GetWeakPtr()));
 }

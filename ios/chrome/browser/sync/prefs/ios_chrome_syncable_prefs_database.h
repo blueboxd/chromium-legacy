@@ -13,8 +13,10 @@ namespace browser_sync {
 class IOSChromeSyncablePrefsDatabase
     : public sync_preferences::SyncablePrefsDatabase {
  public:
-  // Return true if `pref_name` is syncable.
-  bool IsPreferenceSyncable(const std::string& pref_name) const override;
+  // Returns the metadata associated to the pref or null if `pref_name` is not
+  // syncable.
+  absl::optional<sync_preferences::SyncablePrefMetadata>
+  GetSyncablePrefMetadata(const std::string& pref_name) const override;
 
  private:
   // This defines the list of preferences that are syncable across all

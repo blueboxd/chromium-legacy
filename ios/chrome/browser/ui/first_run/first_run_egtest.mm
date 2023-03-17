@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "base/i18n/number_formatting.h"
+#import "base/ios/ios_util.h"
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
@@ -13,6 +14,7 @@
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
@@ -25,7 +27,6 @@
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_google_chrome_strings.h"
@@ -91,7 +92,10 @@ id<GREYMatcher> GetSyncSettings() {
 void DismissDefaultBrowserPromo() {
   id<GREYMatcher> buttonMatcher = nil;
 
-  if (@available(iOS 15.0, *)) {
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      [ChromeEarlGrey isUIButtonConfigurationEnabled]) {
     buttonMatcher = grey_allOf(
         grey_ancestor(grey_accessibilityID(
             first_run::kFirstRunDefaultBrowserScreenAccessibilityIdentifier)),

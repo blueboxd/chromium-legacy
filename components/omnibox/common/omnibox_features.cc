@@ -37,13 +37,12 @@ constexpr auto enabled_by_default_desktop_android =
     base::FEATURE_ENABLED_BY_DEFAULT;
 #endif
 
-// Comment out this macro since it is currently not being used in this file.
-// const auto enabled_by_default_android_ios =
-// #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-//     base::FEATURE_ENABLED_BY_DEFAULT;
-// #else
-//     base::FEATURE_DISABLED_BY_DEFAULT;
-// #endif
+const auto enabled_by_default_android_ios =
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif
 
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
@@ -62,10 +61,16 @@ BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
              "OmniboxRemoveSuggestionsFromClipboard",
              enabled_by_default_android_only);
 
-// When enabled, uses the grouping framework (i.e.
+// When enabled, uses the grouping framework with zero prefix suggestions (i.e.
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
-BASE_FEATURE(kGroupingFramework,
-             "OmniboxGroupingFramework",
+BASE_FEATURE(kGroupingFrameworkForZPS,
+             "OmniboxGroupingFrameworkForZPS",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, uses the grouping framework with prefixed suggestions (i.e.
+// autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
+BASE_FEATURE(kGroupingFrameworkForNonZPS,
+             "OmniboxGroupingFrameworkForNonZPS",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Demotes the relevance scores when comparing suggestions based on the
@@ -137,7 +142,7 @@ BASE_FEATURE(kUIExperimentMaxAutocompleteMatches,
 // desired number of URL-type matches.
 BASE_FEATURE(kOmniboxMaxURLMatches,
              "OmniboxMaxURLMatches",
-             enabled_by_default_desktop_android);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to cap max suggestions to a dynamic limit based on how many URLs
 // would be shown. E.g., show up to 10 suggestions if doing so would display no
@@ -348,7 +353,7 @@ BASE_FEATURE(kDomainSuggestions,
 // shown will be no less than minimum for the platform (eg. 5 for Android).
 BASE_FEATURE(kAdaptiveSuggestionsCount,
              "OmniboxAdaptiveSuggestionsCount",
-             enabled_by_default_android_only);
+             enabled_by_default_android_ios);
 
 // If enabled, clipboard suggestion will not show the clipboard content until
 // the user clicks the reveal button.
@@ -509,6 +514,12 @@ BASE_FEATURE(kRevertModelBeforeClosingPopup,
              "OmniboxRevertModelBeforeClosingPopup",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, an existing `AutocompleteClient` will be used instead of
+// generating a new one in `OmniboxEditModel`.
+BASE_FEATURE(kUseExistingAutocompleteClient,
+             "OmniboxUseExistingAutocompleteClient",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, Omnibox reports the Searchbox Stats in the gs_lcrp= param in the
 // Search Results Page URL.
 BASE_FEATURE(kReportSearchboxStats,
@@ -532,5 +543,9 @@ BASE_FEATURE(kMlRelevanceScoring,
 BASE_FEATURE(kUrlScoringModel,
              "UrlScoringModel",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, appends additional Trending and Recent Search Related Queries to
+// the suggestion list on the NTP and SRP.
+BASE_FEATURE(kInspireMe, "OmniboxInspireMe", base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace omnibox

@@ -950,7 +950,7 @@ class BrowserAutofillManagerTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  test::AutofillEnvironment autofill_environment_;
+  test::AutofillUnitTestEnvironment autofill_test_environment_;
   NiceMock<MockAutofillClient> autofill_client_;
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
@@ -6806,19 +6806,13 @@ TEST_F(BrowserAutofillManagerTest, FormSubmittedWithDefaultValues) {
   FillAutofillFormDataAndSaveResults(form, form.fields[3],
                                      MakeFrontendId({.profile_id = guid}),
                                      &response_data);
-
-  // Simulate form submission.  We should call into the PDM to try to save the
-  // filled data.
-  FormSubmitted(response_data);
-  EXPECT_EQ(1, personal_data().num_times_save_imported_profile_called());
-
   // Set the address field's value back to the default value.
   response_data.fields[3].value = u"Enter your address";
 
   // Simulate form submission.  We should not call into the PDM to try to save
   // the filled data, since the filled form is effectively missing an address.
   FormSubmitted(response_data);
-  EXPECT_EQ(1, personal_data().num_times_save_imported_profile_called());
+  EXPECT_EQ(0, personal_data().num_times_save_imported_profile_called());
 }
 
 struct ProfileMatchingTypesTestCase {
@@ -9772,7 +9766,7 @@ TEST_F(BrowserAutofillManagerTest, GetSuggestions_MixedForm) {
 }
 
 // Test that if a form is mixed content we do not show a warning if the opt out
-// polcy is set.
+// policy is set.
 TEST_F(BrowserAutofillManagerTest, GetSuggestions_MixedFormOptoutPolicy) {
   // Set pref to disabled.
   autofill_client_.GetPrefs()->SetBoolean(::prefs::kMixedFormsWarningsEnabled,
@@ -10185,7 +10179,7 @@ class BrowserAutofillManagerTestForVirtualCardOption
   void SetUp() override {
     BrowserAutofillManagerTest::SetUp();
 
-    // The URL should always matche the form URL in
+    // The URL should always match the form URL in
     // CreateTestCreditCardFormData() to have the allowlist work correctly.
     autofill_client_.set_allowed_merchants({"https://myform.com/form.html"});
 
@@ -11070,7 +11064,7 @@ TEST_P(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
   browser_autofill_manager_->OnTextFieldDidChange(
       form_, form_.fields[1], gfx::RectF(), AutofillTickClock::NowTicks());
 
-  // 4. Simulate removing the focus from the form, which generaets a second blur
+  // 4. Simulate removing the focus from the form, which generates a second blur
   // vote which should be sent.
   std::map<std::u16string, ServerFieldTypeSet> expected_vote_types = {
       {u"firstname",

@@ -10,6 +10,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/history_clusters_types.h"
@@ -19,6 +20,7 @@
 
 class Profile;
 class GURL;
+class CartService;
 
 namespace content {
 class WebContents;
@@ -44,6 +46,8 @@ class HistoryClustersPageHandler
   void GetCluster(GetClusterCallback callback) override;
   void ShowJourneysSidePanel(const std::string& query) override;
   void OpenUrlsInTabGroup(const std::vector<GURL>&) override;
+  void DismissCluster(
+      const std::vector<history_clusters::mojom::URLVisitPtr> visits) override;
 
  private:
   // Forward the most relevant history cluster to the callback if any.
@@ -63,6 +67,8 @@ class HistoryClustersPageHandler
   // `Done()` will be true if there is no ongoing task.
   std::unique_ptr<history_clusters::HistoryClustersServiceTask>
       fetch_clusters_task_;
+  base::CancelableTaskTracker hide_visits_task_tracker_;
+  raw_ptr<CartService> cart_service_;
 
   base::WeakPtrFactory<HistoryClustersPageHandler> weak_ptr_factory_{this};
 };

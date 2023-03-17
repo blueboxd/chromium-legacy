@@ -24,6 +24,7 @@ import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
@@ -57,8 +58,8 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
         mUnclampedInitialWidth = initialWidth;
         mShowMaximizeButton = showMaximizeButton;
         mPositionUpdater = this::updatePosition;
-        mIsMaximized = startMaximized;
         mDecorationType = decorationType;
+        mIsMaximized = startMaximized;
         mSheetOnRight = isSheetOnRight(position);
         mSlideDownAnimation = slideInBehavior
                 == CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_BOTTOM;
@@ -215,9 +216,6 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
             handleView.setElevation(elevation);
         }
 
-        // Side sheet does not have the same drag handle view that bottom sheet does and it
-        // requires a higher offset to look like an authentic shadow.
-        shadowOffset = shadowOffset * SIDE_SHADOW_MULTIPLIER;
         if (handleView != null) {
             ViewGroup.MarginLayoutParams lp =
                     (ViewGroup.MarginLayoutParams) handleView.getLayoutParams();
@@ -234,7 +232,9 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     @Override
     protected boolean shouldHaveNoShadowOffset() {
         // We remove shadow in maximized mode.
-        return isMaximized() || mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE
+        return isMaximized()
+                || calculateWidth(mUnclampedInitialWidth) == mVersionCompat.getDisplayWidth()
+                || mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE
                 || mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
     }
 
@@ -318,14 +318,30 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
             return 5;
         } else if (width >= displayWidth / 2) {
             // Side Sheet between 75% and 50% of screen
-            return 10;
+            return 7;
         } else if (width > displayWidth / 3) {
             // Side Sheet between 33% and 50% of screen
-            return 15;
+            return 9;
         } else {
             // 33% min-width Side Sheet
-            return 20;
+            return 11;
         }
+    }
+
+    @Override
+    protected void drawDividerLine(CustomTabToolbar toolbar) {
+        int width =
+                mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_outline_width);
+        int leftDividerInset = mSheetOnRight ? width : 0;
+        int rightDividerInset = !mSheetOnRight ? width : 0;
+
+        drawDividerLine(leftDividerInset, 0, rightDividerInset, toolbar);
+    }
+
+    @Override
+    protected boolean shouldDrawDividerLine() {
+        return SysUtils.isLowEndDevice()
+                || mDecorationType == ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
     }
 
     @Override

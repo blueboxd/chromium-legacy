@@ -59,6 +59,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.components.autofill.AutofillHintsServiceTestHelper;
 import org.chromium.components.autofill.AutofillManagerWrapper;
 import org.chromium.components.autofill.AutofillPopup;
@@ -725,12 +726,8 @@ public class AwAutofillTest {
                 });
         mUMATestHelper = new AwAutofillSessionUMATestHelper(this, mWebServer);
         var histograms = TestThreadUtils.runOnUiThreadBlocking(() -> {
-            return HistogramWatcher.newBuilder()
-                    .expectBooleanRecord(
-                            AutofillProviderUMA.UMA_AUTOFILL_CREATED_BY_ACTIVITY_CONTEXT, true)
-                    .expectBooleanRecord(AutofillProviderUMA.UMA_AUTOFILL_AWG_IS_CURRENT_SERVICE,
-                            isAwGCurrentAutofillService)
-                    .build();
+            return HistogramWatcher.newSingleRecordWatcher(
+                    AutofillProviderUMA.UMA_AUTOFILL_CREATED_BY_ACTIVITY_CONTEXT, true);
         });
         mContentsClient = new AwAutofillTestClient();
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1962,12 +1959,11 @@ public class AwAutofillTest {
     @Feature({"AndroidWebView"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.P)
     public void testUMAAwGIsCurrentService() throws Throwable {
-        // Logs already happened and were checked during setup
         var histograms = TestThreadUtils.runOnUiThreadBlocking(() -> {
-            return HistogramWatcher.newBuilder()
-                    .expectNoRecords(AutofillProviderUMA.UMA_AUTOFILL_AWG_IS_CURRENT_SERVICE)
-                    .build();
+            return HistogramWatcher.newSingleRecordWatcher(
+                    AutofillProviderUMA.UMA_AUTOFILL_AWG_IS_CURRENT_SERVICE, true);
         });
+        doSetUp(/* isAwGCurrentAutofillService */ true);
         mUMATestHelper.triggerAutofill();
         TestThreadUtils.runOnUiThreadBlocking(() -> { histograms.assertExpected(); });
     }
@@ -1977,7 +1973,12 @@ public class AwAutofillTest {
     @Feature({"AndroidWebView"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.P)
     public void testUMAAwGIsNotCurrentService() throws Throwable {
+        var histograms = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return HistogramWatcher.newSingleRecordWatcher(
+                    AutofillProviderUMA.UMA_AUTOFILL_AWG_IS_CURRENT_SERVICE, false);
+        });
         setUpAwGNotCurrent();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { histograms.assertExpected(); });
     }
 
     @Test
@@ -2084,6 +2085,7 @@ public class AwAutofillTest {
 
     @Test
     @SmallTest
+    @RequiresRestart("https://crbug.com/1422936")
     public void testUmaFunnelMetrics() throws Throwable {
         HistogramWatcher.Builder histogramWatcherBuilder = HistogramWatcher.newBuilder();
 

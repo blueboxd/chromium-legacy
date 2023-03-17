@@ -11,6 +11,7 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_photo_controller.h"
+#include "ash/ambient/ambient_ui_launcher.h"
 #include "ash/ambient/ambient_view_delegate_impl.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
@@ -57,6 +58,7 @@ class AmbientBackendController;
 class AmbientContainerView;
 class AmbientMultiScreenMetricsRecorder;
 class AmbientPhotoController;
+class AmbientUiSettings;
 class AmbientWeatherController;
 
 // Class to handle all ambient mode functionalities.
@@ -155,6 +157,10 @@ class ASH_EXPORT AmbientController
     return ambient_photo_controller_.get();
   }
 
+  AmbientUiLauncher* ambient_ui_launcher() {
+    return ambient_ui_launcher_.get();
+  }
+
   AmbientWeatherController* ambient_weather_controller() {
     return ambient_weather_controller_.get();
   }
@@ -187,10 +193,10 @@ class ASH_EXPORT AmbientController
   void CreateAndShowWidgets();
 
   void StartRefreshingImages();
-  void StopRefreshingImages();
+  void StopScreensaver();
   void MaybeStartScreenSaver();
   void MaybeDismissUIOnMouseMove();
-  AmbientTheme GetCurrentTheme() const;
+  AmbientUiSettings GetCurrentUiSettings() const;
 
   // Invoked when the auto-show timer in |InactivityMonitor| gets fired after
   // device being inactive for a specific amount of time.
@@ -210,7 +216,7 @@ class ASH_EXPORT AmbientController
   void OnLockScreenInactivityTimeoutPrefChanged();
   void OnLockScreenBackgroundTimeoutPrefChanged();
   void OnPhotoRefreshIntervalPrefChanged();
-  void OnThemePrefChanged();
+  void OnAmbientUiSettingsChanged();
   void OnAnimationPlaybackSpeedChanged();
 
   AmbientAccessTokenController* access_token_controller_for_testing() {
@@ -283,12 +289,9 @@ class ASH_EXPORT AmbientController
   // TODO(safarli): Remove this workaround when b/266234711 is fixed.
   bool last_mouse_event_was_move_ = false;
 
-  // Not set until the AmbientTheme is initially read from pref
-  // storage when ambient mode is enabled.
-  absl::optional<AmbientTheme> current_theme_from_pref_;
-
   std::unique_ptr<AmbientMultiScreenMetricsRecorder>
       multi_screen_metrics_recorder_;
+  std::unique_ptr<AmbientUiLauncher> ambient_ui_launcher_;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
 };

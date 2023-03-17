@@ -78,6 +78,8 @@ source_set("permissions") {
     "permission_manager.cc",
     "permission_manager.h",
     "permission_prompt.h",
+    "permission_recovery_success_rate_tracker.cc",
+    "permission_recovery_success_rate_tracker.h",
     "permission_request.cc",
     "permission_request.h",
     "permission_request_id.cc",
@@ -136,10 +138,10 @@ source_set("permissions") {
     "//ui/base",
     "//url",
   ]
-  if (is_mac) {
+  if (is_mac || is_chromeos) {
     sources += [
-      "contexts/geolocation_permission_context_mac.cc",
-      "contexts/geolocation_permission_context_mac.h",
+      "contexts/geolocation_permission_context_system.cc",
+      "contexts/geolocation_permission_context_system.h",
     ]
   }
   if (is_android) {

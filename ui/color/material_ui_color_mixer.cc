@@ -36,7 +36,7 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
       {kColorSysStateFocus}, {kColorButtonBackgroundProminent})};
   mixer[kColorButtonBorder] = {kColorSysOutline};
   mixer[kColorButtonBorderDisabled] = {kColorSysStateDisabled};
-  mixer[kColorButtonForeground] = {kColorSysOnSurfacePrimary};
+  mixer[kColorButtonForeground] = {kColorSysPrimary};
   mixer[kColorButtonForegroundDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForegroundProminent] = {kColorSysOnPrimary};
   mixer[kColorCheckboxBackgroundDisabled] = {kColorSysStateDisabledContainer};
@@ -51,6 +51,9 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorFrameActive] = {kColorSysHeader};
   mixer[kColorFrameActiveUnthemed] = {kColorSysHeader};
   mixer[kColorFrameInactive] = {kColorSysHeaderInactive};
+  mixer[kColorListItemFolderIconBackground] = {kColorSysTonalContainer};
+  mixer[kColorListItemFolderIconForeground] = {kColorSysOnTonalContainer};
+  mixer[kColorListItemUrlFaviconBackground] = {kColorSysNeutralContainer};
   mixer[kColorRadioButtonForegroundChecked] = {kColorSysOnSurfacePrimary};
   mixer[kColorRadioButtonForegroundDisabled] = {
       kColorSysStateDisabledContainer};
@@ -59,15 +62,18 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorSliderThumbMinimal] = {kColorSysSecondary};
   mixer[kColorSliderTrack] = {kColorSysOnPrimary};
   mixer[kColorSliderTrackMinimal] = {kColorSysOnSecondary};
+  mixer[kColorSuggestionChipBorder] = {kColorSysTonalOutline};
+  mixer[kColorSuggestionChipIcon] = {kColorSysPrimary};
   mixer[kColorTextfieldBackground] = {kColorSysSurface};
   mixer[kColorTextfieldBackgroundDisabled] = {GetResultingPaintColor(
       {kColorSysStateDisabledContainer}, {kColorTextfieldBackground})};
   mixer[kColorTextfieldForeground] = {kColorSysOnSurface};
-  mixer[kColorTextfieldForegroundInvalid] = {
+  mixer[kColorTextfieldForegroundPlaceholderInvalid] = {
       BlendForMinContrast(kColorSysError, kColorTextfieldBackground)};
   mixer[kColorTextfieldForegroundDisabled] = {kColorSysStateDisabled};
-  mixer[kColorTextfieldForegroundPlaceholder] = {kColorSysOnSurface};
-  mixer[kColorTextfieldInvalidOutline] = {kColorTextfieldForegroundInvalid};
+  mixer[kColorTextfieldForegroundPlaceholder] = {kColorSysOnSurfaceSubtle};
+  mixer[kColorTextfieldInvalidOutline] = {
+      kColorTextfieldForegroundPlaceholderInvalid};
   mixer[kColorTextfieldSelectionBackground] = {kColorSysTonalContainer};
   mixer[kColorToggleButtonHover] = {kColorSysStateHover};
   mixer[kColorToggleButtonPressed] = {kColorSysStatePressed};
@@ -80,6 +86,14 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorToggleButtonTrackOff] = {kColorSysSurfaceVariant};
   mixer[kColorToggleButtonTrackOn] = {kColorSysPrimary};
   mixer[kColorToggleButtonTrackOnDisabled] = {kColorSysStateDisabledContainer};
+  mixer[kColorToolbarSearchFieldBackground] = {kColorSysBaseContainerElevated};
+  mixer[kColorToolbarSearchFieldBackgroundHover] = {kColorSysStateHoverCutout};
+  mixer[kColorToolbarSearchFieldBackgroundPressed] = {
+      kColorSysStateRippleNeutralOnSubtle};
+  mixer[kColorToolbarSearchFieldForeground] = {kColorSysOnSurface};
+  mixer[kColorToolbarSearchFieldForegroundPlaceholder] = {
+      kColorSysOnSurfaceSubtle};
+  mixer[kColorToolbarSearchFieldIcon] = {kColorSysOnSurfaceSubtle};
 }
 
 }  // namespace ui

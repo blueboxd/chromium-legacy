@@ -72,6 +72,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/devicetype.h"
+#include "chromeos/ash/services/nearby/public/cpp/nearby_client_uuids.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using device::BluetoothAdapter;
@@ -1161,6 +1162,14 @@ void BluetoothAdapterBlueZ::AuthorizeService(
   // connection.
 #if BUILDFLAG(IS_CHROMEOS)
   if (device_bluez->IsBonded()) {
+    std::move(callback).Run(SUCCESS);
+    return;
+  }
+#endif
+
+  // Allow nearby connection from unbonded devices.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (ash::nearby::IsNearbyClientUuid(BluetoothUUID(uuid))) {
     std::move(callback).Run(SUCCESS);
     return;
   }

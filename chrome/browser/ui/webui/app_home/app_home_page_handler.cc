@@ -263,6 +263,21 @@ void AppHomePageHandler::SetUserDisplayMode(
           app_id, user_display_mode));
 }
 
+app_home::mojom::AppInfoPtr AppHomePageHandler::GetApp(
+    const web_app::AppId& app_id) {
+  std::vector<app_home::mojom::AppInfoPtr> all_apps;
+  FillWebAppInfoList(&all_apps);
+  FillExtensionInfoList(&all_apps);
+  app_home::mojom::AppInfoPtr found_app;
+  for (const auto& app : all_apps) {
+    if (app->id == app_id) {
+      found_app = app.Clone();
+      break;
+    }
+  }
+  return found_app;
+}
+
 void AppHomePageHandler::ShowWebAppSettings(const std::string& app_id) {
   chrome::ShowWebAppSettings(
       GetCurrentBrowser(), app_id,
@@ -295,13 +310,7 @@ void AppHomePageHandler::CreateExtensionAppShortcut(
   Browser* browser = GetCurrentBrowser();
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
-      base::BindOnce(
-          [](base::OnceClosure done, bool success) {
-            base::UmaHistogramBoolean(
-                "Apps.AppInfoDialog.CreateExtensionShortcutSuccess", success);
-            std::move(done).Run();
-          },
-          std::move(done)));
+      base::IgnoreArgs<bool>(std::move(done)));
 }
 
 app_home::mojom::AppInfoPtr AppHomePageHandler::CreateAppInfoPtrFromWebApp(

@@ -108,12 +108,8 @@ class MockAttributionManager : public AttributionManager {
               (const DataKey&, base::OnceClosure done),
               (override));
 
-  MOCK_METHOD(attribution_reporting::mojom::OsSupport,
-              GetOsSupport,
-              (),
-              (override));
-
 #if BUILDFLAG(IS_ANDROID)
+
   MOCK_METHOD(void,
               HandleOsSource,
               (const GURL& registration_url,
@@ -121,7 +117,15 @@ class MockAttributionManager : public AttributionManager {
                AttributionInputEvent,
                GlobalRenderFrameHostId),
               (override));
-#endif
+
+  MOCK_METHOD(void,
+              HandleOsTrigger,
+              (const GURL& registration_url,
+               const url::Origin& top_level_origin,
+               GlobalRenderFrameHostId),
+              (override));
+
+#endif  // BUILDFLAG(IS_ANDROID)
 
   void AddObserver(AttributionObserver*) override;
   void RemoveObserver(AttributionObserver*) override;

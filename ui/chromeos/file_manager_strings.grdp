@@ -618,7 +618,7 @@
     Preparing to sync <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
   </message>
   <message name="IDS_FILE_BROWSER_READY_TO_SYNC_MY_DRIVE" desc="Files app message displayed to users after they copy files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
-    Ready
+    Ready to sync
   </message>
   <message name="IDS_FILE_BROWSER_EXTRACT_FILESYSTEM_ERROR" desc="File Manager error message.">
     Extract operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
@@ -879,7 +879,7 @@
     This folder
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_OPTIONS_RECENCY_ALL_TIME" desc="Text shown in search options if search results are not limited by time">
-    All time
+    Any time
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_OPTIONS_RECENCY_TODAY" desc="Text shown in search options if search results are limited to files modified today">
     Today
@@ -1714,10 +1714,10 @@
     File access by <ph name="RESTRICTED_DESTINATIONS">$1<ex>https://google.com</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS_FILE_ACCESS_ALL" desc="The message shown when a wildcard is given in as a restricted destination.">
-    File access by all urls
+    File access by all websites and URLs
   </message>
   <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS_FILE_ACCESS_ALL_EXCEPT" desc="The message shown when a wildcard is given in as a restricted destination but some destinations should be excluded.">
-    File access by all urls except <ph name="NON_RESTRICTED_DESTINATIONS">$1<ex>https://google.com</ex></ph>
+    File access by all websites and URLs except <ph name="NON_RESTRICTED_DESTINATIONS">$1<ex>https://google.com</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS_FILE_TRANSFER" desc="The message shown for the list of DLP restricted components.">
     File transfer to <ph name="RESTRICTED_COMPONENTS">$1<ex>removable storage</ex></ph>

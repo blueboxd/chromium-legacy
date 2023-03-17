@@ -1066,8 +1066,6 @@ void FillMiscNavigationParams(
         navigation_params->ad_auction_components->push_back(blink::WebURL(urn));
       }
     }
-    navigation_params->has_fenced_frame_reporting =
-        commit_params.fenced_frame_properties->has_fenced_frame_reporting();
   }
 
   navigation_params->ancestor_or_self_has_cspee =
@@ -3283,10 +3281,9 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       RenderThreadImpl::current()->cors_exempt_header_list();
   blink::WebVector<blink::WebString> web_cors_exempt_header_list(
       cors_exempt_header_list.size());
-  std::transform(cors_exempt_header_list.begin(), cors_exempt_header_list.end(),
-                 web_cors_exempt_header_list.begin(), [](const std::string& h) {
-                   return blink::WebString::FromLatin1(h);
-                 });
+  base::ranges::transform(
+      cors_exempt_header_list, web_cors_exempt_header_list.begin(),
+      [](const auto& header) { return blink::WebString::FromLatin1(header); });
 
   // |pending_subresource_loader_updater| and
   // |pending_resource_load_info_notifier| are not used for
@@ -3526,6 +3523,13 @@ blink::WebFrame* RenderFrameImpl::FindFrame(const blink::WebString& name) {
 
   return GetContentClient()->renderer()->FindFrame(this->GetWebFrame(),
                                                    name.Utf8());
+}
+
+void RenderFrameImpl::WillSwap() {
+  if (navigation_client_impl_ &&
+      ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
+    navigation_client_impl_->ResetWithoutCancelling();
+  }
 }
 
 void RenderFrameImpl::WillDetach() {

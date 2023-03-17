@@ -34,6 +34,7 @@
 <translation id="1173894706177603556">மறுபெயரிடு</translation>
 <translation id="1177863135347784049">பிரத்தியேகம்</translation>
 <translation id="1181037720776840403">அகற்று</translation>
+<translation id="1181366777303791449"><ph name="MAIN_FRAME_ETLD_PLUS_ONE" /> இல்</translation>
 <translation id="1193729455103054076">வலிமையான கடவுச்சொல்லைப் பயன்படுத்தவா?</translation>
 <translation id="1197267115302279827">புத்தகக்குறிகளை நகர்த்து</translation>
 <translation id="1201402288615127009">அடுத்து</translation>
@@ -165,7 +166,6 @@
 <translation id="1928696683969751773">புதுப்பிப்புகள்</translation>
 <translation id="19288952978244135">Chromeமை மீண்டும் திறக்கவும்.</translation>
 <translation id="1933845786846280168">தேர்ந்தெடுத்த தாவல்</translation>
-<translation id="193571872656840963">இந்தக் கிரியேட்டருக்கு நன்றி தெரிவியுங்கள்</translation>
 <translation id="1943432128510653496">கடவுச்சொற்களைச் சேமி</translation>
 <translation id="1952172573699511566">சாத்தியமான போது, நீங்கள் விரும்பும் மொழியில் உரையை இணையதளங்கள் காட்டும்.</translation>
 <translation id="1959679933317802873">உள்ளடக்கத்தைப் பெறக் காத்திருக்கிறது</translation>
@@ -201,7 +201,6 @@
 <translation id="2122601567107267586">பயன்பாட்டைத் திறக்க முடியவில்லை</translation>
 <translation id="2132122640199389833">இணைக்கப்பட்டுள்ள சாதனங்கள் அனைத்தையும் அகற்று</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> மூடப்பட்டது</translation>
-<translation id="2134927169889348449">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="2139186145475833000">முகப்புத் திரையில் சேர்</translation>
 <translation id="2141396931810938595">உங்கள் உபயோகத்தின் அடிப்படையில்</translation>
 <translation id="214888715418183969">Chromeமுடன் எதையெல்லாம் பகிரலாம் என்பதைத் தேர்வுசெய்யுங்கள். Chromeமின் அம்சங்கள், செயல்திறன், நிலைப்புத்தன்மை ஆகியவற்றை மேம்படுத்த இந்த அளவீடுகள் பயன்படுத்தப்படும்.</translation>
@@ -554,7 +553,6 @@
 <translation id="409109920254068737">இந்த QR குறியீட்டைக் காட்டும் சாதனத்தில் உள்நுழைய இந்த டேப்லெட்டைப் பயன்படுத்தலாம்.</translation>
 <translation id="4095146165863963773">பயன்பாட்டுத் தரவை நீக்கவா?</translation>
 <translation id="4096227151372679484">புக்மார்க் சேமிப்புச் செயல்முறை பாதித் திரையில் காட்டப்பட்டுள்ளது</translation>
-<translation id="4099578267706723511">பயன்பாட்டுப் புள்ளிவிவரங்களையும், சிதைவு அறிக்கைகளையும் Googleளுக்கு அனுப்புவதன் மூலம் Chromeஐ மேலும் சிறப்பானதாக்க உதவவும்.</translation>
 <translation id="4101475238162928417">உங்களின் பிற சாதனங்களில் உள்ள கடவுச்சொற்கள், புக்மார்க்குகள் மற்றும் பலவற்றைப் பெற ஒத்திசையுங்கள்</translation>
 <translation id="410351446219883937">தானியங்கி</translation>
 <translation id="4106587138345390261">உங்கள் தனிப்பட்ட தகவல்களைக் குறைந்தளவில் பயன்படுத்தி அதே உலாவல் அனுபவத்தை வழங்கும் வகையில் எங்கள் தளங்கள் செயல்படுமாறு புதிய அம்சங்களை Chrome சோதனை செய்து வருகிறது</translation>
@@ -592,7 +590,6 @@
 <translation id="4269820728363426813">இணைப்பு முகவரியை நகலெடு</translation>
 <translation id="4283102315569707115">இயல்பாக டெஸ்க்டாப் தளங்களுக்குக் கோரிக்கை விடுக்கவா?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android அமைப்புகளில் திரைப் பூட்டு அம்சத்தை இயக்கவும்<ph name="END_LINK" /></translation>
-<translation id="4293476595220860475">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள். <ph name="BEGIN_PRIVACY_LINK" />தனியுரிமைக் கொள்கையையும்<ph name="END_PRIVACY_LINK" /> ஏற்கிறீர்கள்.</translation>
 <translation id="4296252229500326964">புதிய மறைநிலைத் தாவல்</translation>
 <translation id="4298388696830689168">இணைக்கப்பட்டுள்ள தளங்கள்</translation>
 <translation id="4303044213806199882">chrome_ஸ்கிரீன்ஷாட்_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -633,6 +630,7 @@
 
 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> எனும் தளத்தில் பிற Google சேவைகளிலிருந்து தேடல்கள், செயல்பாடு போன்ற உங்கள் Google கணக்கிற்கான பிற வகை உலாவல் வரலாறும் இருக்கக்கூடும்.</translation>
 <translation id="452750746583162491">ஒத்திசைத்த தரவை மதிப்பாய்வு செய்க</translation>
+<translation id="4528638190900283934">கூடுதல் அம்சங்களுக்கு உள்நுழையுங்கள்</translation>
 <translation id="4532845899244822526">ஃபோல்டரைத் தேர்வுசெய்யவும்</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> பக்கம்}other{<ph name="TAB_COUNT_MANY" /> பக்கங்கள், <ph name="TAB_COUNT_INCOGNITO" /> மறைநிலை}}</translation>
 <translation id="4554077758708533499">USB கேபிள் மூலம் இணைக்கப்பட்டது</translation>
@@ -765,7 +763,6 @@
 <translation id="5161254044473106830">தலைப்பு அவசியம்</translation>
 <translation id="5170568018924773124">ஃபோல்டரில் காண்பி</translation>
 <translation id="5171045022955879922">தேடுக அல்லது URLலை உள்ளிடுக</translation>
-<translation id="517734441743343109">தொடர்வதன் மூலம் <ph name="BEGIN_TOS_LINK" />சேவை விதிமுறைகளையும்<ph name="END_TOS_LINK" /> <ph name="BEGIN_PRIVACY_LINK" />தனியுரிமைக்\u00A0கொள்கையையும்<ph name="END_PRIVACY_LINK" /> ஏற்கிறீர்கள்.</translation>
 <translation id="5184329579814168207">Chrome இல் திற</translation>
 <translation id="5191251636205085390">மூன்றாம் தரப்புக் குக்கீகளுக்கு மாற்றாகப் பயன்படுத்த உதவும் புதிய தொழில்நுட்பங்கள் குறித்தும் அவற்றைக் கட்டுப்படுத்துவது குறித்தும் மேலும் அறிக</translation>
 <translation id="5193988420012215838">கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டது</translation>
@@ -1248,7 +1245,6 @@
 <translation id="7725024127233776428">நீங்கள் புக்மார்க் செய்த பக்கங்கள் இங்கு தோன்றும்</translation>
 <translation id="7757787379047923882">உரை <ph name="DEVICE_NAME" /> இலிருந்து பகிரப்பட்டுள்ளது</translation>
 <translation id="7762668264895820836">SD கார்டு <ph name="SD_CARD_NUMBER" /></translation>
-<translation id="7762928140712606393">கூடுதல் அம்சங்களுடன் Chromeமின் மிக உறுதியான பாதுகாப்பைப் பெற, உள்நுழையவும்</translation>
 <translation id="7764225426217299476">முகவரியைச் சேர்</translation>
 <translation id="7772032839648071052">கடவுச்சொற்றொடரை உறுதி செய்க</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" />ஐ மூடு</translation>

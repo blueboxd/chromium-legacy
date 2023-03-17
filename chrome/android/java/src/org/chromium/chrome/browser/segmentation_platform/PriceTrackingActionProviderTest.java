@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.segmentation_platform;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
 import android.os.Handler;
@@ -18,8 +19,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -80,7 +83,7 @@ public class PriceTrackingActionProviderTest {
                 .finishLoadingBookmarkModel(any());
     }
 
-    private void setPriceTrackingBackendResult(boolean hasProductInfo) {
+    private void setIsUrlPriceTrackableResult(boolean hasProductInfo) {
         ProductInfo testProductInfo =
                 new ProductInfo(null, null, 0, 0, null, 0, null, Optional.empty());
         Mockito.doReturn(true).when(mShoppingService).isShoppingListEligible();
@@ -94,14 +97,23 @@ public class PriceTrackingActionProviderTest {
                 .getProductInfoForUrl(any(), any());
     }
 
+    private void setIsBookmarkPriceTrackedResult(boolean isBookmarkPriceTracked) {
+        doAnswer((InvocationOnMock invocation) -> {
+            ((Callback<Boolean>) invocation.getArgument(2)).onResult(isBookmarkPriceTracked);
+            return null;
+        })
+                .when(mMockPriceTrackingUtilsJni)
+                .isBookmarkPriceTracked(any(Profile.class), anyLong(), any());
+    }
+
     @Test
     public void priceTrackingActionShownSuccessfully() {
         List<ActionProvider> providers = new ArrayList<>();
-        PriceTrackingActionProvider provider =
-                new PriceTrackingActionProvider(() -> mShoppingService, () -> mBookmarkModel);
+        PriceTrackingActionProvider provider = new PriceTrackingActionProvider(
+                () -> mShoppingService, () -> mBookmarkModel, () -> mProfile);
         providers.add(provider);
         SignalAccumulator accumulator = new SignalAccumulator(new Handler(), mMockTab, providers);
-        setPriceTrackingBackendResult(true);
+        setIsUrlPriceTrackableResult(true);
         provider.getAction(mMockTab, accumulator);
         Assert.assertTrue(accumulator.hasPriceTracking());
     }
@@ -109,16 +121,35 @@ public class PriceTrackingActionProviderTest {
     @Test
     public void priceTrackingNotShownForAlreadyPriceTrackedPages() {
         List<ActionProvider> providers = new ArrayList<>();
-        PriceTrackingActionProvider provider =
-                new PriceTrackingActionProvider(() -> mShoppingService, () -> mBookmarkModel);
+        PriceTrackingActionProvider provider = new PriceTrackingActionProvider(
+                () -> mShoppingService, () -> mBookmarkModel, () -> mProfile);
         providers.add(provider);
         SignalAccumulator accumulator = new SignalAccumulator(new Handler(), mMockTab, providers);
+        // URL supports price tracking.
+        setIsUrlPriceTrackableResult(true);
         Profile.setLastUsedProfileForTesting(mProfile);
+        // URL is already bookmarked.
         doReturn(new BookmarkId(1L, 0)).when(mBookmarkModel).getUserBookmarkIdForTab(mMockTab);
-        doReturn(true)
-                .when(mMockPriceTrackingUtilsJni)
-                .isBookmarkPriceTracked(any(Profile.class), anyLong());
-        setPriceTrackingBackendResult(true);
+        // Bookmark has price tracking information.
+        setIsBookmarkPriceTrackedResult(true);
+        provider.getAction(mMockTab, accumulator);
+        Assert.assertFalse(accumulator.hasPriceTracking());
+    }
+
+    @Test
+    public void priceTrackingNotShownForNonTrackablePages() {
+        List<ActionProvider> providers = new ArrayList<>();
+        PriceTrackingActionProvider provider = new PriceTrackingActionProvider(
+                () -> mShoppingService, () -> mBookmarkModel, () -> mProfile);
+        providers.add(provider);
+        SignalAccumulator accumulator = new SignalAccumulator(new Handler(), mMockTab, providers);
+        // URL does not support price tracking.
+        setIsUrlPriceTrackableResult(false);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        // URL is bookmarked.
+        doReturn(new BookmarkId(1L, 0)).when(mBookmarkModel).getUserBookmarkIdForTab(mMockTab);
+        // Bookmark has no price tracking information.
+        setIsBookmarkPriceTrackedResult(false);
         provider.getAction(mMockTab, accumulator);
         Assert.assertFalse(accumulator.hasPriceTracking());
     }

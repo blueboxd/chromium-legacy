@@ -982,7 +982,7 @@ void PopulateChromeWebUIFrameBinders(
     if (history_clusters_service->IsJourneysImagesEnabled()) {
       RegisterWebUIControllerInterfaceBinder<
           image_service::mojom::ImageServiceHandler, HistoryUI,
-          HistoryClustersSidePanelUI>(map);
+          HistoryClustersSidePanelUI, NewTabPageUI>(map);
     }
   }
 
@@ -1058,6 +1058,11 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI>(
       map);
+
+  if (base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)) {
+    RegisterWebUIControllerInterfaceBinder<
+        image_service::mojom::ImageServiceHandler, BookmarksSidePanelUI>(map);
+  }
 
   if (base::FeatureList::IsEnabled(features::kSidePanelSearchCompanion)) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1238,6 +1243,10 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       ash::eche_app::mojom::StreamOrientationObserver,
       ash::eche_app::EcheAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::eche_app::mojom::ConnectionStatusObserver, ash::eche_app::EcheAppUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::media_app_ui::mojom::PageHandlerFactory, ash::MediaAppUI>(map);

@@ -44,7 +44,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -283,13 +282,6 @@ public class TabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
         assertThat(mMediator.overviewVisible(), equalTo(true));
-
-        assertThat(RecordHistogram.getHistogramValueCountForTesting(
-                           TabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
-                equalTo(1));
-        assertThat(RecordHistogram.getHistogramValueCountForTesting(
-                           TabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 3),
-                equalTo(1));
     }
 
     @Test
@@ -312,13 +304,6 @@ public class TabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
         assertThat(mMediator.overviewVisible(), equalTo(true));
-
-        assertThat(RecordHistogram.getHistogramValueCountForTesting(
-                           TabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
-                equalTo(1));
-        assertThat(RecordHistogram.getHistogramValueCountForTesting(
-                           TabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 2),
-                equalTo(1));
     }
 
     @Test
@@ -1044,6 +1029,23 @@ public class TabSwitcherMediatorUnitTest {
         mTabModelObserverCaptor.getValue().onFinishingTabClosure(mTab1);
         Assert.assertFalse(mMediator.shouldInterceptBackPress());
         Assert.assertEquals(Boolean.FALSE, mMediator.getHandleBackPressChangedSupplier().get());
+    }
+
+    @Test
+    public void testBackPressDuringTransition() {
+        initAndAssertAllProperties();
+        Assert.assertFalse(mMediator.shouldInterceptBackPress());
+
+        mMediator.prepareShowTabSwitcherView();
+        Assert.assertTrue(mMediator.shouldInterceptBackPress());
+        Assert.assertTrue(mMediator.getHandleBackPressChangedSupplier().get());
+
+        doReturn(false).when(mTabGridDialogController).isVisible();
+        mMediator.showTabSwitcherView(false);
+        doReturn(null).when(mTabModelSelector).getCurrentTab();
+        mMediator.showTabSwitcherView(true);
+        Assert.assertFalse(mMediator.shouldInterceptBackPress());
+        Assert.assertFalse(mMediator.getHandleBackPressChangedSupplier().get());
     }
 
     @Test

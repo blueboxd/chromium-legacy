@@ -15,6 +15,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
+#import "components/ntp_tiles/features.h"
 #import "components/ntp_tiles/metrics.h"
 #import "components/ntp_tiles/most_visited_sites.h"
 #import "components/ntp_tiles/ntp_tile.h"
@@ -33,12 +34,14 @@
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
@@ -60,8 +63,6 @@
 #import "ios/chrome/browser/ui/ntp/metrics/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -223,7 +224,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)reloadAllData {
-  BOOL isTileAblationComplete = [self isTileAblationComplete];
   if (!self.consumer) {
     return;
   }
@@ -231,12 +231,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   }
-  if ([self.mostVisitedItems count] &&
-      (!ShouldHideMostVisited() || isTileAblationComplete)) {
+  if ([self.mostVisitedItems count] && ![self shouldHideMVTForTileAblation]) {
     [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
   }
   if (!ShouldHideShortcutsForTrendingQueries() &&
-      (!ShouldHideShortcuts() || isTileAblationComplete)) {
+      ![self shouldHideShortcutsForTileAblation]) {
     [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
   }
   if (IsTrendingQueriesModuleEnabled()) {
@@ -483,7 +482,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
-  if (ShouldHideMostVisited() && ![self isTileAblationComplete]) {
+  if ([self shouldHideMVTForTileAblation]) {
     return;
   }
 
@@ -533,7 +532,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {
-  if (ShouldHideMostVisited() && ![self isTileAblationComplete]) {
+  if ([self shouldHideMVTForTileAblation]) {
     return;
   }
   self.mostVisitedItems = self.freshMostVisitedItems;
@@ -551,7 +550,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.SetInBackground(!incognito);
   params.in_incognito = incognito;
-  params.append_to = kCurrentTab;
+  params.append_to = OpenPosition::kCurrentTab;
   params.origin_point = originPoint;
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
@@ -695,6 +694,33 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     return YES;
   }
   return NO;
+}
+
+// Returns whether the shortcut tiles should be hidden for the tile ablation
+// experiment.
+- (BOOL)shouldHideShortcutsForTileAblation {
+  if ([self isTileAblationComplete]) {
+    return NO;
+  }
+  ntp_tiles::NewTabPageRetentionExperimentBehavior behavior =
+      ntp_tiles::GetNewTabPageRetentionExperimentType();
+  return behavior ==
+         ntp_tiles::NewTabPageRetentionExperimentBehavior::kTileAblationHideAll;
+}
+
+// Returns whether the MVT tiles should be hidden for the tile ablation
+// experiment.
+- (BOOL)shouldHideMVTForTileAblation {
+  if ([self isTileAblationComplete]) {
+    return NO;
+  }
+  ntp_tiles::NewTabPageRetentionExperimentBehavior behavior =
+      ntp_tiles::GetNewTabPageRetentionExperimentType();
+
+  return behavior == ntp_tiles::NewTabPageRetentionExperimentBehavior::
+                         kTileAblationHideAll ||
+         behavior == ntp_tiles::NewTabPageRetentionExperimentBehavior::
+                         kTileAblationHideMVTOnly;
 }
 
 #pragma mark - Properties

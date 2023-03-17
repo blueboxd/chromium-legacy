@@ -32,6 +32,13 @@ BASE_FEATURE(kAttributionReportingCrossAppWeb,
              "AttributionReportingCrossAppWeb",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, whenever form controls are removed from the DOM, the ChromeClient
+// is informed about this. This enables Autofill to trigger a reparsing of
+// forms.
+BASE_FEATURE(kAutofillDetectRemovedFormControls,
+             "AutofillDetectRemovedFormControls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Apply lazy-loading to ad frames which have embeds likely impacting Core Web
 // Vitals.
 BASE_FEATURE(kAutomaticLazyFrameLoadingToAds,
@@ -106,7 +113,7 @@ BASE_FEATURE(kBackForwardCacheDedicatedWorker,
 
 BASE_FEATURE(kBackForwardCacheNotReachedOnJavaScriptExecution,
              "BackForwardCacheNotReachedOnJavaScriptExecution",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows pages with keepalive requests to stay eligible for the back/forward
 // cache. See https://crbug.com/1347101 for more details.
@@ -257,6 +264,28 @@ BASE_FEATURE(kPortalsCrossOrigin,
 // allows the element to be enabled by the runtime enabled feature, for origin
 // trials.
 BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the Private Aggregation API. Note that this API also requires the
+// `kPrivacySandboxAggregationService` to be enabled to successfully send
+// reports.
+BASE_FEATURE(kPrivateAggregationApi,
+             "PrivateAggregationApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Selectively allows the JavaScript API to be disabled in just one of the
+// contexts.
+constexpr base::FeatureParam<bool> kPrivateAggregationApiEnabledInSharedStorage{
+    &kPrivateAggregationApi, "enabled_in_shared_storage",
+    /*default_value=*/true};
+constexpr base::FeatureParam<bool> kPrivateAggregationApiEnabledInFledge{
+    &kPrivateAggregationApi, "enabled_in_fledge",
+    /*default_value=*/true};
+
+// Selectively allows the FLEDGE-specific extensions to be disabled.
+constexpr base::FeatureParam<bool>
+    kPrivateAggregationApiFledgeExtensionsEnabled{&kPrivateAggregationApi,
+                                                  "fledge_extensions_enabled",
+                                                  /*default_value=*/false};
 
 // Enable the shared storage API. Note that enabling this feature does not
 // automatically expose this API to the web, it only allows the element to be
@@ -463,9 +492,12 @@ BASE_FEATURE(kDropInputEventsBeforeFirstPaint,
 
 // Drop touch-end dispatch from `InputHandlerProxy` when all other touch-events
 // in current interaction sequence are dropeed.
+//
+// TODO(https://crbug.com/1417126): This is disabled because of a suspicious
+// flake in AR/XR tests.
 BASE_FEATURE(kDroppedTouchSequenceIncludesTouchEnd,
              "DroppedTouchSequenceIncludesTouchEnd",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // File handling icons. https://crbug.com/1218213
 BASE_FEATURE(kFileHandlingIcons,
@@ -704,12 +736,6 @@ BASE_FEATURE(kCreateImageBitmapOrientationNone,
              "CreateImageBitmapOrientationNone",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, frees up CachedMetadata after consumption by script resources
-// and modules. Needed for the experiment in http://crbug.com/1045052.
-BASE_FEATURE(kDiscardCodeCacheAfterFirstUse,
-             "DiscardCodeCacheAfterFirstUse",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, code cache is produced asynchronously from the script execution
 // (https://crbug.com/1260908).
 BASE_FEATURE(kCacheCodeOnIdle,
@@ -853,7 +879,14 @@ const base::FeatureParam<CheckOfflineCapabilityMode>
 // means losing lcd text.
 BASE_FEATURE(kPreferCompositingToLCDText,
              "PreferCompositingToLCDText",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// On Android we never have LCD text. On Chrome OS we prefer composited
+// scrolling for better scrolling performance.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 BASE_FEATURE(kLogUnexpectedIPCPostedToBackForwardCachedDocuments,
              "LogUnexpectedIPCPostedToBackForwardCachedDocuments",
@@ -1001,8 +1034,11 @@ const base::FeatureParam<int>
     kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering{
         &kBrowsingTopics,
         "number_of_epochs_of_observation_data_to_use_for_filtering", 3};
-// The max number of observed-by context domains to keep for each top topic.
-// The intent is to cap the in-use memory.
+// The max number of observed-by context domains to keep for each top topic
+// during the epoch topics calculation. The final number of domains associated
+// with each topic may be larger than this threshold, because that set of
+// domains will also include all domains associated with the topic's descendant
+// topics. The intent is to cap the in-use memory.
 const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToKeepPerTopic{
         &kBrowsingTopics,
@@ -1135,51 +1171,6 @@ bool IsSetTimeoutWithoutClampEnabled() {
   return base::FeatureList::IsEnabled(features::kSetTimeoutWithoutClamp);
 }
 
-namespace {
-
-enum class UnthrottledNestedTimeoutPolicyOverride {
-  kNoOverride,
-  kForceDisable,
-  kForceEnable
-};
-
-bool g_unthrottled_nested_timeout_policy_override_cached = false;
-
-// Returns the UnthrottledNestedTimeout policy settings. This is calculated
-// once on first access and cached.
-UnthrottledNestedTimeoutPolicyOverride
-GetUnthrottledNestedTimeoutPolicyOverride() {
-  static UnthrottledNestedTimeoutPolicyOverride policy =
-      UnthrottledNestedTimeoutPolicyOverride::kNoOverride;
-  if (g_unthrottled_nested_timeout_policy_override_cached)
-    return policy;
-
-  // Otherwise, check the command-line for the renderer. Only values of "0"
-  // and "1" are valid, anything else is ignored (and allows the base::Feature
-  // to control the feature). This slow path will only be hit once per renderer
-  // process.
-  std::string value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUnthrottledNestedTimeoutPolicy);
-  if (value == switches::kUnthrottledNestedTimeoutPolicy_ForceEnable) {
-    policy = UnthrottledNestedTimeoutPolicyOverride::kForceEnable;
-  } else if (value == switches::kUnthrottledNestedTimeoutPolicy_ForceDisable) {
-    policy = UnthrottledNestedTimeoutPolicyOverride::kForceDisable;
-  } else {
-    policy = UnthrottledNestedTimeoutPolicyOverride::kNoOverride;
-  }
-  g_unthrottled_nested_timeout_policy_override_cached = true;
-  return policy;
-}
-
-}  // namespace
-
-void ClearUnthrottledNestedTimeoutOverrideCacheForTesting() {
-  // Tests may want to force recalculation of the cached policy value when
-  // exercising different configs.
-  g_unthrottled_nested_timeout_policy_override_cached = false;
-}
-
 // If enabled, the setTimeout(..., 0) will clamp to 4ms after a custom `nesting`
 // level.
 // Tracking bug: https://crbug.com/1108877.
@@ -1189,18 +1180,11 @@ BASE_FEATURE(kMaxUnthrottledTimeoutNestingLevel,
 const base::FeatureParam<int> kMaxUnthrottledTimeoutNestingLevelParam{
     &kMaxUnthrottledTimeoutNestingLevel, "nesting", 15};
 bool IsMaxUnthrottledTimeoutNestingLevelEnabled() {
-  auto policy = GetUnthrottledNestedTimeoutPolicyOverride();
-  if (policy != UnthrottledNestedTimeoutPolicyOverride::kNoOverride)
-    return policy == UnthrottledNestedTimeoutPolicyOverride::kForceEnable;
-  // Otherwise respect the base::Feature.
   return base::FeatureList::IsEnabled(
       blink::features::kMaxUnthrottledTimeoutNestingLevel);
 }
 
 int GetMaxUnthrottledTimeoutNestingLevel() {
-  auto policy = GetUnthrottledNestedTimeoutPolicyOverride();
-  if (policy != UnthrottledNestedTimeoutPolicyOverride::kNoOverride)
-    return kMaxUnthrottledTimeoutNestingLevelParam.default_value;
   return kMaxUnthrottledTimeoutNestingLevelParam.Get();
 }
 
@@ -1520,7 +1504,7 @@ BASE_FEATURE(kWebRtcThreadsUseResourceEfficientType,
 
 BASE_FEATURE(kWebRtcMetronome,
              "WebRtcMetronome",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRunTextInputUpdatePostLifecycle,
              "RunTextInputUpdatePostLifecycle",
@@ -1544,7 +1528,7 @@ const base::FeatureParam<bool> kProcessHtmlDataImmediatelySubsequentChunks{
 
 BASE_FEATURE(kFastPathPaintPropertyUpdates,
              "FastPathPaintPropertyUpdates",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThrottleOffscreenAnimatingSvgImages,
              "ThrottleOffscreenAnimatingSvgImages",
@@ -1739,6 +1723,21 @@ BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial,
 BASE_FEATURE(kRuntimeFeatureStateControllerApplyFeatureDiff,
              "RuntimeFeatureStateControllerApplyFeatureDiff",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kURLSetPortCheckOverflow,
+             "URLSetPortCheckOverflow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMemoryCacheStrongReference,
+             "MemoryCacheStrongReference",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMemoryCacheStrongReferenceSingleUnload,
+             "MemoryCacheStrongReferenceSingleUnload",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMemoryCacheStrongReferenceFilterImages,
+             "MemoryCacheStrongReferenceFilterImages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

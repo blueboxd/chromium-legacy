@@ -14,6 +14,7 @@
 #include "components/exo/wayland/output_metrics.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_output.h"
+#include "components/exo/wayland/zaura_output_manager.h"
 #include "components/exo/wayland/zcr_color_manager.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
@@ -22,17 +23,22 @@
 namespace exo {
 namespace wayland {
 
+WaylandDisplayObserver::WaylandDisplayObserver() = default;
+
+WaylandDisplayObserver::~WaylandDisplayObserver() = default;
+
 WaylandDisplayHandler::WaylandDisplayHandler(WaylandDisplayOutput* output,
                                              wl_resource* output_resource)
-    : output_(output), output_resource_(output_resource) {
-}
+    : output_(output), output_resource_(output_resource) {}
 
 WaylandDisplayHandler::~WaylandDisplayHandler() {
   ash::Shell::Get()->RemoveShellObserver(this);
-  for (auto& obs : observers_)
+  for (auto& obs : observers_) {
     obs.OnOutputDestroyed();
-  if (xdg_output_resource_)
+  }
+  if (xdg_output_resource_) {
     wl_resource_set_user_data(xdg_output_resource_, nullptr);
+  }
   output_->UnregisterOutput(output_resource_);
 }
 
@@ -47,8 +53,8 @@ void WaylandDisplayHandler::AddObserver(WaylandDisplayObserver* observer) {
   observers_.AddObserver(observer);
 
   display::Display display;
-  bool exists = display::Screen::GetScreen()->GetDisplayWithDisplayId(
-      output_->id(), &display);
+  bool exists =
+      display::Screen::GetScreen()->GetDisplayWithDisplayId(id(), &display);
   if (!exists) {
     // WaylandDisplayHandler is created asynchronously, and the
     // display can be deleted before created. This usually won't happen
@@ -58,13 +64,7 @@ void WaylandDisplayHandler::AddObserver(WaylandDisplayObserver* observer) {
 
   // Send the first round of changes to the observer.
   constexpr uint32_t all_changes = 0xFFFFFFFF;
-  if (observer->SendDisplayMetrics(display, all_changes)) {
-    if (wl_resource_get_version(output_resource_) >=
-        WL_OUTPUT_DONE_SINCE_VERSION) {
-      wl_output_send_done(output_resource_);
-    }
-    wl_client_flush(wl_resource_get_client(output_resource_));
-  }
+  OnDisplayMetricsChanged(display, all_changes);
 }
 
 void WaylandDisplayHandler::RemoveObserver(WaylandDisplayObserver* observer) {
@@ -81,12 +81,26 @@ void WaylandDisplayHandler::OnDisplayMetricsChanged(
     uint32_t changed_metrics) {
   DCHECK(output_resource_);
 
-  if (output_->id() != display.id())
+  if (id() != display.id()) {
     return;
+  }
 
   bool needs_done = false;
-  for (auto& observer : observers_)
+
+  // If supported, the aura_output_manager must have been bound by clients
+  // before the wl_output associated with this WaylandDisplayHandler is bound.
+  wl_client* client = wl_resource_get_client(output_resource_);
+  if (auto* output_manager = AuraOutputManager::Get(client)) {
+    // This sends all relevant output metrics to clients. These events are sent
+    // immediately after the client binds an output and again every time display
+    // metrics have changed.
+    needs_done |= output_manager->SendOutputMetrics(output_resource_, display,
+                                                    changed_metrics);
+  }
+
+  for (auto& observer : observers_) {
     needs_done |= observer.SendDisplayMetrics(display, changed_metrics);
+  }
 
   if (needs_done) {
     if (wl_resource_get_version(output_resource_) >=
@@ -99,13 +113,13 @@ void WaylandDisplayHandler::OnDisplayMetricsChanged(
 
 void WaylandDisplayHandler::OnDisplayForNewWindowsChanged() {
   DCHECK(output_resource_);
-  if (output_->id() !=
-      display::Screen::GetScreen()->GetDisplayForNewWindows().id()) {
+  if (id() != display::Screen::GetScreen()->GetDisplayForNewWindows().id()) {
     return;
   }
 
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.SendActiveDisplay();
+  }
 }
 
 void WaylandDisplayHandler::OnXdgOutputCreated(
@@ -114,8 +128,7 @@ void WaylandDisplayHandler::OnXdgOutputCreated(
   xdg_output_resource_ = xdg_output_resource;
 
   display::Display display;
-  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(output_->id(),
-                                                             &display)) {
+  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(id(), &display)) {
     return;
   }
   OnDisplayMetricsChanged(display, 0xFFFFFFFF);
@@ -143,8 +156,9 @@ void WaylandDisplayHandler::XdgOutputSendDescription(const std::string& desc) {
 
 bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
                                                uint32_t changed_metrics) {
-  if (!output_resource_)
+  if (!output_resource_) {
     return false;
+  }
 
   // There is no need to check DISPLAY_METRIC_PRIMARY because when primary
   // changes, bounds always changes. (new primary should have had non
@@ -197,8 +211,9 @@ void WaylandDisplayHandler::OnOutputDestroyed() {
 size_t WaylandDisplayHandler::CountObserversForTesting() const {
   size_t count = 0;
   for (auto& obs : observers_) {
-    if (&obs != this)
+    if (&obs != this) {
       count++;
+    }
   }
   return count;
 }

@@ -376,6 +376,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1803351196216024260">Får begära åtkomst till mikrofonen</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1807528111851433570">Första ark</translation>
+<translation id="180991881384371158">CVC-koden finns på baksidan av kortet. Det är de sista tre siffrorna uppe till höger i signaturrutan.</translation>
 <translation id="181000283860817563">Bevaka priser på flera webbplatser</translation>
 <translation id="1810391395243432441">Skydda dina lösenord med skärmlåset</translation>
 <translation id="1812527064848182527">liggande</translation>
@@ -506,6 +507,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2149968176347646218">Anslutningen är inte säker</translation>
 <translation id="2153609454945889823">Vill du installera Google Play-tjänster för AR?</translation>
 <translation id="2154484045852737596">Redigera kortet</translation>
+<translation id="2154739667870063220">Starta om</translation>
 <translation id="2155260325161282517">5 x 7 tum</translation>
 <translation id="2157640075051554492">Aviseringar för prisbevakningar</translation>
 <translation id="2161656808144014275">Text</translation>
@@ -640,6 +642,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2521736961081452453">Skapa formulär</translation>
 <translation id="2523886232349826891">Endast sparat på den här enheten</translation>
 <translation id="2524461107774643265">Lägg till mer information</translation>
+<translation id="2527451058878391043">CVC-koden finns på framsidan av kortet. Det är den fyrsiffriga koden uppe till höger ovanför kortnumret.</translation>
 <translation id="2529899080962247600">Fältet får ha högst <ph name="MAX_ITEMS_LIMIT" /> poster. Alla poster utöver det ignoreras.</translation>
 <translation id="253493526287553278">Visa information om kampanjkoden</translation>
 <translation id="2535585790302968248">Öppna en ny inkognitoflik och surfa privat</translation>
@@ -894,6 +897,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3215092763954878852">Det gick inte att använda WebAuthn</translation>
 <translation id="3216313131063488104">Blues</translation>
 <translation id="3218181027817787318">Relativ</translation>
+<translation id="3218247554732884571">{DAYS_UNTIL_DEADLINE,plural, =1{Uppdatering krävs nu}=2{Uppdatering krävs i morgon}other{Uppdatering krävs inom # dagar}}</translation>
 <translation id="3223287115535306850">Ikon för appstart</translation>
 <translation id="3223425961342298674">Plats tillåts inte</translation>
 <translation id="3225919329040284222">Ett certifikat som inte överensstämmer med inbyggda förväntningar presenterades på servern. Förväntningarna gäller för webbplatser med hög säkerhet för att skydda dig.</translation>
@@ -1378,6 +1382,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4350629523305688469">Flerfunktionsfack</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> vill söka efter Bluetooth-enheter i närheten. Följande enheter har hittats:</translation>
 <translation id="4351175281479794167">Ange verifieringskod</translation>
+<translation id="4355383636893709732">ChromeOS-uppdatering för Android-appar</translation>
 <translation id="4356973930735388585">Det kan hända att angripare på den här webbplatsen försöker installera skadliga program på datorn som stjäl eller raderar dina uppgifter (t.ex. foton, lösenord, meddelanden och kreditkort).</translation>
 <translation id="4358059973562876591">Det gick inte att tillämpa de angivna mallarna på grund av ett fel i principen DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Hantera betalningsmetoder …</translation>
@@ -1758,6 +1763,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5288393065350884210">Bokföring och revision</translation>
 <translation id="5288808348893593856">Webbplatsens anslutning är alltid säker så länge det inte visas en varning i Chrome.</translation>
 <translation id="5289384342738547352">Hantering av flera dokument</translation>
+<translation id="5291770543968339335">{DAYS_UNTIL_DEADLINE,plural, =1{Uppdatering krävs i dag}=2{Uppdatering krävs i morgon}other{Uppdatering krävs inom # dagar}}</translation>
 <translation id="5293919335876685914">Kupébilar</translation>
 <translation id="5296589789433599000">Matlagning och recept</translation>
 <translation id="5299298092464848405">Det uppstod ett fel när policyn analyserades</translation>
@@ -1952,6 +1958,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5786044859038896871">Vill du att kortuppgifterna ska fyllas i?</translation>
 <translation id="578633867165174378">Chrome upptäckte att lösenordet som du precis använde har läckt ut vid ett dataintrång. Vi rekommenderar att du byter det här lösenordet nu.</translation>
 <translation id="5789643057113097023">,</translation>
+<translation id="580241730938216256">Starta uppdatering</translation>
 <translation id="5803412860119678065">Vill du att uppgifterna om <ph name="CARD_DETAIL" /> ska fyllas i?</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5808435672482059465">Visa Chrome-historiken</translation>
@@ -2112,6 +2119,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6218753634732582820">Vill du ta bort adressen från Chromium?</translation>
 <translation id="622039917539443112">Parallellfalsning</translation>
 <translation id="6221345481584921695">Google Säker webbsökning upptäckte nyligen <ph name="BEGIN_LINK" />skadlig programvara<ph name="END_LINK" /> på <ph name="SITE" />. Webbplatser som vanligtvis är säkra utsätts ibland för skadlig programvara. Det skadliga innehållet kommer från <ph name="SUBRESOURCE_HOST" />, som är en känd distributör av skadlig programvara.</translation>
+<translation id="6221892641068781024">Förenklad visning</translation>
 <translation id="6226163402662242066"><ph name="MANAGE_CHROME_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />: tryck på Tabb och sedan på Retur om du vill anpassa tillgänglighetsverktygen i Chrome-inställningarna</translation>
 <translation id="6229649258872345286">Familjeresor</translation>
 <translation id="6232271601416750929">Ren skönhet</translation>
@@ -2171,6 +2179,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6366710531182496394">Två häftklamrar till vänster</translation>
 <translation id="6367196786591004737">Radera post</translation>
 <translation id="6370022303958842211">Åtgärder för enhetsåtkomst, t.ex. inloggningar (inklusive misslyckade inloggningar), utloggningar, låsningar och upplåsningar</translation>
+<translation id="6374469231428023295">Försök igen</translation>
 <translation id="6374865374745447009">fönsterhantering</translation>
 <translation id="6377268785556383139">1 resultat för <ph name="SEARCH_TEXT" /></translation>
 <translation id="6380497234672085559">A0</translation>
@@ -2481,6 +2490,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
 <translation id="7153618581592392745">Lavendelfärgad</translation>
 <translation id="7156870133441232244">Servern behöver uppgraderas till TLS 1.2 eller senare.</translation>
+<translation id="7160999678034985039">Spara ditt arbete och starta uppdateringen när du är redo.</translation>
 <translation id="7163295244162773898">{0,plural, =1{Vill du kopiera en konfidentiell fil?}other{Vill du kopiera konfidentiella filer?}}</translation>
 <translation id="717330890047184534">Gaia-id:</translation>
 <translation id="7174545416324379297">Sammanslagen</translation>
@@ -2695,7 +2705,6 @@ Mer information.
 <translation id="7630470133768862132">Samtyckesstatus:</translation>
 <translation id="7631444403134069754">Friidrott</translation>
 <translation id="7633909222644580952">Prestandainformation och kraschrapporter</translation>
-<translation id="7634280112532283638">Motverka spam och bedrägerier</translation>
 <translation id="7637571805876720304">Vill du ta bort kreditkortet från Chromium?</translation>
 <translation id="7637586430889951925">{COUNT,plural, =0{Inga}=1{1 lösenord i kontot (för <ph name="DOMAIN_LIST" />)}other{# lösenord i kontot (för <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="7638605456503525968">Serieportar</translation>
@@ -2728,6 +2737,7 @@ Mer information.
 <translation id="7687305263118037187">Tidsgränsen för nytt försök överskreds</translation>
 <translation id="7690647519407127574">Oufuku Hagaki-vykort</translation>
 <translation id="7693583928066320343">Sidordning mottagen</translation>
+<translation id="769424100851389104">Starta uppdateringen nu</translation>
 <translation id="7696089921647603491">Klassisk rock och gamla godingar</translation>
 <translation id="769721561045429135">Du har för närvarande kort som bara kan användas på den här enheten. Klicka på Fortsätt om du vill granska korten.</translation>
 <translation id="7698864304447945242">Vill du uppdatera Google Play-tjänster för AR?</translation>
@@ -2752,6 +2762,7 @@ Mer information.
 <translation id="774634243536837715">Farligt innehåll har blockerats.</translation>
 <translation id="7751971323486164747">Anpassa teckenstorlekar och teckensnitt i Chrome</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
+<translation id="7754587126786572336">Dina flikar och appar i Chrome stängs när uppdateringen startar</translation>
 <translation id="7755287808199759310">En förälder kan ta bort blockeringen</translation>
 <translation id="7755624218968747854">Primär rulle</translation>
 <translation id="7758069387465995638">Anslutningen kan ha blockerats av en brandvägg eller antivirusprogram.</translation>
@@ -2916,6 +2927,7 @@ Mer information.
 <translation id="8186706823560132848">Program</translation>
 <translation id="8190193880870196235">Hanteras av ett tillägg</translation>
 <translation id="8194797478851900357">&amp;Ångra Flytta</translation>
+<translation id="8200772114523450471">Återuppta</translation>
 <translation id="8201077131113104583">Ogiltig webbadress för uppdatering för tillägg med id <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Beställningsöversikt</translation>
 <translation id="8202370299023114387">Konflikt</translation>
@@ -3214,6 +3226,7 @@ Mer information:
 <translation id="8963117664422609631">Öppna webbplatsinställningarna</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Förslag:<ph name="MARKUP_2" />Kontrollera att du använder en dataanslutning<ph name="MARKUP_3" />Läs in den här webbsidan igen senare<ph name="MARKUP_4" />Kontrollera att du har angett rätt adress<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Spara kortet</translation>
+<translation id="8970887620466824814">Något gick fel.</translation>
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
 <translation id="8975012916872825179">Gäller uppgifter som telefonnummer, e-postadresser och leveransadresser</translation>
 <translation id="8975263830901772334">Namn på filer du skriver ut</translation>

@@ -6,6 +6,18 @@
     width: 100%;
   }
 
+  a:link,
+  a:visited,
+  a:hover,
+  a:active {
+    text-decoration: none;
+  }
+
+  :host-context(.focus-outline-visible) :focus {
+    box-shadow: var(--ntp-focus-shadow);
+    outline: none;
+  }
+
   .related-search {
     background:
         var(--color-new-tab-page-history-clusters-module-item-background);
@@ -46,11 +58,12 @@
 <div id="content">
   <template is="dom-repeat" items="[[relatedSearches]]"
             filter="[[filterRelatedSearches_]]">
-    <div class="related-search">
+    <a class="related-search" href="[[computeSearchUrl_(item.query)]]"
+       aria-label$="[[i18n('modulesJourneysSearchSuggAcc', item.query)]]">
       <div class="icon"
            style="-webkit-mask-image:
            url(//resources/images/icon_search.svg);"></div>
       <div class="title truncate">[[item.query]]</div>
-    </div>
+    </a>
   </template>
 </div>

@@ -31,6 +31,7 @@ extern const char kSafeBrowsingForTrustedSourcesEnabled[];
 extern const char kDisableScreenshots[];
 extern const char kDownloadRestrictions[];
 extern const char kDownloadBubbleEnabled[];
+extern const char kDownloadBubbleIphSuppression[];
 extern const char kDownloadDuplicateFilePromptEnabled[];
 extern const char kForceEphemeralProfiles[];
 extern const char kHomePageIsNewTabPage[];
@@ -54,9 +55,6 @@ extern const char kManagedProfileSerialAllowUsbDevicesForUrlsDeprecated[];
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kSupervisedUserApprovedExtensions[];
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-extern const char kSupervisedUserMetricsDayId[];
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 extern const char kURLsToRestoreOnStartup[];
 extern const char kUserFeedbackAllowed[];
@@ -297,6 +295,9 @@ extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
 extern const char kFirstEolWarningDismissed[];
 extern const char kSecondEolWarningDismissed[];
+extern const char kEolApproachingIncentiveNotificationDismissed[];
+extern const char kEolPassedFinalIncentiveDismissed[];
+extern const char kEolIncentiveNotificationSilenced[];
 extern const char kPinUnlockFeatureNotificationShown[];
 extern const char kFingerprintUnlockFeatureNotificationShown[];
 extern const char kPinUnlockAutosubmitEnabled[];
@@ -489,8 +490,6 @@ extern const char kPrintJobHistoryExpirationPeriod[];
 extern const char kDeletePrintJobHistoryAllowed[];
 extern const char kPrintingOAuth2AuthorizationServers[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-extern const char kDefaultSupervisedUserFilteringBehavior[];
 
 extern const char kSupervisedUsers[];
 
@@ -986,7 +985,6 @@ extern const char kCryptAuthDeviceId[];
 extern const char kCryptAuthInstanceId[];
 extern const char kCryptAuthInstanceIdToken[];
 extern const char kEasyUnlockHardlockState[];
-extern const char kEasyUnlockLocalStateUserPrefs[];
 
 extern const char kRecoveryComponentNeedsElevation[];
 

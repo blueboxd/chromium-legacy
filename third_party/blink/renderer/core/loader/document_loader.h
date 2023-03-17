@@ -318,7 +318,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
 
   void DispatchLinkHeaderPreloads(const ViewportDescription*,
-                                  PreloadHelper::MediaPreloadPolicy);
+                                  PreloadHelper::LoadLinksFromHeaderMode);
 
   void LoadFailed(const ResourceError&);
 
@@ -404,8 +404,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const absl::optional<Vector<KURL>>& AdAuctionComponents() const {
     return ad_auction_components_;
   }
-
-  bool HasFencedFrameReporting() const { return has_fenced_frame_reporting_; }
 
   const absl::optional<FencedFrame::RedactedFencedFrameProperties>&
   FencedFrameProperties() const {
@@ -800,11 +798,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // contains URNs to the ad components returned by the winning bid. Null,
   // otherwise.
   absl::optional<Vector<KURL>> ad_auction_components_;
-
-  // This boolean flag indicates whether there is associated reporting metadata
-  // with the fenced frame.
-  // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  bool has_fenced_frame_reporting_;
 
   std::unique_ptr<ExtraData> extra_data_;
 

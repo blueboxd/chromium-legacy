@@ -260,9 +260,10 @@ class AutofillCapturedSitesInteractiveTest
   }
 
  protected:
-  AutofillCapturedSitesInteractiveTest() = default;
+  AutofillCapturedSitesInteractiveTest()
+      : AutofillUiTest({.disable_server_communication = false}) {}
 
-  ~AutofillCapturedSitesInteractiveTest() override {}
+  ~AutofillCapturedSitesInteractiveTest() override = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
@@ -349,7 +350,7 @@ class AutofillCapturedSitesInteractiveTest
   bool ShowAutofillSuggestion(const std::string& target_element_xpath,
                               const std::vector<std::string> iframe_path,
                               content::RenderFrameHost* frame) {
-    // First, automation should focus on the frame containg the autofill form.
+    // First, automation should focus on the frame containing the autofill form.
     // Doing so ensures that Chrome scrolls the element into view if the
     // element is off the page.
     test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},

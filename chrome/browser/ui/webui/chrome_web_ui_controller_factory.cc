@@ -279,6 +279,7 @@
 #include "chrome/browser/ui/webui/ash/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/ash/kerberos/kerberos_in_browser_ui.h"
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_network_ui.h"
 #include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_start_reauth_ui.h"
@@ -580,6 +581,15 @@ void BindEcheStreamOrientationObserver(
   }
 }
 
+void BindEcheConnectionStatusObserver(
+    ash::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<ash::eche_app::mojom::ConnectionStatusObserver>
+        receiver) {
+  if (manager) {
+    manager->BindConnectionStatusObserverInterface(std::move(receiver));
+  }
+}
+
 template <>
 WebUIController* NewWebUI<ash::eche_app::EcheAppUI>(WebUI* web_ui,
                                                     const GURL& url) {
@@ -592,7 +602,8 @@ WebUIController* NewWebUI<ash::eche_app::EcheAppUI>(WebUI* web_ui,
       base::BindRepeating(&BindEcheUidGenerator, manager),
       base::BindRepeating(&BindEcheNotificationGenerator, manager),
       base::BindRepeating(&BindEcheDisplayStreamHandler, manager),
-      base::BindRepeating(&BindEcheStreamOrientationObserver, manager));
+      base::BindRepeating(&BindEcheStreamOrientationObserver, manager),
+      base::BindRepeating(&BindEcheConnectionStatusObserver, manager));
 }
 
 template <>
@@ -1037,6 +1048,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() ==
       ash::personalization_app::kChromeUIPersonalizationAppHost) {
     return &NewWebUI<ash::personalization_app::PersonalizationAppUI>;
+  }
+  if (base::FeatureList::IsEnabled(net::features::kKerberosInBrowserRedirect) &&
+      url.host_piece() == chrome::kChromeUIKerberosInBrowserHost) {
+    return &NewWebUI<ash::KerberosInBrowserUI>;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -1499,7 +1514,8 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
         GURL(chrome::kChromeUICrostiniCreditsURL),
         GURL(chrome::kChromeUICrostiniInstallerUrl),
         GURL(chrome::kChromeUICrostiniUpgraderUrl),
-        GURL(chrome::kChromeUICryptohomeURL), GURL(chrome::kOsUIDeviceLogURL),
+        GURL(chrome::kChromeUICryptohomeURL),
+        GURL(chrome::kOsUIDeviceEmulatorURL), GURL(chrome::kOsUIDeviceLogURL),
         GURL(chrome::kChromeUIDiagnosticsAppURL),
         GURL(chrome::kChromeUIDriveInternalsUrl),
         GURL(chrome::kOsUIDriveInternalsURL),
@@ -1593,8 +1609,9 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
 }
 
 bool ChromeWebUIControllerFactory::CanHandleUrl(const GURL& url) {
-  return crosapi::gurl_os_handler_utils::IsUrlInList(url,
-                                                     GetListOfAcceptableURLs());
+  return crosapi::gurl_os_handler_utils::IsUrlInList(
+      crosapi::gurl_os_handler_utils::SanitizeAshURL(url),
+      GetListOfAcceptableURLs());
 }
 
 #endif

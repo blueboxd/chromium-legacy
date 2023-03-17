@@ -48,6 +48,12 @@ BASE_FEATURE(kChromeWhatsNewUI,
 #endif
 );
 
+// Create new Extensions app menu option (removing "More Tools -> Extensions")
+// with submenu to manage extensions and visit chrome web store.
+BASE_FEATURE(kExtensionsMenuInAppMenu,
+             "ExtensionsMenuInAppMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if !defined(ANDROID)
 // Enables "Access Code Cast" UI.
 BASE_FEATURE(kAccessCodeCastUI,
@@ -77,12 +83,6 @@ BASE_FEATURE(kLightweightExtensionOverrideConfirmations,
 // Enables Bookmarks++ Side Panel UI.
 BASE_FEATURE(kPowerBookmarksSidePanel,
              "PowerBookmarksSidePanel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables a more prominent active tab title in dark mode to aid with
-// accessibility.
-BASE_FEATURE(kProminentDarkModeActiveTabTitle,
-             "ProminentDarkModeActiveTabTitle",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the QuickCommands UI surface. See https://crbug.com/1014639
@@ -161,7 +161,9 @@ const char kScrollableTabStripOverflowModeName[] = "tabScrollOverflow";
 
 // Splits pinned and unpinned tabs into separate TabStrips.
 // https://crbug.com/1346019
-BASE_FEATURE(kSplitTabStrip, "SplitTabStrip", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kSplitTabStrip,
+             "SplitTabStrip",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables tabs to be frozen when collapsed.
 // https://crbug.com/1110108
@@ -182,8 +184,12 @@ BASE_FEATURE(kTabGroupsNewBadgePromo,
 BASE_FEATURE(kTabGroupsSave,
              "TabGroupsSave",
              base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<bool> kTabGroupsSaveSyncIntegration{
-    &kTabGroupsSave, "TabGroupsSaveSyncIntegration", false};
+
+// Enables users to explicitly save and recall tab groups.
+// https://crbug.com/1223929
+BASE_FEATURE(kTabGroupsSaveSyncIntegration,
+             "TabGroupsSaveSyncIntegration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954
@@ -206,11 +212,6 @@ const char kTabHoverCardImagesCrossfadePreviewAtParameterName[] =
 const char kTabHoverCardAdditionalMaxWidthDelay[] =
     "additional_max_width_delay";
 const char kTabHoverCardAlternateFormat[] = "alternate_format";
-
-// Enables tab outlines in additional situations for accessibility.
-BASE_FEATURE(kTabOutlinesInLowContrastThemes,
-             "TabOutlinesInLowContrastThemes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabSearchChevronIcon,
              "TabSearchChevronIcon",

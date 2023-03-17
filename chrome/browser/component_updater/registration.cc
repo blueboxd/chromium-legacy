@@ -27,6 +27,7 @@
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/hyphenation_component_installer.h"
+#include "chrome/browser/component_updater/masked_domain_list_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
 #include "chrome/browser/component_updater/pki_metadata_component_installer.h"
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
@@ -64,7 +65,6 @@
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/component_updater/crow_domain_list_component_installer.h"
 #include "chrome/browser/component_updater/real_time_url_checks_allowlist_component_installer.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -139,6 +139,7 @@ void RegisterComponentsForUpdate() {
   RegisterOptimizationHintsComponent(cus);
   RegisterTrustTokenKeyCommitmentsComponentIfTrustTokensEnabled(cus);
   RegisterFirstPartySetsComponent(cus);
+  RegisterMaskedDomainListComponent(cus);
 
   base::FilePath path;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &path)) {
@@ -202,8 +203,13 @@ void RegisterComponentsForUpdate() {
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-  RegisterCrowDomainListComponent(cus);
   RegisterRealTimeUrlChecksAllowlistComponent(cus);
+  // TODO(https://crbug.com/1423159): Clean this up once it's been live for a
+  // few months.
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::GetDeleteFileCallback(
+          path.Append(FILE_PATH_LITERAL("CreatorChipConfig"))));
 #endif  // BUIDLFLAG(IS_ANDROID)
 
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());

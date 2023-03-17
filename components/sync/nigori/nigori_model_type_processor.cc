@@ -14,12 +14,12 @@
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/forwarding_model_type_processor.h"
 #include "components/sync/engine/model_type_processor_metrics.h"
-#include "components/sync/engine/model_type_worker.h"
 #include "components/sync/model/processor_entity.h"
 #include "components/sync/model/type_entities_count.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/model_type_state_helper.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 
@@ -134,7 +134,8 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   // must be empty for Nigori.
   absl::optional<ModelError> error;
 
-  const bool is_initial_sync = !model_type_state_.initial_sync_done();
+  const bool is_initial_sync =
+      !IsInitialSyncDone(model_type_state_.initial_sync_state());
   LogUpdatesReceivedByProcessorHistogram(NIGORI, is_initial_sync,
                                          updates.size());
 
@@ -314,7 +315,10 @@ void NigoriModelTypeProcessor::ModelReadyToSync(
     return;
   }
 
-  if (nigori_metadata.model_type_state.initial_sync_done() &&
+  MigrateLegacyInitialSyncDone(nigori_metadata.model_type_state, NIGORI);
+
+  if (IsInitialSyncDone(
+          nigori_metadata.model_type_state.initial_sync_state()) &&
       nigori_metadata.entity_metadata) {
     model_type_state_ = std::move(nigori_metadata.model_type_state);
     sync_pb::EntityMetadata metadata =
@@ -339,7 +343,7 @@ void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
   DCHECK_EQ(NIGORI, GetModelTypeFromSpecifics(entity_data->specifics));
   DCHECK(entity_);
 
-  if (!model_type_state_.initial_sync_done()) {
+  if (!IsInitialSyncDone(model_type_state_.initial_sync_state())) {
     // Ignore changes before the initial sync is done.
     return;
   }
@@ -411,7 +415,7 @@ NigoriModelTypeProcessor::GetModelTypeStateForTest() {
 }
 
 bool NigoriModelTypeProcessor::IsTrackingMetadata() {
-  return model_type_state_.initial_sync_done();
+  return IsInitialSyncDone(model_type_state_.initial_sync_state());
 }
 
 bool NigoriModelTypeProcessor::IsConnected() const {
@@ -432,7 +436,7 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  if (model_type_state_.initial_sync_done() &&
+  if (IsInitialSyncDone(model_type_state_.initial_sync_state()) &&
       model_type_state_.cache_guid() != activation_request_.cache_guid) {
     ClearMetadataAndReset();
     DCHECK(model_ready_to_sync_);
@@ -458,7 +462,7 @@ void NigoriModelTypeProcessor::NudgeForCommitIfNeeded() const {
   }
 
   // Don't send anything if the type is not ready to handle commits.
-  if (!model_type_state_.initial_sync_done()) {
+  if (!IsInitialSyncDone(model_type_state_.initial_sync_state())) {
     return;
   }
 

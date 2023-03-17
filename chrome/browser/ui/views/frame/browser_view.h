@@ -767,10 +767,6 @@ class BrowserView : public BrowserWindow,
     return accessibility_focus_highlight_.get();
   }
 
-  // Closes an opened right aligned side panel, returns true if there is an open
-  // side panel being closed.
-  bool CloseOpenRightAlignedSidePanel(bool exclude_side_search = false);
-
   bool should_show_window_controls_overlay_toggle() const {
     return should_show_window_controls_overlay_toggle_;
   }
@@ -1047,6 +1043,10 @@ class BrowserView : public BrowserWindow,
 
   // The hosting view of TabStripRegionView during immersive fullscreen.
   raw_ptr<views::View, DanglingUntriaged> tab_overlay_view_ = nullptr;
+
+  // Targeter for the tab_overlay_view_. Ensures tab_overlay_view_ does not
+  // handle events, while allowing for child views to handle events.
+  std::unique_ptr<views::ViewTargeterDelegate> tab_overlay_view_targeter_;
 
 #endif
 

@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance_script_timing.h"
 #include "third_party/blink/renderer/core/timing/task_attribution_timing.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -27,6 +29,18 @@ PerformanceLongAnimationFrameTiming::PerformanceLongAnimationFrameTiming(
   info_ = info;
   time_origin_ = time_origin;
   cross_origin_isolated_capability_ = cross_origin_isolated_capability;
+  DCHECK(source->ToLocalDOMWindow());
+  const SecurityOrigin* security_origin =
+      source->ToLocalDOMWindow()->GetSecurityOrigin();
+  DCHECK(security_origin);
+
+  for (ScriptTimingInfo* script : info->Scripts()) {
+    if (script->Window() &&
+        security_origin->CanAccess(script->Window()->GetSecurityOrigin())) {
+      scripts_.push_back(MakeGarbageCollected<PerformanceScriptTiming>(
+          script, time_origin, cross_origin_isolated_capability, source));
+    }
+  }
 }
 
 PerformanceLongAnimationFrameTiming::~PerformanceLongAnimationFrameTiming() =
@@ -38,6 +52,11 @@ const AtomicString& PerformanceLongAnimationFrameTiming::entryType() const {
 
 DOMHighResTimeStamp PerformanceLongAnimationFrameTiming::renderStart() const {
   return ToMonotonicTime(info_->RenderStartTime());
+}
+
+DOMHighResTimeStamp PerformanceLongAnimationFrameTiming::desiredRenderStart()
+    const {
+  return ToMonotonicTime(info_->DesiredRenderStartTime());
 }
 
 DOMHighResTimeStamp PerformanceLongAnimationFrameTiming::ToMonotonicTime(
@@ -52,9 +71,19 @@ DOMHighResTimeStamp PerformanceLongAnimationFrameTiming::styleAndLayoutStart()
   return ToMonotonicTime(info_->StyleAndLayoutStartTime());
 }
 
+DOMHighResTimeStamp PerformanceLongAnimationFrameTiming::firstUIEventTimestamp()
+    const {
+  return ToMonotonicTime(info_->FirstUIEventTime());
+}
+
 PerformanceEntryType PerformanceLongAnimationFrameTiming::EntryTypeEnum()
     const {
   return PerformanceEntry::EntryType::kLongAnimationFrame;
+}
+
+const PerformanceScriptVector& PerformanceLongAnimationFrameTiming::scripts()
+    const {
+  return scripts_;
 }
 
 void PerformanceLongAnimationFrameTiming::BuildJSONValue(
@@ -62,11 +91,16 @@ void PerformanceLongAnimationFrameTiming::BuildJSONValue(
   PerformanceEntry::BuildJSONValue(builder);
   builder.AddNumber("renderStart", renderStart());
   builder.AddNumber("styleAndLayoutStart", styleAndLayoutStart());
+  builder.AddNumber("desiredRenderStart", desiredRenderStart());
+  ScriptState* script_state = builder.GetScriptState();
+  builder.Add("scripts", FreezeV8Object(ToV8(scripts_, script_state),
+                                        script_state->GetIsolate()));
 }
 
 void PerformanceLongAnimationFrameTiming::Trace(Visitor* visitor) const {
   PerformanceEntry::Trace(visitor);
   visitor->Trace(info_);
+  visitor->Trace(scripts_);
 }
 
 }  // namespace blink

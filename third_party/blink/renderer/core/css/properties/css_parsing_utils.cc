@@ -3145,6 +3145,7 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
 
   if (has_color_space) {
     result->SetColorInterpolationSpace(color_space, hue_interpolation_method);
+    context.Count(WebFeature::kCSSColorGradientColorSpace);
   }
 
   return ConsumeGradientColorStops(args, context, result,
@@ -3212,6 +3213,7 @@ static CSSValue* ConsumeLinearGradient(
 
   if (has_color_space) {
     result->SetColorInterpolationSpace(color_space, hue_interpolation_method);
+    context.Count(WebFeature::kCSSColorGradientColorSpace);
   }
 
   return ConsumeGradientColorStops(args, context, result,
@@ -3263,6 +3265,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
 
   if (has_color_space) {
     result->SetColorInterpolationSpace(color_space, hue_interpolation_method);
+    context.Count(WebFeature::kCSSColorGradientColorSpace);
   }
 
   return ConsumeGradientColorStops(args, context, result,
@@ -3540,7 +3543,8 @@ static CSSImageSetOptionValue* ConsumeImageSetOption(
     }
 
     resolution = ConsumeResolution(range);
-    if (!resolution || resolution->GetDoubleValue() <= 0.0) {
+    if (!resolution || (resolution->GetDoubleValue() <= 0.0 &&
+                        !RuntimeEnabledFeatures::CSSImageSetEnabled())) {
       return nullptr;
     }
   }
@@ -4313,7 +4317,7 @@ CSSValue* ConsumeTimelineRangeNameAndPercent(CSSParserTokenRange& range,
 
 CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
-  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSAnimationDelayStartEndEnabled());
   return ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll);
 }
 

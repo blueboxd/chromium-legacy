@@ -4,20 +4,25 @@ setup(() =>
     'Long animation frames are not supported.'));
 
 const very_long_frame_duration = 360;
+const no_long_frame_timeout = very_long_frame_duration * 3;
+const waiting_for_long_frame_timeout = very_long_frame_duration * 10;
 
-function loaf_promise() {
+function loaf_promise(t) {
   return new Promise(resolve => {
       const observer = new PerformanceObserver(entries => {
           const entry = entries.getEntries()[0];
-          if (entry.duration >= very_long_frame_duration)
+          // TODO: understand why we need this 5ms epsilon.
+          if (entry.duration > very_long_frame_duration - 5) {
+            observer.disconnect();
             resolve(entry);
+          }
       });
+
+      t.add_cleanup(() => observer.disconnect());
 
       observer.observe({entryTypes: ['long-animation-frame']});
   });
 }
-
-const no_long_frame_timeout = very_long_frame_duration * 2;
 
 function busy_wait(ms_delay = very_long_frame_duration) {
   const deadline = performance.now() + ms_delay;
@@ -28,9 +33,9 @@ async function expect_long_frame(cb, t) {
   await windowLoaded;
   await new Promise(resolve => t.step_timeout(resolve, 0));
   const timeout = new Promise((resolve, reject) =>
-    t.step_timeout(() => reject("timeout"), no_long_frame_timeout));
-  const receivedLongFrame = loaf_promise();
-  await cb();
+    t.step_timeout(() => resolve("timeout"), waiting_for_long_frame_timeout));
+  const receivedLongFrame = loaf_promise(t);
+  await cb(t);
   const entry = await Promise.race([
     receivedLongFrame,
     timeout
@@ -38,10 +43,24 @@ async function expect_long_frame(cb, t) {
   return entry;
 }
 
+async function expect_long_frame_with_script(cb, predicate, t) {
+  for (let i = 0; i < 10; ++i) {
+      const entry = await expect_long_frame(cb, t);
+      if (entry === "timeout" || !entry.scripts.length)
+        continue;
+      for (const script of entry.scripts) {
+        if (predicate(script))
+          return [entry, script];
+      }
+  }
+
+  return [];
+}
+
 async function expect_no_long_frame(cb, t) {
   await windowLoaded;
   for (let i = 0; i < 5; ++i) {
-    const receivedLongFrame = loaf_promise();
+    const receivedLongFrame = loaf_promise(t);
     await cb();
     const result = await Promise.race([receivedLongFrame,
         new Promise(resolve => t.step_timeout(() => resolve("timeout"),
@@ -62,7 +81,7 @@ async function prepare_exec_iframe(t, origin) {
   iframe.src = url.href;
   document.body.appendChild(iframe);
   await new Promise(resolve => iframe.addEventListener("load", resolve));
-  return new RemoteContext(uuid);
+  return [new RemoteContext(uuid), iframe];
 }
 
 
@@ -72,5 +91,39 @@ async function prepare_exec_popup(t, origin) {
   url.searchParams.set("uuid", uuid);
   const popup = window.open(url);
   t.add_cleanup(() => popup.close());
-  return new RemoteContext(uuid);
+  return [new RemoteContext(uuid), popup];
+}
+function test_loaf_script(cb, name, type, label) {
+  promise_test(async t => {
+    let [entry, script] = [];
+    [entry, script] = await expect_long_frame_with_script(cb,
+      script => (script.type === type && script.duration >= very_long_frame_duration), t);
+
+    assert_true(!!entry, "Entry detected");
+    assert_equals(script.name, name);
+    assert_greater_than_equal(script.duration, very_long_frame_duration);
+    assert_greater_than_equal(entry.duration, script.duration);
+    assert_greater_than_equal(script.executionStart, script.startTime);
+    assert_greater_than_equal(script.startTime, entry.startTime)
+    assert_equals(script.window, window);
+    assert_equals(script.forcedStyleAndLayoutDuration, 0);
+    assert_equals(script.windowAttribution, "self");
+}, `LoAF script: ${name} ${type},${label ? ` ${label}` : ''}`);
+
+}
+
+function test_self_user_callback(cb, name) {
+    test_loaf_script(cb, name, "user-callback");
+}
+
+function test_self_event_listener(cb, name) {
+  test_loaf_script(cb, name, "event-listener");
+}
+
+function test_promise_script(cb, resolve_or_reject, name, label) {
+  test_loaf_script(cb, name, `${resolve_or_reject}-promise`, label);
+}
+
+function test_self_script_block(cb, name, type) {
+  test_loaf_script(cb, name, type);
 }

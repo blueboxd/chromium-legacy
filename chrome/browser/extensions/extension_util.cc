@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "components/variations/variations_associated_data.h"
@@ -30,7 +29,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -78,10 +76,14 @@ bool HasIsolatedStorage(const std::string& extension_id,
   const Extension* extension =
       ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
           extension_id);
+  return extension && HasIsolatedStorage(*extension, context);
+}
 
+bool HasIsolatedStorage(const Extension& extension,
+                        content::BrowserContext* context) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const bool is_policy_extension =
-      extension && Manifest::IsPolicyLocation(extension->location());
+      Manifest::IsPolicyLocation(extension.location());
   Profile* profile = Profile::FromBrowserContext(context);
   if (profile && ash::ProfileHelper::IsSigninProfile(profile) &&
       is_policy_extension) {
@@ -89,7 +91,11 @@ bool HasIsolatedStorage(const std::string& extension_id,
   }
 #endif
 
-  return extension && AppIsolationInfo::HasIsolatedStorage(extension);
+  return LegacyHasIsolatedStorage(&extension);
+}
+
+bool LegacyHasIsolatedStorage(const Extension* extension) {
+  return extension->is_platform_app();
 }
 
 void SetIsIncognitoEnabled(const std::string& extension_id,
@@ -144,21 +150,15 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
   }
 }
 
-bool AllowFileAccess(const std::string& extension_id,
-                     content::BrowserContext* context) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             ::switches::kDisableExtensionsFileAccessCheck) ||
-         ExtensionPrefs::Get(context)->AllowFileAccess(extension_id);
-}
-
 void SetAllowFileAccess(const std::string& extension_id,
                         content::BrowserContext* context,
                         bool allow) {
   // Reload to update browser state if the value changed. We need to reload even
   // if the extension is disabled, in order to make sure file access is
   // reinitialized correctly.
-  if (allow == AllowFileAccess(extension_id, context))
+  if (allow == util::AllowFileAccess(extension_id, context)) {
     return;
+  }
 
   ExtensionPrefs::Get(context)->SetAllowFileAccess(extension_id, allow);
 

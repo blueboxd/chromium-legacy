@@ -41,7 +41,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1682634494516646069">Google Chrome ne peut pas lire et écrire dans son répertoire de données : 
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1691802391966922744">{COUNT,plural, =1{Votre administrateur a configuré Chrome de sorte qu'il se ferme après plus de 1 minute d'inactivité.}one{Votre administrateur a configuré Chrome de sorte qu'il se ferme après plus de # minute d'inactivité.}other{Votre administrateur a configuré Chrome de sorte qu'il se ferme après plus de # minutes d'inactivité.}}</translation>
 <translation id="1698376642261615901">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome va être relancé dans une heure}one{Chrome va être relancé dans # heure}other{Chrome va être relancé dans # heures}}</translation>
 <translation id="1734234790201236882">Chrome va enregistrer ce mot de passe dans votre compte Google. Vous n'avez pas besoin de le retenir.</translation>
@@ -258,8 +257,8 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
 <translation id="6003112304606738118">Téléchargement… <ph name="HOURS" /> heure(s) restante(s)</translation>
 <translation id="6010556343189461180">Vous devez disposer de macOS 10.15 ou d'une version ultérieure pour recevoir les futures mises à jour de Google Chrome. Or, c'est la version macOS 10.14 qui est installée sur cet ordinateur.</translation>
-<translation id="6022388122721048220">{0,plural, =0{Chrome va se fermer.}=1{Chrome va se fermer dans 1 seconde.}one{Chrome va se fermer dans # seconde.}other{Chrome va se fermer dans # secondes.}}</translation>
 <translation id="6022659036123304283">Personnalisez Chrome</translation>
+<translation id="6025087594896450715">Google Chrome va redémarrer dans <ph name="REMAINING_TIME" /></translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6070348360322141662">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome</translation>
 <translation id="608006075545470555">Ajouter un profil professionnel à ce navigateur</translation>
@@ -277,6 +276,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6327105987658262776">Aucune mise à jour disponible.</translation>
 <translation id="6412673304250309937">Il vérifie les URL d'après une liste de sites dangereux stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la fonctionnalité de navigation sécurisée.</translation>
 <translation id="6418662306461808273">Passer au profil Chrome existant ?</translation>
+<translation id="6493527311031785448">Google Chrome tente <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Pour créer un plan 3D de votre environnement, Chrome a besoin de l'autorisation d'accéder à la caméra</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome pour les développeurs</translation>
 <translation id="659498884637196217">Dans le Gestionnaire de mots de passe Google sur cet appareil</translation>
@@ -317,9 +317,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="7296210096911315575">Informations importantes concernant l'utilisation et la sécurité</translation>
 <translation id="7308322188646931570">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
-<translation id="7388770099345495132">Si vous souhaitez utiliser ce compte une seule fois, vous pouvez utiliser le mode Invité dans le navigateur Chrome. Pour ajouter le compte d'une autre personne, <ph name="LINK_BEGIN" />ajoutez un nouvel utilisateur<ph name="LINK_END" /> à votre <ph name="DEVICE_TYPE" />.
-
-Les autorisations que vous avez déjà accordées aux sites Web et aux applis peuvent s'appliquer à ce compte. Vous pouvez gérer vos comptes Google dans <ph name="SETTINGS_LINK_BEGIN" />Paramètres<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Vous étiez connecté à Google Chrome en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="7410958280246779049">Chrome a bloqué ce fichier, car il est dangereux</translation>
 <translation id="7426611252293106642">Google Chrome risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur cette distribution Linux</translation>
@@ -400,11 +397,9 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="8825634023950448068">Pour protéger votre confidentialité, nous supprimons automatiquement vos centres d'intérêt s'ils datent de plus de quatre semaines. Au fil de votre navigation, un centre d'intérêt peut réapparaître dans la liste. Si Chrome se trompe ou que vous ne voulez pas voir certaines annonces, vous pouvez supprimer un centre d'intérêt.</translation>
 <translation id="8834965163890861871">Google Chrome tente de modifier les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="884296878221830158">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>
-<translation id="8847000024471094355">Chrome est inactif</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="8922193594870374009">Pour envoyer un numéro depuis <ph name="ORIGIN" /> vers votre téléphone Android, connectez-vous à Chrome sur les deux appareils.</translation>
-<translation id="8983720963221508955">Vous avez activé la navigation sécurisée avec protection renforcée dans votre compte. Activez-la maintenant dans Chrome.</translation>
 <translation id="8986207147630327271">Vous êtes sur le point d'ajouter un profil professionnel à ce navigateur et d'en donner le contrôle à votre administrateur.</translation>
 <translation id="8989968390305463310">Votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime automatiquement vos centres d'intérêt tous les mois. Les centres d'intérêt peuvent s'actualiser, sauf si vous les supprimez.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Une mise à jour de Chrome est disponible}=1{Une mise à jour de Chrome est disponible}one{Une mise à jour de Chrome est disponible depuis # jour}other{Une mise à jour de Chrome est disponible depuis # jours}}</translation>

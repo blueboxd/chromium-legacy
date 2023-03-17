@@ -110,7 +110,8 @@ TrainingDataCollectorImpl::TrainingDataCollectorImpl(
       configs_(configs),
       clock_(clock),
       result_prefs_(std::make_unique<SegmentationResultPrefs>(profile_prefs)),
-      training_cache_(std::make_unique<TrainingDataCache>()),
+      training_cache_(std::make_unique<TrainingDataCache>(
+          storage_service->segment_info_database())),
       default_model_manager_(storage_service->default_model_manager()) {}
 
 TrainingDataCollectorImpl::~TrainingDataCollectorImpl() {
@@ -179,6 +180,21 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
         if (output.uma_output().uma_feature().tensor_length() != 0) {
           continuous_collection_segments_.insert(segment.first);
           continue;
+        }
+      }
+    }
+
+    // Check for unfinished partial training data.
+    if (segment_info.training_data_size() > 0) {
+      int64_t current_time =
+          clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
+      for (int i = 0; i < segment_info.training_data_size(); ++i) {
+        const auto& training_data = segment_info.training_data(i);
+        if (current_time > training_data.observation_trigger_timestamp()) {
+          // Observation is reached for the current training data.
+          OnObservationTrigger(absl::nullopt,
+                               (TrainingRequestId)training_data.request_id(),
+                               segment_info);
         }
       }
     }
@@ -427,8 +443,24 @@ void TrainingDataCollectorImpl::OnGetTrainingTensorsAtDecisionTime(
     const ModelProvider::Request& input_tensors,
     const ModelProvider::Response& output_tensors) {
   // Store inputs to cache.
-  training_cache_->StoreInputs(segment_info.segment_id(), request_id,
-                               training_request.prediction_time, input_tensors);
+  proto::TrainingData training_data;
+  bool store_to_disk = FillTrainingData(
+      request_id, training_request, input_tensors, segment_info, training_data);
+
+  if (store_to_disk) {
+    // Calculate observation time only if training data needs to be stored to
+    // disk.
+    int64_t observation_timestamp =
+        (training_request.prediction_time +
+         training_request.observation_delayed_task.value())
+            .ToDeltaSinceWindowsEpoch()
+            .InMicroseconds();
+    training_data.set_observation_trigger_timestamp(observation_timestamp);
+  }
+
+  training_cache_->StoreInputs(segment_info.segment_id(),
+                               std::move(training_data),
+                               /*save_to_db=*/store_to_disk);
 
   // Set up delayed output recordings based on time delay triggers defined
   // in model metadata.
@@ -452,10 +484,16 @@ void TrainingDataCollectorImpl::OnObservationTrigger(
     return;
 
   // Retrieve input tensor from cache.
-  absl::optional<proto::TrainingData> input =
-      training_cache_->GetInputsAndDelete(segment_info.segment_id(),
-                                          request_id);
+  training_cache_->GetInputsAndDelete(
+      segment_info.segment_id(), request_id,
+      base::BindOnce(&TrainingDataCollectorImpl::OnGetStoredTrainingData,
+                     weak_ptr_factory_.GetWeakPtr(), param, segment_info));
+}
 
+void TrainingDataCollectorImpl::OnGetStoredTrainingData(
+    const absl::optional<ImmediaCollectionParam>& param,
+    const proto::SegmentInfo& segment_info,
+    absl::optional<proto::TrainingData> input) {
   if (!input.has_value())
     return;
 
@@ -473,14 +511,13 @@ void TrainingDataCollectorImpl::OnObservationTrigger(
       /*process_option=*/FeatureListQueryProcessor::ProcessOption::kOutputsOnly,
       base::BindOnce(
           &TrainingDataCollectorImpl::OnGetOutputsOnObservationTrigger,
-          weak_ptr_factory_.GetWeakPtr(), param, request_id, segment_info,
+          weak_ptr_factory_.GetWeakPtr(), param, segment_info,
           ModelProvider::Response(input.value().inputs().begin(),
                                   input.value().inputs().end())));
 }
 
 void TrainingDataCollectorImpl::OnGetOutputsOnObservationTrigger(
     const absl::optional<ImmediaCollectionParam>& param,
-    TrainingRequestId request_id,
     const proto::SegmentInfo& segment_info,
     const ModelProvider::Request& cached_input_tensors,
     bool has_error,
@@ -592,6 +629,40 @@ base::Time TrainingDataCollectorImpl::ComputeObservationTiming(
   }
 
   return observation_time;
+}
+
+bool TrainingDataCollectorImpl::FillTrainingData(
+    TrainingRequestId request_id,
+    const TrainingTimings& training_request,
+    const ModelProvider::Request& input_tensors,
+    const proto::SegmentInfo& segment_info,
+    proto::TrainingData& training_data) {
+  for (const auto& input : input_tensors) {
+    training_data.add_inputs(input);
+  }
+  training_data.set_decision_timestamp(
+      training_request.prediction_time.ToDeltaSinceWindowsEpoch()
+          .InMicroseconds());
+  training_data.set_request_id(request_id.GetUnsafeValue());
+
+  const auto& training_config =
+      segment_info.model_metadata().training_outputs().trigger_config();
+  bool is_periodic = (training_config.decision_type() !=
+                      proto::TrainingOutputs::TriggerConfig::ONDEMAND);
+
+  // Only periodic segments need storage to disk and can be multi-session.
+  // If the exact prediction time is not used, we could recompute inputs at
+  // observation time so we don't need to store to disk.
+  // If the observation is triggered immediately, we don't need to store to
+  // disk.
+  // If delay is not specified, then the collector cannot know when to trigger
+  // observation and the training data will live in database forever. So, it is
+  // safe to verify the delay before storing to disk.
+  bool store_to_disk = is_periodic &&
+                       training_config.use_exact_prediction_time() &&
+                       training_request.observation_delayed_task.has_value();
+
+  return store_to_disk;
 }
 
 }  // namespace segmentation_platform

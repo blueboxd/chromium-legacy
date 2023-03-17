@@ -7,6 +7,7 @@ import("//build/config/android/rules.gni")
 # Library groups
 if (!limit_android_deps) {
   java_group("dagger_java") {
+    preferred_dep = true
     if (defined(dagger_java_target)) {
       deps = [ dagger_java_target ]
     } else {
@@ -26,6 +27,7 @@ if (!limit_android_deps) {
   }
 
   java_group("espresso_java") {
+    preferred_dep = true
     testonly = true
 
     # TODO(crbug.com/1005891): Update to use espresso targets below once androidx
@@ -34,6 +36,7 @@ if (!limit_android_deps) {
   }
 
   java_group("guava_android_java") {
+    preferred_dep = true
     if (defined(guava_android_target)) {
       deps = [ guava_android_target ]
     } else {
@@ -43,6 +46,7 @@ if (!limit_android_deps) {
   }
 
   java_group("robolectric_all_java") {
+    preferred_dep = true
     testonly = true
 
     deps = [
@@ -60,6 +64,7 @@ if (!limit_android_deps) {
   }
 
   java_group("material_design_java") {
+    preferred_dep = true
     if (defined(material_design_target)) {
       deps = [ material_design_target ]
     } else {
@@ -70,6 +75,7 @@ if (!limit_android_deps) {
   }
 
   java_group("protobuf_lite_runtime_java") {
+    preferred_dep = true
     deps = [ android_proto_runtime ]
   }
 
@@ -84,6 +90,7 @@ if (!limit_android_deps) {
   }
 
   java_group("playcore_java") {
+    preferred_dep = true
     if (defined(playcore_target)) {
       deps = [ playcore_target ]
     } else {
@@ -1371,6 +1378,16 @@ if (!limit_android_deps) {
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+  java_prebuilt("io_grpc_grpc_context_java") {
+    jar_path = "libs/io_grpc_grpc_context/grpc-context-1.49.0.jar"
+    output_name = "io_grpc_grpc_context"
+    supports_android = true
+
+    # https://crbug.com/1412551
+    requires_android = true
+  }
+
+  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   java_prebuilt("io_grpc_grpc_protobuf_lite_java") {
     jar_path = "libs/io_grpc_grpc_protobuf_lite/grpc-protobuf-lite-1.49.0.jar"
     output_name = "io_grpc_grpc_protobuf_lite"
@@ -1518,6 +1535,15 @@ if (!limit_android_deps) {
 
     # Can't find org.opentest4j.AssertionFailedError classes.
     enable_bytecode_checks = false
+  }
+
+  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+  java_prebuilt("org_mockito_mockito_subclass_java") {
+    jar_path = "libs/org_mockito_mockito_subclass/mockito-subclass-5.1.1.jar"
+    output_name = "org_mockito_mockito_subclass"
+    supports_android = true
+    testonly = true
+    deps = [ ":org_mockito_mockito_core_java" ]
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2232,23 +2258,6 @@ if (!limit_android_deps) {
       ":org_jetbrains_kotlin_kotlin_stdlib_jdk8_java",
       "//third_party/kotlin_stdlib:kotlin_stdlib_java",
     ]
-  }
-
-  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-  java_prebuilt("io_grpc_grpc_context_java") {
-    jar_path = "libs/io_grpc_grpc_context/grpc-context-1.49.0.jar"
-    output_name = "io_grpc_grpc_context"
-    supports_android = true
-
-    # To remove visibility constraint, add this dependency to
-    # //third_party/android_deps/build.gradle.
-    visibility = [
-      ":*",
-      "//third_party/androidx:*",
-    ]
-
-    # https://crbug.com/1412551
-    requires_android = true
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

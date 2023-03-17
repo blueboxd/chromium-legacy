@@ -28,7 +28,7 @@ BASE_FEATURE(kUseUtilityThreadGroup,
 
 BASE_FEATURE(kNoWorkerThreadReclaim,
              "NoWorkerThreadReclaim",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // static
 BASE_FEATURE(kNoWakeUpsForCanceledTasks,
@@ -84,5 +84,12 @@ BASE_EXPORT TimeDelta GetTaskLeewayForCurrentThread() {
 BASE_EXPORT TimeDelta GetDefaultTaskLeeway() {
   return g_task_leeway.load(std::memory_order_relaxed);
 }
+
+BASE_FEATURE(kMaxDelayedStarvationTasks,
+             "MaxDelayedStarvationTasks",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kMaxDelayedStarvationTasksParam{
+    &kMaxDelayedStarvationTasks, "count", 3};
 
 }  // namespace base

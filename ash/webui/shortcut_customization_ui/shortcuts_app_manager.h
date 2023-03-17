@@ -5,9 +5,13 @@
 #ifndef ASH_WEBUI_SHORTCUT_CUSTOMIZATION_UI_SHORTCUTS_APP_MANAGER_H_
 #define ASH_WEBUI_SHORTCUT_CUSTOMIZATION_UI_SHORTCUTS_APP_MANAGER_H_
 
-#include "components/keyed_service/core/keyed_service.h"
-
 #include <memory>
+
+#include "ash/public/mojom/accelerator_info.mojom-forward.h"
+#include "ash/webui/shortcut_customization_ui/backend/accelerator_configuration_provider.h"
+#include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
+#include "base/gtest_prod_util.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace ash {
 
@@ -30,7 +34,9 @@ class SearchConceptRegistry;
 // also responsible for retrieving the list of accelerators and passing them
 // to the SearchConceptRegistry so that they can be added to the Local Search
 // Service index.
-class ShortcutsAppManager : public KeyedService {
+class ShortcutsAppManager
+    : public KeyedService,
+      public AcceleratorConfigurationProvider::AcceleratorsUpdatedObserver {
  public:
   explicit ShortcutsAppManager(local_search_service::LocalSearchServiceProxy*
                                    local_search_service_proxy);
@@ -38,12 +44,28 @@ class ShortcutsAppManager : public KeyedService {
   ShortcutsAppManager& operator=(const ShortcutsAppManager& other) = delete;
   ~ShortcutsAppManager() override;
 
+  AcceleratorConfigurationProvider* accelerator_configuration_provider() {
+    return accelerator_configuration_provider_.get();
+  }
   SearchHandler* search_handler() { return search_handler_.get(); }
 
+  // shortcut_ui::AcceleratorConfigurationProvider::
+  void OnAcceleratorsUpdated(
+      shortcut_ui::AcceleratorConfigurationProvider::AcceleratorConfigurationMap
+          configs) override;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ShortcutsAppManagerTest, SetSearchConcepts);
   // KeyedService:
   void Shutdown() override;
 
+  void SetSearchConcepts(
+      shortcut_ui::AcceleratorConfigurationProvider::AcceleratorConfigurationMap
+          config,
+      std::vector<mojom::AcceleratorLayoutInfoPtr> layout_infos);
+
+  std::unique_ptr<AcceleratorConfigurationProvider>
+      accelerator_configuration_provider_;
   std::unique_ptr<SearchConceptRegistry> search_concept_registry_;
   std::unique_ptr<SearchHandler> search_handler_;
 };

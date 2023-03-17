@@ -433,6 +433,12 @@ id<GREYMatcher> EditDoneButton() {
   config.features_disabled.push_back(
       password_manager::features::kPasswordsGrouping);
 
+  // Enabling kEnablePasswordsAccountStorage in fieldtrial_testing_config.json
+  // would break these tests, but they will be deleted soon. Force disable the
+  // flag while they haven't been deleted yet.
+  config.features_disabled.push_back(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
   return config;
 }
 
@@ -1329,7 +1335,8 @@ id<GREYMatcher> EditDoneButton() {
 
   OpenPasswordSettings();
 
-  [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
 
@@ -1917,7 +1924,8 @@ id<GREYMatcher> EditDoneButton() {
   SaveExamplePasswordForm();
 
   OpenPasswordSettings();
-  [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
 
@@ -2032,7 +2040,8 @@ id<GREYMatcher> EditDoneButton() {
 // when adding a new credential.
 - (void)testTLDMissingMessage {
   OpenPasswordSettings();
-  [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
 

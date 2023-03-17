@@ -108,20 +108,22 @@ suite('fakeShortcutProviderTest', function() {
 
   test('RemoveAcceleratorFake', () => {
     // TODO(jimmyxgong): Remove this test once real data is ready.
-    return getProvider().removeAccelerator().then((result) => {
-      assertEquals(AcceleratorConfigResult.kSuccess, result);
+    return getProvider().removeAccelerator().then(({result}) => {
+      assertEquals(AcceleratorConfigResult.kSuccess, result.result);
     });
   });
 
   test('RestoreAllDefaultsFake', () => {
-    return getProvider().restoreAllDefaults().then((result) => {
-      assertEquals(AcceleratorConfigResult.kSuccess, result);
+    return getProvider().restoreAllDefaults().then(({result}) => {
+      assertEquals(AcceleratorConfigResult.kSuccess, result.result);
     });
   });
 
-  test('RestoreActionDefaultsFake', () => {
-    return getProvider().restoreActionDefaults().then((result) => {
-      assertEquals(AcceleratorConfigResult.kSuccess, result);
-    });
+  test('RestoreDefaultFake', () => {
+    return getProvider()
+        .restoreDefault(AcceleratorSource.kAsh, 0)
+        .then(({result}) => {
+          assertEquals(AcceleratorConfigResult.kSuccess, result.result);
+        });
   });
 });

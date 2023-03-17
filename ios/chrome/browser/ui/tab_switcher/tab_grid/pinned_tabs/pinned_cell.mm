@@ -9,11 +9,11 @@
 
 #import "base/check.h"
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_animation.h"
-#import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ui/gfx/ios/uikit_util.h"
@@ -159,8 +159,12 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   if (icon) {
     _faviconView.image = icon;
   } else {
-    _faviconView.image = CustomSymbolWithPointSize(
-        kChromeProductSymbol, kPinnedCellFaviconSymbolPointSize);
+    NSString* symbolName = kGlobeSymbol;
+    if (@available(iOS 15, *)) {
+      symbolName = kGlobeAmericasSymbol;
+    }
+    _faviconView.image = DefaultSymbolWithPointSize(
+        symbolName, kPinnedCellFaviconSymbolPointSize);
   }
 }
 
@@ -216,9 +220,7 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   selectedBackgroundBorderView.layer.borderWidth =
       kPinnedCellSelectionRingTintWidth;
   selectedBackgroundBorderView.layer.borderColor =
-      UseSymbols()
-          ? [UIColor colorNamed:kStaticBlue400Color].CGColor
-          : [UIColor colorNamed:@"grid_theme_selection_tint_color"].CGColor;
+      [UIColor colorNamed:kStaticBlue400Color].CGColor;
 
   UIView* selectedBackgroundView = [[UIView alloc] init];
   [selectedBackgroundView addSubview:selectedBackgroundBorderView];
@@ -342,6 +344,8 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   ]];
 
   _faviconView = faviconView;
+  // Set the default icon.
+  self.icon = nil;
 }
 
 - (void)setupActivityIndicator {
@@ -370,6 +374,7 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   UILabel* titleLabel = [[UILabel alloc] init];
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
   titleLabel.lineBreakMode = NSLineBreakByClipping;
+  titleLabel.adjustsFontForContentSizeCategory = YES;
   titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   titleLabel.textColor =
       GetInterfaceStyleDarkColor([UIColor colorNamed:kTextPrimaryColor]);

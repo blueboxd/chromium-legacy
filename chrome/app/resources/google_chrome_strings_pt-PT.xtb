@@ -38,7 +38,6 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="1662146548738125461">Acerca do ChromeOS Flex</translation>
 <translation id="1674870198290878346">Abrir link numa janela de nave&amp;gação anónima do Chrome</translation>
 <translation id="1682634494516646069">O Google Chrome não consegue ler e escrever no respetivo diretório de dados: <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1691802391966922744">{COUNT,plural, =1{A pessoa com a função de administração configurou o Chrome para fechar se estiver inativo durante mais de 1 minuto.}other{A pessoa com a função de administração configurou o Chrome para fechar se estiver inativo durante mais de # minutos.}}</translation>
 <translation id="1698376642261615901">O Google Chrome é um navegador de internet que executa páginas Web e aplicações de forma extremamente rápida. É rápido, estável e fácil de utilizar. Navegue na Web com mais segurança com proteção contra phishing e programas maliciosos incorporada no Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{O Chrome será reiniciado dentro de uma hora}other{O Chrome será reiniciado dentro de # horas}}</translation>
 <translation id="1734234790201236882">O Chrome vai guardar esta palavra-passe na sua Conta Google. Não tem de a memorizar.</translation>
@@ -251,7 +250,6 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="5941830788786076944">Tornar o Google Chrome no browser padrão.</translation>
 <translation id="6003112304606738118">A transferir… Falta(m) <ph name="HOURS" /> hora(s)</translation>
 <translation id="6010556343189461180">Para obter atualizações futuras do Google Chrome, precisa do macOS 10.15 posterior. Este computador está a usar o macOS 10.14.</translation>
-<translation id="6022388122721048220">{0,plural, =0{O Chrome vai fechar agora.}=1{O Chrome vai fechar dentro de 1 segundo.}other{O Chrome vai fechar dentro de # segundos.}}</translation>
 <translation id="6022659036123304283">Personalize o Google Chrome</translation>
 <translation id="6025087594896450715">O Google Chrome vai ser reiniciado dentro de <ph name="REMAINING_TIME" /></translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -271,6 +269,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="6327105987658262776">Nenhuma atualização disponível.</translation>
 <translation id="6412673304250309937">Verifica os URLs com listas de sites inseguros armazenados no Chrome. Se um site tentar roubar a sua palavra-passe, ou quando transferir um ficheiro prejudicial, o Chrome também pode enviar URLs, incluindo bits de conteúdo das páginas, para a Navegação segura.</translation>
 <translation id="6418662306461808273">Mudar para o perfil do Chrome existente?</translation>
+<translation id="6493527311031785448">O Google Chrome está a tentar <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">O Chrome necessita da autorização da câmara para criar um mapa 3D do ambiente à sua volta</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="659498884637196217">No Gestor de palavras-passe da Google neste dispositivo</translation>
@@ -311,9 +310,6 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="7296210096911315575">Informações de utilização e segurança importantes</translation>
 <translation id="7308322188646931570">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
-<translation id="7388770099345495132">Se quiser utilizar esta conta apenas uma vez, pode utilizar o Modo convidado no navegador Chrome. Se quiser adicionar uma conta para outra pessoa, <ph name="LINK_BEGIN" />adicione uma nova pessoa<ph name="LINK_END" /> ao seu dispositivo <ph name="DEVICE_TYPE" />.
-
-As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta conta. Pode gerir as suas Contas Google nas <ph name="SETTINGS_LINK_BEGIN" />Definições<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="7410958280246779049">O Chrome bloqueou este ficheiro porque é perigoso</translation>
 <translation id="7426611252293106642">O Google Chrome pode não funcionar corretamente, uma vez que já não é suportado nesta distribuição do Linux</translation>
@@ -394,11 +390,9 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="8825634023950448068">Para proteger a sua privacidade, eliminamos automaticamente os seus interesses com mais de 4 semanas. Enquanto navega, um interesse pode aparecer novamente na lista. Além disso, pode remover um interesse se o Chrome se enganar ou caso não queira ver determinados anúncios.</translation>
 <translation id="8834965163890861871">O Google Chrome está a tentar editar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="884296878221830158">Também controla a página apresentada quando inicia o Chrome ou clica no botão Página Inicial.</translation>
-<translation id="8847000024471094355">O Chrome está inativo</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
 <translation id="8914504000324227558">Reiniciar o Chrome</translation>
 <translation id="8922193594870374009">Para enviar um número de <ph name="ORIGIN" /> para o seu telemóvel Android, inicie sessão no Chrome em ambos os dispositivos.</translation>
-<translation id="8983720963221508955">Ativou a Navegação segura melhorada na sua conta. Agora, ative-a para o Chrome.</translation>
 <translation id="8986207147630327271">Está a adicionar um perfil de trabalho a este navegador e a conceder ao seu administrador controlo apenas sobre o perfil de trabalho.</translation>
 <translation id="8989968390305463310">O seu histórico de navegação afeta os anúncios que vê e os interesses, conforme estimados abaixo. Para proteger a sua privacidade, o Chrome elimina automaticamente os seus interesses todos os meses. Os interesses podem ser atualizados, a menos que os remova.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Está disponível uma atualização do Chrome}=1{Está disponível uma atualização do Chrome}other{Está disponível uma atualização do Chrome há # dias}}</translation>

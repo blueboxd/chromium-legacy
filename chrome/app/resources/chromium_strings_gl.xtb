@@ -25,9 +25,11 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="1640672724030957280">Descargando…</translation>
 <translation id="1708666629004767631">Hai unha versión nova e máis segura de Chromium dispoñible.</translation>
 <translation id="17264556997921157">Podes ver e eliminar temas de interese que usan os sitios para mostrarche anuncios. Chromium estima os teus intereses en función do teu historial de navegación recente.</translation>
+<translation id="1745121272106313518">Chromium reiniciarase dentro de <ph name="REMAINING_TIME" /></translation>
 <translation id="1774152462503052664">Deixar que Chromium se execute en segundo plano</translation>
 <translation id="1779356040007214683">Para conseguir que Chromium resulte máis seguro, desactivamos algunhas extensións que non aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e que é posible que se engadisen sen o teu coñecemento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
+<translation id="1820835682567584003">Chromium está tentando <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="185970820835152459">Podes xestionar as Contas de Google nas que teñas a sesión iniciada. As túas Contas de Google úsanse para o navegador Chromium, Play Store, Gmail e moito máis. Se queres engadir unha conta para outra persoa, como un familiar, engade unha persoa nova ao teu dispositivo (<ph name="DEVICE_TYPE" />). <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">Os sitios poden almacenar con Chromium información sobre os teus intereses. Por exemplo, se visitas un sitio para comprar zapatillas deportivas para un maratón, ese sitio podería determinar que che interesa correr maratóns. Máis tarde, se visitas un sitio distinto que che permite rexistrarte para participar nunha carreira, pode mostrárseche nel un anuncio de zapatillas deportivas baseado nos teus intereses.</translation>
 <translation id="1881322772814446296">Estás iniciando sesión cunha conta xestionada e outorgando control ao seu administrador sobre o teu perfil de Chromium. Os teus datos de Chromium, como as túas aplicacións, marcadores, historial, contrasinais e outras configuracións ligaranse permanentemente a <ph name="USER_NAME" />. Poderás eliminar estes datos a través do Panel de control das contas de Google, pero non poderás asociar estes datos a outra conta. Tamén podes crear un perfil novo para manter separados os teus datos de Chromium existentes. <ph name="LEARN_MORE" /></translation>
@@ -35,9 +37,6 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="1911763535808217981">Ao desactivar esta opción, podes iniciar sesión nos sitios de Google, como Gmail, sen iniciar sesión en Chromium</translation>
 <translation id="1929939181775079593">Chromium non responde. Queres volver inicialo agora?</translation>
 <translation id="193439633299369377">É necesario reiniciar Chromium OS para aplicar a actualización.</translation>
-<translation id="1940680973325097484">Se queres usar esta conta unha soa vez, podes utilizar o modo de convidado no navegador Chromium. Se queres engadir unha conta para outra persoa, <ph name="LINK_BEGIN" />engade unha persoa nova<ph name="LINK_END" /> ao teu dispositivo (<ph name="DEVICE_TYPE" />).
-
-Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web e ás aplicacións. Podes xestionar as túas Contas de Google en <ph name="SETTINGS_LINK_BEGIN" />Configuración<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1953553007165777902">Descargando… Tempo restante: <ph name="MINUTE" /> min</translation>
 <translation id="1966382378801805537">Chromium non pode determinar nin establecer o navegador predeterminado</translation>
 <translation id="2008474315282236005">Esta acción eliminará 1 elemento deste dispositivo. Para recuperar os teus datos máis tarde, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
@@ -102,7 +101,6 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3406848076815591792">Queres cambiar ao perfil existente de Chromium?</translation>
 <translation id="3412460710772753638">No xestor de contrasinais neste dispositivo</translation>
-<translation id="3420193029125244288">{COUNT,plural, =1{O teu administrador configurou Chromium para que se peche cando estea inactivo durante máis de 1 minuto.}other{O teu administrador configurou Chromium para que se peche cando estea inactivo durante máis de # minutos.}}</translation>
 <translation id="3430503420100763906">Cos perfís de Chromium podes separar todo o contido que teñas neste navegador. Crea perfís para os amigos e a familia ou ben crea un para o traballo e outro para o lecer.</translation>
 <translation id="347328004046849135">Chromium enviarache unha notificación cando inicies sesión cun contrasinal vulnerado</translation>
 <translation id="3474745554856756813">Esta acción eliminará <ph name="ITEMS_COUNT" /> elementos deste dispositivo. Para recuperar os teus datos máis tarde, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
@@ -184,7 +182,6 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="538767207339317086">Permitir inicio de sesión en Chromium</translation>
 <translation id="5398878173008909840">Hai unha nova versión de Chromium dispoñible.</translation>
 <translation id="5405650547142096840">Eliminar de Chromium</translation>
-<translation id="5421879995290576427">{0,plural, =0{Chromium pecharase agora.}=1{Chromium pecharase en 1 segundo.}other{Chromium pecharase en # segundos.}}</translation>
 <translation id="5427571867875391349">Establecer Chromium como o teu navegador predeterminado</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> (versión beta de Chromium)</translation>
 <translation id="5473971139929175403">Pode que Chromium non funcione correctamente porque xa non é compatible con esta distribución de Linux</translation>
@@ -275,7 +272,6 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="6964305034639999644">Abrir ligazón nunha ventá do modo de incó&amp;gnito de Chromium</translation>
 <translation id="6978145336957848883">Os contrasinais pouco seguros son fáciles de adiviñar. Permite que Chromium <ph name="BEGIN_LINK" />cree e lembre contrasinais seguros por ti<ph name="END_LINK" />.</translation>
 <translation id="6981396265751285733">Cando esta opción está activada, Chromium libera memoria das pestanas inactivas. Desta forma, as pestanas activas e outras aplicacións dispoñen de máis recursos informáticos e Chromium segue funcionando rápido. As pestanas inactivas volven activarse automaticamente cando regresas a elas.</translation>
-<translation id="6984667024406244807">Chromium está inactivo</translation>
 <translation id="6985329841647292029">Condicións de Chromium OS</translation>
 <translation id="6990124437352146030">Chromium necesita permiso para acceder ao micrófono neste sitio</translation>
 <translation id="7025789849649390912">Detívose a instalación.</translation>
@@ -305,7 +301,6 @@ Chromium non pode recuperar a túa configuración.</translation>
 <translation id="7561906087460245826">Borrar tamén os datos de Chromium (<ph name="URL" />)</translation>
 <translation id="7582945390259497898">Chromium pode facer unha estimación dos teus intereses. Máis tarde, un sitio que visites pode consultarlle a Chromium os teus intereses para personalizar os anuncios que se che mostren.</translation>
 <translation id="7583399374488819119">Instalador de <ph name="COMPANY_NAME" /></translation>
-<translation id="7597596667193879455">Activaches na túa conta a función Navegación segura mellorada. Agora comeza a utilizala en Chromium.</translation>
 <translation id="761356813943268536">Chromium está utilizando a túa cámara e micrófono.</translation>
 <translation id="7617377681829253106">Chromium introduciu melloras</translation>
 <translation id="7649070708921625228">Axuda</translation>

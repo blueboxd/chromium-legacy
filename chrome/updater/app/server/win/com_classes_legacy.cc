@@ -342,26 +342,26 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
   AppWebImpl(const AppWebImpl&) = delete;
   AppWebImpl& operator=(const AppWebImpl&) = delete;
 
-  HRESULT RuntimeClassInitialize(const std::wstring& app_id) {
+  HRESULT RuntimeClassInitialize(
+      const std::wstring& app_id,
+      UpdateService::PolicySameVersionUpdate policy_same_version_update) {
     app_id_ = base::WideToASCII(app_id);
-
+    policy_same_version_update_ = policy_same_version_update;
     return S_OK;
   }
 
-  // Invokes the in-process update service on the main sequence. Forwards the
-  // callbacks to a sequenced task runner. |obj| is bound to this object.
-  HRESULT Update(bool do_update_check_only) {
+  // For backward-compatibility purposes, the `CheckForUpdate` call assumes
+  // foreground priority and disallows same version updates.
+  HRESULT CheckForUpdate() {
     using AppWebImplPtr = Microsoft::WRL::ComPtr<AppWebImpl>;
     scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
     com_server->main_task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](scoped_refptr<UpdateService> update_service, AppWebImplPtr obj,
-               bool do_update_check_only) {
-              update_service->Update(
-                  obj->app_id_, "", UpdateService::Priority::kForeground,
-                  UpdateService::PolicySameVersionUpdate::kNotAllowed,
-                  do_update_check_only,
+            [](scoped_refptr<UpdateService> update_service, AppWebImplPtr obj) {
+              update_service->CheckForUpdate(
+                  obj->app_id_, UpdateService::Priority::kForeground,
+                  obj->policy_same_version_update_,
                   base::BindRepeating(
                       [](AppWebImplPtr obj,
                          const UpdateService::UpdateState& state_update) {
@@ -380,8 +380,39 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
                       },
                       obj));
             },
-            com_server->update_service(), AppWebImplPtr(this),
-            do_update_check_only));
+            com_server->update_service(), AppWebImplPtr(this)));
+    return S_OK;
+  }
+
+  HRESULT Update() {
+    using AppWebImplPtr = Microsoft::WRL::ComPtr<AppWebImpl>;
+    scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
+    com_server->main_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](scoped_refptr<UpdateService> update_service, AppWebImplPtr obj) {
+              update_service->Update(
+                  obj->app_id_, "", UpdateService::Priority::kForeground,
+                  obj->policy_same_version_update_,
+                  base::BindRepeating(
+                      [](AppWebImplPtr obj,
+                         const UpdateService::UpdateState& state_update) {
+                        obj->task_runner_->PostTask(
+                            FROM_HERE,
+                            base::BindOnce(&AppWebImpl::UpdateStateCallback,
+                                           obj, state_update));
+                      },
+                      obj),
+                  base::BindOnce(
+                      [](AppWebImplPtr obj, UpdateService::Result result) {
+                        obj->task_runner_->PostTask(
+                            FROM_HERE,
+                            base::BindOnce(&AppWebImpl::UpdateResultCallback,
+                                           obj, result));
+                      },
+                      obj));
+            },
+            com_server->update_service(), AppWebImplPtr(this)));
     return S_OK;
   }
 
@@ -595,6 +626,8 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::string app_id_;
+  UpdateService::PolicySameVersionUpdate policy_same_version_update_ =
+      UpdateService::PolicySameVersionUpdate::kNotAllowed;
 
   // Access to `state_update_` and `result_` must be serialized by using the
   // lock.
@@ -618,8 +651,14 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
                            BSTR brand_code,
                            BSTR language,
                            BSTR ap) override {
-    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
-    return E_NOTIMPL;
+    base::AutoLock lock{lock_};
+
+    if (app_web_) {
+      return E_UNEXPECTED;
+    }
+
+    return Microsoft::WRL::MakeAndInitialize<AppWebImpl>(
+        &app_web_, app_id, UpdateService::PolicySameVersionUpdate::kAllowed);
   }
 
   IFACEMETHODIMP createInstalledApp(BSTR app_id) override {
@@ -629,7 +668,8 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
       return E_UNEXPECTED;
     }
 
-    return Microsoft::WRL::MakeAndInitialize<AppWebImpl>(&app_web_, app_id);
+    return Microsoft::WRL::MakeAndInitialize<AppWebImpl>(
+        &app_web_, app_id, UpdateService::PolicySameVersionUpdate::kNotAllowed);
   }
 
   IFACEMETHODIMP createAllInstalledApps() override {
@@ -663,17 +703,12 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
 
   IFACEMETHODIMP initialize() override { return S_OK; }
 
-  // Delegates the call to the `AppWebImpl` implementation.
   IFACEMETHODIMP checkForUpdate() override {
     base::AutoLock lock{lock_};
-
     if (!app_web_) {
       return E_UNEXPECTED;
     }
-
-    // TODO(crbug.com/1396103): Implement checkForUpdate to only check for
-    // updates.
-    return app_web_->Update(/*do_update_check_only=*/false);
+    return app_web_->CheckForUpdate();
   }
 
   IFACEMETHODIMP download() override {
@@ -688,7 +723,7 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
       return E_UNEXPECTED;
     }
 
-    return app_web_->Update(/*do_update_check_only=*/false);
+    return app_web_->Update();
   }
 
   IFACEMETHODIMP pause() override {

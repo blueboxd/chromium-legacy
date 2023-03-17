@@ -28,6 +28,7 @@
 
 #include "base/check_op.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/parser/css_nesting_type.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -245,9 +246,6 @@ class CORE_EXPORT CSSSelector {
     kPseudoOnlyOfType,
     kPseudoOptional,
     kPseudoParent,  // Written as & (in nested rules).
-    // Something that was unparsable, but contained a & and thus must be kept
-    // for serialization purposes.
-    kPseudoParentUnparsed,
     kPseudoPart,
     kPseudoPlaceholder,
     kPseudoPlaceholderShown,
@@ -271,6 +269,10 @@ class CORE_EXPORT CSSSelector {
     kPseudoState,
     kPseudoTarget,
     kPseudoUnknown,
+    // Something that was unparsable, but contained either a nesting
+    // selector (&), or a :scope pseudo-class, and must therefore be kept
+    // for serialization purposes.
+    kPseudoUnparsed,
     kPseudoValid,
     kPseudoVertical,
     kPseudoVisited,
@@ -318,6 +320,8 @@ class CORE_EXPORT CSSSelector {
     kPseudoSpatialNavigationInterest,
     kPseudoSpellingError,
     kPseudoTargetText,
+    // Always matches. See SetTrue().
+    kPseudoTrue,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
 
@@ -347,7 +351,22 @@ class CORE_EXPORT CSSSelector {
                         const CSSParserContext&,
                         bool has_arguments,
                         CSSParserMode);
-  void SetUnparsedPlaceholder(const AtomicString&);
+  void SetUnparsedPlaceholder(CSSNestingType, const AtomicString&);
+  // If this simple selector contains a parent selector (&), returns kNesting.
+  // Otherwise, if this simple selector contains a :scope pseudo-class,
+  // returns kScope. Otherwise, returns kNone.
+  //
+  // Note that this means that a selector which contains both '&' and :scope
+  // (which can happen for kPseudoUnparsed) will return kNesting. This is OK,
+  // since any selector which is nest-containing is also treated as
+  // scope-containing during parsing.
+  CSSNestingType GetNestingType() const;
+  // Set this CSSSelector as a :true pseudo-class. This can be useful if you
+  // need to insert a special RelationType into a selector's TagHistory,
+  // but lack any existing/suitable CSSSelector to attach that RelationType to.
+  //
+  // Note that :true is always implicit (see IsImplicit).
+  void SetTrue();
   void UpdatePseudoPage(const AtomicString&, const Document*);
   static PseudoType NameToPseudoType(const AtomicString&,
                                      bool has_arguments,
@@ -495,6 +514,10 @@ class CORE_EXPORT CSSSelector {
   // Returns true if the immediately preceeding simple selector is ::slotted.
   bool FollowsSlotted() const;
 
+  // True if the selector was added implicitly. This can happen for e.g.
+  // nested rules that would otherwise lack the nesting selector (&).
+  bool IsImplicit() const { return is_implicitly_added_; }
+
   void Trace(Visitor* visitor) const;
 
   static String FormatPseudoTypeForDebugging(PseudoType);
@@ -525,7 +548,7 @@ class CORE_EXPORT CSSSelector {
   // flags in MatchResult.
   //
   // This always starts out false, and is set when we bucket a given
-  // RuleData (by calling ComputeEntirelyCoveredByBucketing()).
+  // RuleData (by calling MarkAsCoveredByBucketing()).
   unsigned is_covered_by_bucketing_ : 1;
 
   void SetPseudoType(PseudoType pseudo_type) {
@@ -569,6 +592,9 @@ class CORE_EXPORT CSSSelector {
         // containing complex selector in its argument. e.g. :has(:is(.a .b))
         bool contains_complex_logical_combinations_;
       } has_;
+
+      // See GetNestingType.
+      CSSNestingType unparsed_nesting_type_;
     } bits_;
     QualifiedName attribute_;  // Used for attribute selector
     AtomicString argument_;    // Used for :contains, :lang, :dir, :toggle, etc.
@@ -826,6 +852,11 @@ inline void swap(CSSSelector& a, CSSSelector& b) {
 // call NOTREACHED().
 CSSSelector::RelationType ConvertRelationToRelative(
     CSSSelector::RelationType relation);
+
+// Returns the maximum specificity within a list of selectors. This is typically
+// used to calculate the specificity of selectors that have an inner selector
+// list, e.g. :is(), :where() etc.
+unsigned MaximumSpecificity(const CSSSelector* first_selector);
 
 }  // namespace blink
 

@@ -19,10 +19,6 @@ namespace gl {
 Presenter::Presenter() = default;
 Presenter::~Presenter() = default;
 
-bool Presenter::SupportsCommitOverlayPlanes() {
-  return false;
-}
-
 bool Presenter::SupportsOverridePlatformSize() const {
   return false;
 }
@@ -61,10 +57,6 @@ bool Presenter::Resize(const gfx::Size& size,
                        float scale_factor,
                        const gfx::ColorSpace& color_space,
                        bool has_alpha) {
-  return true;
-}
-
-bool Presenter::OnMakeCurrent(GLContext* context) {
   return true;
 }
 

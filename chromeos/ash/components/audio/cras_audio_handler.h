@@ -83,6 +83,23 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
     kOther,
   };
 
+  // This enum is used to record UMA histogram values and should not be
+  // reordered. Please keep in sync with `AudioSettingsChangeSource` in
+  // src/tools/metrics/histograms/enums.xml.
+  enum class AudioSettingsChangeSource {
+    kSystemTray = 0,
+    kOsSettings,
+    kAccelerator,
+    kMaxValue = kAccelerator,
+  };
+
+  static constexpr base::TimeDelta kMetricsDelayTimerInterval =
+      base::Seconds(2);
+  static constexpr char kInputGainChangedSourceHistogramName[] =
+      "Cras.InputGainChangedSource";
+  static constexpr char kOutputVolumeChangedSourceHistogramName[] =
+      "Cras.OutputVolumeChangedSource";
+
   class AudioObserver {
    public:
     AudioObserver(const AudioObserver&) = delete;
@@ -259,7 +276,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   bool IsOutputVolumeBelowDefaultMuteLevel();
 
   // Returns volume level in 0-100% range at which the volume should be muted.
-  int GetOutputDefaultVolumeMuteThreshold();
+  int GetOutputDefaultVolumeMuteThreshold() const;
 
   // Gets volume level in 0-100% range (0 being pure silence) for the current
   // active node.

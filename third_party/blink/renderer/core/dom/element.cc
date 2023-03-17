@@ -2836,6 +2836,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     if (UNLIKELY(HasUndoStack())) {
       frame->GetEditor().GetUndoStack().ElementRemoved(this);
     }
+    frame->GetEditor().ElementRemoved(this);
     frame->GetEventHandler().ElementRemoved(this);
   }
 }
@@ -7024,6 +7025,7 @@ scoped_refptr<const ComputedStyle> Element::StyleForPseudoElement(
     first_line_inherited_request.pseudo_id =
         IsPseudoElement() ? To<PseudoElement>(this)->GetPseudoId()
                           : kPseudoIdNone;
+    first_line_inherited_request.can_trigger_animations = false;
     StyleRecalcContext local_recalc_context(style_recalc_context);
     local_recalc_context.old_style = PostStyleUpdateScope::GetOldStyle(*this);
     Element* target = IsPseudoElement() ? parentElement() : this;
@@ -7294,7 +7296,8 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
 ScriptValue Element::requestPointerLock(ScriptState* script_state,
                                         const PointerLockOptions* options,
                                         ExceptionState& exception_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+      script_state, exception_state.GetContext());
   ScriptPromise promise;
   if (GetDocument().GetPage()) {
     promise =

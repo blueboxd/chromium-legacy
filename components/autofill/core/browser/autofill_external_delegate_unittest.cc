@@ -187,8 +187,8 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
   void TearDown() override {
     // Order of destruction is important as BrowserAutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
-    browser_autofill_manager_.reset();
     external_delegate_.reset();
+    browser_autofill_manager_.reset();
     autofill_driver_.reset();
   }
 
@@ -215,7 +215,7 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  test::AutofillEnvironment autofill_environment_;
+  test::AutofillUnitTestEnvironment autofill_test_environment_;
 
   NiceMock<MockAutofillClient> autofill_client_;
   std::unique_ptr<NiceMock<MockAutofillDriver>> autofill_driver_;

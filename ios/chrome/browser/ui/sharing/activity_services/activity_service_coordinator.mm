@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/sharing/activity_services/activity_service_coordinator.h"
 
 #import "components/bookmarks/browser/bookmark_model.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/sharing/activity_services/activity_service_mediator.h"
@@ -26,8 +28,6 @@
 #import "ios/chrome/browser/ui/sharing/activity_services/data/share_to_data_builder.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_positioner.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state.h"
@@ -88,7 +88,8 @@ const char kMimeTypePDF[] = "application/pdf";
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   self.incognito = browserState->IsOffTheRecord();
   bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(browserState);
+      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+          browserState);
   id<BookmarksCommands> bookmarksHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), BookmarksCommands);
   WebNavigationBrowserAgent* agent =

@@ -270,6 +270,8 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   source->AddBoolean("isOobeFlow", is_oobe_flow);
   // TODO (b/268463435) Cleanup OobeJelly
   source->AddBoolean("isOobeJellyEnabled", features::IsOobeJellyEnabled());
+  // TODO (b/269117729) Cleanup OobeSimon
+  source->AddBoolean("isOobeSimonEnabled", features::IsOobeSimonEnabled());
   source->AddBoolean("isChoobeEnabled", features::IsOobeChoobeEnabled());
   source->AddBoolean(
       "isArcVmDataMigrationEnabled",
@@ -650,6 +652,17 @@ base::Value::Dict OobeUI::GetLocalizedStrings() {
 #else
   localized_strings.Set("buildType", "chromium");
 #endif
+
+  std::string oobeClasses = "";
+  // TODO (b/268463435) Cleanup OobeJelly
+  if (features::IsOobeJellyEnabled()) {
+    oobeClasses += "jelly-enabled ";
+  }
+  // TODO (b/269117729) Cleanup OobeSimon
+  if (features::IsOobeSimonEnabled()) {
+    oobeClasses += "simon-enabled ";
+  }
+  localized_strings.Set("oobeClasses", oobeClasses);
 
   bool keyboard_driven_oobe = ash::system::InputDeviceSettings::Get()
                                   ->ForceKeyboardDrivenUINavigation();

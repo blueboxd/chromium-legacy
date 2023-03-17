@@ -34,7 +34,9 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/intranet_redirector_state.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/omnibox/browser/page_classification_functions.h"
 #include "components/omnibox/browser/tab_matcher.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
@@ -53,19 +55,9 @@ typedef AutocompleteMatchType ACMatchType;
 
 namespace {
 
-constexpr bool is_android =
-#if BUILDFLAG(IS_ANDROID)
-    true;
-#else
-    false;
-#endif
-
-constexpr bool is_ios =
-#if BUILDFLAG(IS_IOS)
-    true;
-#else
-    false;
-#endif
+constexpr bool is_android = !!BUILDFLAG(IS_ANDROID);
+constexpr bool is_ios = !!BUILDFLAG(IS_IOS);
+constexpr bool is_desktop = !(is_android || is_ios);
 
 // Rotates |it| to be in the front of |matches|.
 // |it| must be a valid iterator of |matches| or equal to |matches->end()|.
@@ -90,7 +82,7 @@ constexpr size_t kMaxPedalMatchIndex =
 // static
 size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
   constexpr size_t kDefaultMaxAutocompleteMatches =
-      is_android ? 10 : (is_ios ? 6 : 8);
+      is_android ? 10 : (is_ios ? 10 : 8);
   constexpr size_t kDefaultMaxZeroSuggestMatches =
       is_android ? 15 : (is_ios ? 20 : 8);
 #if BUILDFLAG(IS_IOS)
@@ -261,10 +253,12 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
 
 void AutocompleteResult::AppendMatches(const ACMatches& matches) {
   for (const auto& match : matches) {
-    DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents),
-              match.contents);
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents)
+        << "description: " << match.description
+        << ", match type: " << match.type;
     DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
-              match.description);
+              match.description)
+        << "contents: " << match.contents << ", match type: " << match.type;
     matches_.push_back(match);
     if (!match.description.empty() &&
         !AutocompleteMatch::IsSearchType(match.type) &&
@@ -346,15 +340,20 @@ void AutocompleteResult::SortAndCull(
       matches_[0].ComputeStrippedDestinationURL(input, template_url_service);
   }
 
-  // If `kGroupingFramework` is enabled and the current input & platform are
-  // supported, delegate to the framework.
   const bool is_zero_suggest = input.IsZeroSuggest();
-  if (base::FeatureList::IsEnabled(omnibox::kGroupingFramework) &&
-      !is_android && !is_ios) {
-    // Grouping requires all matches have a group ID. To keep providers 'dumb',
-    // they only assign IDs when their ID isn't obvious from the match type.
-    // Most matches will instead set IDs here to keep providers 'dumb' and the
-    // type->group mapping consistent between providers.
+  const bool use_grouping_for_zps =
+      base::FeatureList::IsEnabled(omnibox::kGroupingFrameworkForZPS) &&
+      is_zero_suggest;
+  const bool use_grouping_for_non_zps =
+      base::FeatureList::IsEnabled(omnibox::kGroupingFrameworkForNonZPS) &&
+      !is_zero_suggest;
+  const bool use_grouping = use_grouping_for_zps || use_grouping_for_non_zps;
+
+  // Grouping requires all matches have a group ID. To keep providers 'dumb',
+  // they only assign IDs when their ID isn't obvious from the match type.
+  // Most matches will instead set IDs here to keep providers 'dumb' and the
+  // type->group mapping consistent between providers.
+  if (use_grouping) {
     base::ranges::for_each(matches_, [&](auto& match) {
       if (!match.suggestion_group_id.has_value()) {
         match.suggestion_group_id =
@@ -367,23 +366,48 @@ void AutocompleteResult::SortAndCull(
     // but shouldn't be shown otherwise. Filter them out.
     base::EraseIf(matches_,
                   [&](const auto& match) { return match.relevance == 0; });
+  }
 
+  // If `kGroupingFrameworkForZPS` is enabled and the current input & platform
+  // are supported, delegate to the framework.
+  //
+  // - Include both Desktop ZPS and prefixed suggestions.
+  // - Include Android ZPS only (no prefixed suggestions),
+  // - IOS is currently not included.
+  if (use_grouping_for_zps) {
     PSections sections;
-    if (is_zero_suggest) {
+    if constexpr (is_android) {
+      sections.push_back(
+          std::make_unique<AndroidZpsSection>(suggestion_groups_map_));
+      if (omnibox::IsNTPPage(page_classification)) {
+        size_t num_related_queries =
+            OmniboxFieldTrial::kInspireMeAdditionalRelatedQueries.Get();
+        size_t num_trending_queries =
+            OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.Get();
+
+        if (num_related_queries + num_trending_queries > 0) {
+          sections.push_back(std::make_unique<AndroidInspireMeZpsSection>(
+              num_related_queries, num_trending_queries,
+              suggestion_groups_map_));
+        }
+      }
+    } else if constexpr (is_desktop) {
       sections.push_back(
           std::make_unique<DesktopZpsSection>(suggestion_groups_map_));
+
       if (page_classification == OmniboxEventProto::NTP_REALBOX &&
           base::FeatureList::IsEnabled(omnibox::kKeepSecondaryZeroSuggest)) {
         // Allow secondary zero-prefix suggestions in the NTP realbox, if any.
         sections.push_back(std::make_unique<DesktopSecondaryZpsSection>(
             suggestion_groups_map_));
       }
-    } else {
-      sections.push_back(
-          std::make_unique<DesktopNonZpsSection>(suggestion_groups_map_));
     }
     matches_ = Section::GroupMatches(std::move(sections), matches_);
-
+  } else if (use_grouping_for_non_zps) {
+    PSections sections;
+    sections.push_back(
+        std::make_unique<DesktopNonZpsSection>(suggestion_groups_map_));
+    matches_ = Section::GroupMatches(std::move(sections), matches_);
   } else {
     // Limit history cluster suggestions to 1. This has to be done before
     // limiting URL matches below so that a to-be-removed history cluster

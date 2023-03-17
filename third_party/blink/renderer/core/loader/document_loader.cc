@@ -305,7 +305,6 @@ struct SameSizeAsDocumentLoader
   std::unique_ptr<CodeCacheHost> code_cache_host;
   HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
-  bool has_fenced_frame_reporting_;
   std::unique_ptr<ExtraData> extra_data;
   AtomicString reduced_accept_language;
   network::mojom::NavigationDeliveryType navigation_delivery_type;
@@ -508,7 +507,6 @@ DocumentLoader::DocumentLoader(
           params_->is_cross_site_cross_browsing_context_group),
       navigation_api_back_entries_(params_->navigation_api_back_entries),
       navigation_api_forward_entries_(params_->navigation_api_forward_entries),
-      has_fenced_frame_reporting_(params_->has_fenced_frame_reporting),
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
@@ -649,7 +647,6 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
       params->ad_auction_components->emplace_back(KURL(url));
     }
   }
-  params->has_fenced_frame_reporting = has_fenced_frame_reporting_;
   params->reduced_accept_language = reduced_accept_language_;
   params->navigation_delivery_type = navigation_delivery_type_;
   params->has_storage_access = has_storage_access_;
@@ -719,13 +716,12 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
 
 void DocumentLoader::DispatchLinkHeaderPreloads(
     const ViewportDescription* viewport,
-    PreloadHelper::MediaPreloadPolicy media_policy) {
+    PreloadHelper::LoadLinksFromHeaderMode mode) {
   DCHECK_GE(state_, kCommitted);
   PreloadHelper::LoadLinksFromHeader(
       GetResponse().HttpHeaderField(http_names::kLink),
-      GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
-      PreloadHelper::kOnlyLoadResources, media_policy, viewport,
-      nullptr /* alternate_resource_info */,
+      GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(), mode,
+      viewport, nullptr /* alternate_resource_info */,
       nullptr /* recursive_prefetch_token */);
 }
 
@@ -1729,7 +1725,7 @@ void DocumentLoader::StartLoadingInternal() {
   PreloadHelper::LoadLinksFromHeader(
       response_.HttpHeaderField(http_names::kLink),
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
-      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll,
+      PreloadHelper::LoadLinksFromHeaderMode::kDocumentBeforeCommit,
       nullptr /* viewport_description */, nullptr /* alternate_resource_info */,
       nullptr /* recursive_prefetch_token */);
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
@@ -2448,8 +2444,8 @@ void DocumentLoader::CommitNavigation() {
   // since the latter isn't populated in unit tests.
   if (frame_->IsOutermostMainFrame()) {
     auto address_space = response_.AddressSpace();
-    if ((address_space == network::mojom::blink::IPAddressSpace::kPrivate ||
-         address_space == network::mojom::blink::IPAddressSpace::kLocal) &&
+    if ((address_space == network::mojom::blink::IPAddressSpace::kLocal ||
+         address_space == network::mojom::blink::IPAddressSpace::kLoopback) &&
         !frame_->DomWindow()->IsSecureContext()) {
       CountUse(WebFeature::kMainFrameNonSecurePrivateAddressSpace);
     }
@@ -2742,7 +2738,8 @@ void DocumentLoader::CreateParserPostCommit() {
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.
   DispatchLinkHeaderPreloads(nullptr /* viewport */,
-                             PreloadHelper::kOnlyLoadNonMedia);
+                             PreloadHelper::LoadLinksFromHeaderMode::
+                                 kDocumentAfterCommitWithoutViewport);
 
   // Initializing origin trials might force window proxy initialization,
   // which later triggers CHECK when swapping in via WebFrame::Swap().

@@ -56,6 +56,12 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       DeviceId id) override;
   void SetKeyboardSettings(DeviceId id,
                            mojom::KeyboardSettingsPtr settings) override;
+  void SetTouchpadSettings(DeviceId id,
+                           mojom::TouchpadSettingsPtr settings) override;
+  void SetMouseSettings(DeviceId id, mojom::MouseSettingsPtr settings) override;
+  void SetPointingStickSettings(
+      DeviceId id,
+      mojom::PointingStickSettingsPtr settings) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
@@ -79,19 +85,19 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void Init();
 
   void DispatchKeyboardConnected(DeviceId id);
-  void DispatchKeyboardDisconnected(DeviceId id);
+  void DispatchKeyboardDisconnectedAndEraseFromList(DeviceId id);
   void DispatchKeyboardSettingsChanged(DeviceId id);
 
   void DispatchTouchpadConnected(DeviceId id);
-  void DispatchTouchpadDisconnected(DeviceId id);
+  void DispatchTouchpadDisconnectedAndEraseFromList(DeviceId id);
   void DispatchTouchpadSettingsChanged(DeviceId id);
 
   void DispatchMouseConnected(DeviceId id);
-  void DispatchMouseDisconnected(DeviceId id);
+  void DispatchMouseDisconnectedAndEraseFromList(DeviceId id);
   void DispatchMouseSettingsChanged(DeviceId id);
 
   void DispatchPointingStickConnected(DeviceId id);
-  void DispatchPointingStickDisconnected(DeviceId id);
+  void DispatchPointingStickDisconnectedAndEraseFromList(DeviceId id);
   void DispatchPointingStickSettingsChanged(DeviceId id);
 
   base::ObserverList<InputDeviceSettingsController::Observer> observers_;

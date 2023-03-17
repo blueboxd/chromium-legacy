@@ -30,23 +30,23 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "pna-permission",
+    "prefix": "lna-permission",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/private-network-access"],
+    "bases": ["external/wpt/fetch/local-network-access"],
     "args": ["--enable-features=PrivateNetworkAccessPermissionPrompt"],
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "pna-workers-disabled",
+    "prefix": "lna-workers-disabled",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/private-network-access"],
+    "bases": ["external/wpt/fetch/local-network-access"],
     "args": ["--disable-features=PrivateNetworkAccessForWorkers"],
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "pna-workers-enabled",
+    "prefix": "lna-workers-enabled",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/private-network-access"],
+    "bases": ["external/wpt/fetch/local-network-access"],
     "args": [
       "--enable-features=PrivateNetworkAccessForWorkers",
       "--disable-features=PrivateNetworkAccessForWorkersWarningOnly"
@@ -56,7 +56,7 @@
   {
     "prefix": "lna-allow-potentially-trustworthy-same-origin",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/private-network-access"],
+    "bases": ["external/wpt/fetch/local-network-access"],
     "args": [
       "--enable-features=LocalNetworkAccessAllowPotentiallyTrustworthySameOrigin"
     ],
@@ -105,6 +105,7 @@
               "external/wpt/css/css-transforms/animation",
               "external/wpt/css/css-transforms/individual-transform/animation",
               "external/wpt/feature-policy/experimental-features",
+              "external/wpt/long-animation-frame/tentative",
               "external/wpt/permissions-policy/experimental-features",
               "external/wpt/html/canvas/offscreen/manual/convert-to-blob",
               "external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html",
@@ -137,7 +138,15 @@
     "exclusive_tests": "ALL",
     "args": ["--attribution-reporting-debug-mode",
              "--enable-features=AttributionReportingCrossAppWeb,AttributionReportingTriggerAttestation",
-             "--additional-trust-token-key-commitments={\"https://web-platform.test:8444\":{\"TrustTokenV3VOPRF\":{\"protocol_version\":\"TrustTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"],
+             "--additional-private-state-token-key-commitments={\"https://web-platform.test:8444\":{\"PrivateStateTokenV3VOPRF\":{\"protocol_version\":\"PrivateStateTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "attribution-reporting-cross-app-web",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/inspector-protocol/attribution-reporting/os"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=AttributionReportingCrossAppWeb"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -634,6 +643,19 @@
     "args": ["--disable-site-isolation-trials"],
     "expires": "Jul 1, 2023"
   },
+  "---------------------- New Base Url Inheritance Behavior -----------------",
+  "Some wpt tests are specific to the new base-url inheritance behavior,",
+  "namely that about:blank and about:srcdoc inherit their base urls from",
+  "their openers, and not their parents, and the inheritance is done using a",
+  "snapshot taken at the time the frame is navigated. This virtual test suite",
+  "is for tests that rely on the new behavior to pass.",
+  {
+    "prefix": "new-base-url-inheritance-behavior",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/infrastructure/urls/base-url"],
+    "args": ["--enable-features=NewBaseUrlInheritanceBehavior"],
+    "expires": "Sep 10, 2023"
+  },
 
   "----------------------- origin-keyed agent clusters --------------------",
   "Origin-keyed agent clusters web platform tests are for the feature at",
@@ -925,7 +947,7 @@
     "args": [
         "--enable-features=PrivateStateTokens",
         "--enable-blink-features=PrivateStateTokens,PrivateStateTokensAlwaysAllowIssuance",
-        "--additional-trust-token-key-commitments={\"https://web-platform.test:8444\":{\"TrustTokenV3VOPRF\":{\"protocol_version\":\"TrustTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"
+        "--additional-private-state-token-key-commitments={\"https://web-platform.test:8444\":{\"PrivateStateTokenV3VOPRF\":{\"protocol_version\":\"PrivateStateTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1511,6 +1533,17 @@
   },
 
   {
+    "prefix": "url-port-overflow",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/url/url-setters.any.js",
+      "external/wpt/url/url-setters-a-area.window.js"
+    ],
+    "args": ["--enable-features=URLSetPortCheckOverflow"],
+    "expires": "Jul 1, 2023"
+  },
+
+  {
     "prefix": "origin-agent-cluster-default-warning",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "wpt_internal/origin-agent-cluster-default-warning" ],
@@ -1830,12 +1863,54 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "disable-device-id-pointer-event",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["fast/events/pointerevents/device-id"],
+    "args": [
+      "--disable-blink-features=PointerEventDeviceId"
+    ],
+    "expires": "Jul 1, 2023"
+  },
+  {
     "prefix": "webrtc-legacy-stats-trial-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "http/tests/inspector-protocol/issues/webrtc-stats-deprecation.js"
     ],
     "args": ["--disable-blink-features=RTCLegacyCallbackBasedGetStats"],
+    "expires": "Dec 21, 2023"
+  },
+  {
+    "prefix": "webrtc-vp9-simulcast",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/webrtc/simulcast/vp9-scalability-mode.https.html"
+    ],
+    "args": [
+      "--force-fieldtrials=WebRTC-AllowDisablingLegacyScalability/Enabled"
+    ],
+    "expires": "Jun 16, 2023"
+  },
+  {
+    "prefix": "allow-rtc-encoded-video-frame-set-metadata-csrcs",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "fast/peerconnection/RTCEncodedVideoFrame-set-metadata.html"
+    ],
+    "args": ["--enable-features=AllowRTCEncodedVideoFrameSetMetadataCsrcs"],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "scheduler-composition-disabled",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/scheduler/post-task-abort-reason.any.js",
+      "external/wpt/scheduler/post-task-run-order.any.js",
+      "external/wpt/scheduler/post-task-with-abort-signal.any.js",
+      "external/wpt/scheduler/task-controller-abort-signal-and-priority.any.js",
+      "external/wpt/scheduler/task-controller-setPriority1.any.js"
+    ],
+    "args": ["--disable-blink-features=AbortSignalComposition"],
     "expires": "Dec 21, 2023"
   }
 ]

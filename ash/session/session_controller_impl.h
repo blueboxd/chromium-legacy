@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 
 class AccountId;
+class PrefRegistrySimple;
 class PrefService;
 
 namespace ash {
@@ -30,7 +31,6 @@ class FullscreenController;
 class ScopedScreenLockBlocker;
 class SessionControllerClient;
 class SessionObserver;
-class SignoutScreenshotHandler;
 class TestSessionControllerClient;
 
 // Implements mojom::SessionController to cache session related info such as
@@ -46,6 +46,9 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   SessionControllerImpl& operator=(const SessionControllerImpl&) = delete;
 
   ~SessionControllerImpl() override;
+
+  // Registers syncable user profile prefs with the specified `registry`.
+  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry);
 
   base::TimeDelta session_length_limit() const { return session_length_limit_; }
   base::Time session_start_time() const { return session_start_time_; }
@@ -224,8 +227,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
 
   // Test helpers.
   void ClearUserSessionsForTest();
-  void SetSignoutScreenshotHandlerForTest(
-      std::unique_ptr<SignoutScreenshotHandler> handler);
 
  private:
   friend class TestSessionControllerClient;
@@ -271,13 +272,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // Called when IsUserSessionBlocked() becomes true. If there isn't an active
   // window, tries to activate one.
   void EnsureActiveWindowAfterUnblockingUserSession();
-
-  // Proceeds with signout after the (optional) signout screenshot is taken.
-  void ProceedWithSignOut();
-
-  // Proceeds with restart to update after the (optional) signout screenshot is
-  // taken.
-  void ProceedWithRestartToUpdate();
 
   // Called when an object of `ScopedScreenLockBlockerImpl` is destroyed.
   void RemoveScopedScreenLockBlocker();
@@ -340,9 +334,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   PrefService* last_active_user_prefs_ = nullptr;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
-
-  // May be null if glanceables are not enabled.
-  std::unique_ptr<SignoutScreenshotHandler> signout_screenshot_handler_;
 
   int scoped_screen_lock_blocker_count_ = 0;
 

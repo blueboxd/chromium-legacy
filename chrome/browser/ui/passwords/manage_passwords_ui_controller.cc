@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -43,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
@@ -199,6 +201,8 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   DCHECK(!local_credentials.empty());
   if (!HasBrowserWindow())
     return false;
+  // Delete any existing window from the screen.
+  dialog_controller_.reset();
   // If |local_credentials| contains PSL matches they shouldn't be propagated to
   // the state (unless they are also web affiliations) because PSL matches
   // aren't saved for current page. This logic is implemented here because
@@ -260,6 +264,23 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     ClearPopUpFlagForBubble();
     passwords_data_.OnPasswordAutofilled(password_forms, origin,
                                          federated_matches);
+    if (GetState() == password_manager::ui::MANAGE_STATE) {
+      if (Browser* browser =
+              chrome::FindBrowserWithWebContents(web_contents())) {
+        if (browser->tab_strip_model()->GetActiveWebContents() ==
+            web_contents()) {
+          const bool has_non_empty_note =
+              !base::ranges::all_of(GetCurrentForms(), &std::u16string::empty,
+                                    &password_manager::PasswordForm::
+                                        GetNoteWithEmptyUniqueDisplayName);
+          if (has_non_empty_note) {
+            browser->window()->MaybeShowFeaturePromo(
+                feature_engagement::
+                    kIPHPasswordsManagementBubbleDuringSigninFeature);
+          }
+        }
+      }
+    }
     // Don't close the existing bubble. Update the icon later.
     if (bubble_status_ == BubbleStatus::SHOWN)
       bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
@@ -591,8 +612,11 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
-  if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents()))
+  if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents())) {
     browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
+    browser->window()->MaybeShowFeaturePromo(
+        feature_engagement::kIPHPasswordsManagementBubbleAfterSaveFeature);
+  }
 }
 
 void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore(

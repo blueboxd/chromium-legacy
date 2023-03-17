@@ -34,6 +34,7 @@
 <translation id="1173894706177603556">ប្តូរឈ្មោះ</translation>
 <translation id="1177863135347784049">ផ្ទាល់ខ្លួន</translation>
 <translation id="1181037720776840403">ដកចេញ</translation>
+<translation id="1181366777303791449">នៅ <ph name="MAIN_FRAME_ETLD_PLUS_ONE" /></translation>
 <translation id="1193729455103054076">ប្រើ​ពាក្យសម្ងាត់ខ្លាំងឬ?</translation>
 <translation id="1197267115302279827">ផ្លាស់ទីចំណាំ</translation>
 <translation id="1201402288615127009">បន្ទាប់</translation>
@@ -42,7 +43,6 @@
 <translation id="1204692632633423444">ប៊ូតុងសកម្មភាព Chrome៖ <ph name="ACTION" /></translation>
 <translation id="1206892813135768548">ចម្លងអត្ថបទតំណ</translation>
 <translation id="1209206284964581585">លាក់ឥឡូវនេះ</translation>
-<translation id="1226851825267005295">អ្នក​អាច​គ្រប់គ្រង​ចំណូលចិត្ត​របស់​អ្នកបាន បន្ទាប់ពី​អ្នក​ចូល Chrome ដោយ​ប្រើ​គណនី Google របស់យើង។</translation>
 <translation id="1227058898775614466">ប្រវត្តិ​រុករក</translation>
 <translation id="1231733316453485619">បើក​សមកាលកម្ម?</translation>
 <translation id="123724288017357924">ផ្ទុកទំព័របច្ចុប្បន្នឡើងវិញ ដោយមិនអើពីនឹងមាតិកាដែលបានរក្សាទុកក្នុងឃ្លាំងផ្ទុកទិន្នន័យ</translation>
@@ -166,7 +166,6 @@
 <translation id="1928696683969751773">ធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="19288952978244135">បើក Chrome ឡើងវិញ។</translation>
 <translation id="1933845786846280168">ផ្ទាំងដែលបានជ្រើស</translation>
-<translation id="193571872656840963">សម្ដែងការអរគុណចំពោះអ្នកបង្កើតនេះ</translation>
 <translation id="1943432128510653496">រក្សាទុកពាក្យសម្ងាត់</translation>
 <translation id="1952172573699511566">គេហទំព័រ​នឹង​បង្ហាញ​អក្សរ​ជា​ភាសា​ដែលអ្នកចង់ប្រើ​ នៅពេល​ដែល​មាន។</translation>
 <translation id="1959679933317802873">កំពុងរង់ចាំ​ខ្លឹមសារ</translation>
@@ -202,7 +201,6 @@
 <translation id="2122601567107267586">មិនអាច​បើក​កម្មវិធី​បានទេ</translation>
 <translation id="2132122640199389833">ដកឧបករណ៍ដែលបានភ្ជាប់ទាំងអស់ចេញ</translation>
 <translation id="213279576345780926">បានបិទ <ph name="TAB_TITLE" /></translation>
-<translation id="2134927169889348449">ប្រសិនបើប្រើ Chrome មានន័យថា​អ្នកយល់ព្រមតាម<ph name="BEGIN_TOS_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់ Google<ph name="END_TOS_LINK" /> និង<ph name="BEGIN_ATOS_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់​បន្ថែមរបស់ Google Chrome និង ChromeOS<ph name="END_ATOS_LINK" />។</translation>
 <translation id="2139186145475833000">បន្ថែមទៅអេក្រង់ដើម</translation>
 <translation id="2141396931810938595">ផ្អែកលើការប្រើប្រាស់របស់អ្នក</translation>
 <translation id="214888715418183969">ជ្រើសរើសអ្វី​ដែលអ្នកយល់ថាអាចចែករំលែក​ជាមួយ Chrome បាន។ មេទ្រិកដែលអ្នកចែករំលែក​នឹងត្រូវបានប្រើ ដើម្បីជួយ​កែលម្អមុខងារ ប្រតិបត្តិការ និងស្ថិរភាពរបស់ Chrome។</translation>
@@ -555,7 +553,6 @@
 <translation id="409109920254068737">អ្នកអាចប្រើថេប្លេតនេះ ដើម្បីចូលគណនីនៅលើឧបករណ៍ដែលកំពុងបង្ហាញកូដ QR នេះ។</translation>
 <translation id="4095146165863963773">លុបទិន្នន័យកម្មវិធីឬ?</translation>
 <translation id="4096227151372679484">លំហូរនៃការរក្សាទុកចំណាំបានបើកពាក់កណ្ដាលអេក្រង់</translation>
-<translation id="4099578267706723511">ជួយធ្វើឲ្យ Chrome ប្រសើរជាងមុនដោយផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍ការគាំងទៅ Google។</translation>
 <translation id="4101475238162928417">ធ្វើសមកាលកម្ម ដើម្បីទទួលបាន​ពាក្យ​សម្ងាត់ ចំណាំ និង​អ្វីៗ​ជាច្រើនទៀត​របស់អ្នក​នៅលើ​ឧបករណ៍​ផ្សេងៗទៀត​របស់អ្នក</translation>
 <translation id="410351446219883937">ចាក់ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="4106587138345390261">Chrome កំពុងរុករក​មុខងារថ្មីៗដែលអនុញ្ញាត​ឱ្យគេហទំព័រផ្ដល់​បទពិសោធន៍រុករក​ដូចគ្នា ដោយប្រើ​ព័ត៌មានរបស់អ្នក​កាន់តែតិច</translation>
@@ -593,7 +590,6 @@
 <translation id="4269820728363426813">ចម្លងអាសយដ្ឋានតំណ</translation>
 <translation id="4283102315569707115">ស្នើសុំគេហទំព័រកុំព្យូទ័រតាម​លំនាំដើមឬ?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />បើក​ការចាក់សោអេក្រង់​នៅក្នុង​ការកំណត់ Android<ph name="END_LINK" /></translation>
-<translation id="4293476595220860475">ប្រសិនបើប្រើ Chrome មានន័យថា​អ្នកយល់ព្រមតាម<ph name="BEGIN_TOS_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់ Google<ph name="END_TOS_LINK" /> និង<ph name="BEGIN_ATOS_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់​បន្ថែមរបស់ Google Chrome និង ChromeOS<ph name="END_ATOS_LINK" />។ <ph name="BEGIN_PRIVACY_LINK" />គោលការណ៍​ឯកជនភាព<ph name="END_PRIVACY_LINK" />ក៏អនុវត្តផងដែរ។</translation>
 <translation id="4296252229500326964">ផ្ទាំងឯកជន​ថ្មី</translation>
 <translation id="4298388696830689168">គេហទំព័រ​ដែលបានតភ្ជាប់</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -634,6 +630,7 @@
 
 គណនី Google របស់អ្នកអាចមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតដូចជា ការស្វែងរក និងសកម្មភាពពីសេវាកម្ម Google ផ្សេងទៀត​នៅ​ក្នុង <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="452750746583162491">ពិនិត្យមើល​ទិន្នន័យ​ដែលបានធ្វើសមកាលកម្មរបស់អ្នក</translation>
+<translation id="4528638190900283934">ចូលគណនី​ដើម្បីប្រើ​មុខងារ​បន្ថែម</translation>
 <translation id="4532845899244822526">ជ្រើសរើសថតឯកសារ</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{ផ្ទាំង <ph name="TAB_COUNT_ONE" />}other{ផ្ទាំង <ph name="TAB_COUNT_MANY" />, ឯកជន <ph name="TAB_COUNT_INCOGNITO" />}}</translation>
 <translation id="4554077758708533499">បានភ្ជាប់ជាមួយខ្សែ USB</translation>
@@ -766,7 +763,6 @@
 <translation id="5161254044473106830">ត្រូវមានចំណងជើង</translation>
 <translation id="5170568018924773124">បង្ហាញនៅក្នុងថតឯកសារ</translation>
 <translation id="5171045022955879922">ស្វែងរក ឬវាយបញ្ចូល URL</translation>
-<translation id="517734441743343109">ប្រសិនបើបន្ត មានន័យថាអ្នក​យល់ព្រមតាម<ph name="BEGIN_TOS_LINK" />លក្ខខណ្ឌប្រើប្រាស់<ph name="END_TOS_LINK" /> និង<ph name="BEGIN_PRIVACY_LINK" />គោលការណ៍​ឯកជនភាព<ph name="END_PRIVACY_LINK" />។</translation>
 <translation id="5184329579814168207">បើកនៅក្នុង Chrome</translation>
 <translation id="5191251636205085390">ស្វែងយល់អំពី និងគ្រប់គ្រងបច្ចេកវិទ្យាថ្មីៗ ដែលមានគោលបំណងជំនួសខូគីរបស់ភាគីទីបី</translation>
 <translation id="5193988420012215838">បាន​ចម្លងទៅក្នុងឃ្លីបបត​របស់អ្នក</translation>
@@ -1246,10 +1242,10 @@
 <translation id="7707922173985738739">ប្រើ​ទិន្នន័យ​ទូរសព្ទចល័ត</translation>
 <translation id="7709094866268987903">ចំណាប់អារម្មណ៍ដែលអ្នកបានដកចេញនឹងបង្ហាញនៅទីនេះ</translation>
 <translation id="7709918231054955894">ទទួលបាន​ផ្ទាំង​ទាំងអស់​របស់អ្នក</translation>
+<translation id="772434085369393266">ប្ដូរ​ការរុករក​ទៅជា HTTPS និងប្រាប់ឱ្យ​អ្នកប្រុងប្រយ័ត្ន មុនពេលផ្ទុក​គេហទំព័រ​ដែលមិនស្គាល់ HTTPS។ អ្នកមិនអាចផ្លាស់ប្ដូរការ​កំណត់នេះបានទេ ដោយសារអ្នកបានបើកការ​ការពារ​កម្រិតខ្ពស់។</translation>
 <translation id="7725024127233776428">ទំព័រ​ដែលអ្នកចំណាំ​បង្ហាញនៅទីនេះ</translation>
 <translation id="7757787379047923882">អត្ថបទ​ដែលបានចែករំលែកពី <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">កាត SD <ph name="SD_CARD_NUMBER" /></translation>
-<translation id="7762928140712606393">ចូលគណនី ដើម្បីប្រើមុខងារបន្ថែម និងសុវត្ថិភាពខ្លាំងបំផុតរបស់ Chrome</translation>
 <translation id="7764225426217299476">បន្ថែមអាសយដ្ឋាន</translation>
 <translation id="7772032839648071052">អះអាងឃ្លាសម្ងាត់</translation>
 <translation id="7772375229873196092">បិទ <ph name="APP_NAME" /></translation>

@@ -19,8 +19,8 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
@@ -30,6 +30,17 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_illustrated_empty_view.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -49,9 +60,6 @@
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_shared_state.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -61,14 +69,6 @@
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
-#import "ios/chrome/browser/ui/table_view/table_view_model.h"
-#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -147,6 +147,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @property(nonatomic, assign) bookmarks::BookmarkModel* profileBookmarks;
 
 // The Browser in which bookmarks are presented
+// TODO(crbug.com/1423926): Need to convert this property into:
+// base::WeakPtr<Browser> _browser.
 @property(nonatomic, assign) Browser* browser;
 
 // The user's browser state model used.
@@ -217,9 +219,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @implementation BookmarksHomeViewController {
   // Bridge to register for bookmark changes in the profile model.
   std::unique_ptr<BookmarkModelBridge> _profileBridge;
-
-  // The root node, whose child nodes are shown in the bookmark table view.
-  const bookmarks::BookmarkNode* _rootNode;
   // The bookmark node that was choosen by an entity outside of the Bookmarks UI
   // and is selected when the view is loaded.
   const bookmarks::BookmarkNode* _externalBookmark;
@@ -240,7 +239,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         IOSChromeFaviconLoaderFactory::GetForBrowserState(_browserState);
 
     _profileBookmarks =
-        ios::BookmarkModelFactory::GetForBrowserState(_browserState);
+        ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+            _browserState);
 
     _profileBridge.reset(new BookmarkModelBridge(self, _profileBookmarks));
   }
@@ -261,10 +261,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.browser = nullptr;
   self.browserState = nullptr;
   _profileBridge.reset();
-}
-
-- (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode {
-  _rootNode = rootNode;
 }
 
 - (void)setExternalBookmark:(const bookmarks::BookmarkNode*)node {
@@ -293,7 +289,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // reconstructing from cache, or there will be a loading flicker if this gets
   // done on viewDidLoad.
   [self setupNavigationForBookmarksHomeViewController:self
-                                    usingBookmarkNode:_rootNode];
+                                    usingBookmarkNode:self.displayedFolderNode];
   [stack addObject:self];
 
   int64_t cachedFolderID;
@@ -330,7 +326,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     }
 
     BookmarksHomeViewController* controller =
-        [self createControllerWithRootFolder:node];
+        [self createControllerWithDisplayedFolderNode:node];
     // Configure the controller's Navigationbar at this time when
     // reconstructing from cache, or there will be a loading flicker if this
     // gets done on viewDidLoad.
@@ -474,12 +470,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - Protected
 
 - (void)loadBookmarkViews {
-  DCHECK(_rootNode);
+  DCHECK(self.displayedFolderNode);
   [self loadModel];
 
   self.sharedState = [[BookmarksHomeSharedState alloc]
       initWithProfileBookmarkModel:_profileBookmarks
-                 displayedRootNode:_rootNode];
+                 displayedRootNode:self.displayedFolderNode];
   self.sharedState.tableViewModel = self.tableViewModel;
   self.sharedState.tableView = self.tableView;
   self.sharedState.observer = self;
@@ -512,7 +508,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self.mediator startMediating];
 
   [self setupNavigationForBookmarksHomeViewController:self
-                                    usingBookmarkNode:_rootNode];
+                                    usingBookmarkNode:self.displayedFolderNode];
 
   [self setupContextBar];
 
@@ -531,10 +527,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)cacheIndexPathRow {
   // Cache IndexPathRow for BookmarkTableView.
   int topMostVisibleIndexPathRow = [self topMostVisibleIndexPathRow];
-  if (_rootNode) {
+  if (self.displayedFolderNode) {
     [BookmarkPathCache
         cacheBookmarkTopMostRowWithPrefService:self.browserState->GetPrefs()
-                                      folderId:_rootNode->id()
+                                      folderId:self.displayedFolderNode->id()
                                     topMostRow:topMostVisibleIndexPathRow];
   } else {
     // TODO(crbug.com/1061882):Remove DCHECK once we know the root cause of the
@@ -779,7 +775,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
       // Build reversed list of controllers.
       BookmarksHomeViewController* controller =
-          [self createControllerWithRootFolder:cursor];
+          [self createControllerWithDisplayedFolderNode:cursor];
       [stack insertObject:controller atIndex:0];
 
       // Setup now, so that the back button labels shows parent folder
@@ -821,7 +817,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
   BookmarksHomeViewController* controller =
-      [self createControllerWithRootFolder:folder];
+      [self createControllerWithDisplayedFolderNode:folder];
   [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -895,7 +891,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self.snackbarCommandsHandler
       showSnackbarMessage:
           bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
-              node, _rootNode, position, self.profileBookmarks,
+              node, self.displayedFolderNode, position, self.profileBookmarks,
               self.browserState)];
 }
 
@@ -974,12 +970,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {
-  DCHECK(!_rootNode);
-  [self setRootNode:self.profileBookmarks->root_node()];
+  DCHECK(!self.displayedFolderNode);
+  self.displayedFolderNode = self.profileBookmarks->root_node();
 
   // If the view hasn't loaded yet, then return early. The eventual call to
   // viewDidLoad will properly initialize the views.  This early return must
-  // come *after* the call to setRootNode above.
+  // come *after* setting displayedFolderNode above.
   if (![self isViewLoaded]) {
     return;
   }
@@ -1046,7 +1042,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)bookmarkNodeDeleted:(const BookmarkNode*)node
                  fromFolder:(const BookmarkNode*)folder {
-  if (_rootNode == node) {
+  if (self.displayedFolderNode == node) {
     [self setTableViewEditing:NO];
   }
 }
@@ -1065,7 +1061,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - private
 
 - (BOOL)isDisplayingBookmarkRoot {
-  return _rootNode == self.profileBookmarks->root_node();
+  return self.displayedFolderNode == self.profileBookmarks->root_node();
 }
 
 // Check if any of our controller is presenting. We don't consider when this
@@ -1165,7 +1161,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
 
-  new_tab_page_uma::RecordAction(self.browserState,
+  new_tab_page_uma::RecordAction(self.browserState->IsOffTheRecord(),
                                  self.webStateList->GetActiveWebState(),
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
@@ -1220,11 +1216,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                     animated:YES];
 }
 
-- (BookmarksHomeViewController*)createControllerWithRootFolder:
-    (const bookmarks::BookmarkNode*)folder {
+- (BookmarksHomeViewController*)createControllerWithDisplayedFolderNode:
+    (const bookmarks::BookmarkNode*)displayedFolderNode {
   BookmarksHomeViewController* controller =
       [[BookmarksHomeViewController alloc] initWithBrowser:self.browser];
-  [controller setRootNode:folder];
+  controller.displayedFolderNode = displayedFolderNode;
   controller.homeDelegate = self.homeDelegate;
   controller.applicationCommandsHandler = self.applicationCommandsHandler;
   controller.snackbarCommandsHandler = self.snackbarCommandsHandler;
@@ -2591,8 +2587,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self.snackbarCommandsHandler
       showSnackbarMessage:
           bookmark_utils_ios::CreateBookmarkAtPositionWithUndoToast(
-              base::SysUTF8ToNSString(URL.spec()), URL, _rootNode, index,
-              self.profileBookmarks, self.browserState)];
+              base::SysUTF8ToNSString(URL.spec()), URL,
+              self.displayedFolderNode, index, self.profileBookmarks,
+              self.browserState)];
 }
 
 @end

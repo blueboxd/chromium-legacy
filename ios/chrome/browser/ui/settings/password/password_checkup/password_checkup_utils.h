@@ -29,11 +29,15 @@ enum class WarningType {
 // Struct used to obtain the password counts associated with the different
 // insecure types.
 struct InsecurePasswordCounts {
-  int compromisedCount;
-  int dismissedCount;
-  int reusedCount;
-  int weakCount;
+  int compromised_count;
+  int dismissed_count;
+  int reused_count;
+  int weak_count;
 };
+
+// Operator overload for the InsecurePasswordCounts struct.
+bool operator==(const InsecurePasswordCounts& lhs,
+                const InsecurePasswordCounts& rhs);
 
 // Returns the type of warning with the highest priority, the descending order
 // of priority being:
@@ -55,7 +59,13 @@ InsecurePasswordCounts CountInsecurePasswordsPerInsecureType(
 // Returns the number of saved passwords associated with the warning type passed
 // in parameters.
 int GetPasswordCountForWarningType(
-    WarningType warningType,
+    WarningType warning_type,
+    const std::vector<password_manager::CredentialUIEntry>&
+        insecure_credentials);
+
+// Returns saved passwords associated with a warning type.
+std::vector<password_manager::CredentialUIEntry> GetPasswordsForWarningType(
+    WarningType warning_type,
     const std::vector<password_manager::CredentialUIEntry>&
         insecure_credentials);
 

@@ -4,18 +4,18 @@
 <script>
 async function triggerDialog() {
   try {
-    navigator.credentials.get({
+    const result = await navigator.credentials.get({
       identity: {
         providers: [{
           configURL: `https://${location.host}/resources/fedcm/fedcm.json`,
-          clientId: '1',
+          clientId: '123',
           nonce: '2',
         }]
       }
     });
-    return "OK";
+    return result.token;
   } catch (error) {
-     return error.toString();
+    return error.toString();
   }
 }
 </script>

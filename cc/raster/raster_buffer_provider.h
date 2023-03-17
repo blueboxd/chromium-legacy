@@ -41,7 +41,7 @@ class CC_EXPORT RasterBufferProvider {
   // a placeholder for the skia native format.
   static void PlaybackToMemory(
       void* memory,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       size_t stride,
       const RasterSource* raster_source,

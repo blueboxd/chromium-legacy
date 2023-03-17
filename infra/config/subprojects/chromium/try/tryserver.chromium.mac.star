@@ -84,7 +84,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "mac-builder-next-rel",
+    name = "mac-builder-next",
     mirrors = ["ci/Mac Builder Next"],
     builderless = False,
     os = os.MAC_13,
@@ -319,14 +319,14 @@ try_.builder(
     name = "mac_upload_clang",
     executable = "recipe:chromium_upload_clang",
     builderless = False,
-    execution_timeout = 6 * time.hour,
+    execution_timeout = 8 * time.hour,
 )
 
 try_.builder(
     name = "mac_upload_clang_arm",
     executable = "recipe:chromium_upload_clang",
     builderless = False,
-    execution_timeout = 6 * time.hour,
+    execution_timeout = 8 * time.hour,
 )
 
 try_.builder(
@@ -347,6 +347,8 @@ ios_builder(
     mirrors = [
         "ci/ios-blink-dbg-fyi",
     ],
+    cpu = cpu.ARM64,
+    execution_timeout = 12 * time.hour,
 )
 
 ios_builder(
@@ -477,6 +479,13 @@ ios_builder(
             "third_party/crashpad/crashpad/.+",
         ],
     ),
+)
+
+ios_builder(
+    name = "ios-wpt-fyi-rel",
+    mirrors = [
+        "ci/ios-wpt-fyi-rel",
+    ],
 )
 
 ios_builder(

@@ -168,7 +168,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     EXPECT_EQ(config.noise_suppression.level,
               webrtc::AudioProcessing::Config::NoiseSuppression::kHigh);
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     // Android uses echo cancellation optimized for mobiles, and does not
     // support keytap suppression.
     EXPECT_TRUE(config.echo_canceller.mobile_mode);
@@ -362,7 +362,15 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, TestStereoAudio) {
   }
 
   // Test without and with audio processing enabled.
-  for (bool use_apm : {false, true}) {
+  constexpr bool kUseApmValues[] =
+#if BUILDFLAG(IS_IOS)
+      // TODO(https://crbug.com/1417474): `false` fails on ios-blink platform
+      // due to a special case for iOS in settings.NeedWebrtcAudioProcessing()
+      {true};
+#else
+      {false, true};
+#endif
+  for (bool use_apm : kUseApmValues) {
     // No need to test stereo with APM if disabled.
     if (use_apm && !use_multichannel_processing) {
       continue;
@@ -721,8 +729,17 @@ TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
   EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
 }
 
+#if BUILDFLAG(IS_IOS)
+// TODO(https://crbug.com/1417474): Remove legacy iOS case in
+// AudioProcessingSettings::NeedWebrtcAudioProcessing().
+#define MAYBE_TrueWhenSoftwareEchoCancellationIsEnabled \
+  DISABLED_TrueWhenSoftwareEchoCancellationIsEnabled
+#else
+#define MAYBE_TrueWhenSoftwareEchoCancellationIsEnabled \
+  TrueWhenSoftwareEchoCancellationIsEnabled
+#endif  // BUILDFLAG(IS_IOS)
 TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
-     TrueWhenSoftwareEchoCancellationIsEnabled) {
+     MAYBE_TrueWhenSoftwareEchoCancellationIsEnabled) {
   blink::AudioProcessingProperties properties;
   properties.DisableDefaultProperties();
   properties.echo_cancellation_type =
@@ -740,8 +757,16 @@ TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
   EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
 }
 
+#if BUILDFLAG(IS_IOS)
+// TODO(https://crbug.com/1417474): Remove legacy iOS case in
+// AudioProcessingSettings::NeedWebrtcAudioProcessing().
+#define MAYBE_TrueWhenStereoMirroringIsEnabled \
+  DISABLED_TrueWhenStereoMirroringIsEnabled
+#else
+#define MAYBE_TrueWhenStereoMirroringIsEnabled TrueWhenStereoMirroringIsEnabled
+#endif  // BUILDFLAG(IS_IOS)
 TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
-     TrueWhenStereoMirroringIsEnabled) {
+     MAYBE_TrueWhenStereoMirroringIsEnabled) {
   blink::AudioProcessingProperties properties;
   properties.DisableDefaultProperties();
   properties.goog_audio_mirroring = true;
@@ -757,8 +782,15 @@ TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
   EXPECT_FALSE(audio_processor->has_webrtc_audio_processing());
 }
 
+#if BUILDFLAG(IS_IOS)
+// TODO(https://crbug.com/1417474): Remove legacy iOS case in
+// AudioProcessingSettings::NeedWebrtcAudioProcessing().
+#define MAYBE_TrueWhenGainControlIsEnabled DISABLED_TrueWhenGainControlIsEnabled
+#else
+#define MAYBE_TrueWhenGainControlIsEnabled TrueWhenGainControlIsEnabled
+#endif  // BUILDFLAG(IS_IOS)
 TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
-     TrueWhenGainControlIsEnabled) {
+     MAYBE_TrueWhenGainControlIsEnabled) {
   blink::AudioProcessingProperties properties;
   properties.DisableDefaultProperties();
   properties.goog_auto_gain_control = true;
@@ -775,12 +807,21 @@ TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
   EXPECT_TRUE(audio_processor->has_webrtc_audio_processing());
 }
 
+#if BUILDFLAG(IS_IOS)
+// TODO(https://crbug.com/1417474): Remove legacy iOS case in
+// AudioProcessingSettings::NeedWebrtcAudioProcessing().
+#define MAYBE_TrueWhenExperimentalEchoCancellationIsEnabled \
+  DISABLED_TrueWhenExperimentalEchoCancellationIsEnabled
+#else
+#define MAYBE_TrueWhenExperimentalEchoCancellationIsEnabled \
+  TrueWhenExperimentalEchoCancellationIsEnabled
+#endif  // BUILDFLAG(IS_IOS)
 // "Experimental echo cancellation" does not map to any real effect, but still
 // enables audio processing.
 // TODO(https://crbug.com/1269723): Remove the experimental AEC option. This
 // test documents *current* behavior, not *desired* behavior.
 TEST(MediaStreamAudioProcessorWouldModifyAudioTest,
-     TrueWhenExperimentalEchoCancellationIsEnabled) {
+     MAYBE_TrueWhenExperimentalEchoCancellationIsEnabled) {
   blink::AudioProcessingProperties properties;
   properties.DisableDefaultProperties();
   properties.goog_experimental_echo_cancellation = true;

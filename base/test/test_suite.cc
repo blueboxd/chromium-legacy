@@ -177,12 +177,9 @@ class FeatureListScopedToEachTest : public testing::EmptyTestEventListener {
     *CommandLine::ForCurrentProcess() = new_command_line;
 
     // TODO(https://crbug.com/1400059): Enable dangling pointer detector.
-    // TODO(https://crbug.com/1400058): Enable BackupRefPtr in unittests on
-    // Windows and Android too.
     // TODO(https://crbug.com/1413674): Enable PartitionAlloc in unittests with
     // ASAN.
-#if BUILDFLAG(USE_PARTITION_ALLOC) && !BUILDFLAG(IS_WIN) && \
-    !BUILDFLAG(IS_ANDROID) && !defined(ADDRESS_SANITIZER)
+#if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(ADDRESS_SANITIZER)
     allocator::PartitionAllocSupport::Get()->ReconfigureAfterFeatureListInit(
         "", /*configure_dangling_pointer_detector=*/false);
 #endif
@@ -334,7 +331,7 @@ void TestSuite::InitializeFromCommandLine(int argc, char** argv) {
   testing::InitGoogleMock(&argc, argv);
 
 #if BUILDFLAG(IS_IOS)
-  InitIOSRunHook(this, argc, argv);
+  InitIOSArgs(argc, argv);
 #endif
 }
 
@@ -423,10 +420,6 @@ void TestSuite::AddTestLauncherResultPrinter() {
 // Don't add additional code to this method.  Instead add it to
 // Initialize().  See bug 6436.
 int TestSuite::Run() {
-#if BUILDFLAG(IS_IOS)
-  RunTestsFromIOSApp();
-#endif
-
 #if BUILDFLAG(IS_APPLE)
   mac::ScopedNSAutoreleasePool scoped_pool;
 #endif
@@ -597,11 +590,10 @@ void TestSuite::Initialize() {
 #endif
 
   // TODO(https://crbug.com/1400058): Enable BackupRefPtr in unittests on
-  // Windows and Android too. Same for ASAN.
+  // Android too. Same for ASAN.
   // TODO(https://crbug.com/1413674): Enable PartitionAlloc in unittests with
   // ASAN.
-#if BUILDFLAG(USE_PARTITION_ALLOC) && !BUILDFLAG(IS_WIN) && \
-    !BUILDFLAG(IS_ANDROID) && !defined(ADDRESS_SANITIZER)
+#if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(ADDRESS_SANITIZER)
   allocator::PartitionAllocSupport::Get()->ReconfigureForTests();
 #endif  // BUILDFLAG(IS_WIN)
 

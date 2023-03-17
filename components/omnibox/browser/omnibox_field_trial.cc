@@ -579,7 +579,7 @@ const base::FeatureParam<int>
     OmniboxFieldTrial::kFuzzyUrlSuggestionsMinInputLength(
         &omnibox::kOmniboxFuzzyUrlSuggestions,
         "FuzzyUrlSuggestionsMinInputLength",
-        2);
+        3);
 
 // Note about this default, which produces good results for most inputs:
 // Using 10% reasonably took a 1334 relevance match down to 1200,
@@ -1122,6 +1122,18 @@ bool IsUrlScoringModelEnabled() {
 }
 
 // <- ML Relevance Scoring
+// ---------------------------------------------------------
+// Inspire Me ->
+const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
+    &omnibox::kInspireMe,
+    "AdditionalRelatedQueries",
+    0);
+
+const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
+    &omnibox::kInspireMe,
+    "AdditionalTrendingQueries",
+    0);
+// <- Inspire Me
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

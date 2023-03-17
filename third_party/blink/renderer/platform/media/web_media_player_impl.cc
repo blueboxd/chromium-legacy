@@ -98,6 +98,10 @@
 #include "third_party/blink/renderer/platform/media/web_media_source_impl.h"
 #include "ui/gfx/geometry/size.h"
 
+#if BUILDFLAG(ENABLE_HLS_DEMUXER)
+#include "third_party/blink/renderer/platform/media/hls_data_source_provider_impl.h"
+#endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
+
 #if BUILDFLAG(IS_ANDROID)
 #include "media/base/android/media_codec_util.h"
 #endif
@@ -374,6 +378,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           media_log_.get(),
           frame_->GetDocument().SiteForCookies(),
           frame_->GetDocument().TopFrameOrigin(),
+          frame_->GetDocument().HasStorageAccess(),
           enable_instant_source_buffer_gc,
           std::move(demuxer_override))),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -516,7 +521,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   renderer_factory_selector_->SetRemotePlayStateChangeCB(
       base::BindPostTaskToCurrentDefault(base::BindRepeating(
           &WebMediaPlayerImpl::OnRemotePlayStateChange, weak_this_)));
-#endif  // defined (OS_ANDROID)
+#endif  // defined (IS_ANDROID)
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -1570,6 +1575,15 @@ void WebMediaPlayerImpl::AddVideoTrack(const std::string& id,
 }
 #endif  // BUILDFLAG(ENABLE_FFMPEG)
 
+#if BUILDFLAG(ENABLE_HLS_DEMUXER)
+base::SequenceBound<media::HlsDataSourceProvider>
+WebMediaPlayerImpl::GetHlsDataSourceProvider() {
+  return base::SequenceBound<HlsDataSourceProviderImpl>(
+      main_task_runner_, media_log_.get(), url_index_, main_task_runner_,
+      media_task_runner_, tick_clock_);
+}
+#endif
+
 void WebMediaPlayerImpl::SetCdmInternal(WebContentDecryptionModule* cdm) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(cdm);
@@ -1697,6 +1711,8 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   // Add a log event so the player shows up as "SUSPENDED" in media-internals.
   media_log_->AddEvent<MediaLogEvent::kSuspended>();
 
+  pending_oneshot_suspend_ = false;
+
   if (attempting_suspended_start_) {
     DCHECK(pipeline_controller_->IsSuspended());
     did_lazy_load_ = !has_poster_ && HasVideo();
@@ -1804,20 +1820,26 @@ void WebMediaPlayerImpl::UpdateLoadedUrl(const GURL& url) {
   loaded_url_ = url;
 }
 
-bool WebMediaPlayerImpl::RestartForHls() {
+void WebMediaPlayerImpl::RestartForHls() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
   observer_->OnHlsManifestDetected();
-#if BUILDFLAG(IS_ANDROID)
-  // TODO: DCHECK that |pipeline_| is stopped.
+
+  // Use the media player renderer if the native hls demuxer isn't compiled in
+  // or if the feature is disabled.
+#if BUILDFLAG(ENABLE_HLS_DEMUXER)
+  if (!base::FeatureList::IsEnabled(media::kBuiltInHlsPlayer)) {
+    renderer_factory_selector_->SetBaseRendererType(
+        media::RendererType::kMediaPlayer);
+  }
+#elif BUILDFLAG(IS_ANDROID)
   renderer_factory_selector_->SetBaseRendererType(
       media::RendererType::kMediaPlayer);
+#else
+  // Shouldn't be reachable from desktop where hls is not enabled.
+  NOTREACHED();
+#endif
   SetMemoryReportingState(false);
   StartPipeline();
-  return true;
-#else
-  return false;
-#endif
 }
 
 void WebMediaPlayerImpl::OnError(media::PipelineStatus status) {
@@ -2280,6 +2302,16 @@ void WebMediaPlayerImpl::OnWaiting(media::WaitingReason reason) {
     // PipelineImpl.
     case media::WaitingReason::kDecoderStateLost:
       pipeline_controller_->OnDecoderStateLost();
+      return;
+
+    // On Android, it happens when the surface used by the decoder is destroyed,
+    // e.g. background. We want to suspend the pipeline and hope the surface
+    // will be available when resuming the pipeline by some other signals.
+    case media::WaitingReason::kSecureSurfaceLost:
+      if (!pipeline_controller_->IsSuspended() && !pending_oneshot_suspend_) {
+        pending_oneshot_suspend_ = true;
+        UpdatePlayState();
+      }
       return;
   }
 }
@@ -3044,7 +3076,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(
     bool is_in_picture_in_picture) {
   PlayState result;
 
-  bool must_suspend = was_suspended_for_frame_closed_;
+  bool must_suspend =
+      was_suspended_for_frame_closed_ || pending_oneshot_suspend_;
   bool is_stale = delegate_->IsStale(delegate_id_);
 
   if (stale_state_override_for_testing_.has_value() &&
@@ -3727,7 +3760,8 @@ void WebMediaPlayerImpl::WriteSplitHistogram(
 
 void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {
   DCHECK(demuxer_manager_->HasDataSource() ||
-         GetDemuxerType() == media::DemuxerType::kChunkDemuxer);
+         GetDemuxerType() == media::DemuxerType::kChunkDemuxer ||
+         GetDemuxerType() == media::DemuxerType::kHlsDemuxer);
   WriteSplitHistogram<kPlaybackType | kEncrypted>(
       &base::UmaHistogramTimes, "Media.UnderflowDuration2", duration);
 }

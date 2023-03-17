@@ -399,9 +399,11 @@ void ClearLacrosDataBackwardMigrationModeCacheForTest();
 // Clears the cached value for LacrosSelection policy.
 void ClearLacrosSelectionCacheForTest();
 
+// Returns true if profile migraiton is enabled. If profile migration is
+// enabled, the completion of it is required to enable Lacros.
 bool IsProfileMigrationEnabled();
 
-// Returns true if the profile migration can run, but not yet completed.
+// Returns true if the profile migration is enabled, but not yet completed.
 bool IsProfileMigrationAvailable();
 
 // Returns `MigrationMode::kMove` if LacrosOnly or `kLacrosMoveProfileMigration`
@@ -501,10 +503,6 @@ bool WasGotoFilesClicked(PrefService* local_state,
 
 // Returns true if ash 1st party extension keep list should be enforced.
 bool ShouldEnforceAshExtensionKeepList();
-
-// Forces IsLacrosEnabled() to return true or false for testing. Reset upon
-// destruction of returned |base::AutoReset| object.
-base::AutoReset<bool> SetLacrosEnabledForTest(bool force_enabled);
 
 // Forces IsLacrosPrimaryBrowser() to return true or false for testing.
 // Reset upon destruction of returned |base::AutoReset| object.

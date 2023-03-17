@@ -81,6 +81,7 @@
 <translation id="149095475893949513">یہ ویب سائٹ کنفیگریشن پروفائل کو ڈاؤن لوڈ کرنے کی کوشش کر رہی ہے۔</translation>
 <translation id="1491277525950327607">ترتیبات کو ٹوگل کرنے کیلئے دو بار تھپتھپائیں</translation>
 <translation id="1492417797159476138">آپ نے پہلے ہی اس سائٹ کے لئے یہ صارف نام محفوظ کر لیا ہے</translation>
+<translation id="1497590942294823549">مینو ← پاس ورڈ مینیجر</translation>
 <translation id="1498283581832036924">آپ کا <ph name="WEBSITE" /> اکاؤنٹ حذف نہیں ہوگا۔</translation>
 <translation id="1506063256525392513">‏یہ آپ کو تصاویر لینے اور اپ لوڈ کرنے کے ساتھ ساتھ QR کوڈز اسکین کرنے کی اجازت دیتا ہے</translation>
 <translation id="1509486075633541495">ویب سائٹ میں سائن ان کریں</translation>
@@ -518,6 +519,7 @@
 <translation id="4737560986434232178">حالیہ ٹیبز تلاش کریں</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4747097190499141774">‏پاس فریز کی مرموز کاری میں Google Pay کے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔ آپ کے پاس فریز کا حامل شخص ہی آپ کے مرموز کردہ ڈیٹا کو پڑھ سکتا ہے۔ پاس فریز Google کو نہیں بھیجا جاتا ہے اور نہ ہی Google اسے اسٹور کرتا ہے۔ اگر آپ اپنا پاس فریز بھول جاتے ہیں یا اس ترتیب کو تبدیل کرنا چاہتے ہیں تو آپ کو مطابقت پذیری کو دوبارہ ترتیب دینے کی ضرورت ہوگی۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
+<translation id="4751162929052964260"><ph name="TITLE" />، <ph name="STATE" />، صرف اس آلہ پر، <ph name="URL" /></translation>
 <translation id="4751645464639803239">نیا پوشیدگی ٹیب</translation>
 <translation id="4766112107778026136">‏Discover اور پیروی کرنا</translation>
 <translation id="4775879719735953715">ڈیفالٹ براؤزر</translation>
@@ -843,6 +845,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6801927553864092214">نجی طور پر براؤز کرنے کے لیے ایک پوشیدگی ٹیب کھولیں</translation>
 <translation id="6807889908376551050">سبھی دکھائیں…</translation>
 <translation id="681368974849482173">آئٹم بنایا گیا</translation>
+<translation id="6822587385560699678">آن ہونے پر پاس ورڈز <ph name="ACCOUNT" /> میں محفوظ ہوتے ہیں۔ آف ہونے پر پاس ورڈز صرف اس آلے پر محفوظ ہوتے ہیں۔</translation>
 <translation id="683022620450280906">‏آپ کسی بھی آلے پر محفوظ کردہ پاس ورڈز استعمال کر سکتے ہیں۔ وہ <ph name="EMAIL" /> کے لیے Google پاس ورڈ مینیجر میں محفوظ ہوتے ہیں</translation>
 <translation id="6831043979455480757">ترجمہ کریں</translation>
 <translation id="6842136130964845393">اس بات کو یقینی بنانے کیلئے کہ آپ ہمیشہ اپنے محفوظ کردہ پاس ورڈز تک رسائی حاصل کر سکتے ہیں، توثیق کریں کہ یہ آپ ہیں</translation>
@@ -941,6 +944,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> کا کبھی بھی ترجمہ نہ کریں</translation>
 <translation id="7603852183842204213">پاپ اپس کو مسدود کر دیا گیا (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">پاس ورڈ حذف کریں</translation>
+<translation id="7611459119367035420">آپ اپنے پن کردہ ٹیبز یہاں تلاش کر سکتے ہیں۔</translation>
 <translation id="7638584964844754484">غلط پاس فریز</translation>
 <translation id="7646263789464975852">مینو ← ترتیبات ← سیفٹی چیک</translation>
 <translation id="7646772052135772216">پاس ورڈ کی مطابقت پذیری کام نہیں کر رہی ہے</translation>
@@ -953,6 +957,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7701040980221191251">کوئی نہیں</translation>
 <translation id="7720410380936703141">دوبارہ کوشش کریں</translation>
 <translation id="7726702057919861819">مینو ← سرگزشت ← براؤزنگ ڈیٹا صاف کریں</translation>
+<translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />۔ صرف اس آلہ پر۔</translation>
 <translation id="7738120385185846461">ایک مسئلے کی اطلاع دیں…</translation>
 <translation id="7741325291586284254">پوشیدگی ٹیب کا نیا صفحہ</translation>
 <translation id="7744394900930577716">دیگر ایپس میں پاس ورڈز</translation>
@@ -1128,6 +1133,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8952559610785099500">پاس ورڈ شامل کریں</translation>
 <translation id="8953046091948372197">آپ کو اپنے پاس ورڈ یہاں ملیں گے</translation>
 <translation id="895541991026785598">ایک مسئلہ کی اطلاع دیں</translation>
+<translation id="8971545611707025079">دوبارہ چیک کریں</translation>
 <translation id="8974714402877957201">‏1۔ iPad ترتیبات کھولیں</translation>
 <translation id="8976382372951310360">مدد</translation>
 <translation id="8976414606286374109">‏کارڈز آپ کے Google اکاؤنٹ میں محفوظ ہوتے ہیں۔</translation>
@@ -1161,7 +1167,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="9165320910061267720">‏قیمت میں کمی کے الرٹس کی اطلاعات حاصل کرنے کے لیے، آپ کو اپنے iOS کی ترتیبات میں اطلاعات کو آن کرنا ہوگا۔</translation>
 <translation id="9177438225260810839">کھلے ٹیبز تلاش کریں</translation>
 <translation id="9188680907066685419">نظم کردہ اکاؤنٹ سے سائن آؤٹ کریں</translation>
-<translation id="9193147658040604536">ٹیب کو پن کرنے کے لیے یہاں گھسیٹیں</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> دن پہلے</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9219154867334666734">ٹیبز تلاش کریں…</translation>

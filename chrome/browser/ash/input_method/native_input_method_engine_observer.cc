@@ -893,7 +893,7 @@ void NativeInputMethodEngineObserver::HandleOnFocusAsyncForNativeMojoEngine(
   ime::mojom::InputMethodSettingsPtr settings = WithAutocorrectOverride(
       /*base_settings=*/CreateSettingsFromPrefs(*prefs_, engine_id),
       /*autocorrect_enabled=*/!autocorrect_manager_
-          ->DisabledByInvalidSuggestionProvider());
+          ->DisabledByInvalidExperimentContext());
   OverrideXkbLayoutIfNeeded(InputMethodManager::Get()->GetImeKeyboard(),
                             settings);
 
@@ -1100,6 +1100,14 @@ void NativeInputMethodEngineObserver::OnAssistiveWindowButtonClicked(
             SettingToQueryString(
                 chromeos::settings::mojom::kSmartInputsSubpagePath,
                 chromeos::settings::mojom::Setting::kShowEmojiSuggestions));
+      }
+      if (button.window_type ==
+          ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion) {
+        chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+            ProfileManager::GetActiveUserProfile(),
+            SettingToQueryString(
+                chromeos::settings::mojom::kInputMethodOptionsSubpagePath,
+                chromeos::settings::mojom::Setting::kShowDiacritic));
       }
       if (button.window_type == ash::ime::AssistiveWindowType::kLearnMore) {
         autocorrect_manager_->HideUndoWindow();

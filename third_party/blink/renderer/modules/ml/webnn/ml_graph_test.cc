@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_clamp_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_2d_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_transpose_options.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_test_base.h"
 
@@ -882,6 +883,201 @@ TEST_P(MLGraphTest, ReshapeTest) {
                                    .values = {-10.0, -0.5, 0.5, 10.0}},
                          .new_shape = {1, absl::nullopt},
                          .expected_output_shape = {1, 4}}
+        .Test(*this, scope);
+  }
+}
+
+template <typename T>
+struct TransposeTester {
+  OperandInfo<T> input;
+  Vector<T> expected;
+
+  void Test(MLGraphTest& helper,
+            V8TestingScope& scope,
+            MLGraphBuilder* builder,
+            MLTransposeOptions* options = MLTransposeOptions::Create()) {
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand =
+        BuildTranspose(scope, builder, input_operand, options);
+    auto [graph, build_exception] =
+        helper.BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper.ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
+    EXPECT_EQ(results, expected);
+  }
+};
+
+TEST_P(MLGraphTest, TransposeTest) {
+  V8TestingScope scope;
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+  {
+    // Test transpose operator with default options.
+    auto* options = MLTransposeOptions::Create();
+    TransposeTester<float>{
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {2, 3, 4},
+                  .values =
+                      {
+                          0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+                          12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                      }},
+        .expected =
+            {
+                0, 12, 4, 16, 8,  20, 1, 13, 5, 17, 9,  21,
+                2, 14, 6, 18, 10, 22, 3, 15, 7, 19, 11, 23,
+            }}
+        .Test(*this, scope, builder, options);
+  }
+  {
+    // Test transpose with permutation = {0, 2, 1}.
+    auto* options = MLTransposeOptions::Create();
+    options->setPermutation({{0, 2, 1}});
+    TransposeTester<float>{
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {2, 3, 4},
+                  .values =
+                      {
+                          0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+                          12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                      }},
+        .expected =
+            {
+                0,  4,  8,  1,  5,  9,  2,  6,  10, 3,  7,  11,
+                12, 16, 20, 13, 17, 21, 14, 18, 22, 15, 19, 23,
+            }}
+        .Test(*this, scope, builder, options);
+  }
+}
+
+template <typename T>
+struct ConcatTester {
+  Vector<OperandInfo<T>> inputs;
+  uint32_t axis;
+  Vector<uint32_t> expected_output_shape;
+  Vector<T> expected_output_data;
+
+  void Test(MLGraphTest& helper, V8TestingScope& scope) {
+    // Build the graph.
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    HeapVector<Member<MLOperand>> input_operands;
+    String input_str = "input_";
+    for (uint32_t i = 0; i < inputs.size(); ++i) {
+      input_operands.push_back(BuildInput(
+          builder, input_str + String::Number(i), inputs[i].dimensions,
+          inputs[i].type, scope.GetExceptionState()));
+    }
+    auto* output_operand =
+        builder->concat(input_operands, axis, scope.GetExceptionState());
+    EXPECT_EQ(output_operand->Dimensions(), expected_output_shape);
+    auto [graph, build_exception] =
+        helper.BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute the graph.
+    MLNamedArrayBufferViews named_inputs;
+    for (uint32_t i = 0; i < inputs.size(); ++i) {
+      named_inputs.push_back(std::pair<String, NotShared<DOMArrayBufferView>>{
+          input_str + String::Number(i),
+          CreateArrayBufferViewForOperand(input_operands[i],
+                                          inputs[i].values)});
+    }
+    MLNamedArrayBufferViews named_outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper.ComputeGraph(scope, graph, named_inputs, named_outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(named_outputs[0].second);
+    EXPECT_EQ(results, expected_output_data);
+  }
+};
+
+TEST_P(MLGraphTest, ConcatTest) {
+  V8TestingScope scope;
+  {
+    // Test concat operator with one input and axis = 0.
+    ConcatTester<float>{.inputs = {{.type = V8MLOperandType::Enum::kFloat32,
+                                    .dimensions = {2, 2},
+                                    .values = {1., 2., 3., 4.}}},
+                        .axis = 0,
+                        .expected_output_shape = {2, 2},
+                        .expected_output_data = {1., 2., 3., 4.}}
+        .Test(*this, scope);
+  }
+  {
+    // Test concat operator with two inputs and axis = 0.
+    ConcatTester<float>{
+        .inputs = {{.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {2, 2},
+                    .values = {1., 2., 3., 4.}},
+                   {.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {2, 2},
+                    .values = {1., 2., 3., 4.}}},
+        .axis = 0,
+        .expected_output_shape = {4, 2},
+        .expected_output_data = {1., 2., 3., 4., 1., 2., 3., 4.}}
+        .Test(*this, scope);
+  }
+  {
+    // Test concat operator with two inputs and axis = 1;
+    ConcatTester<float>{
+        .inputs = {{.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {2, 2},
+                    .values = {1., 2., 3., 4.}},
+                   {.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {2, 2},
+                    .values = {1., 2., 3., 4.}}},
+        .axis = 1,
+        .expected_output_shape = {2, 4},
+        .expected_output_data = {1., 2., 1., 2., 3., 4., 3., 4.}}
+        .Test(*this, scope);
+  }
+  {
+    // Test concat operator with three inputs and axis = 0.
+    ConcatTester<float>{.inputs = {{.type = V8MLOperandType::Enum::kFloat32,
+                                    .dimensions = {1, 2},
+                                    .values = {1., 2.}},
+                                   {.type = V8MLOperandType::Enum::kFloat32,
+                                    .dimensions = {2, 2},
+                                    .values = {1., 2., 3., 4.}},
+                                   {.type = V8MLOperandType::Enum::kFloat32,
+                                    .dimensions = {3, 2},
+                                    .values = {1., 2., 3., 4., 5., 6.}}},
+                        .axis = 0,
+                        .expected_output_shape = {6, 2},
+                        .expected_output_data = {1., 2., 1., 2., 3., 4., 1., 2.,
+                                                 3., 4., 5., 6.}}
+        .Test(*this, scope);
+  }
+  {
+    // Test concat operator with four inputs and axis = 2.
+    ConcatTester<float>{
+        .inputs = {{.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {1, 2, 1},
+                    .values = {1., 2.}},
+                   {.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {1, 2, 2},
+                    .values = {1., 2., 3., 4.}},
+                   {.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {1, 2, 3},
+                    .values = {1., 2., 3., 4., 5., 6.}},
+                   {.type = V8MLOperandType::Enum::kFloat32,
+                    .dimensions = {1, 2, 4},
+                    .values = {1., 2., 3., 4., 5., 6., 7., 8.}}},
+        .axis = 2,
+        .expected_output_shape = {1, 2, 10},
+        .expected_output_data = {1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0,
+                                 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 4.0,
+                                 5.0, 6.0, 5.0, 6.0, 7.0, 8.0}}
         .Test(*this, scope);
   }
 }

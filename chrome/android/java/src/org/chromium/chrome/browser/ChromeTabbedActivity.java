@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import static org.chromium.chrome.browser.ui.IncognitoRestoreAppLaunchDrawBlocker.IS_INCOGNITO_SELECTED;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -129,12 +128,12 @@ import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteMetricsDelegate;
 import org.chromium.chrome.browser.read_later.ReadingListBackPressHandler;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.share.crow.CrowButtonDelegateImpl;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
@@ -518,8 +517,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 // Crash if intent came from us, but only in debug builds and only if we weren't
                 // explicitly told not to. Hopefully we'll get enough reports to find where
                 // these intents come from.
-                if (externalId == IntentHandler.ExternalAppId.CHROME
-                        && 0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE)
+                if (externalId == IntentHandler.ExternalAppId.CHROME && BuildInfo.isDebugApp()
                         && !CommandLine.getInstance().hasSwitch(
                                 ChromeSwitches.DONT_CRASH_ON_VIEW_MAIN_INTENTS)) {
                     String intentInfo = intent.toString();
@@ -558,7 +556,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mHistoricalTabModelObserver =
                     new HistoricalTabModelObserver(mTabModelSelector.getModel(false));
 
-            if (TabUiFeatureUtilities.isTabletGridTabSwitcherEnabled(this)) {
+            if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)) {
                 mTabModelSelector.addObserver(new TabModelSelectorObserver() {
                     @Override
                     public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
@@ -651,13 +649,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             return;
         }
 
-        boolean gridTabSwitcherEnabled = TabUiFeatureUtilities.isTabletGridTabSwitcherEnabled(this);
         boolean overviewVisible = mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
         boolean hasNextTab = !(getTabModelSelector().getTotalTabCount() == 0
                 || (!getTabModelSelector().isIncognitoSelected()
                         && getTabModelSelector().getModel(false).getCount() == 0));
 
-        if (gridTabSwitcherEnabled && !overviewVisible && !hasNextTab) {
+        if (!overviewVisible && !hasNextTab) {
             mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, false);
         }
     }
@@ -698,13 +695,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForTablet")) {
             CompositorViewHolder compositorViewHolder = getCompositorViewHolderSupplier().get();
 
-            // TODO(1239025): Remove all GTS enabled checks after GTS is enabled by default on
-            // tablets.
-            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this)
-                    && !TabUiFeatureUtilities.isTabletGridTabSwitcherDelayCreationEnabled()) {
-                createAndSetStartSurfaceForTablet();
-            }
-
             // clang-format off
             ViewGroup tabSwitcherViewHolder = findViewById(R.id.grid_tab_switcher_view_holder);
             mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, mContentContainer,
@@ -743,8 +733,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 /* chromeActivityNativeDelegate= */ this, getLifecycleDispatcher(),
                 getTabCreatorManagerSupplier().get(), getMenuOrKeyboardActionController(),
                 getMultiWindowModeStateDispatcher(), mJankTracker, getToolbarManager()::getToolbar,
-                new CrowButtonDelegateImpl(), mBackPressManager,
-                mRootUiCoordinator.getIncognitoReauthControllerSupplier(),
+                mBackPressManager, mRootUiCoordinator.getIncognitoReauthControllerSupplier(),
                 v -> onTabSwitcherClicked());
     }
 
@@ -754,8 +743,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 this, getLifecycleDispatcher(), getTabModelSelector(), getTabContentManager(),
                 getBrowserControlsManager(), getTabCreatorManagerSupplier().get(),
                 getMenuOrKeyboardActionController(), tabSwitcherContainer,
-                getShareDelegateSupplier(), getMultiWindowModeStateDispatcher(),
-                mRootUiCoordinator.getScrimCoordinator(),
+                getMultiWindowModeStateDispatcher(), mRootUiCoordinator.getScrimCoordinator(),
                 /* rootView= */ tabSwitcherContainer,
                 compositorViewHolder::getDynamicResourceLoader, getSnackbarManager(),
                 getModalDialogManager(), mRootUiCoordinator.getIncognitoReauthControllerSupplier(),
@@ -864,14 +852,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         final long startTimeMs = SystemClock.uptimeMillis();
         CompositorViewHolder compositorViewHolder = getCompositorViewHolderSupplier().get();
         ViewGroup containerView = compositorViewHolder;
-        if (TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(this)) {
-            // Inflate view holder for polish GTS.
-            containerView =
-                    (ViewGroup) ((ViewStub) findViewById(R.id.grid_tab_switcher_view_holder_stub))
-                            .inflate();
-            // Set view in toolbar manager to set toolbar stub.
-            getToolbarManager().setTabSwitcherFullScreenView(containerView);
-        }
+        // Inflate view holder for polish GTS.
+        containerView =
+                (ViewGroup) ((ViewStub) findViewById(R.id.grid_tab_switcher_view_holder_stub))
+                        .inflate();
+        // Set view in toolbar manager to set toolbar stub.
+        getToolbarManager().setTabSwitcherFullScreenView(containerView);
 
         // create start surface.
         createTabSwitcherOrStartSurface(compositorViewHolder, containerView);
@@ -1964,8 +1950,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     getCompositorViewHolderSupplier(), getModalDialogManagerSupplier(),
                     this::getSnackbarManager, getBrowserControlsManager(), getActivityTabProvider(),
                     getLifecycleDispatcher(), getWindowAndroid(), this::getLastUserInteractionTime,
-                    this::hadWarmStart, mJankTracker, getToolbarManager()::getToolbar,
-                    new CrowButtonDelegateImpl());
+                    this::hadWarmStart, mJankTracker, getToolbarManager()::getToolbar);
         }
         return mTabDelegateFactory;
     }
@@ -2219,7 +2204,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             assert !mTabModelSelector.getCurrentModel().isIncognito()
                 : "Quick delete is not supported in Incognito.";
 
-            QuickDeleteController.create(getModalDialogManager(), getSnackbarManager())
+            QuickDeleteMetricsDelegate.recordHistogram(
+                    QuickDeleteMetricsDelegate.PrivacyQuickDelete.MENU_ITEM_CLICKED);
+
+            new QuickDeleteController(this, getModalDialogManager(), getSnackbarManager())
                     .triggerQuickDeleteFlow();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);

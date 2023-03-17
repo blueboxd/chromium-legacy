@@ -8,9 +8,12 @@
  * allow users to customize the remapped key.
  */
 
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../settings_shared.css.js';
 import '../../controls/settings_dropdown_menu.js';
 import '../../prefs/prefs.js';
+import '../../settings_shared.css.js';
+import '../os_settings_icons.html.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
@@ -30,6 +33,7 @@ enum KeyState {
   MODIFIER_REMAPPED = 'modifier-remapped',
 }
 
+type MetaKeyIcon = 'cr:search'|'os-settings:launcher'|'';
 const KeyboardRemapModifierKeyRowElementBase = I18nMixin(PolymerElement);
 
 export class KeyboardRemapModifierKeyRowElement extends
@@ -79,12 +83,18 @@ export class KeyboardRemapModifierKeyRowElement extends
       keyMapTargets: {
         type: Object,
       },
+
+      metaKeyIcon: {
+        type: String,
+        value: '',
+      },
     };
   }
 
   protected keyLabel: string;
   private metaKeyLabel: string;
   private keyMapTargets: DropdownMenuOptionList;
+  private metaKeyIcon: MetaKeyIcon;
   keyState: KeyState;
   pref: chrome.settingsPrivate.PrefObject;
   metaKey: MetaKey;
@@ -106,6 +116,9 @@ export class KeyboardRemapModifierKeyRowElement extends
   }
 
   private onMetaKeyChanged(): void {
+    if (this.key === ModifierKey.kMeta) {
+      this.metaKeyIcon = this.getMetaKeyIcon();
+    }
     this.setUpKeyMapTargets();
   }
 
@@ -114,16 +127,16 @@ export class KeyboardRemapModifierKeyRowElement extends
    */
   private getMetaKeyLabel(): string {
     switch (this.metaKey) {
-      case MetaKey.COMMAND: {
+      case MetaKey.kCommand: {
         return this.i18n('keyboardKeyCommand');
       }
-      case MetaKey.EXTERNAL_META: {
+      case MetaKey.kExternalMeta: {
         return this.i18n('keyboardKeyExternalMeta');
       }
-      case MetaKey.LAUNCHER: {
+      case MetaKey.kLauncher: {
         return this.i18n('keyboardKeyLauncher');
       }
-      case MetaKey.SEARCH: {
+      case MetaKey.kSearch: {
         return this.i18n('keyboardKeySearch');
       }
     }
@@ -134,27 +147,25 @@ export class KeyboardRemapModifierKeyRowElement extends
    */
   private getKeyLabel(): string {
     switch (this.key) {
-      case ModifierKey.ALT: {
+      case ModifierKey.kAlt: {
         return this.i18n('keyboardKeyAlt');
       }
-      case ModifierKey.ASSISTANT: {
+      case ModifierKey.kAssistant: {
         return this.i18n('keyboardKeyAssistant');
       }
-      case ModifierKey.BACKSPACE: {
+      case ModifierKey.kBackspace: {
         return this.i18n('keyboardKeyBackspace');
       }
-      case ModifierKey.CAPS_LOCK: {
+      case ModifierKey.kCapsLock: {
         return this.i18n('keyboardKeyCapsLock');
       }
-      case ModifierKey.CONTROL: {
+      case ModifierKey.kControl: {
         return this.i18n('keyboardKeyCtrl');
       }
-      case ModifierKey.ESC: {
+      case ModifierKey.kEscape: {
         return this.i18n('keyboardKeyEscape');
       }
-      case ModifierKey.META: {
-        // TODO(yyhyyh@): Replace the i18n string for launcher and search label
-        // with icon.
+      case ModifierKey.kMeta: {
         return this.getMetaKeyLabel();
       }
       default:
@@ -166,38 +177,48 @@ export class KeyboardRemapModifierKeyRowElement extends
     // Ordering is according to UX, but values match ModifierKey.
     this.keyMapTargets = [
       {
-        value: ModifierKey.META,
+        value: ModifierKey.kMeta,
         name: this.metaKeyLabel,
       },
       {
-        value: ModifierKey.CONTROL,
+        value: ModifierKey.kControl,
         name: this.i18n('keyboardKeyCtrl'),
       },
       {
-        value: ModifierKey.ALT,
+        value: ModifierKey.kAlt,
         name: this.i18n('keyboardKeyAlt'),
       },
       {
-        value: ModifierKey.CAPS_LOCK,
+        value: ModifierKey.kCapsLock,
         name: this.i18n('keyboardKeyCapsLock'),
       },
       {
-        value: ModifierKey.ESC,
+        value: ModifierKey.kEscape,
         name: this.i18n('keyboardKeyEscape'),
       },
       {
-        value: ModifierKey.BACKSPACE,
+        value: ModifierKey.kBackspace,
         name: this.i18n('keyboardKeyBackspace'),
       },
       {
-        value: ModifierKey.ASSISTANT,
+        value: ModifierKey.kAssistant,
         name: this.i18n('keyboardKeyAssistant'),
       },
       {
-        value: ModifierKey.VOID,
+        value: ModifierKey.kVoid,
         name: this.i18n('keyboardKeyDisabled'),
       },
     ];
+  }
+
+  private getMetaKeyIcon(): MetaKeyIcon {
+    if (this.metaKey === MetaKey.kSearch) {
+      return 'cr:search';
+    }
+    if (this.metaKey === MetaKey.kLauncher) {
+      return 'os-settings:launcher';
+    }
+    return '';
   }
 }
 

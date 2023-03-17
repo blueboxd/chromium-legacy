@@ -172,8 +172,7 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
   sheet->ParseString(css_text);
   HeapHashSet<Member<RuleSet>> rule_sets;
   RuleSet& rule_set =
-      sheet->EnsureRuleSet(MediaQueryEvaluator(GetDocument().GetFrame()),
-                           kRuleHasDocumentSecurityOrigin);
+      sheet->EnsureRuleSet(MediaQueryEvaluator(GetDocument().GetFrame()));
   rule_set.CompactRulesIfNeeded();
   if (rule_set.NeedsFullRecalcForRuleSetInvalidation()) {
     return kRuleSetInvalidationFullRecalc;
@@ -4035,7 +4034,13 @@ TEST_F(StyleEngineTest, CSSViewportUnits4RuntimeFlag) {
   }
 }
 
-TEST_F(StyleEngineTest, VideoControlsReject) {
+#if BUILDFLAG(IS_IOS)
+// TODO(crbug.com/1141478)
+#define MAYBE_VideoControlsReject DISABLED_VideoControlsReject
+#else
+#define MAYBE_VideoControlsReject VideoControlsReject
+#endif  // BUILDFLAG(IS_IOS)
+TEST_F(StyleEngineTest, MAYBE_VideoControlsReject) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <video controls></video>
     <div id="target"></div>
@@ -5914,6 +5919,107 @@ TEST_F(StyleEngineTest, SubsequentSiblingRecalcFlatTree) {
 
   // Only the slotted elements should get style recalc.
   EXPECT_EQ(3u, after_count - before_count);
+}
+
+TEST_F(StyleEngineTest, AnimationDelayShorthandFlags) {
+  String css = "animation-delay:1s";
+  {
+    ScopedCSSAnimationDelayStartEndForTest enabled(false);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(1u, set->PropertyCount());
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelay));
+  }
+  {
+    ScopedCSSAnimationDelayStartEndForTest enabled(true);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(2u, set->PropertyCount());
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayEnd));
+  }
+}
+
+TEST_F(StyleEngineTest, AnimationDelayStartEndFlags) {
+  String css = "animation-delay-start:1s;animation-delay-end:1s";
+  {
+    ScopedCSSAnimationDelayStartEndForTest enabled(false);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(0u, set->PropertyCount());
+  }
+  {
+    ScopedCSSAnimationDelayStartEndForTest enabled(true);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(2u, set->PropertyCount());
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayEnd));
+  }
+}
+
+TEST_F(StyleEngineTest, AnimationShorthandFlags) {
+  String css = "animation: foo 1s";
+  {
+    ScopedCSSScrollTimelineForTest scroll_timeline_enabled(false);
+    ScopedCSSAnimationDelayStartEndForTest start_end_enabled(false);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(8u, set->PropertyCount());
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelay));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationIterationCount));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDirection));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationFillMode));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
+  }
+  {
+    ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
+    ScopedCSSAnimationDelayStartEndForTest start_end_enabled(false);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(9u, set->PropertyCount());
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelay));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationIterationCount));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDirection));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationFillMode));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
+  }
+  {
+    ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
+    ScopedCSSAnimationDelayStartEndForTest start_end_enabled(true);
+    const CSSPropertyValueSet* set =
+        css_test_helpers::ParseDeclarationBlock(css);
+    ASSERT_TRUE(set);
+    EXPECT_EQ(10u, set->PropertyCount());
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayEnd));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationIterationCount));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDirection));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationFillMode));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
+  }
+  // Note that the combination CSSScrollTimeline=false and
+  // CSSAnimationDelayStartEnd=true is not supported, via 'depends_on'
+  // in runtime_enabled_features.json5.
+  EXPECT_FALSE(!RuntimeEnabledFeatures::CSSScrollTimelineEnabled() &&
+               RuntimeEnabledFeatures::CSSAnimationDelayStartEndEnabled());
 }
 
 TEST_F(StyleEngineTest, InitialStyle_Recalc) {

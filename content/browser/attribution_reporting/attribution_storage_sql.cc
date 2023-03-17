@@ -54,6 +54,7 @@
 #include "content/browser/attribution_reporting/sql_queries.h"
 #include "content/browser/attribution_reporting/sql_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/store_source_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "net/base/schemeful_site.h"
@@ -490,7 +491,7 @@ bool AttributionStorageSql::DeactivateSources(
   return transaction.Commit();
 }
 
-AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
+StoreSourceResult AttributionStorageSql::StoreSource(
     const StorableSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Force the creation of the database if it doesn't exist, as we need to
@@ -603,7 +604,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
   statement.BindInt(7, SerializeSourceType(common_info.source_type()));
   statement.BindInt(8, SerializeAttributionLogic(attribution_logic));
   statement.BindInt64(9, reg.priority);
-  statement.BindString(10, common_info.SourceSite().Serialize());
+  statement.BindString(10, common_info.source_site().Serialize());
   statement.BindInt(11, num_conversions);
   statement.BindBool(12, event_level_active);
   statement.BindBool(13, aggregatable_active);

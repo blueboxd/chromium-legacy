@@ -28,11 +28,10 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
-#include <algorithm>
-
 #include "base/auto_reset.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
@@ -686,6 +685,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document,
       accessibility_event_permission_(mojom::blink::PermissionStatus::ASK),
       permission_service_(document.GetExecutionContext()),
       permission_observer_receiver_(this, document.GetExecutionContext()),
+      render_accessibility_host_(document.GetExecutionContext()),
       ax_tree_source_(BlinkAXTreeSource::Create(*this)),
       ax_tree_serializer_(std::make_unique<ui::AXTreeSerializer<AXObject*>>(
           ax_tree_source_,
@@ -3577,9 +3577,9 @@ void AXObjectCacheImpl::PostPlatformNotification(
   event.event_from_action = event_from_action;
   event.event_intents.resize(event_intents.size());
   // We need to filter out the counts from every intent.
-  std::transform(event_intents.begin(), event_intents.end(),
-                 event.event_intents.begin(),
-                 [](const auto& intent) { return intent.key.intent(); });
+  base::ranges::transform(
+      event_intents, event.event_intents.begin(),
+      [](const auto& intent) { return intent.key.intent(); });
   for (auto agent : agents_)
     agent->AXEventFired(obj, event_type);
 
@@ -4046,11 +4046,12 @@ bool AXObjectCacheImpl::AddPendingEvent(const ui::AXEvent& event,
   return true;
 }
 
-mojo::Remote<blink::mojom::blink::RenderAccessibilityHost>&
+HeapMojoRemote<blink::mojom::blink::RenderAccessibilityHost>&
 AXObjectCacheImpl::GetOrCreateRemoteRenderAccessibilityHost() {
   if (!render_accessibility_host_) {
     GetDocument().GetFrame()->GetBrowserInterfaceBroker().GetInterface(
-        render_accessibility_host_.BindNewPipeAndPassReceiver());
+        render_accessibility_host_.BindNewPipeAndPassReceiver(
+            document_->GetTaskRunner(TaskType::kUserInteraction)));
   }
   return render_accessibility_host_;
 }
@@ -4441,6 +4442,7 @@ void AXObjectCacheImpl::Trace(Visitor* visitor) const {
   visitor->Trace(tree_update_callback_queue_popup_);
   visitor->Trace(nodes_with_pending_children_changed_);
   visitor->Trace(nodes_with_spelling_or_grammar_markers_);
+  visitor->Trace(render_accessibility_host_);
   visitor->Trace(ax_tree_source_);
   visitor->Trace(dirty_objects_);
   visitor->Trace(aria_notifications_);

@@ -16,6 +16,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "url/gurl.h"
 
 namespace reading_list {
@@ -63,6 +64,7 @@ class DualReadingListModel : public ReadingListModel,
   scoped_refptr<const ReadingListEntry> GetEntryByURL(
       const GURL& gurl) const override;
   bool IsUrlSupported(const GURL& url) override;
+  CoreAccountId GetAccountWhereEntryIsSavedTo(const GURL& url) override;
   bool NeedsExplicitUploadToSyncServer(const GURL& url) const override;
   const ReadingListEntry& AddOrReplaceEntry(
       const GURL& url,
@@ -97,11 +99,19 @@ class DualReadingListModel : public ReadingListModel,
                                   const GURL& url) override;
   void ReadingListDidRemoveEntry(const ReadingListModel* model,
                                  const GURL& url) override;
+  void ReadingListWillMoveEntry(const ReadingListModel* model,
+                                const GURL& url) override;
+  void ReadingListDidMoveEntry(const ReadingListModel* model,
+                               const GURL& url) override;
   void ReadingListWillAddEntry(const ReadingListModel* model,
                                const ReadingListEntry& entry) override;
   void ReadingListDidAddEntry(const ReadingListModel* model,
                               const GURL& url,
                               reading_list::EntrySource source) override;
+  void ReadingListWillUpdateEntry(const ReadingListModel* model,
+                                  const GURL& url) override;
+  void ReadingListDidUpdateEntry(const ReadingListModel* model,
+                                 const GURL& url) override;
   void ReadingListDidApplyChanges(ReadingListModel* model) override;
 
   class ScopedReadingListBatchUpdateImpl : public ScopedReadingListBatchUpdate {
@@ -128,6 +138,12 @@ class DualReadingListModel : public ReadingListModel,
   void NotifyObserversWithWillUpdateEntry(const GURL& url);
   void NotifyObserversWithDidUpdateEntry(const GURL& url);
   void NotifyObserversWithDidApplyChanges();
+
+  // Convenience function that safely "casts" to ReadingListModelImpl for
+  // codepaths where model is guaranteed to be either local_or_syncable_model_
+  // or account_model_.
+  const ReadingListModelImpl* ToReadingListModelImpl(
+      const ReadingListModel* model);
 
   const std::unique_ptr<ReadingListModelImpl> local_or_syncable_model_;
   const std::unique_ptr<ReadingListModelImpl> account_model_;

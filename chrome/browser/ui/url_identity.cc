@@ -11,10 +11,9 @@
 #include "base/types/expected.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -40,6 +39,8 @@ UrlIdentity CreateDefaultUrlIdentityFromUrl(const GURL& url,
           DefaultFormatOptions::kOmitCryptographicScheme)) {
     name = url_formatter::FormatUrlForSecurityDisplay(
         url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+  } else if (options.default_options.Has(DefaultFormatOptions::kHostname)) {
+    name = url_formatter::IDNToUnicode(url.host());
   } else {
     name = url_formatter::FormatUrlForSecurityDisplay(url);
   }
@@ -119,10 +120,7 @@ UrlIdentity CreateFileIdentityFromUrl(Profile* profile,
 
   return UrlIdentity{
       .type = Type::kFile,
-      // TODO(zelin): Rename IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE and move to
-      // "Generic terms"
-      .name =
-          l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE),
+      .name = url_formatter::FormatUrlForSecurityDisplay(url),
   };
 }
 }  // namespace

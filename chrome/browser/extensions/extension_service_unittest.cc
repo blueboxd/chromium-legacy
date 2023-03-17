@@ -1668,6 +1668,46 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   EXPECT_EQ(expected_host_perms, known_perms->effective_hosts());
 }
 
+// This tests that the granted permissions stored in prefs ignore internal
+// permissions specified in the extension manifest.
+TEST_F(ExtensionServiceTest,
+       GrantedPermissionsIgnoreInternalPermissionsFromManifest) {
+  InitializeEmptyExtensionService();
+
+  // Load an extension that tries to include an internal permission in its
+  // manifest. The internal permission should be ignored on the resulting
+  // extension object and should not be included in persisted permissions in
+  // preferences.
+  constexpr char kManifest[] =
+      R"({
+           "name": "Test",
+           "manifest_version": 3,
+           "version": "1.2.3",
+           "permissions": ["searchProvider", "storage"]
+         })";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  const Extension* extension = InstallCRX(test_dir.Pack(), INSTALL_NEW);
+  ASSERT_TRUE(extension);
+
+  EXPECT_FALSE(extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kSearchProvider));
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kStorage));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  std::unique_ptr<const PermissionSet> granted_perms =
+      prefs->GetGrantedPermissions(extension->id());
+  ASSERT_TRUE(granted_perms);
+  EXPECT_EQ(1u, granted_perms->apis().size());
+  EXPECT_TRUE(
+      granted_perms->HasAPIPermission(mojom::APIPermissionID::kStorage));
+  EXPECT_FALSE(
+      granted_perms->HasAPIPermission(mojom::APIPermissionID::kSearchProvider));
+}
+
 // This tests that the granted permissions preferences are correctly set when
 // updating an extension, and the extension is disabled in case of a permission
 // escalation.
@@ -6051,6 +6091,18 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   {
     EXPECT_EQ(0, visitor.Visit(json_data));
   }
+
+  // Test is_bookmark_app.
+  // Bookmark apps are deprecated and should no longer be loaded.
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"is_bookmark_app\": true"
+      "  }"
+      "}";
+  EXPECT_EQ(0, visitor.Visit(json_data));
 
   // Test is_from_webstore.
   MockProviderVisitor from_webstore_visitor(

@@ -180,7 +180,9 @@ enum class NotificationCatalogName {
   kIPHGoogleOneOffer = 165,
   kLockScreen = 166,
   kWebAppSettings = 167,
-  kMaxValue = kWebAppSettings
+  kEOLIncentive = 168,
+  kHotspot = 169,
+  kMaxValue = kHotspot
 };
 
 // A living catalog that registers system nudges.
@@ -250,7 +252,8 @@ enum class ToastCatalogName {
   kCopyToClipboardAction = 40,
   kVideoConferenceTraySpeakOnMuteDetected = 41,
   kCopyGifToClipboardAction = 42,
-  kMaxValue = kCopyGifToClipboardAction,
+  kVideoConferenceTrayUseWhileDisabled = 43,
+  kMaxValue = kVideoConferenceTrayUseWhileDisabled,
 };
 
 }  // namespace ash

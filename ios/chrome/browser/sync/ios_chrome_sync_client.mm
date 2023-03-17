@@ -33,7 +33,7 @@
 #import "components/sync/driver/sync_service.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "components/sync_user_events/user_event_service.h"
-#import "ios/chrome/browser/bookmarks/bookmark_sync_service_factory.h"
+#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -59,6 +59,7 @@
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
+#import "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -89,12 +90,15 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
           this, ::GetChannel(), web::GetUIThreadTaskRunner({}), db_thread_,
           profile_web_data_service_, account_web_data_service_,
           profile_password_store_, account_password_store_,
-          ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_),
+          ios::LocalOrSyncableBookmarkSyncServiceFactory::GetForBrowserState(
+              browser_state_),
           PowerBookmarkServiceFactory::GetForBrowserState(browser_state_));
 
   trusted_vault_client_ = std::make_unique<IOSTrustedVaultClient>(
       ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state_),
-      TrustedVaultClientBackendFactory::GetForBrowserState(browser_state_));
+      GetIdentityManager(),
+      TrustedVaultClientBackendFactory::GetForBrowserState(browser_state_),
+      browser_state_->GetSharedURLLoaderFactory());
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}

@@ -352,7 +352,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   GetSystemSharedURLLoaderFactory() override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   std::string GetGeolocationApiKey() override;
+
+#if BUILDFLAG(IS_MAC)
   device::GeolocationManager* GetGeolocationManager() override;
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   bool ShouldUseGmsCoreGeolocationProvider() override;
@@ -783,7 +786,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url) override;
   bool ShouldServiceWorkerInheritPolicyContainerFromCreator(
       const GURL& url) override;
-  bool ShouldAllowInsecurePrivateNetworkRequests(
+  bool ShouldAllowInsecureLocalNetworkRequests(
       content::BrowserContext* browser_context,
       const url::Origin& origin) override;
   bool IsJitDisabledForSite(content::BrowserContext* browser_context,
@@ -861,6 +864,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool AreIsolatedWebAppsEnabled(
       content::BrowserContext* browser_context) override;
+
+  bool IsThirdPartyStoragePartitioningAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_level_origin) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

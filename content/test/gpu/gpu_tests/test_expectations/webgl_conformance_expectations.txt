@@ -345,6 +345,7 @@ crbug.com/1175371 [ angle-opengles chromeos passthrough ] conformance/extensions
 crbug.com/1175371 [ angle-opengl display-server-x linux passthrough renderer-skia-gl ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ angle-opengles display-server-wayland linux passthrough ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ angle-metal monterey no-asan oop-c release ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
+crbug.com/1175371 [ angle-metal ventura ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ angle-opengl mac ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ win ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 
@@ -436,13 +437,33 @@ crbug.com/844311 [ angle-opengl mac ] conformance/glsl/misc/fragcolor-fragdata-i
 
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/1230781 [ mac amd-0x679e ] conformance/canvas/to-data-url-test.html [ Failure ]
+crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1240443 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
 crbug.com/1276186 [ mac amd-0x679e angle-opengl ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
+crbug.com/1276186 [ mac amd-0x67ef angle-opengl ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 
 # TODO(kbr): uncomment the following expectation after test has
 # been made more robust.
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
+
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/rapid-resizing.html [ Failure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/to-data-url-test.html [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/context/context-eviction-with-garbage-collection.html [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/ogles/GL/* [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/canvas/* [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/image/* [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/svg_image/* [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/webgl_canvas/* [ Failure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
+crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/data/gles2/shaders/* [ RetryOnFailure ]
+
+crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
 ## Mac Retina NVidia failures / flakes ##
 
@@ -531,6 +552,18 @@ crbug.com/1357064 [ android android-shield-android-tv no-passthrough ] conforman
 crbug.com/1175223 [ android android-pixel-4 angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1175226 [ android android-pixel-4 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
+# finder:group-start crbug.com/1382796 failures happen in many tests, so can be classified as stale for one specific test
+# finder:disable-narrowing
+crbug.com/1382796 [ android android-pixel-4 ] conformance/canvas/rapid-resizing.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/canvas/to-data-url-test.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/context/context-release-with-workers.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/ogles/GL/biConstants/biConstants_001_to_008.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/video/* [ RetryOnFailure ]
+# finder:enable-narrowing
+# finder:group-end
+
 ## Pixel 6 ##
 
 crbug.com/1286830 [ android android-pixel-6 arm ] WebglExtension_EXT_shader_texture_lod [ Failure ]
@@ -553,7 +586,7 @@ crbug.com/1357064 [ android android-pixel-6 no-passthrough ] conformance/renderi
 crbug.com/1383180 [ android android-pixel-6 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1383180 [ android android-pixel-6 target-cpu-64 ] conformance/textures/misc/texture-video-transparent.html [ RetryOnFailure ]
 crbug.com/1383180 [ android android-pixel-6 ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1383180 [ android android-pixel-6 ] conformance/textures/video/* [ RetryOnFailure ]
+crbug.com/1383180 [ android android-pixel-6 angle-opengles passthrough ] conformance/textures/video/* [ RetryOnFailure ]
 # finder:group-end
 
 ## Misc failures ##

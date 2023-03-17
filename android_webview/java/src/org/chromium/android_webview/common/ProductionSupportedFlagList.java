@@ -162,6 +162,9 @@ public final class ProductionSupportedFlagList {
                             + "classifications."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_DEPENDENT_LOCALITY_PARSING,
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_PHONE_NUMBER_TRUNK_TYPES,
+                    "Rationalizes city-and-number and city-code fields to the "
+                            + "correct trunk-prefix types."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
                     "Enforce delay between offering Autofill opportunities in the "
                             + "strike database."),
@@ -325,6 +328,7 @@ public final class ProductionSupportedFlagList {
                             + "viewport."),
             Flag.baseFeature(BlinkFeatures.SCROLL_OVERLAP_OPTIMIZATION,
                     "Enables scroll overlap optimization. See https://crbug.com/1401086#c29."),
+            Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
             Flag.baseFeature("PreconnectOnRedirect"),
             Flag.baseFeature("PreconnectInNetworkService"), Flag.baseFeature("PrefetchDNSWithURL"),
             Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
@@ -346,9 +350,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ALLOW_EARLY_LOG_CLOSE,
                     "Controls whether a log is allowed to be closed when Chrome"
                             + " is backgrounded/foregrounded early."),
-            Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_COLLECTION,
-                    "Controls whether the metrics service creates periodic logs"
-                            + " in a background thread or on the main thread."),
             Flag.baseFeature(MetricsFeatures.METRICS_CLEAR_LOGS_ON_CLONED_INSTALL,
                     "Controls whether UMA logs are cleared when a cloned "
                             + "install is detected."),
@@ -370,6 +371,10 @@ public final class ProductionSupportedFlagList {
                     "Enables downloading TrustTokenKeyCommitmentsComponent by the component"
                             + " updater downloading service in nonembedded WebView."
                             + " See https://crbug.com/1170468."),
+            Flag.baseFeature(BlinkFeatures.STYLUS_POINTER_ADJUSTMENT,
+                    "When enabled, a hover icon is shown over editable HTML elements when"
+                            + " using a stylus and the rectangle to trigger stylus writing on"
+                            + " editable elements is expanded."),
             Flag.baseFeature(BlinkFeatures.STYLUS_RICH_GESTURES,
                     "When enabled, stylus input can be used to draw rich gestures which "
                             + "affect text in editable web content."),
@@ -383,9 +388,13 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.RENDER_BLOCKING_FONTS,
                     "When enabled, blocks rendering on font preloads to reduce CLS. "
                             + "See go/critical-font-analysis"),
-            Flag.baseFeature(AwFeatures.WEBVIEW_CLIENT_SIDE_SAMPLING,
-                    "If disabled, the client side sampling for user metrics will be turned off."
-                            + " This have no effect if metrics reporting is disabled"),
+            Flag.baseFeature(AwFeatures.WEBVIEW_SERVER_SIDE_SAMPLING,
+                    "If enabled, the client side sampling for user metrics will be turned off."
+                            + " This has no effect if metrics reporting is disabled"),
+            Flag.baseFeature("SafeBrowsingOnUIThread"),
+            Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
+                    "Enables WebView to use the extended keyboard shortcuts added for Android U"),
+            Flag.baseFeature("LessChattyNetworkService"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

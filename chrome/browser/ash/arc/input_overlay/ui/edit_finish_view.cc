@@ -207,13 +207,12 @@ class EditFinishView::ChildButton : public views::LabelButton {
 };
 
 // static
-std::unique_ptr<EditFinishView> EditFinishView::BuildView(
+EditFinishView* EditFinishView::BuildView(
     DisplayOverlayController* display_overlay_controller,
-    const gfx::Size& parent_size) {
-  auto menu_view_ptr =
-      std::make_unique<EditFinishView>(display_overlay_controller);
-  menu_view_ptr->Init(parent_size);
-
+    views::View* parent) {
+  auto* menu_view_ptr = parent->AddChildView(
+      std::make_unique<EditFinishView>(display_overlay_controller));
+  menu_view_ptr->Init(parent->size());
   return menu_view_ptr;
 }
 
@@ -281,6 +280,8 @@ void EditFinishView::SetFocusRing() {
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
   GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_LAYOUT_ACCTIONS_MENU));
+  GetViewAccessibility().OverrideDescription(
+      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDIT_MENU_FOCUS));
   views::FocusRing::Install(this);
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 kButtonCornerRadius);
@@ -301,14 +302,15 @@ bool EditFinishView::OnMousePressed(const ui::MouseEvent& event) {
   if (AllowReposition()) {
     OnDragStart(event);
   }
-  return views::View::OnMousePressed(event);
+  return true;
 }
 
 bool EditFinishView::OnMouseDragged(const ui::MouseEvent& event) {
   if (AllowReposition()) {
+    SetCursor(ui::mojom::CursorType::kGrabbing);
     OnDragUpdate(event);
   }
-  return views::View::OnMouseDragged(event);
+  return true;
 }
 
 void EditFinishView::OnMouseReleased(const ui::MouseEvent& event) {
@@ -316,8 +318,10 @@ void EditFinishView::OnMouseReleased(const ui::MouseEvent& event) {
     views::View::OnMouseReleased(event);
     return;
   }
+  SetCursor(ui::mojom::CursorType::kGrab);
   OnDragEnd();
   RecordInputOverlayButtonGroupReposition(
+      display_overlay_controller_->GetPackageName(),
       RepositionType::kMouseDragRepostion,
       display_overlay_controller_->GetWindowStateType());
 }
@@ -349,6 +353,7 @@ void EditFinishView::OnGestureEvent(ui::GestureEvent* event) {
       OnDragEnd();
       event->SetHandled();
       RecordInputOverlayButtonGroupReposition(
+          display_overlay_controller_->GetPackageName(),
           RepositionType::kTouchscreenDragRepostion,
           display_overlay_controller_->GetWindowStateType());
       break;
@@ -377,6 +382,7 @@ bool EditFinishView::OnKeyReleased(const ui::KeyEvent& event) {
   }
 
   RecordInputOverlayButtonGroupReposition(
+      display_overlay_controller_->GetPackageName(),
       RepositionType::kKeyboardArrowKeyReposition,
       display_overlay_controller_->GetWindowStateType());
   return true;
@@ -398,6 +404,14 @@ void EditFinishView::OnDragUpdate(const ui::LocatedEvent& event) {
 
 void EditFinishView::OnDragEnd() {
   is_dragging_ = false;
+}
+
+void EditFinishView::SetCursor(ui::mojom::CursorType cursor_type) {
+  auto* widget = GetWidget();
+  // widget is null for test.
+  if (widget) {
+    widget->SetCursor(cursor_type);
+  }
 }
 
 void EditFinishView::OnResetButtonPressed() {

@@ -121,7 +121,7 @@ void AccountSelectionViewAndroid::Show(
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
     // waiting state so report that AccountSelectionView is dismissed instead.
-    delegate_->OnDismiss(DismissReason::OTHER);
+    delegate_->OnDismiss(DismissReason::kOther);
     return;
   }
 
@@ -142,6 +142,7 @@ void AccountSelectionViewAndroid::Show(
   Java_AccountSelectionBridge_showAccounts(
       env, java_object_internal_,
       ConvertUTF8ToJavaString(env, top_frame_for_display),
+      ConvertUTF8ToJavaString(env, iframe_url_for_display.value_or("")),
       ConvertUTF8ToJavaString(env, identity_provider_data[0].idp_for_display),
       accounts_obj, idp_metadata_obj, client_id_metadata_obj,
       sign_in_mode == Account::SignInMode::kAuto);

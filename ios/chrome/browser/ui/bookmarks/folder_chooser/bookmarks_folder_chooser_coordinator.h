@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <set>
 
+#import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 namespace bookmarks {
 class BookmarkNode;
@@ -24,11 +24,6 @@ class BookmarkNode;
 // Coordinator's delegate.
 @property(nonatomic, weak) id<BookmarksFolderChooserCoordinatorDelegate>
     delegate;
-// The current nodes (bookmarks or folders) that are considered for a move.
-// Will be set right before this coordinator sends a confirm selection signal
-// through it's delegate.
-@property(nonatomic, assign, readonly)
-    const std::set<const bookmarks::BookmarkNode*>& editedNodes;
 // Will provide the necessary UI to create a folder. `YES` by default.
 // Should be set before calling `start`.
 @property(nonatomic) BOOL allowsNewFolders;
@@ -60,6 +55,10 @@ class BookmarkNode;
 
 // Whether the bookmark folder chooser can be dismissed.
 - (BOOL)canDismiss;
+// The current nodes (bookmarks or folders) that are considered for a move.
+// Will be available right before this coordinator sends a confirm selection
+// signal through it's delegate.
+- (const std::set<const bookmarks::BookmarkNode*>&)editedNodes;
 // Puts a blue check mark beside a folder it in the UI.
 // If unset no blue check mark is shown.
 - (void)setSelectedFolder:(const bookmarks::BookmarkNode*)folder;

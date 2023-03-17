@@ -26,6 +26,8 @@ struct VectorIcon;
 
 namespace ash {
 
+enum class VcEffectId;
+
 // CameraEffectsController is the interface for any object in ash to
 // enable/change camera effects.
 class ASH_EXPORT CameraEffectsController : public media::CameraEffectObserver,
@@ -66,8 +68,8 @@ class ASH_EXPORT CameraEffectsController : public media::CameraEffectObserver,
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
   // VcEffectsDelegate:
-  absl::optional<int> GetEffectState(int effect_id) override;
-  void OnEffectControlActivated(absl::optional<int> effect_id,
+  absl::optional<int> GetEffectState(VcEffectId effect_id) override;
+  void OnEffectControlActivated(VcEffectId effect_id,
                                 absl::optional<int> state) override;
 
   // media::CameraEffectObserver:
@@ -79,12 +81,12 @@ class ASH_EXPORT CameraEffectsController : public media::CameraEffectObserver,
   }
 
  private:
+  // Returns the segmentation model that should be used in the effects pipeline
+  // based on the value of the feature flag.
+  cros::mojom::SegmentationModel GetSegmentationModelType();
+
   // SetCameraEffects camera effects with `config`.
   void SetCameraEffects(cros::mojom::EffectsConfigPtr config);
-
-  // SetInitialCameraEffects tells the camera server what `config`
-  // to use when it first registers.
-  void SetInitialCameraEffects(cros::mojom::EffectsConfigPtr config);
 
   // Constructs EffectsConfigPtr from prefs.
   cros::mojom::EffectsConfigPtr GetEffectsConfigFromPref();

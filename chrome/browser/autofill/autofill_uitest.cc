@@ -121,12 +121,14 @@ bool BrowserAutofillManagerTestDelegateImpl::Wait() {
 }
 
 // AutofillUiTest ----------------------------------------------------
-AutofillUiTest::AutofillUiTest()
+AutofillUiTest::AutofillUiTest(
+    const test::AutofillTestEnvironment::Options& options)
     : key_press_event_sink_(
           base::BindRepeating(&AutofillUiTest::HandleKeyPressEvent,
-                              base::Unretained(this))) {}
+                              base::Unretained(this))),
+      autofill_test_environment_(options) {}
 
-AutofillUiTest::~AutofillUiTest() {}
+AutofillUiTest::~AutofillUiTest() = default;
 
 void AutofillUiTest::SetUpOnMainThread() {
   // Make autofill popup stay open by ignoring external changes when possible.

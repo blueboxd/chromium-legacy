@@ -411,6 +411,17 @@ int GetNotificationTitleIdForFile(const base::FilePath& file_path) {
   return IDS_ASH_SCREEN_CAPTURE_SCREENSHOT_TITLE;
 }
 
+// Returns the size of the file at the given `file_path` in KBs. Returns -1 when
+// a failure occurs.
+int GetFileSizeInKB(const base::FilePath& file_path) {
+  int64_t size_in_bytes = 0;
+  if (!base::GetFileSize(file_path, &size_in_bytes)) {
+    return -1;
+  }
+  // Convert the value to KBs.
+  return size_in_bytes / 1024;
+}
+
 }  // namespace
 
 CaptureModeController::CaptureModeController(
@@ -519,6 +530,12 @@ bool CaptureModeController::GetAudioRecordingEnabled() const {
 
 bool CaptureModeController::IsAudioCaptureDisabledByPolicy() const {
   return delegate_->IsAudioCaptureDisabledByPolicy();
+}
+
+bool CaptureModeController::IsAudioRecordingInProgress() const {
+  return video_recording_watcher_ &&
+         !video_recording_watcher_->is_shutting_down() &&
+         video_recording_watcher_->is_recording_audio();
 }
 
 void CaptureModeController::SetSource(CaptureModeSource source) {
@@ -716,6 +733,12 @@ void CaptureModeController::PerformCapture() {
 }
 
 void CaptureModeController::EndVideoRecording(EndRecordingReason reason) {
+  if (!is_recording_in_progress()) {
+    // A user may click on the stop recording button multiple times while still
+    // in the process of hiding. See http://b/270625738.
+    return;
+  }
+
   RecordEndRecordingReason(reason);
   recording_service_remote_->StopRecording();
   TerminateRecordingUiElements();
@@ -1043,7 +1066,8 @@ CaptureModeController::GetCaptureParams() const {
 void CaptureModeController::LaunchRecordingServiceAndStartRecording(
     const CaptureParams& capture_params,
     mojo::PendingReceiver<viz::mojom::FrameSinkVideoCaptureOverlay>
-        cursor_overlay) {
+        cursor_overlay,
+    bool should_record_audio) {
   DCHECK(!recording_service_remote_.is_bound())
       << "Should not launch a new recording service while one is already "
          "running.";
@@ -1076,10 +1100,10 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
   // is ok since the |audio_stream_factory| parameter in the recording service
   // APIs is optional, and can be not bound.
   mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory;
-  if (SupportsAudioRecording(recording_type_) && GetAudioRecordingEnabled()) {
+  if (should_record_audio) {
     delegate_->BindAudioStreamFactory(
         audio_stream_factory.InitWithNewPipeAndPassReceiver());
-    capture_mode_util::MaybeUpdateMicrophonePrivacyIndicator(/*mic_on=*/true);
+    capture_mode_util::MaybeUpdateCaptureModePrivacyIndicators();
   }
 
   // Only act as a `DriveFsQuotaDelegate` for the recording service if the video
@@ -1166,7 +1190,7 @@ void CaptureModeController::FinalizeRecording(bool success,
   const bool was_in_projector_mode =
       video_recording_watcher_->is_in_projector_mode();
   video_recording_watcher_.reset();
-  capture_mode_util::MaybeUpdateMicrophonePrivacyIndicator(/*mic_on=*/false);
+  capture_mode_util::MaybeUpdateCaptureModePrivacyIndicators();
 
   delegate_->StopObservingRestrictedContent(
       base::BindOnce(&CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd,
@@ -1321,6 +1345,12 @@ void CaptureModeController::OnVideoFileSaved(
                    : HoldingSpaceItem::Type::kScreenRecording,
             saved_video_file_path);
       }
+
+      // We only record the file size histogram if it's not a projector-
+      // initiated recording.
+      blocking_task_runner_->PostTaskAndReplyWithResult(
+          FROM_HERE, base::BindOnce(&GetFileSizeInKB, saved_video_file_path),
+          base::BindOnce(&RecordVideoFileSizeKB, is_gif));
     }
     DCHECK(!recording_start_time_.is_null());
     RecordCaptureModeRecordTime(
@@ -1552,13 +1582,15 @@ void CaptureModeController::BeginVideoRecording(
   // video.
   Stop();
 
+  const bool should_record_audio =
+      SupportsAudioRecording(recording_type_) && GetAudioRecordingEnabled();
   mojo::PendingRemote<viz::mojom::FrameSinkVideoCaptureOverlay>
       cursor_capture_overlay;
   auto cursor_overlay_receiver =
       cursor_capture_overlay.InitWithNewPipeAndPassReceiver();
   video_recording_watcher_ = std::make_unique<VideoRecordingWatcher>(
       this, capture_params.window, std::move(cursor_capture_overlay),
-      for_projector);
+      for_projector, should_record_audio);
 
   // We only paint the recorded area highlight for window and region captures.
   if (source_ != CaptureModeSource::kFullscreen)
@@ -1568,8 +1600,8 @@ void CaptureModeController::BeginVideoRecording(
   recording_start_time_ = base::TimeTicks::Now();
   current_video_file_path_ = video_file_path;
 
-  LaunchRecordingServiceAndStartRecording(capture_params,
-                                          std::move(cursor_overlay_receiver));
+  LaunchRecordingServiceAndStartRecording(
+      capture_params, std::move(cursor_overlay_receiver), should_record_audio);
 
   // Intentionally record the metrics before
   // `MaybeRestoreCachedCaptureConfigurations` as `enable_demo_tools_` may be

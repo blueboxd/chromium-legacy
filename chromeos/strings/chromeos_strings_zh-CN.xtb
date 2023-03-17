@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">检测到防火墙</translation>
 <translation id="1075811647922107217">页面大小</translation>
+<translation id="1082009148392559545">正在下载屏保</translation>
 <translation id="1094693127011229778">IP 地址缺失</translation>
 <translation id="1113892970288677790">选择系统挑选的美术作品和图片</translation>
 <translation id="1119447706177454957">内部错误</translation>
@@ -90,6 +91,7 @@
 <translation id="1717874160321062422">由 <ph name="FIRST_MANAGER" /> 和 <ph name="SECOND_MANAGER" /> 管理</translation>
 <translation id="1726100011689679555">域名服务器</translation>
 <translation id="1731082422893354635">蓝牙触控板</translation>
+<translation id="1738949837603788263">区域 <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">无法加载这些图片。请检查您的网络连接状况，或尝试重新加载这些图片。</translation>
 <translation id="1751249301761991853">个人</translation>
 <translation id="1753496554272155572">退出壁纸预览</translation>
@@ -241,7 +243,6 @@
 <translation id="3226657629376379887">布局操作菜单</translation>
 <translation id="3246869037381808805">系统会自动移除存在时长已超过 1 天的打印任务</translation>
 <translation id="3268178239013324452">失败 - 机盖未关</translation>
-<translation id="3275506277319227640">固定在<ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">头像图片</translation>
 <translation id="3283504360622356314">{0,plural, =1{修改文件}other{修改文件}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="3600339377155080675">屏幕镜像</translation>
 <translation id="3602290021589620013">预览</translation>
-<translation id="360282891121575443">其他用户可以更新共享影集中的照片。如果每日更换一次，系统可能会显示当前未包含在此影集中的壁纸。</translation>
 <translation id="3603829704940252505">头像</translation>
 <translation id="3604713164406837697">更换壁纸</translation>
 <translation id="360565022852130722">Wi-Fi 网络采用了防护能力较弱的 WEP 802.1x 协议</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">全屏</translation>
 <translation id="4333390807948134856">已按下<ph name="KEY_NAME" />键</translation>
 <translation id="435692326371619097">管理网络 APN 设置。APN 会在移动网络和互联网之间建立连接。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">固定在较小的一侧</translation>
 <translation id="4378373042927530923">未运行</translation>
 <translation id="4378551569595875038">正在连接…</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -601,6 +600,7 @@
 <translation id="636850387210749493">企业注册</translation>
 <translation id="6379086450106841622">触摸屏</translation>
 <translation id="6381741036071372448">测试您的键盘</translation>
+<translation id="6382182670717268353">屏保预览</translation>
 <translation id="6388847657025262518">扫描仪的文件馈送器卡纸了。请检查馈送器，然后重试。</translation>
 <translation id="6394634179843537518">添加文件</translation>
 <translation id="6410257289063177456">图片文件</translation>
@@ -639,7 +639,6 @@
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">标签页</translation>
 <translation id="6692996468359469499">获取与您的所选项相关的信息</translation>
-<translation id="6698459586333070823">其他用户可以更新共享影集</translation>
 <translation id="6704062477274546131">DNS 解析</translation>
 <translation id="6723839937902243910">电源</translation>
 <translation id="6723847290197874913">键盘背光</translation>
@@ -691,6 +690,7 @@
 <translation id="7177485034254901881">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。管理员可能会远程配置此设备。</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7180865173735832675">自定义</translation>
+<translation id="7184043045742675738">点击任意键自定义您的按钮。使用鼠标或箭头键调整键的位置。</translation>
 <translation id="7212734716605298123">外部设备的固件更新</translation>
 <translation id="7216409898977639127">移动网络服务提供商</translation>
 <translation id="725133483556299729">选择电子邮件地址</translation>
@@ -732,6 +732,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB 触摸屏</translation>
 <translation id="7595982850646262331">电池续航时间还剩 <ph name="TIME_VALUE" /></translation>
+<translation id="7613724632293948900">使用鼠标或箭头键调整位置。</translation>
 <translation id="7620771111601174153">在帮助中心内了解详情</translation>
 <translation id="763165478673169849">上次重置时间</translation>
 <translation id="7648838807254605802">HTTPS 延迟较高</translation>
@@ -795,7 +796,6 @@
 <translation id="8226628635270268143">选择您喜爱的照片和影集</translation>
 <translation id="8227119283605456246">附上文件</translation>
 <translation id="8230672074305416752">未能对默认网关执行 ping 操作</translation>
-<translation id="8242426110754782860">继续</translation>
 <translation id="8246209727385807362">未知运营商</translation>
 <translation id="827422111966801947">靛青色</translation>
 <translation id="8286154143153872371">若要查看壁纸，请连接到网络并重新加载这个页面。</translation>
@@ -855,6 +855,7 @@
 <translation id="8798441408945964110">提供商名称</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">壁纸</translation>
+<translation id="8820457400746201697">将蓝色接触点移至某个操作。选择要自定义的关联键。</translation>
 <translation id="8834539327799336565">目前已连接</translation>
 <translation id="8845001906332463065">获取帮助</translation>
 <translation id="8855781559874488009">无法通过防火墙连接到 HTTP 网站</translation>
@@ -903,7 +904,6 @@
 <translation id="9137526406337347448">Google 服务</translation>
 <translation id="9138630967333032450">左 Shift</translation>
 <translation id="9149391708638971077">运行内存测试</translation>
-<translation id="9157515863513902090">固定在较大的一侧</translation>
 <translation id="9161276708550942948">空格键</translation>
 <translation id="9173638680043580060">还剩不到 1 分钟</translation>
 <translation id="917720651393141712">测试</translation>

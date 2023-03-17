@@ -453,7 +453,7 @@ class BrowserAutofillManager : public AutofillManager,
   void OnSelectControlDidChangeImpl(const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
-  bool ShouldParseForms(const std::vector<FormData>& forms) override;
+  bool ShouldParseForms() override;
   void OnBeforeProcessParsedForms() override;
   void OnFormProcessed(const FormData& form,
                        const FormStructure& form_structure) override;
@@ -676,7 +676,7 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Checks whether JavaScript cleared an autofilled value within
   // kLimitBeforeRefill after the filling and records metrics for this. This
-  // method should be called after we learend that JavaScript modified an
+  // method should be called after we learned that JavaScript modified an
   // autofilled field. It's responsible for assessing the nature of the
   // modification.
   void AnalyzeJavaScriptChangedAutofilledValue(const FormData& form,
@@ -734,9 +734,13 @@ class BrowserAutofillManager : public AutofillManager,
   std::string app_locale_;
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.  This is overridden by the BrowserAutofillManagerTest.
+  // web database. Set when this BrowserAutofillManager is initialized. This is
+  // overridden by the BrowserAutofillManagerTest.
   // Weak reference.
-  // May be NULL.  NULL indicates OTR.
+  // May be nullptr. Nullptr indicates that we are on an unsupported platform,
+  // for example android webview.
+  // In OTR mode, on supported platforms, `personal_data_` will represent the
+  // original profile's PersonalDataManager.
   raw_ptr<PersonalDataManager> personal_data_;
 
   // Used to help fill data into fields.

@@ -6,10 +6,13 @@ import '../module_header.js';
 import './suggest_tile.js';
 import './tile.js';
 
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Cluster, URLVisit} from '../../history_cluster_types.mojom-webui.js';
-import {I18nMixin} from '../../i18n_setup.js';
+import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
+import {InfoDialogElement} from '../info_dialog';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
 import {HistoryClustersProxyImpl} from './history_clusters_proxy.js';
@@ -35,7 +38,12 @@ export enum HistoryClusterLayoutType {
   LAYOUT_3 = 3,  // 2 image visits & 2 non-image visits
 }
 
-// TODO:(crbug.com/1410808): Add module UI logic.
+export interface HistoryClustersModuleElement {
+  $: {
+    infoDialogRender: CrLazyRenderElement<InfoDialogElement>,
+  };
+}
+
 export class HistoryClustersModuleElement extends I18nMixin
 (PolymerElement) {
   static get is() {
@@ -52,16 +60,82 @@ export class HistoryClustersModuleElement extends I18nMixin
 
       /** The cluster displayed by this element. */
       cluster: Object,
+
       searchResultPage: Object,
+
+      title_: {
+        type: String,
+        computed: 'computeClusterTitle_(cluster)',
+      },
     };
   }
 
+  private title_: string;
   cluster: Cluster;
   layoutType: HistoryClusterLayoutType;
   searchResultPage: URLVisit;
 
+  private computeClusterTitle_() {
+    return this.cluster.label ? this.cluster.label :
+                                this.searchResultPage.pageTitle;
+  }
+
+  private onVisitTileClick_(e: Event) {
+    this.recordClick_(e.target as HTMLElement, 'Visit');
+  }
+
+  private onSuggestTileClick_(e: Event) {
+    this.recordClick_(e.target as HTMLElement, 'Suggest');
+  }
+
+  private recordClick_(tile: HTMLElement, tileType: string) {
+    assert(this.layoutType !== HistoryClusterLayoutType.NONE);
+    const index = Array.from(tile.parentNode!.children).indexOf(tile);
+    chrome.metricsPrivate.recordValue(
+        {
+          metricName: `NewTabPage.HistoryClusters.Layout${this.layoutType}.${
+              tileType!}Tile.ClickIndex`,
+          type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
+          min: 0,
+          max: 10,
+          buckets: 10,
+        },
+        index);
+
+    this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
+  }
+
   private isLayout_(type: HistoryClusterLayoutType): boolean {
     return type === this.layoutType;
+  }
+
+  private onDisableButtonClick_() {
+    const disableEvent = new CustomEvent('disable-module', {
+      composed: true,
+      detail: {
+        message: loadTimeData.getStringF(
+            'disableModuleToastMessage',
+            loadTimeData.getString('modulesJourneysSentence2')),
+      },
+    });
+    this.dispatchEvent(disableEvent);
+  }
+
+  private onDismissButtonClick_() {
+    HistoryClustersProxyImpl.getInstance().handler.dismissCluster(
+        [this.searchResultPage, ...this.cluster.visits]);
+    this.dispatchEvent(new CustomEvent('dismiss-module', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        message:
+            loadTimeData.getStringF('dismissModuleToastMessage', this.title_),
+      },
+    }));
+  }
+
+  private onInfoButtonClick_() {
+    this.$.infoDialogRender.get().showModal();
   }
 
   private onShowAllClick_() {

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -187,7 +188,6 @@
 namespace blink {
 class AssociatedInterfaceRegistry;
 class DocumentPolicy;
-class RuntimeFeatureStateReadContext;
 struct FramePolicy;
 struct TransferableMessage;
 struct UntrustworthyContextMenuParams;
@@ -1383,10 +1383,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   class CookieChangeListener : public network::mojom::CookieChangeListener {
    public:
     struct CookieChangeInfo {
-      // Indicates whether any cookie modification has been observed.
-      bool cookie_modified = false;
-      // Indicates whether any HTTPOnly cookie modification has been observed.
-      bool http_only_cookie_modified = false;
+      // The number of observed cookie modifications.
+      int64_t cookie_modification_count_ = 0;
+      // The number of observed HTTPOnly cookie modifications.
+      int64_t http_only_cookie_modification_count_ = 0;
     };
 
     CookieChangeListener(StoragePartition* storage_partition, GURL& url);
@@ -1396,6 +1396,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
     // Returns a copy of the `cookie_change_info_`.
     CookieChangeInfo cookie_change_info() { return cookie_change_info_; }
+
+    // We don't want to count the cookie modification made by the
+    // `NavigationRequest` itself, so provide this function to allow the count
+    // adjustment.
+    // Passing the `base::PassKey` to restrict the caller of this method to
+    // `NavigationRequest` only.
+    void RemoveNavigationCookieModificationCount(
+        base::PassKey<content::NavigationRequest> navigation_request,
+        uint64_t cookie_modification_count_delta,
+        uint64_t http_only_cookie_modification_count_delta) {
+      cookie_change_info_.cookie_modification_count_ -=
+          cookie_modification_count_delta;
+      cookie_change_info_.http_only_cookie_modification_count_ -=
+          http_only_cookie_modification_count_delta;
+    }
 
    private:
     // network::mojom::CookieChangeListener
@@ -2394,8 +2409,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
+  using BackForwardCacheBlockingDetails =
+      std::vector<blink::mojom::BlockingDetailsPtr>;
   void DidChangeBackForwardCacheDisablingFeatures(
-      uint64_t features_mask) override;
+      BackForwardCacheBlockingDetails details) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -2672,9 +2689,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // opaque origin instead).
   void SetOriginDependentStateOfNewFrame(RenderFrameHostImpl* creator_frame);
 
-  // Returns the value of `this`'s main frame's
-  // RuntimeFeatureStateReadContext::
-  // IsDisableThirdPartyStoragePartitioningEnabled()
+  // Indicates whether `this` main frame has third-party storage partitioning
+  // enabled. This depends on the deprecation trial (which can block), content
+  // browser client (which can block), and base feature (which can allow).
   bool IsMainFrameThirdPartyStoragePartitioningEnabled();
 
   // Calculates the storage key for this RenderFrameHostImpl using the passed
@@ -2953,6 +2970,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 bool for_legacy);
 
  private:
+  friend class ResumeCommitClosureSetObserver;
   friend class RenderFrameHostPermissionsPolicyTest;
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
@@ -3734,8 +3752,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetPolicyContainerHost(
       scoped_refptr<PolicyContainerHost> policy_container_host);
 
-  // Initializes |private_network_request_policy_|. Constructor helper.
-  void InitializePrivateNetworkRequestPolicy();
+  // Initializes |local_network_request_policy_|. Constructor helper.
+  void InitializeLocalNetworkRequestPolicy();
 
   // Returns true if this frame requires a proxy to talk to its parent.
   // Note: Using a proxy to talk to a parent does not imply that the parent
@@ -4002,7 +4020,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHostImpl.
   blink::StorageKey storage_key_;
 
-  // The policy to apply to private network requests issued by the last
+  // The policy to apply to local network requests issued by the last
   // committed document. Set to a default value until a document commits for the
   // first time. The default value depends on whether the
   // |BlockInsecurePrivateNetworkRequests| feature is enabled, see constructor.
@@ -4015,8 +4033,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // TODO(https://crbug.com/888079): Simplify the above comment when the
   // behavior it explains is fixed.
-  network::mojom::PrivateNetworkRequestPolicy private_network_request_policy_ =
-      network::mojom::PrivateNetworkRequestPolicy::kBlock;
+  network::mojom::LocalNetworkRequestPolicy local_network_request_policy_ =
+      network::mojom::LocalNetworkRequestPolicy::kBlock;
 
   // Track the SiteInfo of the last site we committed successfully, as obtained
   // from SiteInfo::CreateInternal() called on the last committed UrlInfo.

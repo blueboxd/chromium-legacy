@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
+#include "components/autofill/core/browser/payments/client_behavior_constants.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -38,7 +39,10 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::HasSubstr;
 
 namespace autofill::payments {
 namespace {
@@ -138,9 +142,16 @@ struct GetUploadDetailsOptions {
     return *this;
   }
 
+  GetUploadDetailsOptions& with_client_behavior_signals(
+      std::vector<ClientBehaviorConstants> v) {
+    client_behavior_signals = std::move(v);
+    return *this;
+  }
+
   PaymentsClient::UploadCardSource upload_card_source =
       PaymentsClient::UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE;
   int64_t billing_customer_number = 111222333444L;
+  std::vector<ClientBehaviorConstants> client_behavior_signals;
 };
 
 struct UploadCardOptions {
@@ -159,9 +170,16 @@ struct UploadCardOptions {
     return *this;
   }
 
+  UploadCardOptions& with_client_behavior_signals(
+      std::vector<ClientBehaviorConstants> v) {
+    client_behavior_signals = std::move(v);
+    return *this;
+  }
+
   bool include_cvc = false;
   bool include_nickname = false;
   int64_t billing_customer_number = 111222333444L;
+  std::vector<ClientBehaviorConstants> client_behavior_signals;
 };
 
 }  // namespace
@@ -347,12 +365,13 @@ class PaymentsClientTest : public testing::Test {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Issue a GetUploadDetails request.
+  // Issue a GetUploadDetails request. This may require an OAuth token before
+  // starting the request.
   void StartGettingUploadDetails(
       GetUploadDetailsOptions get_upload_details_options) {
     client_->GetUploadDetails(
-        BuildTestProfiles(), kAllDetectableValues, std::vector<const char*>(),
-        "language-LOCALE",
+        BuildTestProfiles(), kAllDetectableValues,
+        get_upload_details_options.client_behavior_signals, "language-LOCALE",
         base::BindOnce(&PaymentsClientTest::OnDidGetUploadDetails,
                        weak_ptr_factory_.GetWeakPtr()),
         /*billable_service_number=*/12345,
@@ -374,6 +393,9 @@ class PaymentsClientTest : public testing::Test {
       upstream_nickname_ = u"grocery";
       request_details.card.SetNickname(upstream_nickname_);
     }
+    request_details.client_behavior_signals =
+        upload_card_options.client_behavior_signals;
+
     request_details.context_token = u"context token";
     request_details.risk_data = "some risk data";
     request_details.app_locale = "language-LOCALE";
@@ -435,6 +457,14 @@ class PaymentsClientTest : public testing::Test {
   const std::string& GetUploadData() { return intercepted_body_; }
 
   bool HasVariationsHeader() { return has_variations_header_; }
+
+  // Issues access token if feature flag is enabled, otherwise does not.
+  void IssueOAuthTokenIfNecessaryForPreflightCall() {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillUpstreamAuthenticatePreflightCall)) {
+      IssueOAuthToken();
+    }
+  }
 
   // Issues access token in response to any access token request. This will
   // start the Payments Request which requires the authentication.
@@ -1121,8 +1151,35 @@ TEST_F(PaymentsClientTest, EnrollAttemptReturnsCreationOptions) {
                 "relying_party_id"));
 }
 
-TEST_F(PaymentsClientTest, GetDetailsSuccess) {
+// Params of the PaymentsClientUploadDetailsTest:
+// -- bool authenticate
+class PaymentsClientUploadDetailsTest
+    : public PaymentsClientTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  PaymentsClientUploadDetailsTest() = default;
+  ~PaymentsClientUploadDetailsTest() override = default;
+
+  bool Authenticate() { return GetParam(); }
+
+  void SetUp() override {
+    if (Authenticate()) {
+      feature_list_.InitAndEnableFeature(
+          features::kAutofillUpstreamAuthenticatePreflightCall);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kAutofillUpstreamAuthenticatePreflightCall);
+    }
+    PaymentsClientTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsSuccess) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
   ReturnResponse(
       net::HTTP_OK,
       "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
@@ -1130,8 +1187,9 @@ TEST_F(PaymentsClientTest, GetDetailsSuccess) {
   EXPECT_NE(nullptr, legal_message_.get());
 }
 
-TEST_F(PaymentsClientTest, GetDetailsRemovesNonLocationData) {
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsRemovesNonLocationData) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the recipient name field and test names appear nowhere in the
   // upload data.
@@ -1153,8 +1211,10 @@ TEST_F(PaymentsClientTest, GetDetailsRemovesNonLocationData) {
   EXPECT_TRUE(GetUploadData().find("0090") == std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsIncludesDetectedValuesInRequest) {
+TEST_P(PaymentsClientUploadDetailsTest,
+       GetDetailsIncludesDetectedValuesInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the detected values were included in the request.
   std::string detected_values_string =
@@ -1163,110 +1223,146 @@ TEST_F(PaymentsClientTest, GetDetailsIncludesDetectedValuesInRequest) {
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsIncludesChromeUserContext) {
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsIncludesChromeUserContext) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kAutofillEnableAccountWalletStorage);
 
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
+TEST_P(PaymentsClientUploadDetailsTest,
+       GetDetailsIncludesIncludesClientBehaviorSignalsInChromeUserContext) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnableNewSaveCardBubbleUi);
+
+  StartGettingUploadDetails(
+      GetUploadDetailsOptions().with_client_behavior_signals(
+          std::vector<ClientBehaviorConstants>{
+              ClientBehaviorConstants::kUsingFasterAndProtectedUi}));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
+
+  // Verify ChromeUserContext was set.
+  EXPECT_THAT(GetUploadData(), HasSubstr("chrome_user_context"));
+  // Verify Client_behavior_signals was set.
+  EXPECT_THAT(GetUploadData(), HasSubstr("client_behavior_signals"));
+  // Verify fake_client_behavior_signal was set.
+  // ClientBehaviorConstants::kUsingFasterAndProtectedUi has the numeric value
+  // set to 1.
+  EXPECT_THAT(GetUploadData(), HasSubstr("\"client_behavior_signals\":[1]"));
+}
+
+TEST_P(PaymentsClientUploadDetailsTest,
        GetDetailsIncludesChromeUserContextIfWalletStorageFlagEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillEnableAccountWalletStorage);
 
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
+TEST_P(PaymentsClientUploadDetailsTest,
        GetDetailsIncludesUpstreamCheckoutFlowUploadCardSourceInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions().with_upload_card_source(
       PaymentsClient::UploadCardSource::UPSTREAM_CHECKOUT_FLOW));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the correct upload card source was included in the request.
   EXPECT_TRUE(GetUploadData().find("UPSTREAM_CHECKOUT_FLOW") !=
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
+TEST_P(PaymentsClientUploadDetailsTest,
        GetDetailsIncludesUpstreamSettingsPageUploadCardSourceInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions().with_upload_card_source(
       PaymentsClient::UploadCardSource::UPSTREAM_SETTINGS_PAGE));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the correct upload card source was included in the request.
   EXPECT_TRUE(GetUploadData().find("UPSTREAM_SETTINGS_PAGE") !=
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
+TEST_P(PaymentsClientUploadDetailsTest,
        GetDetailsIncludesUpstreamCardOcrUploadCardSourceInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions().with_upload_card_source(
       PaymentsClient::UploadCardSource::UPSTREAM_CARD_OCR));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the correct upload card source was included in the request.
   EXPECT_TRUE(GetUploadData().find("UPSTREAM_CARD_OCR") != std::string::npos);
 }
 
-TEST_F(
-    PaymentsClientTest,
+TEST_P(
+    PaymentsClientUploadDetailsTest,
     GetDetailsIncludesLocalCardMigrationCheckoutFlowUploadCardSourceInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions().with_upload_card_source(
       PaymentsClient::UploadCardSource::LOCAL_CARD_MIGRATION_CHECKOUT_FLOW));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the correct upload card source was included in the request.
   EXPECT_TRUE(GetUploadData().find("LOCAL_CARD_MIGRATION_CHECKOUT_FLOW") !=
               std::string::npos);
 }
 
-TEST_F(
-    PaymentsClientTest,
+TEST_P(
+    PaymentsClientUploadDetailsTest,
     GetDetailsIncludesLocalCardMigrationSettingsPageUploadCardSourceInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions().with_upload_card_source(
       PaymentsClient::UploadCardSource::LOCAL_CARD_MIGRATION_SETTINGS_PAGE));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the correct upload card source was included in the request.
   EXPECT_TRUE(GetUploadData().find("LOCAL_CARD_MIGRATION_SETTINGS_PAGE") !=
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsIncludesUnknownUploadCardSourceInRequest) {
+TEST_P(PaymentsClientUploadDetailsTest,
+       GetDetailsIncludesUnknownUploadCardSourceInRequest) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the absence of an upload card source results in UNKNOWN.
   EXPECT_TRUE(GetUploadData().find("UNKNOWN_UPLOAD_CARD_SOURCE") !=
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
+TEST_P(PaymentsClientUploadDetailsTest, GetUploadDetailsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers.
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
 }
 
-TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
+TEST_P(PaymentsClientUploadDetailsTest,
+       GetDetailsIncludeBillableServiceNumber) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that billable service number was included in the request.
   EXPECT_TRUE(GetUploadData().find("\"billable_service\":12345") !=
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsIncludeBillingCustomerNumber) {
+TEST_P(PaymentsClientUploadDetailsTest,
+       GetDetailsIncludeBillingCustomerNumber) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the billing customer number is included in the request if flag
   // is enabled.
@@ -1275,11 +1371,12 @@ TEST_F(PaymentsClientTest, GetDetailsIncludeBillingCustomerNumber) {
       std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
+TEST_P(PaymentsClientUploadDetailsTest,
        GetDetailsExcludesBillingCustomerNumberIfNoBcnExists) {
   // A value of zero is treated as a non-existent BCN.
   StartGettingUploadDetails(
       GetUploadDetailsOptions().with_billing_customer_number(0L));
+  IssueOAuthTokenIfNecessaryForPreflightCall();
 
   // Verify that the billing customer number is not included in the request if
   // billing customer number is 0.
@@ -1289,8 +1386,9 @@ TEST_F(PaymentsClientTest,
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsFollowedByUploadSuccess) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
   ReturnResponse(
       net::HTTP_OK,
       "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
@@ -1299,26 +1397,33 @@ TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
   result_ = AutofillClient::PaymentsRpcResult::kNone;
 
   StartUploading(UploadCardOptions());
-  IssueOAuthToken();
+  // If Authenticate() is true, the OAuth token was already issued. If not, it
+  // needs to be issued now for the second, non-GetUploadDetails request.
+  if (!Authenticate()) {
+    IssueOAuthToken();
+  }
   ReturnResponse(net::HTTP_OK, "{}");
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsMissingContextToken) {
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsMissingContextToken) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
   ReturnResponse(net::HTTP_OK, "{ \"legal_message\": {} }");
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kPermanentFailure, result_);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsMissingLegalMessage) {
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsMissingLegalMessage) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
   ReturnResponse(net::HTTP_OK, "{ \"context_token\": \"some_token\" }");
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kPermanentFailure, result_);
   EXPECT_EQ(nullptr, legal_message_.get());
 }
 
-TEST_F(PaymentsClientTest, SupportedCardBinRangesParsesCorrectly) {
+TEST_P(PaymentsClientUploadDetailsTest, SupportedCardBinRangesParsesCorrectly) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
   ReturnResponse(
       net::HTTP_OK,
       "{"
@@ -1550,6 +1655,27 @@ TEST_F(PaymentsClientTest, UploadRequestIncludesEncryptedPan) {
               std::string::npos);
 }
 
+TEST_F(PaymentsClientTest, UploadRequestIncludesClientBehaviorSignals) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnableNewSaveCardBubbleUi);
+
+  StartUploading(UploadCardOptions().with_client_behavior_signals(
+      std::vector<ClientBehaviorConstants>{
+          ClientBehaviorConstants::kUsingFasterAndProtectedUi}));
+  IssueOAuthToken();
+
+  // Verify ChromeUserContext was set.
+  EXPECT_THAT(GetUploadData(), HasSubstr("chrome_user_context"));
+  // Verify Client_behavior_signals was set.
+  EXPECT_THAT(GetUploadData(), HasSubstr("client_behavior_signals"));
+  // Verify fake_client_behavior_signal was set.
+  // ClientBehaviorConstants::kUsingFasterAndProtectedUi has the numeric value
+  // set to 1.
+  EXPECT_THAT(GetUploadData(),
+              HasSubstr("%22client_behavior_signals%22:%5B1%5D"));
+}
+
 TEST_F(PaymentsClientTest,
        UploadRequestIncludesEncryptedPanUsingAlternateType) {
   base::test::ScopedFeatureList feature_list;
@@ -1763,8 +1889,9 @@ TEST_F(PaymentsClientTest, UnmaskPermanentFailureWhenVcnMissingCvv) {
 
 // Tests for the local card migration flow. Desktop only.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsFollowedByMigrationSuccess) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
+  IssueOAuthTokenIfNecessaryForPreflightCall();
   ReturnResponse(
       net::HTTP_OK,
       "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
@@ -1773,13 +1900,22 @@ TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
   result_ = AutofillClient::PaymentsRpcResult::kNone;
 
   StartMigrating(/*has_cardholder_name=*/true);
-  IssueOAuthToken();
+  // If Authenticate() is true, the OAuth token was already issued. If not, it
+  // needs to be issued now for the second, non-GetUploadDetails request.
+  if (!Authenticate()) {
+    IssueOAuthToken();
+  }
   ReturnResponse(
       net::HTTP_OK,
       "{\"save_result\":[],\"value_prop_display_text\":\"display text\"}");
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
 }
+#endif
 
+INSTANTIATE_TEST_SUITE_P(, PaymentsClientUploadDetailsTest, testing::Bool());
+
+// Tests for the local card migration flow. Desktop only.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers.

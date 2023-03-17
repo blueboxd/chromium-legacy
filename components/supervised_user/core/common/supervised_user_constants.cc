@@ -13,6 +13,7 @@ GURL KidsManagementBaseURL() {
   return GURL("https://kidsmanagement-pa.googleapis.com/kidsmanagement/v1/");
 }
 
+const char kGetFamilyProfileURL[] = "families/mine?alt=json";
 const char kGetFamilyMembersURL[] = "families/mine/members?alt=json";
 const char kPermissionRequestsURL[] = "people/me/permissionRequests";
 const char kClassifyURLRequestURL[] = "people/me:classifyUrl";
@@ -30,7 +31,6 @@ const char kForceSafeSearch[] = "ForceSafeSearch";
 const char kGeolocationDisabled[] = "GeolocationDisabled";
 const char kSafeSitesEnabled[] = "SafeSites";
 const char kSigninAllowed[] = "SigninAllowed";
-const char kUserName[] = "UserName";
 
 const char kChildAccountSUID[] = "ChildAccountSUID";
 
@@ -57,6 +57,13 @@ const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
 
 const base::FilePath::CharType kDenylistFilename[] =
     FILE_PATH_LITERAL("su-denylist.bin");
+
+const char kSyncGoogleDashboardURL[] =
+    "https://www.google.com/settings/chrome/sync";
+
+GURL KidsManagementGetFamilyProfileURL() {
+  return KidsManagementBaseURL().Resolve(kGetFamilyProfileURL);
+}
 
 GURL KidsManagementGetFamilyMembersURL() {
   return KidsManagementBaseURL().Resolve(kGetFamilyMembersURL);

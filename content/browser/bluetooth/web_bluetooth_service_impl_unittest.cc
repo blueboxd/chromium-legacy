@@ -21,6 +21,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
@@ -32,6 +34,8 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/test_support/fake_message_dispatch_context.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -768,16 +772,8 @@ TEST_F(WebBluetoothServiceImplTest,
   EXPECT_FALSE(service_ptr_->AreScanFiltersAllowed(filters));
 }
 
-// TODO(https://crbug.com/1420032): Failing on iOS.
-#if BUILDFLAG(IS_IOS)
-#define MAYBE_BluetoothScanningPermissionRevokedWhenFocusIsLost \
-  DISABLED_BluetoothScanningPermissionRevokedWhenFocusIsLost
-#else
-#define MAYBE_BluetoothScanningPermissionRevokedWhenFocusIsLost \
-  BluetoothScanningPermissionRevokedWhenFocusIsLost
-#endif
 TEST_F(WebBluetoothServiceImplTest,
-       MAYBE_BluetoothScanningPermissionRevokedWhenFocusIsLost) {
+       BluetoothScanningPermissionRevokedWhenFocusIsLost) {
   blink::mojom::WebBluetoothLeScanFilterPtr filter = CreateScanFilter("a", "b");
   absl::optional<WebBluetoothServiceImpl::ScanFilters> filters;
   filters.emplace();
@@ -851,7 +847,7 @@ TEST_F(WebBluetoothServiceImplTest,
   // BluetoothRemoteGattCharacteristic::ValueCallback callback argument is that
   // when an error occurs, value must be ignored. This test verifies that
   // WebBluetoothServiceImpl::OnCharacteristicReadValue honors that contract
-  // and will not pass a value to it's callback
+  // and will not pass a value to its callback
   // (a RemoteCharacteristicReadValueCallback instance) when an error occurs
   // with a non-empty value array.
   const std::vector<uint8_t> read_error_value = {1, 2, 3};
@@ -1041,6 +1037,29 @@ TEST_F(WebBluetoothServiceImplTest, DeviceDisconnected) {
       get_primary_services_future.GetCallback());
   EXPECT_EQ(get_primary_services_future.Get<0>(),
             blink::mojom::WebBluetoothResult::NO_SERVICES_FOUND);
+}
+
+TEST_F(WebBluetoothServiceImplTest, RejectOpaqueOrigin) {
+  // Create a fake dispatch context to trigger a bad message in.
+  mojo::FakeMessageDispatchContext fake_dispatch_context;
+  mojo::test::BadMessageObserver bad_message_observer;
+
+  auto response_headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
+  response_headers->SetHeader("Content-Security-Policy",
+                              "sandbox allow-scripts");
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL("http://whatever.com"), main_test_rfh());
+  navigation_simulator->SetResponseHeaders(response_headers);
+  navigation_simulator->Start();
+  navigation_simulator->Commit();
+
+  mojo::Remote<blink::mojom::WebBluetoothService> service;
+  contents()->GetPrimaryMainFrame()->CreateWebBluetoothServiceForTesting(
+      service.BindNewPipeAndPassReceiver());
+
+  EXPECT_EQ(bad_message_observer.WaitForBadMessage(),
+            "Web Bluetooth is not allowed from an opaque origin.");
 }
 
 }  // namespace content

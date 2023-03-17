@@ -5,16 +5,20 @@
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
+#include "services/network/public/mojom/no_vary_search.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
+#include "third_party/blink/renderer/core/speculation_rules/speculation_rules_features.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -74,8 +78,12 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
       "referrer_policy", "relative_to"};
   const auto kConditionalKnownKeys = [context]() {
     Vector<const char*, 4> conditional_known_keys;
-    if (RuntimeEnabledFeatures::SpeculationRulesEagernessEnabled(context)) {
+    if (speculation_rules::EagernessEnabled(context)) {
       conditional_known_keys.push_back("eagerness");
+    }
+    if (RuntimeEnabledFeatures::SpeculationRulesNoVarySearchHintEnabled(
+            context)) {
+      conditional_known_keys.push_back("no_vary_search_expected");
     }
     return conditional_known_keys;
   }();
@@ -191,10 +199,9 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     // conjunction whose clauses is an empty list.
     if (!input->Get("where")) {
       document_rule_predicate = DocumentRulePredicate::MakeDefaultPredicate();
-    }
-    // Otherwise, set predicate to the result of parsing a document rule
-    // predicate given input["where"] and baseURL.
-    else {
+    } else {
+      // Otherwise, set predicate to the result of parsing a document rule
+      // predicate given input["where"] and baseURL.
       document_rule_predicate = DocumentRulePredicate::Parse(
           input->GetJSONObject("where"), base_url, context,
           IGNORE_EXCEPTION_FOR_TESTING, out_error);
@@ -298,7 +305,7 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
   absl::optional<mojom::blink::SpeculationEagerness> eagerness;
   if (JSONValue* eagerness_value = input->Get("eagerness")) {
     // Feature gated due to known keys check above.
-    DCHECK(RuntimeEnabledFeatures::SpeculationRulesEagernessEnabled(context));
+    DCHECK(speculation_rules::EagernessEnabled(context));
 
     String eagerness_str;
     if (!eagerness_value->AsString(&eagerness_str)) {
@@ -317,11 +324,35 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
           out_error, "Eagerness value: \"" + eagerness_str + "\" is invalid.");
       return nullptr;
     }
+
+    UseCounter::Count(context, WebFeature::kSpeculationRulesExplicitEagerness);
+  }
+
+  network::mojom::blink::NoVarySearchPtr no_vary_search = nullptr;
+  if (JSONValue* no_vary_search_value = input->Get("no_vary_search_expected")) {
+    CHECK(RuntimeEnabledFeatures::SpeculationRulesNoVarySearchHintEnabled(
+        context));
+    String no_vary_search_str;
+    if (!no_vary_search_value->AsString(&no_vary_search_str)) {
+      SetParseErrorMessage(out_error,
+                           "no_vary_search_expected's value must be a string.");
+      return nullptr;
+    }
+    // Parse No-Vary-Search hint value.
+    auto no_vary_search_expected = blink::ParseNoVarySearch(no_vary_search_str);
+    CHECK(no_vary_search_expected);
+    if (no_vary_search_expected->is_parse_error()) {
+      SetParseErrorMessage(out_error,
+                           GetNoVarySearchHintConsoleMessage(
+                               no_vary_search_expected->get_parse_error()));
+      return nullptr;
+    }
+    no_vary_search = std::move(no_vary_search_expected->get_no_vary_search());
   }
 
   return MakeGarbageCollected<SpeculationRule>(
       std::move(urls), document_rule_predicate, requires_anonymous_client_ip,
-      target_hint, referrer_policy, eagerness);
+      target_hint, referrer_policy, eagerness, std::move(no_vary_search));
 }
 
 }  // namespace
@@ -357,17 +388,6 @@ void SpeculationRuleSet::Source::Trace(Visitor* visitor) const {
 
 // ---- SpeculationRuleSet implementation ----
 
-namespace {
-
-// If enabled, allows non-standard JSON comments in speculation rules.
-// TODO(crbug.com/1264024): Remove this feature if no issues arose with
-// deprecating it.
-BASE_FEATURE(kSpeculationRulesJSONComments,
-             "SpeculationRulesJSONComments",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-}  // namespace
-
 SpeculationRuleSet::SpeculationRuleSet(base::PassKey<SpeculationRuleSet>,
                                        Source* source)
     : inspector_id_(IdentifiersFactory::CreateIdentifier()), source_(source) {}
@@ -383,12 +403,8 @@ SpeculationRuleSet* SpeculationRuleSet::Parse(Source* source,
 
   // Let parsed be the result of parsing a JSON string to an Infra value given
   // input.
-  // TODO(crbug.com/1264024): Deprecate JSON comments here, if possible.
   JSONParseError parse_error;
-  auto parsed = JSONObject::From(
-      base::FeatureList::IsEnabled(kSpeculationRulesJSONComments)
-          ? ParseJSONWithCommentsDeprecated(source_text, &parse_error)
-          : ParseJSON(source_text, &parse_error));
+  auto parsed = JSONObject::From(ParseJSON(source_text, &parse_error));
 
   // If parsed is not a map, then return null.
   if (!parsed) {

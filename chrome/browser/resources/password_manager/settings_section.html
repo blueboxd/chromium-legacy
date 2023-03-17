@@ -70,7 +70,7 @@
   <template is="dom-if" if="[[!isPasswordManagerShortcutInstalled_]]" restamp>
     <cr-link-row id="addShortcutBanner" class="cr-row settings-cr-link-row"
         on-click="onAddShortcutClick_" label="$i18n{addShortcut}"
-        sub-label="[[getShortcutBannerDescription_]]" hide-icon>
+        sub-label="[[getShortcutBannerDescription_()]]" hide-icon>
     </cr-link-row>
   </template>
 </div>
@@ -89,7 +89,9 @@
         <div class="blocked-site-content flex-centered" first$="[[!index]]">
           <div class="label site-url">[[item.urls.shown]]</div>
           <cr-icon-button class="icon-clear" id="removeBlockedValueButton"
-              on-click="onRemoveBlockedSiteClick_"></cr-icon-button>
+              on-click="onRemoveBlockedSiteClick_"
+              aria-label="[[getAriaLabelForBlockedSite_(item)]]">
+          </cr-icon-button>
         </div>
       </div>
     </template>

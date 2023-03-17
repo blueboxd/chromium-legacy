@@ -304,6 +304,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Ash.Hotspot.Upstream.Cellular.Enabled.UpstreamStatus"
+    enum="HotspotUpstreamStatus" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the upstream status the when hotspot is start up.
+    Emitted each time the hotspot starts successfully.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ash.Hotspot.Upstream.Cellular.EnableHotspot.Latency"
+    units="ms" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks how long the user needs to wait once the hotspot is requested to turn
+    on until the hotspot is ready to use.
+  </summary>
+</histogram>
+
 <histogram
     name="Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.AutoDisable"
     enum="BooleanEnabled" expires_after="2023-10-01">
@@ -335,6 +355,38 @@ chromium-metrics-reviews@google.com.
     Measures and tracks the number of whether the hotspot BSSID randomization
     configuration is set for usage. Emitted each time the hotspot starts
     successfully.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ash.Hotspot.Upstream.Cellular.Usage.Duration"
+    units="ms" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks how long users use hotspot per session. Emitted whenever the hotspot
+    is torn down.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Hotspot.Upstream.Cellular.Usage.ManagedStateWhenHotspotEnabled"
+    enum="BooleanManaged" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the number of the hotspot being used on a managed device
+    or not. Emitted each time the hotspot starts successfully.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Hotspot.Upstream.Cellular.Usage.MaxConnectedDeviceCount"
+    units="count" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the number of maximum connected device count per hotspot session.
+    Emitted whenever the hotspot session is torn down.
   </summary>
 </histogram>
 
@@ -490,7 +542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.CacheNotUsed"
-    enum="CacheTransparencyCacheNotUsedReason" expires_after="2023-07-09">
+    enum="CacheTransparencyCacheNotUsedReason" expires_after="2023-09-10">
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -516,7 +568,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.MarkedUnusable" units="list index"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by Network.CacheTransparency2.
+    MarkedUnusable which has a higher range.
+  </obsolete>
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -527,7 +583,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.MismatchedChecksums"
-    units="list index" expires_after="2023-07-09">
+    units="list index" expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by Network.CacheTransparency2.
+    MismatchedChecksums which has a higher range.
+  </obsolete>
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -539,7 +599,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.SingleKeyedCacheIsUsed"
-    units="list index" expires_after="2023-07-09">
+    units="list index" expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by Network.CacheTransparency2.
+    SingleKeyedCacheIsUsed which has a higher range.
+  </obsolete>
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -552,7 +616,58 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.CacheTransparency.URLMatched" units="list index"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
+  <obsolete>
+    Removed as of 03/2023, as it is replaced by
+    Network.CacheTransparency2.URLMatched which has a higher range.
+  </obsolete>
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether a requested resource's URL matched with any of the URLs in
+    the pervasive payloads list when a URL request is made. The list index is
+    the index of the URL in the pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.MarkedUnusable" units="list index"
+    expires_after="2023-11-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether a URL in the pervasive payloads list is marked as
+    &quot;unusable&quot; when the cached response is read. The list index is the
+    index of the URL in the pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.MismatchedChecksums"
+    units="list index" expires_after="2023-11-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether a URL in the pervasive payloads list has a different
+    checksum than what is expected when the response checksums are compared in
+    HttpCache::Transaction. The list index is the index of the URL in the
+    pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.SingleKeyedCacheIsUsed"
+    units="list index" expires_after="2023-11-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Records whether the single-keyed cache is used for a URL in the pervasive
+    payloads list (not just when a cache entry is hit because there could be an
+    &quot;unusable&quot; flag set). This is recorded when the response checksum
+    matches the expected checksum in HttpCache::Transaction. The list index is
+    the index of the URL in the pervasive payloads list.
+  </summary>
+</histogram>
+
+<histogram name="Network.CacheTransparency2.URLMatched" units="list index"
+    expires_after="2023-11-01">
   <owner>nidhijaju@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -1318,7 +1433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.DnsProxy.DnsOverHttpsMode"
-    enum="DnsProxy.DnsOverHttpsMode" expires_after="2023-07-09">
+    enum="DnsProxy.DnsOverHttpsMode" expires_after="2023-09-10">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1338,13 +1453,74 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.DnsProxy.NameserverTypes"
-    enum="DnsProxy.NameserverType" expires_after="2023-07-09">
+    enum="DnsProxy.NameserverType" expires_after="2023-09-10">
   <owner>garrick@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     Diagnostic metric for ChromeOS DNS proxy that records the type of plain text
     nameservers used whenever they are obtained from shill for a given network.
   </summary>
+</histogram>
+
+<histogram name="Network.DnsProxy.PlainTextProbe.{Family}.Errors"
+    enum="DnsProxy.QueryResult" expires_after="2023-05-07">
+  <owner>jasongustaman@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Diagnostic metric for ChromeOS DNS proxy that records any errors that occur
+    during DNS probes made by the service. A value will be recorded whenever the
+    probe completes in error.
+  </summary>
+  <token key="Family">
+    <variant name="IPv4"/>
+    <variant name="IPv6"/>
+  </token>
+</histogram>
+
+<histogram name="Network.DnsProxy.PlainTextProbe.{Family}.FailedRetries"
+    units="count" expires_after="2023-05-07">
+  <owner>jasongustaman@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Diagnostic metric for ChromeOS DNS proxy that records number of retries for
+    failing probes. A value will be recorded whenever the probe completes in
+    error.
+  </summary>
+  <token key="Family">
+    <variant name="IPv4"/>
+    <variant name="IPv6"/>
+  </token>
+</histogram>
+
+<histogram name="Network.DnsProxy.PlainTextProbe.{Family}.Results"
+    enum="DnsProxy.QueryResult" expires_after="2023-05-07">
+  <owner>jasongustaman@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Diagnostic metric for ChromeOS DNS proxy that records the results of the DNS
+    probes made by the service. A value will be recorded whenever the probe
+    completes.
+  </summary>
+  <token key="Family">
+    <variant name="IPv4"/>
+    <variant name="IPv6"/>
+  </token>
+</histogram>
+
+<histogram name="Network.DnsProxy.PlainTextProbe.{Family}.ResultsWithRetries"
+    enum="DnsProxy.QueryResult" expires_after="2023-05-07">
+  <owner>jasongustaman@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Diagnostic metric for ChromeOS DNS proxy that records the results of the DNS
+    probes made by the service. A value will be recorded whenever the probe
+    completes. However, on error it is only recorded if it is a consistent
+    error, meaning if it fails even after certain amount of retries.
+  </summary>
+  <token key="Family">
+    <variant name="IPv4"/>
+    <variant name="IPv6"/>
+  </token>
 </histogram>
 
 <histogram name="Network.DnsProxy.Query.Failed{Stage}Duration" units="ms"
@@ -1539,6 +1715,19 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Network.Ethernet.Policy.OncRecommendedFieldsWorkaroundAction"
+    enum="OncRecommendedFieldsWorkaroundAction" expires_after="2024-01-31">
+  <owner>pmarko@google.com</owner>
+  <owner>suprnet@google.com</owner>
+  <summary>
+    The action taken when evaluating whether a workaround should be applied to
+    mark Ethernet ONC Policy fields as Recommended for backward compatiblity.
+    This histogram is emitted when the DeviceOpenNetworkConfiguration policy is
+    parsed (on chrome start and policy updates) and is found to contain an
+    Ethernet network configuration.
+  </summary>
+</histogram>
+
 <histogram name="Network.NetworkPortalDetectorHasProxy" enum="Boolean"
     expires_after="2023-09-18">
   <owner>stevenjb@chromium.org</owner>
@@ -1729,7 +1918,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.DevicePresenceStatus"
-    enum="BooleanPresent" expires_after="2023-07-09">
+    enum="BooleanPresent" expires_after="2023-09-10">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1931,7 +2120,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.ConnectionDiagnosticsIssue"
-    enum="ConnectionDiagnosticsIssue" expires_after="2023-07-09">
+    enum="ConnectionDiagnosticsIssue" expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1989,7 +2178,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.DevicePresenceStatus"
-    enum="BooleanPresent" expires_after="2023-07-09">
+    enum="BooleanPresent" expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2028,7 +2217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.PortalResult"
-    enum="NetworkPortalResult" expires_after="2023-07-09">
+    enum="NetworkPortalResult" expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2076,7 +2265,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToInitialize" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2088,7 +2277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToOnline" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2100,7 +2289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToPortal" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2343,7 +2532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.Driver" enum="VPNDriver"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2448,7 +2637,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToOnline" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2900,7 +3089,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.HiddenSSIDEverConnected"
-    enum="BooleanEverConnected" expires_after="2023-07-09">
+    enum="BooleanEverConnected" expires_after="2023-09-10">
   <owner>tnagel@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <owner>cros-privacy-core@google.com</owner>
@@ -2913,7 +3102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.HiddenSSIDNetworkCount" units="units"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>tnagel@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <owner>cros-privacy-core@google.com</owner>
@@ -2940,7 +3129,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.IPv6ConnectivityStatus"
-    enum="IPv6ConnectivityStatus" expires_after="2023-06-18">
+    enum="IPv6ConnectivityStatus" expires_after="2023-09-10">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2961,7 +3150,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.NeighborLinkMonitorFailure"
-    enum="NeighborLinkMonitorFailureType" expires_after="2023-07-09">
+    enum="NeighborLinkMonitorFailureType" expires_after="2023-09-10">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3033,7 +3222,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.RegulatoryDomain" enum="RegulatoryDomain"
-    expires_after="2023-04-16">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3273,7 +3462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToConnect" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3284,7 +3473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToInitialize" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3382,7 +3571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.UserInitiatedConnectionFailureReason"
-    enum="ConnectionFailureReason" expires_after="2023-05-14">
+    enum="ConnectionFailureReason" expires_after="2023-09-10">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>

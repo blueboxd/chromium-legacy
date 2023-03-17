@@ -229,6 +229,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  TRACE_EVENT0("viz", __PRETTY_FUNCTION__);
   current_paint_.reset();
   root_recorder_.reset();
 
@@ -752,17 +753,15 @@ void SkiaOutputSurfaceImpl::EndPaint(
                    /*make_current=*/true, /*need_framebuffer=*/true);
     draw_rectangle_.reset();
   } else {
-    if (!update_rect.IsEmpty()) {
-      auto task = base::BindOnce(
-          &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
-          base::Unretained(impl_on_gpu_.get()), current_paint_->mailbox(),
-          std::move(ddl), std::move(overdraw_ddl),
-          std::move(images_in_current_paint_), resource_sync_tokens_,
-          std::move(on_finished), std::move(return_release_fence_cb),
-          update_rect, is_overlay);
-      EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
-                     /*make_current=*/true, /*need_framebuffer=*/false);
-    }
+    auto task = base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
+        base::Unretained(impl_on_gpu_.get()), current_paint_->mailbox(),
+        std::move(ddl), std::move(overdraw_ddl),
+        std::move(images_in_current_paint_), resource_sync_tokens_,
+        std::move(on_finished), std::move(return_release_fence_cb), update_rect,
+        is_overlay);
+    EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
+                   /*make_current=*/true, /*need_framebuffer=*/false);
   }
   images_in_current_paint_.clear();
   current_paint_.reset();
@@ -892,6 +891,7 @@ void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
 
 bool SkiaOutputSurfaceImpl::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  TRACE_EVENT0("viz", __PRETTY_FUNCTION__);
 
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 

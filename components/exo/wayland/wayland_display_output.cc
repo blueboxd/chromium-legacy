@@ -19,16 +19,27 @@ namespace wayland {
 namespace {
 
 void DoDelete(WaylandDisplayOutput* output, int retry_count) {
-  // Retry if a client hasn't released the output yet, or if no client has even
-  // made the initial binding yet.
-  if (retry_count > 0 &&
-      (output->output_counts() > 0 || !output->had_registered_output())) {
-    // If we can't post the task successfully, just delete the output resource
-    // now, otherwise we would leak memory.
-    if (base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-            FROM_HERE, base::BindOnce(&DoDelete, output, retry_count - 1),
-            WaylandDisplayOutput::kDeleteTaskDelay)) {
-      return;
+  // Retry if a client hasn't released the output yet, or if no client has
+  // even made the initial binding yet.
+  if (output->output_counts() > 0 || !output->had_registered_output()) {
+    if (retry_count > 0) {
+      // If we can't post the task successfully, just delete the output
+      // resource now, otherwise we would leak memory.
+      if (base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+              FROM_HERE, base::BindOnce(&DoDelete, output, retry_count - 1),
+              WaylandDisplayOutput::kDeleteTaskDelay)) {
+        return;
+      } else {
+        LOG(WARNING) << "Failed to post delayed deletion task for "
+                        "WaylandDisplayOutput with display id="
+                     << output->id()
+                     << " and remaining retry count: " << retry_count;
+      }
+    } else {
+      LOG(WARNING)
+          << "Timed out waiting for clients to unbind registered output for id="
+          << output->id()
+          << " with remaining bound outputs=" << output->output_counts();
     }
   }
   delete output;
@@ -61,6 +72,9 @@ void WaylandDisplayOutput::OnDisplayRemoved() {
           FROM_HERE, base::BindOnce(&DoDelete, this, kDeleteRetries),
           kDeleteTaskDelay)) {
     // If we can't schedule the delete task, just delete now to not leak memory.
+    LOG(WARNING) << "Failed to post initial delayed deletion task for "
+                    "WaylandDisplayOutput with display id="
+                 << id();
     delete this;
   }
 }

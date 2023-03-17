@@ -247,12 +247,16 @@ html[chrome-refresh-2023] {
   --cr-fallback-color-secondary-container: rgb(194, 231, 255);
   --cr-fallback-color-on-secondary-container: rgb(0, 29, 53);
 
+  --cr-fallback-color-neutral-container: rgb(242, 242, 242);
+
   --cr-fallback-color-surface: rgb(255, 255, 255);
   --cr-fallback-color-on-surface-rgb: 31, 31, 31;
   --cr-fallback-color-on-surface: rgb(var(--cr-fallback-color-on-surface-rgb));
 
   --cr-fallback-color-surface-variant: rgb(225, 227, 225);
   --cr-fallback-color-on-surface-variant: rgb(68, 71, 70);
+
+  --cr-fallback-color-tonal-outline: rgb(168, 199, 250);
 
   /* States */
   --cr-hover-background-color: var(--color-sys-state-hover,
@@ -282,9 +286,11 @@ html[chrome-refresh-2023] {
     --cr-fallback-color-on-primary-container: rgb(211, 227, 253);
     --cr-fallback-color-secondary-container: rgb(0, 74, 119);
     --cr-fallback-color-on-secondary-container: rgb(194, 231, 255);
+    --cr-fallback-color-neutral-container: rgb(42, 42, 42);
     --cr-fallback-color-surface: rgb(26, 27, 30);
     --cr-fallback-color-on-surface-rgb: 227, 227, 227;
     --cr-fallback-color-surface-variant: rgb(68, 71, 70);
     --cr-fallback-color-on-surface-variant: rgb(196, 199, 197);
+    --cr-fallback-color-tonal-outline: rgb(0, 99, 155);
   }
 }

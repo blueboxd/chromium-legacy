@@ -33,7 +33,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
-#include "content/browser/renderer_host/private_network_access_util.h"
+#include "content/browser/renderer_host/local_network_access_util.h"
 #include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -2126,7 +2126,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
         policy_container_host_->ip_address_space();
     client_security_state_->is_web_secure_context =
         policy_container_host_->policies().is_web_secure_context;
-    client_security_state_->private_network_request_policy =
+    client_security_state_->local_network_request_policy =
         DerivePrivateNetworkRequestPolicy(
             policy_container_host_->policies(),
             PrivateNetworkRequestContext::kWorker);

@@ -233,9 +233,8 @@ void PermissionsManager::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kUserPermissions.name);
 }
 
-void PermissionsManager::UpdateUserSiteSetting(
-    const url::Origin& origin,
-    PermissionsManager::UserSiteSetting site_setting) {
+void PermissionsManager::UpdateUserSiteSetting(const url::Origin& origin,
+                                               UserSiteSetting site_setting) {
   switch (site_setting) {
     case UserSiteSetting::kGrantAllExtensions:
       // Granting access to all extensions is allowed iff feature is
@@ -347,6 +346,31 @@ PermissionsManager::UserSiteSetting PermissionsManager::GetUserSiteSetting(
   return UserSiteSetting::kCustomizeByExtension;
 }
 
+PermissionsManager::UserSiteAccess PermissionsManager::GetUserSiteAccess(
+    const Extension& extension,
+    const GURL& gurl) const {
+  DCHECK(
+      !extension.permissions_data()->IsRestrictedUrl(gurl, /*error=*/nullptr));
+
+  // Extension with no host permissions but with active tab permission has "on
+  // click" access.
+  if (!CanAffectExtension(extension) &&
+      HasActiveTabAndCanAccess(extension, gurl)) {
+    return UserSiteAccess::kOnClick;
+  }
+
+  DCHECK(CanAffectExtension(extension));
+
+  ExtensionSiteAccess site_access = GetSiteAccess(extension, gurl);
+  if (site_access.has_all_sites_access) {
+    return UserSiteAccess::kOnAllSites;
+  }
+  if (site_access.has_site_access) {
+    return UserSiteAccess::kOnSite;
+  }
+  return UserSiteAccess::kOnClick;
+}
+
 PermissionsManager::ExtensionSiteAccess PermissionsManager::GetSiteAccess(
     const Extension& extension,
     const GURL& url) const {
@@ -451,6 +475,16 @@ bool PermissionsManager::HasWithheldHostPermissions(
     const Extension& extension) const {
   DCHECK(CanAffectExtension(extension));
   return extension_prefs_->GetWithholdingPermissions(extension.id());
+}
+
+bool PermissionsManager::HasActiveTabAndCanAccess(const Extension& extension,
+                                                  const GURL& url) const {
+  return extension.permissions_data()->HasAPIPermission(
+             mojom::APIPermissionID::kActiveTab) &&
+         !extension.permissions_data()->IsRestrictedUrl(url,
+                                                        /*error=*/nullptr) &&
+         (!url.SchemeIsFile() ||
+          util::AllowFileAccess(extension.id(), browser_context_));
 }
 
 std::unique_ptr<PermissionSet>

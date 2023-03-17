@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -511,6 +510,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   static constexpr int kDataTableHeuristicMinRows = 20;
 
   void UpdateAXForAllDocuments() override;
+  void MarkElementDirty(const Node*) override;
 
  protected:
   void PostPlatformNotification(
@@ -594,7 +594,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Helper to clean up any references to the AXObject's AXID.
   void RemoveReferencesToAXID(AXID);
 
-  mojo::Remote<mojom::blink::RenderAccessibilityHost>&
+  HeapMojoRemote<mojom::blink::RenderAccessibilityHost>&
   GetOrCreateRemoteRenderAccessibilityHost();
   WebLocalFrameClient* GetWebLocalFrameClient() const;
   void ProcessDeferredAccessibilityEventsImpl(Document&);
@@ -663,7 +663,6 @@ class MODULES_EXPORT AXObjectCacheImpl
       ax::mojom::blink::EventFrom event_from,
       ax::mojom::blink::Action event_from_action);
   void MarkAXSubtreeDirty(AXObject*);
-  void MarkElementDirty(const Node*);
   void MarkElementDirtyWithCleanLayout(const Node*);
 
   // Given an object to mark dirty or fire an event on, return an object
@@ -924,8 +923,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // instead.
   static bool use_ax_menu_list_;
 
-  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
-  mojo::Remote<mojom::blink::RenderAccessibilityHost>
+  HeapMojoRemote<mojom::blink::RenderAccessibilityHost>
       render_accessibility_host_;
 
   Member<BlinkAXTreeSource> ax_tree_source_;

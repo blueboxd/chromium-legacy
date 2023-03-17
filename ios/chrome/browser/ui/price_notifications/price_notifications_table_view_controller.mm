@@ -8,17 +8,17 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-#import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/ui/list_model/list_item+Controller.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_link_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_constants.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_consumer.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_mutator.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
-#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -245,6 +245,9 @@ const char kBookmarksSettingsURL[] = "settings://open_bookmarks";
   SectionIdentifier trackableSection =
       SectionIdentifierTrackableItemsOnCurrentSite;
   std::vector<SectionIdentifier> sectionsToReload;
+  BOOL addItemToTrackableSection =
+      isViewingProductSite && ![model hasItemForItemType:ItemTypeListItem
+                                       sectionIdentifier:trackableSection];
 
   trackedItem.tracking = NO;
   NSIndexPath* index = [model indexPathForItem:trackedItem];
@@ -262,7 +265,7 @@ const char kBookmarksSettingsURL[] = "settings://open_bookmarks";
     sectionsToReload.push_back(trackedSection);
   }
 
-  if (isViewingProductSite) {
+  if (addItemToTrackableSection) {
     self.itemOnCurrentSiteIsTracked = NO;
     [model setHeader:[self createHeaderForSectionIndex:trackableSection
                                                isEmpty:NO]
@@ -285,7 +288,7 @@ const char kBookmarksSettingsURL[] = "settings://open_bookmarks";
     return;
   }
 
-  if (isViewingProductSite) {
+  if (addItemToTrackableSection) {
     NSIndexPath* trackableSectionIndex =
         [model indexPathForItemType:ItemTypeListItem
                   sectionIdentifier:trackableSection];
@@ -360,6 +363,13 @@ const char kBookmarksSettingsURL[] = "settings://open_bookmarks";
 - (void)addItem:(PriceNotificationsTableViewItem*)item
     toBeginning:(BOOL)toBeginning
       ofSection:(SectionIdentifier)sectionID {
+  if (sectionID == SectionIdentifierTrackableItemsOnCurrentSite &&
+      [self.tableViewModel
+          hasItemForItemType:ItemTypeListItem
+           sectionIdentifier:SectionIdentifierTrackableItemsOnCurrentSite]) {
+    return;
+  }
+
   DCHECK(item);
   item.type = ItemTypeListItem;
   item.delegate = self;

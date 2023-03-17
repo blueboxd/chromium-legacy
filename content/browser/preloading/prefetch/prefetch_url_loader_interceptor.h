@@ -57,7 +57,7 @@ class CONTENT_EXPORT PrefetchURLLoaderInterceptor
 
   // Checks the prefetch retrieved via |GetPrefetch| to see if it can be used
   // for |tenative_resource_request|.
-  void OnGotPrefetchToServce(
+  void OnGotPrefetchToServe(
       const network::ResourceRequest& tenative_resource_request,
       base::WeakPtr<PrefetchContainer> prefetch_container);
 
@@ -91,6 +91,9 @@ class CONTENT_EXPORT PrefetchURLLoaderInterceptor
   // The time when probing was started. Used to calculate probe latency which is
   // reported to the tab helper.
   absl::optional<base::TimeTicks> probe_start_time_;
+
+  // Result of the most recent probe.
+  PrefetchProbeResult probe_result_{PrefetchProbeResult::kNoProbing};
 
   // The time when we started waiting for cookies to be copied, delaying the
   // navigation. Used to calculate total cookie wait time.

@@ -5,13 +5,14 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_view_controller.h"
 
 #import "base/ios/ios_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/constants.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
@@ -436,22 +437,24 @@ CGFloat const kContentOptimalWidth = 327;
 
     // TODO(crbug.com/1418068): Simplify after minimum version required is >=
     // iOS 15.
-    if (@available(iOS 15, *)) {
-      UIButtonConfiguration* buttonConfiguration =
-          UIButtonConfiguration.plainButtonConfiguration;
-      buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
-          kButtonVerticalInsets, kButtonHorizontalMargin, kButtonVerticalInsets,
-          kButtonHorizontalMargin);
-      _actionButton.configuration = buttonConfiguration;
-    }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-    else {
-      _actionButton.contentEdgeInsets =
+    if (base::ios::IsRunningOnIOS15OrLater() &&
+        IsUIButtonConfigurationEnabled()) {
+      if (@available(iOS 15, *)) {
+        UIButtonConfiguration* buttonConfiguration =
+            [UIButtonConfiguration plainButtonConfiguration];
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            kButtonVerticalInsets, kButtonHorizontalMargin,
+            kButtonVerticalInsets, kButtonHorizontalMargin);
+        _actionButton.configuration = buttonConfiguration;
+      }
+    } else {
+      UIEdgeInsets contentEdgeInsets =
           UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-      _actionButton.titleEdgeInsets = UIEdgeInsetsMake(
+      UIEdgeInsets titleEdgeInsets = UIEdgeInsetsMake(
           0, kButtonHorizontalMargin, 0, kButtonHorizontalMargin);
+      SetContentEdgeInsets(_actionButton, contentEdgeInsets);
+      SetTitleEdgeInsets(_actionButton, titleEdgeInsets);
     }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
     [_actionButton
         setBackgroundColor:[UIColor

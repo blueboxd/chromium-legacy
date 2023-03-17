@@ -38,6 +38,7 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/widget/widget.h"
+#include "util.h"
 
 namespace arc::input_overlay {
 
@@ -330,16 +331,7 @@ void DisplayOverlayController::AddEditFinishView(
   auto* parent_view = overlay_widget->GetContentsView();
   DCHECK(parent_view);
 
-  edit_finish_view_ = parent_view->AddChildView(
-      EditFinishView::BuildView(this, parent_view->size()));
-
-  // Since |input_menu_view_| is removed when adding |edit_finish_view_| and
-  // |FocusManager| lost the focused view. Set |edit_finish_view_| explicitly
-  // as the focused view so Tab traversal key can work as expected.
-  auto* focus_manager = edit_finish_view_->GetFocusManager();
-  if (focus_manager) {
-    focus_manager->SetFocusedView(edit_finish_view_);
-  }
+  edit_finish_view_ = EditFinishView::BuildView(this, parent_view);
 }
 
 void DisplayOverlayController::RemoveEditFinishView() {
@@ -543,6 +535,9 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       SetEventTarget(overlay_widget, /*on_overlay=*/false);
       break;
     case DisplayMode::kEdit:
+      // When using Tab to traverse views and enter into the edit mode, it needs
+      // to reset the focus before removing the menu.
+      ResetFocusTo(overlay_widget->GetContentsView());
       RemoveInputMenuView();
       RemoveMenuEntryView();
       RemoveEducationalView();

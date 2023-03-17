@@ -27,7 +27,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
@@ -733,7 +733,7 @@ void StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod(
               base::Unretained(this), std::move(cb)));
 }
 
-void StandaloneTrustedVaultBackend::ClearDataForAccount(
+void StandaloneTrustedVaultBackend::ClearLocalDataForAccount(
     const CoreAccountInfo& account_info) {
   sync_pb::LocalTrustedVaultPerUser* per_user_vault =
       FindUserVault(account_info.gaia);

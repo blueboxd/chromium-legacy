@@ -18,7 +18,7 @@ class Origin;
 }
 
 namespace network::mojom {
-class NetworkIsolationKeyDataView;
+class FrameSiteEnabledNetworkIsolationKeyDataView;
 }
 
 namespace net {
@@ -27,6 +27,24 @@ namespace net {
 // the context on which they were made.
 class NET_EXPORT NetworkIsolationKey {
  public:
+  class SerializationPasskey {
+   private:
+    friend struct mojo::StructTraits<
+        network::mojom::FrameSiteEnabledNetworkIsolationKeyDataView,
+        NetworkIsolationKey>;
+    SerializationPasskey() = default;
+    ~SerializationPasskey() = default;
+  };
+
+  // This constructor is used for deserialization when `GetMode()` returns
+  // `kFrameSiteEnabled`.
+  // TODO(mmenke): This can be removed once the other constructors that accept a
+  // nonce are updated to accept absl::optionals instead of pointers.
+  NetworkIsolationKey(SerializationPasskey,
+                      SchemefulSite top_frame_site,
+                      SchemefulSite frame_site,
+                      absl::optional<base::UnguessableToken> nonce);
+
   // Full constructor.  When a request is initiated by the top frame, it must
   // also populate the |frame_site| parameter when calling this constructor.
   NetworkIsolationKey(const SchemefulSite& top_frame_site,
@@ -119,22 +137,27 @@ class NET_EXPORT NetworkIsolationKey {
     return top_frame_site_;
   }
 
-  // Note: This will CHECK if `IsFrameSiteEnabled()` returns false.
+  enum class Mode {
+    // This scheme indicates that "triple-key" NetworkIsolationKeys are used to
+    // partition the HTTP cache. This key will have the following properties:
+    // `top_frame_site` -> the schemeful site of the top level page.
+    // `frame_site ` -> the schemeful site of the frame.
+    // `is_cross_site` -> absl::nullopt.
+    kFrameSiteEnabled,
+    // TODO(awillia): Add `kIsCrossSiteEnabled` here to experiment with
+    // 2.5-keying.
+  };
+
+  // Returns the cache key scheme currently in use.
+  static Mode GetMode();
+
+  // Note: This will CHECK if `GetScheme()` does not return `kFrameSiteEnabled`.
   const absl::optional<SchemefulSite>& GetFrameSite() const;
 
   // Do not use outside of testing. Returns the `frame_site_`.
   const absl::optional<SchemefulSite>& GetFrameSiteForTesting() const {
     return frame_site_;
   }
-
-  class SerializationPasskey {
-   private:
-    friend struct mojo::StructTraits<
-        network::mojom::NetworkIsolationKeyDataView,
-        NetworkIsolationKey>;
-    SerializationPasskey() = default;
-    ~SerializationPasskey() = default;
-  };
 
   // When serializing a NIK for sending via mojo we want to access the frame
   // site (or absl::nullopt) regardless of flags. We don't want to expose this
@@ -151,10 +174,6 @@ class NET_EXPORT NetworkIsolationKey {
 
   // Returns true if all parts of the key are empty.
   bool IsEmpty() const;
-
-  // Returns true if the NetworkIsolationKey has a triple keyed scheme. This
-  // means both `frame_site_` and `top_frame_site_` will be used.
-  static bool IsFrameSiteEnabled();
 
  private:
   // Whether this key has opaque origins or a nonce.

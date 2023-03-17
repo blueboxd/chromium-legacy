@@ -28,6 +28,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::InterestGroupAdDataView,
     return ad.render_url;
   }
 
+  static const absl::optional<std::string>& size_group(
+      const blink::InterestGroup::Ad& ad) {
+    return ad.size_group;
+  }
+
   static const absl::optional<std::string>& metadata(
       const blink::InterestGroup::Ad& ad) {
     return ad.metadata;
@@ -115,9 +120,9 @@ struct BLINK_COMMON_EXPORT
     return interest_group.bidding_wasm_helper_url;
   }
 
-  static const absl::optional<GURL>& daily_update_url(
+  static const absl::optional<GURL>& update_url(
       const blink::InterestGroup& interest_group) {
-    return interest_group.daily_update_url;
+    return interest_group.update_url;
   }
 
   static const absl::optional<GURL>& trusted_bidding_signals_url(

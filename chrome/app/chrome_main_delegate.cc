@@ -68,6 +68,7 @@
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "components/devtools/devtools_pipe/devtools_pipe.h"
 #include "components/memory_system/initializer.h"
 #include "components/memory_system/parameters.h"
 #include "components/metrics/persistent_histograms.h"
@@ -108,7 +109,6 @@
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/win/delay_load_failure_hook.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "ui/base/resource/resource_bundle_win.h"
@@ -722,11 +722,6 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   // Initialize the cleaner of left-behind tmp files now that the main thread
   // has its SequencedTaskRunner; see https://crbug.com/1075917.
   base::ImportantFileWriterCleaner::GetInstance().Initialize();
-
-  // For now, do not enable delay load failure hooks for browser process except
-  // in tests, where failures really shouldn't happen.
-  if (invoked_in_browser->is_running_test)
-    chrome::DisableDelayLoadFailureHooksForCurrentModule();
 #endif
 
 #if !BUILDFLAG(IS_FUCHSIA)
@@ -911,17 +906,9 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
   base::PlatformThread::InitFeaturesPostFieldTrial();
 #endif
 
-  const version_info::Channel channel = chrome::GetChannel();
-  const bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                              channel == version_info::Channel::DEV);
-
-  const bool gwp_asan_boost_sampling = is_canary_dev || is_browser_process;
-
-  memory_system::Initializer()
-      .SetGwpAsanParameters(gwp_asan_boost_sampling, process_type)
-      .SetProfilingClientParameters(channel,
-                                    GetProfileParamsProcess(*command_line))
-      .Initialize(memory_system_);
+  // Start memory observation as early as possible so it can start recording
+  // memory allocations. This includes heap profiling.
+  InitializeMemorySystem();
 
   if (is_browser_process) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1048,9 +1035,17 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
     }
   }
 
+  // The DevTools remote debugging pipe file descriptors need to be checked
+  // before any other files are opened, see https://crbug.com/1423048.
+  const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
+  if (is_browser && command_line.HasSwitch(::switches::kRemoteDebuggingPipe) &&
+      !devtools_pipe::AreFileDescriptorsOpen()) {
+    LOG(ERROR) << "Remote debugging pipe file descriptors are not open.";
+    return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
+  }
+
 #if BUILDFLAG(IS_WIN)
   // Browser should not be sandboxed.
-  const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
   if (is_browser && IsSandboxedProcess())
     return chrome::RESULT_CODE_INVALID_SANDBOX_STATE;
 #endif
@@ -1058,7 +1053,6 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
 #if BUILDFLAG(IS_MAC)
   // Give the browser process a longer treadmill, since crashes
   // there have more impact.
-  const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
   ObjcEvilDoers::ZombieEnable(true, is_browser ? 10000 : 1000);
 #endif
 
@@ -1758,4 +1752,24 @@ absl::optional<int> ChromeMainDelegate::PreBrowserMain() {
 
   // Do not interrupt startup.
   return absl::nullopt;
+}
+
+void ChromeMainDelegate::InitializeMemorySystem() {
+  const base::CommandLine* const command_line =
+      base::CommandLine::ForCurrentProcess();
+  const std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  const bool is_browser_process = process_type.empty();
+  const version_info::Channel channel = chrome::GetChannel();
+  const bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                              channel == version_info::Channel::DEV);
+  const bool gwp_asan_boost_sampling = is_canary_dev || is_browser_process;
+
+  memory_system::Initializer()
+      .SetGwpAsanParameters(gwp_asan_boost_sampling, process_type)
+      .SetProfilingClientParameters(channel,
+                                    GetProfileParamsProcess(*command_line))
+      .SetDispatcherParameters(memory_system::DispatcherParameters::
+                                   PoissonAllocationSamplerInclusion::kEnforce)
+      .Initialize(memory_system_);
 }

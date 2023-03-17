@@ -4864,7 +4864,7 @@ class DesksAcceleratorsTest : public DesksTest,
                                     int* result) const override {
     return false;
   }
-  bool TopRowKeysAreFunctionKeys() const override { return false; }
+  bool TopRowKeysAreFunctionKeys(int device_id) const override { return false; }
   bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
                                     int flags) const override {
     return false;
@@ -6803,7 +6803,7 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
   base::i18n::SetRTLForTesting(default_rtl);
 }
 
-// Tests the behavior when drag a desk on the scroll button.
+// Tests the behavior when dragging a desk on the scroll button.
 TEST_P(DesksTest, ScrollBarByDraggedDesk) {
   // Make a flat long window to generate multiple pages on desks bar.
   UpdateDisplay("800x150");

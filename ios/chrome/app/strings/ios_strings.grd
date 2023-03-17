@@ -372,6 +372,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CONSISTENCY_PROMO_CHOOSE_ACCOUNT" desc="Presents the list of account on the device and invites the user to choose an account to sign-in.">
         Choose an Account
       </message>
+      <message name="IDS_IOS_CONSISTENCY_PROMO_SIGN_IN" desc="Button to sign in from the consistency menu when there is no Google account on the device.">
+        Sign In…
+      </message>
       <message name="IDS_IOS_CONSISTENCY_PROMO_SKIP" desc="Dismisses the sign-in promo on the web.">
         Skip
       </message>
@@ -954,6 +957,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_TITLE" desc="Title of the feed card sign-in promo UI. [iOS only]">
         Sign in to manage the content you see
+      </message>
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_ONLY_PROMO_LABEL" desc="Label of the feed card sign-in only promo UI. [iOS only]">
+        Sign in to manage your preferences.
       </message>
       <message name="IDS_IOS_FEED_CUSTOM_SEARCH_ENGINE_LABEL" desc="Message informing users with custom search engines that the feed is provided by Google.">
         Provided by Google
@@ -1804,6 +1810,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PARTIAL_TRANSLATE_SWITCH_FULL_PAGE_TRANSLATION" desc="Title of the alert proposing to switch to full page translation if partial translate fails.">
         Switch to Full Page Translation
       </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD" desc="The action button to use the selected credentials to fill the username and password fields on the webpage.">
+        Use Password
+      </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS" desc="The action button to dismiss the password bottom sheet and revert to using the keyboard to fill in username and password information on the webpage.">
+        No Thanks
+      </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_PERMISSION_REDIRECT_ALERT_CANCEL" desc="The label for the alert's cancel button">
           Cancel
       </message>
@@ -1991,7 +2003,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Passwords on All Your Devices
       </message>
       <message name="IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_SUBTITLE" desc="Subtitle of the sheet that notifies the user they are saving passwords to their Google Account. [Length: unlimited] [iOS only]">
-        When you're signed in to Chrome, passwords you save will go in your Google Account (<ph name="ACCOUNT">$1<ex>foo@gmail.com</ex></ph>). To turn this off, <ph name="BEGIN_LINK">BEGIN_LINK</ph>go to settings<ph name="END_LINK">END_LINK</ph>.
+        When you're signed in to Chrome, passwords you save will go in your Google Account. To turn this off, <ph name="BEGIN_LINK">BEGIN_LINK</ph>go to settings<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_BUTTON_TEXT" desc="Button text for the sheet that notifies the user they are saving passwords to their Google Account. [Length: unlimited] [iOS only]">
         Got It
@@ -2122,7 +2134,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Edit Permissions
       </message>
       <message name="IDS_IOS_PINNED_TABS_DRAG_TO_PIN_LABEL" desc="Label displayed in the pin tab toolbar when a Tab is being dragged.">
-        Drag here to Pin Tab
+        Drag tab here to pin it.
+      </message>
+      <message name="IDS_IOS_PINNED_TAB_OVERFLOW_ACTION_IPH_TEXT" desc="Text for the In Product Help displayed after the user pinned a tab using the overflow menu indicating where the pinned tab is.">
+        You can find your pinned tabs here.
       </message>
       <message name="IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION" desc="Specifies the reason for writing to the user's photo library while the app is in use [Length: unlimited] [iOS only].">
         This lets you save photos to your photo library.
@@ -2264,6 +2279,11 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_READING_LIST_SNACKBAR_MESSAGE" desc="Message briefly displayed at the bottom of the screen to the user to inform that the selected page has been added to the reading list. [Length: 35em]" meaning="The selected page has been added to your reading list. [Length: 35em]">
         Added to Reading List
+      </message>
+      <message name="IDS_IOS_READING_LIST_SNACKBAR_MESSAGE_FOR_ACCOUNT" desc="Message briefly displayed at the bottom of the screen to the user to inform that the selected page has been added to the reading list of their account." meaning="The selected page has been added to your account's reading list.">
+        {count, plural,
+        =1 {Page added to your reading list in your account, {email}}
+        other {Pages added to your reading list in your account, {email}}}
       </message>
       <message name="IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL" desc="Accessibility label for a reading list entry. Summarizes fields in the reading list entry (title, status and url). Read by Text To Speech. Similar to IDS_IOS_READING_LIST_ENTRY_WITH_UPLOAD_STATE_ACCESSIBILITY_LABEL">
         <ph name="TITLE"><ex>Chromium - The Chromium Projects</ex>$1</ph>, <ph name="STATE"><ex>Available offline</ex>$2</ph>, <ph name="URL"><ex>http://www.chromium.org/Home</ex>$3</ph>
@@ -2483,6 +2503,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PASSWORD_SETTINGS_ADD_PASSWORD_MANUALLY_TITLE" desc="Title of the view that allow user to enter the details for a new password credential to add it to the list the passwords. [iOS only]">
         Add Password
+      </message>
+      <message name="IDS_IOS_LOCAL_PASSWORD_ACCESSIBILITY_LABEL" desc="Screenreader label when a password is saved only locally and not backed up to any account.">
+        Only on this device
       </message>
       <message name="IDS_IOS_PASSWORD_SETTINGS_SAVE_BUTTON" desc="Save button text for adding a new credential manually via settings [Length: 10em]">
         Save
@@ -4191,6 +4214,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_ACCOUNT_TABLE_ENTER_PASSPHRASE_MESSAGE" desc="The error message to show in the account table when there is a passphrase error. [iOS only]">
         Sync is not working. To start sync enter your passphrase.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_CHECK_AGAIN_BUTTON" desc="Label of a button which starts a new password Check [Length: 22em] [iOS only]">
+        Check Again
       </message>
     </messages>
   </release>

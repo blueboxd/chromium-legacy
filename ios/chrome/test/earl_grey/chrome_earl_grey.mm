@@ -1324,6 +1324,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return [ChromeEarlGreyAppInterface isSFSymbolEnabled];
 }
 
+- (BOOL)isUIButtonConfigurationEnabled {
+  return [ChromeEarlGreyAppInterface isUIButtonConfigurationEnabled];
+}
+
 #pragma mark - ContentSettings
 
 - (ContentSetting)popupPrefValue {
@@ -1347,6 +1351,13 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 - (void)simulatePhysicalKeyboardEvent:(NSString*)input
                                 flags:(UIKeyModifierFlags)flags {
   [ChromeEarlGreyAppInterface simulatePhysicalKeyboardEvent:input flags:flags];
+}
+
+#pragma mark - Default Utilities (EG2)
+
+- (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName {
+  return [ChromeEarlGreyAppInterface setUserDefaultObject:value
+                                                   forKey:defaultName];
 }
 
 #pragma mark - Pref Utilities (EG2)

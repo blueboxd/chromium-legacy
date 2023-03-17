@@ -42,7 +42,7 @@
 <translation id="1363028406613469049">ಟ್ರ್ಯಾಕ್</translation>
 <translation id="1378727793141957596">Google ಡ್ರೈವ್‌ಗೆ ಸುಸ್ವಾಗತ!</translation>
 <translation id="1379911846207762492">ನಿಮ್ಮ ಬಳಿ ಇಂಟರ್ನೆಟ್ ಕನೆಕ್ಷನ್ ಇಲ್ಲದಿದ್ದಾಗ, ಪ್ರವೇಶಕ್ಕಾಗಿ ಫೈಲ್‌ಗಳನ್ನು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯವಾಗುವಂತೆ ನೀವು ಮಾಡಬಹುದು.</translation>
-<translation id="1383876407941801731">Search</translation>
+<translation id="1383876407941801731">ಹುಡುಕಿ</translation>
 <translation id="1388045380422025115">ಎಲ್ಲಾ ಪ್ರಕಾರಗಳು</translation>
 <translation id="1395262318152388157">ಸೀಕ್ ಸ್ಲೈಡರ್</translation>
 <translation id="1399511500114202393">ಯಾವುದೇ ಬಳಕೆದಾರ ಪ್ರಮಾಣಪತ್ರವಿಲ್ಲ</translation>
@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> ಐಟಂಗಳನ್ನು ಝಿಪ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1722687688096767818">ಪ್ರೊಫೈಲ್ ಅನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1726100011689679555">ಹೆಸರಿನ ಸರ್ವರ್‌ಗಳು</translation>
+<translation id="1727562178154619254">ಸಿಂಕ್ ಮಾಡಲು ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="1729953886957086472">ಜರ್ಮನ್ (ಜರ್ಮನಿ)</translation>
 <translation id="1730235522912993863">ಚೈನೀಸ್ ಕಾಂಗ್‌ಜೀ</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> ಐಟಂಗಳನ್ನು ನಕಲಿಸಲಾಗಿದೆ.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">ಚಿತ್ರದ ರೆಸಲ್ಯೂಷನ್‌‌</translation>
 <translation id="1972984168337863910">ಫೈಲ್‌ಗಳ ಪ್ರತಿಕ್ರಿಯೆ ಫಲಕಗಳನ್ನು ವಿಸ್ತರಿಸಿ</translation>
 <translation id="1995337122023280937">ಫೈಲ್ ಸ್ಥಳಕ್ಕೆ ಹೋಗಿ</translation>
-<translation id="1999709132469742660">ಎಲ್ಲಾ URL ಗಳ ಮೂಲಕ ಫೈಲ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡುವುದು</translation>
 <translation id="2001796770603320721">ಡ್ರೈವ್‌ನಲ್ಲಿ ನಿರ್ವಹಿಸಿ</translation>
 <translation id="2009067268969781306">ಡ್ರೈವ್ ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡುವುದರಿಂದ, ಅದರಲ್ಲಿ ಸಂಗ್ರಣೆಯಾಗಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2025955442973426285">ಟಿಗ್ರಿನ್ಯಾ</translation>
@@ -395,7 +395,7 @@
 <translation id="4348495354623233847">ಅರೇಬಿಕ್-ಆಧಾರಿತ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ಸೊರಾನಿ ಕುರ್ದಿಶ್</translation>
 <translation id="434941167647142660">ಮೂಲ ಸ್ಥಳ</translation>
 <translation id="4363958938297989186">ಫೋನೆಟಿಕ್ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ರಷ್ಯನ್</translation>
-<translation id="4364327530094270451">ಕರಬೂಜ ಹಣ್ಣು</translation>
+<translation id="4364327530094270451">ಕಲ್ಲಂಗಡಿ ಹಣ್ಣು</translation>
 <translation id="4378551569595875038">ಕನೆಕ್ಟ್...</translation>
 <translation id="4380245540200674032"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ, ವಿವರಗಳು</translation>
 <translation id="4387004326333427325">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ರಿಮೋಟ್ ಆಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
@@ -544,7 +544,6 @@
 <translation id="5323213332664049067">ಲ್ಯಾಟಿನ್ ಅಮೇರಿಕನ್</translation>
 <translation id="5330145655348521461">ಈ ಫೈಲ್‍‍ಗಳನ್ನು ವಿವಿಧ ಡೆಸ್ಕ್‌ಟಾಪ್‍‍ಗಳಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ. ಅದನ್ನು ವೀಕ್ಷಿಸಲು <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) ಗೆ ಸರಿಸಿ.</translation>
 <translation id="5330512191124428349">ಮಾಹಿತಿ ಪಡೆಯಿರಿ</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> ಹೊರತುಪಡಿಸಿ ಎಲ್ಲಾ URL ಗಳ ಮೂಲಕ ಫೈಲ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡುವುದು</translation>
 <translation id="5344246330454251646">Bruschetta ಹಂಚಿಕೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="535792325654997756">ಬೆಕ್ಕುಗಳ ಜೊತೆಯಲ್ಲಿರುವ ವ್ಯಕ್ತಿ</translation>
 <translation id="5358764674931277">ಫ್ರೇಮ್‌ ರೇಟ್</translation>
@@ -705,6 +704,7 @@
 <translation id="6732801395666424405">ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಲೋಡ್‌ ಮಾಡಲಾಗಲಿಲ್ಲ</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta ಜೊತೆಗೆ ಫೋಲ್ಡರ್ ಹಂಚಿಕೊಳ್ಳಿ</translation>
+<translation id="6750737795876287924">ಪ್ರಸ್ತುತ ಡೈರೆಕ್ಟರಿ</translation>
 <translation id="6751256176799620176">1 ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6755827872271341378">ChromeOS Flex ಸಾಧನ</translation>
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
@@ -742,7 +742,6 @@
 <translation id="6973630695168034713">ಫೋಲ್ಡರ್‌ಗಳು</translation>
 <translation id="6976795442547527108">ಸಿಂಹ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">ಎಲ್ಲ ಸಮಯ</translation>
 <translation id="6989942356279143254">ಸ್ವೀಡಿಶ್</translation>
 <translation id="6990081529015358884">ನಿಮ್ಮ ಬಳಿ ಇದ್ದ ಸ್ಥಳ ಖಾಲಿಯಾಗಿದೆ</translation>
 <translation id="6993826899923627728">ಈ ಐಟಂಗಳು ನಿಮ್ಮ ಅನುಪಯುಕ್ತದಲ್ಲಿವೆ</translation>
@@ -798,7 +797,6 @@
 <translation id="7458955835361612701">ಯಾವುದೇ ಇತ್ತೀಚಿನ ಚಿತ್ರಗಳಿಲ್ಲ</translation>
 <translation id="7460898608667578234">ಉಕ್ರೇನಿಯನ್</translation>
 <translation id="7469894403370665791">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
-<translation id="7481358317100446445">ಸಿದ್ಧ</translation>
 <translation id="7486315294984620427">‌Parallels Desktop ನಲ್ಲಿ ಫೈಲ್‌ಗಳನ್ನು ಡ್ರಾಪ್ ಮಾಡಲು, ಫೈಲ್ ಅನ್ನು Windows ಫೈಲ್‌ಗಳಿಗೆ ನಕಲಿಸಬೇಕು.</translation>
 <translation id="749452993132003881">ಹಿರಾಗನ</translation>
 <translation id="7495372004724182530">ಮಲಯಾಳಂ ಫೋನೆಟಿಕ್</translation>

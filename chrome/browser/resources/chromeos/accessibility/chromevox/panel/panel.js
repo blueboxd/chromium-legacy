@@ -6,6 +6,7 @@
  * @fileoverview The ChromeVox panel and menus.
  */
 import {AsyncUtil} from '../../common/async_util.js';
+import {BrowserUtil} from '../../common/browser_util.js';
 import {constants} from '../../common/constants.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
@@ -355,6 +356,7 @@ export class Panel extends PanelInterface {
 
         [CommandCategory.BRAILLE]: null,
         [CommandCategory.DEVELOPER]: null,
+        [CommandCategory.NO_CATEGORY]: null,
       };
 
       // TODO(accessibility): Commands should be based off of CommandStore and
@@ -723,31 +725,14 @@ export class Panel extends PanelInterface {
       }
     }
 
-    activeIndex = this.findEnabledMenuIndex_(activeIndex, delta > 0 ? 1 : -1);
+    activeIndex =
+        this.menuManager_.findEnabledMenuIndex(activeIndex, delta > 0 ? 1 : -1);
     if (activeIndex === -1) {
       return;
     }
 
     this.menuManager_.activateMenu(
         this.menuManager_.menus[activeIndex], true /* activateFirstItem */);
-  }
-
-  /**
-   * Starting at |startIndex|, looks for an enabled menu.
-   * @param {number} startIndex
-   * @param {number} delta
-   * @return {number} The index of the enabled menu. -1 if not found.
-   * @private
-   */
-  findEnabledMenuIndex_(startIndex, delta) {
-    const endIndex = (delta > 0) ? this.menuManager_.menus.length : -1;
-    while (startIndex !== endIndex) {
-      if (this.menuManager_.menus[startIndex].enabled) {
-        return startIndex;
-      }
-      startIndex += delta;
-    }
-    return -1;
   }
 
   /**
@@ -917,7 +902,7 @@ export class Panel extends PanelInterface {
 
     // Prepare the watcher before close the panel so that the watcher won't miss
     // panel collapse signal.
-    await BackgroundBridge.PanelBackground.setPanelCollapseWatcher;
+    await BackgroundBridge.PanelBackground.setPanelCollapseWatcher();
 
     // Make sure all menus are cleared to avoid bogus output when we re-open.
     this.menuManager_.clearMenus();
@@ -1053,7 +1038,7 @@ export class Panel extends PanelInterface {
       // Ensure UserActionMonitor is destroyed before closing tutorial.
       await BackgroundBridge.UserActionMonitor.destroy();
       this.onCloseTutorial_();
-      chrome.tabs.create({url});
+      BrowserUtil.openBrowserUrl(url);
     });
   }
 

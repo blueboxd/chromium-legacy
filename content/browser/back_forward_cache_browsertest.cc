@@ -12,6 +12,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
@@ -76,6 +77,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/switches.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 
 // This file has too many tests.
@@ -140,10 +142,21 @@ BackForwardCacheBrowserTest::~BackForwardCacheBrowserTest() {
     // If this is triggered, see MojoInterfaceName in
     // tools/metrics/histograms/enums.xml for which values correspond which
     // messages.
-    EXPECT_THAT(histogram_tester().GetAllSamples(
-                    "BackForwardCache.UnexpectedRendererToBrowserMessage."
-                    "InterfaceName"),
-                testing::ElementsAre());
+    std::vector<base::Bucket> samples = histogram_tester().GetAllSamples(
+        "BackForwardCache.UnexpectedRendererToBrowserMessage."
+        "InterfaceName");
+    // TODO(https://crbug.com/1379490): Remove this.
+    // This bucket corresponds to the LocalFrameHost interface. It is known to
+    // be flaky due calls to `LocalFrameHost::DidFocusFrame()` after entering
+    // BFCache. So we ignore it for now by removing it if it's present until we
+    // can fix the root cause.
+    std::erase_if(samples, [](base::Bucket bucket) {
+      return bucket.min ==
+             static_cast<base::HistogramBase::Sample>(
+                 base::HashMetricName(blink::mojom::LocalFrameHost::Name_));
+    });
+
+    EXPECT_THAT(samples, testing::ElementsAre());
   }
 }
 
@@ -934,13 +947,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
 // alive in the same BrowsingInstance does not cause anything to blow up.
 
 // TODO(crbug.com/1127979): Flaky on Linux and Windows
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-#define MAYBE_NavigateToTwoPagesOnSameSite DISABLED_NavigateToTwoPagesOnSameSite
-#else
-#define MAYBE_NavigateToTwoPagesOnSameSite NavigateToTwoPagesOnSameSite
-#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       MAYBE_NavigateToTwoPagesOnSameSite) {
+                       NavigateToTwoPagesOnSameSite) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));

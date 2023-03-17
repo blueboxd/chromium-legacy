@@ -1131,6 +1131,7 @@
     Continue
   </message>
 
+   <!-- Strings for sync consent screen -->
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
     Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
@@ -1175,7 +1176,56 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE2" desc="Alternate label on the button that closes the dialog while not agreeing to sync.">
     No thanks
   </message>
-
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_TITLE" desc="Title of the screen that explains Chrome Sync and privacy options."  translateable="false">
+    Back up and restore your apps and settings
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_SUBTITLE" desc="Subtitle of the dialog that explains Chrome Sync and privacy options."  translateable="false">
+    Turn on device sync to restore your apps, settings, Wi-Fi networks, and wallpaper from your previous Chromebook. Make changes anytime in Settings > Accounts.
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_ADDITIONAL_SUBTITLE" desc="Additional subtitle of the dialog that explains Chrome Sync and privacy options."  translateable="false">
+    New to Chromebook? Turn on sync so your preferences will be backed up.
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_SYNC_OPTIONS" desc="The label on the button that displays the manage sync option screen." translateable="false">
+    Manage sync options
+  </message>
+  <!-- Strings for OS sync consent screen options -->
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_APPS_TITLE" desc="Title of the os sync screen option Apps."  translateable="false">
+    Apps
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_APPS_SUBTITLE" desc="Subtitle of the os sync screen option Apps."  translateable="false">
+    Apps installed from the Play Store and web apps from Chrome browser
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_SETTINGS_TITLE" desc="Title of the os sync screen option Settings."  translateable="false">
+    Settings
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_SETTINGS_SUBTITLE" desc="Subtitle of the os sync screen option Settings."  translateable="false">
+    Keyboard and mouse behavior, language preferences, and more
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_WIFI_TITLE" desc="Title of the os sync screen option Wifi networks."  translateable="false">
+    Wi-Fi networks
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_WIFI_SUBTITLE" desc="Subtitle of the os sync screen option Wifi networks."  translateable="false">
+    Saved networks and passwords so you can connect instantly
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_WALLPAPER_TITLE" desc="Title of the os sync screen option Wallpaper."  translateable="false">
+    Wallpaper
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_OPTION_WALLPAPER_SUBTITLE" desc="Subtitle of the os sync screen option Wallpaper."  translateable="false">
+    Remember your desktop background across devices
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_TOOLTIP_TEXT" desc="Text of the disclaimer to the toggle of the Apps item in sync screen option."  translateable="false">
+    Once turned on, your apps will be available on any ChromeOS devices after you sign in with your Google Account.  Web apps will be synced through Chrome even if other browser sync features are turned off.
+  </message>
+   <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_TOOLTIP_ADDITIONAL_TEXT" desc="Additional text of the disclaimer to the toggle of the Apps item in sync screen option."  translateable="false">
+    If you also chose to send diagnostic and usage data in the previous step, this data will be collected for installed apps.
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_MANAGE_SYNC_TITLE" desc="Title of the screen that displays sync options and allows user to control them."  translateable="false">
+    Manage sync options
+  </message>
+   <message name="IDS_LOGIN_OS_SYNC_CONSENT_SCREEN_MANAGE_SYNC_SUBTITLE" desc="Subtitle of the dialog that displays sync options and allows user to control them."  translateable="false">
+    Selected items will be available on this Chromebook. If you're new to Chromebook, sync all items so your preferences will be backed up. Make changes anytime in Settings > Accounts.
+  </message>
+  <!-- Strings for recommend apps screen -->
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps to user">
     Install apps for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> from the Google Play Store
   </message>
@@ -3367,6 +3417,12 @@
   <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_UNKNOWN" desc="Text displayed when the Shill debugging mode is unknown.">
     Unknown
   </message>
+  <message name="IDS_NETWORK_UI_RENDER_NETWORK_SELECT_BUTTON_TEXT" desc="Text displayed on the button for rendering network select.">
+    Render Network Select
+  </message>
+  <message name="IDS_NETWORK_UI_RENDER_NETWORK_SELECT_BUTTON_DESCRIPTION" desc="Text displayed above the render button to inform users the impact of rendering network select.">
+    Render network select list will trigger WiFi to scan frequently; this may affect your WiFi network performance.
+  </message>
   <message name="IDS_NETWORK_UI_NETWORK_METRICS_LABEL" desc="Title for the section for displaying WiFi performance metrics.">
     WiFi Performance Metrics
   </message>
@@ -5012,7 +5068,10 @@
     Sorry, an error occurred
   </message>
   <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta (codename, do not translate) fails to install.">
-    Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>
+    Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_CLEANUP_MESSAGE" desc="More detailed message for the installer when Bruschetta (codename, do not translate) fails to install and the cleaning up the incomplete install also failed.">
+    Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>. Cleaning up failed, you may need to do so manually.
   </message>
   <message name="IDS_BRUSCHETTA_INSTALLER_INSTALLING_DLC_MESSAGE" desc="Message while DLC (DownLoadable Content - codename) to support Bruschetta is being installed.">
     Configuring DLC.
@@ -5023,6 +5082,9 @@
   <message name="IDS_BRUSCHETTA_INSTALLER_STARTING_VM_MESSAGE" desc="Message while the installer is launching the Virtual Machine (VM).">
     This process may take a few minutes. Starting the virtual machine.
   </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_CLEANING_UP_MESSAGE" desc="Message while the installer is cleaning up a failed install.">
+    Install failed, cleaning up
+  </message>
   <message name="IDS_BRUSCHETTA_UNINSTALLER_TITLE" desc="Title of the Bruschetta (codename) uninstaller, a dialog for uninstalling Bruschetta, the associated VM and files.">
     Remove Bruschetta
   </message>
@@ -5032,7 +5094,7 @@
   <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Bruschetta uninstaller dialog to uninstall the VM.">
     Remove
   </message>
-  <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALLING_MESSAGE" desc="Text shown in the Bruschetta installer dialog when uninstallation is in progress.">
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALLING_MESSAGE" desc="Text shown in the Bruschetta uninstaller dialog when uninstallation is in progress.">
     Removing...
   </message>
   <message name="IDS_BRUSCHETTA_UNINSTALLER_ERROR" desc="Text shown in the Bruschetta (codename) uninstaller dialog when uninstallation fails.">
@@ -5158,9 +5220,6 @@
   </message>
   <message name="IDS_CUSTOM_POLICY_PROVIDED_TRUST_ANCHORS_AT_LOCK_SCREEN_TOOLTIP" desc="Tooltip message shown on the lock screen when hovering above the managed icon which is shown when custom policy provided trusted anchors are present.">
     Certificate provided by your administrator who can view credentials for <ph name="DOMAIN">$1<ex>google.com</ex></ph>
-  </message>
-  <message name="IDS_CUSTOM_POLICY_PROVIDED_TRUST_ANCHORS_AT_LOCK_SCREEN_WARNING_MESSAGE" desc="Message shown on the lock screen which is shown when custom policy provided trusted anchors are present.">
-    Monitored connection
   </message>
 
   <!-- Strings for EcheApp -->
@@ -5323,7 +5382,7 @@
   <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_DESCRIPTION" desc="The description for the gesture navigation education overview OOBE screen shown on the first user login.">
     To see all open app windows, swipe up from the bottom and hold.
   </message>
-  
+
   <!-- Strings for ChromeVox hint -->
   <message name="IDS_OOBE_ACTIVATE_CHROMEVOX" desc="Label for the button in the ChromeVox hint dialog that will activate ChromeVox.">
     Yes, activate ChromeVox
@@ -5764,6 +5823,16 @@
 You can use this account with Android apps. If you want to add an account for someone else, <ph name="LINK_BEGIN">&lt;a id="newPersonLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>add a new person<ph name="LINK_END">&lt;/a&gt;</ph> to your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> instead.
 
 Permissions you've already given to apps may apply to this account. You can control permissions for Android apps in <ph name="APPS_LINK_BEGIN">&lt;a id="appsSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Apps Settings<ph name="APPS_LINK_END">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_V2_WITH_DEVICE_GUEST_MODE" desc="Text body for the Welcome screen in ChromiumOS 'Add account' dialog.">
+If you want to use this account one-time only, you can <ph name="GUEST_LINK_BEGIN">&lt;a id="guestModeLink" href="#"&gt;</ph>use the device as guest<ph name="GUEST_LINK_END">&lt;/a&gt;</ph>. If you want to add an account for someone else, <ph name="LINK_BEGIN">&lt;a target="_blank" id="newPersonLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>add a new person<ph name="LINK_END">&lt;/a&gt;</ph> to your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>.
+
+Permissions you've already given to websites and apps may apply to this account. You can manage your Google Accounts in <ph name="SETTINGS_LINK_BEGIN">&lt;a id="osSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="SETTINGS_LINK_END">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_V2_WITHOUT_GUEST" desc="Text body for the Welcome screen in ChromiumOS 'Add account' dialog.">
+If you want to add an account for someone else, <ph name="LINK_BEGIN">&lt;a target="_blank" id="newPersonLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>add a new person<ph name="LINK_END">&lt;/a&gt;</ph> to your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>.
+
+Permissions you've already given to websites and apps may apply to this account. You can manage your Google Accounts in <ph name="SETTINGS_LINK_BEGIN">&lt;a id="osSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="SETTINGS_LINK_END">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_ARC_TOGGLE_LABEL" desc="Toggle text for the Welcome screen in ChromeOS 'Add account' dialog. If user toggles it on, the account that will be added will be available in Android Apps. The default value for the toggle may be 'on' or 'off' depending on where the dialog is being opened from.">
     Use this account with Android apps. You can control permissions for Android apps in <ph name="LINK_BEGIN">&lt;a id="appsSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Apps Settings<ph name="LINK_END">&lt;/a&gt;</ph>.

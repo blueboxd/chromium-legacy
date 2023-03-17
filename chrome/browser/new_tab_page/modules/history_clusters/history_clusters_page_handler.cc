@@ -8,13 +8,18 @@
 #include <tuple>
 #include <vector>
 
+#include "base/barrier_callback.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/cart/cart_service.h"
+#include "chrome/browser/cart/cart_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
+#include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,7 +31,10 @@
 #include "components/history_clusters/core/history_clusters_service_task.h"
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/history_clusters/public/mojom/history_cluster_types.mojom.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/search/ntp_features.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/url_util.h"
 
 namespace {
@@ -37,10 +45,12 @@ constexpr int kMinRequiredRelatedSearches = 3;
 // visit.
 constexpr int kMinRequiredVisits = 3;
 
-base::flat_set<std::string> GetCategories() {
+base::flat_set<std::string> GetCategories(bool allowlist) {
   std::string categories_string = base::GetFieldTrialParamValueByFeature(
       ntp_features::kNtpHistoryClustersModuleCategories,
-      ntp_features::kNtpHistoryClustersModuleCategoriesParam);
+      allowlist
+          ? ntp_features::kNtpHistoryClustersModuleCategoriesAllowlistParam
+          : ntp_features::kNtpHistoryClustersModuleCategoriesBlocklistParam);
   if (categories_string.empty()) {
     return {};
   }
@@ -57,14 +67,15 @@ base::flat_set<std::string> GetCategories() {
 int GetMinImagesToShow() {
   static int min_images_to_show = base::GetFieldTrialParamByFeatureAsInt(
       ntp_features::kNtpHistoryClustersModuleMinimumImagesRequired,
-      ntp_features::kNtpHistoryClustersModuleMinimumImagesRequiredParam, 2);
+      ntp_features::kNtpHistoryClustersModuleMinimumImagesRequiredParam, 1);
   return min_images_to_show;
 }
 
 history_clusters::QueryClustersFilterParams GetFilterParamsFromFeatureFlags() {
   history_clusters::QueryClustersFilterParams filter_params;
   filter_params.min_visits_with_images = GetMinImagesToShow();
-  filter_params.categories = GetCategories();
+  filter_params.categories_allowlist = GetCategories(/*allowlist=*/true);
+  filter_params.categories_blocklist = GetCategories(/*allowlist=*/false);
   filter_params.is_search_initiated = true;
   filter_params.has_related_searches = true;
   filter_params.is_shown_on_prominent_ui_surfaces = true;
@@ -92,6 +103,7 @@ history::ClusterVisit GenerateSampleVisit(history::VisitID visit_id,
   history::VisitRow visit_row;
   visit_row.visit_id = visit_id;
   visit_row.visit_time = base::Time::Now();
+  visit_row.is_known_to_sync = true;
   auto content_annotations = history::VisitContentAnnotations();
   content_annotations.has_url_keyed_image = has_url_keyed_image;
   history::AnnotatedVisit annotated_visit;
@@ -109,11 +121,11 @@ history::ClusterVisit GenerateSampleVisit(history::VisitID visit_id,
 
 history::Cluster GenerateSampleCluster(int num_visits, int num_images) {
   const std::vector<std::tuple<std::string, GURL>> kSampleUrlVisitData = {
-      {"Pixel 7", GURL("https://store.google.com/product/pixel_7")},
+      {"Pixel 7", GURL("https://store.google.com/product/pixel_7?hl=en-US")},
       {"Pixel Buds Pro",
-       GURL("https://store.google.com/product/pixel_buds_pro")},
+       GURL("https://store.google.com/product/pixel_buds_pro?hl=en-US")},
       {"Pixel Watch",
-       GURL("https://store.google.com/product/google_pixel_watch")}};
+       GURL("https://store.google.com/product/google_pixel_watch?hl=en-US")}};
 
   std::vector<history::ClusterVisit> sample_visits;
   for (int i = 0; i < num_visits; i++) {
@@ -139,7 +151,10 @@ history::Cluster GenerateSampleCluster(int num_visits, int num_images) {
   return history::Cluster(
       0, sample_visits, {},
       /*should_show_on_prominent_ui_surfaces=*/true,
-      /*label=*/base::UTF8ToUTF16(kSampleSearchQuery),
+      /*label=*/
+      l10n_util::GetStringFUTF16(
+          IDS_HISTORY_CLUSTERS_CLUSTER_LABEL_SEARCH_TERMS,
+          base::UTF8ToUTF16(kSampleSearchQuery)),
       /*raw_label=*/base::UTF8ToUTF16(kSampleSearchQuery), {},
       {"new google products", "google devices", "google stuff"}, 0);
 }
@@ -153,7 +168,8 @@ HistoryClustersPageHandler::HistoryClustersPageHandler(
     : receiver_(this, std::move(pending_receiver)),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       web_contents_(web_contents),
-      filter_params_(GetFilterParamsFromFeatureFlags()) {}
+      filter_params_(GetFilterParamsFromFeatureFlags()),
+      cart_service_(CartServiceFactory::GetForProfile(profile_)) {}
 
 HistoryClustersPageHandler::~HistoryClustersPageHandler() = default;
 
@@ -164,11 +180,18 @@ void HistoryClustersPageHandler::CallbackWithClusterData(
   std::set<GURL> seen_urls = {};
   history_clusters::CullNonProminentOrDuplicateClusters("", clusters,
                                                         &seen_urls);
+  // Cull clusters that do not have the minimum number of visits to be eligible
+  // for display.
+  base::EraseIf(clusters, [&](auto& cluster) {
+    // Cull visits that have a zero relevance score.
+    base::EraseIf(cluster.visits,
+                  [&](auto& visit) { return visit.score == 0.0; });
 
-  history_clusters::HideAndCullLowScoringVisits(clusters, kMinRequiredVisits);
+    return cluster.visits.size() < kMinRequiredVisits;
+  });
   history_clusters::CoalesceRelatedSearches(clusters);
-  // Cull clusters that do not have the minimum required of related searches to
-  // be eligible for display.
+  // Cull clusters that do not have the minimum required number of related
+  // searches to be eligible for display.
   base::EraseIf(clusters, [&](auto& cluster) {
     return cluster.related_searches.size() < kMinRequiredRelatedSearches;
   });
@@ -188,9 +211,27 @@ void HistoryClustersPageHandler::CallbackWithClusterData(
   base::UmaHistogramCounts100("NewTabPage.HistoryClusters.NumRelatedSearches",
                               clusters.front().related_searches.size());
 
+  history::Cluster top_cluster = clusters.front();
   auto cluster_mojom = history_clusters::ClusterToMojom(
-      TemplateURLServiceFactory::GetForProfile(profile_), clusters.front());
+      TemplateURLServiceFactory::GetForProfile(profile_), top_cluster);
   std::move(callback).Run(std::move(cluster_mojom));
+
+  if (!IsCartModuleEnabled() || !cart_service_) {
+    return;
+  }
+  const auto metrics_callback = base::BarrierCallback<bool>(
+      top_cluster.visits.size(),
+      base::BindOnce([](const std::vector<bool>& results) {
+        bool has_cart = false;
+        for (bool result : results) {
+          has_cart = has_cart || result;
+        }
+        base::UmaHistogramBoolean(
+            "NewTabPage.HistoryClusters.HasCartForTopCluster", has_cart);
+      }));
+  for (auto& visit : top_cluster.visits) {
+    cart_service_->HasActiveCartForURL(visit.normalized_url, metrics_callback);
+  }
 }
 
 void HistoryClustersPageHandler::GetCluster(GetClusterCallback callback) {
@@ -281,4 +322,21 @@ void HistoryClustersPageHandler::OpenUrlsInTabGroup(
   tab_indices.insert(tab_indices.begin(), model->GetIndexOfWebContents(
                                               model->GetActiveWebContents()));
   model->AddToNewGroup(tab_indices);
+}
+
+void HistoryClustersPageHandler::DismissCluster(
+    const std::vector<history_clusters::mojom::URLVisitPtr> visits) {
+  if (visits.empty()) {
+    return;
+  }
+
+  std::vector<history::VisitID> visit_ids;
+  base::ranges::transform(
+      visits, std::back_inserter(visit_ids),
+      [](const auto& url_visit_ptr) { return url_visit_ptr->visit_id; });
+
+  auto* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history_service->HideVisits(visit_ids, base::BindOnce([]() {}),
+                              &hide_visits_task_tracker_);
 }

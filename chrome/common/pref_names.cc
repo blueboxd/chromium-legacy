@@ -54,6 +54,12 @@ const char kDownloadRestrictions[] = "download_restrictions";
 // set to false, the old download shelf UI will be shown instead.
 const char kDownloadBubbleEnabled[] = "download_bubble_enabled";
 
+// A boolean specifying whether the download bubble IPH should be suppressed.
+// This will be set to true for users who are using the download bubble prior
+// to the addition of the IPH, so that the IPH will not be shown to users who
+// have already used the download bubble.
+const char kDownloadBubbleIphSuppression[] = "suppress_download_bubble_iph";
+
 // Whether the user wants to be prompted upon downloading a duplicate file. Only
 // used when the new download bubble UI is enabled.
 const char kDownloadDuplicateFilePromptEnabled[] =
@@ -141,12 +147,6 @@ const char kManagedProfileSerialAllowUsbDevicesForUrlsDeprecated[] =
 const char kSupervisedUserApprovedExtensions[] =
     "profile.managed.approved_extensions";
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-// Integer pref to record the day id (number of days since origin of time) when
-// supervised user metrics were last recorded.
-const char kSupervisedUserMetricsDayId[] = "supervised_user.metrics.day_id";
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_RLZ)
 // Integer. RLZ ping delay in seconds.
@@ -840,6 +840,13 @@ const char kSecondEolWarningDismissed[] = "second_eol_warning_dismissed";
 // dismissed by the user.
 const char kEolNotificationDismissed[] = "eol_notification_dismissed";
 
+const char kEolApproachingIncentiveNotificationDismissed[] =
+    "approaching_eol_incentive_dismissed";
+const char kEolPassedFinalIncentiveDismissed[] =
+    "passed_eol_incentive_dismissed";
+const char kEolIncentiveNotificationSilenced[] =
+    "eol_incentive_dont_show_notification";
+
 // A boolean pref that controls whether the PIN autosubmit feature is enabled.
 // This feature, when enabled, exposes the user's PIN length by showing how many
 // digits are necessary to unlock the device. Can be recommended.
@@ -1151,7 +1158,7 @@ const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
 const char kForceGoogleSafeSearch[] = "settings.force_google_safesearch";
 
 // Integer controlling whether Restrict Mode (moderate/strict) is mandatory on
-// YouTube. See |safe_search_util::YouTubeRestrictMode| for possible values.
+// YouTube. See |safe_search_api::YouTubeRestrictMode| for possible values.
 const char kForceYouTubeRestrict[] = "settings.force_youtube_restrict";
 
 // Comma separated list of domain names (e.g. "google.com,school.edu").
@@ -1501,14 +1508,6 @@ const char kPrintJobHistoryExpirationPeriod[] =
 const char kDeletePrintJobHistoryAllowed[] =
     "printing.delete_print_job_history_allowed";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// An integer pref specifying the fallback behavior for sites outside of content
-// packs. One of:
-// 0: Allow (does nothing)
-// 1: Warn. [Deprecated]
-// 2: Block.
-const char kDefaultSupervisedUserFilteringBehavior[] =
-    "profile.managed.default_filtering_behavior";
 
 // List pref containing the users supervised by this user.
 const char kSupervisedUsers[] = "profile.managed_users";
@@ -2923,12 +2922,6 @@ const char kCryptAuthInstanceIdToken[] = "cryptauth.instance_id_token";
 
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
-
-// A dictionary in local state containing each user's Easy Unlock profile
-// preferences, so they can be accessed outside of the user's profile. The value
-// is a dictionary containing an entry for each user. Each user's entry mirrors
-// their profile's Easy Unlock preferences.
-const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
 
 // Boolean that indicates whether elevation is needed to recover Chrome upgrade.
 const char kRecoveryComponentNeedsElevation[] =

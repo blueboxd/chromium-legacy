@@ -8,9 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
-#include "ash/glanceables/glanceables_controller.h"
-#include "ash/glanceables/signout_screenshot_handler.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/session/scoped_screen_lock_blocker.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
@@ -26,10 +24,7 @@
 #include "ash/system/privacy/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "components/account_id/account_id.h"
@@ -63,15 +58,18 @@ class SessionControllerImpl::ScopedScreenLockBlockerImpl
 };
 
 SessionControllerImpl::SessionControllerImpl()
-    : fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
-  if (features::AreGlanceablesEnabled())
-    signout_screenshot_handler_ = std::make_unique<SignoutScreenshotHandler>();
-}
+    : fullscreen_controller_(std::make_unique<FullscreenController>(this)) {}
 
 SessionControllerImpl::~SessionControllerImpl() {
   // Abort pending start lock request.
   if (!start_lock_callback_.is_null())
     std::move(start_lock_callback_).Run(false /* locked */);
+}
+
+// static
+void SessionControllerImpl::RegisterUserProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterTimePref(prefs::kTimeOfLastSessionActivation, base::Time());
 }
 
 int SessionControllerImpl::NumberOfLoggedInUsers() const {
@@ -241,37 +239,15 @@ void SessionControllerImpl::HideLockScreen() {
 }
 
 void SessionControllerImpl::RequestSignOut() {
-  if (features::AreGlanceablesEnabled() &&
-      Shell::Get()->glanceables_controller()->ShouldTakeSignoutScreenshot()) {
-    DCHECK(IsActiveUserSessionStarted());
-    signout_screenshot_handler_->TakeScreenshot(
-        base::BindOnce(&SessionControllerImpl::ProceedWithSignOut,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-  ProceedWithSignOut();
-}
-
-void SessionControllerImpl::ProceedWithSignOut() {
-  if (client_)
+  if (client_) {
     client_->RequestSignOut();
+  }
 }
 
 void SessionControllerImpl::RequestRestartForUpdate() {
-  if (features::AreGlanceablesEnabled() &&
-      Shell::Get()->glanceables_controller()->ShouldTakeSignoutScreenshot()) {
-    DCHECK(IsActiveUserSessionStarted());
-    signout_screenshot_handler_->TakeScreenshot(
-        base::BindOnce(&SessionControllerImpl::ProceedWithRestartToUpdate,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-  ProceedWithRestartToUpdate();
-}
-
-void SessionControllerImpl::ProceedWithRestartToUpdate() {
-  if (client_)
+  if (client_) {
     client_->RequestRestartForUpdate();
+  }
 }
 
 void SessionControllerImpl::AttemptRestartChrome() {
@@ -424,6 +400,14 @@ void SessionControllerImpl::SetUserSessionOrder(
           user_sessions_[0]->user_info.account_id);
     }
 
+    // NOTE: This pref is intentionally set *after* notifying observers of
+    // active user session changes so observers can use time of last activation
+    // during event handling.
+    if (state_ == SessionState::ACTIVE && user_pref_service) {
+      user_pref_service->SetTime(prefs::kTimeOfLastSessionActivation,
+                                 base::Time::Now());
+    }
+
     UpdateLoginStatus();
   }
 }
@@ -516,11 +500,6 @@ void SessionControllerImpl::ClearUserSessionsForTest() {
   primary_session_id_ = 0u;
 }
 
-void SessionControllerImpl::SetSignoutScreenshotHandlerForTest(
-    std::unique_ptr<SignoutScreenshotHandler> handler) {
-  signout_screenshot_handler_ = std::move(handler);
-}
-
 void SessionControllerImpl::SetIsDemoSession() {
   if (is_demo_session_)
     return;
@@ -540,6 +519,15 @@ void SessionControllerImpl::SetSessionState(SessionState state) {
   state_ = state;
   for (auto& observer : observers_)
     observer.OnSessionStateChanged(state_);
+
+  // NOTE: This pref is intentionally set *after* notifying observers of state
+  // changes so observers can use time of last activation during event handling.
+  if (state_ == SessionState::ACTIVE) {
+    if (auto* pref_service = GetUserPrefServiceForUser(GetActiveAccountId())) {
+      pref_service->SetTime(prefs::kTimeOfLastSessionActivation,
+                            base::Time::Now());
+    }
+  }
 
   UpdateLoginStatus();
 

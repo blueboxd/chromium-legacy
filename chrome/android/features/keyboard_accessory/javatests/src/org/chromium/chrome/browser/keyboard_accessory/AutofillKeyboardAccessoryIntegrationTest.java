@@ -264,15 +264,13 @@ public class AutofillKeyboardAccessoryIntegrationTest {
                 .perform(scrollTo(isKeyboardAccessoryTabLayout()),
                         actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(0)));
 
-        CriteriaHelper.pollUiThread(() -> {
-            View sheetView = mActivityTestRule.getActivity().findViewById(
-                    R.id.keyboard_accessory_sheet_frame);
-            return sheetView.isShown() && sheetView.getHeight() > 0;
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet_frame)).check((sheetView, exception) -> {
+            assertTrue(sheetView.isShown() && sheetView.getHeight() > 0);
         });
 
         // Click the back arrow.
         whenDisplayed(withId(R.id.show_keyboard)).perform(click());
-        waitToBeHidden(withChild(withId(R.id.keyboard_accessory_sheet_frame)));
+        waitToBeHidden(withId(R.id.keyboard_accessory_sheet_container));
 
         CriteriaHelper.pollUiThread(() -> {
             View sheetView = mActivityTestRule.getActivity().findViewById(

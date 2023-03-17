@@ -85,7 +85,6 @@ class MenuScrollButton : public View {
 
   void OnDragEntered(const ui::DropTargetEvent& event) override {
     DCHECK(host_->GetMenuItem()->GetMenuController());
-    host_->GetMenuItem()->GetMenuController()->SetEnabledScrollButtons(true);
     host_->GetMenuItem()->GetMenuController()->OnDragEnteredScrollButton(
         host_, is_up_);
   }
@@ -97,10 +96,6 @@ class MenuScrollButton : public View {
   void OnDragExited() override {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     host_->GetMenuItem()->GetMenuController()->OnDragExitedScrollButton(host_);
-  }
-
-  void OnMouseEntered(const ui::MouseEvent& event) override {
-    host_->GetMenuItem()->GetMenuController()->SetEnabledScrollButtons(true);
   }
 
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override {
@@ -373,12 +368,10 @@ void MenuScrollViewContainer::OnBoundsChanged(
 
 void MenuScrollViewContainer::DidScrollToTop() {
   scroll_up_button_->SetVisible(false);
-  content_view_->GetMenuItem()->GetMenuController()->OnMenuEdgeReached();
 }
 
 void MenuScrollViewContainer::DidScrollToBottom() {
   scroll_down_button_->SetVisible(false);
-  content_view_->GetMenuItem()->GetMenuController()->OnMenuEdgeReached();
 }
 
 void MenuScrollViewContainer::DidScrollAwayFromTop() {
@@ -421,13 +414,22 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
             content_view_->GetMenuItem()->GetMenuController())) {
       CreateBubbleBorder();
     } else {
+      gfx::Insets insets = gfx::Insets::TLBR(vertical_inset, horizontal_inset,
+                                             bottom_inset, horizontal_inset);
+      // When a custom background color is used, ensure that the border uses
+      // the custom background color for its insets.
+      if (border_color_id_.has_value()) {
+        SetBorder(views::CreateThemedSolidSidedBorder(
+            insets, border_color_id_.value()));
+        return;
+      }
+
       SkColor color = GetWidget()
                           ? GetColorProvider()->GetColor(ui::kColorMenuBorder)
                           : gfx::kPlaceholderColor;
       SetBorder(views::CreateBorderPainter(
           std::make_unique<views::RoundRectPainter>(color, corner_radius_),
-          gfx::Insets::TLBR(vertical_inset, horizontal_inset, bottom_inset,
-                            horizontal_inset)));
+          insets));
     }
   } else {
     SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(

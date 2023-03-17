@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::bindings::encoding::{
+use crate::encoding::{
     Bits, Context, DataHeader, DataHeaderValue, MojomPrimitive, DATA_HEADER_SIZE,
 };
-use crate::bindings::mojom::{MojomEncodable, MOJOM_NULL_POINTER, UNION_SIZE};
+use crate::mojom::{MojomEncodable, MOJOM_NULL_POINTER, UNION_SIZE};
 
 use std::mem;
 use std::ptr;
 use std::vec::Vec;
 
-use crate::system;
-use crate::system::{CastHandle, Handle, UntypedHandle};
+use system::{self, CastHandle, Handle, UntypedHandle};
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ValidationError {
@@ -195,16 +194,16 @@ impl<'slice> DecodingState<'slice> {
     /// The pointer in the buffer is an offset relative to the pointer to
     /// another location in the buffer. We convert that to an absolute
     /// offset with respect to the buffer before returning. This is our
-    /// defintion of a pointer.
-    pub fn decode_pointer(&mut self) -> Option<u64> {
+    /// definition of a pointer.
+    pub fn decode_pointer(&mut self) -> Result<u64, ValidationError> {
         self.align_to_byte();
         self.align_to_bytes(8);
         let current_location = (self.global_offset + self.offset) as u64;
         let offset = self.read::<u64>();
         if offset == MOJOM_NULL_POINTER {
-            Some(MOJOM_NULL_POINTER)
+            Ok(MOJOM_NULL_POINTER)
         } else {
-            offset.checked_add(current_location)
+            offset.checked_add(current_location).ok_or(ValidationError::IllegalPointer)
         }
     }
 
@@ -226,13 +225,11 @@ impl<'slice> DecodingState<'slice> {
             return Err(ValidationError::UnexpectedArrayHeader);
         }
         let elems = self.decode::<u32>();
-        match T::embed_size(&Default::default()).checked_mul(elems as usize) {
-            Some(value) => {
-                if (bytes as usize) < value.as_bytes() + DATA_HEADER_SIZE {
-                    return Err(ValidationError::UnexpectedArrayHeader);
-                }
-            }
-            None => return Err(ValidationError::UnexpectedArrayHeader),
+        let req_size = T::embed_size(&Default::default())
+            .checked_mul(elems as usize)
+            .ok_or(ValidationError::UnexpectedArrayHeader)?;
+        if (bytes as usize) < req_size.as_bytes() + DATA_HEADER_SIZE {
+            return Err(ValidationError::UnexpectedArrayHeader);
         }
         Ok(DataHeader::new(bytes as usize, DataHeaderValue::Elements(elems)))
     }

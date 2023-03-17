@@ -14,7 +14,6 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -37,6 +36,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/omnibox_proto/entity_info.pb.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,8 +108,8 @@ std::vector<std::vector<int>> ParseMatchSubtypes(
   return result;
 }
 
-std::string FindStringKeyOrEmpty(const base::Value& value, std::string key) {
-  auto* ptr = value.FindStringKey(key);
+std::string FindStringOrEmpty(const base::Value::Dict& value, std::string key) {
+  auto* ptr = value.FindString(key);
   return ptr ? *ptr : "";
 }
 
@@ -257,6 +257,13 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
   match_contents_ = !entity_info_.name().empty()
                         ? base::UTF8ToUTF16(entity_info_.name())
                         : match_contents;
+  match_contents_ = base::CollapseWhitespace(match_contents_, false);
+  // TODO(manukh|crbug.com/1421485) Remove this DCHECK 9/14/23. It's already
+  //   checked in `AutocompleteResult::AppendMatches()`, but duplicated here to
+  //   make it easier to debug if it triggers.
+  DCHECK_EQ(AutocompleteMatch::SanitizeString(match_contents_), match_contents_)
+      << "match type: " << type_ << ", from entity info: << "
+      << !entity_info_.name().empty();
   DCHECK(!match_contents_.empty());
   ClassifyMatchContents(true, input_text);
 }
@@ -498,7 +505,7 @@ std::string SearchSuggestionParser::ExtractJsonData(
 }
 
 // static
-std::unique_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
+absl::optional<base::Value> SearchSuggestionParser::DeserializeJsonData(
     base::StringPiece json_data) {
   // The JSON response should be an array.
   for (size_t response_start_index = json_data.find("["), i = 0;
@@ -507,15 +514,13 @@ std::unique_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     // Remove any XSSI guards to allow for JSON parsing.
     json_data.remove_prefix(response_start_index);
 
-    JSONStringValueDeserializer deserializer(json_data,
-                                             base::JSON_ALLOW_TRAILING_COMMAS);
-    int error_code = 0;
-    std::unique_ptr<base::Value> data =
-        deserializer.Deserialize(&error_code, nullptr);
-    if (error_code == 0)
+    absl::optional<base::Value> data =
+        base::JSONReader::Read(json_data, base::JSON_ALLOW_TRAILING_COMMAS);
+    if (data) {
       return data;
+    }
   }
-  return nullptr;
+  return absl::nullopt;
 }
 
 // static
@@ -636,8 +641,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
     // Store the metadata that came with the response in case we need to pass
     // it along with the prefetch query to Instant.
-    JSONStringValueSerializer json_serializer(&results->metadata);
-    json_serializer.Serialize(extras);
+    base::JSONWriter::Write(extras, &results->metadata);
   }
 
   // Processed list of match subtypes, one vector per match.
@@ -695,9 +699,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
     std::string deletion_url;
     if (suggestion_details && index < suggestion_details->GetList().size() &&
         suggestion_details->GetList()[index].is_dict()) {
-      const base::Value& suggestion_detail =
-          suggestion_details->GetList()[index];
-      deletion_url = FindStringKeyOrEmpty(suggestion_detail, "du");
+      const base::Value::Dict& suggestion_detail =
+          suggestion_details->GetList()[index].GetDict();
+      deletion_url = FindStringOrEmpty(suggestion_detail, "du");
     }
 
     if ((match_type == AutocompleteMatchType::NAVSUGGEST) ||
@@ -754,44 +758,41 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
       if (suggestion_details &&
           suggestion_details->GetList()[index].is_dict() &&
-          !suggestion_details->GetList()[index].DictEmpty()) {
-        const base::Value& suggestion_detail =
-            suggestion_details->GetList()[index];
+          !suggestion_details->GetList()[index].GetDict().empty()) {
+        const base::Value::Dict& suggestion_detail =
+            suggestion_details->GetList()[index].GetDict();
 
         const auto* entity_info_string =
-            suggestion_detail.FindStringKey("google:entityinfo");
+            suggestion_detail.FindString("google:entityinfo");
 
         // Extract data from proto field, but fall back to individual JSON
         // fields if necessary.
         if (!DecodeProtoFromBase64<omnibox::EntityInfo>(entity_info_string,
                                                         entity_info)) {
-          entity_info.set_name(FindStringKeyOrEmpty(suggestion_detail, "t"));
-          entity_info.set_annotation(
-              FindStringKeyOrEmpty(suggestion_detail, "a"));
+          entity_info.set_name(FindStringOrEmpty(suggestion_detail, "t"));
+          entity_info.set_annotation(FindStringOrEmpty(suggestion_detail, "a"));
           entity_info.set_dominant_color(
-              FindStringKeyOrEmpty(suggestion_detail, "dc"));
-          entity_info.set_image_url(
-              FindStringKeyOrEmpty(suggestion_detail, "i"));
+              FindStringOrEmpty(suggestion_detail, "dc"));
+          entity_info.set_image_url(FindStringOrEmpty(suggestion_detail, "i"));
           entity_info.set_suggest_search_parameters(
-              FindStringKeyOrEmpty(suggestion_detail, "q"));
+              FindStringOrEmpty(suggestion_detail, "q"));
           entity_info.set_entity_id(
-              FindStringKeyOrEmpty(suggestion_detail, "zae"));
+              FindStringOrEmpty(suggestion_detail, "zae"));
         }
 
         match_contents_prefix =
-            base::UTF8ToUTF16(FindStringKeyOrEmpty(suggestion_detail, "mp"));
+            base::UTF8ToUTF16(FindStringOrEmpty(suggestion_detail, "mp"));
 
         // Suggestion group Id.
-        suggestion_group_id = suggestion_detail.FindIntKey("zl");
+        suggestion_group_id = suggestion_detail.FindInt("zl");
 
         // Extract the Answer, if provided.
-        const base::Value* answer_json = suggestion_detail.FindDictKey("ansa");
-        const std::string* answer_type =
-            suggestion_detail.FindStringKey("ansb");
+        const base::Value::Dict* answer_json =
+            suggestion_detail.FindDict("ansa");
+        const std::string* answer_type = suggestion_detail.FindString("ansb");
         if (answer_json && answer_type) {
-          if (SuggestionAnswer::ParseAnswer(answer_json->GetDict(),
-                                            base::UTF8ToUTF16(*answer_type),
-                                            &answer)) {
+          if (SuggestionAnswer::ParseAnswer(
+                  *answer_json, base::UTF8ToUTF16(*answer_type), &answer)) {
             base::UmaHistogramSparse("Omnibox.AnswerParseType", answer.type());
             answer_parsed_successfully = true;
           }
@@ -804,8 +805,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       bool should_prefetch = int_index == prefetch_index;
       bool should_prerender = int_index == prerender_index;
       results->suggest_results.push_back(SuggestResult(
-          suggestion, match_type, subtypes[index],
-          base::CollapseWhitespace(match_contents, false),
+          suggestion, match_type, subtypes[index], match_contents,
           match_contents_prefix, annotation, std::move(entity_info),
           deletion_url, is_keyword_result, relevance, relevances != nullptr,
           should_prefetch, should_prerender, trimmed_input));

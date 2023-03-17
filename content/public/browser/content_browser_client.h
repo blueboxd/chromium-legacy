@@ -2243,7 +2243,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // |browser_context| must not be nullptr. Caller retains ownership.
   // |origin| is the origin of a navigation ready to commit.
-  virtual bool ShouldAllowInsecurePrivateNetworkRequests(
+  virtual bool ShouldAllowInsecureLocalNetworkRequests(
       BrowserContext* browser_context,
       const url::Origin& origin);
 
@@ -2392,6 +2392,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Checks if Isolated Web Apps are enabled, e.g. by feature flag
   // or in any other way.
   virtual bool AreIsolatedWebAppsEnabled(BrowserContext* browser_context);
+
+  // This function can serve to block third-party storage partitioning
+  // from being enabled if it returns false. If it returns true, then
+  // we fallback on the base feature to determine if partitioning is on.
+  virtual bool IsThirdPartyStoragePartitioningAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_level_origin);
 };
 
 }  // namespace content

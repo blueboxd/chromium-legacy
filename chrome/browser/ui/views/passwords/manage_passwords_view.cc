@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
@@ -21,7 +22,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/base/features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view_class_properties.h"
@@ -154,13 +157,24 @@ ManagePasswordsView::CreatePasswordDetailsView() {
   DCHECK(controller_.get_currently_selected_password().has_value());
   return std::make_unique<ManagePasswordsDetailsView>(
       controller_.get_currently_selected_password().value(),
+      base::BindRepeating(&ItemsBubbleController::UsernameExists,
+                          base::Unretained(&controller_)),
       base::BindRepeating(
           [](ManagePasswordsView* view) {
             view->SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-            // TODO(crbug.com/1408790): use internationalized string.
-            view->SetButtonLabel(ui::DIALOG_BUTTON_OK, u"Update");
+            view->SetButtonLabel(
+                ui::DIALOG_BUTTON_OK,
+                l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UPDATE));
             view->PreferredSizeChanged();
             view->SizeToContents();
+          },
+          base::Unretained(this)),
+      base::BindRepeating(&ManagePasswordsView::ExtendAuthValidity,
+                          base::Unretained(this)),
+      base::BindRepeating(
+          [](ManagePasswordsView* view, bool is_invalid) {
+            view->SetButtonEnabled(ui::DialogButton::DIALOG_BUTTON_OK,
+                                   !is_invalid);
           },
           base::Unretained(this)));
 }
@@ -209,17 +223,10 @@ void ManagePasswordsView::RecreateLayout() {
   DCHECK(frame_view);
 
   if (controller_.get_currently_selected_password().has_value()) {
-    // TODO(crbug.com/1382017): implement authentication before navigating to
-    // the details page.
     frame_view->SetTitleView(ManagePasswordsDetailsView::CreateTitleView(
         controller_.get_currently_selected_password().value(),
-        base::BindRepeating(
-            [](ManagePasswordsView* view) {
-              view->SetButtons(ui::DIALOG_BUTTON_NONE);
-              view->controller_.set_currently_selected_password(absl::nullopt);
-              view->RecreateLayout();
-            },
-            base::Unretained(this))));
+        base::BindRepeating(&ManagePasswordsView::SwitchToListView,
+                            base::Unretained(this))));
     frame_view->SetFootnoteView(nullptr);
     std::unique_ptr<ManagePasswordsDetailsView> details_view =
         CreatePasswordDetailsView();
@@ -235,7 +242,10 @@ void ManagePasswordsView::RecreateLayout() {
         ManagePasswordsListView::CreateTitleView(controller_.GetTitle()));
     frame_view->SetFootnoteView(CreateFooterView());
     page_container_->SwitchToPage(CreatePasswordListView());
-    page_container_->SetProperty(views::kMarginsKey, gfx::Insets());
+    page_container_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets().set_bottom(ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)));
     password_details_view_ = nullptr;
   }
   PreferredSizeChanged();
@@ -246,6 +256,19 @@ void ManagePasswordsView::SwitchToReadingMode() {
   password_details_view_->SwitchToReadingMode();
   SetButtons(ui::DIALOG_BUTTON_NONE);
   RecreateLayout();
+}
+
+void ManagePasswordsView::SwitchToListView() {
+  auth_timer_.Stop();
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  controller_.set_currently_selected_password(absl::nullopt);
+  RecreateLayout();
+}
+
+void ManagePasswordsView::ExtendAuthValidity() {
+  if (auth_timer_.IsRunning()) {
+    auth_timer_.Reset();
+  }
 }
 
 void ManagePasswordsView::OnFaviconReady(const gfx::Image& favicon) {
@@ -280,6 +303,10 @@ void ManagePasswordsView::AuthenticateUserAndDisplayDetailsOf(
             if (authentication_result) {
               view->RecreateLayout();
             }
+            view->auth_timer_.Start(
+                FROM_HERE, syncer::kPasswordNotesAuthValidity.Get(),
+                base::BindRepeating(&ManagePasswordsView::SwitchToListView,
+                                    base::Unretained(view)));
             // This is necessary on Windows since the bubble isn't activated
             // again after the conlusion of the auth flow.
             view->GetWidget()->Activate();

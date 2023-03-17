@@ -41,13 +41,13 @@ class UpdateServiceStub : public mojom::UpdateService {
                    RegisterAppCallback callback) override;
   void GetAppStates(GetAppStatesCallback callback) override;
   void RunPeriodicTasks(RunPeriodicTasksCallback callback) override;
-  void UpdateAll(UpdateAllCallback callback) override;
   void Update(const std::string& app_id,
               const std::string& install_data_index,
               UpdateService::Priority priority,
               UpdateService::PolicySameVersionUpdate policy_same_version_update,
               bool do_update_check_only,
               UpdateCallback callback) override;
+  void UpdateAll(UpdateAllCallback callback) override;
   void Install(mojom::RegistrationRequestPtr registration,
                const std::string& client_install_data,
                const std::string& install_data_index,
@@ -60,6 +60,11 @@ class UpdateServiceStub : public mojom::UpdateService {
                     const std::string& install_data,
                     const std::string& install_settings,
                     RunInstallerCallback callback) override;
+  void CheckForUpdate(
+      const std::string& app_id,
+      UpdateService::Priority priority,
+      UpdateService::PolicySameVersionUpdate policy_same_version_update,
+      UpdateCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdaterIPCTestCase, AllRpcsComplete);

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_candidate.h"
+#include "third_party/blink/renderer/core/speculation_rules/speculation_rules_features.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rules_metrics.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
@@ -494,7 +495,8 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
             rule->requires_anonymous_client_ip_when_cross_origin(),
             rule->target_browsing_context_name_hint().value_or(
                 mojom::blink::SpeculationTargetHint::kNoHint),
-            eagerness, rule_set, /*anchor=*/nullptr));
+            eagerness, rule->no_vary_search_expected().Clone(), rule_set,
+            /*anchor=*/nullptr));
       }
     }
   };
@@ -543,12 +545,31 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
 
   probe::SpeculationCandidatesUpdated(*GetSupplementable(), candidates);
 
+  using SpeculationEagerness = blink::mojom::SpeculationEagerness;
+  base::EnumSet<SpeculationEagerness, SpeculationEagerness::kMinValue,
+                SpeculationEagerness::kMaxValue>
+      eagerness_set;
+
   Vector<mojom::blink::SpeculationCandidatePtr> mojom_candidates;
   mojom_candidates.ReserveInitialCapacity(candidates.size());
   for (SpeculationCandidate* candidate : candidates) {
+    eagerness_set.Put(candidate->eagerness());
     mojom_candidates.push_back(candidate->ToMojom());
   }
   host->UpdateSpeculationCandidates(std::move(mojom_candidates));
+
+  if (eagerness_set.Has(SpeculationEagerness::kConservative)) {
+    UseCounter::Count(GetSupplementable(),
+                      WebFeature::kSpeculationRulesEagernessConservative);
+  }
+  if (eagerness_set.Has(SpeculationEagerness::kModerate)) {
+    UseCounter::Count(GetSupplementable(),
+                      WebFeature::kSpeculationRulesEagernessModerate);
+  }
+  if (eagerness_set.Has(SpeculationEagerness::kEager)) {
+    UseCounter::Count(GetSupplementable(),
+                      WebFeature::kSpeculationRulesEagernessEager);
+  }
 }
 
 void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
@@ -561,7 +582,7 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
         MakeGarbageCollected<HeapVector<Member<SpeculationCandidate>>>();
     ExecutionContext* execution_context =
         GetSupplementable()->GetExecutionContext();
-    DCHECK(execution_context);
+    CHECK(execution_context);
 
     const auto push_link_candidates =
         [&link, &link_candidates, &execution_context, this](
@@ -613,7 +634,8 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
                     rule->requires_anonymous_client_ip_when_cross_origin(),
                     rule->target_browsing_context_name_hint().value_or(
                         mojom::blink::SpeculationTargetHint::kNoHint),
-                    eagerness, rule_set, link);
+                    eagerness, rule->no_vary_search_expected().Clone(),
+                    rule_set, link);
             link_candidates->push_back(std::move(candidate));
           }
         };
@@ -760,9 +782,8 @@ bool DocumentSpeculationRules::SelectorMatchesEnabled() {
   if (was_selector_matches_enabled_) {
     return true;
   }
-  was_selector_matches_enabled_ = RuntimeEnabledFeatures::
-      SpeculationRulesDocumentRulesSelectorMatchesEnabled(
-          GetSupplementable()->GetExecutionContext());
+  was_selector_matches_enabled_ = speculation_rules::SelectorMatchesEnabled(
+      GetSupplementable()->GetExecutionContext());
   return was_selector_matches_enabled_;
 }
 

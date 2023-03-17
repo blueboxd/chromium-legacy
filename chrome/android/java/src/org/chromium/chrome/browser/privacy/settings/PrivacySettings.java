@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
 import org.chromium.chrome.browser.safe_browsing.settings.SafeBrowsingSettingsFragment;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
@@ -39,7 +40,6 @@ import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
-import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
@@ -70,7 +70,6 @@ public class PrivacySettings
     private static final String PREF_INCOGNITO_LOCK = "incognito_lock";
     private static final String PREF_THIRD_PARTY_COOKIES = "third_party_cookies";
 
-    private ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private IncognitoLockSettings mIncognitoLockSettings;
 
     @Override
@@ -127,8 +126,6 @@ public class PrivacySettings
 
         setHasOptionsMenu(true);
 
-        mManagedPreferenceDelegate = createManagedPreferenceDelegate();
-
         ChromeSwitchPreference canMakePaymentPref =
                 (ChromeSwitchPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
         canMakePaymentPref.setOnPreferenceChangeListener(this);
@@ -138,9 +135,29 @@ public class PrivacySettings
         httpsFirstModePref.setVisible(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HTTPS_FIRST_MODE));
         httpsFirstModePref.setOnPreferenceChangeListener(this);
-        httpsFirstModePref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+        httpsFirstModePref.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                String key = preference.getKey();
+                assert PREF_HTTPS_FIRST_MODE.equals(key) : "Unexpected preference key: " + key;
+                return UserPrefs.get(Profile.getLastUsedRegularProfile())
+                        .isManagedPreference(Pref.HTTPS_ONLY_MODE_ENABLED);
+            }
+
+            @Override
+            public boolean isPreferenceClickDisabled(Preference preference) {
+                // Advanced Protection automatically enables HTTPS-Only Mode so
+                // lock the setting.
+                return isPreferenceControlledByPolicy(preference)
+                        || SafeBrowsingBridge.isUnderAdvancedProtection();
+            }
+        });
         httpsFirstModePref.setChecked(UserPrefs.get(Profile.getLastUsedRegularProfile())
                                               .getBoolean(Pref.HTTPS_ONLY_MODE_ENABLED));
+        if (SafeBrowsingBridge.isUnderAdvancedProtection()) {
+            httpsFirstModePref.setSummary(getContext().getResources().getString(
+                    R.string.settings_https_first_mode_with_advanced_protection_summary));
+        }
 
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
         secureDnsPref.setVisible(SecureDnsSettings.isUiEnabled());
@@ -274,17 +291,6 @@ public class PrivacySettings
         }
     }
 
-    private ChromeManagedPreferenceDelegate createManagedPreferenceDelegate() {
-        return preference -> {
-            String key = preference.getKey();
-            if (PREF_HTTPS_FIRST_MODE.equals(key)) {
-                return UserPrefs.get(Profile.getLastUsedRegularProfile())
-                        .isManagedPreference(Pref.HTTPS_ONLY_MODE_ENABLED);
-            }
-            return false;
-        };
-    }
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
@@ -297,9 +303,8 @@ public class PrivacySettings
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            HelpAndFeedbackLauncherImpl.getInstance().show(getActivity(),
-                    getString(R.string.help_context_privacy), Profile.getLastUsedRegularProfile(),
-                    null);
+            HelpAndFeedbackLauncherImpl.getForProfile(Profile.getLastUsedRegularProfile())
+                    .show(getActivity(), getString(R.string.help_context_privacy), null);
             return true;
         }
         return false;

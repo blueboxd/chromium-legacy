@@ -124,9 +124,9 @@ BASE_FEATURE(kMdnsResponderGeneratedNameListing,
 //   //services/network/public/cpp/corb/README.md
 //
 // Implementing ORB in Chromium is tracked in https://crbug.com/1178928
-BASE_FEATURE(kOpaqueResponseBlockingV01,
+BASE_FEATURE(kOpaqueResponseBlockingV01_LAUNCHED,
              "OpaqueResponseBlockingV01",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables ORB blocked responses being treated as errors (according to the spec)
 // rather than the current, CORB-style handling of injecting an empty response.
@@ -355,5 +355,9 @@ BASE_FEATURE(kPrefetchNoVarySearch,
 BASE_FEATURE(kPrerender2ContentSecurityPolicyExtensions,
              "Prerender2ContentSecurityPolicyExtensions",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLessChattyNetworkService,
+             "LessChattyNetworkService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace network::features

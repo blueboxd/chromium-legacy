@@ -9017,6 +9017,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Extensions.Toolbar.SiteAccessCombobox.OnAllSitesSelected">
+  <obsolete>
+    Deprecated 03/2023. Extensions tabbed menu view, which was under a flag that
+    never landed, was removed in crbug/1390958.
+  </obsolete>
   <owner>emiliapaz@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <description>
@@ -9027,6 +9031,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Extensions.Toolbar.SiteAccessCombobox.OnClickSelected">
+  <obsolete>
+    Deprecated 03/2023. Extensions tabbed menu view, which was under a flag that
+    never landed, was removed in crbug/1390958.
+  </obsolete>
   <owner>emiliapaz@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <description>
@@ -9037,6 +9045,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Extensions.Toolbar.SiteAccessCombobox.OnSiteSelected">
+  <obsolete>
+    Deprecated 03/2023. Extensions tabbed menu view, which was under a flag that
+    never landed, was removed in crbug/1390958.
+  </obsolete>
   <owner>emiliapaz@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <description>
@@ -19623,6 +19635,14 @@ should be able to be added at any place in this file.
   <description>User pressed 'Paste and Go' in the app menu.</description>
 </action>
 
+<action name="MobileMenuPinTab">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User tapped on the 'Pin Tab' action in the iOS overflow menu.
+  </description>
+</action>
+
 <action name="MobileMenuPriceNotifications">
   <owner>danieltwhite@google.com</owner>
   <owner>ajuma@chromium.org</owner>
@@ -19761,6 +19781,14 @@ should be able to be added at any place in this file.
   <owner>sczs@chromium.org</owner>
   <owner>tinazwang@chromium.org</owner>
   <description>User pressed the unfollow option in the app menu.</description>
+</action>
+
+<action name="MobileMenuUnpinTab">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User tapped on the 'Unpin Tab' action in the iOS overflow menu.
+  </description>
 </action>
 
 <action name="MobileMenuVoiceSearch">
@@ -20945,6 +20973,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileSnackbarUndoPinAction">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User tapped on the UNDO button of the snackbar displayed after pinning a tab
+    from the iOS overflow menu.
+  </description>
+</action>
+
+<action name="MobileSnackbarUndoUnpinAction">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User tapped on the UNDO button of the snackbar displayed after unpinning a
+    tab from the iOS overflow menu.
+  </description>
+</action>
+
 <action name="MobileStackViewCloseTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -21117,6 +21163,15 @@ should be able to be added at any place in this file.
   <description>
     User in the iOS incognito tab grid used the Close All control and the action
     sheet that asks for confirmation has been displayed.
+  </description>
+</action>
+
+<action name="MobileTabGridCloseAllNonPinnedTabs">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User in the iOS tab grid used the Close All control and chose to close all
+    non-pinned tabs.
   </description>
 </action>
 
@@ -21312,6 +21367,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabGridPinnedTabSelected">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User selected a tab in the iOS tab grid pinned tabs section.
+  </description>
+</action>
+
 <action name="MobileTabGridReordered">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
@@ -21496,6 +21559,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabPinned">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User pins a Tab. This includes pinning a tab from the tab strip, tab grid
+    and overflow menu.
+  </description>
+</action>
+
 <action name="MobileTabReturnedToCurrentTab">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -21566,6 +21638,15 @@ should be able to be added at any place in this file.
   <owner>clank-large-form-factors@google.com</owner>
   <description>
     User switched tabs via the tab strip on tablets. Recorded for Android only.
+  </description>
+</action>
+
+<action name="MobileTabUnpinned">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <description>
+    User unpins a Tab. This includes unpinning a tab from the tab strip, tab
+    grid and overflow menu.
   </description>
 </action>
 
@@ -30352,8 +30433,34 @@ should be able to be added at any place in this file.
 
 <action name="Signin_AddAccountToDevice">
   <owner>gogerald@chromium.org</owner>
+  <description>Recorded when the add account dialog is opened.</description>
+</action>
+
+<action name="Signin_AddAccountToDevice_DismissedWithError"
+    not_user_triggered="true">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
   <description>
-    Recorded when the user chooses to add an account to device.
+    Recorded when the add account view is dismissed with an error. Recorded for
+    iOS only.
+  </description>
+</action>
+
+<action name="Signin_AddAccountToDevice_DismissedWithNewAccount">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the add account view is dismissed with adding a new account.
+    Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_AddAccountToDevice_DismissedWithoutNewAccount">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the add account view is dismissed without adding a new
+    account. Recorded for iOS only.
   </description>
 </action>
 
@@ -30371,6 +30478,58 @@ should be able to be added at any place in this file.
   <description>
     Recorded when dialog is shown to resolve Google Play services error (e.g.,
     update request).
+  </description>
+</action>
+
+<action name="Signin_BottomSheet_ClosedByCancel" not_user_triggered="true">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the sign-in bottom sheet is canceled. Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_BottomSheet_ClosedByInterrupt" not_user_triggered="true">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the sign-in bottom sheet is interrupted by a Chrome action.
+    Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_BottomSheet_ClosedBySignIn" not_user_triggered="true">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the sign-in bottom sheet closes after the user is signed in.
+    Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_BottomSheet_IdentityChooser_Closed">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the identity chooser dialog from the bottom sheet is closed by
+    the user. Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_BottomSheet_IdentityChooser_Opened">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the identity chooser dialog from the bottom sheet is opened by
+    the user. Recorded for iOS only.
+  </description>
+</action>
+
+<action name="Signin_BottomSheet_Opened" not_user_triggered="true">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the bottom sheet is opened. Recorded for iOS only.
   </description>
 </action>
 
@@ -30463,6 +30622,13 @@ should be able to be added at any place in this file.
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the cloud print preview page.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromCreatorFeedFollow">
+  <owner>wry@chromium.org</owner>
+  <description>
+    Recorded when showing sign-in entry in Creator Feed on Android only.
   </description>
 </action>
 
@@ -31079,6 +31245,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromCreatorFeedFollow">
+  <owner>wry@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW on Android
+    Only.
   </description>
 </action>
 
@@ -36599,6 +36774,7 @@ should be able to be added at any place in this file.
       label="For DataSaverMilestonePromo feature."/>
   <suffix name="DataSaverPreview" label="For DataSaverPreview feature."/>
   <suffix name="DefaultSiteView" label="For DefaultSiteView feature."/>
+  <suffix name="DesktopCustomizeChrome" label="For Customize Chrome feature."/>
   <suffix name="DesktopPwaInstall" label="For desktop PWA install icon."/>
   <suffix name="DesktopSharedHighlighting"
       label="For DesktopSharedHighlighting feature."/>
@@ -36681,6 +36857,11 @@ should be able to be added at any place in this file.
       label="For iOSDefaultBrowserOverflowMenuBadge feature"/>
   <suffix name="iOSDefaultBrowserSettingsBadge"
       label="For iOSDefaultBrowserSettingsBadge feature"/>
+  <suffix name="iOSPromoAppStore" label="For iOSPromoAppStore feature"/>
+  <suffix name="iOSPromoCredentialProviderExtension"
+      label="For iOSPromoCredentialProviderExtension feature"/>
+  <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
+  <suffix name="iOSPromoWhatsNew" label="For iOSPromoWhatsNew feature"/>
   <suffix name="KeyboardAccessoryAddressFilling"
       label="For KeyboardAccessoryAddressFilling feature."/>
   <suffix name="KeyboardAccessoryBarSwiping"
@@ -36710,6 +36891,10 @@ should be able to be added at any place in this file.
   <suffix name="PageZoom" label="For Page Zoom feature."/>
   <suffix name="PasswordsAccountStorage"
       label="For PasswordsAccountStorage feature."/>
+  <suffix name="PasswordsManagementBubbleAfterSave"
+      label="For password management bubble after save feature."/>
+  <suffix name="PasswordsManagementBubbleDuringSignin"
+      label="For password management bubble during signin feature."/>
   <suffix name="PasswordSuggestions" label="For PasswordSuggestions feature."/>
   <suffix name="PerformanceNewBadge"
       label="For new badge next to Performance feature."/>
@@ -36779,6 +36964,7 @@ should be able to be added at any place in this file.
   <suffix name="TabGroupsTapToSeeAnotherTab" label="For tab strip."/>
   <suffix name="TabGroupsYourTabsTogether"
       label="For tab switcher with tab groups."/>
+  <suffix name="TabPinnedFeature" label="For tab pinned overflow hint."/>
   <suffix name="TabSearch" label="For the tab search feature."/>
   <suffix name="TabSwitcherButton" label="For tab switcher button."/>
   <suffix name="TranslateMenuButton" label="For translate menu button."/>

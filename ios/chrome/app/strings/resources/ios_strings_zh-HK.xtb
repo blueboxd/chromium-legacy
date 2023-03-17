@@ -81,6 +81,7 @@
 <translation id="149095475893949513">此網站正嘗試下載設定描述檔。</translation>
 <translation id="1491277525950327607">連扲兩下可以切換設定</translation>
 <translation id="1492417797159476138">您已為此網站儲存此使用者名稱</translation>
+<translation id="1497590942294823549">選單 → 密碼管理工具</translation>
 <translation id="1498283581832036924">系統不會刪除您的 <ph name="WEBSITE" /> 帳戶。</translation>
 <translation id="1506063256525392513">此操作允許您拍攝並上載相片，以及掃瞄 QR 碼</translation>
 <translation id="1509486075633541495">登入網站</translation>
@@ -518,6 +519,7 @@
 <translation id="4737560986434232178">搜尋最近開啟的分頁</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4747097190499141774">密碼短語加密的資料不包括 Google Pay 的付款方法和地址。只有知道您密碼短語的使用者，才能讀取已加密的資料。系統不會將密碼短語傳送給 Google，Google 也不會儲存您的密碼短語。如果您忘記自己的密碼短語，或希望變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+<translation id="4751162929052964260"><ph name="TITLE" />，<ph name="STATE" />，只係喺呢部裝置上面，<ph name="URL" /></translation>
 <translation id="4751645464639803239">新無痕式分頁</translation>
 <translation id="4766112107778026136">探索和追蹤</translation>
 <translation id="4775879719735953715">預設瀏覽器</translation>
@@ -841,6 +843,7 @@
 <translation id="6801927553864092214">如要私密瀏覽，請開啟無痕式分頁</translation>
 <translation id="6807889908376551050">全部顯示…</translation>
 <translation id="681368974849482173">已建立項目</translation>
+<translation id="6822587385560699678">開啟時，密碼將會儲存在 <ph name="ACCOUNT" /> 中。關閉後，密碼只會儲存在此裝置上。</translation>
 <translation id="683022620450280906">您可在任何裝置上使用已儲存的密碼。密碼已儲存至 <ph name="EMAIL" /> 的「Google 密碼管理工具」</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6842136130964845393">為確保您可隨時存取已儲存的密碼，請驗證您的身分</translation>
@@ -939,6 +942,7 @@
 <translation id="7600965453749440009">永遠不要翻譯<ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">已封鎖彈出式視窗 (<ph name="NUMBER_OF_BLOCKED_POPUPS" /> 個)</translation>
 <translation id="7607521702806708809">刪除密碼</translation>
+<translation id="7611459119367035420">您可在此處找到已固定的分頁。</translation>
 <translation id="7638584964844754484">複雜密碼不正確</translation>
 <translation id="7646263789464975852">「選單」→「設定」→「安全檢查」</translation>
 <translation id="7646772052135772216">密碼同步功能無法正常運作</translation>
@@ -951,6 +955,7 @@
 <translation id="7701040980221191251">沒有</translation>
 <translation id="7720410380936703141">再試一次</translation>
 <translation id="7726702057919861819">「選單」→「記錄」→「清除瀏覽資料」</translation>
+<translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />。只係喺呢部裝置上面。</translation>
 <translation id="7738120385185846461">報告問題…</translation>
 <translation id="7741325291586284254">新無痕式分頁頁面</translation>
 <translation id="7744394900930577716">其他應用程式中的密碼</translation>
@@ -1159,7 +1164,6 @@
 <translation id="9165320910061267720">如要接收減價通知，請在 iOS 設定中開啟通知功能。</translation>
 <translation id="9177438225260810839">在開啟的分頁中搜尋</translation>
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
-<translation id="9193147658040604536">拖曳至此處以固定分頁</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> 天前</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9219154867334666734">搜尋分頁…</translation>

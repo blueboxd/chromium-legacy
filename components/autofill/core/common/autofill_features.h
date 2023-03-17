@@ -115,7 +115,7 @@ BASE_DECLARE_FEATURE(
 // `kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete` is enabled.
 enum class PrecedenceOverAutocompleteScope {
   kNone = 0,
-  kAddressLine1Or2 = 1,
+  kAddressLine1And2 = 1,
   kRecognized = 2,
   kSpecified = 3,
   kMaxValue = kSpecified
@@ -176,6 +176,8 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillSilentProfileUpdateForInsufficientImport);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillSkipComparingInferredLabels);
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillSplitCreditCardNumbersCautiously);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillTokenPrefixMatching);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillSupportPoorMansPlaceholder);
@@ -265,6 +267,7 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillDisableSilentProfileUpdates);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillCreateAccountProfilesFromSettings);
+COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillLogToTerminal);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillServerCommunication);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillShowTypePredictions);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillUploadThrottling);

@@ -133,6 +133,8 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_DOWN},
       {"iconLabelLaunchApplication1",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION1},
+      {"iconLabelLaunchApplication2",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION2},
       {"iconLabelLaunchAssistant",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT},
       {"iconLabelMediaFastForward",
@@ -158,7 +160,6 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"iconLabelPrivacyScreenToggle",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRIVACY_SCREEN_TOGGLE},
       {"iconLabelSettings", IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_SETTINGS},
-      {"iconLabelSpace", IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_SPACE},
       {"iconLabelZoomToggle",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ZOOM_TOGGLE},
   };
@@ -196,8 +197,6 @@ ShortcutCustomizationAppUI::ShortcutCustomizationAppUI(content::WebUI* web_ui)
   AddLocalizedStrings(source);
 
   AddFeatureFlags(source);
-
-  provider_ = std::make_unique<shortcut_ui::AcceleratorConfigurationProvider>();
 }
 
 ShortcutCustomizationAppUI::~ShortcutCustomizationAppUI() = default;
@@ -206,7 +205,10 @@ void ShortcutCustomizationAppUI::BindInterface(
     mojo::PendingReceiver<
         shortcut_customization::mojom::AcceleratorConfigurationProvider>
         receiver) {
-  provider_->BindInterface(std::move(receiver));
+  shortcut_ui::ShortcutsAppManagerFactory::GetForBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext())
+      ->accelerator_configuration_provider()
+      ->BindInterface(std::move(receiver));
 }
 
 void ShortcutCustomizationAppUI::BindInterface(

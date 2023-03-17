@@ -13,11 +13,11 @@
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/sync_error_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/infobars/banners/test/fake_infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/test/mock_sync_error_infobar_delegate.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
@@ -97,9 +97,6 @@ TEST_F(SyncErrorInfobarBannerOverlayMediatorTest, SetUpConsumerWithMessages) {
 // consumer's icon using SF symbol.
 TEST_F(SyncErrorInfobarBannerOverlayMediatorTest,
        SetUpConsumerWithIconSettingsUseSFSymbol) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kUseSFSymbols);
-
   mediator_.consumer = consumer_mock_;
   // Verify that the infobar's icon was set up properly.
   OCMExpect([consumer_mock_
@@ -107,18 +104,4 @@ TEST_F(SyncErrorInfobarBannerOverlayMediatorTest,
   OCMExpect([consumer_mock_
       setIconBackgroundColor:[UIColor colorNamed:kRed500Color]]);
   OCMExpect([consumer_mock_ setUseIconBackgroundTint:true]);
-}
-
-// Tests that a SyncErrorInfobarBannerOverlayMediator correctly sets up its
-// consumer's icon using legacy asset.
-TEST_F(SyncErrorInfobarBannerOverlayMediatorTest,
-       SetUpConsumerWithIconSettingsUseLegacyAsset) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kUseSFSymbols);
-
-  mediator_.consumer = consumer_mock_;
-  // Verify that the infobar's icon was set up properly.
-  OCMExpect([consumer_mock_ setIconImageTintColor:nullptr]);
-  OCMExpect([consumer_mock_ setIconBackgroundColor:nullptr]);
-  OCMExpect([consumer_mock_ setUseIconBackgroundTint:false]);
 }

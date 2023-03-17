@@ -531,9 +531,6 @@ bool TextFieldInputType::ShouldRespectListAttribute() {
 }
 
 void TextFieldInputType::UpdatePlaceholderText(bool is_suggested_value) {
-  if (!HasCreatedShadowSubtree()) {
-    return;
-  }
   if (!SupportsPlaceholder())
     return;
   HTMLElement* placeholder = GetElement().PlaceholderElement();
@@ -544,6 +541,7 @@ void TextFieldInputType::UpdatePlaceholderText(bool is_suggested_value) {
     return;
   }
   if (!placeholder) {
+    GetElement().EnsureShadowSubtree();
     auto* new_element =
         MakeGarbageCollected<HTMLDivElement>(GetElement().GetDocument());
     placeholder = new_element;

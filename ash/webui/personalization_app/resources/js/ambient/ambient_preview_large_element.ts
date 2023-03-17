@@ -48,22 +48,23 @@ export class AmbientPreviewLarge extends AmbientPreviewBase {
         computed:
             'computeCollageImages_(topicSource_, previewAlbums_, previewImages_)',
       },
+      thumbnailImages_: {
+        type: Array,
+        computed: 'computeThumbnailImages_(topicSource_, previewImages_)',
+      },
     };
   }
 
   private collageImages_: Url[];
+  private thumbnailImages_: Url[];
 
-  /** Returns the array of images that form the collage. */
+  /** Returns the array of images that form the collage when Jelly is off. */
   private computeCollageImages_(): Url[] {
-    const maxLength = this.isPersonalizationJellyEnabled_ ? 3 : 4;
     switch (this.topicSource_) {
       case TopicSource.kArtGallery:
-        if (this.isPersonalizationJellyEnabled_ &&
-            isNonEmptyArray(this.previewImages_)) {
-          return this.previewImages_.slice(0, 2);
-        }
         return (this.previewAlbums_ || []).map(album => album.url).slice(0, 2);
       case TopicSource.kGooglePhotos:
+        const maxLength = 4;
         if (isNonEmptyArray(this.previewImages_)) {
           return this.previewImages_.length < maxLength ?
               [this.previewImages_[0]] :
@@ -74,6 +75,17 @@ export class AmbientPreviewLarge extends AmbientPreviewBase {
               [this.previewAlbums_[0].url] :
               this.previewAlbums_.map(album => album.url).slice(0, maxLength);
         }
+    }
+    return [];
+  }
+
+  /** Returns the array of thumbnail images. */
+  private computeThumbnailImages_(): Url[] {
+    if (isNonEmptyArray(this.previewImages_)) {
+      const maxLength = Math.min(
+          this.previewImages_.length,
+          this.topicSource_ === TopicSource.kArtGallery ? 2 : 3);
+      return this.previewImages_.slice(0, maxLength);
     }
     return [];
   }
@@ -100,7 +112,7 @@ export class AmbientPreviewLarge extends AmbientPreviewBase {
 
   /**
    * Navigate directly to photo selection subpage. Should only be possible to
-   * call this function if |topic_source| is set and photo collage is visible.
+   * call this function if |topic_source| is set and thumbnail is visible.
    */
   private onClickPhotoCollage_(event: Event) {
     assert(typeof this.topicSource_ === 'number', 'topic source required');
@@ -109,7 +121,7 @@ export class AmbientPreviewLarge extends AmbientPreviewBase {
   }
 
   private getThumbnailContainerClass_(): string {
-    return `thumbnail-${this.collageImages_.length} clickable`;
+    return `thumbnail-${this.thumbnailImages_.length} clickable`;
   }
 
   private getCollageContainerClass_(): string {

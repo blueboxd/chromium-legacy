@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">دیوار آتش شناسایی شد</translation>
 <translation id="1075811647922107217">اندازه صفحه</translation>
+<translation id="1082009148392559545">درحال بارگیری محافظ صفحه‌نمایش</translation>
 <translation id="1094693127011229778">‏نشانی IP دردسترس نیست</translation>
 <translation id="1113892970288677790">انتخاب کارهای هنری و تصاویر برگزیده</translation>
 <translation id="1119447706177454957">خطای داخلی</translation>
@@ -90,6 +91,7 @@
 <translation id="1717874160321062422">تحت مدیریت <ph name="FIRST_MANAGER" /> و <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">سرورهای نام</translation>
 <translation id="1731082422893354635">تاچ‌پد بلوتوث</translation>
+<translation id="1738949837603788263">منطقه <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">تصویرها بار نشد. اتصال شبکه را بررسی کنید یا دوباره برای بار کردن تصویرها تلاش کنید.</translation>
 <translation id="1751249301761991853">شخصی</translation>
 <translation id="1753496554272155572">خروج از پیش‌نمای کاغذدیواری</translation>
@@ -241,7 +243,6 @@
 <translation id="3226657629376379887">منوی کنش‌های طرح‌بندی</translation>
 <translation id="3246869037381808805">کارهای چاپ قدیمی‌تر از ۱ روز برداشته می‌شوند</translation>
 <translation id="3268178239013324452">انجام نشد - در باز است</translation>
-<translation id="3275506277319227640">از سمت <ph name="DIRECTION" /> روی پایه قرار دهید</translation>
 <translation id="3275729367986477355">تصویر چهره‌نما</translation>
 <translation id="3283504360622356314">{0,plural, =1{ویرایش فایل}one{ویرایش فایل}other{ویرایش فایل‌ها}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> گیگاهرتز</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="3600339377155080675">بازتاب صفحه‌نمایش</translation>
 <translation id="3602290021589620013">پیش‌نمایش</translation>
-<translation id="360282891121575443">کاربران دیگر می‌توانند عکس‌های موجود در آلبوم‌های مشترک را به‌روز کنند. تغییر روزانه ممکن است کاغذدیواری‌هایی را که اکنون در آلبوم نیست نشان دهد.</translation>
 <translation id="3603829704940252505">چهره‌نما</translation>
 <translation id="3604713164406837697">تغییر کاغذدیواری</translation>
 <translation id="360565022852130722">‏شبکه Wi-Fi با پروتکل ضعیف WEP 802.1x ایمن شده است</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">پر</translation>
 <translation id="4333390807948134856">کلید <ph name="KEY_NAME" /> فشار داده شد</translation>
 <translation id="435692326371619097">‏مدیریت تنظیمات APN شبکه. APN اتصالی میان شبکه تلفن همراه و اینترنت برقرار می‌کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">از سمت کوچک‌تر روی پایه قرار دهید</translation>
 <translation id="4378373042927530923">اجرا نشد</translation>
 <translation id="4378551569595875038">در حال اتصال..</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -601,6 +600,7 @@
 <translation id="636850387210749493">ثبت‌نام شرکت</translation>
 <translation id="6379086450106841622">صفحه لمسی</translation>
 <translation id="6381741036071372448">امتحان کردن صفحه‌کلید</translation>
+<translation id="6382182670717268353">پیش‌نمایش محافظ صفحه‌نمایش</translation>
 <translation id="6388847657025262518">تغذیه‌کننده سند اسکنر گیر کرده است. تغذیه‌کننده را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="6394634179843537518">افزودن فایل</translation>
 <translation id="6410257289063177456">فایل‌های تصویری</translation>
@@ -639,7 +639,6 @@
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6659594942844771486">برگه</translation>
 <translation id="6692996468359469499">دریافت اطلاعاتی که با انتخابتان مرتبط است</translation>
-<translation id="6698459586333070823">کاربران دیگر می‌توانند آلبوم‌های مشترک را به‌روز کنند</translation>
 <translation id="6704062477274546131">وضوح ساناد</translation>
 <translation id="6723839937902243910">نیرو</translation>
 <translation id="6723847290197874913">نور پس‌زمینه صفحه‌کلید</translation>
@@ -691,6 +690,7 @@
 <translation id="7177485034254901881">این <ph name="DEVICE_TYPE" /> توسط <ph name="MANAGER" /> مدیریت می‌شود. سرپرستان می‌توانند این دستگاه را ازراه‌دور پیکربندی کنند.</translation>
 <translation id="7180611975245234373">بازآوری</translation>
 <translation id="7180865173735832675">سفارشی کردن</translation>
+<translation id="7184043045742675738">برای سفارشی‌سازی دکمه، روی یکی از کلیدها کلیک کنید. موقعیت را با موشواره یا کلیدهای جهت‌نما تغییر دهید.</translation>
 <translation id="7212734716605298123">به‌روزرسانی‌های سفت‌افزار برای دستگاه‌های خارجی</translation>
 <translation id="7216409898977639127">ارائه‌دهنده شبکه تلفن همراه</translation>
 <translation id="725133483556299729">انتخاب ایمیل</translation>
@@ -732,6 +732,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">‏صفحه لمسی USB</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> باقی مانده است</translation>
+<translation id="7613724632293948900">موقعیت را با موشواره یا کلیدهای جهت‌نما تغییر دهید.</translation>
 <translation id="7620771111601174153">اطلاعات بیشتر در «مرکز راهنمایی»</translation>
 <translation id="763165478673169849">آخرین زمان بازنشانی</translation>
 <translation id="7648838807254605802">‏تأخیر بالا در HTTPS</translation>
@@ -795,7 +796,6 @@
 <translation id="8226628635270268143">انتخاب عکس‌ها و آلبوم‌های دلخواه</translation>
 <translation id="8227119283605456246">پیوست کردن فایل</translation>
 <translation id="8230672074305416752">پینگ کردن دروازه شبکه پیش‌فرض انجام نشد</translation>
-<translation id="8242426110754782860">ادامه دادن</translation>
 <translation id="8246209727385807362">شرکت مخابراتی ناشناس</translation>
 <translation id="827422111966801947">نیلی سیر</translation>
 <translation id="8286154143153872371">لطفاً برای مشاهده کاغذدیواری، به شبکه متصل شوید و صفحه را بار کردن مجدد کنید.</translation>
@@ -855,6 +855,7 @@
 <translation id="8798441408945964110">نام ارائه‌دهنده</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">کاغذ دیواری</translation>
+<translation id="8820457400746201697">نقطه لمسی آبی را به کنش موردنظر انتقال دهید. کلید مرتبط را برای سفارشی‌سازی انتخاب کنید.</translation>
 <translation id="8834539327799336565">درحال‌حاضر متصل</translation>
 <translation id="8845001906332463065">دریافت راهنمایی</translation>
 <translation id="8855781559874488009">‏نمی‌توان ازطریق دیوار آتش به وب‌سایت‌های HTTP متصل شد</translation>
@@ -903,7 +904,6 @@
 <translation id="9137526406337347448">‏سرویس‌های Google</translation>
 <translation id="9138630967333032450">کلید تبدیل چپ</translation>
 <translation id="9149391708638971077">اجرای آزمایش حافظه</translation>
-<translation id="9157515863513902090">از سمت بزرگ‌تر روی پایه قرار دهید</translation>
 <translation id="9161276708550942948">فاصله</translation>
 <translation id="9173638680043580060">کمتر از یک دقیقه باقیمانده است</translation>
 <translation id="917720651393141712">آزمایش کردن</translation>

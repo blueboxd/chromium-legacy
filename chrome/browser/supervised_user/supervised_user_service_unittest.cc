@@ -30,6 +30,7 @@
 #include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/supervised_user/core/common/features.h"
+#include "components/supervised_user/core/common/pref_names.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -93,7 +94,7 @@ class AsyncTestHelper {
 
 class SupervisedUserURLFilterObserver
     : public AsyncTestHelper,
-      public SupervisedUserURLFilter::Observer {
+      public supervised_user::SupervisedUserURLFilter::Observer {
  public:
   SupervisedUserURLFilterObserver() {}
 
@@ -104,7 +105,7 @@ class SupervisedUserURLFilterObserver
 
   ~SupervisedUserURLFilterObserver() {}
 
-  void Init(SupervisedUserURLFilter* url_filter) {
+  void Init(supervised_user::SupervisedUserURLFilter* url_filter) {
     scoped_observation_.Observe(url_filter);
   }
 
@@ -112,8 +113,8 @@ class SupervisedUserURLFilterObserver
   void OnSiteListUpdated() override { QuitRunLoop(); }
 
  private:
-  base::ScopedObservation<SupervisedUserURLFilter,
-                          SupervisedUserURLFilter::Observer>
+  base::ScopedObservation<supervised_user::SupervisedUserURLFilter,
+                          supervised_user::SupervisedUserURLFilter::Observer>
       scoped_observation_{this};
 };
 
@@ -161,7 +162,7 @@ TEST_F(SupervisedUserServiceTest, IsURLFilteringEnabled) {
   SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   EXPECT_TRUE(profile_->IsChild());
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   EXPECT_TRUE(service->IsURLFilteringEnabled());
 #else
   EXPECT_FALSE(service->IsURLFilteringEnabled());
@@ -171,8 +172,6 @@ TEST_F(SupervisedUserServiceTest, IsURLFilteringEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty);
-  EXPECT_TRUE(base::FeatureList::IsEnabled(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty));
 
   EXPECT_TRUE(service->IsURLFilteringEnabled());
 }
@@ -227,7 +226,7 @@ TEST_F(SupervisedUserServiceTestUnsupervised, AreExtensionsPermissionsEnabled) {
 TEST_F(SupervisedUserServiceTest, MAYBE_DeprecatedFilterPolicy) {
   PrefService* prefs = profile_->GetPrefs();
   EXPECT_EQ(prefs->GetInteger(prefs::kDefaultSupervisedUserFilteringBehavior),
-            SupervisedUserURLFilter::ALLOW);
+            supervised_user::SupervisedUserURLFilter::ALLOW);
 
   ASSERT_DCHECK_DEATH(
       prefs->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
@@ -256,7 +255,8 @@ class SupervisedUserServiceExtensionTestBase
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     service->Init();
 
-    SupervisedUserURLFilter* url_filter = service->GetURLFilter();
+    supervised_user::SupervisedUserURLFilter* url_filter =
+        service->GetURLFilter();
     url_filter->SetBlockingTaskRunnerForTesting(
         base::SingleThreadTaskRunner::GetCurrentDefault());
     url_filter_observer_.Init(url_filter);

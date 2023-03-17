@@ -54,7 +54,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -71,6 +70,7 @@
 #include "components/safe_browsing/content/browser/download/download_stats.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_search_api/safe_search_util.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -394,7 +394,10 @@ void MaybeReportDangerousDownloadBlocked(
   auto* router =
       extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile);
   if (router) {
-    std::string raw_digest_sha256 = download->GetHash();
+    std::string raw_digest_sha256;
+    if (download->GetState() == DownloadItem::DownloadState::COMPLETE) {
+      raw_digest_sha256 = download->GetHash();
+    }
     router->OnDangerousDownloadEvent(
         download->GetURL(), download_path,
         base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
@@ -848,7 +851,7 @@ void ChromeDownloadManagerDelegate::SanitizeDownloadParameters(
     download::DownloadUrlParameters* params) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kForceGoogleSafeSearch)) {
     GURL safe_url;
-    safe_search_util::ForceGoogleSafeSearch(params->url(), &safe_url);
+    safe_search_api::ForceGoogleSafeSearch(params->url(), &safe_url);
     if (!safe_url.is_empty())
       params->set_url(std::move(safe_url));
   }

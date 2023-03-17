@@ -8,29 +8,35 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import './add_password_dialog.js';
 import '../shared_style.css.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
+import {CrTextareaElement} from 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PasswordManagerImpl} from '../password_manager_proxy.js';
+import {Page, Router} from '../router.js';
 import {ShowPasswordMixin} from '../show_password_mixin.js';
 
+import {PASSWORD_NOTE_MAX_CHARACTER_COUNT, PASSWORD_NOTE_WARNING_CHARACTER_COUNT} from './add_password_dialog.js';
 import {getTemplate} from './edit_password_dialog.html.js';
 
 export interface EditPasswordDialogElement {
   $: {
-    dialog: CrDialogElement,
-    saveButton: CrButtonElement,
     cancelButton: CrButtonElement,
-    usernameInput: CrInputElement,
+    dialog: CrDialogElement,
     passwordInput: CrInputElement,
+    passwordNote: CrTextareaElement,
+    saveButton: CrButtonElement,
     showPasswordButton: CrIconButtonElement,
+    usernameInput: CrInputElement,
+    viewExistingPasswordLink: HTMLAnchorElement,
   };
 }
 
@@ -78,6 +84,10 @@ export class EditPasswordDialogElement extends EditPasswordDialogElementBase {
   static get properties() {
     return {
       credential: Object,
+      showRedirect: {
+        type: Boolean,
+        value: false,
+      },
 
       username_: String,
       password_: String,
@@ -93,10 +103,17 @@ export class EditPasswordDialogElement extends EditPasswordDialogElementBase {
         computed: 'computeUsernameErrorMessage_(credential, username_, ' +
             'conflictingUsernames_)',
       },
+
+      canEditPassword_: {
+        type: Boolean,
+        computed: 'computeCanEditPassword_(credential, username_, password_, ' +
+            'note_)',
+      },
     };
   }
 
   credential: chrome.passwordsPrivate.PasswordUiEntry;
+  showRedirect: boolean;
   private username_: string;
   private password_: string;
   private note_: string;
@@ -105,13 +122,18 @@ export class EditPasswordDialogElement extends EditPasswordDialogElementBase {
   private setSavedPasswordsListener_: (
       (entries: chrome.passwordsPrivate.PasswordUiEntry[]) => void)|null = null;
 
-  override connectedCallback() {
-    super.connectedCallback();
+  override ready() {
+    super.ready();
     assert(this.credential.password);
 
     this.username_ = this.credential.username;
     this.password_ = this.credential.password;
     this.note_ = this.credential.note ?? '';
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
     this.setSavedPasswordsListener_ = passwordList => {
       this.conflictingUsernames_ =
           getConflictingUsernames(this.credential, passwordList);
@@ -159,6 +181,68 @@ export class EditPasswordDialogElement extends EditPasswordDialogElementBase {
     return this.i18n(
         'editPasswordFootnote',
         this.credential.affiliatedDomains[0]?.name ?? '');
+  }
+
+  private showRedirect_(): boolean {
+    return this.showRedirect && this.doesUsernameExistAlready_();
+  }
+
+  private getViewExistingPasswordAriaDescription_(): string {
+    if (!this.conflictingUsernames_) {
+      return '';
+    }
+    return this.conflictingUsernames_.has(this.username_) ?
+        this.i18n(
+            'viewExistingPasswordAriaDescription', this.username_,
+            this.conflictingUsernames_.get(this.username_)!) :
+        '';
+  }
+
+  private onViewExistingPasswordClick_(e: Event) {
+    e.preventDefault();
+    assert(this.conflictingUsernames_.has(this.username_));
+    Router.getInstance().navigateTo(
+        Page.PASSWORD_DETAILS, this.conflictingUsernames_.get(this.username_));
+    this.$.dialog.close();
+  }
+
+  private isNoteInputInvalid_(): boolean {
+    return this.note_.length >= PASSWORD_NOTE_MAX_CHARACTER_COUNT;
+  }
+
+  private getFirstNoteFooter_(): string {
+    return this.note_.length < PASSWORD_NOTE_WARNING_CHARACTER_COUNT ?
+        '' :
+        this.i18n(
+            'passwordNoteCharacterCountWarning',
+            PASSWORD_NOTE_MAX_CHARACTER_COUNT);
+  }
+
+  private getSecondNoteFooter_(): string {
+    return this.note_.length < PASSWORD_NOTE_WARNING_CHARACTER_COUNT ?
+        '' :
+        this.i18n(
+            'passwordNoteCharacterCount', this.note_.length,
+            PASSWORD_NOTE_MAX_CHARACTER_COUNT);
+  }
+
+  private computeCanEditPassword_(): boolean {
+    return !this.doesUsernameExistAlready_() && !!this.password_ &&
+        this.password_.length > 0 && !this.isNoteInputInvalid_();
+  }
+
+  private onEditClick_() {
+    assert(this.computeCanEditPassword_());
+    const params: chrome.passwordsPrivate.ChangeSavedPasswordParams = {
+      username: this.username_,
+      password: this.password_,
+      note: this.note_,
+    };
+    PasswordManagerImpl.getInstance()
+        .changeSavedPassword(this.credential.id, params)
+        .finally(() => {
+          this.$.dialog.close();
+        });
   }
 }
 

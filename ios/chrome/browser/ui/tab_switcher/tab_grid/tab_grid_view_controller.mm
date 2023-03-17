@@ -15,16 +15,21 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
-#import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_ui_delegate.h"
@@ -48,12 +53,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/thumb_strip_plus_sign_button.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -2449,6 +2448,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self setCurrentIdlePageStatus:NO];
 }
 
+- (void)pinnedViewControllerDropAnimationWillBegin:
+    (PinnedTabsViewController*)pinnedTabsViewController {
+  self.regularTabsViewController.dropAnimationInProgress = YES;
+}
+
+- (void)pinnedViewControllerDropAnimationDidEnd:
+    (PinnedTabsViewController*)pinnedTabsViewController {
+  self.regularTabsViewController.dropAnimationInProgress = NO;
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -2747,11 +2756,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)handleCloseAllButtonForRegularTabsWithAnchor:(UIBarButtonItem*)anchor {
-  DCHECK_EQ(self.undoCloseAllAvailable,
-            self.regularTabsViewController.gridEmpty);
+  const BOOL hasPinnedTabs =
+      (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.collectionEmpty);
+  const BOOL hasOpenTabs =
+      !self.regularTabsViewController.gridEmpty || hasPinnedTabs;
+  DCHECK_EQ(self.undoCloseAllAvailable, !hasOpenTabs);
+
   if (self.undoCloseAllAvailable) {
     [self undoCloseAllItemsForRegularTabs];
-  } else if (IsPinnedTabsEnabled()) {
+  } else if (hasPinnedTabs) {
     [self confirmCloseAllItemsForRegularTabs:anchor];
   } else {
     [self saveAndCloseAllItemsForRegularTabs];
@@ -2967,24 +2980,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
-  if (IsKeyboardShortcutsMenuEnabled()) {
-    // Other key commands are already declared in the menu.
-    return @[
-      UIKeyCommand.cr_openNewRegularTab,
-      UIKeyCommand.cr_undo,
-      UIKeyCommand.cr_close,
-      // TODO(crbug.com/1385469): Move it to the menu builder once we have the
-      // strings.
-      UIKeyCommand.cr_select2,
-      UIKeyCommand.cr_select3,
-    ];
-  } else {
-    return @[
-      UIKeyCommand.cr_openNewTab,
-      UIKeyCommand.cr_openNewIncognitoTab,
-      UIKeyCommand.cr_openNewRegularTab,
-    ];
-  }
+  // Other key commands are already declared in the menu.
+  return @[
+    UIKeyCommand.cr_openNewRegularTab,
+    UIKeyCommand.cr_undo,
+    UIKeyCommand.cr_close,
+    // TODO(crbug.com/1385469): Move it to the menu builder once we have the
+    // strings.
+    UIKeyCommand.cr_select2,
+    UIKeyCommand.cr_select3,
+  ];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {

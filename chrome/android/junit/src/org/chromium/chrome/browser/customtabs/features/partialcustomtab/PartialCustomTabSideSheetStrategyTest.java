@@ -13,6 +13,9 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_DEFAULT;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_END;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.ACTIVITY_SIDE_SHEET_POSITION_START;
@@ -65,20 +68,28 @@ public class PartialCustomTabSideSheetStrategyTest {
     public final PartialCustomTabTestRule mPCCTTestRule = new PartialCustomTabTestRule();
 
     private PartialCustomTabSideSheetStrategy createPcctSideSheetStrategy(@Px int widthPx) {
-        return createPcctSideSheetStrategy(widthPx, ACTIVITY_SIDE_SHEET_POSITION_DEFAULT);
+        return createPcctSideSheetStrategy(widthPx, ACTIVITY_SIDE_SHEET_POSITION_DEFAULT,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
     }
 
     private PartialCustomTabSideSheetStrategy createLeftPcctSideSheetStrategy(@Px int widthPx) {
-        return createPcctSideSheetStrategy(widthPx, ACTIVITY_SIDE_SHEET_POSITION_START);
+        return createPcctSideSheetStrategy(widthPx, ACTIVITY_SIDE_SHEET_POSITION_START,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
     }
 
     private PartialCustomTabSideSheetStrategy createPcctSideSheetStrategy(
             @Px int widthPx, int position) {
+        return createPcctSideSheetStrategy(
+                widthPx, position, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
+    }
+
+    private PartialCustomTabSideSheetStrategy createPcctSideSheetStrategy(
+            @Px int widthPx, int position, int decorationType) {
         PartialCustomTabSideSheetStrategy pcct = new PartialCustomTabSideSheetStrategy(
                 mPCCTTestRule.mActivity, widthPx, mPCCTTestRule.mOnResizedCallback,
                 mPCCTTestRule.mFullscreenManager, false, true, /*showMaximizedButton=*/true,
                 /*startMaximized=*/false, position, ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT,
-                mPCCTTestRule.mHandleStrategyFactory, 0);
+                mPCCTTestRule.mHandleStrategyFactory, decorationType);
         pcct.setMockViewForTesting(mPCCTTestRule.mCoordinatorLayout, mPCCTTestRule.mToolbarView,
                 mPCCTTestRule.mToolbarCoordinator);
         return pcct;
@@ -236,21 +247,84 @@ public class PartialCustomTabSideSheetStrategyTest {
     }
 
     @Test
-    public void enterAndExitHtmlFullscreen() {
-        var strategy = createPcctSideSheetStrategy(2000);
-        assertFalse(getWindowAttributes().isFullscreen());
-        int height = getWindowAttributes().height;
-        int width = getWindowAttributes().width;
+    public void noShadowsFullWidth() {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
                 .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+
+        mPCCTTestRule.configLandscapeMode();
+        createLeftPcctSideSheetStrategy(3000);
+
+        mPCCTTestRule.verifyWindowFlagsSet();
+        assertTabIsAtFullLandscapeHeight();
+        assertEquals("Side-sheet has wrong width", DEVICE_WIDTH_LANDSCAPE,
+                mPCCTTestRule.mRealMetrics.widthPixels);
+        assertEquals("Right margin should be zero because side sheet is max width", 0,
+                mPCCTTestRule.mLayoutParams.rightMargin);
+
+        mPCCTTestRule.configPortraitMode();
+        createPcctSideSheetStrategy(2000);
+        assertEquals(
+                "Side-sheet has wrong width", DEVICE_WIDTH, mPCCTTestRule.mRealMetrics.widthPixels);
+        assertEquals("Left margin should be zero because side sheet is max width", 0,
+                mPCCTTestRule.mLayoutParams.leftMargin);
+    }
+
+    @Test
+    public void drawDividerLine() {
+        doReturn(10)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+        mPCCTTestRule.configLandscapeMode();
+        var strategy = createPcctSideSheetStrategy(2000, ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER);
+        strategy.onToolbarInitialized(
+                mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
+        mPCCTTestRule.verifyWindowFlagsSet();
+
+        assertTrue(strategy.shouldDrawDividerLine());
+        assertEquals("Right margin should zero for no shadow", 0,
+                mPCCTTestRule.mLayoutParams.rightMargin);
+        assertEquals("Left margin should be zero for no shadow", 0,
+                mPCCTTestRule.mLayoutParams.leftMargin);
+    }
+
+    @Test
+    public void noDecoration() {
+        doReturn(10)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+        mPCCTTestRule.configLandscapeMode();
+        var strategy = createPcctSideSheetStrategy(2000, ACTIVITY_SIDE_SHEET_POSITION_DEFAULT,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE);
+        strategy.onToolbarInitialized(
+                mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
+        mPCCTTestRule.verifyWindowFlagsSet();
+
+        assertFalse(strategy.shouldDrawDividerLine());
+        assertEquals("Right margin should zero for no shadow", 0,
+                mPCCTTestRule.mLayoutParams.rightMargin);
+        assertEquals("Left margin should be zero for no shadow", 0,
+                mPCCTTestRule.mLayoutParams.leftMargin);
+    }
+
+    @Test
+    public void enterAndExitHtmlFullscreen() {
+        doReturn(47)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
+        var strategy = createPcctSideSheetStrategy(1000);
+        assertFalse(getWindowAttributes().isFullscreen());
+        int height = getWindowAttributes().height;
+        int width = getWindowAttributes().width;
+        mPCCTTestRule.verifyWindowFlagsSet();
 
         strategy.setFullscreenSupplierForTesting(() -> mFullscreen);
 
         mFullscreen = true;
         strategy.onEnterFullscreen(null, null);
         assertTrue(getWindowAttributes().isFullscreen());
-        assertEquals("Shadow should be removed.", 0, strategy.getShadowOffsetForTesting());
+        assertEquals("Shadow should be removed.", 0, mPCCTTestRule.mLayoutParams.leftMargin);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(DEVICE_HEIGHT), eq(DEVICE_WIDTH));
         clearInvocations(mPCCTTestRule.mOnResizedCallback);
 
@@ -260,7 +334,7 @@ public class PartialCustomTabSideSheetStrategyTest {
         assertFalse(getWindowAttributes().isFullscreen());
         assertEquals(height, getWindowAttributes().height);
         assertEquals(width, getWindowAttributes().width);
-        assertNotEquals("Shadow should be restored.", 0, strategy.getShadowOffsetForTesting());
+        assertNotEquals("Shadow should be restored.", 0, mPCCTTestRule.mLayoutParams.leftMargin);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(height), eq(width));
     }
 

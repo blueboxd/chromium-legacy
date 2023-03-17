@@ -20,6 +20,10 @@
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -27,11 +31,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -67,10 +67,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL _ignoresOwnMove;
   std::unique_ptr<SyncObserverBridge> _syncObserverModelBridge;
   SyncSetupService* _syncSetupService;
+  // The browser for this view controller.
+  base::WeakPtr<Browser> _browser;
 }
 @property(nonatomic, assign) BOOL editingExistingFolder;
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
-@property(nonatomic, assign) Browser* browser;
 @property(nonatomic, assign) ChromeBrowserState* browserState;
 // Whether the folder name was edited.
 @property(nonatomic, assign) BOOL edited;
@@ -86,6 +87,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                      syncSetupService:(SyncSetupService*)syncSetupService
                           syncService:(syncer::SyncService*)syncService
+                              browser:(Browser*)browser
     NS_DESIGNATED_INITIALIZER;
 
 // Enables or disables the save button depending on the state of the form.
@@ -107,7 +109,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize editingExistingFolder = _editingExistingFolder;
 @synthesize folder = _folder;
 @synthesize parentFolder = _parentFolder;
-@synthesize browser = _browser;
 @synthesize browserState = _browserState;
 @synthesize doneItem = _doneItem;
 @synthesize titleItem = _titleItem;
@@ -125,10 +126,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BookmarksFolderEditorViewController* folderCreator =
       [[self alloc] initWithBookmarkModel:bookmarkModel
                          syncSetupService:syncSetupService
-                              syncService:syncService];
+                              syncService:syncService
+                                  browser:browser];
   folderCreator.parentFolder = parentFolder;
   folderCreator.folder = NULL;
-  folderCreator.browser = browser;
   folderCreator.editingExistingFolder = NO;
   return folderCreator;
 }
@@ -145,10 +146,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BookmarksFolderEditorViewController* folderEditor =
       [[self alloc] initWithBookmarkModel:bookmarkModel
                          syncSetupService:syncSetupService
-                              syncService:syncService];
+                              syncService:syncService
+                                  browser:browser];
   folderEditor.parentFolder = folder->parent();
   folderEditor.folder = folder;
-  folderEditor.browser = browser;
   folderEditor.browserState =
       browser->GetBrowserState()->GetOriginalChromeBrowserState();
   folderEditor.editingExistingFolder = YES;
@@ -159,14 +160,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                      syncSetupService:(SyncSetupService*)syncSetupService
-                          syncService:(syncer::SyncService*)syncService {
+                          syncService:(syncer::SyncService*)syncService
+                              browser:(Browser*)browser {
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
+  DCHECK(browser);
   UITableViewStyle style = ChromeTableViewStyle();
   self = [super initWithStyle:style];
   if (self) {
     _bookmarkModel = bookmarkModel;
-
+    _browser = browser->AsWeakPtr();
     // Set up the bookmark model oberver.
     _modelBridge.reset(new BookmarkModelBridge(self, _bookmarkModel));
     _syncObserverModelBridge.reset(new SyncObserverBridge(self, syncService));
@@ -189,7 +192,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)presentationControllerDidAttemptToDismiss {
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
-                         browser:_browser
+                         browser:_browser.get()
                            title:nil
                          message:nil
                    barButtonItem:self.navigationItem.leftBarButtonItem];

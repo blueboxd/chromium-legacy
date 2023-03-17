@@ -78,7 +78,7 @@
 /cpuinfo/src
 /crc32c/src
 /cros
-/cros_components
+/cros-components/src
 /cros_system_api
 /custom_tabs_client/src
 /cygwin
@@ -295,6 +295,7 @@
 /win_toolchain/.timestamps
 /win_toolchain/files
 /wix
+/wlcs/src
 /wuffs/src
 /xdg-utils
 /xnnpack/src

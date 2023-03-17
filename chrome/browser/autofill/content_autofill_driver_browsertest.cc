@@ -22,10 +22,8 @@
 #include "components/autofill/content/browser/test_content_autofill_client.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory_test_api.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
@@ -54,24 +52,12 @@ class MockAutofillClient : public TestContentAutofillClient {
 
   ~MockAutofillClient() override = default;
 
-  PrefService* GetPrefs() override {
-    return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
-  }
-  const PrefService* GetPrefs() const override { return &prefs_; }
-
-  user_prefs::PrefRegistrySyncable* GetPrefRegistry() {
-    return prefs_.registry();
-  }
-
   MOCK_METHOD(void,
               ShowAutofillPopup,
               (const PopupOpenArgs& open_args,
                base::WeakPtr<AutofillPopupDelegate> delegate),
               (override));
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason), (override));
-
- private:
-  sync_preferences::TestingPrefServiceSyncable prefs_;
 };
 
 }  // namespace
@@ -92,8 +78,6 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     Observe(web_contents());
-    prefs::RegisterProfilePrefs(autofill_client().GetPrefRegistry());
-
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -154,13 +138,14 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   base::OnceClosure same_document_navigation_callback_;
   base::OnceClosure subframe_navigation_callback_;
 
+  test::AutofillBrowserTestEnvironment autofill_test_environment_;
   TestAutofillClientInjector<testing::NiceMock<MockAutofillClient>>
       autofill_client_injector_;
   content::test::PrerenderTestHelper prerender_helper_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
-                       DISABLED_SwitchTabAndHideAutofillPopup) {
+                       SwitchTabAndHideAutofillPopup) {
   EXPECT_CALL(autofill_client(),
               HideAutofillPopup(PopupHidingReason::kTabGone));
 
@@ -173,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
-                       DISABLED_SameDocumentNavigationHideAutofillPopup) {
+                       SameDocumentNavigationHideAutofillPopup) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/autofill/autofill_test_form.html")));
@@ -196,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
-                       DISABLED_PrerenderNavigationDoesntHideAutofillPopup) {
+                       PrerenderNavigationDoesntHideAutofillPopup) {
   GURL initial_url =
       embedded_test_server()->GetURL("/autofill/autofill_test_form.html");
   GURL prerender_url = embedded_test_server()->GetURL("/empty.html");
@@ -221,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
-                       DISABLED_SubframeNavigationDoesntHideAutofillPopup) {
+                       SubframeNavigationDoesntHideAutofillPopup) {
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
@@ -243,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
-                       DISABLED_TestPageNavigationHidingAutofillPopup) {
+                       TestPageNavigationHidingAutofillPopup) {
   // HideAutofillPopup is called once for each navigation.
   EXPECT_CALL(autofill_client(),
               HideAutofillPopup(PopupHidingReason::kNavigation))
@@ -275,7 +260,7 @@ class ContentAutofillDriverPrerenderBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverPrerenderBrowserTest,
-                       DISABLED_PrerenderingDoesNotSubmitForm) {
+                       PrerenderingDoesNotSubmitForm) {
   GURL initial_url =
       embedded_test_server()->GetURL("/autofill/autofill_test_form.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));

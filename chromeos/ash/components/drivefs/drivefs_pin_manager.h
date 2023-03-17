@@ -42,7 +42,10 @@ std::ostream& operator<<(std::ostream& out, HumanReadableSize size);
 // monitoring. This enum represents the various stages the setup goes through.
 enum class Stage {
   // Initial stage.
-  kNotStarted,
+  kStopped,
+
+  // Paused because of unfavorable network conditions.
+  kPaused,
 
   // In-progress stages.
   kGettingFreeSpace,
@@ -53,7 +56,6 @@ enum class Stage {
   kSuccess,
 
   // Final error stages.
-  kStopped,
   kCannotGetFreeSpace,
   kCannotListFiles,
   kNotEnoughSpace,
@@ -110,7 +112,7 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
   int duplicated_events = 0;
 
   // Stage of the setup process.
-  Stage stage = Stage::kNotStarted;
+  Stage stage = Stage::kStopped;
 
   // Has the PinManager ever emptied its set of tracking items?
   bool emptied_queue = false;
@@ -232,6 +234,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
     should_check_stalled_files_ = b;
   }
 
+  // Sets the online or offline network status, and starts or pauses the Pin
+  // manager accordingly.
+  void SetOnline(bool online);
+
  private:
   // Progress of a file being synced or to be synced.
   struct File {
@@ -299,11 +305,17 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Invoked on retrieval of free space during the periodic check.
   void OnFreeSpaceRetrieved2(int64_t free_space);
 
+  // Creates the Search Query.
+  void StartSearchQuery();
+
+  // Gets the next batch of items when listing files.
+  void GetNextPage();
+
   // Once the free disk space has been retrieved, this method will be invoked
   // after every batch of searches to Drive complete. This is required as the
   // user may already have files pinned (which the `GetQuotaUsage` will include
   // in it's calculation).
-  void OnSearchResultForSizeCalculation(
+  void OnSearchResult(
       drive::FileError error,
       absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
@@ -359,6 +371,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   const raw_ptr<mojom::DriveFs, DanglingUntriaged> drivefs_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // Is the device connected to a suitable network? Assume it is online for
+  // tests.
+  bool is_online_ GUARDED_BY_CONTEXT(sequence_checker_) = true;
+
   // Should the feature actually pin files, or should it stop after checking the
   // space requirements?
   bool should_pin_ GUARDED_BY_CONTEXT(sequence_checker_) = true;
@@ -407,6 +423,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, NotEnoughSpace2);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnFreeSpaceRetrieved2);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, PeriodicSpaceCheck);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, SetOnline);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnTransientError);
 };
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)

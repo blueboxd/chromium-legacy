@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -25,8 +26,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
-#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -34,7 +33,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/supervised_user/core/browser/supervised_user_service_observer.h"
 #include "components/supervised_user/core/browser/supervised_user_settings_service.h"
+#include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
@@ -89,7 +90,7 @@ constexpr char const* kAllowlistExtensionIds[] = {
 base::FilePath GetDenylistPath() {
   base::FilePath denylist_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &denylist_dir);
-  return denylist_dir.AppendASCII(supervised_user::kDenylistFilename);
+  return denylist_dir.Append(supervised_user::kDenylistFilename);
 }
 
 bool AreWebFilterPrefsDefault(const PrefService& pref_service) {
@@ -119,8 +120,9 @@ void SupervisedUserService::RegisterProfilePrefs(
 #endif
   registry->RegisterDictionaryPref(prefs::kSupervisedUserManualHosts);
   registry->RegisterDictionaryPref(prefs::kSupervisedUserManualURLs);
-  registry->RegisterIntegerPref(prefs::kDefaultSupervisedUserFilteringBehavior,
-                                SupervisedUserURLFilter::ALLOW);
+  registry->RegisterIntegerPref(
+      prefs::kDefaultSupervisedUserFilteringBehavior,
+      supervised_user::SupervisedUserURLFilter::ALLOW);
   registry->RegisterBooleanPref(prefs::kSupervisedUserSafeSites, true);
   for (const char* pref : supervised_user::kCustodianInfoPrefs) {
     registry->RegisterStringPref(pref, std::string());
@@ -163,7 +165,8 @@ void SupervisedUserService::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-SupervisedUserURLFilter* SupervisedUserService::GetURLFilter() {
+supervised_user::SupervisedUserURLFilter*
+SupervisedUserService::GetURLFilter() {
   return &url_filter_;
 }
 
@@ -217,7 +220,7 @@ std::string SupervisedUserService::GetEduCoexistenceLoginUrl() {
 
 bool SupervisedUserService::IsURLFilteringEnabled() const {
 // TODO(b/271413641): Use capabilities to verify if filtering is enabled on iOS.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   return profile_->IsChild();
 #else
   return profile_->IsChild() &&
@@ -254,9 +257,13 @@ SupervisedUserService::SupervisedUserService(
     signin::IdentityManager* identity_manager,
     PrefService& user_prefs,
     supervised_user::SupervisedUserSettingsService& settings_service,
-    ValidateURLSupportCallback check_webstore_url_callback)
+    syncer::SyncService& sync_service,
+    ValidateURLSupportCallback check_webstore_url_callback,
+    std::unique_ptr<supervised_user::SupervisedUserURLFilter::Delegate>
+        url_filter_delegate)
     : user_prefs_(user_prefs),
       settings_service_(settings_service),
+      sync_service_(sync_service),
       profile_(profile),
       identity_manager_(identity_manager),
       active_(false),
@@ -264,7 +271,8 @@ SupervisedUserService::SupervisedUserService(
       is_profile_active_(false),
       did_init_(false),
       did_shutdown_(false),
-      url_filter_(std::move(check_webstore_url_callback)),
+      url_filter_(std::move(check_webstore_url_callback),
+                  std::move(url_filter_delegate)),
       denylist_state_(DenylistLoadState::NOT_LOADED) {
   url_filter_.AddObserver(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -367,7 +375,9 @@ void SupervisedUserService::SetActive(bool active) {
   if (delegate_)
     delegate_->SetActive(active_);
 
-    // Now activate/deactivate anything not handled by the delegate yet.
+  settings_service_->SetActive(active_);
+
+  // Now activate/deactivate anything not handled by the delegate yet.
 #if BUILDFLAG(IS_CHROMEOS)
   // Re-set the default theme to turn the SU theme on/off.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
@@ -379,15 +389,11 @@ void SupervisedUserService::SetActive(bool active) {
   // The logic to do this lives in the SupervisedUserSyncModelTypeController.
   // TODO(crbug.com/946473): Get rid of this hack and instead call
   // DataTypePreconditionChanged from the controller.
-  syncer::SyncService* sync_service =
-      SyncServiceFactory::GetForProfile(profile_);
-  if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
+  if (sync_service_->GetUserSettings()->IsFirstSetupComplete()) {
     // Trigger a reconfig by grabbing a SyncSetupInProgressHandle and
     // immediately releasing it again (via the temporary unique_ptr going away).
-    sync_service->GetSetupInProgressHandle();
+    sync_service_->GetSetupInProgressHandle();
   }
-
-  settings_service_->SetActive(active_);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   SetExtensionsActive();
@@ -483,15 +489,15 @@ void SupervisedUserService::OnSupervisedUserIdChanged() {
 void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
   int behavior_value =
       user_prefs_->GetInteger(prefs::kDefaultSupervisedUserFilteringBehavior);
-  SupervisedUserURLFilter::FilteringBehavior behavior =
-      SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
+  supervised_user::SupervisedUserURLFilter::FilteringBehavior behavior =
+      supervised_user::SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
   url_filter_.SetDefaultFilteringBehavior(behavior);
   UpdateAsyncUrlChecker();
 
   for (SupervisedUserServiceObserver& observer : observer_list_)
     observer.OnURLFilterChanged();
 
-  SupervisedUserURLFilter::WebFilterType filter_type =
+  supervised_user::SupervisedUserURLFilter::WebFilterType filter_type =
       url_filter_.GetWebFilterType();
   if (!AreWebFilterPrefsDefault(*user_prefs_) &&
       current_web_filter_type_ != filter_type) {
@@ -521,7 +527,7 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
 
   UpdateAsyncUrlChecker();
 
-  SupervisedUserURLFilter::WebFilterType filter_type =
+  supervised_user::SupervisedUserURLFilter::WebFilterType filter_type =
       url_filter_.GetWebFilterType();
   if (!AreWebFilterPrefsDefault(*user_prefs_) &&
       current_web_filter_type_ != filter_type) {
@@ -533,12 +539,13 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
 void SupervisedUserService::UpdateAsyncUrlChecker() {
   int behavior_value =
       user_prefs_->GetInteger(prefs::kDefaultSupervisedUserFilteringBehavior);
-  SupervisedUserURLFilter::FilteringBehavior behavior =
-      SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
+  supervised_user::SupervisedUserURLFilter::FilteringBehavior behavior =
+      supervised_user::SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
 
   bool use_online_check =
       IsSafeSitesEnabled() ||
-      behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK;
+      behavior ==
+          supervised_user::SupervisedUserURLFilter::FilteringBehavior::BLOCK;
 
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check) {
@@ -934,10 +941,6 @@ void SupervisedUserService::SetExtensionsActive() {
   }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-bool SupervisedUserService::IsCustomPassphraseAllowed() const {
-  return !active_;
-}
 
 #if BUILDFLAG(IS_CHROMEOS)
 void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {

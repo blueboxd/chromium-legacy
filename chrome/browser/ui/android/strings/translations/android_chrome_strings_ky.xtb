@@ -34,6 +34,7 @@
 <translation id="1173894706177603556">Атын өзгөртүү</translation>
 <translation id="1177863135347784049">Өзгөчөлөштүрүлгөн</translation>
 <translation id="1181037720776840403">Алып салуу</translation>
+<translation id="1181366777303791449"><ph name="MAIN_FRAME_ETLD_PLUS_ONE" /></translation>
 <translation id="1193729455103054076">Татаал сырсөздү колдоносузбу?</translation>
 <translation id="1197267115302279827">Кыстармаларды жылдыруу</translation>
 <translation id="1201402288615127009">Кийинки</translation>
@@ -165,7 +166,6 @@
 <translation id="1928696683969751773">Жаңыртуулар</translation>
 <translation id="19288952978244135">Chrome'ду кайра ачуу.</translation>
 <translation id="1933845786846280168">Тандалган өтмөк</translation>
-<translation id="193571872656840963">Авторго ыраазычылыгыңызды билдириңиз</translation>
 <translation id="1943432128510653496">Сырсөздөрдү сактоо</translation>
 <translation id="1952172573699511566">Мүмкүн болгон учурда вебсайттар текстти сиз каалаган тилде көрсөтүшөт.</translation>
 <translation id="1959679933317802873">Мазмун күтүлүүдө</translation>
@@ -201,7 +201,6 @@
 <translation id="2122601567107267586">Колдонмо ачылбай койду</translation>
 <translation id="2132122640199389833">Бардык байланыштырылган түзмөктөрдү өчүрүү</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> жабылган</translation>
-<translation id="2134927169889348449">Chrome'ду колдонуу менен, <ph name="BEGIN_TOS_LINK" />Google'дун Тейлөө шарттарына<ph name="END_TOS_LINK" /> жана <ph name="BEGIN_ATOS_LINK" />Google Chrome менен ChromeOS'тун Кошумча Тейлөө шарттарына<ph name="END_ATOS_LINK" /> макул болосуз.</translation>
 <translation id="2139186145475833000">Башкы экранга кошуу</translation>
 <translation id="2141396931810938595">Колдонулушуна жараша</translation>
 <translation id="214888715418183969">Chrome менен бөлүшкүңүз келген нерселерди тандаңыз. Сиз бөлүшкөн маалымат Chrome'дун функцияларын, ишин жана туруктуулугун жакшыртууга жардам берет.</translation>
@@ -550,7 +549,6 @@
 <translation id="409109920254068737">Бул планшет менен ушул QR коду көрүнүп турган түзмөккө кире аласыз.</translation>
 <translation id="4095146165863963773">Колдонмонун дайындары жок кылынсынбы?</translation>
 <translation id="4096227151372679484">Тематикасына жараша сакталган кыстармалар жарым экранда ачылды</translation>
-<translation id="4099578267706723511">Google'га колдонуу статистикасын жөнөтүп, ката жөнүндө кабарлап, Chrome өркүндөтүлүшүнө жардам бериңиз.</translation>
 <translation id="4101475238162928417">Башка түзмөктөрдөгү сырсөздөрдү, кыстармаларды жана башкаларды колдонуу үчүн шайкештирүүнү иштетиңиз</translation>
 <translation id="410351446219883937">Авто ойнотуу</translation>
 <translation id="4106587138345390261">Chrome сайттар маалыматыңызды азыраак колдонуу менен бирдей карап чыгуу мүмкүнчүлүгүн бере турган жаңы функцияларды изилдеп жатат</translation>
@@ -584,7 +582,6 @@
 <translation id="4269820728363426813">Шилтеме дарегин көчүрүү</translation>
 <translation id="4283102315569707115">Демейки компьютердик версияларды суранасызбы?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android'дин параметрлеринен экранды кулпулоону күйгүзүңүз<ph name="END_LINK" /></translation>
-<translation id="4293476595220860475">Chrome'ду колдонуу менен, <ph name="BEGIN_TOS_LINK" />Google'дун Тейлөө шарттарына<ph name="END_TOS_LINK" /> жана <ph name="BEGIN_ATOS_LINK" />Google Chrome менен ChromeOS'тун Кошумча Тейлөө шарттарына<ph name="END_ATOS_LINK" /> макул болосуз. <ph name="BEGIN_PRIVACY_LINK" />Купуялык саясаты<ph name="END_PRIVACY_LINK" /> да колдонулат.</translation>
 <translation id="4296252229500326964">Жаңы жашыруун өтмөк</translation>
 <translation id="4298388696830689168">Байланышкан сайттар</translation>
 <translation id="4303044213806199882">chrome_скриншот_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -625,6 +622,7 @@
 
 Google аккаунтуңуздун башка Google кызматтарынан алынган серептөө таржымалы <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="452750746583162491">Шайкештирилген маалыматты карап чыгуу</translation>
+<translation id="4528638190900283934">Кошумча функцияларды колдонуу үчүн аккаунтуңузга кириңиз</translation>
 <translation id="4532845899244822526">Куржун тандаңыз</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> өтмөк}other{<ph name="TAB_COUNT_MANY" /> өтмөк, <ph name="TAB_COUNT_INCOGNITO" /> жашыруун}}</translation>
 <translation id="4554077758708533499">USB кабели аркылуу туташты</translation>
@@ -757,7 +755,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5161254044473106830">Аталышы керек</translation>
 <translation id="5170568018924773124">Куржунда көрсөтүү</translation>
 <translation id="5171045022955879922">URL издеңиз же териңиз</translation>
-<translation id="517734441743343109">Улантуу менен, <ph name="BEGIN_TOS_LINK" />Тейлөө шарттарына<ph name="END_TOS_LINK" /> жана <ph name="BEGIN_PRIVACY_LINK" />Купуялык саясатына<ph name="END_PRIVACY_LINK" /> макул болосуз.</translation>
 <translation id="5184329579814168207">Chrome'до ачуу</translation>
 <translation id="5191251636205085390">Үчүнчү тараптын cookie файлдарын алмаштыруучу жаңы технологиялар жөнүндө маалымат алып, аларды башкарыңыз</translation>
 <translation id="5193988420012215838">Алмашуу буферине көчүрүлдү</translation>
@@ -1237,10 +1234,10 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7707922173985738739">Мобилдик Интернетти колдонуу</translation>
 <translation id="7709094866268987903">Өчүрүлгөн кызыккан нерселериңиз тууралуу маалымат ушул жерде көрүнөт</translation>
 <translation id="7709918231054955894">Бардык өтмөктөрүңүздү көрүңүз</translation>
+<translation id="772434085369393266">Өтүү аракеттери HTTPS'ке чейин жаңыртылып, алар колдоого алынбаган сайттарды жүктөөдөн мурда эскертилет. Өркүндөтүлгөн коргоо иштетилгендиктен, бул параметрди өзгөртө албайсыз.</translation>
 <translation id="7725024127233776428">Сиз кыстарма катары сактаган барактар ушул жерде көрүнөт</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> түзмөгүнөн көчүрүлгөн текст</translation>
 <translation id="7762668264895820836"><ph name="SD_CARD_NUMBER" />-SD-карта</translation>
-<translation id="7762928140712606393">Кошумча функциялар жана Chrome'дун коопсуздук системасы үчүн аккаунтка кириңиз</translation>
 <translation id="7764225426217299476">Дарек кошуу</translation>
 <translation id="7772032839648071052">Купуя сөз айкашын ырастаңыз</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> өтмөгүн жабуу</translation>

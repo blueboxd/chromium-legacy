@@ -119,9 +119,10 @@ class CastActivityManager : public CastActivityManagerBase,
   void OnMediaStatusUpdated(const MediaSinkInternal& sink,
                             const base::Value::Dict& media_status,
                             absl::optional<int> request_id) override;
+
   void OnSourceChanged(const std::string& media_route_id,
                        int old_frame_tree_node_id,
-                       int frame_tree_node_id) override;
+                       int frame_tree_node_id);
 
   static void SetActitityFactoryForTest(CastActivityFactoryForTest* factory) {
     cast_activity_factory_for_test_ = factory;
@@ -304,6 +305,19 @@ class CastActivityManager : public CastActivityManagerBase,
 
   void MaybeShowIssueAtLaunch(const MediaSource& media_source,
                               const MediaSink::Id& sink_id);
+
+  void HandleMissingSinkOnJoin(
+      mojom::MediaRouteProvider::JoinRouteCallback callback,
+      const std::string& sink_id,
+      const std::string& source_id,
+      const std::string& session_id);
+  void HandleMissingSessionIdOnJoin(
+      mojom::MediaRouteProvider::JoinRouteCallback callback);
+  void HandleMissingSessionOnJoin(
+      mojom::MediaRouteProvider::JoinRouteCallback callback,
+      const std::string& sink_id,
+      const std::string& source_id,
+      const std::string& session_id);
 
   static CastActivityFactoryForTest* cast_activity_factory_for_test_;
 

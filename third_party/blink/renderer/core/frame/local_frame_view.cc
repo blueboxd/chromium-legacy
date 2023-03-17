@@ -3037,8 +3037,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }
 
-  paint_artifact_compositor_->SetPrefersLCDText(
-      !page->GetSettings().GetPreferCompositingToLCDTextEnabled());
+  paint_artifact_compositor_->SetLCDTextPreference(
+      page->GetSettings().GetLCDTextPreference());
 
   SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
                            LocalFrameUkmAggregator::kCompositingCommit);
@@ -4051,8 +4051,9 @@ void LocalFrameView::PaintOutsideOfLifecycle(GraphicsContext& context,
   });
 
   {
+    bool disable_expansion = paint_flags & PaintFlag::kOmitCompositingInfo;
     OverriddenCullRectScope force_cull_rect(*GetLayoutView()->Layer(),
-                                            cull_rect);
+                                            cull_rect, disable_expansion);
     PaintControllerCycleScope cycle_scope(context.GetPaintController(),
                                           PaintDebugInfoEnabled());
     PaintFrame(context, paint_flags);
@@ -4849,9 +4850,9 @@ PaintLayer* LocalFrameView::GetXROverlayLayer() const {
   return nullptr;
 }
 
-void LocalFrameView::PropagateCullRectNeedsUpdateForFrames() {
+void LocalFrameView::SetCullRectNeedsUpdateForFrames(bool disable_expansion) {
   ForAllNonThrottledLocalFrameViews(
-      [](LocalFrameView& frame_view) {
+      [disable_expansion](LocalFrameView& frame_view) {
         // Propagate child frame PaintLayer NeedsCullRectUpdate flag into the
         // owner frame.
         if (auto* frame_layout_view = frame_view.GetLayoutView()) {
@@ -4863,6 +4864,15 @@ void LocalFrameView::PropagateCullRectNeedsUpdateForFrames() {
                 frame_root_layer->DescendantNeedsCullRectUpdate()) {
               owner->Layer()->SetDescendantNeedsCullRectUpdate();
             }
+          }
+        }
+        // If we disable cull rect expansion in a OverriddenCullRectScope,
+        // invalidate cull rects for user scrollable areas. This may not
+        // invalidate all cull rects affected by disable_expansion but it
+        // doesn't affect correctness.
+        if (disable_expansion && frame_view.UserScrollableAreas()) {
+          for (const auto& area : *frame_view.UserScrollableAreas()) {
+            area->Layer()->SetNeedsCullRectUpdate();
           }
         }
       },
@@ -4949,26 +4959,6 @@ bool LocalFrameView::RemovePendingTransformUpdate(const LayoutObject& object) {
   return true;
 }
 
-bool LocalFrameView::UpdateAllPendingTransforms() {
-  DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
-  bool updated = false;
-  ForAllNonThrottledLocalFrameViews([&updated](LocalFrameView& frame_view) {
-    HeapHashSet<Member<LayoutObject>> blocked_updates;
-    if (frame_view.pending_transform_updates_) {
-      for (LayoutObject* object : *frame_view.pending_transform_updates_) {
-        if (!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object)) {
-          PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(*object);
-          updated = true;
-        } else {
-          blocked_updates.insert(object);
-        }
-      }
-      frame_view.pending_transform_updates_->swap(blocked_updates);
-    }
-  });
-  return updated;
-}
-
 void LocalFrameView::AddPendingOpacityUpdate(LayoutObject& object) {
   if (!pending_opacity_updates_) {
     pending_opacity_updates_ =
@@ -4987,23 +4977,44 @@ bool LocalFrameView::RemovePendingOpacityUpdate(const LayoutObject& object) {
   return true;
 }
 
-bool LocalFrameView::UpdateAllPendingOpacityUpdates() {
+bool LocalFrameView::ExecuteAllPendingUpdates() {
   DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
   bool updated = false;
   ForAllNonThrottledLocalFrameViews([&updated](LocalFrameView& frame_view) {
-    HeapHashSet<Member<LayoutObject>> blocked_updates;
     if (frame_view.pending_opacity_updates_) {
       for (LayoutObject* object : *frame_view.pending_opacity_updates_) {
-        if (!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object)) {
-          PaintPropertyTreeBuilder::DirectlyUpdateOpacityValue(*object);
-          updated = true;
-        } else {
-          blocked_updates.insert(object);
-        }
+        DCHECK(
+            !DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object));
+        PaintPropertyTreeBuilder::DirectlyUpdateOpacityValue(*object);
+        updated = true;
       }
-      frame_view.pending_opacity_updates_->swap(blocked_updates);
+      frame_view.pending_opacity_updates_->clear();
+    }
+    if (frame_view.pending_transform_updates_) {
+      for (LayoutObject* object : *frame_view.pending_transform_updates_) {
+        DCHECK(
+            !DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object));
+        PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(*object);
+        updated = true;
+      }
+      frame_view.pending_transform_updates_->clear();
     }
   });
   return updated;
+}
+
+void LocalFrameView::RemoveAllPendingUpdates() {
+  if (pending_opacity_updates_) {
+    for (LayoutObject* object : *pending_opacity_updates_) {
+      object->SetNeedsPaintPropertyUpdate();
+    }
+    pending_opacity_updates_->clear();
+  }
+  if (pending_transform_updates_) {
+    for (LayoutObject* object : *pending_transform_updates_) {
+      object->SetNeedsPaintPropertyUpdate();
+    }
+    pending_transform_updates_->clear();
+  }
 }
 }  // namespace blink

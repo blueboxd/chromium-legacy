@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 
 #import "base/check_op.h"
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "build/branding_buildflags.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -63,19 +66,34 @@ const PromoStyleValues kStandardPromoStyle = {
 
 // TODO(crbug.com/1331010): We may remove these styles if we don't launch them
 // with the feed promo.
-const PromoStyleValues kTitledPromoStyle = {
+const PromoStyleValues kCompactVerticalStyle = {
     16.0,  // kStackViewTopPadding
     16.0,  // kStackViewBottomPadding
     19.0,  // kStackViewTrailingMargin
-    0.0,   // kContentStackViewSubViewSpacing
+    10.0,  // kContentStackViewSubViewSpacing
     5.0,   // kTextStackViewSubViewSpacing
-    24.0,  // kButtonTitleHorizontalContentInset
+    42.0,  // kButtonTitleHorizontalContentInset
     9.0,   // kButtonTitleVerticalContentInset
     8.0,   // kButtonCornerRadius
     -8.0,  // kCloseButtonTrailingMargin
     8.0,   // kCloseButtonTopMargin
-    19.0,  // kMainPromoSubViewSpacing
+    12.0,  // kMainPromoSubViewSpacing
     5.0,   // kButtonStackViewSubViewSpacing
+};
+
+const PromoStyleValues kCompactHorizontalStyle = {
+    20.0,  // kStackViewTopPadding
+    14.0,  // kStackViewBottomPadding
+    42.0,  // kStackViewTrailingMargin
+    14.0,  // kContentStackViewSubViewSpacing
+    0.0,   // kTextStackViewSubViewSpacing
+    0.0,   // kButtonTitleHorizontalContentInset
+    0.0,   // kButtonTitleVerticalContentInset
+    0.0,   // kButtonCornerRadius
+    -9.0,  // kCloseButtonTrailingMargin
+    9.0,   // kCloseButtonTopMargin
+    6.0,   // kMainPromoSubViewSpacing
+    0.0,   // kButtonStackViewSubViewSpacing
 };
 
 const PromoStyleValues kTitledCompactPromoStyle = {
@@ -101,11 +119,16 @@ constexpr CGFloat kStackViewHorizontalPadding = 16.0;
 constexpr CGFloat kNonProfileIconCornerRadius = 14;
 // Size for the close button width and height.
 constexpr CGFloat kCloseButtonWidthHeight = 24;
-// Size of the signin promo image.
+// Sizes of the signin promo image.
 constexpr CGFloat kProfileImageHeightWidth = 32.0;
+constexpr CGFloat kProfileImageCompactHeightWidth = 48.0;
+constexpr CGFloat kNonProfileLogoImageCompactHeightWidth = 34.0;
+constexpr CGFloat kNonProfileBackgroundImageCompactHeightWidth = 54.0;
 constexpr CGFloat kNonProfileImageHeightWidth = 56.0;
 // Size of the font for the headline.
 constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
+// Constant for the size of the compact style text.
+constexpr CGFloat kCompactStyleTextSize = 15.0;
 }
 
 @interface SigninPromoView ()
@@ -132,15 +155,20 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* standardLayoutConstraints;
 @property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* titledLayoutConstraints;
+    NSArray<NSLayoutConstraint*>* compactVerticalLayoutConstraints;
 @property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* titledCompactLayoutConstraints;
+    NSArray<NSLayoutConstraint*>* compactHorizontalLayoutConstraints;
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* compactTitledLayoutConstraints;
 // Constraints for the image size.
 @property(nonatomic, strong) NSArray<NSLayoutConstraint*>* imageConstraints;
 @end
 
 @implementation SigninPromoView {
   signin_metrics::AccessPoint _accessPoint;
+  // Activity indicator shown on top of the primary button.
+  // See `startSignInSpinner` and `stopSignInSpinner`.
+  UIActivityIndicatorView* _activityIndicatorView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -177,17 +205,17 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
     // Create and setup primary button.
     // TODO(crbug.com/1418068): Simplify after minimum version required is >=
     // iOS 15.
-    if (@available(iOS 15, *)) {
-      UIButtonConfiguration* buttonConfiguration =
-          UIButtonConfiguration.plainButtonConfiguration;
-      _primaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
-                                           primaryAction:nil];
-    }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-    else {
+    if (base::ios::IsRunningOnIOS15OrLater() &&
+        IsUIButtonConfigurationEnabled()) {
+      if (@available(iOS 15, *)) {
+        UIButtonConfiguration* buttonConfiguration =
+            [UIButtonConfiguration plainButtonConfiguration];
+        _primaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
+                                             primaryAction:nil];
+      }
+    } else {
       _primaryButton = [[UIButton alloc] init];
     }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
     [_primaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
@@ -288,7 +316,20 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 
 - (void)setProfileImage:(UIImage*)image {
   DCHECK_NE(self.mode, SigninPromoViewModeNoAccounts);
-  [self updateImageSizeForProfileImage:YES];
+  switch (self.promoViewStyle) {
+    case SigninPromoViewStyleStandard:
+      [self updateImageWithSize:kProfileImageHeightWidth];
+      break;
+    case SigninPromoViewStyleCompactVertical:
+    case SigninPromoViewStyleCompactHorizontal:
+      [self updateImageWithSize:kProfileImageCompactHeightWidth];
+      break;
+    case SigninPromoViewStyleCompactTitled:
+      // Compact Titled should not have a profile image, nor it should call
+      // `setProfileImage:`.
+      CHECK(NO);
+      break;
+  }
   DCHECK_EQ(kProfileImageHeightWidth, image.size.height);
   DCHECK_EQ(kProfileImageHeightWidth, image.size.width);
   self.imageView.image =
@@ -298,16 +339,88 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 }
 
 - (void)setNonProfileImage:(UIImage*)image {
-  [self updateImageSizeForProfileImage:NO];
-  DCHECK_EQ(kNonProfileImageHeightWidth, image.size.height);
-  DCHECK_EQ(kNonProfileImageHeightWidth, image.size.width);
-  self.imageView.image = image;
-  self.imageView.backgroundColor = [UIColor colorNamed:kSolidWhiteColor];
-  self.imageView.layer.cornerRadius = kNonProfileIconCornerRadius;
+  switch (self.promoViewStyle) {
+    case SigninPromoViewStyleStandard:
+      // Standard Style should not call `setNonProfileImage`.
+      DCHECK(NO);
+      break;
+    case SigninPromoViewStyleCompactTitled:
+      [self updateImageWithSize:kNonProfileImageHeightWidth];
+      self.imageView.image = image;
+      self.imageView.backgroundColor = [UIColor colorNamed:kSolidWhiteColor];
+      self.imageView.layer.cornerRadius = kNonProfileIconCornerRadius;
+      break;
+    case SigninPromoViewStyleCompactVertical:
+    case SigninPromoViewStyleCompactHorizontal: {
+      [self updateImageWithSize:kNonProfileBackgroundImageCompactHeightWidth];
+      // Declare a new image view to hold the non-profile image logo
+      UIImageView* logoImageView = [[UIImageView alloc] init];
+      logoImageView.image = image;
+      self.imageView.image = nil;
+      self.imageView.backgroundColor =
+          [UIColor colorNamed:kPrimaryBackgroundColor];
+      self.imageView.layer.cornerRadius = kNonProfileIconCornerRadius;
+
+      logoImageView.translatesAutoresizingMaskIntoConstraints = NO;
+      logoImageView.contentMode = UIViewContentModeScaleAspectFit;
+      [NSLayoutConstraint activateConstraints:@[
+        [logoImageView.heightAnchor
+            constraintEqualToConstant:kNonProfileLogoImageCompactHeightWidth],
+        [logoImageView.widthAnchor
+            constraintEqualToConstant:kNonProfileLogoImageCompactHeightWidth],
+      ]];
+      // Add subview and constraints to current UIImageView which represents the
+      // logo's solid background.
+      [self.imageView addSubview:logoImageView];
+      [NSLayoutConstraint activateConstraints:@[
+        [logoImageView.centerXAnchor
+            constraintEqualToAnchor:self.imageView.centerXAnchor],
+        [logoImageView.centerYAnchor
+            constraintEqualToAnchor:self.imageView.centerYAnchor]
+      ]];
+      break;
+    }
+  }
 }
 
 - (void)prepareForReuse {
   self.delegate = nil;
+  if (_activityIndicatorView) {
+    [self stopSignInSpinner];
+  }
+}
+
+- (void)startSignInSpinner {
+  if (_activityIndicatorView) {
+    return;
+  }
+  self.primaryButton.titleLabel.alpha = 0;
+  _activityIndicatorView = [[UIActivityIndicatorView alloc] init];
+  _activityIndicatorView.color = UIColor.whiteColor;
+  _activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:_activityIndicatorView];
+  [NSLayoutConstraint activateConstraints:@[
+    [_activityIndicatorView.centerXAnchor
+        constraintEqualToAnchor:self.primaryButton.centerXAnchor],
+    [_activityIndicatorView.centerYAnchor
+        constraintEqualToAnchor:self.primaryButton.centerYAnchor],
+  ]];
+  self.primaryButton.enabled = NO;
+  self.secondaryButton.enabled = NO;
+  self.closeButton.enabled = NO;
+  [_activityIndicatorView startAnimating];
+}
+
+- (void)stopSignInSpinner {
+  if (!_activityIndicatorView) {
+    return;
+  }
+  self.primaryButton.titleLabel.alpha = 1.;
+  [_activityIndicatorView removeFromSuperview];
+  _activityIndicatorView = nil;
+  self.primaryButton.enabled = YES;
+  self.secondaryButton.enabled = YES;
+  self.closeButton.enabled = YES;
 }
 
 #pragma mark - NSObject(Accessibility)
@@ -330,14 +443,17 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 }
 
 - (BOOL)accessibilityActivate {
+  if (!self.primaryButton.enabled) {
+    return NO;
+  }
   [self accessibilityPrimaryAction:nil];
   return YES;
 }
 
 - (NSArray<UIAccessibilityCustomAction*>*)accessibilityCustomActions {
   NSMutableArray* actions = [NSMutableArray array];
-
-  if (self.mode == SigninPromoViewModeSigninWithAccount) {
+  if (self.secondaryButton.enabled &&
+      self.mode == SigninPromoViewModeSigninWithAccount) {
     NSString* secondaryActionName =
         [self.secondaryButton titleForState:UIControlStateNormal];
     UIAccessibilityCustomAction* secondaryCustomAction =
@@ -347,8 +463,7 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
                 selector:@selector(accessibilitySecondaryAction:)];
     [actions addObject:secondaryCustomAction];
   }
-
-  if (!self.closeButton.hidden) {
+  if (self.closeButton.enabled && !self.closeButton.hidden) {
     NSString* closeActionName =
         l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_CLOSE_ACCESSIBILITY);
     UIAccessibilityCustomAction* closeCustomAction =
@@ -358,7 +473,6 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
                 selector:@selector(accessibilityCloseAction:)];
     [actions addObject:closeCustomAction];
   }
-
   return actions;
 }
 
@@ -422,35 +536,67 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
   return _standardLayoutConstraints;
 }
 
-// Constraints specific to titled layout.
-- (NSArray<NSLayoutConstraint*>*)titledLayoutConstraints {
-  if (!_titledLayoutConstraints) {
-    _titledLayoutConstraints = @[
+// Constraints specific to the compact vertical layout.
+- (NSArray<NSLayoutConstraint*>*)compactVerticalLayoutConstraints {
+  if (!_compactVerticalLayoutConstraints) {
+    _compactVerticalLayoutConstraints = @[
       // Content padding.
       [self.contentStackView.topAnchor
           constraintEqualToAnchor:self.topAnchor
-                         constant:kTitledPromoStyle.kStackViewTopPadding],
+                         constant:kCompactVerticalStyle.kStackViewTopPadding],
       [self.contentStackView.bottomAnchor
           constraintEqualToAnchor:self.bottomAnchor
-                         constant:-kTitledPromoStyle.kStackViewBottomPadding],
+                         constant:-kCompactVerticalStyle
+                                       .kStackViewBottomPadding],
       [self.contentStackView.trailingAnchor
           constraintEqualToAnchor:self.trailingAnchor
-                         constant:-kTitledPromoStyle.kStackViewTrailingMargin],
+                         constant:-kCompactVerticalStyle
+                                       .kStackViewTrailingMargin],
       [self.closeButton.trailingAnchor
           constraintEqualToAnchor:self.trailingAnchor
-                         constant:kTitledPromoStyle.kCloseButtonTrailingMargin],
+                         constant:kCompactVerticalStyle
+                                      .kCloseButtonTrailingMargin],
       [self.closeButton.topAnchor
           constraintEqualToAnchor:self.topAnchor
-                         constant:kTitledPromoStyle.kCloseButtonTopMargin],
+                         constant:kCompactVerticalStyle.kCloseButtonTopMargin],
     ];
   }
-  return _titledLayoutConstraints;
+  return _compactVerticalLayoutConstraints;
+}
+
+// Constraints specific to compact horitzontal layout.
+- (NSArray<NSLayoutConstraint*>*)compactHorizontalLayoutConstraints {
+  if (!_compactHorizontalLayoutConstraints) {
+    _compactHorizontalLayoutConstraints = @[
+      // Content padding.
+      [self.contentStackView.topAnchor
+          constraintEqualToAnchor:self.topAnchor
+                         constant:kCompactHorizontalStyle.kStackViewTopPadding],
+      [self.contentStackView.bottomAnchor
+          constraintEqualToAnchor:self.bottomAnchor
+                         constant:-kCompactHorizontalStyle
+                                       .kStackViewBottomPadding],
+      [self.contentStackView.trailingAnchor
+          constraintEqualToAnchor:self.trailingAnchor
+                         constant:-kCompactHorizontalStyle
+                                       .kStackViewTrailingMargin],
+      [self.closeButton.trailingAnchor
+          constraintEqualToAnchor:self.trailingAnchor
+                         constant:kCompactHorizontalStyle
+                                      .kCloseButtonTrailingMargin],
+      [self.closeButton.topAnchor
+          constraintEqualToAnchor:self.topAnchor
+                         constant:kCompactHorizontalStyle
+                                      .kCloseButtonTopMargin],
+    ];
+  }
+  return _compactHorizontalLayoutConstraints;
 }
 
 // Constraints specific to titled compact layout.
-- (NSArray<NSLayoutConstraint*>*)titledCompactLayoutConstraints {
-  if (!_titledCompactLayoutConstraints) {
-    _titledCompactLayoutConstraints = @[
+- (NSArray<NSLayoutConstraint*>*)compactTitledLayoutConstraints {
+  if (!_compactTitledLayoutConstraints) {
+    _compactTitledLayoutConstraints = @[
       // Content padding.
       [self.contentStackView.topAnchor
           constraintEqualToAnchor:self.topAnchor
@@ -474,7 +620,7 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
                                       .kCloseButtonTopMargin],
     ];
   }
-  return _titledCompactLayoutConstraints;
+  return _compactTitledLayoutConstraints;
 }
 
 #pragma mark - Private
@@ -518,90 +664,29 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 
       // TODO(crbug.com/1418068): Simplify after minimum version required is >=
       // iOS 15.
-      if (@available(iOS 15, *)) {
-        self.primaryButton.configuration.contentInsets =
-            NSDirectionalEdgeInsetsMake(
-                kStandardPromoStyle.kButtonTitleVerticalContentInset,
-                kStandardPromoStyle.kButtonTitleHorizontalContentInset,
-                kStandardPromoStyle.kButtonTitleVerticalContentInset,
-                kStandardPromoStyle.kButtonTitleHorizontalContentInset);
-      }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-      else {
-        self.primaryButton.contentEdgeInsets = UIEdgeInsetsMake(
+      if (base::ios::IsRunningOnIOS15OrLater() &&
+          IsUIButtonConfigurationEnabled()) {
+        if (@available(iOS 15, *)) {
+          self.primaryButton.configuration.contentInsets =
+              NSDirectionalEdgeInsetsMake(
+                  kStandardPromoStyle.kButtonTitleVerticalContentInset,
+                  kStandardPromoStyle.kButtonTitleHorizontalContentInset,
+                  kStandardPromoStyle.kButtonTitleVerticalContentInset,
+                  kStandardPromoStyle.kButtonTitleHorizontalContentInset);
+        }
+      } else {
+        UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kStandardPromoStyle.kButtonTitleVerticalContentInset,
             kStandardPromoStyle.kButtonTitleHorizontalContentInset,
             kStandardPromoStyle.kButtonTitleVerticalContentInset,
             kStandardPromoStyle.kButtonTitleHorizontalContentInset);
+        SetContentEdgeInsets(self.primaryButton, contentEdgeInsets);
       }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
       constraintsToActivate = self.standardLayoutConstraints;
       break;
     }
-    case SigninPromoViewStyleTitled: {
-      // Lays out content vertically for standard view.
-      self.contentStackView.axis = UILayoutConstraintAxisVertical;
-      self.contentStackView.spacing =
-          kTitledPromoStyle.kContentStackViewSubViewSpacing;
-      self.textVerticalStackView.alignment = UIStackViewAlignmentCenter;
-      self.textVerticalStackView.spacing =
-          kTitledPromoStyle.kTextStackViewSubViewSpacing;
-      self.buttonVerticalStackView.spacing =
-          kTitledPromoStyle.kButtonStackViewSubViewSpacing;
-      self.mainPromoStackView.spacing =
-          kTitledPromoStyle.kMainPromoSubViewSpacing;
-      self.textLabel.textAlignment = NSTextAlignmentCenter;
-      self.secondaryButton.hidden = YES;
-      self.imageView.hidden = YES;
-
-      // Configures fonts for titled layout.
-      // TODO(crbug.com/1331010): Make this font size dynamic.
-      self.titleLabel.font =
-          [[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              fontWithSize:kSignInPromoHeadlineFontSize];
-
-      self.titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
-      self.textLabel.font = [[UIFont
-          preferredFontForTextStyle:UIFontTextStyleBody] fontWithSize:15];
-      self.textLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
-
-      // In the standard layout, the button has a background.
-      [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
-                               forState:UIControlStateNormal];
-      self.primaryButton.titleLabel.font =
-          [[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              fontWithSize:kSignInPromoHeadlineFontSize];
-      self.primaryButton.backgroundColor =
-          [UIColor colorNamed:kBackgroundColor];
-      self.primaryButton.layer.cornerRadius =
-          kTitledPromoStyle.kButtonCornerRadius;
-      self.primaryButton.clipsToBounds = YES;
-
-      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-      // iOS 15.
-      if (@available(iOS 15, *)) {
-        self.primaryButton.configuration.contentInsets =
-            NSDirectionalEdgeInsetsMake(
-                kTitledPromoStyle.kButtonTitleVerticalContentInset,
-                kTitledPromoStyle.kButtonTitleHorizontalContentInset,
-                kTitledPromoStyle.kButtonTitleVerticalContentInset,
-                kTitledPromoStyle.kButtonTitleHorizontalContentInset);
-      }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-      else {
-        self.primaryButton.contentEdgeInsets = UIEdgeInsetsMake(
-            kTitledPromoStyle.kButtonTitleVerticalContentInset,
-            kTitledPromoStyle.kButtonTitleHorizontalContentInset,
-            kTitledPromoStyle.kButtonTitleVerticalContentInset,
-            kTitledPromoStyle.kButtonTitleHorizontalContentInset);
-      }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-
-      constraintsToActivate = self.titledLayoutConstraints;
-      break;
-    }
-    case SigninPromoViewStyleTitledCompact: {
+    case SigninPromoViewStyleCompactTitled: {
       // Lays out content for titled compact view.
       self.buttonVerticalStackView.alignment = UIStackViewAlignmentLeading;
       self.buttonVerticalStackView.spacing =
@@ -636,25 +721,139 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 
       // TODO(crbug.com/1418068): Simplify after minimum version required is >=
       // iOS 15.
-      if (@available(iOS 15, *)) {
-        self.primaryButton.configuration.contentInsets =
-            NSDirectionalEdgeInsetsMake(
-                kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
-                kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset,
-                kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
-                kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset);
-      }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-      else {
-        self.primaryButton.contentEdgeInsets = UIEdgeInsetsMake(
+      if (base::ios::IsRunningOnIOS15OrLater() &&
+          IsUIButtonConfigurationEnabled()) {
+        if (@available(iOS 15, *)) {
+          self.primaryButton.configuration.contentInsets =
+              NSDirectionalEdgeInsetsMake(
+                  kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
+                  kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset,
+                  kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
+                  kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset);
+        }
+      } else {
+        UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
             kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset,
             kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
             kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset);
+        SetContentEdgeInsets(self.primaryButton, contentEdgeInsets);
+      }
+
+      constraintsToActivate = self.compactTitledLayoutConstraints;
+      break;
+    }
+    case SigninPromoViewStyleCompactHorizontal: {
+      // Lays out content for the horizontal compact view.
+      self.buttonVerticalStackView.alignment = UIStackViewAlignmentLeading;
+      self.buttonVerticalStackView.spacing =
+          kCompactHorizontalStyle.kButtonStackViewSubViewSpacing;
+      self.mainPromoStackView.alignment = UIStackViewAlignmentLeading;
+      self.mainPromoStackView.spacing =
+          kCompactHorizontalStyle.kMainPromoSubViewSpacing;
+      self.contentStackView.alignment = UIStackViewAlignmentTop;
+      self.contentStackView.axis = UILayoutConstraintAxisHorizontal;
+      self.contentStackView.spacing =
+          kCompactHorizontalStyle.kContentStackViewSubViewSpacing;
+      self.textVerticalStackView.alignment = UIStackViewAlignmentLeading;
+      self.textVerticalStackView.spacing =
+          kCompactHorizontalStyle.kTextStackViewSubViewSpacing;
+      self.textLabel.textAlignment = NSTextAlignmentNatural;
+      self.secondaryButton.hidden = YES;
+
+      // Configures fonts for the compact horizontal layout.
+      self.textLabel.font =
+          [[UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+              fontWithSize:kCompactStyleTextSize];
+      self.textLabel.textColor = [UIColor colorNamed:kGrey800Color];
+
+      // In the Compact Horizontal style, the primary button is plain.
+      [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                               forState:UIControlStateNormal];
+      self.primaryButton.backgroundColor = nil;
+      self.primaryButton.layer.cornerRadius =
+          kCompactHorizontalStyle.kButtonCornerRadius;
+      self.primaryButton.clipsToBounds = NO;
+
+      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+      // iOS 15.
+      if (base::ios::IsRunningOnIOS15OrLater() &&
+          IsUIButtonConfigurationEnabled()) {
+        if (@available(iOS 15, *)) {
+          self.primaryButton.configuration.contentInsets =
+              NSDirectionalEdgeInsetsMake(
+                  kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
+                  kCompactHorizontalStyle.kButtonTitleHorizontalContentInset,
+                  kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
+                  kCompactHorizontalStyle.kButtonTitleHorizontalContentInset);
+        }
+      }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+      else {
+        self.primaryButton.contentEdgeInsets = UIEdgeInsetsMake(
+            kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
+            kCompactHorizontalStyle.kButtonTitleHorizontalContentInset,
+            kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
+            kCompactHorizontalStyle.kButtonTitleHorizontalContentInset);
       }
 #endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
-      constraintsToActivate = self.titledCompactLayoutConstraints;
+      constraintsToActivate = self.compactHorizontalLayoutConstraints;
+      break;
+    }
+    case SigninPromoViewStyleCompactVertical: {
+      self.contentStackView.axis = UILayoutConstraintAxisVertical;
+      self.contentStackView.spacing =
+          kCompactVerticalStyle.kContentStackViewSubViewSpacing;
+      self.textVerticalStackView.alignment = UIStackViewAlignmentCenter;
+      self.textVerticalStackView.spacing =
+          kCompactVerticalStyle.kTextStackViewSubViewSpacing;
+      self.buttonVerticalStackView.spacing =
+          kCompactVerticalStyle.kButtonStackViewSubViewSpacing;
+      self.mainPromoStackView.spacing =
+          kCompactVerticalStyle.kMainPromoSubViewSpacing;
+      self.textLabel.textAlignment = NSTextAlignmentCenter;
+      self.secondaryButton.hidden = YES;
+      self.imageView.hidden = NO;
+
+      self.textLabel.font =
+          [[UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+              fontWithSize:kCompactStyleTextSize];
+      self.textLabel.textColor = [UIColor colorNamed:kGrey800Color];
+
+      [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                               forState:UIControlStateNormal];
+      self.primaryButton.titleLabel.font =
+          [[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+              fontWithSize:kSignInPromoHeadlineFontSize];
+      self.primaryButton.backgroundColor =
+          [UIColor colorNamed:kBackgroundColor];
+      self.primaryButton.layer.cornerRadius =
+          kCompactVerticalStyle.kButtonCornerRadius;
+      self.primaryButton.clipsToBounds = YES;
+
+      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+      // iOS 15.
+      if (base::ios::IsRunningOnIOS15OrLater() &&
+          IsUIButtonConfigurationEnabled()) {
+        if (@available(iOS 15, *)) {
+          self.primaryButton.configuration.contentInsets =
+              NSDirectionalEdgeInsetsMake(
+                  kCompactVerticalStyle.kButtonTitleVerticalContentInset,
+                  kCompactVerticalStyle.kButtonTitleHorizontalContentInset,
+                  kCompactVerticalStyle.kButtonTitleVerticalContentInset,
+                  kCompactVerticalStyle.kButtonTitleHorizontalContentInset);
+        }
+      } else {
+        UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
+            kCompactVerticalStyle.kButtonTitleVerticalContentInset,
+            kCompactVerticalStyle.kButtonTitleHorizontalContentInset,
+            kCompactVerticalStyle.kButtonTitleVerticalContentInset,
+            kCompactVerticalStyle.kButtonTitleHorizontalContentInset);
+        SetContentEdgeInsets(self.primaryButton, contentEdgeInsets);
+      }
+
+      constraintsToActivate = self.compactVerticalLayoutConstraints;
       break;
     }
   }
@@ -665,14 +864,7 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 }
 
 // Updates image size constraints based on if it is a profile avatar.
-- (void)updateImageSizeForProfileImage:(BOOL)isProfileImage {
-  CGFloat imageSize;
-  if (isProfileImage) {
-    imageSize = kProfileImageHeightWidth;
-  } else {
-    imageSize = kNonProfileImageHeightWidth;
-  }
-
+- (void)updateImageWithSize:(CGFloat)imageSize {
   [NSLayoutConstraint deactivateConstraints:self.imageConstraints];
   self.imageConstraints = @[
     [self.imageView.heightAnchor constraintEqualToConstant:imageSize],
@@ -708,15 +900,18 @@ constexpr CGFloat kSignInPromoHeadlineFontSize = 17.0;
 }
 
 - (void)accessibilityPrimaryAction:(id)unused {
+  DCHECK(self.primaryButton.enabled);
   [self.primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)accessibilitySecondaryAction:(id)unused {
+  DCHECK(self.secondaryButton.enabled);
   [self.secondaryButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)accessibilityCloseAction:(id)unused {
+  DCHECK(self.closeButton.enabled);
   [self.closeButton sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 

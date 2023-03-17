@@ -80,13 +80,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
-  // Invoked before sending private aggregation requests. Logs that requests
-  // were made.
+  // Invoked when private aggregation requests are received from the worklet.
   using LogPrivateAggregationRequestsCallback = base::RepeatingCallback<void(
-      const std::map<
-          url::Origin,
-          std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>&
-          private_aggregation_requests)>;
+      const PrivateAggregationRequests& private_aggregation_requests)>;
 
   // Seller-specific information about the winning bid. The top-level seller and
   // (if present) component seller associated with the winning bid have separate
@@ -142,6 +138,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
 
     // Bid returned by the bidder.
     double bid;
+
+    // Ad cost returned by the bidder.
+    absl::optional<double> ad_cost;
 
     // How long it took to generate the bid.
     base::TimeDelta bid_duration;
@@ -250,20 +249,21 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // the corresponding requests. Does nothing if `private_aggregation_requests`
   // is empty.
   //
-  // Only invokes `log_private_aggregation_requests_callback` if
-  // `private_aggregation_manager` is nullptr.
-  //
   // Static so that this can be invoked when there's no winner, and a reporter
   // isn't needed.
   static void OnFledgePrivateAggregationRequests(
       PrivateAggregationManager* private_aggregation_manager,
-      LogPrivateAggregationRequestsCallback
-          log_private_aggregation_requests_callback,
       const url::Origin& main_frame_origin,
       std::map<
           url::Origin,
           std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
           private_aggregation_requests);
+
+  // Returns the result of performing stochastic rounding on `value`. We limit
+  // the value to `k` bits of precision in the mantissa (not including sign) and
+  // 8 bits in the exponent. So k=8 would correspond to a 16 bit floating point
+  // number (more specifically, bfloat16). Public to enable testing.
+  static double RoundStochasticallyToKBits(double value, unsigned k);
 
  private:
   // Starts request for a seller worklet. Invokes OnSellerWorkletReceived() on

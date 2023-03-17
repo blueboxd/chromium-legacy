@@ -19,7 +19,7 @@
 #import "components/commerce/core/test_utils.h"
 #import "components/optimization_guide/proto/push_notification.pb.h"
 #import "components/session_proto_db/session_proto_db.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/session_proto_db_factory.h"
 #import "ios/chrome/browser/commerce/shopping_service_factory.h"
@@ -123,7 +123,6 @@ const bookmarks::BookmarkNode* PrepareSubscription(
   absl::optional<commerce::ProductInfo> optional_product_info;
   optional_product_info.emplace(product_info);
   shopping_service->SetResponseForGetProductInfoForUrl(optional_product_info);
-  EXPECT_TRUE(commerce::IsBookmarkPriceTracked(bookmark_model, product));
   return product;
 }
 
@@ -137,8 +136,9 @@ class CommercePushNotificationClientTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder builder;
-    builder.AddTestingFactory(ios::BookmarkModelFactory::GetInstance(),
-                              ios::BookmarkModelFactory::GetDefaultFactory());
+    builder.AddTestingFactory(
+        ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
+        ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
     builder.AddTestingFactory(
         commerce::ShoppingServiceFactory::GetInstance(),
         base::BindRepeating(
@@ -161,8 +161,9 @@ class CommercePushNotificationClientTest : public PlatformTest {
     FakeUrlLoadingBrowserAgent::InjectForBrowser(browser_.get());
     commerce_push_notification_client_.SetLastUsedChromeBrowserStateForTesting(
         chrome_browser_state_.get());
-    bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
-        chrome_browser_state_.get());
+    bookmark_model_ =
+        ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+            chrome_browser_state_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
     shopping_service_ = static_cast<commerce::MockShoppingService*>(
         commerce::ShoppingServiceFactory::GetForBrowserState(
@@ -223,11 +224,13 @@ TEST_F(CommercePushNotificationClientTest, TestActionableNotifications) {
 }
 
 TEST_F(CommercePushNotificationClientTest, TestUntrackPrice) {
-  const bookmarks::BookmarkNode* product =
-      PrepareSubscription(shopping_service_, bookmark_model_, true);
+  PrepareSubscription(shopping_service_, bookmark_model_, true);
   NSDictionary* user_info = SerializeOptGuideCommercePayload();
   base::RunLoop run_loop;
   base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*shopping_service_, Unsubscribe(testing::_, testing::_)).Times(1);
+
   // Simulate user clicking 'visit site'.
   HandleNotificationInteraction(kUntrackPriceActionId, user_info, &run_loop);
   run_loop.Run();
@@ -235,7 +238,6 @@ TEST_F(CommercePushNotificationClientTest, TestUntrackPrice) {
                                      /*sample=*/true, /*expected_count=*/1);
   histogram_tester.ExpectBucketCount(kUntrackSuccessHistogramName,
                                      /*sample=*/true, /*expected_count=*/1);
-  EXPECT_FALSE(commerce::IsBookmarkPriceTracked(bookmark_model_, product));
 }
 
 TEST_F(CommercePushNotificationClientTest, TestNoBookmarkFound) {
@@ -244,6 +246,9 @@ TEST_F(CommercePushNotificationClientTest, TestNoBookmarkFound) {
   NSDictionary* user_info = SerializeOptGuideCommercePayload();
   base::RunLoop run_loop;
   base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*shopping_service_, Unsubscribe(testing::_, testing::_)).Times(0);
+
   // Simulate user clicking 'visit site'.
   HandleNotificationInteraction(kUntrackPriceActionId, user_info, &run_loop);
   run_loop.Run();
@@ -254,11 +259,13 @@ TEST_F(CommercePushNotificationClientTest, TestNoBookmarkFound) {
 }
 
 TEST_F(CommercePushNotificationClientTest, TestUntrackPriceFailed) {
-  const bookmarks::BookmarkNode* product =
-      PrepareSubscription(shopping_service_, bookmark_model_, false);
+  PrepareSubscription(shopping_service_, bookmark_model_, false);
   NSDictionary* user_info = SerializeOptGuideCommercePayload();
   base::RunLoop run_loop;
   base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*shopping_service_, Unsubscribe(testing::_, testing::_)).Times(1);
+
   // Simulate user clicking 'visit site'.
   HandleNotificationInteraction(kUntrackPriceActionId, user_info, &run_loop);
   run_loop.Run();
@@ -266,5 +273,4 @@ TEST_F(CommercePushNotificationClientTest, TestUntrackPriceFailed) {
                                      /*sample=*/false, /*expected_count=*/1);
   histogram_tester.ExpectBucketCount(kBookmarkFoundHistogramName,
                                      /*sample=*/true, /*expected_count=*/1);
-  EXPECT_TRUE(commerce::IsBookmarkPriceTracked(bookmark_model_, product));
 }

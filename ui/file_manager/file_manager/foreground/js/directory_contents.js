@@ -16,7 +16,7 @@ import {createTrashReaders} from '../../common/js/trash.js';
 import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {EntryLocation} from '../../externs/entry_location.js';
-import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
+import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {SearchFileType, SearchLocation, SearchOptions, SearchRecency} from '../../externs/ts/state.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {getDefaultSearchOptions} from '../../state/store.js';
@@ -319,12 +319,13 @@ export class SearchV2ContentScanner extends ContentScanner {
     const searchPromises = [];
     const category = this.getDesiredCategory_();
     const now = new Date();
+    const timestamp = getEarliestTimestamp(this.options_.recency, now);
     if (this.isSearchingLocal_()) {
       searchPromises.push(new Promise((resolve, reject) => {
+        metrics.startInterval('Search.Local.Latency');
         const rootDir = this.isSearchingRoot_() ?
             this.entry_.filesystem.root :
             /** @type {DirectoryEntry} */ (util.unwrapEntry(this.entry_));
-        const timestamp = getEarliestTimestamp(this.options_.recency, now);
         chrome.fileManagerPrivate.searchFiles(
             {
               rootDir: rootDir,
@@ -345,6 +346,7 @@ export class SearchV2ContentScanner extends ContentScanner {
                     util.FileError.NOT_READABLE_ERR,
                     chrome.runtime.lastError.message));
               } else {
+                metrics.recordInterval('Search.Local.Latency');
                 resolve(entries);
               }
             });
@@ -352,10 +354,12 @@ export class SearchV2ContentScanner extends ContentScanner {
     }
     if (this.isSearchingDrive_()) {
       searchPromises.push(new Promise((resolve, reject) => {
+        metrics.startInterval('Search.Drive.Latency');
         chrome.fileManagerPrivate.searchDrive(
             {
               query: this.query_,
               category: category,
+              modifiedTimestamp: timestamp,
               nextFeed: '',
             },
             (entries, nextFeed) => {
@@ -368,6 +372,7 @@ export class SearchV2ContentScanner extends ContentScanner {
               } else if (!entries) {
                 reject(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
               } else {
+                metrics.recordInterval('Search.Drive.Latency');
                 resolve(entries);
               }
             });
@@ -379,14 +384,17 @@ export class SearchV2ContentScanner extends ContentScanner {
       successCallback();
     }
     Promise.allSettled(searchPromises).then((results) => {
+      let resultCount = 0;
       for (const result of results) {
         if (result.status === 'rejected') {
           errorCallback(/** @type {DOMError} */ (result.reason));
         } else if (result.status === 'fulfilled') {
           entriesCallback(result.value);
+          resultCount += result.value.length;
         }
       }
       successCallback();
+      metrics.recordMediumCount('Search.ResultCount', resultCount);
     });
   }
 }
@@ -698,8 +706,8 @@ export class FileFilter extends EventTarget {
 
   /**
    * @param {string} name Filter identifier.
-   * @param {function(Entry)} callback A filter - a function receiving an Entry,
-   *     and returning bool.
+   * @param {function((Entry|FilesAppEntry))} callback A filter - a function
+   *     receiving an Entry, and returning bool.
    */
   addFilter(name, callback) {
     this.filters_[name] = callback;
@@ -800,7 +808,7 @@ export class FileFilter extends EventTarget {
   }
 
   /**
-   * @param {Entry} entry File entry.
+   * @param {Entry|FilesAppEntry} entry File entry.
    * @return {boolean} True if the file should be shown, false otherwise.
    */
   filter(entry) {

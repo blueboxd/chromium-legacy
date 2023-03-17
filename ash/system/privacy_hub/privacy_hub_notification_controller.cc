@@ -4,6 +4,7 @@
 
 #include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/sensor_disabled_notification_delegate.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -114,9 +115,8 @@ void PrivacyHubNotificationController::ShowSoftwareSwitchNotification(
   switch (sensor) {
     case Sensor::kMicrophone: {
       // Microphone software switch notification will be displayed now. If the
-      // hardware switch notification is still not cleared, let's force clear
-      // it.
-      microphone_hw_switch_notification_->Hide(/*ignore_delay=*/true);
+      // hardware switch notification is still not cleared, clear it first.
+      microphone_hw_switch_notification_->Hide();
       [[fallthrough]];
     }
     case Sensor::kCamera: {
@@ -179,8 +179,8 @@ void PrivacyHubNotificationController::ShowHardwareSwitchNotification(
         combined_notification_->Update();
       } else {
         // As the hardware switch notification for microphone will be displayed
-        // now, let's force remove the sw switch notification.
-        combined_notification_->Hide(/*ignore_delay=*/true);
+        // now, remove the sw switch notification.
+        combined_notification_->Hide();
       }
       microphone_hw_switch_notification_->Show();
       break;

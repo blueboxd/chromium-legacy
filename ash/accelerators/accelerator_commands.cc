@@ -22,6 +22,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
+#include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
@@ -488,10 +489,6 @@ bool CanSwapPrimaryDisplay() {
   return display::Screen::GetScreen()->GetNumDisplays() > 1;
 }
 
-bool CanToggleCalendar() {
-  return features::IsCalendarViewEnabled();
-}
-
 bool CanToggleDictation() {
   return Shell::Get()->accessibility_controller()->dictation().enabled();
 }
@@ -508,7 +505,7 @@ bool CanToggleGameDashboard() {
     return false;
   }
   aura::Window* window = window_util::GetActiveWindow();
-  return window && IsArcWindow(window);
+  return window && GameDashboardController::CanStart(window);
 }
 
 bool CanToggleMultitaskMenu() {
@@ -663,10 +660,6 @@ void CycleUser(CycleUserDirection direction) {
 
 void DisableCapsLock() {
   Shell::Get()->ime_controller()->SetCapsLockEnabled(false);
-}
-
-void DumpCalendarModel() {
-  Shell::Get()->system_tray_model()->calendar_model()->DebugDump();
 }
 
 void FocusCameraPreview() {
@@ -908,6 +901,12 @@ void OpenHelp() {
 void PowerPressed(bool pressed) {
   Shell::Get()->power_button_controller()->OnPowerButtonEvent(
       pressed, base::TimeTicks());
+}
+
+void RecordVolumeSource() {
+  base::UmaHistogramEnumeration(
+      CrasAudioHandler::kOutputVolumeChangedSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kAccelerator);
 }
 
 void RemoveCurrentDesk() {
@@ -1153,6 +1152,9 @@ void ToggleAssistant() {
     case AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
       // No need to show toast in KIOSK mode.
       return;
+    case AssistantAllowedState::DISALLOWED_BY_NO_BINARY:
+      // No need to show toast.
+      return;
     case AssistantAllowedState::ALLOWED:
       // Nothing need to do if allowed.
       break;
@@ -1316,7 +1318,12 @@ void ToggleGameDashboard() {
   DCHECK(features::IsGameDashboardEnabled());
   aura::Window* window = window_util::GetActiveWindow();
   DCHECK(window);
-  // TODO(phshah): Connect to the game dashboard controller.
+  auto* controller = Shell::Get()->game_dashboard_controller();
+  if (!controller->IsActive(window)) {
+    controller->Start(window);
+  } else {
+    controller->ToggleMenu(window);
+  }
 }
 
 void ToggleHighContrast() {

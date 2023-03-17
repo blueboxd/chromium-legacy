@@ -17,9 +17,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 
-namespace attribution_reporting {
-class SuitableOrigin;
+class GURL;
 
+namespace attribution_reporting {
 struct SourceRegistration;
 struct TriggerRegistration;
 }  // namespace attribution_reporting
@@ -30,10 +30,6 @@ template <typename Interface>
 class PendingReceiver;
 
 }  // namespace mojo
-
-namespace network {
-class TriggerAttestation;
-}  // namespace network
 
 namespace content {
 
@@ -56,6 +52,13 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
     return trigger_data_;
   }
 
+#if BUILDFLAG(IS_ANDROID)
+  const std::vector<GURL>& os_sources() const { return os_sources_; }
+  const std::vector<GURL>& os_triggers() const { return os_triggers_; }
+  void WaitForOsSources(size_t);
+  void WaitForOsTriggers(size_t);
+#endif
+
   mojo::Receiver<blink::mojom::AttributionDataHost>& receiver() {
     return receiver_;
   }
@@ -71,6 +74,7 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
       absl::optional<network::TriggerAttestation>) override;
 #if BUILDFLAG(IS_ANDROID)
   void OsSourceDataAvailable(const GURL& registration_url) override;
+  void OsTriggerDataAvailable(const GURL& registration_url) override;
 #endif
 
   size_t min_source_data_count_ = 0;
@@ -78,6 +82,14 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
 
   size_t min_trigger_data_count_ = 0;
   std::vector<attribution_reporting::TriggerRegistration> trigger_data_;
+
+#if BUILDFLAG(IS_ANDROID)
+  size_t min_os_sources_count_ = 0;
+  std::vector<GURL> os_sources_;
+
+  size_t min_os_triggers_count_ = 0;
+  std::vector<GURL> os_triggers_;
+#endif
 
   base::RunLoop wait_loop_;
   mojo::Receiver<blink::mojom::AttributionDataHost> receiver_{this};

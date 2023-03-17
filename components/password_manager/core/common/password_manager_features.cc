@@ -76,6 +76,12 @@ BASE_FEATURE(kFillOnAccountSelect,
              "fill-on-account-select",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables logging the content of chrome://password-manager-internals to the
+// terminal.
+BASE_FEATURE(kPasswordManagerLogToTerminal,
+             "PasswordManagerLogToTerminal",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // When enabled, initial sync will be forced during startup if the password
 // store has encryption service failures.
@@ -96,7 +102,7 @@ BASE_FEATURE(kInferConfirmationPasswordField,
 // Password Manager view.
 BASE_FEATURE(kIOSPasswordUISplit,
              "IOSPasswordUISplit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables password saving and filling in cross-origin iframes on IOS.
 BASE_FEATURE(kIOSPasswordManagerCrossOriginIframeSupport,
@@ -113,6 +119,13 @@ BASE_FEATURE(kIOSPasswordCheckup,
 // subtitle.
 BASE_FEATURE(kIOSShowPasswordStorageInSaveInfobar,
              "IOSShowPasswordStorageInSaveInfobar",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables password bottom sheet to be displayed (on iOS) when a user is
+// signed-in and taps on a username or password field on a website that has at
+// least one credential saved in their password manager.
+BASE_FEATURE(kIOSPasswordBottomSheet,
+             "IOSPasswordBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // IS_IOS
 
@@ -213,6 +226,11 @@ BASE_FEATURE(kPasskeyManagementUsingAccountSettingsAndroid,
 
 BASE_FEATURE(kPasswordEditDialogWithDetails,
              "PasswordEditDialogWithDetails",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the Password generation bottom sheet.
+BASE_FEATURE(kPasswordGenerationBottomSheet,
+             "PasswordGenerationBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShowUPMErrorNotification,
@@ -391,5 +409,12 @@ bool ManagesLocalPasswordsInUnifiedPasswordManager() {
   return false;
 }
 #endif  // IS_ANDROID
+
+#if BUILDFLAG(IS_IOS)
+bool IsPasswordCheckupEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kIOSPasswordCheckup);
+}
+#endif  // IS_IOS
 
 }  // namespace password_manager::features

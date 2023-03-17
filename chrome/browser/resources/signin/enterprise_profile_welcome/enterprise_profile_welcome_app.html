@@ -32,7 +32,7 @@
     width: 512px;
   }
 
-  :host([is-modal-dialog_]) #title {
+  :host([is-modal-dialog_]) .title {
     margin-top: 0;
   }
 
@@ -137,7 +137,7 @@
     text-align: center;
   }
 
-  #title {
+  .title {
     font-size: 1.85em;
     font-weight: normal;
     margin-bottom: 8px;
@@ -208,17 +208,16 @@
     margin: 16px 32px;
   }
 
-  #tangible-sync-style-left-banner {
+  .tangible-sync-style-left-banner {
     content: url(images/left-banner.svg);
   }
 
-  #tangible-sync-style-right-banner {
+  .tangible-sync-style-right-banner {
     content: url(images/right-banner.svg);
   }
 
   .tangible-sync-style#main-container {
-    height: calc(100vh - (2*var(--action-container-padding) +
-             var(--cr-button-height)));
+    height: calc(100vh - (2*var(--action-container-padding) + var(--cr-button-height)));
     width: 100vw;
   }
 
@@ -229,7 +228,7 @@
     transform: translate(-50%, -50%);
   }
 
-  .tangible-sync-style #subtitle {
+  .tangible-sync-style .subtitle {
     margin-top: 0;
   }
 
@@ -247,24 +246,37 @@
       color: var(--google-grey-100);
     }
 
+    .tangible-sync-style .info-box {
+      border-color: var(--google-grey-600);
+    }
+
     .icon-container {
       background-color: var(--google-grey-700);
+    }
+
+    .tangible-sync-style-right-banner {
+      content: url(images/right-banner-dark.svg);
+    }
+
+    .tangible-sync-style-left-banner {
+      content: url(images/left-banner-dark.svg);
     }
   }
 </style>
 
-<div id="main-container" class$="[[getTangibleSyncStyleClass_(isTangibleSyncStyleEnabled_,
-   isModalDialog_)]]">
-  <img id="tangible-sync-style-left-banner"
-     hidden="[[!getTangibleSyncStyleClass_(isTangibleSyncStyleEnabled_,
-      isModalDialog_)]]">
-  <img id="tangible-sync-style-right-banner"
-     hidden="[[!getTangibleSyncStyleClass_(isTangibleSyncStyleEnabled_,
-      isModalDialog_)]]">
+<div id="main-container"
+    class$="[[getTangibleSyncStyleClass_(isTangibleSyncStyleEnabled_,
+        isModalDialog_)]]">
+  <img class="tangible-sync-style-left-banner"
+      hidden="[[!getTangibleSyncStyleClass_(isTangibleSyncStyleEnabled_,
+          isModalDialog_)]]">
+  <img class="tangible-sync-style-right-banner"
+      hidden="[[!getTangibleSyncStyleClass_(isTangibleSyncStyleEnabled_,
+          isModalDialog_)]]">
   <div id="content-container">
     <div id="header-container">
       <div id="banner" hidden="[[getTangibleSyncStyleClass_(
-                isTangibleSyncStyleEnabled_, isModalDialog_)]]"></div>
+          isTangibleSyncStyleEnabled_, isModalDialog_)]]"></div>
       <div id="avatar-container">
         <img id="avatar" alt="" src="[[pictureUrl_]]">
         <div class="work-badge" hidden="[[!showEnterpriseBadge_]]">
@@ -274,12 +286,12 @@
     </div>
     <div id="text-container">
       <template is="dom-if" if="[[title_]]">
-        <h2 id="title">
+        <h2 class="title">
           [[title_]]
         </h2>
       </template>
       <template is="dom-if" if="[[subtitle_]]">
-        <p id="subtitle" class="secondary">
+        <p class="subtitle secondary">
           [[subtitle_]]
         </p>
       </template>
@@ -301,14 +313,15 @@
     </template>
   </div>
 </div>
-<div id="buttons-container" class$="action-container [[getTangibleSyncStyleClass_(
-    isTangibleSyncStyleEnabled_, isModalDialog_)]]">
+<div id="buttons-container"
+    class$="action-container [[getTangibleSyncStyleClass_(
+        isTangibleSyncStyleEnabled_, isModalDialog_)]]">
     <cr-button id="proceedButton" class="action-button" on-click="onProceed_"
-      autofocus$="[[isModalDialog_]]" disabled="[[disableProceedButton_]]">
+        autofocus$="[[isModalDialog_]]" disabled="[[disableProceedButton_]]">
       [[proceedLabel_]]
     </cr-button>
     <cr-button id="cancelButton" on-click="onCancel_"
-      hidden="[[!showCancelButton_]]">
+        hidden="[[!showCancelButton_]]">
       $i18n{cancelLabel}
     </cr-button>
 </div>

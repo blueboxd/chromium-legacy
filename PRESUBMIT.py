@@ -285,6 +285,18 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
         r'.*Test[A-Z]?.*\.java',
       ),
     ),
+    BanRule(
+      r'/RecordHistogram\.getHistogram(ValueCount|TotalCount|Samples)ForTesting\(',
+      (
+       'Raw histogram counts are easy to misuse; for example they don\'t reset '
+       'between batched tests. Use HistogramWatcher to check histogram records instead.',
+      ),
+      False,
+      excluded_paths=(
+        'base/android/javatests/src/org/chromium/base/metrics/RecordHistogramTest.java',
+        'base/test/android/javatests/src/org/chromium/base/test/util/HistogramWatcher.java',
+      ),
+    ),
 )
 
 _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
@@ -445,6 +457,7 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
       True,
       excluded_paths=(
         'ios/chrome/browser/ui/icons/symbol_helpers.mm',
+        'ios/chrome/search_widget_extension/',
       ),
     ),
 )
@@ -788,16 +801,14 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     ),
     BanRule(
       (
-        r'/\b(?:'
-        r'std::linear_congruential_engine|std::mersenne_twister_engine|'
-        r'std::subtract_with_carry_engine|std::discard_block_engine|'
-        r'std::independent_bits_engine|std::shuffle_order_engine|'
-        r'std::minstd_rand0|std::minstd_rand|'
-        r'std::mt19937|std::mt19937_64|'
-        r'std::ranlux24_base|std::ranlux48_base|std::ranlux24|std::ranlux48|'
-        r'std::knuth_b|'
-        r'std::default_random_engine|'
-        r'std::random_device'
+        r'/\bstd::(?:'
+        r'linear_congruential_engine|mersenne_twister_engine|'
+        r'subtract_with_carry_engine|discard_block_engine|'
+        r'independent_bits_engine|shuffle_order_engine|'
+        r'minstd_rand0?|mt19937(_64)?|ranlux(24|48)(_base)?|knuth_b|'
+        r'default_random_engine|'
+        r'random_device|'
+        r'seed_seq'
         r')\b'
       ),
       (
@@ -1091,14 +1102,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ],
     ),
     BanRule(
-      r'/#include <random>',
-      (
-        '<random> is banned. Use base::RandomBitGenerator instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
-    ),
-    BanRule(
       r'/#include <X11/',
       (
         'Do not use Xlib. Use xproto (from //ui/gfx/x:xproto) instead.',
@@ -1162,6 +1165,14 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       r'/(\b(co_await|co_return|co_yield)\b|#include <coroutine>)',
       (
         'Coroutines are not yet allowed (https://crbug.com/1403840).',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/^\s*(import|export|module)\b',
+      (
+        'Modules are disallowed for now due to lack of toolchain support.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
@@ -6780,7 +6791,17 @@ def CheckNoJsInIos(input_api, output_api):
                           (r'^ios/third_party/*', r'^third_party/*'),
             files_to_check=[r'^ios/.*\.js$', r'.*/ios/.*\.js$'])
 
+    deleted_files = []
+
+    # Collect filenames of all removed JS files.
+    for f in input_api.AffectedSourceFiles(_FilterFile):
+        local_path = f.LocalPath()
+
+        if input_api.os_path.splitext(local_path)[1] == '.js' and f.Action() == 'D':
+            deleted_files.append(input_api.os_path.basename(local_path))
+
     error_paths = []
+    moved_paths = []
     warning_paths = []
 
     for f in input_api.AffectedSourceFiles(_FilterFile):
@@ -6788,7 +6809,12 @@ def CheckNoJsInIos(input_api, output_api):
 
         if input_api.os_path.splitext(local_path)[1] == '.js':
             if f.Action() == 'A':
-                error_paths.append(local_path)
+                if input_api.os_path.basename(local_path) in deleted_files:
+                    # This script was probably moved rather than newly created.
+                    # Present a warning instead of an error for these cases.
+                    moved_paths.append(local_path)
+                else:
+                    error_paths.append(local_path)
             elif f.Action() != 'D':
                 warning_paths.append(local_path)
 
@@ -6800,6 +6826,13 @@ def CheckNoJsInIos(input_api, output_api):
             'Consider converting JavaScript files to TypeScript. See '
             '//ios/web/public/js_messaging/README.md for more details.',
             warning_paths))
+
+    if moved_paths:
+        results.append(output_api.PresubmitPromptWarning(
+            'Do not use JavaScript on iOS for new files as TypeScript is '
+            'fully supported. (If this is a moved file, you may leave the '
+            'script unconverted.) See //ios/web/public/js_messaging/README.md '
+            'for help using scripts on iOS.', moved_paths))
 
     if error_paths:
         results.append(output_api.PresubmitError(

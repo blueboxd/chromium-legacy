@@ -524,7 +524,10 @@ void ActionLabel::SetDisplayMode(DisplayMode mode) {
       SetToEditMode();
       SetFocusBehavior(FocusBehavior::ALWAYS);
       static_cast<ActionView*>(parent())->ShowInfoMsg(
-          l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS), this);
+          l10n_util::GetStringUTF8(
+              allow_reposition_ ? IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS_ALPHAV2
+                                : IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS),
+          this);
       break;
     case DisplayMode::kEditedSuccess:
       SetToEditFocus();
@@ -619,7 +622,7 @@ void ActionLabel::OnFocus() {
         l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_MISSING_BINDING), this,
         /*ax_annouce=*/false);
   } else {
-    static_cast<ActionView*>(parent())->ShowLabelFocusInfoMsg(
+    static_cast<ActionView*>(parent())->ShowFocusInfoMsg(
         l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_FOCUSED_KEY), this);
   }
 }

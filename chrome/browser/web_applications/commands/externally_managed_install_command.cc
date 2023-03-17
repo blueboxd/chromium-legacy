@@ -18,11 +18,11 @@
 #include "chrome/browser/web_applications/locks/noop_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
-#include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_logging.h"
 #include "chrome/browser/web_applications/web_app_uninstall_and_replace_job.h"
+#include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_logging.h"
@@ -104,7 +104,7 @@ base::Value ExternallyManagedInstallCommand::ToDebugValue() const {
 void ExternallyManagedInstallCommand::Abort(webapps::InstallResultCode code) {
   if (!install_callback_)
     return;
-  debug_value_.Set("result_code", base::StreamableToString(code));
+  debug_value_.Set("result_code", base::ToString(code));
   webapps::InstallableMetrics::TrackInstallResult(false);
   SignalCompletionAndSelfDestruct(
       CommandResult::kFailure,
@@ -302,7 +302,7 @@ void ExternallyManagedInstallCommand::OnInstallFinalized(
     Abort(code);
     return;
   }
-  debug_value_.Set("result_code", base::StreamableToString(code));
+  debug_value_.Set("result_code", base::ToString(code));
 
   RecordWebAppInstallationTimestamp(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext())

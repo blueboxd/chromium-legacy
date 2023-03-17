@@ -92,8 +92,9 @@ class PartitionAllocThreadCacheTest
     ThreadCache::SetLargestCachedSize(ThreadCache::kDefaultSizeThreshold);
 
     // Cleanup the global state so next test can recreate ThreadCache.
-    if (ThreadCache::IsTombstone(ThreadCache::Get()))
+    if (ThreadCache::IsTombstone(ThreadCache::Get())) {
       ThreadCache::RemoveTombstoneForTesting();
+    }
   }
 
  protected:
@@ -176,8 +177,9 @@ class PartitionAllocThreadCacheTest
            allocation_size++) {
         FillThreadCacheAndReturnIndex(allocation_size, batch);
 
-        if (ThreadCache::Get()->CachedMemory() >= target_cached_memory)
+        if (ThreadCache::Get()->CachedMemory() >= target_cached_memory) {
           return;
+        }
       }
     }
 
@@ -338,25 +340,18 @@ TEST_P(PartitionAllocThreadCacheTest, DirectMappedReallocMetrics) {
             root()->get_total_size_of_allocated_bytes());
   EXPECT_EQ(expected_allocated_size, root()->get_max_size_of_allocated_bytes());
 
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-  // One extra byte for beyond-the-end pointers: crbug.com/1364476
-  constexpr size_t kExtrasSize = 1ull;
-#else
-  constexpr size_t kExtrasSize = 0ull;
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-  void* ptr = root()->Alloc(10 * internal::kMaxBucketed - kExtrasSize, "");
+  void* ptr = root()->Alloc(10 * internal::kMaxBucketed, "");
 
   EXPECT_EQ(expected_allocated_size + 10 * internal::kMaxBucketed,
             root()->get_total_size_of_allocated_bytes());
 
-  void* ptr2 =
-      root()->Realloc(ptr, 9 * internal::kMaxBucketed - kExtrasSize, "");
+  void* ptr2 = root()->Realloc(ptr, 9 * internal::kMaxBucketed, "");
 
   ASSERT_EQ(ptr, ptr2);
   EXPECT_EQ(expected_allocated_size + 9 * internal::kMaxBucketed,
             root()->get_total_size_of_allocated_bytes());
 
-  ptr2 = root()->Realloc(ptr, 10 * internal::kMaxBucketed - kExtrasSize, "");
+  ptr2 = root()->Realloc(ptr, 10 * internal::kMaxBucketed, "");
 
   ASSERT_EQ(ptr, ptr2);
   EXPECT_EQ(expected_allocated_size + 10 * internal::kMaxBucketed,
@@ -481,8 +476,9 @@ TEST_P(PartitionAllocThreadCacheTest, ThreadCacheReclaimedWhenThreadExits) {
   EXPECT_EQ(UntagPtr(this_thread_ptr), UntagPtr(other_thread_ptr));
   root()->Free(other_thread_ptr);
 
-  for (void* ptr : tmp)
+  for (void* ptr : tmp) {
     root()->Free(ptr);
+  }
 }
 
 namespace {
@@ -796,8 +792,9 @@ void FillThreadCacheWithMemory(ThreadSafePartitionRoot* root,
       FillThreadCacheAndReturnIndex(root, allocation_size, bucket_distribution,
                                     batch);
 
-      if (ThreadCache::Get()->CachedMemory() >= target_cached_memory)
+      if (ThreadCache::Get()->CachedMemory() >= target_cached_memory) {
         return;
+      }
     }
   }
 
@@ -1057,14 +1054,7 @@ TEST_P(PartitionAllocThreadCacheTest, DynamicSizeThreshold) {
 
   // Default threshold at first.
   ThreadCache::SetLargestCachedSize(ThreadCache::kDefaultSizeThreshold);
-#if !PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   FillThreadCacheAndReturnIndex(ThreadCache::kDefaultSizeThreshold);
-#else
-  // When MTECheckedPtr is in play, adjust the testing threshold down
-  // one byte to account for the extra byte for beyond-the-end
-  // pointers. See also: crbug.com/1364476
-  FillThreadCacheAndReturnIndex(ThreadCache::kDefaultSizeThreshold - 1);
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
   EXPECT_EQ(0u, alloc_miss_too_large_counter.Delta());
   EXPECT_EQ(1u, cache_fill_counter.Delta());

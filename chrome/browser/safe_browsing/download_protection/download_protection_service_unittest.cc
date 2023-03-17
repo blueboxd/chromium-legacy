@@ -127,6 +127,7 @@ using content::BrowserThread;
 using content::FileSystemAccessWriteItem;
 using ::testing::_;
 using ::testing::Assign;
+using ::testing::AtMost;
 using ::testing::ContainerEq;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -2456,16 +2457,25 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
                 MatchDownloadAllowlistUrl(_))
         .WillRepeatedly(Return(false));
 
-    // Expects that MockDownloadItem will go out of scope while asynchronous
-    // processing is checking allowlist, and thus will return after allowlist
-    // check rather than continuing to process the download, since
-    // OnDownloadDestroyed will be called to terminate the processing.
+    int expect_count;
+    if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
+      expect_count = 1;
+    } else {
+      // Expects that MockDownloadItem will go out of scope while asynchronous
+      // processing is checking allowlist, and thus will return after allowlist
+      // check rather than continuing to process the download, since
+      // OnDownloadDestroyed will be called to terminate the processing.
+      expect_count = 0;
+    }
+
+    // Note 'AtMost' is used because on Mac timing differences make the mocks
+    // not reached when kSafeBrowsingOnUIThread is enabled.
     EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-        .Times(0);
+        .Times(AtMost(expect_count));
     EXPECT_CALL(*binary_feature_extractor_.get(),
                 ExtractImageFeatures(
                     tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-        .Times(0);
+        .Times(AtMost(expect_count));
 
     download_service_->CheckClientDownload(
         &item, base::BindRepeating(
@@ -2883,7 +2893,8 @@ TEST_F(DownloadProtectionServiceTest,
       0,  // expected_content_size
       safe_browsing::EventResultToString(
           safe_browsing::EventResult::BYPASSED),  // expected_result
-      ""                                          // expected_username
+      "",                                         // expected_username
+      profile()->GetPath().AsUTF8Unsafe()         // expected_profile_identifier
   );
 
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
@@ -2951,6 +2962,7 @@ TEST_F(DownloadProtectionServiceTest,
       safe_browsing::EventResultToString(
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
+      profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
       {} /* expected_scan_id */);
 
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
@@ -3001,7 +3013,8 @@ TEST_F(DownloadProtectionServiceTest,
       0,  // expected_content_size
       safe_browsing::EventResultToString(
           safe_browsing::EventResult::BYPASSED),  // expected_result
-      ""                                          // expected_username
+      "",                                         // expected_username
+      profile()->GetPath().AsUTF8Unsafe()         // expected_profile_identifier
   );
 
   download_service_->ReportDelayedBypassEvent(
@@ -3063,6 +3076,7 @@ TEST_F(DownloadProtectionServiceTest,
       safe_browsing::EventResultToString(
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
+      profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
       {} /* expected_scan_id */);
 
   download_service_->ReportDelayedBypassEvent(
@@ -3124,6 +3138,7 @@ TEST_F(DownloadProtectionServiceTest,
       safe_browsing::EventResultToString(
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
+      profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
       {} /* expected_scan_id */);
 
   download_service_->ReportDelayedBypassEvent(
@@ -3876,6 +3891,17 @@ TEST_F(DownloadProtectionServiceTest,
       /*tmp_path_literal=*/FILE_PATH_LITERAL("a.exe.crswap"),
       /*final_path_literal=*/FILE_PATH_LITERAL("a.exe"));
   item->browser_context = profile1;
+
+  if (base::FeatureList::IsEnabled(kSafeBrowsingOnUIThread)) {
+    // Note 'AtMost' is used below because on Mac timing differences make the
+    // mocks not reached.
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+        .Times(AtMost(1));
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+        .Times(AtMost(1));
+  }
 
   RunLoop run_loop;
   download_service_->CheckFileSystemAccessWrite(
@@ -4683,43 +4709,18 @@ TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalseWhenTooLarge) {
   EXPECT_TRUE(IsResult(DownloadCheckResult::UNCOMMON));
 }
 
-// Test fixture with the enterprise CSD checks either enabled or disabled.
-class EnterpriseCsdDownloadTest : public DownloadProtectionServiceTestBase,
-                                  public ::testing::WithParamInterface<bool> {
+class EnterpriseCsdDownloadTest : public DownloadProtectionServiceTestBase {
  public:
-  EnterpriseCsdDownloadTest() {
-    // Enable the feature early to prevent race condition trying to access
-    // the enabled features set.  This happens for example when the history
-    // service is started below.
-    if (flag_enabled()) {
-      EnableFeatures({kSafeBrowsingEnterpriseCsd,
-                      kSafeBrowsingDisableConsumerCsdForEnterprise});
-    } else {
-      DisableFeatures({kSafeBrowsingEnterpriseCsd,
-                       kSafeBrowsingDisableConsumerCsdForEnterprise});
-    }
-  }
-
-  bool flag_enabled() const { return GetParam(); }
+  EnterpriseCsdDownloadTest() = default;
 };
 
-TEST_P(EnterpriseCsdDownloadTest, SkipsConsumerCsdWhenEnabled) {
+TEST_F(EnterpriseCsdDownloadTest, SkipsConsumerCsdWhenEnabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",              // referrer
                            FILE_PATH_LITERAL("a.tmp"),            // tmp_path
                            FILE_PATH_LITERAL("a.exe"));           // final_path
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-
-  if (!flag_enabled()) {
-    EXPECT_CALL(*sb_service_->mock_database_manager(),
-                MatchDownloadAllowlistUrl(_))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
-    EXPECT_CALL(*binary_feature_extractor_.get(),
-                ExtractImageFeatures(
-                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
-  }
 
   SetAnalysisConnector(profile()->GetPrefs(),
                        enterprise_connectors::FILE_DOWNLOADED, R"(
@@ -4747,26 +4748,17 @@ TEST_P(EnterpriseCsdDownloadTest, SkipsConsumerCsdWhenEnabled) {
                           base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
-  EXPECT_EQ(HasClientDownloadRequest(), !flag_enabled());
+  EXPECT_EQ(HasClientDownloadRequest(), false);
   EXPECT_TRUE(test_upload_service->was_called());
 }
 
-TEST_P(EnterpriseCsdDownloadTest, PopulatesCsdFieldWhenEnabled) {
+TEST_F(EnterpriseCsdDownloadTest, PopulatesCsdFieldWhenEnabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",              // referrer
                            FILE_PATH_LITERAL("a.tmp"),            // tmp_path
                            FILE_PATH_LITERAL("a.exe"));           // final_path
   content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-  if (!flag_enabled()) {
-    EXPECT_CALL(*sb_service_->mock_database_manager(),
-                MatchDownloadAllowlistUrl(_))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
-    EXPECT_CALL(*binary_feature_extractor_.get(),
-                ExtractImageFeatures(
-                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
-  }
 
   SetAnalysisConnector(profile()->GetPrefs(),
                        enterprise_connectors::FILE_DOWNLOADED,
@@ -4795,11 +4787,10 @@ TEST_P(EnterpriseCsdDownloadTest, PopulatesCsdFieldWhenEnabled) {
   run_loop.Run();
 
   EXPECT_TRUE(test_upload_service->was_called());
-  EXPECT_EQ(test_upload_service->last_request().request_data().has_csd(),
-            flag_enabled());
+  EXPECT_EQ(test_upload_service->last_request().request_data().has_csd(), true);
 }
 
-TEST_P(EnterpriseCsdDownloadTest, StillDoesMetadataCheckForLargeFile) {
+TEST_F(EnterpriseCsdDownloadTest, StillDoesMetadataCheckForLargeFile) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",              // referrer
@@ -4843,7 +4834,5 @@ TEST_P(EnterpriseCsdDownloadTest, StillDoesMetadataCheckForLargeFile) {
   EXPECT_TRUE(test_upload_service->was_called());
   EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
 }
-
-INSTANTIATE_TEST_SUITE_P(, EnterpriseCsdDownloadTest, testing::Bool());
 
 }  // namespace safe_browsing

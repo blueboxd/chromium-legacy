@@ -36,6 +36,7 @@ struct RedirectInfo;
 namespace content {
 
 class BrowserContext;
+class FrameTreeNode;
 class NavigationEarlyHintsManager;
 class NavigationLoaderInterceptor;
 class PrefetchedSignedExchangeCache;
@@ -95,6 +96,15 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(NavigationURLLoaderImplTest,
                            OnAcceptCHFrameReceivedUKM);
+
+  // Creates a SharedURLLoaderFactory for network-service-bound requests.
+  static scoped_refptr<network::SharedURLLoaderFactory>
+  CreateNetworkLoaderFactory(BrowserContext* browser_context,
+                             StoragePartitionImpl* storage_partition,
+                             FrameTreeNode* frame_tree_node,
+                             const ukm::SourceIdObj& ukm_id,
+                             bool* bypass_redirect_checks);
+
   // Starts the loader by finalizing loader factories initialization and
   // calling Restart().
   // This is called only once (while Restart can be called multiple times).
@@ -275,19 +285,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   // is already called while we are transferring the `url_loader_` and
   // response body to download code.
   absl::optional<network::URLLoaderCompletionStatus> status_;
-
-  // Before creating this URLLoaderRequestController on UI thread, the
-  // embedder may have elected to proxy the URLLoaderFactory receiver, in
-  // which case these fields will contain input (remote) and output (receiver)
-  // endpoints for the proxy. If this controller is handling a receiver for
-  // which proxying is supported, receivers will be plumbed through these
-  // endpoints.
-  //
-  // Note that these are only used for receivers that go to the Network
-  // Service.
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
-      proxied_factory_receiver_;
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> proxied_factory_remote_;
 
   // The schemes that this loader can use. For anything else we'll try
   // external protocol handlers.

@@ -227,8 +227,11 @@
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #endif
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 #include "content/browser/child_process_task_port_provider_mac.h"
+#endif
+
+#if BUILDFLAG(IS_MAC)
 #include "content/browser/sandbox_support_mac_impl.h"
 #include "content/common/sandbox_support_mac.mojom.h"
 #endif
@@ -1732,13 +1735,6 @@ bool RenderProcessHostImpl::Init() {
   CreateMessageFilters();
   RegisterMojoInterfaces();
 
-  auto attribution_os_support =
-      attribution_reporting::mojom::OsSupport::kDisabled;
-  if (auto* attribution_manager =
-          AttributionManager::FromBrowserContext(browser_context_)) {
-    attribution_os_support = attribution_manager->GetOsSupport();
-  }
-
   // Call this now and not in OnProcessLaunched in case any mojo calls get
   // dispatched before this.
   GetRendererInterface()->InitializeRenderer(
@@ -1748,7 +1744,7 @@ bool RenderProcessHostImpl::Init() {
       GetContentClient()->browser()->GetReducedUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       storage_partition_impl_->cors_exempt_header_list(),
-      attribution_os_support);
+      AttributionManager::GetOsSupport());
 
   if (run_renderer_in_process()) {
     DCHECK(g_renderer_main_thread_factory);
@@ -2245,6 +2241,10 @@ RenderProcessHostImpl::GetInfoForBrowserContextDestructionCrashReporting() {
   if (worker_ref_count_ != 0)
     ret += " wrc=" + base::NumberToString(worker_ref_count_);
 
+  if (pending_reuse_ref_count_ != 0) {
+    ret += " prrc=" + base::NumberToString(pending_reuse_ref_count_);
+  }
+
   if (!listeners_.IsEmpty()) {
     ret += " lsn=" + base::NumberToString(listeners_.size());
 
@@ -2675,7 +2675,7 @@ void RenderProcessHostImpl::IncrementKeepAliveRefCount(uint64_t handle_id) {
 
 bool RenderProcessHostImpl::AreAllRefCountsZero() {
   return keep_alive_ref_count_ == 0 && worker_ref_count_ == 0 &&
-         shutdown_delay_ref_count_ == 0;
+         shutdown_delay_ref_count_ == 0 && pending_reuse_ref_count_ == 0;
 }
 
 void RenderProcessHostImpl::DecrementKeepAliveRefCount(uint64_t handle_id) {
@@ -2687,6 +2687,25 @@ void RenderProcessHostImpl::DecrementKeepAliveRefCount(uint64_t handle_id) {
   keep_alive_start_times_.erase(handle_id);
   if (AreAllRefCountsZero())
     Cleanup();
+}
+
+void RenderProcessHostImpl::IncrementPendingReuseRefCount() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CHECK(!are_ref_counts_disabled_);
+  if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
+    CHECK(!deleting_soon_);
+  }
+  ++pending_reuse_ref_count_;
+}
+
+void RenderProcessHostImpl::DecrementPendingReuseRefCount() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CHECK(!are_ref_counts_disabled_);
+  CHECK_GT(pending_reuse_ref_count_, 0);
+  --pending_reuse_ref_count_;
+  if (AreAllRefCountsZero()) {
+    Cleanup();
+  }
 }
 
 std::string RenderProcessHostImpl::GetKeepAliveDurations() const {
@@ -2771,6 +2790,7 @@ void RenderProcessHostImpl::DisableRefCounts() {
   keep_alive_ref_count_ = 0;
   worker_ref_count_ = 0;
   shutdown_delay_ref_count_ = 0;
+  pending_reuse_ref_count_ = 0;
   // Cleaning up will also remove this from the SpareRenderProcessHostManager.
   // (in this case |keep_alive_ref_count_| would be 0 even before).
   Cleanup();
@@ -3307,7 +3327,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
     switches::kAllowLoopbackInPeerConnection,
-    switches::kAndroidFontsPath,
     switches::kAudioBufferSize,
     switches::kAutoplayPolicy,
     switches::kMojoCoreLibraryPath,
@@ -3377,6 +3396,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceGpuMemAvailableMb,
     switches::kForceHighContrast,
     switches::kForceRasterColorProfile,
+    switches::kForceSkiaAnalyticAntialiasing,
     switches::kForceVideoOverlays,
     switches::kFullMemoryCrashReport,
     switches::kGaiaUrl,
@@ -3635,6 +3655,10 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
 
   if (worker_ref_count_ != 0)
     return false;
+
+  if (pending_reuse_ref_count_ != 0) {
+    return false;
+  }
 
   // TODO(wjmaclean): This is probably unnecessary, but let's remove it in a
   // separate CL to be safe.
@@ -3932,6 +3956,16 @@ void RenderProcessHostImpl::Cleanup() {
           auto* proto =
               ctx.event<ChromeTrackEvent>()->set_render_process_host_cleanup();
           proto->set_worker_ref_count(worker_ref_count_);
+        });
+    return;
+  } else if (pending_reuse_ref_count_ != 0) {
+    TRACE_EVENT(
+        "shutdown", "RenderProcessHostImpl::Cleanup : Have pending_reuse_ref.",
+        ChromeTrackEvent::kRenderProcessHost, *this,
+        [&](perfetto::EventContext ctx) {
+          auto* proto =
+              ctx.event<ChromeTrackEvent>()->set_render_process_host_cleanup();
+          proto->set_pending_reuse_ref_count(pending_reuse_ref_count_);
         });
     return;
   }
@@ -5107,7 +5141,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       // Not all platforms launch processes in the same backgrounded state. Make
       // sure |priority_.visible| reflects this platform's initial process
       // state.
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
     priority_.visible =
         !child_process_launcher_->GetProcess().IsProcessBackgrounded(
             ChildProcessTaskPortProvider::GetInstance());
@@ -5427,10 +5461,17 @@ void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
 }
 
 #if BUILDFLAG(IS_ANDROID)
+
 void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   child_process_->OnMemoryPressure(level);
 }
+
+void RenderProcessHostImpl::SetOsSupportForAttributionReporting(
+    attribution_reporting::mojom::OsSupport os_support) {
+  GetRendererInterface()->SetOsSupportForAttributionReporting(os_support);
+}
+
 #endif
 
 }  // namespace content

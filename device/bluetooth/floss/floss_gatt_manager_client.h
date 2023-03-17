@@ -92,6 +92,13 @@ enum class DEVICE_BLUETOOTH_EXPORT GattStatus {
   kOutOfRange = 0xFF,
 };
 
+// GATT WriteCharacteristic D-Bus method results.
+enum class DEVICE_BLUETOOTH_EXPORT GattWriteRequestStatus {
+  kSuccess = 0,
+  kFail = 1,
+  kBusy = 2,
+};
+
 struct DEVICE_BLUETOOTH_EXPORT GattDescriptor {
   device::BluetoothUUID uuid;
   int32_t instance_id;
@@ -376,6 +383,16 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
   virtual void Disconnect(ResponseCallback<Void> callback,
                           const std::string& remote_device);
 
+  // Start a reliable write for the remote device.
+  virtual void BeginReliableWrite(ResponseCallback<Void> callback,
+                                  const std::string& remote_device);
+
+  // Execute or abort (depending on the value of |execute|) a reliable write for
+  // the remote device.
+  virtual void EndReliableWrite(ResponseCallback<Void> callback,
+                                const std::string& remote_device,
+                                bool execute);
+
   // Clears the attribute cache of a device.
   virtual void Refresh(ResponseCallback<Void> callback,
                        const std::string& remote_device);
@@ -405,12 +422,13 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
                                            const AuthRequired auth_required);
 
   // Writes a characteristic on a connected device with given |handle|.
-  virtual void WriteCharacteristic(ResponseCallback<Void> callback,
-                                   const std::string& remote_device,
-                                   const int32_t handle,
-                                   const WriteType write_type,
-                                   const AuthRequired auth_required,
-                                   const std::vector<uint8_t> data);
+  virtual void WriteCharacteristic(
+      ResponseCallback<GattWriteRequestStatus> callback,
+      const std::string& remote_device,
+      const int32_t handle,
+      const WriteType write_type,
+      const AuthRequired auth_required,
+      const std::vector<uint8_t> data);
 
   // Reads the descriptor for a given characteristic |handle|.
   virtual void ReadDescriptor(ResponseCallback<Void> callback,
@@ -505,7 +523,8 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
   // Initialize the gatt client for the given adapter.
   void Init(dbus::Bus* bus,
             const std::string& service_name,
-            const int adapter_index) override;
+            const int adapter_index,
+            base::OnceClosure on_ready) override;
 
  protected:
   friend class BluetoothGattFlossTest;
@@ -641,6 +660,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
   void RegisterClient();
   void RegisterServer();
 
+  // Complete initialization and signal we're ready.
+  void CompleteInit();
+
   template <typename R, typename... Args>
   void CallGattMethod(ResponseCallback<R> callback,
                       const char* member,
@@ -653,6 +675,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
   // Used in many apis.
   int32_t client_id_ = 0;
   int32_t server_id_ = 0;
+
+  // Signal when the client is ready to be used.
+  base::OnceClosure on_ready_;
 
   // Exported callbacks for interacting with daemon.
   ExportedCallbackManager<FlossGattClientObserver>

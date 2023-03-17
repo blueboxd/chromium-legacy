@@ -646,6 +646,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.TextAlignLast() == b.TextAlignLast();
     case CSSPropertyID::kTextAnchor:
       return a.TextAnchor() == b.TextAnchor();
+    case blink::CSSPropertyID::kTextBoxTrim:
+      return a.TextBoxTrim() == b.TextBoxTrim();
     case CSSPropertyID::kTextDecorationColor:
       return a.TextDecorationColor() == b.TextDecorationColor() &&
              a.InternalVisitedTextDecorationColor() ==
@@ -878,8 +880,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kAliasWebkitAlignContent:
     case CSSPropertyID::kAliasWebkitAlignItems:
     case CSSPropertyID::kAliasWebkitAlignSelf:
-    case CSSPropertyID::kAliasWebkitAlternativeAnimation:
     case CSSPropertyID::kAliasWebkitAlternativeAnimationDelay:
+    case CSSPropertyID::kAliasWebkitAlternativeAnimationWithDelayStartEnd:
+    case CSSPropertyID::kAliasWebkitAlternativeAnimationWithTimeline:
     case CSSPropertyID::kAliasWebkitAnimation:
     case CSSPropertyID::kAliasWebkitAnimationDelay:
     case CSSPropertyID::kAliasWebkitAnimationDirection:
@@ -1183,8 +1186,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return true;
 
     // Non-animateable properties
-    case CSSPropertyID::kAlternativeAnimation:
     case CSSPropertyID::kAlternativeAnimationDelay:
+    case CSSPropertyID::kAlternativeAnimationWithDelayStartEnd:
+    case CSSPropertyID::kAlternativeAnimationWithTimeline:
     case CSSPropertyID::kAnimation:
     case CSSPropertyID::kAnimationComposition:
     case CSSPropertyID::kAnimationDelay:

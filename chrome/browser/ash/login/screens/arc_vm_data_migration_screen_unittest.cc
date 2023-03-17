@@ -47,8 +47,12 @@ constexpr char kGaiaId[] = "1234567890";
 constexpr char kUserActionUpdate[] = "update";
 constexpr char kUserActionResume[] = "resume";
 
-constexpr int64_t kFreeDiskSpaceLessThanThreshold = 1LL << 29;
-constexpr int64_t kFreeDiskSpaceMoreThanThreshold = 1LL << 31;
+constexpr uint64_t kDefaultAndroidDataSize = 8ULL << 30;
+
+// These values assume the default Android /data size.
+constexpr uint64_t kFreeDiskSpaceLessThanThreshold = 512ULL << 20;
+constexpr uint64_t kFreeDiskSpaceMoreThanThreshold = 2ULL << 30;
+
 constexpr double kBatteryPercentLessThanThreshold = 20.0;
 constexpr double kBatteryPercentMoreThanThreshold = 40.0;
 
@@ -101,7 +105,7 @@ class FakeArcVmDataMigrationScreenView : public ArcVmDataMigrationScreenView {
  private:
   void Show() override { shown_ = true; }
   void SetUIState(UIState state) override { state_ = state; }
-  void SetRequiredFreeDiskSpace(int64_t required_free_disk_space) override {
+  void SetRequiredFreeDiskSpace(uint64_t required_free_disk_space) override {
     minimum_free_disk_space_set_ = true;
     has_enough_free_disk_space_ = false;
   }
@@ -141,14 +145,18 @@ class TestArcVmDataMigrationScreen : public ArcVmDataMigrationScreen {
       base::WeakPtr<ArcVmDataMigrationScreenView> view)
       : ArcVmDataMigrationScreen(std::move(view)) {}
 
-  bool encountered_fatal_error() { return encountered_fatal_error_; }
+  bool encountered_retriable_fatal_error() {
+    return encountered_retriable_fatal_error_;
+  }
   bool HasWakeLock() { return fake_wake_lock_.HasWakeLock(); }
 
  private:
-  void HandleFatalError() override { encountered_fatal_error_ = true; }
+  void HandleRetriableFatalError() override {
+    encountered_retriable_fatal_error_ = true;
+  }
   device::mojom::WakeLock* GetWakeLock() override { return &fake_wake_lock_; }
 
-  bool encountered_fatal_error_ = false;
+  bool encountered_retriable_fatal_error_ = false;
   FakeWakeLock fake_wake_lock_;
 };
 
@@ -185,6 +193,8 @@ class ArcVmDataMigrationScreenTest : public ChromeAshTestBase,
     // Set the default states. They can be overwritten by individual test cases.
     arc::SetArcVmDataMigrationStatus(profile_->GetPrefs(),
                                      arc::ArcVmDataMigrationStatus::kConfirmed);
+    FakeArcVmDataMigratorClient::Get()->set_android_data_size(
+        kDefaultAndroidDataSize);
     SetFreeDiskSpace(/*enough=*/true);
     SetBatteryState(/*enough=*/true, /*connected=*/true);
 
@@ -303,7 +313,7 @@ TEST_F(ArcVmDataMigrationScreenTest, NotEnoughDiskSpace) {
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kWelcome);
   EXPECT_TRUE(view_->minimum_free_disk_space_set());
   EXPECT_FALSE(view_->has_enough_free_disk_space());
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, BatteryStateUpdate_InitiallyGood) {
@@ -322,7 +332,7 @@ TEST_F(ArcVmDataMigrationScreenTest, BatteryStateUpdate_InitiallyGood) {
   EXPECT_FALSE(view_->has_enough_battery());
   EXPECT_FALSE(view_->is_connected_to_charger());
 
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, BatteryStateUpdate_InitiallyBad) {
@@ -343,7 +353,7 @@ TEST_F(ArcVmDataMigrationScreenTest, BatteryStateUpdate_InitiallyBad) {
   EXPECT_TRUE(view_->has_enough_battery());
   EXPECT_TRUE(view_->is_connected_to_charger());
 
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, WakeLockIsHeldWhileScreenIsShown) {
@@ -354,7 +364,7 @@ TEST_F(ArcVmDataMigrationScreenTest, WakeLockIsHeldWhileScreenIsShown) {
   EXPECT_TRUE(screen_->HasWakeLock());
   screen_->Hide();
   EXPECT_FALSE(screen_->HasWakeLock());
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, ScreenLockIsDisabledWhileScreenIsShown) {
@@ -366,7 +376,7 @@ TEST_F(ArcVmDataMigrationScreenTest, ScreenLockIsDisabledWhileScreenIsShown) {
   EXPECT_FALSE(session_controller->CanLockScreen());
   screen_->Hide();
   EXPECT_TRUE(session_controller->CanLockScreen());
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, GetVmInfoFailureIsFatal) {
@@ -374,7 +384,7 @@ TEST_F(ArcVmDataMigrationScreenTest, GetVmInfoFailureIsFatal) {
 
   screen_->Show(wizard_context_.get());
   task_environment()->RunUntilIdle();
-  EXPECT_TRUE(screen_->encountered_fatal_error());
+  EXPECT_TRUE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, ArcVmNotRunning) {
@@ -388,7 +398,7 @@ TEST_F(ArcVmDataMigrationScreenTest, ArcVmNotRunning) {
   task_environment()->RunUntilIdle();
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kWelcome);
   EXPECT_EQ(fake_concierge_client->stop_vm_call_count(), 0);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, StopArcVmFailureIsFatal) {
@@ -400,7 +410,7 @@ TEST_F(ArcVmDataMigrationScreenTest, StopArcVmFailureIsFatal) {
 
   screen_->Show(wizard_context_.get());
   task_environment()->RunUntilIdle();
-  EXPECT_TRUE(screen_->encountered_fatal_error());
+  EXPECT_TRUE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, StopArcVmSuccess) {
@@ -417,7 +427,7 @@ TEST_F(ArcVmDataMigrationScreenTest, StopArcVmSuccess) {
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kWelcome);
   EXPECT_EQ(fake_concierge_client->stop_vm_call_count(), 1);
   EXPECT_TRUE(arc_vm_stopped_);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 // Tests that UpstartClient::StopJob() is called for each job to be stopped even
@@ -431,7 +441,8 @@ TEST_F(ArcVmDataMigrationScreenTest, StopArcUpstartJobs) {
   FakeUpstartClient::Get()->set_stop_job_cb(base::BindLambdaForTesting(
       [&jobs_to_be_stopped](const std::string& job_name,
                             const std::vector<std::string>& env) {
-        EXPECT_TRUE(jobs_to_be_stopped.contains(job_name));
+        // Do not check the existence of the job in |job_to_be_stopped|, because
+        // some jobs can be stopped multiple times.
         jobs_to_be_stopped.erase(job_name);
         return (jobs_to_be_stopped.size() % 2) == 0;
       }));
@@ -440,7 +451,42 @@ TEST_F(ArcVmDataMigrationScreenTest, StopArcUpstartJobs) {
   task_environment()->RunUntilIdle();
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kWelcome);
   EXPECT_TRUE(jobs_to_be_stopped.empty());
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
+}
+
+TEST_F(ArcVmDataMigrationScreenTest,
+       ArcVmDataMigratorStartFailureOnGetAndroidDataSizeIsFatal) {
+  FakeUpstartClient::Get()->set_start_job_cb(base::BindLambdaForTesting(
+      [](const std::string& job_name, const std::vector<std::string>& env) {
+        return job_name != arc::kArcVmDataMigratorJobName;
+      }));
+
+  screen_->Show(wizard_context_.get());
+  task_environment()->RunUntilIdle();
+  EXPECT_TRUE(screen_->encountered_retriable_fatal_error());
+}
+
+TEST_F(ArcVmDataMigrationScreenTest,
+       ArcVmDataMigratorStartFailureOnStartMigrateIsFatal) {
+  screen_->Show(wizard_context_.get());
+  task_environment()->RunUntilIdle();
+
+  FakeUpstartClient::Get()->set_start_job_cb(base::BindLambdaForTesting(
+      [](const std::string& job_name, const std::vector<std::string>& env) {
+        return job_name != arc::kArcVmDataMigratorJobName;
+      }));
+
+  PressUpdateButton();
+  task_environment()->RunUntilIdle();
+  EXPECT_TRUE(screen_->encountered_retriable_fatal_error());
+}
+
+TEST_F(ArcVmDataMigrationScreenTest, GetAndroidDataSizeFailureIsFatal) {
+  FakeArcVmDataMigratorClient::Get()->set_android_data_size(absl::nullopt);
+
+  screen_->Show(wizard_context_.get());
+  task_environment()->RunUntilIdle();
+  EXPECT_TRUE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, CreateDiskImageSuccess) {
@@ -454,7 +500,7 @@ TEST_F(ArcVmDataMigrationScreenTest, CreateDiskImageSuccess) {
   EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
             arc::ArcVmDataMigrationStatus::kStarted);
   EXPECT_EQ(FakeConciergeClient::Get()->create_disk_image_call_count(), 1);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, CreateDiskImageFailureIsFatal) {
@@ -467,7 +513,7 @@ TEST_F(ArcVmDataMigrationScreenTest, CreateDiskImageFailureIsFatal) {
 
   PressUpdateButton();
   task_environment()->RunUntilIdle();
-  EXPECT_TRUE(screen_->encountered_fatal_error());
+  EXPECT_TRUE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, MigrationInProgress) {
@@ -490,7 +536,7 @@ TEST_F(ArcVmDataMigrationScreenTest, MigrationInProgress) {
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kProgress);
   EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
             arc::ArcVmDataMigrationStatus::kStarted);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, Resume) {
@@ -506,7 +552,42 @@ TEST_F(ArcVmDataMigrationScreenTest, Resume) {
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kProgress);
   EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
             arc::ArcVmDataMigrationStatus::kStarted);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
+}
+
+TEST_F(ArcVmDataMigrationScreenTest,
+       SetupFailureIsTreatedAsMigrationFailureOnLoadingResumeScreen) {
+  arc::SetArcVmDataMigrationStatus(profile_->GetPrefs(),
+                                   arc::ArcVmDataMigrationStatus::kStarted);
+  // Assume that somehow Concierge cannot check whether ARCVM is running.
+  FakeConciergeClient::Get()->set_get_vm_info_response(absl::nullopt);
+
+  screen_->Show(wizard_context_.get());
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kFailure);
+  EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
+            arc::ArcVmDataMigrationStatus::kFinished);
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
+}
+
+TEST_F(ArcVmDataMigrationScreenTest,
+       SetupFailureIsTreatedAsMigrationFailureOnResumeScreen) {
+  arc::SetArcVmDataMigrationStatus(profile_->GetPrefs(),
+                                   arc::ArcVmDataMigrationStatus::kStarted);
+  // Let ArcVmDataMigrator fail to start.
+  FakeUpstartClient::Get()->set_start_job_cb(base::BindLambdaForTesting(
+      [](const std::string& job_name, const std::vector<std::string>& env) {
+        return job_name != arc::kArcVmDataMigratorJobName;
+      }));
+
+  screen_->Show(wizard_context_.get());
+  task_environment()->RunUntilIdle();
+  PressResumeButton();
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kFailure);
+  EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
+            arc::ArcVmDataMigrationStatus::kFinished);
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, MigrationSuccess) {
@@ -523,7 +604,7 @@ TEST_F(ArcVmDataMigrationScreenTest, MigrationSuccess) {
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kSuccess);
   EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
             arc::ArcVmDataMigrationStatus::kFinished);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, MigrationFailure) {
@@ -541,7 +622,7 @@ TEST_F(ArcVmDataMigrationScreenTest, MigrationFailure) {
   EXPECT_EQ(view_->state(), ArcVmDataMigrationScreenView::UIState::kFailure);
   EXPECT_EQ(arc::GetArcVmDataMigrationStatus(profile_->GetPrefs()),
             arc::ArcVmDataMigrationStatus::kFinished);
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 TEST_F(ArcVmDataMigrationScreenTest, MigrationFailure_ArcDataRemovalFailed) {
@@ -566,7 +647,7 @@ TEST_F(ArcVmDataMigrationScreenTest, MigrationFailure_ArcDataRemovalFailed) {
             arc::ArcVmDataMigrationStatus::kFinished);
   EXPECT_TRUE(
       profile_->GetPrefs()->GetBoolean(arc::prefs::kArcDataRemoveRequested));
-  EXPECT_FALSE(screen_->encountered_fatal_error());
+  EXPECT_FALSE(screen_->encountered_retriable_fatal_error());
 }
 
 }  // namespace

@@ -334,6 +334,12 @@ its dependencies.
 The list of paths to all `deps_info['dex_path']` entries for all libraries
 that comprise this APK. Valid only for debug builds.
 
+* `deps_info['preferred_dep']`:
+Whether the target should be the preferred dep. This is usually the case when we
+have a java_group that depends on either the public or internal dep accordingly,
+and it is better to depend on the group rather than the underlying dep. Another
+case is for android_library_factory targets, the factory target should be
+preferred instead of the actual implementation.
 
 ## <a name="target_robolectric_binary">Target type `robolectric_binary`</a>:
 
@@ -1073,8 +1079,12 @@ def main(argv):
   parser.add_option('--treat-as-locale-paks', action='store_true',
       help='Consider the assets as locale paks in BuildConfig.java')
 
-  # java library options
+  # java library and group options
+  parser.add_option('--preferred-dep',
+                    action='store_true',
+                    help='Whether the target should be preferred as a dep.')
 
+  # java library options
   parser.add_option('--public-deps-configs',
                     help='GN list of config files of deps which are exposed as '
                     'part of the target\'s public API.')
@@ -1223,6 +1233,9 @@ def main(argv):
       '--base-module-build-config',
       help='Path to the base module\'s build config '
       'if this is a feature module.')
+  parser.add_option('--parent-module-build-config',
+                    help='Path to the parent module\'s build config '
+                    'when not using base module as parent.')
 
   parser.add_option(
       '--module-build-configs',
@@ -1367,6 +1380,10 @@ def main(argv):
   if options.base_module_build_config:
     base_module_build_config = GetDepConfigRoot(
         options.base_module_build_config)
+  parent_module_build_config = base_module_build_config
+  if options.parent_module_build_config:
+    parent_module_build_config = GetDepConfigRoot(
+        options.parent_module_build_config)
 
   # Initialize some common config.
   # Any value that needs to be queryable by dependents must go within deps_info.
@@ -1414,6 +1431,9 @@ def main(argv):
   if options.type == 'java_library':
     deps_info['is_prebuilt'] = bool(options.is_prebuilt)
     deps_info['gradle_treat_as_prebuilt'] = options.gradle_treat_as_prebuilt
+
+  if options.preferred_dep:
+    deps_info['preferred_dep'] = bool(options.preferred_dep)
 
   if options.android_manifest:
     deps_info['android_manifest'] = options.android_manifest
@@ -2122,21 +2142,29 @@ def main(argv):
     deps_info['java_resources_jar'] = options.java_resources_jar_path
 
   # DYNAMIC FEATURE MODULES:
-  # Make sure that dependencies that exist on the base module are not
-  # duplicated on the feature module. Note: this is only approximately correct,
-  # and doesn't take into account other parent modules. If we are able to read
-  # the build config of the whole bundle (instead of reading the individual
-  # modules'), we can use _DedupFeatureModuleSharedCode() and have the
-  # fully-deduplicated values.
+  # There are two approaches to dealing with modules dependencies:
+  # 1) Perform steps in android_apk_or_module(), with only the knowledge of
+  #    ancesstor splits. Our implementation currently allows only for 2 levels:
+  #        base -> parent -> leaf
+  #    Bundletool normally fails if two leaf nodes merge the same manifest or
+  #    resources. The fix is to add the common dep to the chrome or base module
+  #    so that our deduplication logic will work.
+  #    RemoveObjDups() implements this approach.
+  # 2) Perform steps in android_app_bundle(), with knowledge of full set of
+  #    modules. This is required for dex because it can handle the case of two
+  #    leaf nodes having the same dep, and promoting that dep to their common
+  #    parent.
+  #    _DedupFeatureModuleSharedCode() implements this approach.
   if base_module_build_config:
-    base = base_module_build_config
-    RemoveObjDups(config, base, 'deps_info', 'dependency_zips')
-    RemoveObjDups(config, base, 'deps_info', 'dependency_zip_overlays')
-    RemoveObjDups(config, base, 'deps_info', 'extra_package_names')
-    RemoveObjDups(config, base, 'deps_info', 'javac_full_classpath')
-    RemoveObjDups(config, base, 'deps_info', 'javac_full_interface_classpath')
-    RemoveObjDups(config, base, 'deps_info', 'jni_all_source')
-    RemoveObjDups(config, base, 'extra_android_manifests')
+    ancestors = [base_module_build_config]
+    if parent_module_build_config is not base_module_build_config:
+      ancestors += [parent_module_build_config]
+    for ancestor in ancestors:
+      RemoveObjDups(config, ancestor, 'deps_info', 'dependency_zips')
+      RemoveObjDups(config, ancestor, 'deps_info', 'dependency_zip_overlays')
+      RemoveObjDups(config, ancestor, 'deps_info', 'extra_package_names')
+      RemoveObjDups(config, ancestor, 'deps_info', 'jni_all_source')
+      RemoveObjDups(config, ancestor, 'extra_android_manifests')
 
   if is_java_target:
     jar_to_target = {}
@@ -2144,6 +2172,8 @@ def main(argv):
     _AddJarMapping(jar_to_target, all_deps)
     if base_module_build_config:
       _AddJarMapping(jar_to_target, [base_module_build_config['deps_info']])
+      if parent_module_build_config is not base_module_build_config:
+        _AddJarMapping(jar_to_target, [parent_module_build_config['deps_info']])
     if options.tested_apk_config:
       _AddJarMapping(jar_to_target, [tested_apk_config])
       for jar, target in zip(tested_apk_config['javac_full_classpath'],

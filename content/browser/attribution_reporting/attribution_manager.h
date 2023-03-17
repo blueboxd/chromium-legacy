@@ -62,6 +62,8 @@ class CONTENT_EXPORT AttributionManager : public AttributionDataModel {
 
   static AttributionManager* FromBrowserContext(BrowserContext*);
 
+  static attribution_reporting::mojom::OsSupport GetOsSupport();
+
   ~AttributionManager() override = default;
 
   virtual void AddObserver(AttributionObserver* observer) = 0;
@@ -82,11 +84,17 @@ class CONTENT_EXPORT AttributionManager : public AttributionDataModel {
                              GlobalRenderFrameHostId render_frame_id) = 0;
 
 #if BUILDFLAG(IS_ANDROID)
+
   virtual void HandleOsSource(const GURL& registration_url,
                               const url::Origin& top_level_origin,
                               AttributionInputEvent,
-                              GlobalRenderFrameHostId render_frame_id);
-#endif
+                              GlobalRenderFrameHostId render_frame_id) = 0;
+
+  virtual void HandleOsTrigger(const GURL& registration_url,
+                               const url::Origin& top_level_origin,
+                               GlobalRenderFrameHostId render_frame_id) = 0;
+
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Get all sources that are currently stored in this partition. Used for
   // populating WebUI.
@@ -132,8 +140,6 @@ class CONTENT_EXPORT AttributionManager : public AttributionDataModel {
                          BrowsingDataFilterBuilder* filter_builder,
                          bool delete_rate_limit_data,
                          base::OnceClosure done) = 0;
-
-  virtual attribution_reporting::mojom::OsSupport GetOsSupport() = 0;
 };
 
 }  // namespace content

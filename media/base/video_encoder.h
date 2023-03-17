@@ -25,6 +25,8 @@ class VideoFrame;
 MEDIA_EXPORT uint32_t GetDefaultVideoEncodeBitrate(gfx::Size frame_size,
                                                    uint32_t framerate);
 
+MEDIA_EXPORT int GetNumberOfThreadsForSoftwareEncoding(gfx::Size frame_size);
+
 // Encoded video frame, its data and metadata.
 struct MEDIA_EXPORT VideoEncoderOutput {
   VideoEncoderOutput();
@@ -86,7 +88,7 @@ class MEDIA_EXPORT VideoEncoder {
     EncodeOptions();
     EncodeOptions(const EncodeOptions&);
     ~EncodeOptions();
-    bool key_frame;
+    bool key_frame = false;
     // Per-frame codec-specific quantizer value.
     // Should only be used when encoder configured with kExternal bitrate mode.
     absl::optional<double> quantizer;

@@ -111,7 +111,7 @@ enum class RestrictedPrefetchReused {
 
 void RecordPervasivePayloadIndex(const char* histogram_name, int index) {
   if (index != -1) {
-    base::UmaHistogramExactLinear(histogram_name, index, 323);
+    base::UmaHistogramCustomCounts(histogram_name, index, 1, 323, 323);
   }
 }
 
@@ -693,12 +693,13 @@ bool HttpCache::Transaction::ResponseChecksumMatches(
   if (hex_result != request_->checksum) {
     DVLOG(2) << "Pervasive payload checksum mismatch for \"" << request_->url
              << "\": got " << hex_result << ", expected " << request_->checksum;
-    RecordPervasivePayloadIndex("Network.CacheTransparency.MismatchedChecksums",
-                                request_->pervasive_payloads_index_for_logging);
+    RecordPervasivePayloadIndex(
+        "Network.CacheTransparency2.MismatchedChecksums",
+        request_->pervasive_payloads_index_for_logging);
     return false;
   }
   RecordPervasivePayloadIndex(
-      "Network.CacheTransparency.SingleKeyedCacheIsUsed",
+      "Network.CacheTransparency2.SingleKeyedCacheIsUsed",
       request_->pervasive_payloads_index_for_logging);
   return true;
 }
@@ -1618,7 +1619,7 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   }
 
   if (response_.single_keyed_cache_entry_unusable) {
-    RecordPervasivePayloadIndex("Network.CacheTransparency.MarkedUnusable",
+    RecordPervasivePayloadIndex("Network.CacheTransparency2.MarkedUnusable",
                                 request_->pervasive_payloads_index_for_logging);
 
     // We've read the single keyed entry and it turned out to be unusable. Let's
@@ -3459,7 +3460,7 @@ int HttpCache::Transaction::DoConnectedCallback() {
 int HttpCache::Transaction::DoConnectedCallbackComplete(int result) {
   if (result != OK) {
     if (result ==
-        ERR_CACHED_IP_ADDRESS_SPACE_BLOCKED_BY_PRIVATE_NETWORK_ACCESS_POLICY) {
+        ERR_CACHED_IP_ADDRESS_SPACE_BLOCKED_BY_LOCAL_NETWORK_ACCESS_POLICY) {
       DoomInconsistentEntry();
       UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);
       TransitionToState(reading_ ? STATE_SEND_REQUEST
@@ -3885,10 +3886,6 @@ void HttpCache::Transaction::RecordHistograms() {
     return;
   }
 
-  bool validation_request =
-      cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||
-      cache_entry_status_ == CacheEntryStatus::ENTRY_UPDATED;
-
   bool is_third_party = false;
 
   // Given that cache_entry_status_ is not ENTRY_UNDEFINED, the request must
@@ -3951,16 +3948,6 @@ void HttpCache::Transaction::RecordHistograms() {
 
   CACHE_STATUS_HISTOGRAMS("");
   IS_NO_STORE_HISTOGRAMS("", is_no_store);
-
-  if (validation_request) {
-    UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
-                              VALIDATION_CAUSE_MAX);
-  }
-
-  if (cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE) {
-    UMA_HISTOGRAM_ENUMERATION("HttpCache.CantConditionalizeCause",
-                              validation_cause_, VALIDATION_CAUSE_MAX);
-  }
 
   if (cache_entry_status_ == CacheEntryStatus::ENTRY_OTHER)
     return;

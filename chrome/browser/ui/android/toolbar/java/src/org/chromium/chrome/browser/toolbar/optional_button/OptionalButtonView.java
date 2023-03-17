@@ -263,6 +263,13 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         mBackground.setColorFilter(color);
     }
 
+    void setBackgroundAlpha(int alpha) {
+        mBackground.setImageAlpha(alpha);
+    }
+
+    View getBackgroundView() {
+        return mBackground;
+    }
     void setColorStateList(ColorStateList colorStateList) {
         ImageViewCompat.setImageTintList(mButton, colorStateList);
         ImageViewCompat.setImageTintList(mAnimationImage, colorStateList);
@@ -649,6 +656,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
 
         mButton.setVisibility(GONE);
         mBackground.setVisibility(GONE);
+        mActionChipLabel.setVisibility(GONE);
         setWidth(0);
 
         if (mOnBeforeHideTransitionCallback != null) {
@@ -686,6 +694,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         mButton.setVisibility(GONE);
         mBackground.setVisibility(GONE);
         mAnimationImage.setVisibility(GONE);
+        mActionChipLabel.setVisibility(GONE);
 
         mButton.setImageDrawable(mIconDrawable);
 

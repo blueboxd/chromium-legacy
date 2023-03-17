@@ -7,7 +7,29 @@
 
 #include <string>
 
+#include "components/sync/base/model_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace sync_preferences {
+
+// This class represents the metadata corresponding to a syncable preference.
+class SyncablePrefMetadata {
+ public:
+  // TODO(crbug.com/1424774): Remove the default for `model_type` once the
+  // database has been populated.
+  // Note: Not marking explicit to allow construction from initializer-list.
+  SyncablePrefMetadata(int syncable_pref_id,
+                       syncer::ModelType model_type = syncer::UNSPECIFIED);
+  // Returns the unique ID corresponding to the syncable preference.
+  int syncable_pref_id() const { return syncable_pref_id_; }
+  // Returns the model type of the pref, i.e. PREFERENCES, PRIORITY_PREFERENCES,
+  // OS_PREFERENCES or OS_PRIORITY_PREFERENCES.
+  syncer::ModelType model_type() const { return model_type_; }
+
+ private:
+  int syncable_pref_id_;
+  syncer::ModelType model_type_;
+};
 
 // This class provides an interface to define the list of syncable
 // preferences (and in the future, some additional metadata).
@@ -24,9 +46,14 @@ class SyncablePrefsDatabase {
   SyncablePrefsDatabase(const SyncablePrefsDatabase&) = delete;
   SyncablePrefsDatabase& operator=(const SyncablePrefsDatabase&) = delete;
 
+  // Returns the metadata associated to the pref and null if `pref_name` is not
+  // syncable.
+  virtual absl::optional<SyncablePrefMetadata> GetSyncablePrefMetadata(
+      const std::string& pref_name) const = 0;
+
   // Returns true if `pref_name` is part of the allowlist of syncable
   // preferences.
-  virtual bool IsPreferenceSyncable(const std::string& pref_name) const = 0;
+  bool IsPreferenceSyncable(const std::string& pref_name) const;
 };
 
 }  // namespace sync_preferences

@@ -440,7 +440,7 @@ bool CrasAudioHandler::IsInputMutedForDevice(uint64_t device_id) {
   return false;
 }
 
-int CrasAudioHandler::GetOutputDefaultVolumeMuteThreshold() {
+int CrasAudioHandler::GetOutputDefaultVolumeMuteThreshold() const {
   return kMuteThresholdPercent;
 }
 
@@ -1080,8 +1080,13 @@ void CrasAudioHandler::NodesChanged() {
 void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   const AudioDevice* device = this->GetDeviceFromId(node_id);
   if (!device || device->is_input) {
-    LOG(ERROR) << "Unexpexted OutputNodeVolumeChanged received on node: 0x"
+    LOG(ERROR) << "Unexpected OutputNodeVolumeChanged received on node: 0x"
                << std::hex << node_id;
+    return;
+  }
+  if (volume < 0 || volume > 100) {
+    LOG(ERROR) << "Unexpected OutputNodeVolumeChanged received on volume: "
+               << volume;
     return;
   }
 

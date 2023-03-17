@@ -645,4 +645,15 @@ bool TouchPoint::OnKeyReleased(const ui::KeyEvent& event) {
   return static_cast<ActionView*>(parent())->ApplyKeyReleased(event);
 }
 
+void TouchPoint::OnFocus() {
+  static_cast<ActionView*>(parent())->ShowFocusInfoMsg(
+      l10n_util::GetStringUTF8(
+          IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS_TOUCH_POINT_FOCUS),
+      this);
+}
+
+void TouchPoint::OnBlur() {
+  static_cast<ActionView*>(parent())->RemoveMessage();
+}
+
 }  // namespace arc::input_overlay

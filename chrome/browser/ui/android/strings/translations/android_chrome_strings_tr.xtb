@@ -34,6 +34,7 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="1173894706177603556">Yeniden adlandır</translation>
 <translation id="1177863135347784049">Özel</translation>
 <translation id="1181037720776840403">Kaldır</translation>
+<translation id="1181366777303791449"><ph name="MAIN_FRAME_ETLD_PLUS_ONE" /> sayfasında</translation>
 <translation id="1193729455103054076">Güçlü şifre kullanılsın mı?</translation>
 <translation id="1197267115302279827">Yer işaretlerini taşı</translation>
 <translation id="1201402288615127009">İleri</translation>
@@ -165,7 +166,6 @@ Belirli bir siteye ait veya tüm tarama geçmişinizi sildiğinizde bununla ili�
 <translation id="1928696683969751773">Güncellemeler</translation>
 <translation id="19288952978244135">Chrome'u yeniden açın.</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
-<translation id="193571872656840963">Bu içerik oluşturucuya takdirinizi gösterin</translation>
 <translation id="1943432128510653496">Şifreleri kaydet</translation>
 <translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
 <translation id="1959679933317802873">İçerik bekleniyor</translation>
@@ -201,7 +201,6 @@ Belirli bir siteye ait veya tüm tarama geçmişinizi sildiğinizde bununla ili�
 <translation id="2122601567107267586">Uygulama açılamadı</translation>
 <translation id="2132122640199389833">Tüm bağlı cihazları kaldır</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> kapatıldı</translation>
-<translation id="2134927169889348449">Chrome'u kullanarak <ph name="BEGIN_TOS_LINK" />Google Hizmet Şartları<ph name="END_TOS_LINK" /> ile <ph name="BEGIN_ATOS_LINK" />Google Chrome ve ChromeOS Ek Hizmet Şartları<ph name="END_ATOS_LINK" />'nı kabul etmiş olursunuz.</translation>
 <translation id="2139186145475833000">Ana ekrana ekle</translation>
 <translation id="2141396931810938595">Kullanımınıza göre</translation>
 <translation id="214888715418183969">Chrome'la paylaşmak istediklerinizi seçin. Paylaştığınız metrikler Chrome’un özelliklerini, performansını ve kararlılığını iyileştirmeye yardımcı olmak için kullanılır.</translation>
@@ -554,7 +553,6 @@ Gizlilik jetonları, web'deki gizliliği artırırken kim olduğunuzu bulmak iç
 <translation id="409109920254068737">Bu QR kodunu gösteren cihazda oturum açmak için bu tableti kullanabilirsiniz.</translation>
 <translation id="4095146165863963773">Uygulama verileri silinsin mi?</translation>
 <translation id="4096227151372679484">Yer işareti kaydetme akışı ekranın yarısına kadar açıldı</translation>
-<translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="4101475238162928417">Şifrelerinize, yer işaretlerinize ve daha fazlasına tüm cihazlarınızdan ulaşmak için senkronize edin</translation>
 <translation id="410351446219883937">Otomatik oynatma</translation>
 <translation id="4106587138345390261">Chrome, sitelerin size ait daha az bilgiyi kullanarak aynı tarama deneyimini sunmasını sağlayan yeni özellikleri keşfediyor</translation>
@@ -592,7 +590,6 @@ Gizlilik jetonları, web'deki gizliliği artırırken kim olduğunuzu bulmak iç
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4283102315569707115">Varsayılan olarak masaüstü siteleri istensin mi?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android ayarlarında ekran kilidini açın<ph name="END_LINK" /></translation>
-<translation id="4293476595220860475">Chrome'u kullanarak <ph name="BEGIN_TOS_LINK" />Google Hizmet Şartları<ph name="END_TOS_LINK" /> ile <ph name="BEGIN_ATOS_LINK" />Google Chrome ve ChromeOS Ek Hizmet Şartları<ph name="END_ATOS_LINK" />'nı kabul etmiş olursunuz. Ayrıca <ph name="BEGIN_PRIVACY_LINK" />Gizlilik Politikası<ph name="END_PRIVACY_LINK" /> da geçerli olur.</translation>
 <translation id="4296252229500326964">Yeni Gizli sekme</translation>
 <translation id="4298388696830689168">Bağlantılı siteler</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -633,6 +630,7 @@ Gizlilik jetonları, web'deki gizliliği artırırken kim olduğunuzu bulmak iç
 
 Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>
 <translation id="452750746583162491">Senkronize edilmiş verilerinizi inceleyin</translation>
+<translation id="4528638190900283934">Ek özellikler için oturum açın</translation>
 <translation id="4532845899244822526">Klasör seçin</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> sekme}other{<ph name="TAB_COUNT_MANY" /> sekme, <ph name="TAB_COUNT_INCOGNITO" /> gizli mod}}</translation>
 <translation id="4554077758708533499">USB kablosuyla bağlandı</translation>
@@ -765,7 +763,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5161254044473106830">Başlık gerekiyor</translation>
 <translation id="5170568018924773124">Klasörde göster</translation>
 <translation id="5171045022955879922">Arayın veya URL'yi yazın</translation>
-<translation id="517734441743343109">Devam ederek <ph name="BEGIN_TOS_LINK" />Hizmet Şartları<ph name="END_TOS_LINK" /> ve <ph name="BEGIN_PRIVACY_LINK" />Gizlilik Politikası<ph name="END_PRIVACY_LINK" />'nı kabul etmiş olursunuz.</translation>
 <translation id="5184329579814168207">Chrome'da aç</translation>
 <translation id="5191251636205085390">Üçüncü taraf çerezlerin yerini alması amaçlanan yeni teknolojileri öğrenip kontrol edin</translation>
 <translation id="5193988420012215838">Panonuza kopyalandı</translation>
@@ -1248,7 +1245,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7725024127233776428">Yer işareti koyduğunuz sayfalar burada görünür</translation>
 <translation id="7757787379047923882">Metin, <ph name="DEVICE_NAME" /> cihazından paylaşıldı</translation>
 <translation id="7762668264895820836">SD Kart <ph name="SD_CARD_NUMBER" /></translation>
-<translation id="7762928140712606393">Ek özellikler ve Chrome’un en güçlü güvenlik özellikleri için oturum açın</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> penceresini kapat</translation>

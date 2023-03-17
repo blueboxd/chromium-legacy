@@ -5,6 +5,7 @@
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_view_controller.h"
 
 #import "base/check.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
@@ -702,21 +703,11 @@ const CGFloat kFaviconBadgeSideLength = 24;
   [secondaryActionButton setTitleColor:titleColor
                               forState:UIControlStateNormal];
 
-  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-  // iOS 15.
-  if (@available(iOS 15, *)) {
-    UIButtonConfiguration* buttonConfiguration =
-        UIButtonConfiguration.plainButtonConfiguration;
-    buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
-        kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-    secondaryActionButton.configuration = buttonConfiguration;
-  }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-  else {
-    secondaryActionButton.contentEdgeInsets =
-        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-  }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+  // deployment target is iOS 15.
+  UIEdgeInsets contentInsets =
+      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  SetContentEdgeInsets(secondaryActionButton, contentInsets);
 
   secondaryActionButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
@@ -742,21 +733,11 @@ const CGFloat kFaviconBadgeSideLength = 24;
   [tertiaryActionButton setTitle:self.tertiaryActionString
                         forState:UIControlStateNormal];
 
-  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-  // iOS 15.
-  if (@available(iOS 15, *)) {
-    UIButtonConfiguration* buttonConfiguration =
-        UIButtonConfiguration.plainButtonConfiguration;
-    buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
-        kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-    tertiaryActionButton.configuration = buttonConfiguration;
-  }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-  else {
-    tertiaryActionButton.contentEdgeInsets =
-        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-  }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+  // deployment target is iOS 15.
+  UIEdgeInsets contentInsets =
+      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  SetContentEdgeInsets(tertiaryActionButton, contentInsets);
 
   [tertiaryActionButton setBackgroundColor:[UIColor clearColor]];
   UIColor* titleColor = [UIColor colorNamed:kBlueColor];

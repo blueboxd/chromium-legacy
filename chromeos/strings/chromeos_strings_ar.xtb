@@ -241,7 +241,6 @@
 <translation id="3226657629376379887">قائمة إجراءات التصميم</translation>
 <translation id="3246869037381808805">ستتم إزالة طلبات الطباعة التي مرَّ عليها أكثر من يوم.</translation>
 <translation id="3268178239013324452">تعذَّرت الطباعة - باب الطابعة مفتوح</translation>
-<translation id="3275506277319227640">إرساء على <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">الصورة الرمزية</translation>
 <translation id="3283504360622356314">{0,plural, =1{تعديل الملف}zero{تعديل الملفات}two{تعديل الملفَين}few{تعديل الملفات}many{تعديل الملفات}other{تعديل الملفات}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> غيغاهرتز</translation>
@@ -278,7 +277,6 @@
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
 <translation id="3600339377155080675">النسخ المطابق لمحتوى الشاشة</translation>
 <translation id="3602290021589620013">معاينة</translation>
-<translation id="360282891121575443">يمكن للمستخدمين الآخرين تعديل الصور في الألبومات المشتركة. قد يؤدي تغيير الخلفيات يوميًا إلى عرض خلفيات ليست في الألبوم حاليًا.</translation>
 <translation id="3603829704940252505">الصورة الرمزية</translation>
 <translation id="3604713164406837697">تغيير الخلفية</translation>
 <translation id="360565022852130722">‏شبكة Wi-Fi مؤمَّنة باستخدام بروتوكول WEP 802.1x ضعيف.</translation>
@@ -360,7 +358,6 @@
 <translation id="4311195029067684288">كامل</translation>
 <translation id="4333390807948134856">تم الضغط على المفتاح <ph name="KEY_NAME" />.</translation>
 <translation id="435692326371619097">‏يمكنك إدارة إعدادات اسم نقطة الوصول (APN) للشبكة. تنشئ أسماء نقاط الوصول (APN) اتصالاً بين شبكة الجوّال والإنترنت. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">إرساء على الجانب الأصغر</translation>
 <translation id="4378373042927530923">لم يتم التشغيل</translation>
 <translation id="4378551569595875038">جارٍ الاتصال...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -619,6 +616,7 @@
 <translation id="650266656685499220">‏لإنشاء ألبومات، انتقِل إلى "صور Google".</translation>
 <translation id="6516990319416533844">لاختبار معدّل شحن البطارية، عليك استهلاك نسبة من طاقتها في فترة قصيرة.</translation>
 <translation id="6517239166834772319">استكشاف</translation>
+<translation id="6526200165918397681">مطابقة درجات لون الخلفية</translation>
 <translation id="6527081081771465939">‏بروتوكول حماية شبكة Wi-Fi غير معروف.</translation>
 <translation id="6535178685492749208">لا يتوفّر اتصال بالإنترنت. سيتم إرسال التعليقات لاحقًا.</translation>
 <translation id="65587193855025101">المسطَّح</translation>
@@ -638,7 +636,6 @@
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="6692996468359469499">الحصول على معلومات ذات صلة باختيارك</translation>
-<translation id="6698459586333070823">يمكن للمستخدمين الآخرين تعديل الألبومات المشتركة</translation>
 <translation id="6704062477274546131">دقة نظام أسماء النطاقات</translation>
 <translation id="6723839937902243910">الطاقة</translation>
 <translation id="6723847290197874913">الإضاءة الخلفية للوحة المفاتيح</translation>
@@ -794,7 +791,6 @@
 <translation id="8226628635270268143">اختيار صورك وألبوماتك المفضَّلة</translation>
 <translation id="8227119283605456246">إرفاق ملف</translation>
 <translation id="8230672074305416752">تعذَّر فحص اتصال بوابة الشبكة التلقائية.</translation>
-<translation id="8242426110754782860">متابعة</translation>
 <translation id="8246209727385807362">مشغل شبكة جوّال غير معروف</translation>
 <translation id="827422111966801947">نيلي</translation>
 <translation id="8286154143153872371">يُرجى الاتصال بإحدى الشبكات وإعادة تحميل الصفحة لعرض الخلفية.</translation>
@@ -902,7 +898,6 @@
 <translation id="9137526406337347448">‏خدمات Google</translation>
 <translation id="9138630967333032450">‏المفتاح Shift الأيسر</translation>
 <translation id="9149391708638971077">تشغيل اختبار الذاكرة</translation>
-<translation id="9157515863513902090">إرساء على الجانب الأكبر</translation>
 <translation id="9161276708550942948">مفتاح المسافة</translation>
 <translation id="9173638680043580060">يتبقى أقل من دقيقة.</translation>
 <translation id="917720651393141712">اختبار</translation>

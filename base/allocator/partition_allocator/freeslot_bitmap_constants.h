@@ -12,7 +12,6 @@
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
-#include "base/allocator/partition_allocator/partition_tag_bitmap.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 
 namespace partition_alloc::internal {
@@ -27,7 +26,7 @@ constexpr size_t kFreeSlotBitmapOffsetMask = kFreeSlotBitmapBitsPerCell - 1;
 constexpr size_t kFreeSlotBitmapSize =
     (kSuperPageSize / kSmallestBucket) / CHAR_BIT;
 
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR size_t
 ReservedFreeSlotBitmapSize() {
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
   return base::bits::AlignUp(kFreeSlotBitmapSize, PartitionPageSize());
@@ -36,7 +35,7 @@ ReservedFreeSlotBitmapSize() {
 #endif
 }
 
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR size_t
 CommittedFreeSlotBitmapSize() {
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
   return base::bits::AlignUp(kFreeSlotBitmapSize, SystemPageSize());
@@ -45,7 +44,7 @@ CommittedFreeSlotBitmapSize() {
 #endif
 }
 
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR size_t
 NumPartitionPagesPerFreeSlotBitmap() {
   return ReservedFreeSlotBitmapSize() / PartitionPageSize();
 }
@@ -53,8 +52,7 @@ NumPartitionPagesPerFreeSlotBitmap() {
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
 PA_ALWAYS_INLINE uintptr_t SuperPageFreeSlotBitmapAddr(uintptr_t super_page) {
   PA_DCHECK(!(super_page % kSuperPageAlignment));
-  return super_page + PartitionPageSize() +
-         (IsManagedByNormalBuckets(super_page) ? ReservedTagBitmapSize() : 0);
+  return super_page + PartitionPageSize();
 }
 #endif
 

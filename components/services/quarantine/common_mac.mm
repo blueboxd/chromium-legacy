@@ -39,8 +39,9 @@ bool GetQuarantineProperties(
       return false;
     }
 
-    if (!quarantine_properties)
+    if (!quarantine_properties) {
       return true;
+    }
 
     NSDictionary* quarantine_properties_dict =
         base::mac::ObjCCast<NSDictionary>(quarantine_properties);

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 
+#import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/time/time.h"
@@ -17,18 +18,33 @@
 #error "This file requires ARC support."
 #endif
 
+using password_manager::CredentialUIEntry;
+
 namespace {
 
 // Amount of time after which the timestamp is shown instead of "just now".
 constexpr base::TimeDelta kJustCheckedTimeThreshold = base::Minutes(1);
 
+// Helper function to determine if a credential is compromised but not muted.
+bool IsCredentialUnmutedCompromised(const CredentialUIEntry& credential) {
+  return IsCompromised(credential) && !credential.IsMuted();
+}
+
 }  // anonymous namespace
 
 namespace password_manager {
 
+bool operator==(const InsecurePasswordCounts& lhs,
+                const InsecurePasswordCounts& rhs) {
+  std::tuple lhs_tuple = std::tie(lhs.compromised_count, lhs.dismissed_count,
+                                  lhs.reused_count, lhs.weak_count);
+  std::tuple rhs_tuple = std::tie(rhs.compromised_count, rhs.dismissed_count,
+                                  rhs.reused_count, rhs.weak_count);
+  return lhs_tuple == rhs_tuple;
+}
+
 WarningType GetWarningOfHighestPriority(
-    const std::vector<password_manager::CredentialUIEntry>&
-        insecure_credentials) {
+    const std::vector<CredentialUIEntry>& insecure_credentials) {
   bool has_reused_passwords = false;
   bool has_weak_passwords = false;
   bool has_muted_warnings = false;
@@ -64,15 +80,15 @@ InsecurePasswordCounts CountInsecurePasswordsPerInsecureType(
     // If a compromised credential is muted, we don't want to take it into
     // account in the compromised count.
     if (credential.IsMuted()) {
-      counts.dismissedCount++;
+      counts.dismissed_count++;
     } else if (IsCompromised(credential)) {
-      counts.compromisedCount++;
+      counts.compromised_count++;
     }
     if (credential.IsReused()) {
-      counts.reusedCount++;
+      counts.reused_count++;
     }
     if (credential.IsWeak()) {
-      counts.weakCount++;
+      counts.weak_count++;
     }
   }
   return counts;
@@ -86,20 +102,20 @@ int GetPasswordCountForWarningType(
       CountInsecurePasswordsPerInsecureType(insecure_credentials);
   switch (warningType) {
     case WarningType::kCompromisedPasswordsWarning:
-      return counts.compromisedCount;
+      return counts.compromised_count;
     case WarningType::kReusedPasswordsWarning:
-      return counts.reusedCount;
+      return counts.reused_count;
     case WarningType::kWeakPasswordsWarning:
-      return counts.weakCount;
+      return counts.weak_count;
     case WarningType::kDismissedWarningsWarning:
-      return counts.dismissedCount;
+      return counts.dismissed_count;
     case WarningType::kNoInsecurePasswordsWarning:
       return 0;
   }
 }
 
-// TODO(crbug.com/1406540): Title case returned string for Password Checkup
-// homepage.
+// TODO(crbug.com/1406540): Title case and update returned string for Password
+// Checkup homepage.
 NSString* FormatElapsedTimeSinceLastCheck(base::Time last_completed_check) {
   // `last_completed_check` is 0.0 when the check has never completely run
   // before.
@@ -121,6 +137,39 @@ NSString* FormatElapsedTimeSinceLastCheck(base::Time last_completed_check) {
   }
 
   return l10n_util::GetNSStringF(IDS_IOS_LAST_COMPLETED_CHECK, timestamp);
+}
+
+std::vector<CredentialUIEntry> GetPasswordsForWarningType(
+    WarningType warning_type,
+    const std::vector<CredentialUIEntry>& insecure_credentials) {
+  std::vector<CredentialUIEntry> filtered_credentials;
+
+  switch (warning_type) {
+    case WarningType::kCompromisedPasswordsWarning:
+      base::ranges::copy_if(insecure_credentials,
+                            std::back_inserter(filtered_credentials),
+                            IsCredentialUnmutedCompromised);
+      break;
+    case WarningType::kWeakPasswordsWarning:
+      base::ranges::copy_if(insecure_credentials,
+                            std::back_inserter(filtered_credentials),
+                            std::mem_fn(&CredentialUIEntry::IsWeak));
+      break;
+    case WarningType::kReusedPasswordsWarning:
+      base::ranges::copy_if(insecure_credentials,
+                            std::back_inserter(filtered_credentials),
+                            std::mem_fn(&CredentialUIEntry::IsReused));
+      break;
+    case WarningType::kDismissedWarningsWarning:
+      base::ranges::copy_if(insecure_credentials,
+                            std::back_inserter(filtered_credentials),
+                            std::mem_fn(&CredentialUIEntry::IsMuted));
+      break;
+    case WarningType::kNoInsecurePasswordsWarning:
+      NOTREACHED_NORETURN();
+  }
+
+  return filtered_credentials;
 }
 
 }  // namespace password_manager

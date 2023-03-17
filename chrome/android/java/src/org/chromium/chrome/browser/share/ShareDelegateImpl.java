@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.AppHooks;
@@ -21,9 +20,9 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.android_share_sheet.AndroidShareSheetController;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextHelper;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetCoordinator;
-import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -164,10 +163,8 @@ public class ShareDelegateImpl implements ShareDelegate {
             final WebContents webContents, final String title, final @NonNull GURL visibleUrl,
             final GURL canonicalUrl, @ShareOrigin final int shareOrigin,
             final boolean shareDirectly) {
-        ShareParams.Builder builder =
-                new ShareParams.Builder(window, title, getUrlToShare(visibleUrl, canonicalUrl))
-                        .setScreenshotUri(null);
-        share(builder.build(),
+        share(new ShareParams.Builder(window, title, getUrlToShare(visibleUrl, canonicalUrl))
+                        .build(),
                 new ChromeShareExtras.Builder()
                         .setSaveLastUsed(!shareDirectly)
                         .setShareDirectly(shareDirectly)
@@ -279,20 +276,17 @@ public class ShareDelegateImpl implements ShareDelegate {
                 ShareHelper.recordShareSource(ShareHelper.ShareSourceAndroid.CHROME_SHARE_SHEET);
                 boolean isIncognito = tabModelSelectorSupplier.hasValue()
                         && tabModelSelectorSupplier.get().isIncognitoSelected();
-                ShareSheetCoordinator coordinator = new ShareSheetCoordinator(controller,
-                        lifecycleDispatcher, tabProvider,
-                        new ShareSheetPropertyModelBuilder(controller,
-                                ContextUtils.getApplicationContext().getPackageManager(), profile),
-                        printCallback, new LargeIconBridge(profile), isIncognito,
-                        AppHooks.get().getImageEditorModuleProvider(),
-                        TrackerFactory.getTrackerForProfile(profile), profile);
+                ShareSheetCoordinator coordinator =
+                        new ShareSheetCoordinator(controller, lifecycleDispatcher, tabProvider,
+                                printCallback, new LargeIconBridge(profile), isIncognito,
+                                AppHooks.get().getImageEditorModuleProvider(),
+                                TrackerFactory.getTrackerForProfile(profile), profile);
                 coordinator.showInitialShareSheet(params, chromeShareExtras, shareStartTime);
             } else {
                 RecordHistogram.recordEnumeratedHistogram(
                         "Sharing.DefaultSharesheetAndroid.Opened", shareOrigin, ShareOrigin.COUNT);
-                // Profile can be null here since it is checked later on before being used.
-                ShareHelper.shareWithSystemShareSheetUi(
-                        params, profile, chromeShareExtras.saveLastUsed());
+                AndroidShareSheetController.showShareSheet(params, chromeShareExtras, controller,
+                        tabProvider, tabModelSelectorSupplier, profileSupplier, printCallback);
             }
         }
     }

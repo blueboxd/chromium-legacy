@@ -50,10 +50,10 @@ BASE_FEATURE(kDisableVoiceMatch,
 
 BASE_FEATURE(kEnableLibAssistantV2,
              "LibAssistantV2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableLibAssistantDlc,
-             "LibAssistantDlc",
+BASE_FEATURE(kEnableLibAssistantDLC,
+             "LibAssistantDLC",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAppSupportEnabled() {
@@ -104,9 +104,8 @@ bool IsLibAssistantV2Enabled() {
   return base::FeatureList::IsEnabled(kEnableLibAssistantV2);
 }
 
-bool IsLibAssistantDlcEnabled() {
-  return IsLibAssistantV2Enabled() ||
-         base::FeatureList::IsEnabled(kEnableLibAssistantDlc);
+bool IsLibAssistantDLCEnabled() {
+  return base::FeatureList::IsEnabled(kEnableLibAssistantDLC);
 }
 
 }  // namespace ash::assistant::features

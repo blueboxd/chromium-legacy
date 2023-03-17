@@ -26,6 +26,8 @@
 #include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_controller.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -232,14 +234,27 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   return WM_EVENT_NORMAL;
 }
 
+// Returns true if the split view divider exits which should be taken into
+// consideration when calculating the snap ratio.
+bool ShouldConsiderDivider(aura::Window* window) {
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(window->GetRootWindow());
+  return split_view_controller->InSplitViewMode() &&
+         split_view_controller->split_view_divider();
+}
+
 float GetCurrentSnapRatio(aura::Window* window) {
   gfx::Rect maximized_bounds =
       screen_util::GetMaximizedWindowBoundsInParent(window);
+  const int divider_delta =
+      ShouldConsiderDivider(window) ? kSplitviewDividerShortSideLength / 2 : 0;
   if (SplitViewController::IsLayoutHorizontal(window)) {
-    return static_cast<float>(window->GetTargetBounds().width()) /
+    return static_cast<float>(window->GetTargetBounds().width() +
+                              divider_delta) /
            static_cast<float>(maximized_bounds.width());
   }
-  return static_cast<float>(window->GetTargetBounds().height()) /
+  return static_cast<float>(window->GetTargetBounds().height() +
+                            divider_delta) /
          static_cast<float>(maximized_bounds.height());
 }
 
@@ -747,23 +762,36 @@ void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
 std::unique_ptr<PresentationTimeRecorder> WindowState::OnDragStarted(
     int window_component) {
   DCHECK(drag_details_);
-  if (delegate_)
+
+  SplitViewController* split_view_controller(
+      SplitViewController::Get(Shell::GetPrimaryRootWindow()));
+  DCHECK(split_view_controller);
+
+  if (split_view_controller->IsWindowInSplitView(window_)) {
+    split_view_controller->MaybeDetachWindow(window_);
+  }
+
+  if (delegate_) {
     return delegate_->OnDragStarted(window_component);
+  }
 
   return nullptr;
 }
 
 void WindowState::OnCompleteDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
-  if (delegate_)
-    delegate_->OnDragFinished(/*canceled=*/false, location);
+  if (delegate_) {
+    delegate_->OnDragFinished(/*cancel=*/false, location);
+  }
+
   SaveWindowForWindowRestore(this);
 }
 
 void WindowState::OnRevertDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
-  if (delegate_)
-    delegate_->OnDragFinished(/*canceled=*/true, location);
+  if (delegate_) {
+    delegate_->OnDragFinished(/*cancel=*/true, location);
+  }
 }
 
 void WindowState::OnActivationLost() {

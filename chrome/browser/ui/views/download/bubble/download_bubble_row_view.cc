@@ -11,8 +11,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
+#include "chrome/browser/download/bubble/download_bubble_ui_controller.h"
 #include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_ui_model.h"
@@ -365,12 +365,8 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                /*highlight_on_hover=*/true,
                                                /*highlight_on_focus=*/true);
-  views::InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
-      [](views::View* host) {
-        return views::style::GetColor(*host, views::style::CONTEXT_BUTTON,
-                                      views::style::STYLE_SECONDARY);
-      },
-      this));
+  views::InkDrop::Get(this)->SetBaseColorId(views::style::GetColorId(
+      views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY));
 
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -642,6 +638,7 @@ void DownloadBubbleRowView::Layout() {
 }
 
 void DownloadBubbleRowView::OnMainButtonPressed() {
+  bubble_controller_->RecordDownloadBubbleInteraction();
   if (ui_info_.has_subpage) {
     DownloadItemWarningData::AddWarningActionEvent(
         model_->GetDownloadItem(),
@@ -821,12 +818,8 @@ views::ImageButton* DownloadBubbleRowView::AddQuickAction(
   quick_action->SetProperty(views::kMarginsKey, kRowInterElementPadding);
   quick_action->SetVisible(false);
   views::InkDrop::Get(quick_action)
-      ->SetBaseColorCallback(base::BindRepeating(
-          [](views::View* host) {
-            return views::style::GetColor(*host, views::style::CONTEXT_BUTTON,
-                                          views::style::STYLE_SECONDARY);
-          },
-          quick_action));
+      ->SetBaseColorId(views::style::GetColorId(views::style::CONTEXT_BUTTON,
+                                                views::style::STYLE_SECONDARY));
   return quick_action;
 }
 

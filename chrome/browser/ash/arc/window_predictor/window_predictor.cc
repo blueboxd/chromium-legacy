@@ -124,7 +124,7 @@ bool WindowPredictor::LaunchArcAppWithGhostWindow(
   arc_task_handler->GetWindowPredictorArcAppRestoreHandler(launch_counter)
       ->LaunchGhostWindowWithApp(
           profile, arc_app_id, intent ? intent->Clone() : nullptr, event_flags,
-          GhostWindowType::kAppLaunch, std::move(predict_window_info));
+          window_type, std::move(predict_window_info));
 
   base::UmaHistogramEnumeration(kWindowPredictorLaunchHistogram,
                                 WindowPredictorLaunchType::kSuccess);
@@ -145,11 +145,19 @@ arc::mojom::WindowInfoPtr WindowPredictor::PredictAppWindowInfo(
         window_info->display_id, &disp);
   }
 
+  if (ash::TabletMode::Get()->IsInTabletMode()) {
+    window_info->state =
+        static_cast<int32_t>(chromeos::WindowStateType::kMaximized);
+    window_info->bounds = disp.work_area();
+    return window_info;
+  }
+
   const auto& layout = app_info.initial_window_layout;
   switch (layout.type) {
     case arc::mojom::WindowSizeType::kMaximize:
       window_info->state =
           static_cast<int32_t>(chromeos::WindowStateType::kMaximized);
+      window_info->bounds = disp.work_area();
       break;
     case arc::mojom::WindowSizeType::kTabletSize:
       window_info->state =

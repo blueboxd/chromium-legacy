@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -18,6 +19,7 @@ import org.junit.Assert;
 import org.chromium.webengine.Navigation;
 import org.chromium.webengine.NavigationObserver;
 import org.chromium.webengine.Tab;
+import org.chromium.webengine.TabListObserver;
 import org.chromium.webengine.WebEngine;
 import org.chromium.webengine.WebFragment;
 import org.chromium.webengine.WebSandbox;
@@ -91,6 +93,10 @@ public class InstrumentationActivityTestRule
         return getFragment().getWebEngine().getTabManager().getActiveTab();
     }
 
+    public View getFragmentContainerView() {
+        return getActivity().getFragmentContainerView();
+    }
+
     /**
      * Creates a new WebEngine and attaches its Fragment before navigating.
      */
@@ -115,11 +121,11 @@ public class InstrumentationActivityTestRule
         runOnUiThreadBlocking(() -> {
             tab.getNavigationController().registerNavigationObserver(new NavigationObserver() {
                 @Override
-                public void onNavigationCompleted(Navigation navigation) {
+                public void onNavigationCompleted(Tab tab, Navigation navigation) {
                     navigationCompleteLatch.countDown();
                 }
                 @Override
-                public void onNavigationFailed(Navigation navigation) {
+                public void onNavigationFailed(Tab tab, Navigation navigation) {
                     failed.set(true);
                     navigationCompleteLatch.countDown();
                 }
@@ -129,6 +135,20 @@ public class InstrumentationActivityTestRule
         navigationCompleteLatch.await();
 
         if (failed.get()) throw new RuntimeException("Navigation failed.");
+    }
+
+    public void setTabActiveAndWait(WebEngine webEngine, Tab tab) throws Exception {
+        CountDownLatch setActiveLatch = new CountDownLatch(1);
+        runOnUiThreadBlocking(() -> {
+            webEngine.getTabManager().registerTabListObserver(new TabListObserver() {
+                @Override
+                public void onActiveTabChanged(WebEngine webEngine, Tab activeTab) {
+                    setActiveLatch.countDown();
+                }
+            });
+            tab.setActive();
+        });
+        setActiveLatch.await();
     }
 
     public Context getContext() {

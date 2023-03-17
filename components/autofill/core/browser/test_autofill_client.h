@@ -13,6 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,6 +43,7 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/translate/core/browser/language_state.h"
@@ -69,13 +71,18 @@ namespace autofill {
 // As a rule of thumb, TestContentAutofillClient is preferable in tests that
 // have a content::WebContents.
 //
-// If you pass the command-line flag --show-autofill-internals,
+// If you enable the Finch feature `kAutofillLoggingToTerminal`,
 // autofill-internals logs are recorded to LOG(INFO).
 template <typename T>
 class TestAutofillClientTemplate : public T {
  public:
-  static_assert(std::is_same_v<AutofillClient, T> ||
-                std::is_base_of_v<AutofillClient, T>);
+  static_assert(std::is_base_of_v<AutofillClient, T>);
+
+  TestAutofillClientTemplate() {
+    if (base::FeatureList::IsEnabled(features::test::kAutofillLogToTerminal)) {
+      log_router_.LogToTerminal();
+    }
+  }
 
   using T::T;
   TestAutofillClientTemplate(const TestAutofillClientTemplate&) = delete;
@@ -116,6 +123,10 @@ class TestAutofillClientTemplate : public T {
     return mock_autofill_optimization_guide_.get();
   }
 
+  void ResetAutofillOptimizationGuide() {
+    mock_autofill_optimization_guide_.reset();
+  }
+
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override {
     return &mock_autocomplete_history_manager_;
   }
@@ -141,10 +152,15 @@ class TestAutofillClientTemplate : public T {
   }
 
   PrefService* GetPrefs() override {
-    return const_cast<PrefService*>(std::as_const(*this).GetPrefs());
+    if (!prefs_) {
+      prefs_ = autofill::test::PrefServiceForTesting();
+    }
+    return prefs_.get();
   }
 
-  const PrefService* GetPrefs() const override { return prefs_.get(); }
+  const PrefService* GetPrefs() const override {
+    return const_cast<TestAutofillClientTemplate*>(this)->GetPrefs();
+  }
 
   syncer::SyncService* GetSyncService() override { return test_sync_service_; }
 
@@ -701,29 +717,15 @@ class TestAutofillClientTemplate : public T {
   std::vector<std::string> allowed_bin_ranges_;
 #endif
 
-  struct ScopedLogRouterObservation {
-    explicit ScopedLogRouterObservation(LogRouter* log_router,
-                                        TextLogReceiver* receiver)
-        : scoped_logging_subscription_(receiver) {
-      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      if (command_line->HasSwitch("show-autofill-internals")) {
-        scoped_logging_subscription_.Observe(log_router);
-      }
-    }
-    base::ScopedObservation<LogRouter, LogReceiver>
-        scoped_logging_subscription_;
-  };
-
   LogRouter log_router_;
   std::unique_ptr<LogManager> log_manager_ =
       LogManager::Create(&log_router_, base::NullCallback());
-  TextLogReceiver text_log_receiver_;
-  ScopedLogRouterObservation scoped_logging_subscription_{&log_router_,
-                                                          &text_log_receiver_};
 };
 
 // A simple `AutofillClient` for tests. Consider `TestContentAutofillClient` as
 // an alternative for tests where the content layer is visible.
+//
+// Consider using TestAutofillClientInjector in browser tests.
 using TestAutofillClient = TestAutofillClientTemplate<AutofillClient>;
 
 }  // namespace autofill

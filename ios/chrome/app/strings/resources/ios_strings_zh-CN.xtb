@@ -81,6 +81,7 @@
 <translation id="149095475893949513">此网站正要尝试下载一个配置文件。</translation>
 <translation id="1491277525950327607">点按两次即可切换设置</translation>
 <translation id="1492417797159476138">您已为此网站保存该用户名</translation>
+<translation id="1497590942294823549">菜单 → 密码管理工具</translation>
 <translation id="1498283581832036924">您的 <ph name="WEBSITE" /> 帐号不会被删除。</translation>
 <translation id="1506063256525392513">这样您就能拍摄并上传照片，还能扫描二维码</translation>
 <translation id="1509486075633541495">登录网站</translation>
@@ -518,6 +519,7 @@
 <translation id="4737560986434232178">在最近打开的标签页中搜索</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4747097190499141774">密码加密不包括 Google Pay 中的付款方式和地址。只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="4751162929052964260"><ph name="TITLE" />，<ph name="STATE" />，仅在该设备上，<ph name="URL" /></translation>
 <translation id="4751645464639803239">打开新的无痕式标签页</translation>
 <translation id="4766112107778026136">探索与关注</translation>
 <translation id="4775879719735953715">默认浏览器</translation>
@@ -843,6 +845,7 @@
 <translation id="6801927553864092214">若要私密地浏览网页，请打开一个无痕式标签页</translation>
 <translation id="6807889908376551050">全部显示...</translation>
 <translation id="681368974849482173">书签已创建</translation>
+<translation id="6822587385560699678">当此设置处于开启状态时，密码会保存到 <ph name="ACCOUNT" /> 中。当此设置处于关闭状态时，密码只会保存在此设备上。</translation>
 <translation id="683022620450280906">您可在任意设备上使用已存密码。系统会将密码保存到 <ph name="EMAIL" /> 的 Google 密码管理器中</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6842136130964845393">若要确保您能随时访问自己的已保存密码，请验证是您本人在操作</translation>
@@ -941,6 +944,7 @@
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">拦截了弹出式窗口（<ph name="NUMBER_OF_BLOCKED_POPUPS" /> 个）</translation>
 <translation id="7607521702806708809">删除密码</translation>
+<translation id="7611459119367035420">您可以在此处找到固定标签页。</translation>
 <translation id="7638584964844754484">密码不正确</translation>
 <translation id="7646263789464975852">菜单 → 设置 → 安全检查</translation>
 <translation id="7646772052135772216">无法同步密码</translation>
@@ -953,6 +957,7 @@
 <translation id="7701040980221191251">无</translation>
 <translation id="7720410380936703141">重试</translation>
 <translation id="7726702057919861819">菜单 → 历史 → 清除浏览数据</translation>
+<translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />。仅在该设备上。</translation>
 <translation id="7738120385185846461">报告问题…</translation>
 <translation id="7741325291586284254">新的无痕式标签页</translation>
 <translation id="7744394900930577716">在其他应用中填充密码</translation>
@@ -1161,7 +1166,6 @@
 <translation id="9165320910061267720">若要接收降价提醒通知，您需在 iOS 设置中开启通知功能。</translation>
 <translation id="9177438225260810839">在打开的标签页中搜索</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
-<translation id="9193147658040604536">拖到此处即可固定标签页</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> 天前</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9219154867334666734">搜索标签页…</translation>

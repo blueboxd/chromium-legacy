@@ -236,9 +236,14 @@ void IOSChromeMainParts::PreCreateThreads() {
   // Sync the CleanExitBeacon.
   metrics::CleanExitBeacon::SyncUseUserDefaultsBeacon();
 
+  // On iOS we know that ProfilingClient is the only user of
+  // PoissonAllocationSampler, there are no others. Therefore, make
+  // memory_system include it dynamically.
   memory_system::Initializer()
       .SetProfilingClientParameters(
           channel, metrics::CallStackProfileParams::Process::kBrowser)
+      .SetDispatcherParameters(memory_system::DispatcherParameters::
+                                   PoissonAllocationSamplerInclusion::kDynamic)
       .Initialize(memory_system_);
 
   variations::InitCrashKeys();
@@ -264,6 +269,11 @@ void IOSChromeMainParts::PreCreateThreads() {
 
 void IOSChromeMainParts::PreMainMessageLoopRun() {
   application_context_->PreMainMessageLoopRun();
+
+  // Retrieve first run information for future use.
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&FirstRun::LoadSentinelInfo));
 
   // ContentSettingsPattern need to be initialized before creating the
   // ChromeBrowserState.

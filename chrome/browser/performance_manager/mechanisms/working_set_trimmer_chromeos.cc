@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/memory/arc_memory_bridge.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -57,15 +58,15 @@ bool WorkingSetTrimmerChromeOS::PlatformSupportsWorkingSetTrim() {
   return kPlatformSupported;
 }
 
-bool WorkingSetTrimmerChromeOS::TrimWorkingSet(base::ProcessId pid) {
+void WorkingSetTrimmerChromeOS::TrimWorkingSet(base::ProcessId pid) {
   const std::string reclaim_file = base::StringPrintf("/proc/%d/reclaim", pid);
   const std::string kReclaimMode = "all";
-  bool success = base::WriteFile(base::FilePath(reclaim_file), kReclaimMode);
+  [[maybe_unused]] bool success =
+      base::WriteFile(base::FilePath(reclaim_file), kReclaimMode);
 
   // We won't log an error if reclaim failed due to the process being dead.
   PLOG_IF(ERROR, success && errno != ENOENT)
       << "Write failed on " << reclaim_file << " mode: " << kReclaimMode;
-  return success;
 }
 
 void WorkingSetTrimmerChromeOS::TrimArcVmWorkingSet(
@@ -125,23 +126,73 @@ void WorkingSetTrimmerChromeOS::OnDropArcVmCaches(
     return;
   }
 
-  // Do the actual VM trimming regardless of the |result|.
-  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
-  if (!arc_session_manager) {
-    LOG(ERROR) << "ArcSessionManager unavailable";
-    std::move(callback).Run(false, "ArcSessionManager unavailable");
-    return;
-  }
+  // Do the actual VM trimming regardless of the |result|. When "ArcGuestZram"
+  // feature is enabled, guest memory is locked and should be reclaimed from
+  // guest through ArcMemoryBridge's reclaim API (if "guest_reclaim_enabled"
+  // param is enabled). Otherwise the memory should be reclaimed from host
+  // through ArcSessionManager's TrimVmMemory.
+  if (base::FeatureList::IsEnabled(arc::kGuestZram) &&
+      arc::kGuestReclaimEnabled.Get()) {
+    content::BrowserContext* context =
+        context_for_testing_ ? context_for_testing_ : GetContext();
+    if (!context) {
+      LogErrorAndInvokeCallback("BrowserContext unavailable",
+                                std::move(callback));
+      return;
+    }
 
-  arc_session_manager->TrimVmMemory(std::move(callback), page_limit);
+    auto* bridge =
+        context ? arc::ArcMemoryBridge::GetForBrowserContext(context) : nullptr;
+    if (!bridge) {
+      LogErrorAndInvokeCallback("ArcMemoryBridge unavailable",
+                                std::move(callback));
+      return;
+    }
+
+    auto reclaim_request = arc::mojom::ReclaimRequest::New(
+        arc::kGuestReclaimOnlyAnonymous.Get() ? arc::mojom::ReclaimType::ANON
+                                              : arc::mojom::ReclaimType::ALL);
+    bridge->Reclaim(
+        std::move(reclaim_request),
+        base::BindOnce(&WorkingSetTrimmerChromeOS::OnArcVmMemoryGuestReclaim,
+                       weak_factory_.GetMutableWeakPtr(), std::move(callback)));
+  } else {
+    arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+    if (!arc_session_manager) {
+      LogErrorAndInvokeCallback("ArcSessionManager unavailable",
+                                std::move(callback));
+      return;
+    }
+
+    arc_session_manager->TrimVmMemory(std::move(callback), page_limit);
+  }
 }
 
-bool WorkingSetTrimmerChromeOS::TrimWorkingSet(
-    const ProcessNode* process_node) {
-  if (!process_node->GetProcess().IsValid())
-    return false;
+void WorkingSetTrimmerChromeOS::OnArcVmMemoryGuestReclaim(
+    TrimArcVmWorkingSetCallback callback,
+    arc::mojom::ReclaimResultPtr result) {
+  VLOG(2) << "Finished trimming memory from guest. " << result->reclaimed
+          << " processes were reclaimed successfully. " << result->unreclaimed
+          << " processes were not reclaimed.";
+  if (result->reclaimed == 0) {
+    std::move(callback).Run(false, "No guest process was reclaimed");
+  } else {
+    std::move(callback).Run(true, "");
+  }
+}
 
-  return TrimWorkingSet(process_node->GetProcessId());
+void WorkingSetTrimmerChromeOS::LogErrorAndInvokeCallback(
+    const char* error,
+    TrimArcVmWorkingSetCallback callback) {
+  LOG(ERROR) << error;
+  std::move(callback).Run(false, error);
+}
+
+void WorkingSetTrimmerChromeOS::TrimWorkingSet(
+    const ProcessNode* process_node) {
+  if (process_node->GetProcess().IsValid()) {
+    TrimWorkingSet(process_node->GetProcessId());
+  }
 }
 
 }  // namespace mechanism

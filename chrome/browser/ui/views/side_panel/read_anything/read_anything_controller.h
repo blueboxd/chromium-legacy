@@ -34,7 +34,8 @@ class Browser;
 //  This class is owned by the ReadAnythingCoordinator and has the same lifetime
 //  as the browser.
 //
-class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
+class ReadAnythingController : public ui::AXActionHandlerObserver,
+                               public ReadAnythingToolbarView::Delegate,
                                public ReadAnythingFontCombobox::Delegate,
                                public ReadAnythingPageHandler::Delegate,
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -56,6 +57,9 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
  private:
   friend class ReadAnythingControllerTest;
 
+  // ui::AXActionHandlerObserver:
+  void TreeRemoved(ui::AXTreeID ax_tree_id) override;
+
   // ReadAnythingFontCombobox::Delegate:
   void OnFontChoiceChanged(int new_index) override;
   ui::ComboboxModel* GetFontComboboxModel() override;
@@ -68,6 +72,7 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   ReadAnythingMenuModel* GetLineSpacingModel() override;
   void OnLetterSpacingChanged(int new_index) override;
   ReadAnythingMenuModel* GetLetterSpacingModel() override;
+  void OnSystemThemeChanged() override;
 
   // ReadAnythingPageHandler::Delegate:
   void OnUIReady() override;
@@ -90,7 +95,7 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   // content::WebContentsObserver:
   void AccessibilityEventReceived(
       const content::AXEventNotificationDetails& details) override;
-  void WebContentsDestroyed() override;
+  void PrimaryPageChanged(content::Page& page) override;
 
   // When the active web contents changes (or the UI becomes active):
   // 1. Begins observing the web contents of the active tab and enables web
@@ -100,6 +105,9 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   //    copy of the web contents' AXTree.
   // 2. Notifies the model that the AXTreeID has changed.
   void OnActiveWebContentsChanged();
+
+  // Notifies the model that the AXTreeID has changed.
+  void OnActiveAXTreeIDChanged();
 
   const raw_ptr<ReadAnythingModel> model_;
 
@@ -114,6 +122,11 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   // Whether the Read Anything feature's UI is ready. This is set to true when
   // the UI is constructed and false when it is destroyed.
   bool ui_ready_ = false;
+
+  // Observes the AXActionHandlerRegistry for AXTree removals.
+  base::ScopedObservation<ui::AXActionHandlerRegistry,
+                          ui::AXActionHandlerObserver>
+      ax_action_handler_observer_{this};
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   // screen_ai::ScreenAIInstallState::Observer:

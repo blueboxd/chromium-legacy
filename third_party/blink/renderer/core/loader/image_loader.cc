@@ -677,12 +677,15 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
       image->RemoveObserver(this);
     }
     image_content_ = nullptr;
+    image_complete_ = true;
     image_content_for_image_document_ = nullptr;
     delay_until_image_notify_finished_ = nullptr;
     if (lazy_image_load_state_ != LazyImageLoadState::kNone) {
       LazyImageHelper::StopMonitoring(GetElement());
       lazy_image_load_state_ = LazyImageLoadState::kNone;
     }
+  } else {
+    image_complete_ = false;
   }
 
   // Don't load images for inactive documents or active documents without V8
@@ -940,7 +943,8 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   UseCounter::Count(execution_context, WebFeature::kImageDecodeAPI);
 
   auto* request = MakeGarbageCollected<DecodeRequest>(
-      this, MakeGarbageCollected<ScriptPromiseResolver>(script_state));
+      this, MakeGarbageCollected<ScriptPromiseResolver>(
+                script_state, exception_state.GetContext()));
   execution_context->GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
       &DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
   decode_requests_.push_back(request);

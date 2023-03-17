@@ -4,6 +4,8 @@
 
 #include "ash/system/video_conference/video_conference_tray_controller.h"
 
+#include <string>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
@@ -17,6 +19,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/video_conference/video_conference_common.h"
 #include "ash/system/video_conference/video_conference_tray.h"
+#include "base/notreached.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "components/prefs/pref_service.h"
@@ -31,6 +34,10 @@ namespace {
 // The ID for the "Speak-on-mute detected" toast.
 constexpr char kVideoConferenceTraySpeakOnMuteDetectedId[] =
     "video_conference_tray_toast_ids.speak_on_mute_detected";
+
+// The ID for the "use while disabled" toast.
+constexpr char kVideoConferenceTrayUseWhileDisabledToastId[] =
+    "video_conference_tray_toast_ids.use_while_disable";
 
 // The cool down duration for speak-on-mute detection notification in seconds.
 constexpr int KSpeakOnMuteNotificationCoolDownDuration = 60;
@@ -109,6 +116,13 @@ bool VideoConferenceTrayController::IsCapturingMicrophone() const {
 }
 
 void VideoConferenceTrayController::SetCameraMuted(bool muted) {
+  // If the camera is hardware-muted, do nothing here.
+  if (camera_muted_by_hardware_switch_) {
+    // TODO(b/272145024): Display a toast if camera button is clicked during
+    // hardware-muted.
+    return;
+  }
+
   if (!ash::features::IsCrosPrivacyHubEnabled()) {
     media::CameraHalDispatcherImpl::GetInstance()
         ->SetCameraSWPrivacySwitchState(
@@ -127,8 +141,12 @@ void VideoConferenceTrayController::SetCameraMuted(bool muted) {
 }
 
 bool VideoConferenceTrayController::GetCameraMuted() {
+  if (camera_muted_by_hardware_switch_) {
+    return true;
+  }
+
   if (!features::IsCrosPrivacyHubEnabled()) {
-    return camera_muted_by_software_switch();
+    return camera_muted_by_software_switch_;
   }
 
   auto* pref_service =
@@ -175,22 +193,32 @@ void VideoConferenceTrayController::ReturnToApp(
   video_conference_manager_->ReturnToApp(id);
 }
 
+void VideoConferenceTrayController::OnCameraHWPrivacySwitchStateChanged(
+    const std::string& device_id,
+    cros::mojom::CameraPrivacySwitchState state) {
+  camera_muted_by_hardware_switch_ =
+      state == cros::mojom::CameraPrivacySwitchState::ON;
+
+  UpdateCameraIcons();
+
+  if (video_conference_manager_) {
+    video_conference_manager_->SetSystemMediaDeviceStatus(
+        crosapi::mojom::VideoConferenceMediaDevice::kCamera,
+        /*disabled=*/GetCameraMuted());
+  }
+}
+
 void VideoConferenceTrayController::OnCameraSWPrivacySwitchStateChanged(
     cros::mojom::CameraPrivacySwitchState state) {
   camera_muted_by_software_switch_ =
-      state != cros::mojom::CameraPrivacySwitchState::ON;
+      state == cros::mojom::CameraPrivacySwitchState::ON;
 
-  for (auto* root_window_controller :
-       Shell::Get()->GetAllRootWindowControllers()) {
-    DCHECK(root_window_controller);
-    DCHECK(root_window_controller->GetStatusAreaWidget());
+  UpdateCameraIcons();
 
-    auto* camera_icon = root_window_controller->GetStatusAreaWidget()
-                            ->video_conference_tray()
-                            ->camera_icon();
-
-    camera_icon->SetToggled(!camera_muted_by_software_switch_);
-    camera_icon->UpdateCapturingState();
+  if (video_conference_manager_) {
+    video_conference_manager_->SetSystemMediaDeviceStatus(
+        crosapi::mojom::VideoConferenceMediaDevice::kCamera,
+        /*disabled=*/GetCameraMuted());
   }
 }
 
@@ -209,9 +237,19 @@ void VideoConferenceTrayController::OnInputMuteChanged(
     audio_icon->SetToggled(mute_on);
     audio_icon->UpdateCapturingState();
   }
+
+  if (video_conference_manager_) {
+    video_conference_manager_->SetSystemMediaDeviceStatus(
+        crosapi::mojom::VideoConferenceMediaDevice::kMicrophone,
+        /*disabled=*/mute_on);
+  }
+
+  microphone_muted_by_hardware_switch_ =
+      method == CrasAudioHandler::InputMuteChangeMethod::kPhysicalShutter;
 }
 
 void VideoConferenceTrayController::OnSpeakOnMuteDetected() {
+  // TODO(b/273374112): Add unit test for this toast.
   const base::TimeTicks current_time = base::TimeTicks::Now();
 
   if (!last_speak_on_mute_notification_time_.has_value() ||
@@ -271,10 +309,67 @@ void VideoConferenceTrayController::UpdateWithMediaState(
   }
 }
 
+bool VideoConferenceTrayController::HasCameraPermission() const {
+  return state_.has_camera_permission;
+}
+
+bool VideoConferenceTrayController::HasMicrophonePermission() const {
+  return state_.has_microphone_permission;
+}
+
 void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
     crosapi::mojom::VideoConferenceMediaDevice device,
     const std::u16string& app_name) {
-  // TODO(b/249828245): Implement logic to handle this.
+  // TODO(b/273570886): Handle the case when both camera and microphone are
+  // being used while disabled.
+  std::u16string device_name;
+  int toast_text_id;
+  switch (device) {
+    case crosapi::mojom::VideoConferenceMediaDevice::kMicrophone:
+      device_name =
+          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_MICROPHONE_NAME);
+      toast_text_id =
+          microphone_muted_by_hardware_switch_
+              ? IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED
+              : IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED;
+      break;
+    case crosapi::mojom::VideoConferenceMediaDevice::kCamera:
+      device_name =
+          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_CAMERA_NAME);
+      toast_text_id =
+          camera_muted_by_hardware_switch_
+              ? IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED
+              : IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  ToastData toast_data(
+      kVideoConferenceTrayUseWhileDisabledToastId,
+      ToastCatalogName::kVideoConferenceTrayUseWhileDisabled,
+      l10n_util::GetStringFUTF16(toast_text_id, app_name, device_name),
+      ToastData::kDefaultToastDuration,
+      /*visible_on_lock_screen=*/false);
+  toast_data.show_on_all_root_windows = true;
+  ToastManager::Get()->Show(std::move(toast_data));
+}
+
+void VideoConferenceTrayController::UpdateCameraIcons() {
+  for (auto* root_window_controller :
+       Shell::Get()->GetAllRootWindowControllers()) {
+    DCHECK(root_window_controller);
+    DCHECK(root_window_controller->GetStatusAreaWidget());
+
+    auto* camera_icon = root_window_controller->GetStatusAreaWidget()
+                            ->video_conference_tray()
+                            ->camera_icon();
+
+    camera_icon->SetToggled(camera_muted_by_hardware_switch_ ||
+                            camera_muted_by_software_switch_);
+    camera_icon->UpdateCapturingState();
+  }
 }
 
 }  // namespace ash

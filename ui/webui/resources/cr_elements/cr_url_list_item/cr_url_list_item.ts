@@ -5,6 +5,7 @@
 import '../cr_hidden_style.css.js';
 import '../cr_icons.css.js';
 import '../cr_shared_vars.css.js';
+import '//resources/cr_elements/cr_auto_img/cr_auto_img.js';
 
 import {assert} from '//resources/js/assert_ts.js';
 import {FocusOutlineManager} from '//resources/js/focus_outline_manager.js';
@@ -68,6 +69,10 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
       },
       title: String,
       url: String,
+      imageUrls: {
+        type: Array,
+        value: () => [],
+      },
     };
   }
 
@@ -81,6 +86,7 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
   size: CrUrlListItemSize;
   override title: string;
   url?: string;
+  imageUrls: string[];
 
   override ready() {
     super.ready();
@@ -119,6 +125,10 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
     return getFaviconForPageURL(this.url || '', false);
   }
 
+  private shouldShowImageUrl_(_url: string, index: number) {
+    return index <= 2;
+  }
+
   private onBadgesSlotChange_() {
     this.hasBadges_ =
         this.$.badges.assignedElements({flatten: true}).length > 0;
@@ -133,7 +143,19 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
   }
 
   private shouldShowFavicon_(): boolean {
-    return this.url !== undefined;
+    return this.url !== undefined &&
+        (this.size === CrUrlListItemSize.COMPACT ||
+         this.imageUrls.length === 0);
+  }
+
+  private shouldShowUrlImage_(): boolean {
+    return this.url !== undefined &&
+        !(this.size === CrUrlListItemSize.COMPACT ||
+          this.imageUrls.length === 0);
+  }
+
+  private shouldShowFolderCount_(): boolean {
+    return this.url === undefined;
   }
 }
 

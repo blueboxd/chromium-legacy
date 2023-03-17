@@ -84,8 +84,9 @@ constexpr int kArcVersionT = 33;
 constexpr int kMaxArcVersion = 999;
 
 // How long ARCVM /data migration notification and dialog are dismissible.
+constexpr int kArcVmDataMigrationNumberOfDismissibleDays = 30;
 constexpr base::TimeDelta kArcVmDataMigrationDismissibleTimeDelta =
-    base::Days(30);
+    base::Days(kArcVmDataMigrationNumberOfDismissibleDays);
 
 // Returns true if ARC is installed and the current device is officially
 // supported to run ARC.
@@ -251,6 +252,20 @@ int GetDaysUntilArcVmDataMigrationDeadline(PrefService* prefs);
 // dismissible given the number of days returned by
 // GetDaysUntilArcVmDataMigrationDeadline().
 bool ArcVmDataMigrationShouldBeDismissible(int days_until_deadline);
+
+// Calculates and returns the desired disk image size for the destination of
+// ARCVM /data migration based on the size of the source (existing Android
+// /data) and free disk space.
+uint64_t GetDesiredDiskImageSizeForArcVmDataMigrationInBytes(
+    uint64_t android_data_size,
+    uint64_t free_disk_space);
+
+// Calculates and returns how much free disk space should be there to start
+// ARCVM /data migration based on the size of existing Android /data and free
+// disk space.
+uint64_t GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
+    uint64_t android_data_size,
+    uint64_t free_disk_space);
 
 }  // namespace arc
 

@@ -70,7 +70,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="HeapProfiling.AndroidStackUnwinder"
-    enum="AndroidStackUnwinder" expires_after="2023-07-09">
+    enum="AndroidStackUnwinder" expires_after="2023-09-10">
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -2483,6 +2483,31 @@ chromium-metrics-reviews@google.com.
   <summary>
     System-wide estimate of memory used in ChromeOS, calculated as the
     difference between the amount of total and available memory.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Total.HibernatedCanvas.OriginalSize" units="MB"
+    expires_after="2023-08-08">
+  <owner>lizeb@chromium.org</owner>
+  <owner>chrome-memory@chromium.org</owner>
+  <summary>
+    Total size of all hibernated canvases across all renderers, prior to
+    compression.
+
+    Recorded at Poisson sampled time intervals with a mean of 5 minutes on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Total.HibernatedCanvas.Size" units="MB"
+    expires_after="2023-08-08">
+  <owner>lizeb@chromium.org</owner>
+  <owner>chrome-memory@chromium.org</owner>
+  <summary>
+    Total size of all hibernated canvases across all renderers.
+
+    Recorded at Poisson sampled time intervals with a mean of 5 minutes on
+    Android.
   </summary>
 </histogram>
 

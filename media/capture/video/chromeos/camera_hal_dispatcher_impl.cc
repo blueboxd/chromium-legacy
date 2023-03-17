@@ -52,10 +52,6 @@ const base::FilePath::CharType kForceEnableAePath[] =
     "/run/camera/force_enable_face_ae";
 const base::FilePath::CharType kForceDisableAePath[] =
     "/run/camera/force_disable_face_ae";
-const base::FilePath::CharType kForceEnableHdrNetPath[] =
-    "/run/camera/force_enable_hdrnet";
-const base::FilePath::CharType kForceDisableHdrNetPath[] =
-    "/run/camera/force_disable_hdrnet";
 const base::FilePath::CharType kForceEnableAutoFramingPath[] =
     "/run/camera/force_enable_auto_framing";
 const base::FilePath::CharType kForceDisableAutoFramingPath[] =
@@ -212,32 +208,6 @@ bool CameraHalDispatcherImpl::Start(
                                               base::File::FLAG_WRITE);
         file.Close();
       } else {
-        base::File file(disable_file_path, base::File::FLAG_CREATE_ALWAYS |
-                                               base::File::FLAG_WRITE);
-        file.Close();
-      }
-    }
-  }
-
-  {
-    base::FilePath enable_file_path(kForceEnableHdrNetPath);
-    base::FilePath disable_file_path(kForceDisableHdrNetPath);
-    if (!base::DeleteFile(enable_file_path)) {
-      LOG(WARNING) << "Could not delete " << kForceEnableHdrNetPath;
-    }
-    if (!base::DeleteFile(disable_file_path)) {
-      LOG(WARNING) << "Could not delete " << kForceDisableHdrNetPath;
-    }
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(media::switches::kHdrNetOverride)) {
-      std::string value =
-          command_line->GetSwitchValueASCII(switches::kHdrNetOverride);
-      if (value == switches::kHdrNetForceEnabled) {
-        base::File file(enable_file_path, base::File::FLAG_CREATE_ALWAYS |
-                                              base::File::FLAG_WRITE);
-        file.Close();
-      } else if (value == switches::kHdrNetForceDisabled) {
         base::File file(disable_file_path, base::File::FLAG_CREATE_ALWAYS |
                                                base::File::FLAG_WRITE);
         file.Close();
@@ -501,7 +471,7 @@ void CameraHalDispatcherImpl::RegisterServerWithToken(
 
   // Should only be called when an effect is set.
   if (!initial_effects_.is_null() || !current_effects_.is_null()) {
-    // If current_effects_ is set, then a newer effect as applied since
+    // If current_effects_ is set, then a newer effect was applied since
     // the initial setup and we should use that, as the camera server
     // may have crashed and restarted.
     cros::mojom::EffectsConfigPtr& config =
@@ -1038,25 +1008,6 @@ void CameraHalDispatcherImpl::GetAutoFramingSupportedOnProxyThread(
   camera_hal_server_->GetAutoFramingSupported(std::move(callback));
 }
 
-void CameraHalDispatcherImpl::SetInitialCameraEffects(
-    cros::mojom::EffectsConfigPtr config) {
-  if (!proxy_thread_.IsRunning()) {
-    // The camera hal dispatcher is not running, ignore the request.
-    return;
-  }
-  proxy_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CameraHalDispatcherImpl::SetInitialCameraEffectsOnProxyThread,
-          base::Unretained(this), std::move(config)));
-}
-
-void CameraHalDispatcherImpl::SetInitialCameraEffectsOnProxyThread(
-    cros::mojom::EffectsConfigPtr config) {
-  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  initial_effects_ = std::move(config);
-}
-
 void CameraHalDispatcherImpl::SetCameraEffects(
     cros::mojom::EffectsConfigPtr config) {
   if (!proxy_thread_.IsRunning()) {
@@ -1089,6 +1040,10 @@ void CameraHalDispatcherImpl::SetCameraEffectsOnProxyThread(
             base::Unretained(this), config.Clone(), is_from_register));
 
   } else {
+    // Save the config to initial_effects_ so that it will be applied when the
+    // server becomes ready.
+    initial_effects_ = std::move(config);
+
     LOG(ERROR) << "Cannot change camera effects, no camera server registered.";
     // Notify with nullopt as no camera server has been registered and camera
     // effects cannot be set in this case.

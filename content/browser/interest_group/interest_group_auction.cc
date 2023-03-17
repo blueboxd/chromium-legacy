@@ -18,6 +18,7 @@
 
 #include "base/check.h"
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -55,6 +56,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -112,32 +114,63 @@ base::flat_map<auction_worklet::mojom::KAnonKeyPtr, bool> KAnonKeysToMojom(
   return std::move(result);
 }
 
-// Finds InterestGroup::Ad in `ads` that matches `render_url`, if any. Returns
-// nullptr if `render_url` is invalid.
+// Finds InterestGroup::Ad in `ads` that matches `ad_descriptor`, if any.
+// Returns nullptr if `ad_descriptor` is invalid.
 const blink::InterestGroup::Ad* FindMatchingAd(
     const std::vector<blink::InterestGroup::Ad>& ads,
     const base::flat_map<std::string, bool>& kanon_keys,
     const blink::InterestGroup& interest_group,
     InterestGroupAuction::Bid::BidRole bid_role,
     bool is_component_ad,
-    const GURL& render_url) {
+    const blink::AdDescriptor& ad_descriptor) {
   // TODO(mmenke): Validate render URLs on load and make this a DCHECK just
   // before the return instead, since then `ads` will necessarily only contain
   // valid URLs at that point.
-  if (!IsUrlValid(render_url))
+  if (!IsUrlValid(ad_descriptor.url)) {
     return nullptr;
+  }
+
+  if (ad_descriptor.size && !IsValidAdSize(ad_descriptor.size.value())) {
+    return nullptr;
+  }
 
   if (bid_role != InterestGroupAuction::Bid::BidRole::kUnenforcedKAnon) {
     const std::string kanon_key =
-        is_component_ad ? blink::KAnonKeyForAdComponentBid(render_url)
-                        : blink::KAnonKeyForAdBid(interest_group, render_url);
+        is_component_ad
+            ? blink::KAnonKeyForAdComponentBid(ad_descriptor)
+            : blink::KAnonKeyForAdBid(interest_group, ad_descriptor);
     if (!IsKAnon(kanon_keys, kanon_key)) {
       return nullptr;
     }
   }
 
   for (const auto& ad : ads) {
-    if (ad.render_url == render_url) {
+    if (ad.render_url != ad_descriptor.url) {
+      continue;
+    }
+    if (!ad.size_group && !ad_descriptor.size) {
+      // Neither `blink::InterestGroup::Ad` nor the ad from the bid have any
+      // size specifications. They are considered as matching ad as long as
+      // they have the same url.
+      return &ad;
+    }
+    if (!ad.size_group || !ad_descriptor.size) {
+      // Since only one of the ads has a size specification, they are considered
+      // not matching.
+      continue;
+    }
+    // Both `blink::InterestGroup::Ad` and the ad from the bid have size
+    // specifications. They are considered as matching ad only if their
+    // size also matches.
+    auto has_matching_ad_size = [&interest_group,
+                                 &ad_descriptor](const std::string& ad_size) {
+      return interest_group.ad_sizes->at(ad_size) == *ad_descriptor.size;
+    };
+    if (base::ranges::any_of(interest_group.size_groups->at(ad.size_group),
+                             has_matching_ad_size)) {
+      // Each size group may also correspond to multiple ad sizes. If any of
+      // those ad sizes matches with the ad size from `ad_descriptor`, they are
+      // considered as matching ads.
       return &ad;
     }
   }
@@ -361,6 +394,7 @@ InterestGroupAuction::Bid::Bid(
     BidRole bid_role,
     std::string ad_metadata,
     double bid,
+    absl::optional<double> ad_cost,
     blink::AdDescriptor ad_descriptor,
     std::vector<blink::AdDescriptor> ad_component_descriptors,
     base::TimeDelta bid_duration,
@@ -371,6 +405,7 @@ InterestGroupAuction::Bid::Bid(
     : bid_role(bid_role),
       ad_metadata(std::move(ad_metadata)),
       bid(bid),
+      ad_cost(std::move(ad_cost)),
       ad_descriptor(std::move(ad_descriptor)),
       ad_component_descriptors(std::move(ad_component_descriptors)),
       bid_duration(bid_duration),
@@ -903,7 +938,7 @@ class InterestGroupAuction::BuyerHelper
             interest_group.name,
             interest_group.enable_bidding_signals_prioritization,
             interest_group.priority_vector, interest_group.execution_mode,
-            interest_group.daily_update_url,
+            interest_group.update_url,
             interest_group.trusted_bidding_signals_keys,
             interest_group.user_bidding_signals, interest_group.ads,
             interest_group.ad_components,
@@ -1161,6 +1196,7 @@ class InterestGroupAuction::BuyerHelper
         pa_requests,
         [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
                request_ptr) { return request_ptr.is_null(); }));
+    auction_->MaybeLogPrivateAggregationWebFeatures(pa_requests);
     if (!pa_requests.empty()) {
       PrivateAggregationRequests& pa_requests_for_bidder =
           state->private_aggregation_requests[interest_group.owner];
@@ -1321,10 +1357,10 @@ class InterestGroupAuction::BuyerHelper
         bid_state.bidder->interest_group;
     const blink::InterestGroup::Ad* matching_ad = FindMatchingAd(
         *interest_group.ads, bid_state.kanon_keys, interest_group, bid_role,
-        /*is_component_ad=*/false, mojo_bid->ad_descriptor.url);
+        /*is_component_ad=*/false, mojo_bid->ad_descriptor);
     if (!matching_ad) {
       generate_bid_client_receiver_set_.ReportBadMessage(
-          "Bid render URL must be a valid ad URL");
+          "Bid render ad must have a valid URL and size (if specified)");
       return nullptr;
     }
 
@@ -1352,9 +1388,9 @@ class InterestGroupAuction::BuyerHelper
            *mojo_bid->ad_component_descriptors) {
         if (!FindMatchingAd(*interest_group.ad_components, bid_state.kanon_keys,
                             interest_group, bid_role, /*is_component_ad=*/true,
-                            ad_component_descriptor.url)) {
+                            ad_component_descriptor)) {
           generate_bid_client_receiver_set_.ReportBadMessage(
-              "Bid ad components URL must match a valid ad component URL");
+              "Bid ad component must have a valid URL and size (if specified)");
           return nullptr;
         }
       }
@@ -1376,7 +1412,7 @@ class InterestGroupAuction::BuyerHelper
     }
 
     return std::make_unique<Bid>(
-        bid_role, std::move(mojo_bid->ad), mojo_bid->bid,
+        bid_role, std::move(mojo_bid->ad), mojo_bid->bid, mojo_bid->ad_cost,
         std::move(mojo_bid->ad_descriptor), std::move(ad_component_descriptors),
         mojo_bid->bid_duration, bidding_signals_data_version, matching_ad,
         &bid_state, auction_);
@@ -1444,7 +1480,10 @@ InterestGroupAuction::InterestGroupAuction(
     const InterestGroupAuction* parent,
     AuctionWorkletManager* auction_worklet_manager,
     InterestGroupManagerImpl* interest_group_manager,
-    base::Time auction_start_time)
+    base::Time auction_start_time,
+    base::RepeatingCallback<
+        void(const PrivateAggregationRequests& private_aggregation_requests)>
+        maybe_log_private_aggregation_web_features_callback)
     : trace_id_(base::trace_event::GetNextGlobalTraceId()),
       kanon_mode_(kanon_mode),
       auction_worklet_manager_(auction_worklet_manager),
@@ -1453,7 +1492,9 @@ InterestGroupAuction::InterestGroupAuction(
       config_promises_resolved_(config_->NumPromises() == 0),
       parent_(parent),
       auction_start_time_(auction_start_time),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      maybe_log_private_aggregation_web_features_callback_(
+          std::move(maybe_log_private_aggregation_web_features_callback)) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("fledge", "auction", *trace_id_,
                                     "decision_logic_url",
                                     config_->decision_logic_url);
@@ -1464,10 +1505,11 @@ InterestGroupAuction::InterestGroupAuction(
     // Nested component auctions are not supported.
     DCHECK(!parent_);
     component_auctions_.emplace(
-        child_pos, std::make_unique<InterestGroupAuction>(
-                       kanon_mode_, &component_auction_config, /*parent=*/this,
-                       auction_worklet_manager, interest_group_manager,
-                       auction_start_time));
+        child_pos,
+        std::make_unique<InterestGroupAuction>(
+            kanon_mode_, &component_auction_config, /*parent=*/this,
+            auction_worklet_manager, interest_group_manager, auction_start_time,
+            maybe_log_private_aggregation_web_features_callback_));
     ++child_pos;
   }
 }
@@ -1630,8 +1672,6 @@ std::unique_ptr<InterestGroupAuctionReporter>
 InterestGroupAuction::CreateReporter(
     AttributionManager* attribution_manager,
     PrivateAggregationManager* private_aggregation_manager,
-    InterestGroupAuctionReporter::LogPrivateAggregationRequestsCallback
-        log_private_aggregation_requests_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<blink::AuctionConfig> auction_config,
     const url::Origin& main_frame_origin,
@@ -1670,6 +1710,7 @@ InterestGroupAuction::CreateReporter(
   // component auction, otherwise, so will always be the bid returned by the
   // winning bidder's generateBid() method.
   winning_bid_info.bid = winner->bid->auction->top_bid()->bid->bid;
+  winning_bid_info.ad_cost = winner->bid->auction->top_bid()->bid->ad_cost;
   winning_bid_info.bid_duration = winner->bid->bid_duration;
   winning_bid_info.bidding_signals_data_version =
       winner->bid->bidding_signals_data_version;
@@ -1743,7 +1784,8 @@ InterestGroupAuction::CreateReporter(
 
   return std::make_unique<InterestGroupAuctionReporter>(
       interest_group_manager_, auction_worklet_manager_, attribution_manager,
-      private_aggregation_manager, log_private_aggregation_requests_callback,
+      private_aggregation_manager,
+      maybe_log_private_aggregation_web_features_callback_,
       std::move(auction_config), main_frame_origin, frame_origin,
       std::move(client_security_state), std::move(url_loader_factory),
       std::move(winning_bid_info), std::move(top_level_seller_winning_bid_info),
@@ -2221,6 +2263,14 @@ base::flat_set<std::string> InterestGroupAuction::GetKAnonKeysToJoin() const {
   return base::flat_set<std::string>(std::move(k_anon_keys_to_join));
 }
 
+void InterestGroupAuction::MaybeLogPrivateAggregationWebFeatures(
+    const std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>&
+        private_aggregation_requests) {
+  DCHECK(maybe_log_private_aggregation_web_features_callback_);
+  maybe_log_private_aggregation_web_features_callback_.Run(
+      private_aggregation_requests);
+}
+
 const InterestGroupAuction::LeaderInfo& InterestGroupAuction::leader_info()
     const {
   if (kanon_mode_ == auction_worklet::mojom::KAnonymityBidMode::kEnforce) {
@@ -2323,7 +2373,7 @@ void InterestGroupAuction::OnInterestGroupRead(
       interest_groups[0].interest_group.owner);
   for (const auto& bidder : interest_groups) {
     // Report freshness metrics.
-    if (bidder.interest_group.daily_update_url.has_value()) {
+    if (bidder.interest_group.update_url.has_value()) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Ads.InterestGroup.Auction.GroupFreshness.WithDailyUpdates",
           (base::Time::Now() - bidder.last_updated).InMinutes(),
@@ -2463,7 +2513,7 @@ void InterestGroupAuction::OnStartLoadInterestGroupsPhaseComplete(
   //
   // TODO(https://crbug.com/1394777): We should probably add new states for
   // whether the result was used, reports sent, etc, so either the
-  // InterestGroupAuction or the InterestGroupReporter logs a single result.
+  // InterestGroupAuction or the InterestGroupAuctionReporter logs a single result.
   // Alternatively, we could add a separate histogram just for the reporter
   // stuff, which should have exactly as many entries as the historam
   // `final_auction_result_` is logged to.
@@ -2614,9 +2664,10 @@ InterestGroupAuction::CreateBidFromComponentAuctionWinner(
       bid_role, modified_bid_params->ad,
       modified_bid_params->has_bid ? modified_bid_params->bid
                                    : component_bid->bid,
-      component_bid->ad_descriptor, component_bid->ad_component_descriptors,
-      component_bid->bid_duration, component_bid->bidding_signals_data_version,
-      component_bid->bid_ad, component_bid->bid_state, component_bid->auction);
+      component_bid->ad_cost, component_bid->ad_descriptor,
+      component_bid->ad_component_descriptors, component_bid->bid_duration,
+      component_bid->bidding_signals_data_version, component_bid->bid_ad,
+      component_bid->bid_state, component_bid->auction);
 }
 
 void InterestGroupAuction::OnBidSourceDone() {
@@ -2758,6 +2809,7 @@ void InterestGroupAuction::OnScoreAdComplete(
         pa_requests,
         [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
                request_ptr) { return request_ptr.is_null(); }));
+    MaybeLogPrivateAggregationWebFeatures(pa_requests);
     if (!pa_requests.empty()) {
       DCHECK(config_);
       PrivateAggregationRequests& pa_requests_for_seller =

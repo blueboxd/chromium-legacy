@@ -251,7 +251,8 @@ class OmniboxEditModel {
                  base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   // Opens given selection. Most kinds of selection invoke an action or
-  // otherwise call `OpenMatch`, but some may `AcceptInput`.
+  // otherwise call `OpenMatch`, but some may `AcceptInput` which is not
+  // guaranteed to open a match or commit the omnibox.
   void OpenSelection(
       OmniboxPopupSelection selection,
       base::TimeTicks timestamp = base::TimeTicks(),
@@ -804,6 +805,11 @@ class OmniboxEditModel {
   // suggestion whose tab switch button was focused, so that we may compare
   // if equal.
   GURL old_focused_url_;
+
+  // Whether an existing `AutocompleteClient` should be used or a new one
+  // generated in some cases. This is related to a performance optimization and
+  // all new calls to an `AutocompleteClient` should use the existing client.
+  bool use_existing_autocomplete_client_;
 
   base::WeakPtrFactory<OmniboxEditModel> weak_factory_{this};
 };

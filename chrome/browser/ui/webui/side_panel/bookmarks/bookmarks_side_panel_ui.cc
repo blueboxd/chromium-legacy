@@ -12,10 +12,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/image_service/image_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
+#include "chrome/browser/ui/webui/commerce/shopping_list_context_menu_controller.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
@@ -35,6 +37,9 @@
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/webui/shopping_list_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "components/image_service/features.h"
+#include "components/image_service/image_service.h"
+#include "components/image_service/image_service_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -67,6 +72,8 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
       {"shoppingListUntrackPriceButtonDescription",
        IDS_PRICE_TRACKING_UNTRACK_PRODUCT_ACCESSIBILITY},
+      {"shoppingListErrorMessage", IDS_PRICE_TRACKING_SIDE_PANEL_ERROR_MESSAGE},
+      {"shoppingListErrorButton", IDS_PRICE_TRACKING_SIDE_PANEL_ERROR_BUTTON},
       {"sortByType", IDS_BOOKMARKS_SORT_BY_TYPE},
       {"allBookmarks", IDS_BOOKMARKS_ALL_BOOKMARKS},
       {"priceTrackingLabel", IDS_BOOKMARKS_LABEL_TRACKED_PRODUCTS},
@@ -142,6 +149,8 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       !prefs->GetList(bookmarks::prefs::kManagedBookmarks).empty());
   source->AddBoolean("shoppingListEnabled",
                      commerce::IsShoppingListAllowedForEnterprise(prefs));
+  source->AddBoolean("urlImagesEnabled", base::FeatureList::IsEnabled(
+                                             image_service::kImageService));
 
   source->AddBoolean("guestMode", profile->IsGuestSession());
   source->AddBoolean("incognitoMode", profile->IsIncognitoProfile());
@@ -228,6 +237,24 @@ void BookmarksSidePanelUI::BindInterface(
       web_ui()->GetWebContents(), std::move(pending_receiver));
 }
 
+void BookmarksSidePanelUI::BindInterface(
+    mojo::PendingReceiver<image_service::mojom::ImageServiceHandler>
+        pending_image_handler) {
+  base::WeakPtr<image_service::ImageService> image_service_weak;
+  if (auto* image_service =
+          image_service::ImageServiceFactory::GetForBrowserContext(
+              Profile::FromWebUI(web_ui()))) {
+    image_service_weak = image_service->GetWeakPtr();
+  }
+  image_service_handler_ = std::make_unique<image_service::ImageServiceHandler>(
+      std::move(pending_image_handler), std::move(image_service_weak));
+}
+
+commerce::ShoppingListContextMenuController*
+BookmarksSidePanelUI::GetShoppingListContextMenuController() {
+  return shopping_list_context_menu_controller_.get();
+}
+
 void BookmarksSidePanelUI::CreateBookmarksPageHandler(
     mojo::PendingReceiver<side_panel::mojom::BookmarksPageHandler> receiver) {
   bookmarks_page_handler_ =
@@ -247,4 +274,7 @@ void BookmarksSidePanelUI::CreateShoppingListHandler(
   shopping_list_handler_ = std::make_unique<commerce::ShoppingListHandler>(
       std::move(page), std::move(receiver), bookmark_model, shopping_service,
       profile->GetPrefs(), tracker, g_browser_process->GetApplicationLocale());
+  shopping_list_context_menu_controller_ =
+      std::make_unique<commerce::ShoppingListContextMenuController>(
+          bookmark_model, shopping_service, shopping_list_handler_.get());
 }

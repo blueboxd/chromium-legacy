@@ -4,15 +4,18 @@
 
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_view_controller.h"
 
+#import "base/ios/ios_util.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_presentation_controller.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts/signed_in_accounts_table_view_controller.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -167,20 +170,21 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
   // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-  if (@available(iOS 15, *)) {
-    UIButtonConfiguration* buttonConfiguration =
-        UIButtonConfiguration.plainButtonConfiguration;
-    buttonConfiguration.contentInsets =
-        NSDirectionalEdgeInsetsMake(8, 16, 8, 16);
-    _primaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
-                                         primaryAction:nil];
-  }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-  else {
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets =
+          NSDirectionalEdgeInsetsMake(8, 16, 8, 16);
+      _primaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
+                                           primaryAction:nil];
+    }
+  } else {
     _primaryButton = [[UIButton alloc] init];
-    _primaryButton.contentEdgeInsets = UIEdgeInsetsMake(8, 16, 8, 16);
+    UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(8, 16, 8, 16);
+    SetContentEdgeInsets(_primaryButton, contentEdgeInsets);
   }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
   [_primaryButton addTarget:self
                      action:@selector(onPrimaryButtonPressed:)
@@ -199,20 +203,21 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
   // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-  if (@available(iOS 15, *)) {
-    UIButtonConfiguration* buttonConfiguration =
-        UIButtonConfiguration.plainButtonConfiguration;
-    buttonConfiguration.contentInsets =
-        NSDirectionalEdgeInsetsMake(8, 16, 8, 16);
-    _secondaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
-                                           primaryAction:nil];
-  }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-  else {
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets =
+          NSDirectionalEdgeInsetsMake(8, 16, 8, 16);
+      _secondaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
+                                             primaryAction:nil];
+    }
+  } else {
     _secondaryButton = [[UIButton alloc] init];
-    _secondaryButton.contentEdgeInsets = UIEdgeInsetsMake(8, 16, 8, 16);
+    UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(8, 16, 8, 16);
+    SetContentEdgeInsets(_secondaryButton, contentEdgeInsets);
   }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
   [_secondaryButton addTarget:self
                        action:@selector(onSecondaryButtonPressed:)

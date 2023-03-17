@@ -1317,26 +1317,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.HistoryReport.DeltaFile.LastSeqNo" units="count"
-    expires_after="M71">
-  <owner>wychen@chromium.org</owner>
-  <owner>yusufo@chromium.org</owner>
-  <summary>
-    The last sequential number in the delta file for Icing. This is measured on
-    cold start.
-  </summary>
-</histogram>
-
-<histogram name="Search.HistoryReport.DeltaFile.LevelDBEntries" units="entries"
-    expires_after="2019-06-01">
-  <owner>wychen@chromium.org</owner>
-  <owner>yusufo@chromium.org</owner>
-  <summary>
-    The number of entries in the delta file level DB for Icing. This is measured
-    on cold start.
-  </summary>
-</histogram>
-
 <histogram name="Search.HistoryReport.UsageReportsBuffer.LevelDBEntries"
     units="entries" expires_after="2019-06-01">
   <owner>wychen@chromium.org</owner>
@@ -1433,7 +1413,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.FetcherHttpResponseCode"
-    enum="HttpResponseCode" expires_after="2023-07-09">
+    enum="HttpResponseCode" expires_after="2023-09-10">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>Records the HTTP response code get from TileFetcher.</summary>
@@ -1554,24 +1534,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Indicates the number of tiles displayed in the UI after the backend was
     loaded.
-  </summary>
-</histogram>
-
-<histogram name="Search.QueryTiles.TilesFitPerRow" units="tiles"
-    expires_after="M94">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>chrome-upboarding-eng@google.com</owner>
-  <summary>
-    Records the number of tiles per row that can be fit into the screen in the
-    default scroll position.
-  </summary>
-</histogram>
-
-<histogram name="Search.QueryTiles.TileWidth" units="dp" expires_after="M94">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>chrome-upboarding-eng@google.com</owner>
-  <summary>
-    Records the width of a single query tile when shown in the carousel.
   </summary>
 </histogram>
 

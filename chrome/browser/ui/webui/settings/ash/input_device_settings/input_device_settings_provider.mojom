@@ -27,10 +27,15 @@ interface PointingStickSettingsObserver {
   OnPointingStickListUpdated(array<ash.mojom.PointingStick> pointSticks);
 };
 
+// Interface for observing mouse settings changes in OSSettings SWA.
+interface MouseSettingsObserver {
+  // Notifies MouseSettingsObserver when the list of connected mice
+  // and their settings are updated.
+  OnMouseListUpdated(array<ash.mojom.Mouse> mice);
+};
+
 // Interface for fetching and configuring input device settings in OSSettings.
 interface InputDeviceSettingsProvider {
-  // Returns the list of currently connected keyboards.
-  GetConnectedKeyboards() => (array<ash.mojom.Keyboard> keyboards);
   // Registers an observer which will be notified every time
   // a keyboard connects/disconnects or when settings change.
   // The observer which is registered is immediately informed
@@ -47,4 +52,18 @@ interface InputDeviceSettingsProvider {
   // of the current state via its ObservePointingStickSettings function.
   ObservePointingStickSettings(
       pending_remote<PointingStickSettingsObserver> observer);
+  // Registers an observer which will be notified every time
+  // a mouse connects/disconnects or when settings change.
+  // The observer which is registered is immediately informed
+  // of the current state via its ObserveMouseSettings function.
+  ObserveMouseSettings(pending_remote<MouseSettingsObserver> observer);
+  // Sets the keyboard settings based on its id.
+  SetKeyboardSettings(uint32 device_id, ash.mojom.KeyboardSettings settings);
+  // Sets the point stick settings based on its id.
+  SetPointingStickSettings(
+      uint32 device_id, ash.mojom.PointingStickSettings settings);
+  // Sets the mouse settings based on its id.
+  SetMouseSettings(uint32 device_id, ash.mojom.MouseSettings settings);
+  // Sets the touchpad settings based on its id.
+  SetTouchpadSettings(uint32 device_id, ash.mojom.TouchpadSettings settings);
 };

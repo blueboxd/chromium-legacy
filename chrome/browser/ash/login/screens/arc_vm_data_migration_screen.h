@@ -27,6 +27,22 @@ namespace ash {
 
 class ScopedScreenLockBlocker;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "ArcVmDataMigrationScreenSetupFailure" in tools/metrics/histograms/enums.xml.
+enum class ArcVmDataMigrationScreenSetupFailure {
+  kGetVmInfoFailure = 0,
+  kStopVmFailure = 1,
+  kStopUpstartJobsFailure = 2,
+  kGetFreeDiskSpaceFailure = 3,
+  kGetAndroidDataSizeFailure = 4,
+  kCreateDiskImageDBusFailure = 5,
+  kCreateDiskImageGeneralFailure = 6,
+  kArcVmDataMigratorStartFailure = 7,
+  kStartMigrationFailure = 8,
+  kMaxValue = kStartMigrationFailure,
+};
+
 class ArcVmDataMigrationScreen : public BaseScreen,
                                  public ArcVmDataMigratorClient::Observer,
                                  public ConciergeClient::VmObserver,
@@ -61,6 +77,9 @@ class ArcVmDataMigrationScreen : public BaseScreen,
   void SetUpInitialView();
 
   void OnGetFreeDiskSpace(absl::optional<int64_t> reply);
+
+  void OnGetAndroidDataSizeResponse(uint64_t free_disk_space,
+                                    absl::optional<int64_t> response);
 
   void CheckBatteryState();
 
@@ -99,7 +118,12 @@ class ArcVmDataMigrationScreen : public BaseScreen,
   void HandleFinish();
   void HandleReport();
 
-  virtual void HandleFatalError();
+  void HandleSetupFailure(ArcVmDataMigrationScreenSetupFailure failure);
+
+  // Handle errors that are expected to be retriable after going back to the
+  // desktop and re-entering the migration flow. Should not be called when
+  // resuming, because it prevents the user from going back to the desktop.
+  virtual void HandleRetriableFatalError();
 
   virtual device::mojom::WakeLock* GetWakeLock();
 
@@ -108,6 +132,8 @@ class ArcVmDataMigrationScreen : public BaseScreen,
 
   ArcVmDataMigrationScreenView::UIState current_ui_state_ =
       ArcVmDataMigrationScreenView::UIState::kLoading;
+
+  uint64_t disk_size_ = 0;
 
   double battery_percent_ = 100.0;
   bool is_connected_to_charger_ = true;
@@ -123,6 +149,9 @@ class ArcVmDataMigrationScreen : public BaseScreen,
   // Indicates whether the migration was previously stopped halfway and is being
   // resumed. When this is true, the free space check is skipped and the resume
   // screen (not the default welcome screen) is displayed as the initial screen.
+  // Also, when resuming, setup failures are treated in the same way as
+  // migration failures (i.e., wipe /data, mark the migration as finished, and
+  // show the failure screen) to avoid unmanageable resumes.
   bool resuming_ = false;
 
   bool update_button_pressed_ = false;

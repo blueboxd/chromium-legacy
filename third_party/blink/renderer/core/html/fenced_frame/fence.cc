@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/fenced_frame/fence.h"
 
+#include "base/feature_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
@@ -86,7 +87,11 @@ void Fence::reportEvent(ScriptState* script_state,
   LocalFrame* frame = DomWindow()->GetFrame();
   DCHECK(frame->GetDocument());
   bool has_fenced_frame_reporting =
-      frame->GetDocument()->Loader()->HasFencedFrameReporting();
+      frame->GetDocument()->Loader()->FencedFrameProperties().has_value() &&
+      frame->GetDocument()
+          ->Loader()
+          ->FencedFrameProperties()
+          ->has_fenced_frame_reporting();
   if (!has_fenced_frame_reporting) {
     AddConsoleMessage("This frame did not register reporting metadata.");
     return;
@@ -124,7 +129,11 @@ void Fence::setReportEventDataForAutomaticBeacons(
   LocalFrame* frame = DomWindow()->GetFrame();
   DCHECK(frame->GetDocument());
   bool has_fenced_frame_reporting =
-      frame->GetDocument()->Loader()->HasFencedFrameReporting();
+      frame->GetDocument()->Loader()->FencedFrameProperties().has_value() &&
+      frame->GetDocument()
+          ->Loader()
+          ->FencedFrameProperties()
+          ->has_fenced_frame_reporting();
   if (!has_fenced_frame_reporting) {
     AddConsoleMessage("This frame did not register reporting metadata.");
     return;
@@ -163,8 +172,8 @@ HeapVector<Member<FencedFrameConfig>> Fence::getNestedConfigs(
 void Fence::reportPrivateAggregationEvent(ScriptState* script_state,
                                           const String& event,
                                           ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::PrivateAggregationApiFledgeExtensionsEnabled(
-          ExecutionContext::From(script_state))) {
+  if (!base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi) ||
+      !blink::features::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
     exception_state.ThrowSecurityError(
         "FLEDGE extensions must be enabled to use reportEvent() for private "
         "aggregation events.");
@@ -186,7 +195,11 @@ void Fence::reportPrivateAggregationEvent(ScriptState* script_state,
   DCHECK(frame->GetDocument());
 
   bool has_fenced_frame_reporting =
-      frame->GetDocument()->Loader()->HasFencedFrameReporting();
+      frame->GetDocument()->Loader()->FencedFrameProperties().has_value() &&
+      frame->GetDocument()
+          ->Loader()
+          ->FencedFrameProperties()
+          ->has_fenced_frame_reporting();
   if (!has_fenced_frame_reporting) {
     AddConsoleMessage("This frame did not register reporting metadata.");
     return;

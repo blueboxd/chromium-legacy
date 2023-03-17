@@ -41,9 +41,13 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
   std::string GetFontNameAt(size_t index);
   bool IsValidFontName(const std::string& font_name);
   bool IsValidFontIndex(size_t index);
-  void SetDefaultIndexFromPrefsFontName(std::string prefs_font_name);
+  size_t GetFontNameIndex(std::string font_name);
+  void SetSelectedIndex(size_t index);
   std::string GetLabelFontListAt(size_t index);
-  size_t GetStartingStateIndex() { return GetDefaultIndex().value(); }
+  size_t GetSelectedIndex() { return selected_index_; }
+
+  // Used by tests only.
+  absl::optional<size_t> GetDefaultIndexForTesting();
 
  protected:
   // ui::Combobox implementation:
@@ -56,8 +60,7 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
   // Styled font names for the drop down options in front-end.
   std::vector<std::u16string> font_choices_;
 
-  // Default index for drop down, either zero or populated from prefs.
-  size_t default_index_ = 0;
+  size_t selected_index_ = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,6 +106,9 @@ class ReadAnythingColorsModel : public ReadAnythingMenuModel {
     // The separator color, used for visual separators between elements in the
     // toolbar.
     ui::ColorId separator_color_id;
+
+    // The color of the dropdown menu, used for the combobox menu model.
+    ui::ColorId dropdown_color_id;
 
     // The enum value used to log this theme.
     ReadAnythingColorsModel::ReadAnythingColor logging_value;
@@ -214,6 +220,7 @@ class ReadAnythingModel {
         ui::ColorId foreground_color_id,
         ui::ColorId background_color_id,
         ui::ColorId separator_color_id,
+        ui::ColorId dropdown_color_id,
         read_anything::mojom::LineSpacing line_spacing,
         read_anything::mojom::LetterSpacing letter_spacing) = 0;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -251,6 +258,7 @@ class ReadAnythingModel {
   void SetSelectedColorsByIndex(size_t new_index);
   void SetSelectedLineSpacingByIndex(size_t new_index);
   void SetSelectedLetterSpacingByIndex(size_t new_index);
+  void OnSystemThemeChanged();
 
   ReadAnythingFontModel* GetFontModel() { return font_model_.get(); }
   double GetFontScale() { return font_scale_; }
@@ -278,7 +286,10 @@ class ReadAnythingModel {
   std::string font_name_ = string_constants::kReadAnythingDefaultFontName;
   ui::ColorId foreground_color_id_ = kColorReadAnythingForeground;
   ui::ColorId background_color_id_ = kColorReadAnythingBackground;
+
+  // Additional theme colors.
   ui::ColorId separator_color_id_ = kColorReadAnythingSeparator;
+  ui::ColorId dropdown_color_id_ = kColorReadAnythingDropdownBackground;
 
   // A scale multiplier for font size (internal use only, not shown to user).
   float font_scale_ = kReadAnythingDefaultFontScale;

@@ -8,7 +8,7 @@ import {testcase} from '../testcase.js';
 
 import {navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DOWNLOADS_FAKE_TASKS} from './tasks.js';
-import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, NESTED_ENTRY_SET} from './test_data.js';
+import {BASIC_ANDROID_ENTRY_SET, BASIC_DRIVE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, NESTED_ENTRY_SET} from './test_data.js';
 
 /**
  * Clicks the enabled and visible move to trash button and ensures the delete
@@ -35,8 +35,9 @@ async function clickDeleteButton(appId) {
 /**
  * Confirm the deletion happens and assert the dialog has the correct text.
  * @param {string} appId
+ * @param {string} okText expected OK text
  */
-async function confirmPermanentDeletion(appId) {
+async function confirmPermanentDeletion(appId, okText) {
   // Check: the delete confirm dialog should appear.
   await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
 
@@ -48,7 +49,7 @@ async function confirmPermanentDeletion(appId) {
   // Click the delete confirm dialog 'Delete' button.
   const dialogDeleteButton =
       await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
-  chrome.test.assertEq('Delete forever', dialogDeleteButton.text);
+  chrome.test.assertEq(okText, dialogDeleteButton.text);
 
   // Wait for completion of file deletion.
   await remoteCall.waitForElementLost(
@@ -61,7 +62,7 @@ async function confirmPermanentDeletion(appId) {
  */
 async function clickDeleteButtonAndConfirmDeletion(appId) {
   await clickDeleteButton(appId);
-  await confirmPermanentDeletion(appId);
+  await confirmPermanentDeletion(appId, 'Delete forever');
 }
 
 /**
@@ -172,7 +173,7 @@ testcase.trashPermanentlyDelete = async () => {
       'Pressing Shift+Delete failed.');
 
   // Confirm the permanent deletion of the "hello.txt" file.
-  await confirmPermanentDeletion(appId);
+  await confirmPermanentDeletion(appId, 'Delete forever');
 };
 
 /**
@@ -417,6 +418,32 @@ testcase.trashDeleteFromTrash = async () => {
 
   // Delete selected item.
   await clickDeleteButtonAndConfirmDeletion(appId);
+};
+
+/**
+ * Delete files (move them into trash) then permanently delete.
+ */
+testcase.trashDeleteFromTrashOriginallyFromDrive = async () => {
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+  // Select hello.txt.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Delete item and wait for it to be removed (no dialog).
+  await clickTrashButton(appId);
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Navigate to /Trash and ensure the file is shown.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Confirm the permanent deletion of the file does not say 'forever'.
+  await clickDeleteButton(appId);
+  await confirmPermanentDeletion(appId, 'Delete');
 };
 
 /**

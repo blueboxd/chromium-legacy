@@ -132,6 +132,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
 
   friend class BluetoothTestMac;
   friend class BluetoothAdapterMacTest;
+  friend class BluetoothLowEnergyAdapterAppleTest;
 
   BluetoothAdapterMac();
   ~BluetoothAdapterMac() override;

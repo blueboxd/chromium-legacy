@@ -69,6 +69,8 @@ source_set("web_applications") {
     "file_utils_wrapper.h",
     "install_bounce_metric.cc",
     "install_bounce_metric.h",
+    "isolated_web_apps/get_isolated_web_app_browsing_data_command.cc",
+    "isolated_web_apps/get_isolated_web_app_browsing_data_command.h",
     "isolated_web_apps/install_isolated_web_app_command.cc",
     "isolated_web_apps/install_isolated_web_app_command.h",
     "isolated_web_apps/install_isolated_web_app_from_command_line.cc",
@@ -189,8 +191,6 @@ source_set("web_applications") {
     "web_app_command_scheduler.h",
     "web_app_constants.cc",
     "web_app_constants.h",
-    "web_app_data_retriever.cc",
-    "web_app_data_retriever.h",
     "web_app_database.cc",
     "web_app_database.h",
     "web_app_database_factory.cc",
@@ -254,10 +254,12 @@ source_set("web_applications") {
     "web_app_uninstall_and_replace_job.h",
     "web_app_uninstall_job.cc",
     "web_app_uninstall_job.h",
-    "web_app_url_loader.cc",
-    "web_app_url_loader.h",
     "web_app_utils.cc",
     "web_app_utils.h",
+    "web_contents/web_app_data_retriever.cc",
+    "web_contents/web_app_data_retriever.h",
+    "web_contents/web_app_url_loader.cc",
+    "web_contents/web_app_url_loader.h",
   ]
 
   if (is_chromeos) {
@@ -272,6 +274,10 @@ source_set("web_applications") {
       "isolated_web_apps/policy/isolated_web_app_policy_manager.h",
       "os_integration/web_app_run_on_os_login_chromeos.cc",
       "os_integration/web_app_shortcut_chromeos.cc",
+      "preinstalled_web_app_window_experiment.cc",
+      "preinstalled_web_app_window_experiment.h",
+      "preinstalled_web_app_window_experiment_utils.cc",
+      "preinstalled_web_app_window_experiment_utils.h",
       "web_app_run_on_os_login_manager.cc",
       "web_app_run_on_os_login_manager.h",
     ]
@@ -360,6 +366,7 @@ source_set("web_applications") {
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//chrome/common:non_code_constants",
+    "//components/browsing_data/content",
     "//components/content_settings/core/browser",
     "//components/custom_handlers",
     "//components/device_event_log",
@@ -375,6 +382,7 @@ source_set("web_applications") {
     "//components/services/app_service/public/cpp:app_types",
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:app_url_handling",
+    "//components/services/app_service/public/cpp:preferred_apps",
     "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/app_service/public/cpp:run_on_os_login",
     "//components/services/app_service/public/cpp:types",
@@ -632,7 +640,6 @@ source_set("web_applications_unit_tests") {
     "test/web_app_test.h",
     "web_app_command_manager_unittest.cc",
     "web_app_command_scheduler_unittest.cc",
-    "web_app_data_retriever_unittest.cc",
     "web_app_database_unittest.cc",
     "web_app_helpers_unittest.cc",
     "web_app_icon_downloader_unittest.cc",
@@ -648,8 +655,9 @@ source_set("web_applications_unit_tests") {
     "web_app_translation_manager_unittest.cc",
     "web_app_ui_manager_unittest.cc",
     "web_app_unittest.cc",
-    "web_app_url_loader_unittest.cc",
     "web_app_utils_unittest.cc",
+    "web_contents/web_app_data_retriever_unittest.cc",
+    "web_contents/web_app_url_loader_unittest.cc",
   ]
 
   if (is_win) {
@@ -780,6 +788,7 @@ source_set("web_applications_browser_tests") {
     "commands/update_protocol_handler_approval_command_browsertest.cc",
     "externally_installed_web_app_prefs_browsertest.cc",
     "externally_managed_app_manager_impl_browsertest.cc",
+    "isolated_web_apps/get_isolated_web_app_browsing_data_command_browsertest.cc",
     "isolated_web_apps/install_isolated_web_app_from_command_line_browsertest.cc",
     "isolated_web_apps/isolated_web_app_browsertest.cc",
     "isolated_web_apps/isolated_web_app_url_loader_factory_browsertest.cc",
@@ -793,7 +802,7 @@ source_set("web_applications_browser_tests") {
     "web_app_internals_browsertest.cc",
     "web_app_origin_association_manager_browsertest.cc",
     "web_app_pref_migration_browsertest.cc",
-    "web_app_url_loader_browsertest.cc",
+    "web_contents/web_app_url_loader_browsertest.cc",
   ]
 
   if (is_linux) {
@@ -902,4 +911,16 @@ source_set("interactive_ui_tests") {
     "//ui/base/idle:test_support",
     "//ui/events/devices:test_support",
   ]
+
+  if (is_chromeos) {
+    sources += [ "preinstalled_web_app_window_experiment_browsertest.cc" ]
+
+    deps += [
+      "//chrome/browser/apps/app_service",
+      "//chrome/browser/apps/app_service:test_support",
+      "//chrome/browser/web_applications/app_service:test_support",
+      "//components/services/app_service/public/cpp:intents",
+      "//components/services/app_service/public/cpp:preferred_apps",
+    ]
+  }
 }

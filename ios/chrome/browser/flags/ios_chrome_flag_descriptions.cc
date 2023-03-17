@@ -42,12 +42,6 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
-const char kAutofillEnableNewCardUnmaskPromptViewName[] =
-    "Enable the new Card Unmask Prompt View for Autofill.";
-const char kAutofillEnableNewCardUnmaskPromptViewDescription[] =
-    "Displays the new autofill prompt for entering a credit card's CVC and "
-    "(optional) expiration date.";
-
 const char kAutofillEnableRankingFormulaAddressProfilesName[] =
     "Enable new Autofill suggestion ranking formula for address profiles";
 const char kAutofillEnableRankingFormulaAddressProfilesDescription[] =
@@ -133,6 +127,13 @@ const char kAutofillUpstreamAllowAllEmailDomainsDescription[] =
     "When enabled, credit card upload is offered without regard to the user's "
     "logged-in account's domain.";
 
+const char kAutofillUpstreamAuthenticatePreflightCallName[] =
+    "Set authentication token in credit card upload preflight call";
+const char kAutofillUpstreamAuthenticatePreflightCallDescription[] =
+    "When enabled, sets the OAuth2 token in GetUploadDetails requests to "
+    "Google Payments, in order to provide a better experience for users with "
+    "server-side features disabled but not client-side features.";
+
 const char kAutofillUseMobileLabelDisambiguationName[] =
     "Autofill Uses Mobile Label Disambiguation";
 const char kAutofillUseMobileLabelDisambiguationDescription[] =
@@ -185,12 +186,6 @@ extern const char kPhoneNumberName[] = "Phone number experience enable";
 extern const char kPhoneNumberDescription[] =
     "When enabled, one tapping or long pressing on a phone number will trigger "
     "the phone number experience.";
-
-extern const char kEnableExpKitCalendarTextClassifierName[] =
-    "Text Classifier in Experience Kit Calendar";
-extern const char kEnableExpKitCalendarTextClassifierDescription[] =
-    "When enabled, Experience Kit Calendar will use Text Classifier library in "
-    "entity detection where possible.";
 
 extern const char kEnableExpKitTextClassifierName[] =
     "Text Classifier in Experience Kit";
@@ -253,7 +248,7 @@ const char kDetectMainThreadFreezeDescription[] =
     "the time specified by this flag.";
 
 const char kEnableDiscoverFeedTopSyncPromoName[] =
-    "Enable the sync promo on top of the feed.";
+    "Enables the top of feed sync promo.";
 const char kEnableDiscoverFeedTopSyncPromoDescription[] =
     "When enabled, a sync promotion will be presented to eligible users on top "
     "of the feed cards.";
@@ -311,6 +306,12 @@ const char kTileAblationName[] = "Enables tile ablation";
 const char kTileAblationDescription[] =
     "Hides the shortcuts and most visited tiles on the NTP for new users.";
 
+const char kEnableEmailInBookmarksReadingListSnackbarName[] =
+    "Enable Email In Bookmark/Reading List Snackbar";
+const char kEnableEmailInBookmarksReadingListSnackbarDescription[] =
+    "Enable the display of the signed-in account email in the snackbar which "
+    "indicates that an item is added to the bookmarks/reading list.";
+
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
@@ -342,6 +343,11 @@ const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
 
+const char kEnableFollowManagementInstantReloadName[] =
+    "Enable Follow Management Instant Reload";
+const char kEnableFollowManagementInstantReloadDescription[] =
+    "Enable follow management page instant reloading when being opened.";
+
 const char kPasswordsGroupingName[] =
     "Enable password grouping for the Password Manager";
 const char kPasswordsGroupingDescription[] =
@@ -357,6 +363,12 @@ const char kEnablePasswordsAccountStorageName[] =
 const char kEnablePasswordsAccountStorageDescription[] =
     "Enables storing passwords in a second, Gaia-account-scoped storage for "
     "signed-in but not syncing users";
+
+const char kEnablePreferencesAccountStorageName[] =
+    "Enable the account data storage for preferences for syncing users";
+const char kEnablePreferencesAccountStorageDescription[] =
+    "Enables storing preferences in a second, Gaia-account-scoped storage for "
+    "syncing users";
 
 const char kEnablePinnedTabsName[] = "Enable Pinned Tabs";
 const char kEnablePinnedTabsDescription[] = "Allows users to pin tabs.";
@@ -377,6 +389,11 @@ const char kEnableSuggestionsScrollingOnIPadName[] =
 const char kEnableSuggestionsScrollingOnIPadDescription[] =
     "Enable omnibox suggestions scrolling on iPad and disable suggestions "
     "hiding on keyboard dismissal.";
+
+const char kEnableUIButtonConfigurationName[] =
+    "Enable UIButtonConfiguration Usage";
+const char kEnableUIButtonConfigurationDescription[] =
+    "Enable UIButtonConfiguration usage for UIButtons.";
 
 const char kEnableUserPolicyName[] = "Enable user policies";
 const char kEnableUserPolicyDescription[] =
@@ -501,11 +518,15 @@ const char kIOSPasswordManagerCrossOriginIframeSupportName[] =
 const char kIOSPasswordManagerCrossOriginIframeSupportDescription[] =
     "Enables password saving and filling in cross-origin iframes on IOS.";
 
-const char kIOSPopularSitesImprovedSuggestionsName[] =
-    "Most Visited Tiles (Improved Default Suggestions)";
-const char kIOSPopularSitesImprovedSuggestionsDescription[] =
-    "Enables improved default suggestions for the most visited tiles, by using "
-    "only Chrome iOS usage data to generate its suggestions.";
+const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
+const char kIOSPasswordBottomSheetDescription[] =
+    "Enables the display of the password bottom sheet on IOS.";
+
+const char kNewTabPageRetentionName[] =
+    "New tab page features that target new users";
+const char kNewTabPageRetentionDescription[] =
+    "Enables new tab page features that are available on first run for new "
+    "Chrome iOS users.";
 
 const char kIOSSharedHighlightingColorChangeName[] =
     "IOS Shared Highlighting color change";
@@ -528,10 +549,6 @@ const char kIOSShowPasswordStorageInSaveInfobarDescription[] =
     "Modifies the save password infobar to show whether the save happens to an "
     "account or only to the current device";
 
-const char kKeyboardShortcutsMenuName[] = "Keyboard Shortcuts Menu";
-const char kKeyboardShortcutsMenuDescription[] =
-    "Enables the new keyboard shortcuts menu.";
-
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "
@@ -551,6 +568,10 @@ const char kMetrickitNonCrashReportName[] = "Metrickit non-crash reports";
 const char kMetrickitNonCrashReportDescription[] =
     "Enables sending Metrickit reports for non crash type (hang, "
     "cpu-exception, diskwrite-exception)";
+
+const char kMixedContentAutoupgradeName[] = "Auto-upgrade mixed content";
+const char kMixedContentAutoupgradeDescription[] =
+    "Enables auto-upgrading of mixed content images, audio and video";
 
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
@@ -956,7 +977,9 @@ const char kTabGridRecencySortDescription[] =
 const char kTabInactivityThresholdName[] = "Change Tab inactivity threshold";
 const char kTabInactivityThresholdDescription[] =
     "When enabled, the tabs older than the threshold are considered inactive "
-    "and set aside in the Inactive Tabs section of the TabGrid.";
+    "and set aside in the Inactive Tabs section of the TabGrid."
+    "IMPORTANT: If you ever used the in-app settings for Inactive Tabs, this "
+    "flag is never read again.";
 
 const char kUseLoadSimulatedRequestForOfflinePageName[] =
     "Use loadSimulatedRequest:responseHTMLString: when displaying offline "
@@ -964,10 +987,6 @@ const char kUseLoadSimulatedRequestForOfflinePageName[] =
 const char kUseLoadSimulatedRequestForOfflinePageDescription[] =
     "When enabled, the offline pages uses the iOS 15 "
     "loadSimulatedRequest:responseHTMLString: API";
-
-const char kUseSFSymbolsName[] = "Replace Image by SFSymbols";
-const char kUseSFSymbolsDescription[] =
-    "When enabled, images are replaced by SFSymbols";
 
 const char kUseSFSymbolsInOmniboxName[] =
     "Replace Image by SFSymbols in Omnibox";

@@ -838,11 +838,13 @@ TEST_F(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
-  To<Longhand>(ref.GetProperty()).ApplyValue(state, *dark_value);
+  To<Longhand>(ref.GetProperty())
+      .ApplyValue(state, *dark_value, CSSProperty::ValueMode::kNormal);
   EXPECT_EQ(mojom::blink::ColorScheme::kDark,
             state.StyleBuilder().UsedColorScheme());
 
-  To<Longhand>(ref.GetProperty()).ApplyValue(state, *light_value);
+  To<Longhand>(ref.GetProperty())
+      .ApplyValue(state, *light_value, CSSProperty::ValueMode::kNormal);
   EXPECT_EQ(mojom::blink::ColorScheme::kLight,
             state.StyleBuilder().UsedColorScheme());
 }
@@ -948,17 +950,15 @@ TEST_F(ComputedStyleTest, StrokeWidthZoomAndCalc) {
       CSSMathExpressionNumericLiteral::Create(CSSNumericLiteralValue::Create(
           10, CSSPrimitiveValue::UnitType::kNumber)));
 
-  To<Longhand>(GetCSSPropertyStrokeWidth()).ApplyValue(state, *calc_value);
+  To<Longhand>(GetCSSPropertyStrokeWidth())
+      .ApplyValue(state, *calc_value, CSSProperty::ValueMode::kNormal);
   scoped_refptr<const ComputedStyle> style = state.TakeStyle();
   auto* computed_value = To<Longhand>(GetCSSPropertyStrokeWidth())
                              .CSSValueFromComputedStyleInternal(
                                  *style, nullptr /* layout_object */,
                                  false /* allow_visited_style */);
   ASSERT_TRUE(computed_value);
-  auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(computed_value);
-  ASSERT_TRUE(numeric_value);
-  EXPECT_TRUE(numeric_value->IsPx());
-  EXPECT_EQ(10, numeric_value->DoubleValue());
+  ASSERT_EQ("calc(0\% + 10px)", computed_value->CssText());
 }
 
 TEST_F(ComputedStyleTest, InitialVariableNamesEmpty) {

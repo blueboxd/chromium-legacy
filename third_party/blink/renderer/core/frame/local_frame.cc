@@ -293,6 +293,18 @@ void SetViewportSegmentVariablesForRect(StyleEnvironmentVariables& vars,
                    StyleEnvironmentVariables::FormatPx(segment_rect.height()));
 }
 
+mojom::blink::BlockingDetailsPtr CreateBlockingDetailsMojom(
+    const FeatureAndJSLocationBlockingBFCache& blocking_details) {
+  auto feature_location_to_report = mojom::blink::BlockingDetails::New();
+  feature_location_to_report->feature =
+      static_cast<uint32_t>(blocking_details.Feature());
+  feature_location_to_report->line_number = blocking_details.LineNumber();
+  feature_location_to_report->column_number = blocking_details.ColumnNumber();
+  feature_location_to_report->url = blocking_details.Url();
+  feature_location_to_report->function_name = blocking_details.Function();
+  return feature_location_to_report;
+}
+
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -1287,10 +1299,20 @@ void LocalFrame::SetInvalidationForCapture(bool capturing) {
     }
   }
 
+  auto* layout_view = View()->GetLayoutView();
+  if (!layout_view) {
+    return;
+  }
+
   // Trigger a paint property update to ensure the unclipped behavior is
   // applied to the frame level scroller.
-  if (auto* layout_view = View()->GetLayoutView()) {
-    layout_view->SetNeedsPaintPropertyUpdate();
+  layout_view->SetNeedsPaintPropertyUpdate();
+
+  if (!GetPage()->GetScrollbarTheme().UsesOverlayScrollbars()) {
+    // During CapturePaintPreview, the LayoutView thinks it should not have
+    // scrollbars. So if scrollbars affect layout, we should force relayout
+    // when entering and exiting paint preview.
+    layout_view->SetNeedsLayout(layout_invalidation_reason::kPaintPreview);
   }
 }
 
@@ -2087,17 +2109,29 @@ void LocalFrame::WasShown() {
   }
 }
 
-bool LocalFrame::ClipsContent() const {
+bool LocalFrame::ClipsContent(ScrollbarDisableReason* out_reason) const {
   // A paint preview shouldn't clip to the viewport. Each frame paints to a
   // separate canvas in full to allow scrolling.
-  if (GetDocument()->GetPaintPreviewState() != Document::kNotPaintingPreview)
+  if (GetDocument()->GetPaintPreviewState() != Document::kNotPaintingPreview) {
+    if (out_reason) {
+      *out_reason = ScrollbarDisableReason::kPaintPreview;
+    }
     return false;
+  }
 
-  if (ShouldUsePrintingLayout())
+  if (ShouldUsePrintingLayout()) {
+    if (out_reason) {
+      *out_reason = ScrollbarDisableReason::kPrinting;
+    }
     return false;
+  }
 
-  if (IsOutermostMainFrame())
-    return GetSettings()->GetMainFrameClipsContent();
+  if (IsOutermostMainFrame() && !GetSettings()->GetMainFrameClipsContent()) {
+    if (out_reason) {
+      *out_reason = ScrollbarDisableReason::kMainFrameClipsContentFalse;
+    }
+    return false;
+  }
   // By default clip to viewport.
   return true;
 }
@@ -2354,10 +2388,27 @@ void LocalFrame::UpdateTaskTime(base::TimeDelta time) {
 
 void LocalFrame::UpdateBackForwardCacheDisablingFeatures(
     BlockingDetails details) {
-  // TODO(crbug.com/1366675): Add two Vectors to argument of
-  // DidChangeBackForwardCacheDisablingFeatures
+  auto mojom_details = ConvertFeatureAndLocationToMojomStruct(
+      details.non_sticky_features_and_js_locations,
+      details.sticky_features_and_js_locations);
   GetBackForwardCacheControllerHostRemote()
-      .DidChangeBackForwardCacheDisablingFeatures(details.feature_mask);
+      .DidChangeBackForwardCacheDisablingFeatures(std::move(mojom_details));
+}
+
+using BlockingDetailsList = Vector<mojom::blink::BlockingDetailsPtr>;
+BlockingDetailsList LocalFrame::ConvertFeatureAndLocationToMojomStruct(
+    const BFCacheBlockingFeatureAndLocations& non_sticky,
+    const BFCacheBlockingFeatureAndLocations& sticky) {
+  BlockingDetailsList blocking_details_list;
+  for (auto feature : non_sticky) {
+    auto blocking_details = CreateBlockingDetailsMojom(feature);
+    blocking_details_list.push_back(std::move(blocking_details));
+  }
+  for (auto feature : sticky) {
+    auto blocking_details = CreateBlockingDetailsMojom(feature);
+    blocking_details_list.push_back(std::move(blocking_details));
+  }
+  return blocking_details_list;
 }
 
 const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
@@ -2368,9 +2419,11 @@ const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
 }
 
 void LocalFrame::OnTaskCompleted(base::TimeTicks start_time,
-                                 base::TimeTicks end_time) {
+                                 base::TimeTicks end_time,
+                                 base::TimeTicks desired_execution_time) {
   if (FrameWidget* widget = GetWidgetForLocalRoot()) {
-    widget->OnTaskCompletedForFrame(start_time, end_time, this);
+    widget->OnTaskCompletedForFrame(start_time, end_time,
+                                    desired_execution_time, this);
   }
 }
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {

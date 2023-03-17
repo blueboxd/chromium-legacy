@@ -129,7 +129,7 @@
       popover.showPopover();
       assert_equals(document.activeElement, expectedFocusedElement, `${testName} activated by popover.showPopover()`);
       assert_equals(popover.popover, 'auto', 'All popovers in this test should start as popover=auto');
-      popover.popover = 'hint';
+      popover.popover = 'manual';
       assert_false(popover.matches(':open'), 'Changing the popover type should hide the popover');
       assert_equals(document.activeElement, priorFocus, 'prior element should get focus when the type is changed');
       assert_false(isElementVisible(popover));
@@ -196,7 +196,7 @@
       assert_true(popover.matches(':open'));
       await clickOn(button); // This will *not* light dismiss, but will "toggle" the popover.
       assert_false(popover.matches(':open'));
-      assert_equals(document.activeElement, priorFocus, 'focus should return to the prior focus');
+      assert_equals(document.activeElement, button, 'focus should move to the button when clicked, and should stay there when the popover closes');
       assert_false(isElementVisible(popover));
 
       // Same thing, but the button is contained within the popover

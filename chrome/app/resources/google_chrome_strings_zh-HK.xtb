@@ -41,7 +41,6 @@
 <translation id="1682634494516646069">Google Chrome 無法讀取及寫入數據目錄：
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1691802391966922744">{COUNT,plural, =1{管理員已設定 Chrome 在閒置超過 1 分鐘後關閉。}other{管理員已設定 Chrome 在閒置超過 # 分鐘後關閉。}}</translation>
 <translation id="1698376642261615901">Google Chrome 瀏覽器開啟網頁和執行應用程式的速度奇快無比！除了執行速度迅速、穩定且容易使用之外，內置防護機制還可讓您安心瀏覽網頁，無需擔心受到網絡釣魚與惡意軟件的威脅。</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome 將於 1 小時後重新啟動}other{Chrome 將於 # 小時後重新啟動}}</translation>
 <translation id="1734234790201236882">Chrome 會將此密碼儲存在您的 Google 帳戶內，您無需記住。</translation>
@@ -258,8 +257,8 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5941830788786076944">將 Google Chrome 設為預設瀏覽器</translation>
 <translation id="6003112304606738118">正在下載… 剩餘 <ph name="HOURS" /> 小時</translation>
 <translation id="6010556343189461180">如要取得日後的 Google Chrome 更新，您將需要 macOS 10.15 或以上版本。此電腦正在使用 macOS 10.14。</translation>
-<translation id="6022388122721048220">{0,plural, =0{Chrome 現在關閉。}=1{Chrome 將於 1 秒後關閉。}other{Chrome 將於 # 秒後關閉。}}</translation>
 <translation id="6022659036123304283">自訂屬於您的 Chrome</translation>
+<translation id="6025087594896450715">Google Chrome 將會在 <ph name="REMAINING_TIME" />後重新啟動</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6070348360322141662">為提高安全性，Google Chrome 會將您的資料加密</translation>
 <translation id="608006075545470555">將工作設定檔新增至此瀏覽器</translation>
@@ -277,6 +276,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6327105987658262776">沒有可用的更新。</translation>
 <translation id="6412673304250309937">使用儲存在 Chrome 中的不安全網站清單來檢查網址。如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chrome 亦可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能。</translation>
 <translation id="6418662306461808273">要切換至現有 Chrome 設定檔嗎？</translation>
+<translation id="6493527311031785448">Google Chrome 正在嘗試<ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chrome 需要相機權限，才能根據您身處的環境製作 3D 地圖</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome 開發人員版</translation>
 <translation id="659498884637196217">前往此裝置的「Google 密碼管理工具」進行更新</translation>
@@ -317,9 +317,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7296210096911315575">重要的使用和安全資訊</translation>
 <translation id="7308322188646931570">Chrome 需要儲存空間的存取權才能下載檔案</translation>
 <translation id="7339898014177206373">新視窗</translation>
-<translation id="7388770099345495132">如果您只想使用此帳戶一次，可以在 Chrome 瀏覽器中使用訪客模式。如要新增其他人的帳戶，請<ph name="LINK_BEGIN" />新增使用者<ph name="LINK_END" />至您的 <ph name="DEVICE_TYPE" />。
-
-您已向網站和應用程式授予的權限，可能會套用到此帳戶。您可在「<ph name="SETTINGS_LINK_BEGIN" />設定<ph name="SETTINGS_LINK_END" />」中管理 Google 帳戶。</translation>
 <translation id="7398801000654795464">您使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
 <translation id="7410958280246779049">由於此檔案不安全，因此 Chrome 已封鎖此檔案</translation>
 <translation id="7426611252293106642">Google Chrome 不再支援此 Linux 發行版本，因此可能無法正常運作</translation>
@@ -400,11 +397,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8825634023950448068">為保障您的私隱，我們會自動刪除超過 4 星期的興趣。按瀏覽內容而定，某個主題可能會再次在您的興趣清單中顯示。如果您認為 Chrome 判斷錯誤或不想看到特定廣告，可以移除感興趣的主題。</translation>
 <translation id="8834965163890861871">Google Chrome 正在嘗試編輯密碼。如果您同意，請輸入 Windows 密碼。</translation>
 <translation id="884296878221830158">這個擴充功能也會管制 Chrome 啟動時或您按一下 [主頁] 按鈕時所顯示的網頁。</translation>
-<translation id="8847000024471094355">Chrome 閒置中</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝程式。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="8922193594870374009">如要將號碼從 <ph name="ORIGIN" /> 傳送至 Android 手機，請在這兩部裝置上登入 Chrome。</translation>
-<translation id="8983720963221508955">您已開啟帳戶的「強化安全瀏覽」功能。現在請為 Chrome 開啟此功能。</translation>
 <translation id="8986207147630327271">您即將在此瀏覽器中新增工作設定檔，並只將工作設定檔的控制權授予管理員。</translation>
 <translation id="8989968390305463310">您的瀏覽記錄會影響系統顯示的廣告，以及下列由系統推測的興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。除非您移除興趣，否則系統會重新整理興趣。</translation>
 <translation id="8999208279178790196">{0,plural, =0{有可用的 Chrome 更新}=1{有可用的 Chrome 更新}other{Chrome 更新已發佈 # 天}}</translation>

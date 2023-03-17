@@ -9,19 +9,23 @@
 
 #include "base/functional/callback.h"
 #include "base/state_transitions.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
 class PrerenderManager;
 class Profile;
-class SearchPrefetchURLLoader;
 class StreamingSearchPrefetchURLLoader;
+
 namespace content {
 class PreloadingAttempt;
 enum class PreloadingTriggeringOutcome;
 enum class PreloadingFailureReason;
 }  // namespace content
+
+namespace net {
+struct NetworkTrafficAnnotationTag;
+}  // namespace net
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -147,7 +151,21 @@ class SearchPrefetchRequest {
   void RecordClickTime();
 
   // Takes ownership of underlying data/objects needed to serve the response.
-  std::unique_ptr<SearchPrefetchURLLoader> TakeSearchPrefetchURLLoader();
+  std::unique_ptr<StreamingSearchPrefetchURLLoader>
+  TakeSearchPrefetchURLLoader();
+
+  // If the loader is still serving to a navigation, we should not destroy the
+  // loader because it results in serving an incomplete response.
+  // TODO(https://crbug.com/1400881): We may need to consider using
+  // scoped_refptr. Figure out the safer one.
+  void TransferLoaderOwnershipIfStillServing();
+
+  // Instead of completely letting a navigation stack own the prefetch loader,
+  // creates a copy of the prefetched response so that it can be shared among
+  // different clients.
+  // Note: This method should be called after the response reader received
+  // response headers.
+  SearchPrefetchURLLoader::RequestHandler CreateResponseReader();
 
   // Whether the request was started as a navigation prefetch (as opposed to a
   // suggestion prefetch).
@@ -166,7 +184,6 @@ class SearchPrefetchRequest {
   void StartPrefetchRequestInternal(
       Profile* profile,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       base::OnceCallback<void(bool)> report_error_callback);
 
   // Stops the on-going prefetch and should mark |current_status_|
@@ -207,8 +224,6 @@ class SearchPrefetchRequest {
 
   // Whether this is for a navigation-time prefetch.
   bool navigation_prefetch_;
-
-  std::unique_ptr<net::NetworkTrafficAnnotationTag> network_traffic_annotation_;
 
   // The ongoing prefetch request. Null before and after the fetch.
   std::unique_ptr<StreamingSearchPrefetchURLLoader> streaming_url_loader_;

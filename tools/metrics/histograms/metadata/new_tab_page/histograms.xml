@@ -281,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Carts.NonDiscountCountAtLoad" units="count"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>meiliang@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -302,6 +302,19 @@ chromium-metrics-reviews@google.com.
     this may undercount clicks on nested OGB iframes. Note that even if the user
     has Google as their default search engine, Incognito and Guest mode NTPs are
     not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Collections.IdOnLoad" enum="NTPCollectionId"
+    expires_after="2023-08-30">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    The collection id of user's background image on the NTP. Only recorded once
+    per NTP. Note that even if the user has Google as their default search
+    engine, Incognito and Guest mode NTPs are not considered 1P and don't log
+    this histogram.
   </summary>
 </histogram>
 
@@ -546,6 +559,9 @@ chromium-metrics-reviews@google.com.
     can be different from the position observed by the user, e.g. when the user
     dismissed some suggestions from the list or requested more that got inserted
     in the middle of the feed.
+
+    iOS: Reported per click on card in the feed. Does not include position
+    information and thus can only be used as a total count of clicks.
   </summary>
 </histogram>
 
@@ -954,6 +970,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.HistoryClusters.HasCartForTopCluster"
+    enum="Boolean" expires_after="2023-08-08">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs whether there is at least one ChromeCart related to the top cluster.
+    Being related is defined as whether there is a ChromeCart for the domain of
+    any visit in this cluster, Only logged on the 1P NTP when both the history
+    clusters module and ChromeCart is enabled.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.HistoryClusters.HasClusterToShow" enum="Boolean"
     expires_after="2023-08-08">
   <owner>sophiechang@chromium.org</owner>
@@ -964,6 +993,29 @@ chromium-metrics-reviews@google.com.
     clusters module that matches the desired filtering criteria configurable via
     Finch. Only logged on the 1P NTP and the history clusters module is enabled.
   </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.HistoryClusters.Layout{LayoutNum}.{Type}Tile.ClickIndex"
+    units="index" expires_after="2023-08-08">
+  <owner>romanarora@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs the index of a clicked URL visit or suggestion tile for a given
+    displayed layout of the NTP history clusters module. Logged on clicking a
+    tile element of the module. Only logged on the 1P NTP and when the history
+    clusters module is enabled.
+  </summary>
+  <token key="LayoutNum">
+    <variant name="1"/>
+    <variant name="2"/>
+    <variant name="3"/>
+  </token>
+  <token key="Type">
+    <variant name="Suggest"/>
+    <variant name="Visit"/>
+  </token>
 </histogram>
 
 <histogram name="NewTabPage.HistoryClusters.NumClusterCandidates"
@@ -1016,7 +1068,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Lens.UploadDialog.DialogAction"
-    enum="NewTabPageLensUploadDialogActions" expires_after="2023-06-30">
+    enum="NewTabPageLensUploadDialogActions" expires_after="2023-09-10">
   <owner>nguyenbryan@google.com</owner>
   <owner>yowakita@google.com</owner>
   <owner>bbonnet@google.com</owner>
@@ -1152,7 +1204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Module.Click" enum="ModuleTypeOnStartAndNTP"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -1422,6 +1474,7 @@ chromium-metrics-reviews@google.com.
   <token key="NtpModule">
     <variant name="chrome_cart" summary="the Chrome Cart module"/>
     <variant name="drive" summary="the Drive module"/>
+    <variant name="history_clusters" summary="the History clusters module"/>
     <variant name="photos" summary="the Photos module"/>
     <variant name="recipe_tasks" summary="the Recipe module"/>
     <variant name="shopping_tasks" summary="the Shopping Tasks module"/>
@@ -1838,7 +1891,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.SearchResumptionModule.Show"
-    enum="SearchResumptionModule.ModuleShowStatus" expires_after="2023-07-09">
+    enum="SearchResumptionModule.ModuleShowStatus" expires_after="2023-09-10">
   <owner>hanxi@chromium.org</owner>
   <summary>
     Logs whether the search resumption module is expanded or collapsed when the
@@ -1848,7 +1901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.SearchResumptionModule.Show.Cached"
-    enum="SearchResumptionModule.ModuleShowStatus" expires_after="2023-07-09">
+    enum="SearchResumptionModule.ModuleShowStatus" expires_after="2023-09-10">
   <owner>hanxi@chromium.org</owner>
   <owner>xinyiji@chromium.org</owner>
   <summary>
@@ -1983,30 +2036,6 @@ chromium-metrics-reviews@google.com.
     Logs the elapsed time between the time when user enters the Google Lens and
     the time when user dismisses Lens and returns to Chrome. Only logged on
     Android.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.TileFaviconType" enum="FaviconType"
-    expires_after="M90">
-  <owner>dbeam@chromium.org</owner>
-  <owner>yyushkina@chromium.org</owner>
-  <summary>
-    The favicon type that was chosen to represent a most visited tile displayed
-    on the new tab page, logged at impression time. Note that these values don't
-    involve an actual icon being displayed because a scrabble time might have
-    been displayed instead (see NewTabPage.TileType).
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.TileFaviconTypeClicked" enum="FaviconType"
-    expires_after="M90">
-  <owner>dbeam@chromium.org</owner>
-  <owner>yyushkina@chromium.org</owner>
-  <summary>
-    The favicon type that was chosen to represent a most visited tile displayed
-    on the new tab page, logged when a tile is clicked. Note that these values
-    don't involve an actual icon being displayed (see
-    NewTabPage.TileTypeClicked).
   </summary>
 </histogram>
 
@@ -2168,7 +2197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.VoiceActions" enum="NewTabPageVoiceAction"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

@@ -125,7 +125,8 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
                          password_manager::PasswordForm::Type::kManuallyAdded);
 
   // Adds |credentials| to the specified store.
-  // Credentials are expected to be valid according to `GetExpectedAddResult`.
+  // Credentials are expected to be valid according to `GetExpectedAddResult`
+  // and they should all belong to the same Password Store.
   //
   // NOTE: Informing observers of credentials belonging to mixed types of stores
   // is not supported.
@@ -134,6 +135,14 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   void AddCredentials(const std::vector<CredentialUIEntry>& credentials,
                       password_manager::PasswordForm::Type type,
                       AddCredentialsCallback completion);
+
+  // Updates all matching password forms in |password_forms|.
+  // |completion| will be run after the forms are updated.
+  //
+  // NOTE: Updates to different password stores is not supported and hence all
+  // forms in |password_forms| must belong to the same store.
+  void UpdatePasswordForms(const std::vector<PasswordForm>& password_forms,
+                           base::OnceClosure completion = base::DoNothing());
 
   // Modifies all the saved credentials matching |original_credential| to
   // |updated_credential|. Only username, password, notes and password issues
@@ -168,14 +177,6 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   void RemoveObserver(Observer* observer);
 
  private:
-  // Adds the |credential| to the specified store.
-  // Expects a credential that is valid to be added - can be verified by
-  // calling `GetExpectedAddResult()` before. `completion` callback wil be run
-  // after the DB call is completed.
-  void AddCredentialAsync(const CredentialUIEntry& credential,
-                          password_manager::PasswordForm::Type type,
-                          base::OnceClosure completion);
-
   // PasswordStoreInterface::Observer
   void OnLoginsChanged(PasswordStoreInterface* store,
                        const PasswordStoreChangeList& changes) override;

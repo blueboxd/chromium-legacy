@@ -20,6 +20,9 @@
 #import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
@@ -34,9 +37,6 @@
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/synced_bookmarks_bridge.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
-#import "ios/chrome/browser/ui/table_view/table_view_model.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -69,7 +69,7 @@ const int kMaxBookmarksSearchResults = 50;
   // Registrar for pref changes notifications.
   std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
   // The browser for this mediator.
-  Browser* _browser;
+  base::WeakPtr<Browser> _browser;
   // The sync setup service for this mediator.
   SyncSetupService* _syncSetupService;
 }
@@ -91,8 +91,9 @@ const int kMaxBookmarksSearchResults = 50;
 - (instancetype)initWithSharedState:(BookmarksHomeSharedState*)sharedState
                             browser:(Browser*)browser {
   if ((self = [super init])) {
+    DCHECK(browser);
     _sharedState = sharedState;
-    _browser = browser;
+    _browser = browser->AsWeakPtr();
   }
   return self;
 }
@@ -109,7 +110,7 @@ const int kMaxBookmarksSearchResults = 50;
       std::make_unique<sync_bookmarks::SyncedBookmarksObserverBridge>(
           self, browserState);
   _bookmarkPromoController =
-      [[BookmarkPromoController alloc] initWithBrowser:_browser
+      [[BookmarkPromoController alloc] initWithBrowser:_browser.get()
                                               delegate:self
                                              presenter:self];
 
@@ -146,7 +147,7 @@ const int kMaxBookmarksSearchResults = 50;
 
 #pragma mark - Initial Model Setup
 
-// Computes the bookmarks table view based on the current root node.
+// Computes the bookmarks table view based on the currently displayed node.
 - (void)computeBookmarkTableViewData {
   [self deleteAllItemsOrAddSectionWithIdentifier:
             BookmarksHomeSectionIdentifierBookmarks];
@@ -170,12 +171,13 @@ const int kMaxBookmarksSearchResults = 50;
   [self updateTableViewBackground];
 }
 
-// Generate the table view data when the current root node is a child node.
+// Generate the table view data when the currently displayed node is a child
+// node.
 - (void)generateTableViewData {
   if (!self.sharedState.tableViewDisplayedRootNode) {
     return;
   }
-  // Add all bookmarks and folders of the current root node to the table.
+  // Add all bookmarks and folders of the currently displayed node to the table.
   for (const auto& child :
        self.sharedState.tableViewDisplayedRootNode->children()) {
     BookmarksHomeNodeItem* nodeItem = [[BookmarksHomeNodeItem alloc]
@@ -189,8 +191,8 @@ const int kMaxBookmarksSearchResults = 50;
   }
 }
 
-// Generate the table view data when the current root node is the outermost
-// root.
+// Generate the table view data when the current currently displayed node is the
+// outermost root.
 - (void)generateTableViewDataForRootNode {
   // If all the permanent nodes are empty, do not create items for any of them.
   if (![self hasBookmarksOrFolders]) {
@@ -296,8 +298,8 @@ const int kMaxBookmarksSearchResults = 50;
 }
 
 - (void)updateTableViewBackground {
-  // If the current root node is the outermost root, check if we need to show
-  // the spinner backgound.  Otherwise, check if we need to show the empty
+  // If the currently displayed node is the outermost root, check if we need to
+  // show the spinner backgound. Otherwise, check if we need to show the empty
   // background.
   if (self.sharedState.tableViewDisplayedRootNode ==
       self.sharedState.profileBookmarkModel->root_node()) {
@@ -410,7 +412,7 @@ const int kMaxBookmarksSearchResults = 50;
   if (self.sharedState.currentlyShowingSearchResults) {
     [self.consumer refreshContents];
   }
-  // The current root folder's children changed. Reload everything.
+  // The currently displayed folder's children changed. Reload everything.
   // (When adding new folder, table is already been updated. So no need to
   // reload here.)
   if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode &&
@@ -429,7 +431,7 @@ const int kMaxBookmarksSearchResults = 50;
             toParent:(const BookmarkNode*)newParent {
   if (oldParent == self.sharedState.tableViewDisplayedRootNode ||
       newParent == self.sharedState.tableViewDisplayedRootNode) {
-    // A folder was added or removed from the current root folder.
+    // A folder was added or removed from the currently displayed folder.
     [self.consumer refreshContents];
   }
 }

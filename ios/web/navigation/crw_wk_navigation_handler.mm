@@ -6,6 +6,7 @@
 
 #import "base/feature_list.h"
 #import "base/ios/ns_error_util.h"
+#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
@@ -1620,25 +1621,27 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
 
     // TODO(crbug.com/1418068): Remove after minimum version required is >=
     // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-    base::ScopedCFTypeRef<CFArrayRef> certificateChain(
-        SecTrustCopyCertificateChain(trust));
-    SecCertificateRef secCertificate =
-        base::mac::CFCastStrict<SecCertificateRef>(
-            CFArrayGetValueAtIndex(certificateChain, 0));
-    scoped_refptr<net::X509Certificate> leafCert =
-        net::x509_util::CreateX509CertificateFromSecCertificate(
-            base::ScopedCFTypeRef<SecCertificateRef>(
-                secCertificate, base::scoped_policy::RETAIN),
-            {});
-#else
-    scoped_refptr<net::X509Certificate> leafCert =
-        net::x509_util::CreateX509CertificateFromSecCertificate(
-            base::ScopedCFTypeRef<SecCertificateRef>(
-                SecTrustGetCertificateAtIndex(trust, 0),
-                base::scoped_policy::RETAIN),
-            {});
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+    scoped_refptr<net::X509Certificate> leafCert = nil;
+    if (@available(iOS 15.0, *)) {
+      base::ScopedCFTypeRef<CFArrayRef> certificateChain(
+          SecTrustCopyCertificateChain(trust));
+      SecCertificateRef secCertificate =
+          base::mac::CFCastStrict<SecCertificateRef>(
+              CFArrayGetValueAtIndex(certificateChain, 0));
+      leafCert = net::x509_util::CreateX509CertificateFromSecCertificate(
+          base::ScopedCFTypeRef<SecCertificateRef>(secCertificate,
+                                                   base::scoped_policy::RETAIN),
+          {});
+    }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+    else {
+      leafCert = net::x509_util::CreateX509CertificateFromSecCertificate(
+          base::ScopedCFTypeRef<SecCertificateRef>(
+              SecTrustGetCertificateAtIndex(trust, 0),
+              base::scoped_policy::RETAIN),
+          {});
+    }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
     if (leafCert) {
       bool is_recoverable =
@@ -1880,10 +1883,6 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       [[CRWErrorPageHelper alloc] initWithError:error];
   WKBackForwardListItem* backForwardItem = webView.backForwardList.currentItem;
   GURL backForwardGURL = net::GURLWithNSURL(backForwardItem.URL);
-  if (web::wk_navigation_util::IsRestoreSessionUrl(backForwardGURL)) {
-    web::wk_navigation_util::ExtractTargetURL(backForwardGURL,
-                                              &backForwardGURL);
-  }
   GURL failedURL = [CRWErrorPageHelper
       failedNavigationURLFromErrorPageFileURL:backForwardGURL];
   bool isSameURLFromWebClient = web::GetWebClient()->IsPointingToSameDocument(
@@ -1892,20 +1891,21 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   //   1. Current nav item is an error page for failed URL;
   //   2. Current nav item has a failed URL. This may happen when
   //      back/forward/refresh on a loaded page;
-  //   3. Current nav item is a session restoration of the failed navigation.
-  //   4. Current nav item is an irrelevant page.
-  // For 1, 2 and 3, load an empty string to remove existing JS code. The URL is
+  //   3. Current nav item is an irrelevant page.
+  //   4. Current nav item is a session restoration.
+  // For 1, 2 and 4, load an empty string to remove existing JS code. The URL is
   // also updated to the URL of the page that failed to allow back/forward
   // navigations even on navigations originating from pushstate. See
   // crbug.com/1153261.
-  // For 4, load error page file to create a new nav item.
+  // For 3, load error page file to create a new nav item.
   // The actual error HTML will be loaded in didFinishNavigation callback.
   WKNavigation* errorNavigation = nil;
   if (provisionalLoad &&
       ![errorPage
           isErrorPageFileURLForFailedNavigationURL:backForwardItem.URL] &&
       !isSameURLFromWebClient &&
-      backForwardGURL != net::GURLWithNSURL(errorPage.failedNavigationURL)) {
+      ![backForwardItem.URL isEqual:errorPage.failedNavigationURL] &&
+      !web::wk_navigation_util::IsRestoreSessionUrl(backForwardItem.URL)) {
     errorNavigation = [webView loadFileURL:errorPage.errorPageFileURL
                    allowingReadAccessToURL:errorPage.errorPageFileURL];
   } else {

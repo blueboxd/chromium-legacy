@@ -19,6 +19,7 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_metrics.h"
@@ -88,8 +89,7 @@ AttributionHost::AttributionHost(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       WebContentsUserData<AttributionHost>(*web_contents),
       receivers_(web_contents, this) {
-  // TODO(csharrison): When https://crbug.com/1051334 is resolved, add a DCHECK
-  // that the kConversionMeasurement feature is enabled.
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kConversionMeasurement));
 
 #if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
@@ -251,12 +251,9 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  const absl::optional<blink::Impression>& impression =
-      navigation_handle->GetImpression();
-
   // If we were not able to access the impression origin, ignore the
   // navigation.
-  if (impression && !navigation_source_origin_it) {
+  if (!navigation_source_origin_it) {
     MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
@@ -266,17 +263,12 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  data_host_manager->NotifyNavigationSuccess(
-      navigation_handle->GetNavigationId());
-
-  if (!navigation_source_origin_it) {
-    return;
-  }
-
   const NavigationInfo& navigation_info =
       (*navigation_source_origin_it.get())->second;
   const SuitableOrigin& source_origin = navigation_info.source_origin;
 
+  const absl::optional<blink::Impression>& impression =
+      navigation_handle->GetImpression();
   DCHECK(impression);
 
   data_host_manager->NotifyNavigationForDataHost(
@@ -298,14 +290,13 @@ void AttributionHost::MaybeNotifyFailedSourceNavigation(
     return;
   }
 
-  absl::optional<blink::AttributionSrcToken> attribution_src_token;
-  if (absl::optional<blink::Impression> impression =
-          navigation_handle->GetImpression()) {
-    attribution_src_token = impression->attribution_src_token;
+  absl::optional<blink::Impression> impression =
+      navigation_handle->GetImpression();
+  if (!impression) {
+    return;
   }
 
-  data_host_manager->NotifyNavigationFailure(
-      attribution_src_token, navigation_handle->GetNavigationId());
+  data_host_manager->NotifyNavigationFailure(impression->attribution_src_token);
 }
 
 absl::optional<SuitableOrigin>
@@ -438,6 +429,10 @@ void AttributionHost::BindReceiver(
 void AttributionHost::NotifyFencedFrameReportingBeaconStarted(
     BeaconId beacon_id,
     RenderFrameHostImpl* initiator_frame_host) {
+  if (!base::FeatureList::IsEnabled(kAttributionFencedFrameReportingBeacon)) {
+    return;
+  }
+
   if (!initiator_frame_host) {
     return;
   }

@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">បានរកឃើញ​ជញ្ជាំងភ្លើង</translation>
 <translation id="1075811647922107217">ទំហំ​ទំព័រ</translation>
+<translation id="1082009148392559545">កំពុង​ទាញយក​ធាតុរក្សា​អេក្រង់</translation>
 <translation id="1094693127011229778">មិនមានអាសយដ្ឋាន IP ទេ</translation>
 <translation id="1113892970288677790">ជ្រើសរើសរូបភាព និងរូបផូស្ទ័រ​ដែលបានជ្រើសរើស</translation>
 <translation id="1119447706177454957">កំហុសឆ្គងខាងក្នុង</translation>
@@ -79,6 +80,7 @@
 <translation id="1641857168437328880">ឧបករណ៍​បញ្ចូល​ឯកសារ (ម្ខាង)</translation>
 <translation id="1643449475550628585">ប្ដូរផ្ទាំងរូបភាព​ជារៀងរាល់ថ្ងៃ</translation>
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
+<translation id="1651925268237749928">អ្នកបាន​ជ្រើសរើស​អាល់ប៊ុម​រួម។ អ្នកផ្សេង​អាច​បញ្ចូល ឬ​ផ្លាស់ប្ដូរ​រូបថតបាន។ ផ្ទាំង​រូបភាព​របស់​អ្នក​ប្រហែលជា​ប្រើរូបថត​ដែល​បច្ចុប្បន្នមិន​ស្ថិត​នៅ​ក្នុង​អាល់ប៊ុម​នេះ។</translation>
 <translation id="1662989795263954667">បានឈប់ - អស់​ទឹកថ្នាំ</translation>
 <translation id="1664796644829245314">មើល <ph name="PREVIEW_OBJECT" /> សាកល្បង</translation>
 <translation id="1668469839109562275">VPN ដែលភ្ជាប់​មកជាមួយស្រាប់</translation>
@@ -90,6 +92,7 @@
 <translation id="1717874160321062422">ស្ថិតក្រោមការគ្រប់គ្រងរបស់ <ph name="FIRST_MANAGER" /> និង <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">ដាក់​ឈ្មោះ​ឲ្យ​ម៉ាស៊ីន​មេ</translation>
 <translation id="1731082422893354635">ផ្ទាំងប៉ះ​ប៊្លូធូស</translation>
+<translation id="1738949837603788263">តំបន់ទី <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">មិនអាច​ផ្ទុក​រូបភាព​បានទេ។ សូម​ពិនិត្យមើល​ការតភ្ជាប់​បណ្ដាញ​របស់អ្នក ឬ​សាកល្បង​ផ្ទុក​រូបភាព​ម្ដងទៀត។</translation>
 <translation id="1751249301761991853">ផ្ទាល់ខ្លួន</translation>
 <translation id="1753496554272155572">ចេញពីការមើលផ្ទាំង​រូបភាពសាកល្បង</translation>
@@ -236,12 +239,12 @@
 <translation id="319101249942218879">បានប្ដូរ​រូបភាព​រូបតំណាង</translation>
 <translation id="3192947282887913208">ឯកសារសម្លេង</translation>
 <translation id="3199982728237701504">ឧបករណ៍​បញ្ចូល​ឯកសារ (សងខាង)</translation>
+<translation id="3201315366910775591">អាល់ប៊ុមរួម​អាច​ត្រូ​វបាន​ធ្វើបច្ចុប្បន្នភាព​ដោយ​អ្នកផ្សេង</translation>
 <translation id="3211671540163313381">ឌីផេត​សម្រាប់ការរៀបចំ​គ្រាប់ចុច</translation>
 <translation id="3226405216343213872">កំពុងរកមើលម៉ាស៊ីនស្កេន</translation>
 <translation id="3226657629376379887">ម៉ឺនុយសកម្មភាព​ប្លង់​</translation>
 <translation id="3246869037381808805">កិច្ចការបោះពុម្ពដែលចាស់ជាង 1 ថ្ងៃនឹងត្រូវលុបចេញ</translation>
 <translation id="3268178239013324452">មិនបានសម្រេច - ​​​ទ្វារចំហ</translation>
-<translation id="3275506277319227640">ភ្ជាប់​នៅខាង<ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">រូប​តំណាង</translation>
 <translation id="3283504360622356314">{0,plural, =1{កែ​ឯកសារ}other{កែ​ឯកសារ}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
@@ -278,7 +281,6 @@
 <translation id="3595596368722241419">ថ្មពេញ</translation>
 <translation id="3600339377155080675">បញ្ចាំងអេក្រង់</translation>
 <translation id="3602290021589620013">ពិនិត្យមើល</translation>
-<translation id="360282891121575443">រូបថត​នៅ​ក្នុង​អាល់ប៊ុមរួម​អាច​ត្រូវ​បាន​ធ្វើ​បច្ចុប្បន្នភាព​ដោយ​អ្នក​ប្រើប្រាស់​ផ្សេងទៀត។ ការ​ផ្លាស់ប្ដូ​ររាល់ថ្ងៃ​អាច​បង្ហាញ​ផ្ទាំង​រូបភាព​ដែល​បច្ចុប្បន្ន​មិន​ស្ថិត​នៅ​ក្នុង​អាល់ប៊ុម។</translation>
 <translation id="3603829704940252505">រូបតំណាង</translation>
 <translation id="3604713164406837697">ប្ដូរផ្ទាំងរូបភាព</translation>
 <translation id="360565022852130722">បណ្ដាញ WiFi មានសុវត្ថិភាពជាមួយ WEP 802.1x ប្រូតូកូលខ្សោយ</translation>
@@ -360,7 +362,6 @@
 <translation id="4311195029067684288">ពេញ</translation>
 <translation id="4333390807948134856">បានចុច​គ្រាប់ចុច <ph name="KEY_NAME" /></translation>
 <translation id="435692326371619097">គ្រប់គ្រង​ការ​កំណត់ APN បណ្ដាញ។ APN បង្កើត​ការ​តភ្ជាប់​រវាង​បណ្ដាញ​ចល័ត និង​អ៊ីនធឺណិត។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">ភ្ជាប់​នៅ​ខាង​ដែល​តូច​ជាង</translation>
 <translation id="4378373042927530923">មិនដំណើរការទេ</translation>
 <translation id="4378551569595875038">កំពុងភ្ជាប់...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -601,6 +602,7 @@
 <translation id="636850387210749493">ការចុះឈ្មោះសហគ្រាស</translation>
 <translation id="6379086450106841622">អេក្រង់ថាច់</translation>
 <translation id="6381741036071372448">ធ្វើតេស្តក្ដារចុចរបស់អ្នក</translation>
+<translation id="6382182670717268353">មើល​ធាតុរក្សា​អេក្រង់​សាកល្បង</translation>
 <translation id="6388847657025262518">ឧបករណ៍​បញ្ចូល​ឯកសារ​របស់ម៉ាស៊ីនស្កេន​ជាប់គាំង។ សូម​ពិនិត្យមើល​ឧបករណ៍​បញ្ចូល​ឯកសារនោះ រួចព្យាយាម​ម្ដងទៀត។</translation>
 <translation id="6394634179843537518">បញ្ចូល​ឯកសារ</translation>
 <translation id="6410257289063177456">ឯកសាររូបភាព</translation>
@@ -639,7 +641,6 @@
 <translation id="6657585470893396449">ពាក្យសម្ងាត់</translation>
 <translation id="6659594942844771486">ផ្ទាំង</translation>
 <translation id="6692996468359469499">ទទួលបានព័ត៌មានពាក់ព័ន្ធនឹងការជ្រើសរើស​របស់អ្នក</translation>
-<translation id="6698459586333070823">អាល់ប៊ុមរួម​អាច​ត្រូ​វបាន​ធ្វើបច្ចុប្បន្នភាព​ដោយ​អ្នក​ប្រើប្រាស់​ផ្សេង​ទៀត</translation>
 <translation id="6704062477274546131">ដំណោះស្រាយ DNS</translation>
 <translation id="6723839937902243910">ថាមពល</translation>
 <translation id="6723847290197874913">ពន្លឺផ្នែកខាងក្រោយនៃក្ដារចុច</translation>
@@ -657,6 +658,7 @@
 <translation id="6838167112108853532">មិន​អាច​បិទ ឬ​ដក APN នេះ​ចេញ​បាន​ទេ។ សូម​​ប្រាកដថា APN ដែល​បាន​ភ្ជាប់ដែល​បានបើក ត្រូ​វបានបិទ ឬ​ដកចេញ។</translation>
 <translation id="6853312040151791195">អត្រា​ឈប់សាកថ្ម</translation>
 <translation id="6889786074662672253">ខណៈពេលកំពុងចាប់ផ្ដើមឡើងវិញ សូមកុំដកឧបករណ៍ខាងក្រៅនេះ ឬបិទកុំព្យូទ័ររបស់អ្នក។ អ្នកអាចបង្រួមវិនដូនេះបាន។ ការចាប់ផ្ដើមឡើងវិញនេះអាចចំណាយពេលពីរបីនាទី ហើយឧបករណ៍ខាងក្រៅរបស់អ្នកអាចមិនដំណើរការនៅអំឡុងពេលនេះទេ។</translation>
+<translation id="6900701049656042631">អាល់ប៊ុមនេះ​មិនមាន​រូបថត​ទេ។ ដើម្បី​បញ្ចូលរូបថត សូមចូល​ទៅកាន់ <ph name="LINK" /></translation>
 <translation id="6905724422583748843">ត្រឡប់​ទៅ <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">គម្រប​របស់ម៉ាស៊ីនស្កេន​គឺបើក។ សូមបិទ​គម្របនោះ រួចព្យាយាម​ម្ដងទៀត។</translation>
 <translation id="6911383237894364323">មិនអាចភ្ជាប់​ម៉ាស៊ីនមេ​មេឌៀបានទេ</translation>
@@ -691,6 +693,7 @@
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> នេះស្ថិតក្រោម​ការគ្រប់គ្រងរបស់ <ph name="MANAGER" />។ អ្នកគ្រប់គ្រង​អាចកំណត់រចនាសម្ព័ន្ធ​ឧបករណ៍​នេះពីចម្ងាយបាន។</translation>
 <translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
 <translation id="7180865173735832675">កែសម្រួល</translation>
+<translation id="7184043045742675738">ចុច​លើ​គ្រាប់ចុច​ណា​មួយ ដើម្បី​ប្ដូរ​ប៊ូតុង​របស់​អ្នក​តាមបំណង។ ប្ដូរទីតាំងគ្រាប់ចុច ដោយ​ប្រើ​កណ្ដុរ ឬ​គ្រាប់ចុច​ព្រួញ។</translation>
 <translation id="7212734716605298123">ការដំឡើងកំណែកម្មវិធីបង្កប់សម្រាប់ឧបករណ៍ខាងក្រៅ</translation>
 <translation id="7216409898977639127">ក្រុមហ៊ុន​ផ្តល់សេវា​ទូរសព្ទ</translation>
 <translation id="725133483556299729">ជ្រើសរើស​អ៊ីមែល</translation>
@@ -732,6 +735,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">អេក្រង់ថាច់ USB</translation>
 <translation id="7595982850646262331">នៅសល់ <ph name="TIME_VALUE" /> ទៀត</translation>
+<translation id="7613724632293948900">ប្ដូរ​ទីតាំង​ដោយ​ប្រើកណ្ដុរ ឬ​គ្រាប់ចុច​ព្រួញ។</translation>
 <translation id="7620771111601174153">ស្វែងយល់បន្ថែម​នៅក្នុងមជ្ឈមណ្ឌលជំនួយ</translation>
 <translation id="763165478673169849">ពេលវេលាកំណត់ឡើងវិញចុងក្រោយ</translation>
 <translation id="7648838807254605802">ការពន្យារ HTTPS ខ្ពស់</translation>
@@ -795,7 +799,6 @@
 <translation id="8226628635270268143">ជ្រើសរើស​រូបថត និងអាល់ប៊ុមដែលអ្នកចូលចិត្ត</translation>
 <translation id="8227119283605456246">ភ្ជាប់ឯកសារ</translation>
 <translation id="8230672074305416752">មិនអាចភីងច្រកបណ្ដាញលំនាំដើមបានទេ</translation>
-<translation id="8242426110754782860">បន្ត</translation>
 <translation id="8246209727385807362">ក្រុមហ៊ុនបម្រើសេវាទូរសព្ទ​ដែលមិនស្គាល់</translation>
 <translation id="827422111966801947">ទឹកប៊ិក</translation>
 <translation id="8286154143153872371">សូមភ្ជាប់​បណ្ដាញ រួចផ្ទុកទំព័រ​ឡើងវិញ ដើម្បីមើល​ផ្ទាំងរូបភាព។</translation>
@@ -855,6 +858,7 @@
 <translation id="8798441408945964110">ឈ្មោះក្រុមហ៊ុនផ្តល់សេវា</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">ផ្ទាំងរូបភាព</translation>
+<translation id="8820457400746201697">ផ្លាស់ទី​ចំណុចចុច​ពណ៌ខៀវ​ទៅ​សកម្មភាពមួយ។ ជ្រើសរើស​គ្រាប់ចុច​ដែល​បាន​ភ្ជាប់ ដើម្បី​ប្ដូរ​តាមបំណង។</translation>
 <translation id="8834539327799336565">កំពុងភ្ជាប់​បច្ចុប្បន្ននេះ</translation>
 <translation id="8845001906332463065">ទទួលជំនួយ</translation>
 <translation id="8855781559874488009">មិនអាចភ្ជាប់ទៅគេហទំព័រ HTTP តាមរយៈជញ្ជាំងភ្លើងបានទេ</translation>
@@ -903,7 +907,6 @@
 <translation id="9137526406337347448">សេវាកម្ម Google</translation>
 <translation id="9138630967333032450">shift ឆ្វេង</translation>
 <translation id="9149391708638971077">ដំណើរការតេស្តអង្គចងចាំ</translation>
-<translation id="9157515863513902090">ភ្ជាប់​នៅ​ខាង​ដែល​ធំជាង</translation>
 <translation id="9161276708550942948">ដកឃ្លា</translation>
 <translation id="9173638680043580060">នៅសល់​តិច​ជាង​មួយ​នាទី</translation>
 <translation id="917720651393141712">ធ្វើតេស្ត</translation>

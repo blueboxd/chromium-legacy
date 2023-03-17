@@ -29,6 +29,7 @@ class SpeculationCandidate : public GarbageCollected<SpeculationCandidate> {
                        bool requires_anonymous_client_ip_when_cross_origin,
                        mojom::blink::SpeculationTargetHint target_hint,
                        mojom::blink::SpeculationEagerness eagerness,
+                       network::mojom::blink::NoVarySearchPtr no_vary_search,
                        SpeculationRuleSet* rule_set,
                        HTMLAnchorElement* anchor);
   virtual ~SpeculationCandidate() = default;
@@ -42,6 +43,7 @@ class SpeculationCandidate : public GarbageCollected<SpeculationCandidate> {
   mojom::blink::SpeculationTargetHint target_hint() const {
     return target_hint_;
   }
+  mojom::blink::SpeculationEagerness eagerness() const { return eagerness_; }
   SpeculationRuleSet* rule_set() const { return rule_set_; }
   // Only set for candidates derived from a document rule (is null for
   // candidates derived from list rules).
@@ -54,6 +56,7 @@ class SpeculationCandidate : public GarbageCollected<SpeculationCandidate> {
   const bool requires_anonymous_client_ip_when_cross_origin_;
   const mojom::blink::SpeculationTargetHint target_hint_;
   const mojom::blink::SpeculationEagerness eagerness_;
+  const network::mojom::blink::NoVarySearchPtr no_vary_search_;
   const Member<SpeculationRuleSet> rule_set_;
   const Member<HTMLAnchorElement> anchor_;
 };

@@ -11,6 +11,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/xdg_output.h"
 #include "ui/ozone/platform/wayland/test/test_zaura_output.h"
 #include "ui/ozone/platform/wayland/test/test_zaura_shell.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
@@ -50,8 +51,7 @@ class WaylandZAuraOutputTest : public WaylandTestSimpleWithAuraShell {
     // Set default values for the output.
     PostToServerAndWait([](wl::TestWaylandServerThread* server) {
       wl::TestOutput* output = server->output();
-      output->SetRect({800, 600});
-      output->SetScale(1);
+      output->SetPhysicalAndLogicalBounds({800, 600});
       output->Flush();
     });
 
@@ -146,20 +146,20 @@ TEST_F(WaylandZAuraOutputTest, DisplayIdConversions) {
 TEST_F(WaylandZAuraOutputTest, ActiveDisplay) {
   WaylandTestScreen test_screen(output_manager_->wayland_screen());
 
-  wl::TestOutput *primary = nullptr, *secondary = nullptr;
+  wl::TestOutput* primary = nullptr;
+  wl::TestOutput* secondary = nullptr;
   PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
     primary = server->output();
-    secondary = server->CreateAndInitializeOutput();
+    secondary =
+        server->CreateAndInitializeOutput(wl::TestOutputMetrics({100, 100}));
   });
 
-  int64_t primary_id = display::kInvalidDisplayId,
-          secondary_id = display::kInvalidDisplayId;
+  int64_t primary_id = display::kInvalidDisplayId;
+  int64_t secondary_id = display::kInvalidDisplayId;
   // Wait so that the client creates xdg/aura outputs.
   PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    secondary->SetRect(gfx::Rect(100, 100));
-    secondary->Flush();
-    primary_id = primary->GetAuraOutput()->display_id();
-    secondary_id = secondary->GetAuraOutput()->display_id();
+    primary_id = primary->GetDisplayId();
+    secondary_id = secondary->GetDisplayId();
   });
 
   WaitForAllDisplaysReady();
@@ -181,6 +181,51 @@ TEST_F(WaylandZAuraOutputTest, ActiveDisplay) {
   });
   EXPECT_EQ(primary_id,
             display::Screen::GetScreen()->GetDisplayForNewWindows().id());
+}
+
+TEST_F(WaylandZAuraOutputTest, ZAuraOutputIsReady) {
+  auto* output_manager = connection_->wayland_output_manager();
+  const auto* primary_output = output_manager->GetPrimaryOutput();
+
+  // Create a new output but suppress metrics.
+  wl::TestOutput* test_output = nullptr;
+  PostToServerAndWait([&test_output](wl::TestWaylandServerThread* server) {
+    test_output = server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({0, 0, 800, 600}));
+    ASSERT_TRUE(test_output);
+    test_output->set_suppress_implicit_flush(true);
+  });
+  const auto& all_outputs = output_manager->GetAllOutputs();
+  ASSERT_EQ(2u, all_outputs.size());
+
+  // Get the newly created WaylandOutput.
+  auto pair_it = base::ranges::find_if_not(all_outputs, [&](auto& pair) {
+    return pair.first == primary_output->output_id();
+  });
+  ASSERT_NE(all_outputs.end(), pair_it);
+
+  auto* new_output = pair_it->second.get();
+  EXPECT_NE(nullptr, new_output);
+
+  auto* xdg_output = new_output->xdg_output_for_testing();
+  EXPECT_NE(nullptr, xdg_output);
+
+  auto* aura_output = new_output->aura_output_for_testing();
+  EXPECT_NE(nullptr, aura_output);
+
+  // The output should not be marked ready since metrics and specifically the
+  // wl_output.done event has not yet been received.
+  EXPECT_FALSE(new_output->IsReady());
+  EXPECT_FALSE(xdg_output->IsReady());
+  EXPECT_FALSE(aura_output->IsReady());
+
+  // Flush metrics and the output should enter the ready state.
+  PostToServerAndWait([&test_output](wl::TestWaylandServerThread* server) {
+    test_output->Flush();
+  });
+  EXPECT_TRUE(new_output->IsReady());
+  EXPECT_TRUE(xdg_output->IsReady());
+  EXPECT_TRUE(aura_output->IsReady());
 }
 
 }  // namespace ui

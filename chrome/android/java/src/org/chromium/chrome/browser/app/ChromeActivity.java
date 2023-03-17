@@ -235,6 +235,7 @@ import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -645,8 +646,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     getControlContainerHeightResource());
 
             mBottomContainer.initialize(getBrowserControlsManager(),
-                    getWindowAndroid().getApplicationBottomInsetSupplier(),
-                    mManualFillingComponentSupplier.get().getBottomInsetSupplier());
+                    getWindowAndroid().getApplicationBottomInsetSupplier());
 
             ShareDelegate shareDelegate =
                     new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
@@ -1024,6 +1024,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (tabModelSelector != null && !tabModelSelector.isReparentingInProgress()
                 && tab != null) {
             tab.hide(TabHidingType.ACTIVITY_HIDDEN);
+        }
+
+        if (mNativeInitialized
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.KEEP_ANDROID_TINTED_RESOURCES)
+                && mCompositorViewHolderSupplier.hasValue()) {
+            LayoutManagerImpl layoutManager =
+                    mCompositorViewHolderSupplier.get().getLayoutManager();
+            if (layoutManager != null && layoutManager.getResourceManager() != null) {
+                layoutManager.getResourceManager().clearTintedResourceCache();
+            }
         }
     }
 
@@ -2028,11 +2038,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         compositorViewHolder.setControlContainer(controlContainer);
         compositorViewHolder.setBrowserControlsManager(mBrowserControlsManagerSupplier.get());
         compositorViewHolder.setUrlBar(urlBar);
-        compositorViewHolder.setInsetObserverView(mInsetObserverViewSupplier.get());
+
+        ApplicationViewportInsetSupplier insetSupplier =
+                getWindowAndroid().getApplicationBottomInsetSupplier();
+        insetSupplier.setKeyboardInsetSupplier(
+                mInsetObserverViewSupplier.get().getSupplierForBottomInset());
+        insetSupplier.setKeyboardAccessoryInsetSupplier(
+                mManualFillingComponentSupplier.get().getBottomInsetSupplier());
+        compositorViewHolder.setApplicationViewportInsetSupplier(insetSupplier);
         compositorViewHolder.setAutofillUiBottomInsetSupplier(
                 mManualFillingComponentSupplier.get().getBottomInsetSupplier());
-        compositorViewHolder.setApplicationViewportInsetSupplier(
-                getWindowAndroid().getApplicationBottomInsetSupplier());
 
         compositorViewHolder.setTopUiThemeColorProvider(
                 mRootUiCoordinator.getTopUiThemeColorProvider());
@@ -2566,7 +2581,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (isEnabled) {
                 WebContentsDarkModeMessageController.attemptToShowDialog(this, profile,
                         url.getSpec(), getModalDialogManager(), new SettingsLauncherImpl(),
-                        HelpAndFeedbackLauncherImpl.getInstance());
+                        HelpAndFeedbackLauncherImpl.getForProfile(profile));
             }
 
             return true;
@@ -2596,7 +2611,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // before starting the GoogleHelp.
         String helpContextId = HelpAndFeedbackLauncherImpl.getHelpContextIdFromUrl(
                 this, url, getCurrentTabModel().isIncognito());
-        HelpAndFeedbackLauncherImpl.getInstance().show(this, helpContextId, profile, url);
+        HelpAndFeedbackLauncherImpl.getForProfile(profile).show(this, helpContextId, url);
         RecordUserAction.record(recordAction);
     }
 

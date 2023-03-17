@@ -63,8 +63,10 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="Autofill.CreditCardIssuerId">
-  <variant name=".Amex" summary="American Express."/>
-  <variant name=".CapitalOne" summary="Capital One."/>
+  <variant name="Amex" summary="Card issued by American Express."/>
+  <variant name="CapitalOne" summary="Card issued by Capital One."/>
+  <variant name="Chase" summary="Card issued by Chase."/>
+  <variant name="Marqeta" summary="Card issued by Marqeta."/>
 </variants>
 
 <variants name="Autofill.DialogError">
@@ -375,7 +377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.AddressesSuppressedForDisuse" units="addresses"
-    expires_after="2023-04-16">
+    expires_after="2023-08-20">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -660,7 +662,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.BetterAuth.CardUnmaskDuration.Fido" units="ms"
-    expires_after="2023-09-03">
+    expires_after="2023-09-10">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>autofill-auth-team@google.com</owner>
@@ -1061,7 +1063,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCard.IsEnabled.Startup" enum="BooleanEnabled"
-    expires_after="2023-06-04">
+    expires_after="2023-09-10">
   <owner>jsaul@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1139,38 +1141,36 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Autofill.CreditCard.SelectionLatencySinceShown.AnyCardWithMetadata.{CardMetadataVisible}"
-    units="ms" expires_after="2023-05-01">
-  <owner>siyua@chromium.org</owner>
-  <owner>payments-autofill-team@google.com</owner>
-  <summary>
-    The latency between Autofill credit card suggestion dropdown being shown,
-    and when a suggestion was selected, in milliseconds. Logged immediately when
-    a card suggestion is selected by the user, on the condition that any card
-    (not necessarily the selected card) in the suggestion list has card metadata
-    available (even if the metadata is not shown). This helps identify whether
-    showing the card metadata has potential impact on assisting card selection
-    in general.
-  </summary>
-  <token key="CardMetadataVisible" variants="Autofill.CardMetadataVisible"/>
-</histogram>
-
-<histogram
-    name="Autofill.CreditCard.SelectionLatencySinceShown.SelectedCardWithMetadata.{CardMetadataVisible}{CardIssuerId}"
-    units="ms" expires_after="2023-05-01">
+    name="Autofill.CreditCard.SelectionLatencySinceShown.CardWithIssuerId.{CardMetadataVisible}.{CardIssuerId}"
+    units="ms" expires_after="2024-03-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     The latency between an Autofill credit card suggestion being shown, and when
     it was selected, in milliseconds. Logged immediately when a card is selected
-    by the user, on the condition that the selected card has card metadata
-    available (even if the metadata is not shown). This is also broken down by
-    card issuer id if it is available. This helps identify whether showing the
-    card metadata has potential impact on latency for selecting a particular
-    card.
+    by the user if the card has an issuer id, and it is broken down by whether
+    the selected card has card metadata available. This is also broken down by
+    card issuer id. This helps identify whether showing the card metadata has
+    potential impact on latency for selecting a particular card.
   </summary>
   <token key="CardMetadataVisible" variants="Autofill.CardMetadataVisible"/>
   <token key="CardIssuerId" variants="Autofill.CreditCardIssuerId"/>
+</histogram>
+
+<histogram
+    name="Autofill.CreditCard.SelectionLatencySinceShown.{CardMetadataVisible}"
+    units="ms" expires_after="2024-03-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    The latency between Autofill credit card suggestion dropdown being shown,
+    and when a suggestion was selected, in milliseconds. Logged immediately when
+    a card suggestion is selected by the user. Broken down by whether any card
+    (not necessarily the selected card) in the suggestion list has card metadata
+    available. This helps identify whether showing the card metadata has
+    potential impact on assisting card selection in general.
+  </summary>
+  <token key="CardMetadataVisible" variants="Autofill.CardMetadataVisible"/>
 </histogram>
 
 <histogram
@@ -1380,7 +1380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.DaysSinceLastUse.CreditCard" units="days"
-    expires_after="2023-04-16">
+    expires_after="2023-08-20">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1988,7 +1988,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.GetBrowserFormOfRendererForm.Duration"
-    units="microseconds" expires_after="2023-07-09">
+    units="microseconds" expires_after="2023-09-10">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2002,7 +2002,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.GetRendererFormsOfBrowserForm.Duration"
-    units="microseconds" expires_after="2023-07-09">
+    units="microseconds" expires_after="2023-09-10">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2016,7 +2016,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Duration"
-    units="microseconds" expires_after="2023-07-09">
+    units="microseconds" expires_after="2023-09-10">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2028,7 +2028,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Visits"
-    units="node-visits" expires_after="2023-07-09">
+    units="node-visits" expires_after="2023-09-10">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -4425,7 +4425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.TouchToFill.CreditCard.SelectedIndex" units="index"
-    expires_after="2023-06-01">
+    expires_after="2023-09-10">
   <owner>atsvirhckova@google.com</owner>
   <owner>izuzic@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -4492,7 +4492,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanDuration" units="ms"
-    expires_after="2023-09-03">
+    expires_after="2023-09-10">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -5074,14 +5074,14 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.WebView.AutofillSession" enum="AutofillSessionStates"
     expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the state of an autofill session.</summary>
 </histogram>
 
 <histogram name="Autofill.WebView.AwGIsCurrentService" enum="BooleanYesNo"
     expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Records whether Autofill with Google is the current Android autofill
@@ -5092,14 +5092,14 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.WebView.CreatedByActivityContext"
     enum="BooleanEnabled" expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Whether the autofill is created by activity context.</summary>
 </histogram>
 
 <histogram name="Autofill.WebView.Enabled" enum="BooleanEnabled"
     expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Whether the autofill service is enabled in Android platform.
@@ -5244,7 +5244,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.WebView.ServerPrediction.AwGSuggestionAvailability"
     enum="AutofillAwGSuggestionAvailability" expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Records whether Autofill with Google has suggestions and if the user selects
@@ -5255,7 +5255,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.WebView.ServerPredicton.HasValidServerPrediction"
     enum="BooleanYesNo" expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Records whether the server prediction of any field isn't NO_SERVER_DATA.
@@ -5267,7 +5267,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.WebView.ServerPredicton.PredictionAvailability"
     enum="AutofillServerPredictionAvailability" expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Records whether and when the server prediction response of current autofill
@@ -5280,21 +5280,21 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.WebView.SubmissionSource"
     enum="AutofillSubmissionSource" expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the source of form submission.</summary>
 </histogram>
 
 <histogram name="Autofill.WebView.SuggestionTime" units="ms"
     expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>The time taken to display suggestion.</summary>
 </histogram>
 
 <histogram name="Autofill.WebView.UserChangedAutofilledField"
     enum="BooleanEnabled" expires_after="2023-06-01">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Whether the user changed autofilled field.</summary>
 </histogram>

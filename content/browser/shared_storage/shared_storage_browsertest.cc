@@ -30,7 +30,6 @@
 #include "content/browser/shared_storage/shared_storage_worklet_host_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/private_aggregation_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -4687,7 +4686,8 @@ class SharedStoragePrivateAggregationDisabledBrowserTest
     : public SharedStorageBrowserTestBase {
  public:
   SharedStoragePrivateAggregationDisabledBrowserTest() {
-    scoped_feature_list_.InitAndDisableFeature(content::kPrivateAggregationApi);
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kPrivateAggregationApi);
   }
 
  private:
@@ -4719,7 +4719,7 @@ class SharedStoragePrivateAggregationDisabledForSharedStorageOnlyBrowserTest
  public:
   SharedStoragePrivateAggregationDisabledForSharedStorageOnlyBrowserTest() {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::kPrivateAggregationApi,
+        blink::features::kPrivateAggregationApi,
         {{"enabled_in_shared_storage", "false"}});
   }
 
@@ -4764,7 +4764,8 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
   };
 
   SharedStoragePrivateAggregationEnabledBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(content::kPrivateAggregationApi);
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kPrivateAggregationApi);
   }
 
   void SetUpOnMainThread() override {
@@ -4902,19 +4903,11 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
   EXPECT_CALL(mock_callback(), Run)
       .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
                                     PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+        ASSERT_EQ(request.payload_contents().contributions.size(), 2u);
         EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
         EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
-        EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
-        EXPECT_EQ(budget_key.origin(), a_test_origin_);
-        EXPECT_EQ(budget_key.api(),
-                  PrivateAggregationBudgetKey::Api::kSharedStorage);
-      }))
-      .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
-                                    PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 3);
-        EXPECT_EQ(request.payload_contents().contributions[0].value, 4);
+        EXPECT_EQ(request.payload_contents().contributions[1].bucket, 3);
+        EXPECT_EQ(request.payload_contents().contributions[1].value, 4);
         EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
         EXPECT_EQ(budget_key.origin(), a_test_origin_);
         EXPECT_EQ(budget_key.api(),

@@ -5,7 +5,7 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/gfx/paint_vector_icon.h"
+#include "ui/base/models/image_model.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
@@ -26,11 +26,9 @@ BottomStatusIndicator::BottomStatusIndicator(TappedCallback on_tapped_callback)
 BottomStatusIndicator::~BottomStatusIndicator() = default;
 
 void BottomStatusIndicator::SetIcon(const gfx::VectorIcon& vector_icon,
-                                    AshColorProvider::ContentLayerType type) {
-  SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(
-          vector_icon, AshColorProvider::Get()->GetContentLayerColor(type)));
+                                    ui::ColorId color_id) {
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(vector_icon, color_id));
 }
 
 void BottomStatusIndicator::GetAccessibleNodeData(ui::AXNodeData* node_data) {

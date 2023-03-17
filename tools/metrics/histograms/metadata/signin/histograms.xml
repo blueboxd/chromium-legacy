@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountUserInfoFetchTime" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -218,7 +218,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidDeviceAccountsNumberWhenEnteringFRE"
-    units="count" expires_after="2023-07-09">
+    units="count" expires_after="2023-09-10">
   <owner>bsazonov@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -871,15 +871,6 @@ should be kept to monitor/debug signin Multilogin issues-->
   <summary>Response status received from gaia Multilogin.</summary>
 </histogram>
 
-<histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations"
-    expires_after="M85">
-  <owner>noms@chromium.org</owner>
-  <summary>
-    Count of the ways users interact with the confirmation dialogs of the new
-    web based sign in to Chrome flow (accessed via the one click signin).
-  </summary>
-</histogram>
-
 <histogram name="Signin.Reconciler.AllExternalCcResultCompleted"
     enum="BooleanSuccess" expires_after="never">
 <!-- expires-never: used to detect and debug signin issues -->
@@ -1203,7 +1194,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram base="true" name="Signin.SSOIdentityListRequest.CacheState"
-    enum="SigninSSOIdentityListRequestCacheState" expires_after="2023-04-01">
+    enum="SigninSSOIdentityListRequestCacheState" expires_after="2024-04-01">
 <!-- Name completed by histogram_suffixes name="SigninSSOIdentityListRequestCacheRequestState" -->
 
   <owner>jlebel@chromium.org</owner>
@@ -1216,7 +1207,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram base="true" name="Signin.SSOIdentityListRequest.Duration" units="ms"
-    expires_after="2023-04-01">
+    expires_after="2024-04-01">
 <!-- Name completed by histogram_suffixes name="SigninSSOIdentityListRequestDurationCacheState" -->
 
   <owner>jlebel@chromium.org</owner>
@@ -1229,7 +1220,7 @@ kept as long as profile signout is possible -->
 
 <histogram
     name="Signin.SSOIdentityListRequest.FetchIdentitiesWithCallback.Duration"
-    units="ms" expires_after="2023-04-01">
+    units="ms" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>

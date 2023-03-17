@@ -24,6 +24,7 @@
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/chromeos/events/mojom/modifier_key.mojom-shared.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -948,28 +949,13 @@ EventRewriterChromeOS::GetKeyboardTopRowLayout(
 bool EventRewriterChromeOS::HasAssistantKeyOnKeyboard(
     const InputDevice& keyboard_device,
     bool* has_assistant_key) {
-  const char kDevNameProperty[] = "DEVNAME";
-  std::string dev_name;
-  if (!GetDeviceProperty(keyboard_device.sys_path, kDevNameProperty,
-                         &dev_name) ||
-      dev_name.empty()) {
+  std::unique_ptr<EventDeviceInfo> devinfo =
+      KeyboardCapability::CreateEventDeviceInfoFromInputDevice(keyboard_device);
+  if (!devinfo) {
     return false;
   }
 
-  base::ScopedFD fd(open(dev_name.c_str(), O_RDONLY));
-  if (fd.get() < 0) {
-    LOG(ERROR) << "Cannot open " << dev_name.c_str() << " : " << errno;
-    return false;
-  }
-
-  EventDeviceInfo devinfo;
-  if (!devinfo.Initialize(fd.get(), keyboard_device.sys_path)) {
-    LOG(ERROR) << "Failed to get device information for "
-               << keyboard_device.sys_path.value();
-    return false;
-  }
-
-  *has_assistant_key = devinfo.HasKeyEvent(KEY_ASSISTANT);
+  *has_assistant_key = devinfo->HasKeyEvent(KEY_ASSISTANT);
   return true;
 }
 
@@ -1290,6 +1276,18 @@ bool EventRewriterChromeOS::ShouldRemapToRightClick(
   *matched_mask = 0;
   *matched_alt_deprecation = false;
 
+  // If currently only mouse left button is still pressed, while Alt or Search
+  // is not, then we need to look deeper. Here we piggyback on an existing
+  // instance variable `pressed_device_ids_` to check whether the previous
+  // remapped event is a remapped mouse right button press event. If yes,
+  // then even currently the Alt or Search is not pressed, we still proceed to
+  // remap to a mouse right button event. Also, in this case, this event
+  // has to be a release event. this change is for regressions such as:
+  // https://crbug.com/1399284, https://crbug.com/1417079
+  const bool release_without_modifier =
+      AreFlagsSet(flags, EF_LEFT_MOUSE_BUTTON) &&
+      pressed_device_ids_.count(mouse_event.source_device_id()) &&
+      mouse_event.type() == ET_MOUSE_RELEASED;
   // TODO(crbug.com/1179893): When enabling the deprecate alt click flag by
   // default, decide whether kUseSearchClickForRightClick being disabled
   // should be able to override it.
@@ -1300,6 +1298,8 @@ bool EventRewriterChromeOS::ShouldRemapToRightClick(
   if (use_search_key) {
     if (AreFlagsSet(flags, kSearchLeftButton)) {
       *matched_mask = kSearchLeftButton;
+    } else if (release_without_modifier) {
+      *matched_mask = kSearchLeftButton;
     } else if (AreFlagsSet(flags, kAltLeftButton) &&
                is_alt_down_remapping_enabled_) {
       // When the alt variant is deprecated, report when it would have matched.
@@ -1308,8 +1308,13 @@ bool EventRewriterChromeOS::ShouldRemapToRightClick(
            pressed_device_ids_.count(mouse_event.source_device_id())) &&
           IsFromTouchpadDevice(mouse_event);
     }
-  } else {
-    if (AreFlagsSet(flags, kAltLeftButton) && is_alt_down_remapping_enabled_) {
+  } else if (is_alt_down_remapping_enabled_) {
+    // If currently both Alt key and mouse left button are still pressed,
+    // then this would be an easy case, let's still proceed to remap it
+    // to a mouse right button press or release event.
+    if (AreFlagsSet(flags, kAltLeftButton)) {
+      *matched_mask = kAltLeftButton;
+    } else if (release_without_modifier) {
       *matched_mask = kAltLeftButton;
     }
   }
@@ -1874,7 +1879,8 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const KeyEvent& key_event,
     //  No      System   No                 Fn -> System
     //  Yes     Fn       No                 Unchanged
     //  Yes     System   No                 Unchanged
-    if (ForceTopRowAsFunctionKeys() == flip_remapping) {
+    if (ForceTopRowAsFunctionKeys(key_event.source_device_id()) ==
+        flip_remapping) {
       // Rewrite the F1-F12 keys on a Chromebook keyboard to system keys.
       // This is the original Chrome OS layout.
       static const KeyboardRemapping kFkeysToSystemKeys1[] = {
@@ -2270,7 +2276,8 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForCustomLayout(
   // If the scan code appears in the top row mapping it is an action key.
   const bool is_action_key = (key_iter != scan_code_map.end());
   if (is_action_key) {
-    if (flip_remapping != ForceTopRowAsFunctionKeys()) {
+    if (flip_remapping !=
+        ForceTopRowAsFunctionKeys(key_event.source_device_id())) {
       ApplyRemapping(key_iter->second, state);
     }
 
@@ -2419,7 +2426,8 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
                                  std::size(kActionToFnKeys))) {
     // Incoming key code is an action key. Check if it needs to be mapped back
     // to its corresponding function key.
-    if (flip_remapping != ForceTopRowAsFunctionKeys()) {
+    if (flip_remapping !=
+        ForceTopRowAsFunctionKeys(key_event.source_device_id())) {
       // On Drallion, mirror mode toggle is on its own key so don't remap it.
       if (layout == KeyboardCapability::KeyboardTopRowLayout::
                         kKbdTopRowLayoutDrallion &&
@@ -2445,20 +2453,19 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
       state->code = DomCode::F12;
       state->key = DomKey::F12;
     }
-    // At this point, the search modifier flag should be cleared if the
-    // remapping was supposed to be flipped.
+    // If the mapping should be flipped when command is down, the flag needs to
+    // be cleared.
     if (flip_remapping) {
       state->flags &= ~EF_COMMAND_DOWN;
     }
-
     return true;
   }
 
   return false;
 }
 
-bool EventRewriterChromeOS::ForceTopRowAsFunctionKeys() const {
-  return delegate_ && delegate_->TopRowKeysAreFunctionKeys();
+bool EventRewriterChromeOS::ForceTopRowAsFunctionKeys(int device_id) const {
+  return delegate_ && delegate_->TopRowKeysAreFunctionKeys(device_id);
 }
 
 KeyboardCapability::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(

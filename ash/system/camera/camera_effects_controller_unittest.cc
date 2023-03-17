@@ -9,6 +9,7 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -46,17 +47,16 @@ class CameraEffectsControllerTest : public NoSessionAshTestBase {
   }
 
   // Sets background blur state.
-  void SetBackgroundBlurEffectState(int state) {
+  void SetBackgroundBlurEffectState(absl::optional<int> state) {
     camera_effects_controller_->OnEffectControlActivated(
-        static_cast<int>(cros::mojom::CameraEffect::kBackgroundBlur), state);
+        VcEffectId::kBackgroundBlur, state);
   }
 
   // Gets the state of the background blur effect from the effect's host,
   // `camera_effects_controller_`.
   int GetBackgroundBlurEffectState() {
     absl::optional<int> effect_state =
-        camera_effects_controller_->GetEffectState(
-            static_cast<int>(cros::mojom::CameraEffect::kBackgroundBlur));
+        camera_effects_controller_->GetEffectState(VcEffectId::kBackgroundBlur);
     DCHECK(effect_state.has_value());
     return effect_state.value();
   }
@@ -69,12 +69,19 @@ class CameraEffectsControllerTest : public NoSessionAshTestBase {
         ->GetInteger(prefs::kBackgroundBlur);
   }
 
+  // Toggles portrait relighting state.
+  void TogglePortraitRelightingEffectState() {
+    // The `state` argument doesn't matter for toggle effects.
+    camera_effects_controller_->OnEffectControlActivated(
+        VcEffectId::kPortraitRelighting, /*state=*/absl::nullopt);
+  }
+
   // Gets the state of the portrait relighting effect from the effect's host,
   // `camera_effects_controller_`.
   bool GetPortraitRelightingEffectState() {
     absl::optional<int> effect_state =
         camera_effects_controller_->GetEffectState(
-            static_cast<int>(cros::mojom::CameraEffect::kPortraitRelight));
+            VcEffectId::kPortraitRelighting);
     DCHECK(effect_state.has_value());
     return static_cast<bool>(effect_state.value());
   }
@@ -134,32 +141,27 @@ TEST_F(CameraEffectsControllerTest, BackgroundBlurOnEffectControlActivated) {
         CameraEffectsController::BackgroundBlurEffectState::kMedium,
         CameraEffectsController::BackgroundBlurEffectState::kHeavy,
         CameraEffectsController::BackgroundBlurEffectState::kMaximum}) {
-    camera_effects_controller_->OnEffectControlActivated(
-        static_cast<int>(cros::mojom::CameraEffect::kBackgroundBlur), state);
+    SetBackgroundBlurEffectState(state);
     EXPECT_EQ(GetBackgroundBlurPref(), state);
     EXPECT_EQ(GetBackgroundBlurEffectState(), state);
   }
 
   // Invalid background blur effect state should set the state to kOff.
-  camera_effects_controller_->OnEffectControlActivated(
-      static_cast<int>(cros::mojom::CameraEffect::kBackgroundBlur),
+  SetBackgroundBlurEffectState(
       static_cast<int>(
           CameraEffectsController::BackgroundBlurEffectState::kMaximum) +
-          1);
+      1);
   EXPECT_EQ(GetBackgroundBlurPref(),
             CameraEffectsController::BackgroundBlurEffectState::kOff);
   EXPECT_EQ(GetBackgroundBlurEffectState(),
             CameraEffectsController::BackgroundBlurEffectState::kOff);
 
   // Set the background blur state to be kMaximum.
-  camera_effects_controller_->OnEffectControlActivated(
-      static_cast<int>(cros::mojom::CameraEffect::kBackgroundBlur),
+  SetBackgroundBlurEffectState(
       CameraEffectsController::BackgroundBlurEffectState::kMaximum);
   // Setting the background blur state to null will reset the effects as
   // kOff.
-  camera_effects_controller_->OnEffectControlActivated(
-      static_cast<int>(cros::mojom::CameraEffect::kBackgroundBlur),
-      absl::nullopt);
+  SetBackgroundBlurEffectState(absl::nullopt);
   EXPECT_EQ(GetBackgroundBlurPref(),
             CameraEffectsController::BackgroundBlurEffectState::kOff);
   EXPECT_EQ(GetBackgroundBlurEffectState(),
@@ -174,25 +176,18 @@ TEST_F(CameraEffectsControllerTest,
   EXPECT_FALSE(GetPortraitRelightingEffectState());
   EXPECT_FALSE(GetPortraitRelightingPref());
 
-  // Activating the effect should toggle it to "true." The `value` argument
-  // doesn't matter for toggle effects.
-  camera_effects_controller_->OnEffectControlActivated(
-      static_cast<int>(cros::mojom::CameraEffect::kPortraitRelight),
-      absl::nullopt);
+  // Activating the effect should toggle it to "true."
+  TogglePortraitRelightingEffectState();
   EXPECT_TRUE(GetPortraitRelightingEffectState());
   EXPECT_TRUE(GetPortraitRelightingPref());
 
   // Another toggle should set it to "false."
-  camera_effects_controller_->OnEffectControlActivated(
-      static_cast<int>(cros::mojom::CameraEffect::kPortraitRelight),
-      absl::nullopt);
+  TogglePortraitRelightingEffectState();
   EXPECT_FALSE(GetPortraitRelightingEffectState());
   EXPECT_FALSE(GetPortraitRelightingPref());
 
   // And one more toggle should set it back to "true."
-  camera_effects_controller_->OnEffectControlActivated(
-      static_cast<int>(cros::mojom::CameraEffect::kPortraitRelight),
-      absl::nullopt);
+  TogglePortraitRelightingEffectState();
   EXPECT_TRUE(GetPortraitRelightingEffectState());
   EXPECT_TRUE(GetPortraitRelightingPref());
 }
@@ -248,6 +243,21 @@ TEST_F(CameraEffectsControllerTest, PrefOnCameraEffectChanged) {
             CameraEffectsController::BackgroundBlurEffectState::kOff);
   EXPECT_FALSE(GetPortraitRelightingEffectState());
   EXPECT_FALSE(GetPortraitRelightingPref());
+}
+
+TEST_F(CameraEffectsControllerTest, ResourceDependencyFlags) {
+  SimulateUserLogin("testuser@gmail.com");
+
+  // Makes sure that all registered effects have the correct dependency flag.
+  auto* background_blur = camera_effects_controller()->GetEffect(0);
+  ASSERT_EQ(VcEffectId::kBackgroundBlur, background_blur->id());
+  EXPECT_EQ(VcHostedEffect::ResourceDependency::kCamera,
+            background_blur->dependency_flags());
+
+  auto* portrait_relight = camera_effects_controller()->GetEffect(1);
+  ASSERT_EQ(VcEffectId::kPortraitRelighting, portrait_relight->id());
+  EXPECT_EQ(VcHostedEffect::ResourceDependency::kCamera,
+            portrait_relight->dependency_flags());
 }
 
 }  // namespace

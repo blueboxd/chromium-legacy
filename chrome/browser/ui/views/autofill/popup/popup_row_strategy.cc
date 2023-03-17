@@ -78,6 +78,7 @@ constexpr int kAdjacentLabelsVerticalSpacing = 2;
 
 // The default icon size used in the suggestion drop down.
 constexpr int kIconSize = 16;
+constexpr int kTrashCanLightIconSize = 12;
 
 // The icon size used in the suggestion dropdown for displaying the Google
 // Password Manager icon in the Manager Passwords entry.
@@ -232,6 +233,29 @@ void AddSpacerWithSize(views::View& view,
                         /*use_min_size=*/true);
 }
 
+// TODO(crbug.com/1417187): Add ASCII art to explain the reason for the
+// arithmetic below.
+gfx::Insets GetMarginsForContentCell(bool has_control_element) {
+  int left_margin = PopupBaseView::GetHorizontalMargin();
+  int right_margin = left_margin;
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillShowAutocompleteDeleteButton)) {
+    // If the feature is enabled, then the row already adds some extra
+    // horizontal margin on the left - deduct that.
+    left_margin = std::max(
+        0, left_margin - ChromeLayoutProvider::Get()->GetDistanceMetric(
+                             DISTANCE_CONTENT_LIST_VERTICAL_SINGLE));
+
+    // If there is no control element, then this is the only cell and the same
+    // correction needs to be made on the right side, too.
+    if (!has_control_element) {
+      right_margin = left_margin;
+    }
+  }
+  return gfx::Insets::TLBR(0, left_margin, 0, right_margin);
+}
+
 // Creates the table in which all the Autofill suggestion content apart from
 // leading and trailing icons is contained and adds it to `content_view`.
 // It registers `main_text_label`, `minor_text_label`, and `description_label`
@@ -316,10 +340,14 @@ void AddSuggestionContentToView(
     std::unique_ptr<views::Label> description_label,
     std::vector<std::unique_ptr<views::View>> subtext_views,
     PopupCellView& content_view) {
+  bool has_control_element =
+      suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillShowAutocompleteDeleteButton);
   views::BoxLayout& layout =
       *content_view.SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets::VH(0, PopupBaseView::GetHorizontalMargin())));
+          GetMarginsForContentCell(has_control_element)));
 
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -536,7 +564,8 @@ DeleteButtonAccessibilityDelegate::DeleteButtonAccessibilityDelegate(
 void DeleteButtonAccessibilityDelegate::GetAccessibleNodeData(
     bool is_selected,
     ui::AXNodeData* node_data) const {
-  node_data->role = ax::mojom::Role::kButton;
+  node_data->role = ax::mojom::Role::kMenuItem;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, is_selected);
   node_data->SetNameChecked(voice_over_string_);
 }
 
@@ -672,8 +701,8 @@ std::unique_ptr<PopupCellView> PopupSuggestionStrategy::CreateControl() {
     view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
         gfx::Insets::VH(0, kAutocompleteDeleteIconHorizontalPadding)));
-    views::ImageView* delete_icon =
-        view->AddChildView(ImageViewFromVectorIcon(kTrashCanIcon));
+    views::ImageView* delete_icon = view->AddChildView(
+        ImageViewFromVectorIcon(kTrashCanLightIcon, kTrashCanLightIconSize));
     // The tooltip is set for both the cell and the image to ensure that it is
     // also shown over the padding area.
     delete_icon->SetTooltipText(l10n_util::GetStringUTF16(
@@ -800,7 +829,7 @@ std::unique_ptr<PopupCellView> PopupFooterStrategy::CreateContent() {
   views::BoxLayout* layout_manager =
       view->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets::VH(0, PopupBaseView::GetHorizontalMargin())));
+          GetMarginsForContentCell(/*has_control_element=*/false)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);

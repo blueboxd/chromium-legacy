@@ -82,14 +82,6 @@ password_manager::PasswordForm GenerateFormFromCredential(
   return form;
 }
 
-// Check if notes was modified for a specified |form| with |new_note|.
-IsPasswordNoteChanged IsNoteChanged(const password_manager::PasswordForm& form,
-                                    const std::u16string& new_note) {
-  return IsPasswordNoteChanged(
-      form.GetNoteWithEmptyUniqueDisplayName().value_or(std::u16string()) !=
-      new_note);
-}
-
 }  // namespace
 
 namespace password_manager {
@@ -215,18 +207,6 @@ SavedPasswordsPresenter::GetExpectedAddResult(
   return AddResult::kConflictInProfileAndAccountStore;
 }
 
-void SavedPasswordsPresenter::AddCredentialAsync(
-    const CredentialUIEntry& credential,
-    password_manager::PasswordForm::Type type,
-    base::OnceClosure completion) {
-  DCHECK_EQ(GetExpectedAddResult(credential), AddResult::kSuccess);
-
-  UnblocklistBothStores(credential);
-  PasswordForm form = GenerateFormFromCredential(credential, type);
-
-  GetStoreFor(form).AddLogin(form, base::BindOnce(std::move(completion)));
-}
-
 bool SavedPasswordsPresenter::AddCredential(
     const CredentialUIEntry& credential,
     password_manager::PasswordForm::Type type) {
@@ -262,24 +242,35 @@ void SavedPasswordsPresenter::AddCredentials(
     return;
   }
 
-  if (credentials.size() == 1) {
-    AddCredentialAsync(std::move(credentials[0]), type, std::move(completion));
+  std::vector<PasswordForm> password_forms;
+  base::ranges::transform(credentials, std::back_inserter(password_forms),
+                          [&](const CredentialUIEntry& credential) {
+                            return GenerateFormFromCredential(credential, type);
+                          });
+
+  CHECK(base::ranges::all_of(password_forms, [&](const PasswordForm& form) {
+    return password_forms[0].in_store == form.in_store;
+  }));
+
+  GetStoreFor(password_forms[0])
+      .AddLogins(password_forms, std::move(completion));
+}
+
+void SavedPasswordsPresenter::UpdatePasswordForms(
+    const std::vector<PasswordForm>& password_forms,
+    base::OnceClosure completion) {
+  if (password_forms.empty()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(completion));
     return;
   }
 
-  // To avoid multiple updates for the observers we remove them at the
-  // beginning.
-  RemoveObservers();
+  CHECK(base::ranges::all_of(password_forms, [&](const PasswordForm& form) {
+    return password_forms[0].in_store == form.in_store;
+  }));
 
-  // Reinitialize presenter after all add operations are complete.
-  base::RepeatingClosure completion_barrier_closure = base::BarrierClosure(
-      credentials.size(), base::BindOnce(&SavedPasswordsPresenter::Init,
-                                         weak_ptr_factory_.GetWeakPtr())
-                              .Then(std::move(completion)));
-
-  for (const CredentialUIEntry& credential : credentials) {
-    AddCredentialAsync(credential, type, completion_barrier_closure);
-  }
+  GetStoreFor(password_forms[0])
+      .UpdateLogins(password_forms, std::move(completion));
 }
 
 SavedPasswordsPresenter::EditResult
@@ -295,9 +286,9 @@ SavedPasswordsPresenter::EditSavedCredentials(
                                      original_credential.username);
   IsPasswordChanged password_changed(updated_credential.password !=
                                      original_credential.password);
-  IsPasswordNoteChanged note_changed =
-      IsNoteChanged(forms_to_change[0], updated_credential.note);
-
+  IsPasswordNoteChanged note_changed(
+      forms_to_change[0].GetNoteWithEmptyUniqueDisplayName() !=
+      updated_credential.note);
   bool issues_changed =
       updated_credential.password_issues != forms_to_change[0].password_issues;
 

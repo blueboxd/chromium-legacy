@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 
 using bookmarks::BookmarkModel;
@@ -87,7 +88,7 @@ void PopulateBookmarkTreeNode(
 
   if (bookmarks::IsDescendantOf(node, managed->managed_node())) {
     out_bookmark_tree_node->unmodifiable =
-        api::bookmarks::BOOKMARK_TREE_NODE_UNMODIFIABLE_MANAGED;
+        api::bookmarks::BookmarkTreeNodeUnmodifiable::kManaged;
   }
 
   if (recurse && node->is_folder()) {
@@ -139,7 +140,7 @@ bool RemoveNode(BookmarkModel* model,
     return false;
   }
 
-  model->Remove(node);
+  model->Remove(node, bookmarks::metrics::BookmarkEditSource::kExtension);
   return true;
 }
 

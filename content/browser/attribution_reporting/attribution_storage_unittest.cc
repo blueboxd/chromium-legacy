@@ -45,6 +45,7 @@
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/store_source_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/attribution_reporting/test/configurable_storage_delegate.h"
 #include "content/public/browser/attribution_data_model.h"
@@ -73,7 +74,6 @@ using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 
 using AttributionFilterData = ::attribution_reporting::FilterData;
-using AttributionFilters = ::attribution_reporting::Filters;
 
 using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::SuitableOrigin;
@@ -1181,7 +1181,7 @@ TEST_F(AttributionStorageTest,
 
   delegate()->set_randomized_response(
       std::vector<AttributionStorageDelegate::FakeReport>{});
-  AttributionStorage::StoreSourceResult result = storage()->StoreSource(
+  StoreSourceResult result = storage()->StoreSource(
       TestAggregatableSourceProvider().GetBuilder().Build());
   EXPECT_EQ(result.status, StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(absl::nullopt);
@@ -1432,7 +1432,7 @@ TEST_F(AttributionStorageTest,
               {net::SchemefulSite::Deserialize("https://a.example/")})
           .SetSourceType(SourceType::kNavigation)
           .Build());
-  AttributionStorage::StoreSourceResult result = storage()->StoreSource(
+  StoreSourceResult result = storage()->StoreSource(
       SourceBuilder()
           .SetDestinationSites(
               {net::SchemefulSite::Deserialize("https://b.example")})
@@ -1584,8 +1584,7 @@ TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
           {.trigger_data = 7,
            .trigger_time = fake_trigger_time,
            .report_time = fake_report_time}});
-  AttributionStorage::StoreSourceResult result =
-      storage()->StoreSource(builder.Build());
+  StoreSourceResult result = storage()->StoreSource(builder.Build());
   EXPECT_EQ(result.status, StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(absl::nullopt);
 
@@ -2219,44 +2218,48 @@ TEST_F(AttributionStorageTest, AggregatableDedupKeysFiltering) {
       {
           "filter mismatch",
           attribution_reporting::AggregatableDedupKey(
-              /*dedup_key=*/123, FilterPair{.positive = AttributionFilters({{
+              /*dedup_key=*/123, FilterPair(/*positive=*/{{
                                                 {"abc", {"456"}},
-                                            }})}),
+                                            }},
+                                            /*negative=*/{})),
           false,
       },
       {
           "filter match",
           attribution_reporting::AggregatableDedupKey(
-              /*dedup_key=*/123, FilterPair{.positive = AttributionFilters({{
+              /*dedup_key=*/123, FilterPair(/*positive=*/{{
                                                 {"abc", {"123"}},
-                                            }})}),
+                                            }},
+                                            /*negative=*/{})),
           true,
       },
       {
           "negated filters match",
           attribution_reporting::AggregatableDedupKey(
               /*dedup_key=*/123,
-              FilterPair{.negative =
-                             attribution_reporting::FiltersForSourceType(
-                                 SourceType::kNavigation)}),
+              FilterPair(
+                  /*positive=*/{},
+                  /*negative=*/attribution_reporting::FiltersForSourceType(
+                      SourceType::kNavigation))),
           false,
       },
       {
           "negated filters mismatch",
           attribution_reporting::AggregatableDedupKey(
               /*dedup_key=*/123,
-              FilterPair{.negative =
-                             attribution_reporting::FiltersForSourceType(
-                                 SourceType::kEvent)}),
+              FilterPair(
+                  /*positive=*/{},
+                  /*negative=*/attribution_reporting::FiltersForSourceType(
+                      SourceType::kEvent))),
           true,
       },
       {
           "null dedup key",
           attribution_reporting::AggregatableDedupKey(
-              /*dedup_key=*/absl::nullopt,
-              FilterPair{.positive = AttributionFilters({{
-                             {"abc", {"123"}},
-                         }})}),
+              /*dedup_key=*/absl::nullopt, FilterPair(/*positive=*/{{
+                                                          {"abc", {"123"}},
+                                                      }},
+                                                      /*negative=*/{})),
           false,
       },
   };
@@ -3013,9 +3016,10 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
                   /*data=*/11,
                   /*priority=*/12,
                   /*dedup_key=*/13,
-                  FilterPair{.positive =
-                                 attribution_reporting::FiltersForSourceType(
-                                     SourceType::kEvent)})},
+                  FilterPair(
+                      /*positive=*/attribution_reporting::FiltersForSourceType(
+                          SourceType::kEvent),
+                      /*negative=*/{}))},
               /*aggregatable_trigger_data=*/{},
               /*aggregatable_values=*/
               attribution_reporting::AggregatableValues(),
@@ -3048,33 +3052,32 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           /*data=*/11,
           /*priority=*/12,
           /*dedup_key=*/13,
-          FilterPair{.positive = AttributionFilters({{
+          FilterPair(/*positive=*/{{
                          {"abc", {"456"}},
-                     }})}),
+                     }},
+                     /*negative=*/{})),
 
       // Filters match, but negated filters do not.
       attribution_reporting::EventTriggerData(
           /*data=*/21,
           /*priority=*/22,
           /*dedup_key=*/23,
-          FilterPair{.positive = AttributionFilters({{
+          FilterPair(/*positive=*/{{
                          {"abc", {"123"}},
-                     }}),
-                     .negative = AttributionFilters({{
+                     }},
+                     /*negative=*/{{
                          {"source_type", {"navigation"}},
-                     }})}),
+                     }})),
 
       // Filters and negated filters match.
       attribution_reporting::EventTriggerData(
           /*data=*/31,
           /*priority=*/32,
           /*dedup_key=*/33,
-          FilterPair{.positive = AttributionFilters({{
+          FilterPair(/*positive=*/{{
                          {"abc", {"123"}},
-                     }}),
-                     .negative = AttributionFilters({{
-                         {"source_type", {"event"}},
-                     }})}),
+                     }},
+                     /*negative=*/{{{"source_type", {"event"}}}})),
 
       // Filters and negated filters match, but not the first event
       // trigger to match.
@@ -3082,12 +3085,12 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           /*data=*/41,
           /*priority=*/42,
           /*dedup_key=*/43,
-          FilterPair{.positive = AttributionFilters({{
+          FilterPair(/*positive=*/{{
                          {"abc", {"123"}},
-                     }}),
-                     .negative = AttributionFilters({{
+                     }},
+                     /*negative=*/{{
                          {"source_type", {"event"}},
-                     }})}),
+                     }})),
   };
 
   EXPECT_EQ(
@@ -3145,9 +3148,10 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   AttributionTrigger trigger1(
       /*reporting_origin=*/origin,
       attribution_reporting::TriggerRegistration(
-          FilterPair{.positive = AttributionFilters({{
+          FilterPair(/*positive=*/{{
                          {"abc", {"456"}},
-                     }})},
+                     }},
+                     /*negative=*/{}),
           /*debug_key=*/absl::nullopt,
           /*aggregatable_dedup_keys=*/{}, event_triggers,
           aggregatable_trigger_data, aggregatable_values,
@@ -3159,9 +3163,10 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   AttributionTrigger trigger2(
       /*reporting_origin=*/origin,
       attribution_reporting::TriggerRegistration(
-          FilterPair{.positive = AttributionFilters({{
+          FilterPair(/*positive=*/{{
                          {"abc", {"123"}},
-                     }})},
+                     }},
+                     /*negative=*/{}),
           /*debug_key=*/absl::nullopt,
           /*aggregatable_dedup_keys=*/{}, event_triggers,
           aggregatable_trigger_data, aggregatable_values,
@@ -3173,8 +3178,9 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   AttributionTrigger trigger3(
       /*reporting_origin=*/origin,
       attribution_reporting::TriggerRegistration(
-          FilterPair{.negative = attribution_reporting::FiltersForSourceType(
-                         SourceType::kNavigation)},
+          FilterPair(/*positive=*/{},
+                     /*negative=*/attribution_reporting::FiltersForSourceType(
+                         SourceType::kNavigation)),
           /*debug_key=*/absl::nullopt,
           /*aggregatable_dedup_keys=*/{}, event_triggers,
           aggregatable_trigger_data, aggregatable_values,

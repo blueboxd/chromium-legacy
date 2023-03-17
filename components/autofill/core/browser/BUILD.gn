@@ -250,6 +250,8 @@ static_library("browser") {
     "logging/log_receiver.h",
     "logging/log_router.cc",
     "logging/log_router.h",
+    "logging/text_log_receiver.cc",
+    "logging/text_log_receiver.h",
     "manual_testing_profile_import.cc",
     "manual_testing_profile_import.h",
     "merchant_promo_code_manager.cc",
@@ -314,6 +316,8 @@ static_library("browser") {
     "payments/card_unmask_challenge_option.h",
     "payments/card_unmask_delegate.cc",
     "payments/card_unmask_delegate.h",
+    "payments/client_behavior_constants.h",
+    "payments/constants.h",
     "payments/credit_card_access_manager.cc",
     "payments/credit_card_access_manager.h",
     "payments/credit_card_cvc_authenticator.cc",
@@ -582,7 +586,7 @@ static_library("browser") {
     "//components/language/core/browser",
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
-    "//components/os_crypt",
+    "//components/os_crypt/sync",
     "//components/policy/core/browser",
     "//components/policy/core/common",
     "//components/pref_registry",
@@ -667,8 +671,6 @@ static_library("test_support") {
     "geo/test_region_data_loader.h",
     "logging/stub_log_manager.cc",
     "logging/stub_log_manager.h",
-    "logging/text_log_receiver.cc",
-    "logging/text_log_receiver.h",
     "metrics/autofill_metrics_test_base.cc",
     "metrics/autofill_metrics_test_base.h",
     "metrics/ukm_metrics_test_utils.cc",
@@ -746,8 +748,8 @@ static_library("test_support") {
     "//components/autofill/core/common",
     "//components/feature_engagement",
     "//components/leveldb_proto",
-    "//components/os_crypt",
-    "//components/os_crypt:test_support",
+    "//components/os_crypt/sync",
+    "//components/os_crypt/sync:test_support",
     "//components/pref_registry",
     "//components/prefs:test_support",
     "//components/signin/public/identity_manager:test_support",
@@ -915,6 +917,7 @@ source_set("unit_tests") {
     "metrics/autofill_metrics_unittest.cc",
     "metrics/form_events/address_form_event_logger_unittest.cc",
     "metrics/form_events/form_event_logger_base_unittest.cc",
+    "metrics/payments/card_metadata_metrics_unittest.cc",
     "metrics/payments/iban_metrics_unittest.cc",
     "metrics/payments/offers_metrics_unittest.cc",
     "metrics/payments/wallet_usage_data_metrics_unittest.cc",
@@ -1036,8 +1039,8 @@ source_set("unit_tests") {
     "//components/leveldb_proto",
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
-    "//components/os_crypt",
-    "//components/os_crypt:test_support",
+    "//components/os_crypt/sync",
+    "//components/os_crypt/sync:test_support",
     "//components/policy/core/common",
     "//components/prefs:test_support",
     "//components/resources",
@@ -1098,7 +1101,7 @@ fuzzer_test("form_structure_fuzzer") {
   dict = "form_structure_fuzzer.dict"
 }
 
-if (use_libfuzzer) {
+if (use_fuzzing_engine_with_lpm) {
   fuzzer_test("form_structure_process_query_response_fuzzer") {
     sources = [ "form_structure_process_query_response_fuzzer.cc" ]
     deps = [

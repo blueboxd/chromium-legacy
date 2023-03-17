@@ -156,9 +156,13 @@ void AddContentColors(ui::ColorMixer& mixer,
       ui::SetAlpha(kColorAshAppStateIndicatorColor, kDisabledColorOpacity);
   mixer[kColorAshShelfHandleColor] = {cros_tokens::kIconColorSecondary};
   mixer[kColorAshShelfTooltipBackgroundColor] = {
-      kColorAshInvertedShieldAndBase80};
+      chromeos::features::IsJellyEnabled()
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysOnSurface)
+          : kColorAshInvertedShieldAndBase80};
   mixer[kColorAshShelfTooltipForegroundColor] = {
-      cros_tokens::kTextColorPrimaryInverted};
+      chromeos::features::IsJellyEnabled()
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysInverseOnSurface)
+          : cros_tokens::kTextColorPrimaryInverted};
   mixer[kColorAshSliderColorActive] = {kColorAshTextColorURL};
   mixer[kColorAshSliderColorInactive] = {kColorAshScrollBarColor};
   mixer[kColorAshRadioColorActive] = {kColorAshTextColorURL};
@@ -594,6 +598,10 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[kColorAshDragImageOverflowBadgeTextColor] =
       use_dark_color ? ui::ColorTransform(gfx::kGoogleGrey900)
                      : ui::ColorTransform(gfx::kGoogleGrey200);
+
+  mixer[kColorAshFolderItemCountBackgroundColor] =
+      use_dark_color ? ui::ColorTransform(gfx::kGoogleBlue300)
+                     : ui::ColorTransform(gfx::kGoogleBlue600);
 }
 
 }  // namespace ash

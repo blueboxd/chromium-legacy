@@ -18,7 +18,6 @@
 #include "third_party/webrtc/api/video_codecs/video_decoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
-#include "third_party/webrtc/media/engine/encoder_simulcast_proxy.h"
 #include "third_party/webrtc/media/engine/internal_decoder_factory.h"
 #include "third_party/webrtc/media/engine/internal_encoder_factory.h"
 #include "third_party/webrtc/media/engine/simulcast_encoder_adapter.h"
@@ -31,10 +30,6 @@
 namespace blink {
 
 namespace {
-// Kill switch to disable WebRTC Media Capabilities stats collection.
-BASE_FEATURE(kWebrtcMediaCapabilitiesStatsCollection,
-             "WebrtcMediaCapabilitiesStatsCollection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 template <typename Factory>
 bool IsFormatSupported(const Factory* factory,
@@ -73,17 +68,6 @@ std::unique_ptr<webrtc::VideoDecoder> Wrap(
                           : std::move(software_decoder);
 }
 
-std::unique_ptr<webrtc::VideoEncoder> Wrap(
-    std::unique_ptr<webrtc::VideoEncoder> software_encoder,
-    std::unique_ptr<webrtc::VideoEncoder> hardware_encoder) {
-  if (software_encoder && hardware_encoder) {
-    return webrtc::CreateVideoEncoderSoftwareFallbackWrapper(
-        std::move(software_encoder), std::move(hardware_encoder));
-  }
-  return hardware_encoder ? std::move(hardware_encoder)
-                          : std::move(software_encoder);
-}
-
 // This class combines a hardware factory with the internal factory and adds
 // internal SW codecs, simulcast, and SW fallback wrappers.
 class EncoderAdapter : public webrtc::VideoEncoderFactory {
@@ -120,41 +104,19 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
     if (!supported_in_software && !supported_in_hardware)
       return nullptr;
 
-    std::unique_ptr<webrtc::VideoEncoder> encoder;
-    if (base::EqualsCaseInsensitiveASCII(format.name.c_str(),
-                                         cricket::kVp9CodecName) ||
-        base::EqualsCaseInsensitiveASCII(format.name.c_str(),
-                                         cricket::kAv1CodecName)) {
-      // For VP9 and AV1 we don't use simulcast.
-      std::unique_ptr<webrtc::VideoEncoder> software_encoder =
-          supported_in_software
-              ? software_encoder_factory_.CreateVideoEncoder(format)
-              : nullptr;
-      std::unique_ptr<webrtc::VideoEncoder> hardware_encoder =
-          supported_in_hardware
-              ? hardware_encoder_factory_->CreateVideoEncoder(format)
-              : nullptr;
+    VideoEncoderFactory* primary_factory = supported_in_hardware
+                                               ? hardware_encoder_factory_.get()
+                                               : &software_encoder_factory_;
+    VideoEncoderFactory* fallback_factory =
+        supported_in_hardware && supported_in_software
+            ? &software_encoder_factory_
+            : nullptr;
+    std::unique_ptr<webrtc::VideoEncoder> encoder =
+        std::make_unique<webrtc::SimulcastEncoderAdapter>(
+            primary_factory, fallback_factory, format);
 
-      encoder = Wrap(std::move(software_encoder), std::move(hardware_encoder));
-    } else {
-      VideoEncoderFactory* primary_factory =
-          supported_in_hardware ? hardware_encoder_factory_.get()
-                                : &software_encoder_factory_;
-      VideoEncoderFactory* fallback_factory =
-          supported_in_hardware && supported_in_software
-              ? &software_encoder_factory_
-              : nullptr;
-      encoder = std::make_unique<webrtc::SimulcastEncoderAdapter>(
-          primary_factory, fallback_factory, format);
-    }
-
-    if (encoder &&
-        base::FeatureList::IsEnabled(kWebrtcMediaCapabilitiesStatsCollection)) {
-      return std::make_unique<StatsCollectingEncoder>(
-          format, std::move(encoder), stats_callback_);
-    } else {
-      return encoder;
-    }
+    return std::make_unique<StatsCollectingEncoder>(format, std::move(encoder),
+                                                    stats_callback_);
   }
 
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override {
@@ -208,14 +170,9 @@ class DecoderAdapter : public webrtc::VideoDecoderFactory {
     if (!software_decoder && !hardware_decoder)
       return nullptr;
 
-    if (base::FeatureList::IsEnabled(kWebrtcMediaCapabilitiesStatsCollection)) {
-      return std::make_unique<StatsCollectingDecoder>(
-          format,
-          Wrap(std::move(software_decoder), std::move(hardware_decoder)),
-          stats_callback_);
-    } else {
-      return Wrap(std::move(software_decoder), std::move(hardware_decoder));
-    }
+    return std::make_unique<StatsCollectingDecoder>(
+        format, Wrap(std::move(software_decoder), std::move(hardware_decoder)),
+        stats_callback_);
   }
 
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override {

@@ -75,7 +75,7 @@
 #include "components/embedder_support/switches.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
-#include "components/os_crypt/os_crypt_mocker.h"
+#include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_paths.h"
@@ -202,7 +202,7 @@ class ChromeBrowserMainExtraPartsBrowserProcessInjection
         std::make_unique<device::FakeGeolocationManager>();
     fake_geolocation_manager->SetSystemPermission(
         device::LocationSystemPermissionStatus::kAllowed);
-    g_browser_process->platform_part()->SetGeolocationManagerForTesting(
+    g_browser_process->SetGeolocationManager(
         std::move(fake_geolocation_manager));
   }
 

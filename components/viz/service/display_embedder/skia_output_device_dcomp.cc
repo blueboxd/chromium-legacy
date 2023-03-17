@@ -115,7 +115,6 @@ SkiaOutputDeviceDComp::SkiaOutputDeviceDComp(
   if (feature_info->workarounds().supports_two_yuv_hardware_overlays) {
     capabilities_.supports_two_yuv_hardware_overlays = true;
   }
-  capabilities_.supports_commit_overlay_planes = false;
   capabilities_.supports_gpu_vsync = true;
   capabilities_.supports_dc_layers = true;
 
@@ -124,16 +123,14 @@ SkiaOutputDeviceDComp::SkiaOutputDeviceDComp(
   DCHECK(context_state_->context());
 
   // SRGB
-  constexpr SkColorType kSrgbColorType = kRGBA_8888_SkColorType;
-  constexpr SkColorType kSrgbColorTypeOpaque = kRGB_888x_SkColorType;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
-      kSrgbColorType;
+      kRGBA_8888_SkColorType;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBX_8888)] =
-      kSrgbColorTypeOpaque;
+      kRGBA_8888_SkColorType;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRA_8888)] =
-      kSrgbColorType;
+      kRGBA_8888_SkColorType;
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::BGRX_8888)] =
-      kSrgbColorTypeOpaque;
+      kRGBA_8888_SkColorType;
   // HDR10
   capabilities_
       .sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_1010102)] =
@@ -145,18 +142,14 @@ SkiaOutputDeviceDComp::SkiaOutputDeviceDComp(
 
 SkiaOutputDeviceDComp::~SkiaOutputDeviceDComp() = default;
 
-void SkiaOutputDeviceDComp::SwapBuffers(BufferPresentedCallback feedback,
-                                        OutputSurfaceFrame frame) {
-  PostSubBuffer(gfx::Rect(size_), std::move(feedback), std::move(frame));
-}
-
-void SkiaOutputDeviceDComp::PostSubBuffer(const gfx::Rect& rect,
-                                          BufferPresentedCallback feedback,
-                                          OutputSurfaceFrame frame) {
+void SkiaOutputDeviceDComp::Present(
+    const absl::optional<gfx::Rect>& update_rect,
+    BufferPresentedCallback feedback,
+    OutputSurfaceFrame frame) {
   StartSwapBuffers({});
 
   DoPresent(
-      rect,
+      update_rect.value_or(gfx::Rect(size_)),
       base::BindOnce(&SkiaOutputDeviceDComp::OnPresentFinished,
                      weak_ptr_factory_.GetWeakPtr(), std::move(frame), size_),
       std::move(feedback), frame.data);
@@ -212,8 +205,8 @@ void SkiaOutputDeviceDComp::ScheduleOverlays(
     params->protected_video_type = dc_layer.protected_video_type;
     params->color_space = dc_layer.color_space;
     params->hdr_metadata = dc_layer.hdr_metadata.value_or(gfx::HDRMetadata());
-    params->is_video_fullscreen_letterboxing =
-        dc_layer.is_video_fullscreen_letterboxing;
+    params->maybe_video_fullscreen_letterboxing =
+        dc_layer.maybe_video_fullscreen_letterboxing;
 
     // Schedule DC layer overlay to be presented at next SwapBuffers().
     if (!ScheduleDCLayer(std::move(params))) {
@@ -417,9 +410,7 @@ SkiaOutputDeviceDCompPresenter::SkiaOutputDeviceDCompPresenter(
       shared_image_factory_(shared_image_factory) {
   DCHECK(presenter_);
   DCHECK(presenter_->SupportsGpuVSync());
-  DCHECK(!presenter_->SupportsCommitOverlayPlanes());
 
-  capabilities_.supports_post_sub_buffer = true;
   capabilities_.supports_delegated_ink = presenter_->SupportsDelegatedInk();
   capabilities_.pending_swap_params.max_pending_swaps = 1;
 }

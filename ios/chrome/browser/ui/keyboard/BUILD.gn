@@ -13,17 +13,8 @@ source_set("keyboard") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/shared/ui/util",
   ]
-}
-
-source_set("features") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "features.h",
-    "features.mm",
-  ]
-  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
@@ -52,9 +43,9 @@ source_set("eg2_tests") {
   sources = [ "keyboard_commands_egtest.mm" ]
   deps = [
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/shared/ui/table_view:constants",
     "//ios/chrome/browser/ui/bookmarks:constants",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/table_view:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

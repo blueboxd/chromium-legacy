@@ -24,8 +24,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/os_crypt/os_crypt.h"
-#include "components/os_crypt/os_crypt_mocker.h"
+#include "components/os_crypt/sync/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -1617,7 +1617,8 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
       db().UpdateEntityMetadata(syncer::PASSWORDS, kStorageKey1, metadata));
 
   sync_pb::ModelTypeState model_type_state;
-  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_initial_sync_state(
+      sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
 
   EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
 
@@ -1629,7 +1630,8 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
       db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
 
-  EXPECT_TRUE(metadata_batch->GetModelTypeState().initial_sync_done());
+  EXPECT_EQ(metadata_batch->GetModelTypeState().initial_sync_state(),
+            sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
 
   syncer::EntityMetadataMap metadata_records =
       metadata_batch->TakeAllMetadata();
@@ -1639,12 +1641,15 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
   EXPECT_EQ(metadata_records[kStorageKey2]->sequence_number(), 2);
 
   // Now check that a model type state update replaces the old value
-  model_type_state.set_initial_sync_done(false);
+  model_type_state.set_initial_sync_state(
+      sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_STATE_UNSPECIFIED);
   EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
 
   metadata_batch = db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
-  EXPECT_FALSE(metadata_batch->GetModelTypeState().initial_sync_done());
+  EXPECT_EQ(
+      metadata_batch->GetModelTypeState().initial_sync_state(),
+      sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_STATE_UNSPECIFIED);
 }
 
 TEST_F(LoginDatabaseTest, DeleteAllSyncMetadata) {
@@ -1658,7 +1663,8 @@ TEST_F(LoginDatabaseTest, DeleteAllSyncMetadata) {
       db().UpdateEntityMetadata(syncer::PASSWORDS, kStorageKey1, metadata));
 
   sync_pb::ModelTypeState model_type_state;
-  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_initial_sync_state(
+      sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
 
   EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
 
@@ -1684,7 +1690,8 @@ TEST_F(LoginDatabaseTest, WriteThenDeleteSyncMetadata) {
   const std::string kStorageKey = "1";
   sync_pb::ModelTypeState model_type_state;
 
-  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_initial_sync_state(
+      sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
 
   metadata.set_client_tag_hash("client_hash");
 

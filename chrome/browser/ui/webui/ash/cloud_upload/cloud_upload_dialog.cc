@@ -120,7 +120,7 @@ void OpenFileFromODFS(
 
                 auto* proxy =
                     apps::AppServiceProxyFactory::GetForProfile(profile);
-                proxy->LaunchAppWithUrl(web_app::kMicrosoftOfficeAppId,
+                proxy->LaunchAppWithUrl(web_app::kMicrosoft365AppId,
                                         /*event_flags=*/ui::EF_NONE, url,
                                         apps::LaunchSource::kFromFileManager,
                                         /*window_info=*/nullptr);
@@ -802,8 +802,7 @@ bool CloudUploadDialog::IsOfficeWebAppInstalled(Profile* profile) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   bool installed = false;
   proxy->AppRegistryCache().ForOneApp(
-      web_app::kMicrosoftOfficeAppId,
-      [&installed](const apps::AppUpdate& update) {
+      web_app::kMicrosoft365AppId, [&installed](const apps::AppUpdate& update) {
         installed = apps_util::IsInstalled(update.Readiness());
       });
   return installed;
@@ -853,11 +852,11 @@ bool CloudUploadDialog::ShouldShowCloseButton() const {
 
 namespace {
 const int kDialogWidthForOneDriveSetup = 512;
-const int kDialogHeightForOneDriveSetup = 552;
+const int kDialogHeightForOneDriveSetup = 556;
 
 const int kDialogWidthForFileHandlerDialog = 512;
 const int kDialogHeightForFileHandlerDialog = 475;
-const int kDialogHeightForFileHandlerDialogNoLocalApp = 411;
+const int kDialogHeightForFileHandlerDialogNoLocalApp = 310;
 
 const int kDialogWidthForDriveSetup = 512;
 const int kDialogHeightForDriveSetup = 220;

@@ -13,7 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/os_crypt/os_crypt_mocker.h"
+#include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_password_reuse_manager.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -931,8 +931,10 @@ TEST_F(StoreMetricsReporterTest, MultiStoreMetrics) {
   // This test is only relevant when the passwords accounts store is enabled.
   if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage))
     return;
+#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   prefs_.registry()->RegisterDictionaryPref(
       prefs::kAccountStoragePerAccountSettings);
+#endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   auto profile_store =
       base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   auto account_store =

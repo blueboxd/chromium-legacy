@@ -20,8 +20,10 @@
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/features.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/url/url_util.h"
@@ -318,8 +320,11 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
     return;
   }
 
-  // NTP tabs get no favicon.
+  // NTP tabs get the Chrome product favicon.
   if (IsURLNtp(webState->GetVisibleURL())) {
+    UIImage* chromeProductIcon = CustomSymbolWithPointSize(
+        kChromeProductSymbol, kPinnedCellFaviconSymbolPointSize);
+    completion(chromeProductIcon);
     return;
   }
 
@@ -346,6 +351,8 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
 #pragma mark - TabCollectionCommands
 
 - (void)selectItemWithID:(NSString*)itemID {
+  base::RecordAction(base::UserMetricsAction("MobileTabGridPinnedTabSelected"));
+
   int index = GetTabIndex(self.webStateList, itemID, /*pinned=*/YES);
   WebStateList* itemWebStateList = self.webStateList;
 
@@ -366,8 +373,6 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
         base::UserMetricsAction("MobileTabGridMoveToExistingTab"));
   }
 
-  // TODO(crbug.com/1382015): Record some "pinned tabs" related metrics and
-  // check if "LogPriceDropMetrics" method needs be added.
   itemWebStateList->ActivateWebStateAt(index);
 }
 

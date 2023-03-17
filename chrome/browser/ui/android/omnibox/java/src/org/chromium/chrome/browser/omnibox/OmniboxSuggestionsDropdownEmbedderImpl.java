@@ -92,7 +92,7 @@ class OmniboxSuggestionsDropdownEmbedderImpl implements OmniboxSuggestionsDropdo
 
     @Override
     public boolean isTablet() {
-        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)) {
+        if (OmniboxFeatures.shouldAdaptToNarrowTabletWindows()) {
             return mWindowWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         } else {
             return DeviceFormFactor.isWindowOnTablet(mWindowAndroid);
@@ -149,13 +149,13 @@ class OmniboxSuggestionsDropdownEmbedderImpl implements OmniboxSuggestionsDropdo
     // ComponentCallbacks
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        int windowWidth = newConfig.smallestScreenWidthDp;
+        int windowWidth = newConfig.screenWidthDp;
         int windowHeight = newConfig.screenHeightDp;
         if (windowWidth == mWindowWidthDp && mWindowHeightDp == windowHeight) return;
         mWindowWidthDp = windowWidth;
         mWindowHeightDp = windowHeight;
 
-        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)
+        if (OmniboxFeatures.shouldAdaptToNarrowTabletWindows()
                 || OmniboxFeatures.omniboxConsumesImeInsets()) {
             recalculateOmniboxAlignment();
         }

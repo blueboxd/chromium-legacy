@@ -61,7 +61,7 @@
 #include "components/commerce/core/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings_policy_handler.h"
-#include "components/content_settings/core/browser/insecure_private_network_policy_handler.h"
+#include "components/content_settings/core/browser/insecure_local_network_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/custom_handlers/pref_names.h"
 #include "components/domain_reliability/domain_reliability_prefs.h"
@@ -151,6 +151,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/accessibility/magnifier_type.h"
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
@@ -265,6 +266,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kClientSidePhishingProtectionAllowed,
+    prefs::kSafeBrowsingCsdPhishingProtectionAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
   { key::kSavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled,
     base::Value::Type::BOOLEAN },
@@ -299,6 +303,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHttpsUpgradesEnabled,
     prefs::kHttpsUpgradesEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kDefaultThirdPartyStoragePartitioningSetting,
+    prefs::kManagedDefaultThirdPartyStoragePartitioningSetting,
+    base::Value::Type::INTEGER },
+  { key::kThirdPartyStoragePartitioningBlockedForOrigins,
+    prefs::kManagedThirdPartyStoragePartitioningBlockedForOrigins,
+    base::Value::Type::LIST },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
   { key::kAuthAndroidNegotiateAccountType,
@@ -595,9 +605,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSafeBrowsingAllowlistDomains,
     prefs::kSafeBrowsingAllowlistDomains,
     base::Value::Type::LIST },
-  { key::kSafeSitesFilterBehavior,
-    policy_prefs::kSafeSitesFilterBehavior,
-    base::Value::Type::INTEGER },
   { key::kSameOriginTabCaptureAllowedByOrigins,
     prefs::kSameOriginTabCaptureAllowedByOrigins,
     base::Value::Type::LIST },
@@ -752,7 +759,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedLegacyCookieAccessAllowedForDomains,
     base::Value::Type::LIST },
   { key::kInsecurePrivateNetworkRequestsAllowedForUrls,
-    prefs::kManagedInsecurePrivateNetworkAllowedForUrls,
+    prefs::kManagedInsecureLocalNetworkAllowedForUrls,
     base::Value::Type::LIST },
   { key::kDefaultGeolocationSetting,
     prefs::kManagedDefaultGeolocationSetting,
@@ -847,6 +854,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPaymentMethodQueryEnabled,
     payments::kCanMakePaymentEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kSafeSitesFilterBehavior,
+    policy_prefs::kSafeSitesFilterBehavior,
+    base::Value::Type::INTEGER },
 
 #if !BUILDFLAG(IS_CHROMEOS)
   { key::kChromeVariations,
@@ -997,7 +1007,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenPrimaryMouseButtonSwitch,
-    nullptr,
+    ::prefs::kOwnerPrimaryMouseButtonRight,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
     nullptr,
@@ -1405,7 +1415,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWallpaperGooglePhotosIntegrationEnabled,
     wallpaper_handlers::prefs::kWallpaperGooglePhotosIntegrationEnabled,
     base::Value::Type::BOOLEAN },
-
+  { key::kScreensaverLockScreenEnabled,
+    ash::ambient::prefs::kAmbientModeManagedScreensaverEnabled,
+    base::Value::Type::BOOLEAN },
+    { key::kScreensaverLockScreenIdleTimeoutSeconds,
+    ash::ambient::prefs::kAmbientModeManagedScreensaverIdleTimeoutSeconds,
+    base::Value::Type::INTEGER },
+    { key::kScreensaverLockScreenImageDisplayIntervalSeconds,
+    ash::ambient::prefs::kAmbientModeManagedScreensaverImageDisplayIntervalSeconds,
+    base::Value::Type::INTEGER },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -2143,8 +2161,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<content_settings::CookieSettingsPolicyHandler>());
   handlers->AddHandler(
-      std::make_unique<
-          content_settings::InsecurePrivateNetworkPolicyHandler>());
+      std::make_unique<content_settings::InsecureLocalNetworkPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<
           enterprise_reporting::CloudProfileReportingPolicyHandler>());

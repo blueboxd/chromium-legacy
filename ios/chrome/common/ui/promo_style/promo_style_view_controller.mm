@@ -7,6 +7,7 @@
 #import "base/check.h"
 #import "base/check_op.h"
 #import "base/i18n/rtl.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -588,24 +589,14 @@ constexpr CGFloat kFullAvatarImageSize = 100;
   if (!_primaryActionButton) {
     _primaryActionButton = [[HighlightButton alloc] initWithFrame:CGRectZero];
 
-    // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-    // iOS 15.
-    if (@available(iOS 15, *)) {
-      UIButtonConfiguration* buttonConfiguration =
-          UIButtonConfiguration.plainButtonConfiguration;
-      buttonConfiguration.contentInsets =
-          NSDirectionalEdgeInsetsMake(kButtonVerticalInsets, kMoreArrowMargin,
-                                      kButtonVerticalInsets, kMoreArrowMargin);
-      _primaryActionButton.configuration = buttonConfiguration;
-    }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-    else {
-      _primaryActionButton.contentEdgeInsets =
-          UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-      _primaryActionButton.titleEdgeInsets =
-          UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
-    }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+    // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+    // deployment target is iOS 15.
+    UIEdgeInsets contentInsets =
+        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+    SetContentEdgeInsets(_primaryActionButton, contentInsets);
+    UIEdgeInsets titleInsets =
+        UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
+    SetTitleEdgeInsets(_primaryActionButton, titleInsets);
 
     [_primaryActionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]];
     UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
@@ -932,21 +923,11 @@ constexpr CGFloat kFullAvatarImageSize = 100;
   UIColor* titleColor = [UIColor colorNamed:kBlueColor];
   [button setTitleColor:titleColor forState:UIControlStateNormal];
 
-  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-  // iOS 15.
-  if (@available(iOS 15, *)) {
-    UIButtonConfiguration* buttonConfiguration =
-        UIButtonConfiguration.plainButtonConfiguration;
-    buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
-        kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-    button.configuration = buttonConfiguration;
-  }
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
-  else {
-    button.contentEdgeInsets =
-        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-  }
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+  // deployment target is iOS 15.
+  UIEdgeInsets contentInsets =
+      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  SetContentEdgeInsets(button, contentInsets);
 
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
@@ -1105,7 +1086,7 @@ constexpr CGFloat kFullAvatarImageSize = 100;
 
 // Helper that returns whether the `traitCollection` has a regular vertical
 // and regular horizontal size class.
-// Copied from "ios/chrome/browser/ui/util/uikit_ui_util.mm"
+// Copied from "ios/chrome/browser/shared/ui/util/uikit_ui_util.mm"
 - (bool)isRegularXRegularSizeClass:(UITraitCollection*)traitCollection {
   return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
          traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;

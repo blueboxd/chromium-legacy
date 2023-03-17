@@ -73,14 +73,8 @@ bool BaseBrowserTaskExecutor::PostDelayedTask(const base::Location& from_here,
                                               const base::TaskTraits& traits,
                                               base::OnceClosure task,
                                               base::TimeDelta delay) {
-  if (traits.extension_id() != BrowserTaskTraitsExtension::kExtensionId ||
-      traits.GetExtension<BrowserTaskTraitsExtension>().nestable()) {
-    return GetTaskRunner(ExtractBrowserThreadId(traits), traits)
-        ->PostDelayedTask(from_here, std::move(task), delay);
-  } else {
-    return GetTaskRunner(ExtractBrowserThreadId(traits), traits)
-        ->PostNonNestableDelayedTask(from_here, std::move(task), delay);
-  }
+  return GetTaskRunner(ExtractBrowserThreadId(traits), traits)
+      ->PostDelayedTask(from_here, std::move(task), delay);
 }
 
 scoped_refptr<base::TaskRunner> BaseBrowserTaskExecutor::CreateTaskRunner(
@@ -244,9 +238,6 @@ BrowserTaskExecutor* BrowserTaskExecutor::Get() {
 
 // static
 void BrowserTaskExecutor::ResetForTesting() {
-#if BUILDFLAG(IS_ANDROID)
-  base::PostTaskAndroid::SignalNativeSchedulerShutdownForTesting();
-#endif
   if (g_browser_task_executor) {
     RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
     RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);

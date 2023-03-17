@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORDS_TABLE_VIEW_CONSTANTS_H_
 
 #import <Foundation/Foundation.h>
-#import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 
 // The accessibility identifier of the password details table view.
 extern NSString* const kPasswordsTableViewId;
@@ -42,6 +42,10 @@ extern NSString* const kAddPasswordButtonId;
 
 // Delete button accessibility identifier for Password Details.
 extern NSString* const kDeleteButtonForPasswordDetailsId;
+
+// The accessibility identifier of the icon that informs the user a password is
+// only stored locally and not backed up to any account.
+extern NSString* const kLocalOnlyPasswordIconId;
 
 // Sections of the password settings
 typedef NS_ENUM(NSInteger, PasswordSectionIdentifier) {

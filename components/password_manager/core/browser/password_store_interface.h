@@ -68,6 +68,11 @@ class PasswordStoreInterface : public RefcountedKeyedService {
   virtual void AddLogin(const PasswordForm& form,
                         base::OnceClosure completion = base::DoNothing()) = 0;
 
+  // Adds all forms in the given vector of PasswordForm to the secure password
+  // store asynchronously. `completion` will be run after the forms are added.
+  virtual void AddLogins(const std::vector<PasswordForm>& forms,
+                         base::OnceClosure completion = base::DoNothing()) = 0;
+
   // Updates the matching PasswordForm in the secure password store (async).
   // If any of the primary key fields (signon_realm, url, username_element,
   // username_value, password_element) are updated, then the second version of
@@ -77,6 +82,13 @@ class PasswordStoreInterface : public RefcountedKeyedService {
   virtual void UpdateLogin(
       const PasswordForm& form,
       base::OnceClosure completion = base::DoNothing()) = 0;
+
+  // Updates all matching forms in the given vector of PasswordForm in the
+  // secure password store (async). Completion will be run after the forms are
+  // updated.
+  virtual void UpdateLogins(const std::vector<PasswordForm>& forms,
+                            base::OnceClosure completion) = 0;
+
   virtual void UpdateLoginWithPrimaryKey(
       const PasswordForm& new_form,
       const PasswordForm& old_primary_key,
@@ -118,9 +130,10 @@ class PasswordStoreInterface : public RefcountedKeyedService {
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion = base::NullCallback()) = 0;
 
-  // Unblocklists the login with `form_digest` by deleting all the corresponding
-  // blocklisted entries. If `completion` is not null, it will be run after
-  // deletions have been completed. Should be called on the UI thread.
+  // Unblocklists the login with `form_digest` by deleting all the
+  // corresponding blocklisted entries. If `completion` is not null, it will
+  // be run after deletions have been completed. Should be called on the UI
+  // thread.
   virtual void Unblocklist(
       const PasswordFormDigest& form_digest,
       base::OnceClosure completion = base::NullCallback()) = 0;

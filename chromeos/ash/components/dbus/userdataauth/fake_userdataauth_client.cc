@@ -718,18 +718,6 @@ void FakeUserDataAuthClient::CheckKey(
   }
 }
 
-void FakeUserDataAuthClient::StartFingerprintAuthSession(
-    const ::user_data_auth::StartFingerprintAuthSessionRequest& request,
-    StartFingerprintAuthSessionCallback callback) {
-  ::user_data_auth::StartFingerprintAuthSessionReply reply;
-  ReplyOnReturn auto_reply(&reply, std::move(callback));
-}
-void FakeUserDataAuthClient::EndFingerprintAuthSession(
-    const ::user_data_auth::EndFingerprintAuthSessionRequest& request,
-    EndFingerprintAuthSessionCallback callback) {
-  ::user_data_auth::EndFingerprintAuthSessionReply reply;
-  ReplyOnReturn auto_reply(&reply, std::move(callback));
-}
 void FakeUserDataAuthClient::StartMigrateToDircrypto(
     const ::user_data_auth::StartMigrateToDircryptoRequest& request,
     StartMigrateToDircryptoCallback callback) {
@@ -918,9 +906,9 @@ void FakeUserDataAuthClient::ListAuthFactors(
     reply.add_supported_auth_factors(user_data_auth::AUTH_FACTOR_TYPE_PASSWORD);
     if (supports_low_entropy_credentials_) {
       reply.add_supported_auth_factors(user_data_auth::AUTH_FACTOR_TYPE_PIN);
+      reply.add_supported_auth_factors(
+          user_data_auth::AUTH_FACTOR_TYPE_CRYPTOHOME_RECOVERY);
     }
-    reply.add_supported_auth_factors(
-        user_data_auth::AUTH_FACTOR_TYPE_CRYPTOHOME_RECOVERY);
   }
 }
 
@@ -1240,6 +1228,12 @@ void FakeUserDataAuthClient::AuthenticateAuthFactor(
             if (enable_auth_check_ && pin_input.secret() != pin_factor.pin) {
               reply.set_error(
                   ::user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
+              return;
+            }
+
+            if (pin_factor.locked) {
+              reply.set_error(
+                  ::user_data_auth::CRYPTOHOME_ERROR_TPM_DEFEND_LOCK);
               return;
             }
           },

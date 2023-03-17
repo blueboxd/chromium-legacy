@@ -196,6 +196,8 @@ ViewTransitionStyleTracker::ViewTransitionStyleTracker(
     ViewTransitionState transition_state)
     : document_(document), state_(State::kCaptured), deserialized_(true) {
   captured_name_count_ = static_cast<int>(transition_state.elements.size());
+  snapshot_root_size_at_capture_ =
+      transition_state.snapshot_root_size_at_capture;
 
   VectorOf<AtomicString> transition_names;
   transition_names.ReserveInitialCapacity(captured_name_count_);
@@ -378,9 +380,16 @@ bool ViewTransitionStyleTracker::FlattenAndVerifyElements(
     VectorOf<Element>& elements,
     VectorOf<AtomicString>& transition_names,
     absl::optional<RootData>& root_data) {
-  // If the root element doesn't generate a layout object then there can't be
-  // any elements participating in the transition since no element can generate
-  // a box. This is a valid state for things like entry or exit animations.
+  // Fail if the document element does not exist, since that's the place where
+  // we attach pseudo elements, and if it's not there, we can't do a transition.
+  if (!document_->documentElement()) {
+    return false;
+  }
+
+  // If the root element exists but doesn't generate a layout object then there
+  // can't be any elements participating in the transition since no element can
+  // generate a box. This is a valid state for things like entry or exit
+  // animations.
   if (!document_->documentElement()->GetLayoutObject()) {
     return true;
   }
@@ -809,6 +818,10 @@ PseudoElement* ViewTransitionStyleTracker::CreatePseudoElement(
 bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
   DCHECK_GE(document_->Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
+  // Abort if the document element is not there.
+  if (!document_->documentElement()) {
+    return false;
+  }
 
   if (!document_->documentElement()->GetLayoutObject()) {
     // If we have any view transition elements, while having no
@@ -832,6 +845,7 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
 
   // Use the document element's effective zoom, since that's what the parent
   // effective zoom would be.
+  DCHECK(document_->documentElement());
   float device_pixel_ratio = document_->documentElement()
                                  ->GetLayoutObject()
                                  ->StyleRef()
@@ -850,6 +864,7 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
     if (!element_data->target_element)
       continue;
 
+    DCHECK(document_->documentElement());
     DCHECK_NE(element_data->target_element, document_->documentElement());
     auto* layout_object = element_data->target_element->GetLayoutObject();
     // TODO(khushalsagar): Verify that skipping a transition when things become
@@ -951,6 +966,7 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
     PseudoId live_content_element = HasLiveNewContent()
                                         ? kPseudoIdViewTransitionNew
                                         : kPseudoIdViewTransitionOld;
+    DCHECK(document_->documentElement());
     if (auto* pseudo_element =
             document_->documentElement()->GetNestedPseudoElement(
                 live_content_element, entry.key)) {
@@ -1196,6 +1212,11 @@ ViewTransitionState ViewTransitionStyleTracker::GetViewTransitionState() const {
   DCHECK_EQ(state_, State::kCaptured);
 
   ViewTransitionState transition_state;
+
+  DCHECK(snapshot_root_size_at_capture_);
+  transition_state.snapshot_root_size_at_capture =
+      *snapshot_root_size_at_capture_;
+
   for (const auto& entry : element_data_map_) {
     const auto& element_data = entry.value;
     DCHECK_EQ(element_data->container_properties.size(), 1u)
@@ -1242,10 +1263,11 @@ void ViewTransitionStyleTracker::InvalidateStyle() {
   ua_style_sheet_.reset();
   document_->GetStyleEngine().InvalidateUAViewTransitionStyle();
 
-  auto* originating_element = document_->documentElement();
-  originating_element->SetNeedsStyleRecalc(
-      kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                             style_change_reason::kViewTransition));
+  if (auto* originating_element = document_->documentElement()) {
+    originating_element->SetNeedsStyleRecalc(
+        kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                               style_change_reason::kViewTransition));
+  }
 
   auto invalidate_style = [](PseudoElement* pseudo_element) {
     pseudo_element->SetNeedsStyleRecalc(
@@ -1331,12 +1353,6 @@ const String& ViewTransitionStyleTracker::UAStyleSheet() {
   // transition element only -- no roots involved. Everything is done in the
   // `element_data_map_` loop.
 
-  auto root_size_in_css = LayoutSize(GetSnapshotRootSize());
-  // Note that we want the size in css space, which means we need to undo
-  // the effective zoom.
-  root_size_in_css.Scale(
-      1 / document_->GetLayoutView()->StyleRef().EffectiveZoom());
-
   for (auto& root_name : AllRootTags()) {
     // This is case 3 above.
     bool name_is_old_root =
@@ -1347,7 +1363,11 @@ const String& ViewTransitionStyleTracker::UAStyleSheet() {
       continue;
     }
 
-    builder.AddContainerStyles(root_name, root_size_in_css);
+    // TODO(vmpstr): For animations, we need to re-target the layout size if it
+    // changes, but right now we only use the latest layout view size.
+    // Note that we don't set the writing-mode since it would inherit from the
+    // :root anyway, so there is no reason to put it on the pseudo elements.
+    builder.AddContainerStyles(root_name, "right: 0; bottom: 0;");
 
     bool name_is_new_root =
         new_root_data_ && new_root_data_->names.Contains(root_name);
@@ -1430,9 +1450,14 @@ const String& ViewTransitionStyleTracker::UAStyleSheet() {
         builder.AddAnimationAndBlending(
             view_transition_name, element_data->cached_container_properties);
       } else if (element_data->new_snapshot_id.IsValid() && name_is_old_root) {
+        auto layout_view_size = LayoutSize(GetSnapshotRootSize());
+        // Note that we want the size in css space, which means we need to undo
+        // the effective zoom.
+        layout_view_size.Scale(
+            1 / document_->GetLayoutView()->StyleRef().EffectiveZoom());
         builder.AddAnimationAndBlending(
             view_transition_name,
-            ContainerProperties(root_size_in_css, gfx::Transform()));
+            ContainerProperties(layout_view_size, gfx::Transform()));
       }
     }
   }

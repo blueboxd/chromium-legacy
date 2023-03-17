@@ -120,8 +120,7 @@ FormForest::FrameData* FormForest::GetFrameData(LocalFrameToken frame) {
   return it != frame_datas_.end() ? it->get() : nullptr;
 }
 
-FormData* FormForest::GetFormData(const FormGlobalId& form,
-                                  FrameData* frame_data) {
+FormData* FormForest::GetFormData(FormGlobalId form, FrameData* frame_data) {
   DCHECK(!frame_data || frame_data == GetFrameData(form.frame_token));
   if (!frame_data)
     frame_data = GetFrameData(form.frame_token);
@@ -147,7 +146,8 @@ FormForest::FrameAndForm FormForest::GetRoot(FormGlobalId form) {
 }
 
 void FormForest::EraseReferencesTo(
-    absl::variant<LocalFrameToken, FormGlobalId> frame_or_form) {
+    absl::variant<LocalFrameToken, FormGlobalId> frame_or_form,
+    base::flat_set<FormGlobalId>* forms_with_removed_fields) {
   auto Match = [&](FormGlobalId form) {
     return absl::holds_alternative<LocalFrameToken>(frame_or_form)
                ? absl::get<LocalFrameToken>(frame_or_form) == form.frame_token
@@ -156,28 +156,43 @@ void FormForest::EraseReferencesTo(
   for (std::unique_ptr<FrameData>& some_frame : frame_datas_) {
     AFCHECK(some_frame, continue);
     for (FormData& some_form : some_frame->child_forms) {
-      base::EraseIf(some_form.fields, [&](const FormFieldData& some_form) {
-        return Match(some_form.renderer_form_id());
-      });
+      size_t num_removed =
+          base::EraseIf(some_form.fields, [&](const FormFieldData& some_form) {
+            return Match(some_form.renderer_form_id());
+          });
+      if (num_removed > 0 && forms_with_removed_fields) {
+        AFCHECK(!some_frame->parent_form);
+        forms_with_removed_fields->insert(some_form.global_id());
+      }
     }
     if (some_frame->parent_form && Match(*some_frame->parent_form))
       some_frame->parent_form = absl::nullopt;
   }
 }
 
-void FormForest::EraseForm(FormGlobalId form) {
-  if (FrameData* frame = GetFrameData(form.frame_token)) {
-    base::EraseIf(frame->child_forms, [&](const FormData& some_form) {
-      return some_form.global_id() == form;
-    });
-    EraseReferencesTo(form);
+base::flat_set<FormGlobalId> FormForest::EraseForms(
+    base::span<const FormGlobalId> renderer_forms) {
+  for (const FormGlobalId renderer_form : renderer_forms) {
+    if (FrameData* frame = GetFrameData(renderer_form.frame_token)) {
+      base::EraseIf(frame->child_forms, [&](const FormData& some_form) {
+        return some_form.global_id() == renderer_form;
+      });
+    }
   }
+  base::flat_set<FormGlobalId> forms_with_removed_fields;
+  for (const FormGlobalId renderer_form : renderer_forms) {
+    if (FrameData* frame = GetFrameData(renderer_form.frame_token)) {
+      EraseReferencesTo(renderer_form, &forms_with_removed_fields);
+    }
+  }
+  return forms_with_removed_fields;
 }
 
 void FormForest::EraseFrame(LocalFrameToken frame) {
   some_rfh_for_debugging_ = content::GlobalRenderFrameHostId();
-  if (frame_datas_.erase(frame))
-    EraseReferencesTo(frame);
+  if (frame_datas_.erase(frame)) {
+    EraseReferencesTo(frame, /*forms_with_removed_fields=*/nullptr);
+  }
 }
 
 // Maintains the following invariants:
@@ -546,19 +561,16 @@ void FormForest::UpdateTreeOfRendererForm(FormData* form,
   }
 }
 
-const FormData& FormForest::GetBrowserFormOfRendererForm(
-    const FormData& renderer_form) const {
+const FormData* FormForest::GetBrowserForm(FormGlobalId renderer_form) const {
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
       "Autofill.FormForest.GetBrowserFormOfRendererForm.Duration");
-  AFCHECK(renderer_form.host_frame, return renderer_form);
+  AFCHECK(renderer_form.frame_token, return nullptr);
 
   // For calling non-const-qualified getters.
   FormForest& mutable_this = *const_cast<FormForest*>(this);
-  FormData* form = mutable_this.GetRoot(renderer_form.global_id()).form;
-  AFCHECK(form, return renderer_form);
-  DCHECK_LE(form->version, renderer_form.version);
-  form->version = renderer_form.version;
-  return *form;
+  FormData* form = mutable_this.GetRoot(renderer_form).form;
+  AFCHECK(form, return nullptr);
+  return form;
 }
 
 FormForest::RendererForms::RendererForms() = default;

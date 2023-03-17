@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
@@ -170,6 +171,9 @@ void ContextualSearchDelegateImpl::ResolveSearchTermFromContext(
     SearchTermResolutionCallback callback) {
   DCHECK(context);
   GURL request_url(BuildRequestUrl(context.get()));
+
+  SCOPED_CRASH_KEY_STRING1024("contextual_search", "url",
+                              request_url.possibly_invalid_spec());
   DCHECK(request_url.is_valid()) << request_url.possibly_invalid_spec();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();

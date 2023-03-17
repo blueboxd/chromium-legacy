@@ -189,10 +189,6 @@ public class ManualFillingIntegrationTest {
         whenDisplayed(withChild(withId(R.id.keyboard_accessory_sheet_frame))).check((view, e) -> {
             accessorySheetView.set(view);
         });
-        // The accessory bar is now pushed up by the accessory.
-        CriteriaHelper.pollUiThread(() -> {
-            return accessoryMargins.get().bottomMargin == accessorySheetView.get().getHeight();
-        });
 
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
@@ -451,7 +447,6 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "Broken with OSKResizesVisualViewportByDefault - crbug.com/1384433")
     public void testMovesUpSnackbar() throws TimeoutException {
         final String kSnackbarText = "snackbar";
 

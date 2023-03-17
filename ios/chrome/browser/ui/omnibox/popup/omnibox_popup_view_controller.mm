@@ -13,6 +13,10 @@
 #import "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/shared/ui/util/keyboard_observer_helper.h"
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/shared/ui/util/named_guide.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/browser/ui/elements/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
@@ -27,10 +31,6 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_match_preview_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
-#import "ios/chrome/browser/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/device_util.h"
@@ -41,6 +41,7 @@
 #endif
 
 namespace {
+const CGFloat kTopPadding = 8.0;
 const CGFloat kBottomPadding = 8.0;
 const CGFloat kFooterHeight = 12.0;
 /// Percentage of the suggestion height that needs to be visible in order to
@@ -254,6 +255,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
       UIScrollViewContentInsetAdjustmentAutomatic;
   [self.tableView setDirectionalLayoutMargins:NSDirectionalEdgeInsetsMake(
                                                   0, 0, kBottomPadding, 0)];
+  self.tableView.contentInset = UIEdgeInsetsMake(kTopPadding, 0, 0, 0);
 
   self.tableView.sectionHeaderHeight = 0.1;
   self.tableView.estimatedRowHeight = 0;
@@ -889,9 +891,10 @@ BOOL ShouldDismissKeyboardOnScroll() {
   CGFloat windowHeight = CGRectGetHeight(currentWindow.bounds);
   CGFloat bottomInset = windowHeight - self.tableView.visibleSize.height -
                         self.keyboardHeight - absoluteRect.origin.y -
-                        kBottomPadding;
+                        kBottomPadding - kTopPadding;
   bottomInset = MAX(kBottomPadding, -bottomInset);
-  self.tableView.contentInset = UIEdgeInsetsMake(0, 0, bottomInset, 0);
+  self.tableView.contentInset =
+      UIEdgeInsetsMake(kTopPadding, 0, bottomInset, 0);
   self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
 }
 

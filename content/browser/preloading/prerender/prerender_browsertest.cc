@@ -493,6 +493,13 @@ class PrerenderBrowserTest : public ContentBrowserTest,
   std::vector<int64_t> navigation_ids_;
 
  protected:
+  void TestCancelPrerendersWhenTimeout(
+      std::vector<Visibility> visibility_transitions);
+  void TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout(
+      std::vector<Visibility> visibility_transitions);
+  void TestTimerResetWhenPageGoBackToForeground(Visibility visibility);
+  void TestCancelPrerenderWithTargetBlankWhenTimeout(Visibility visibility);
+
   net::test_server::EmbeddedTestServer& ssl_server() { return ssl_server_; }
 
  private:
@@ -2186,15 +2193,46 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SameOriginMainFrameNavigation) {
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kNavigatedUrl);
 }
 
-// TODO(crbug.com/1239281): Support the same-site cross-origin navigation.
 // Tests that the same-site cross-origin main frame navigation in a prerendering
-// page cancels the prerendering.
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest,
-    SameSiteCrossOriginMainFrameNavigationCancelsPrerendering) {
+// page succeeds.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       SameSiteCrossOriginMainFrameNavigation) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
-  const GURL kNavigatedUrl = GetSameSiteCrossOriginUrl("/empty.html?navigated");
+  const GURL kNavigatedUrl =
+      GetSameSiteCrossOriginUrl("/prerender/prerender_with_opt_in_header.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start a prerender.
+  int host_id = AddPrerender(kPrerenderingUrl);
+
+  // Start a same-site cross-origin navigation in the prerender frame tree that
+  // will not cancel the initiator's prerendering.
+  test::PrerenderHostObserver observer(*web_contents_impl(), host_id);
+
+  NavigatePrerenderedPage(host_id, kNavigatedUrl);
+
+  // Activate a prerender and it should succeed.
+  NavigatePrimaryPage(kPrerenderingUrl);
+
+  observer.WaitForActivation();
+  EXPECT_TRUE(observer.was_activated());
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), kNavigatedUrl);
+}
+
+// Tests that the same-site cross-origin main frame navigation in a prerendering
+// page cancels the prerendering without opt-in.
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    SameSiteCrossOriginMainFrameNavigationCancelsPrerenderingWithoutOptInHeader) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+  // The cross-origin navigation should fail prerendering without an opt-in
+  // header.
+  const GURL kNavigatedUrl =
+      GetSameSiteCrossOriginUrl("/prerender/empty.html?navigated");
 
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -2211,7 +2249,7 @@ IN_PROC_BROWSER_TEST_F(
   observer.WaitForDestroyed();
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   ExpectFinalStatusForSpeculationRule(
-      PrerenderFinalStatus::kSameSiteCrossOriginNavigation);
+      PrerenderFinalStatus::kSameSiteCrossOriginNavigationNotOptIn);
 }
 
 // Tests that the cross-site main frame navigation in a prerendering page
@@ -2220,7 +2258,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        CrossSiteMainFrameNavigationCancelsPrerendering) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
-  const GURL kNavigatedUrl = GetCrossSiteUrl("/empty.html?navigated");
+  const GURL kNavigatedUrl =
+      GetCrossSiteUrl("/prerender/prerender_with_opt_in_header.html");
 
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -3036,10 +3075,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
             "MBPA_BAD_INTERFACE: content.mojom.TestInterfaceForUnexpected");
 }
 
-// Regression test for https://crbug.com/1268714.
+// Regression test for https://crbug.com/1268714 and https://crbug.com/1424250.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
+
+  // Some Android bots run with the site isolation disabled and behave
+  // differently on cross-origin iframe creation in a prerendered page. More
+  // specifically, when the site isolation is disabled, cross-site iframe will
+  // not create a speculative RenderFrameHost, and it results in test failures.
+  // To avoid it, this test explicitly runs with the site isolation enabled.
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
   GURL initial_url = GetUrl("/empty.html");
   GURL prerendering_url =
       GetUrl("/cross_site_iframe_factory.html?a.test(a.test,a.test)");
@@ -3084,7 +3130,48 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
   ASSERT_EQ(all_prerender_frames.size(), 4u);
   ASSERT_EQ(count_speculative, 1u);
 
-  // 5. Activate the prerendered page and listen to the DidFinishNavigation
+  // 5. Renderers attempt to build Mojo connections for kDefer and kGrant
+  // interfaces during prerendering. This part simulates them.
+
+  // A barrier closure to wait until a deferred interface is granted on all
+  // frames.
+  base::RunLoop run_loop;
+  auto barrier_closure =
+      base::BarrierClosure(all_prerender_frames.size(), run_loop.QuitClosure());
+
+  // Iterate all the frames to bind interfaces.
+  mojo::RemoteSet<mojom::TestInterfaceForDefer> defer_remote_set;
+  mojo::RemoteSet<mojom::TestInterfaceForGrant> grant_remote_set;
+  for (auto* rfhi : all_prerender_frames) {
+    mojo::Receiver<blink::mojom::BrowserInterfaceBroker>& bib =
+        rfhi->browser_interface_broker_receiver_for_testing();
+    blink::mojom::BrowserInterfaceBroker* prerender_broker =
+        bib.internal_state()->impl();
+
+    // Try to bind a kDefer interface.
+    mojo::Remote<mojom::TestInterfaceForDefer> prerender_defer_remote;
+    prerender_broker->GetInterface(
+        prerender_defer_remote.BindNewPipeAndPassReceiver());
+    // The barrier closure will be called after the deferred interface is
+    // granted.
+    prerender_defer_remote->Ping(barrier_closure);
+    defer_remote_set.Add(std::move(prerender_defer_remote));
+
+    // Try to bind a kGrant interface.
+    mojo::Remote<mojom::TestInterfaceForGrant> prerender_grant_remote;
+    prerender_broker->GetInterface(
+        prerender_grant_remote.BindNewPipeAndPassReceiver());
+    grant_remote_set.Add(std::move(prerender_grant_remote));
+  }
+
+  // Verify that BrowserInterfaceBrokerImpl defers running binders whose
+  // policies are kDefer until the prerendered page is activated.
+  EXPECT_EQ(test_browser_client.GetDeferReceiverSetSize(), 0U);
+  // Verify that BrowserInterfaceBrokerImpl executes kGrant binders immediately.
+  EXPECT_EQ(test_browser_client.GetGrantReceiverSetSize(),
+            all_prerender_frames.size());
+
+  // 6. Activate the prerendered page and listen to the DidFinishNavigation
   // event, to ensure the Activate IPC is sent.
   TestActivationManager prerendered_activation_navigation(web_contents(),
                                                           prerendering_url);
@@ -3093,7 +3180,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
   prerendered_activation_navigation.WaitForNavigationFinished();
   EXPECT_TRUE(prerendered_activation_navigation.was_activated());
 
-  // 6. Renderers attempt to build Mojo connections for kCancel interfaces.
+  // Make sure all the deferred interfaces are granted after activation. This is
+  // a regression test for https://crbug.com/1424250.
+  run_loop.Run();
+  EXPECT_EQ(test_browser_client.GetDeferReceiverSetSize(),
+            all_prerender_frames.size());
+
+  // 7. Renderers attempt to build Mojo connections for kCancel interfaces.
   // This part simulates some subframe documents start sending kCancel
   // interfaces after they know about the activation. It tests the regression
   // situation caught by https://crbug.com/1268714. If some RenderFrameHostImpls
@@ -3111,50 +3204,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
   }
 }
 
-// Test that a PrerenderHost triggered by speculation rules is canceled when
-// it times out in the background.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelPrerenderWhenTimeout) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderUrl = GetUrl("/empty.html?prerender");
-
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  int host_id = AddPrerender(kPrerenderUrl);
-  test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
-
-  PrerenderHostRegistry* registry =
-      web_contents_impl()->GetPrerenderHostRegistry();
-
-  // The timers should not start yet when the prerendered page is in the
-  // foreground.
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // Inject mock time task runner.
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  registry->SetTaskRunnerForTesting(task_runner);
-
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
-  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  task_runner->FastForwardBy(
-      PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
-
-  prerender_observer.WaitForDestroyed();
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-  histogram_tester().ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderFinalStatus::kTimeoutBackgrounded, 1);
-}
-
-// Test that multiple PrerenderHosts triggered by speculation rules are canceled
-// when it times out in the background.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       CancelMultiplePrerendersWhenTimeout) {
+// Test that prerenders triggered by speculation rules are canceled when a
+// background timeout timer is fired.
+void PrerenderBrowserTest::TestCancelPrerendersWhenTimeout(
+    std::vector<Visibility> visibility_transitions) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderUrl1 = GetUrl("/empty.html?prerender1");
   const GURL kPrerenderUrl2 = GetUrl("/empty.html?prerender2");
@@ -3179,27 +3232,78 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   registry->SetTaskRunnerForTesting(task_runner);
 
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
+  // Changing the visibility state starts/stops the timeout timer.
+  for (Visibility visibility : visibility_transitions) {
+    switch (visibility) {
+      case Visibility::HIDDEN:
+        web_contents()->WasHidden();
+        ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+        ASSERT_TRUE(
+            registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+        break;
+      case Visibility::OCCLUDED:
+        web_contents()->WasOccluded();
+        ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+        ASSERT_TRUE(
+            registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+        break;
+      case Visibility::VISIBLE:
+        web_contents()->WasShown();
+        ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+        ASSERT_FALSE(
+            registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+        break;
+    }
+  }
+
+  // The remaining part of this test assumes the timers are running.
   ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
 
+  // Expire the timers.
   task_runner->FastForwardBy(
       PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
-
-  prerender_observer.WaitForDestroyed();
   ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // The timers should cancel prerendering.
+  prerender_observer.WaitForDestroyed();
   histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderFinalStatus::kTimeoutBackgrounded, 2);
 }
 
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerendersWhenTimeout_Hidden) {
+  // The timeout timers should start on the hidden state.
+  TestCancelPrerendersWhenTimeout({Visibility::HIDDEN});
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerendersWhenTimeout_Occluded) {
+  // The timeout timers should start on the occluded state.
+  TestCancelPrerendersWhenTimeout({Visibility::OCCLUDED});
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerendersWhenTimeout_OccludedHidden) {
+  // The timeout timers should start on the occluded state and then keep running
+  // on the hidden state.
+  TestCancelPrerendersWhenTimeout({Visibility::OCCLUDED, Visibility::HIDDEN});
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerendersWhenTimeout_OccludedVisibleHidden) {
+  // The timeout timers should start on the occluded state, stop on the visible
+  // state, and then restart on the hidden state.
+  TestCancelPrerendersWhenTimeout(
+      {Visibility::OCCLUDED, Visibility::VISIBLE, Visibility::HIDDEN});
+}
+
 // Test that a PrerenderHost triggered by embedder is canceled when it times out
 // in the background.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       CancelOnlyEmbedderTriggeredPrerenderWhenTimeout) {
+void PrerenderBrowserTest::TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout(
+    std::vector<Visibility> visibility_transitions) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderUrl1 = GetUrl("/empty.html?prerender1");
   const GURL kPrerenderUrl2 = GetUrl("/empty.html?prerender2");
@@ -3232,9 +3336,31 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   registry->SetTaskRunnerForTesting(task_runner);
 
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
+  // Changing the visibility state starts/stops the timeout timer.
+  for (Visibility visibility : visibility_transitions) {
+    switch (visibility) {
+      case Visibility::HIDDEN:
+        web_contents()->WasHidden();
+        ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+        ASSERT_TRUE(
+            registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+        break;
+      case Visibility::OCCLUDED:
+        web_contents()->WasOccluded();
+        ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+        ASSERT_TRUE(
+            registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+        break;
+      case Visibility::VISIBLE:
+        web_contents()->WasShown();
+        ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+        ASSERT_FALSE(
+            registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+        break;
+    }
+  }
+
+  // The remaining part of this test assumes the timers are running.
   ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
 
@@ -3263,10 +3389,41 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       PrerenderFinalStatus::kTimeoutBackgrounded, 0);
 }
 
-// Test that the timers for PrerenderHost timeout is reset when the tab gets
-// visible.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       TimerResetWhenHiddenPageGoBackToForeground) {
+                       CancelOnlyEmbedderTriggeredPrerenderWhenTimeout_Hidden) {
+  // The timeout timers should start on the hidden state.
+  TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout({Visibility::HIDDEN});
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    CancelOnlyEmbedderTriggeredPrerenderWhenTimeout_Occluded) {
+  // The timeout timers should start on the occluded state.
+  TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout({Visibility::OCCLUDED});
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    CancelOnlyEmbedderTriggeredPrerenderWhenTimeout_OccludedHidden) {
+  // The timeout timers should start on the occluded state and then keep running
+  // on the hidden state.
+  TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout(
+      {Visibility::OCCLUDED, Visibility::HIDDEN});
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    CancelOnlyEmbedderTriggeredPrerenderWhenTimeout_OccludedVisibleHidden) {
+  // The timeout timers should start on the occluded state, stop on the visible
+  // state, and then restart on the hidden state.
+  TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout(
+      {Visibility::OCCLUDED, Visibility::VISIBLE, Visibility::HIDDEN});
+}
+
+// Test that the timers for PrerenderHost timeout is reset when the
+// hidden/occluded page gets visible.
+void PrerenderBrowserTest::TestTimerResetWhenPageGoBackToForeground(
+    Visibility visibility) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderUrl = GetUrl("/empty.html?prerender");
 
@@ -3281,13 +3438,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
 
-  // Changing the visibility state to HIDDEN will not stop prerendering
+  // Changing the visibility state to HIDDEN/OCCLUDED will not stop prerendering
   // immediately, but start the timers.
-  web_contents()->WasHidden();
+  switch (visibility) {
+    case Visibility::HIDDEN:
+      web_contents()->WasHidden();
+      break;
+    case Visibility::OCCLUDED:
+      web_contents()->WasOccluded();
+      break;
+    case Visibility::VISIBLE:
+      ASSERT_TRUE(false);
+      break;
+  }
+
+  // The remaining part of this test assumes the timers are running.
   ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
 
-  // The timers should be reset when the hidden page goes back to the
+  // The timers should be reset when the HIDDEN/OCCLUDED page goes back to the
   // foreground.
   web_contents()->WasShown();
   ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
@@ -3304,10 +3473,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       PrerenderFinalStatus::kActivated, 1);
 }
 
-// Test that a PrerenderHost in a triggered by speculation rules with
-// "target=_blank" are canceled when it times out in the background.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       CancelPrerenderWithTargetBlankWhenTimeout) {
+                       TimerResetWhenPageGoBackToForeground_Hidden) {
+  TestTimerResetWhenPageGoBackToForeground(Visibility::HIDDEN);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       TimerResetWhenPageGoBackToForeground_Occluded) {
+  TestTimerResetWhenPageGoBackToForeground(Visibility::OCCLUDED);
+}
+
+// Test that a PrerenderHost in a triggered by speculation rules with
+// "target=_blank" are canceled when it times out in the background .
+void PrerenderBrowserTest::TestCancelPrerenderWithTargetBlankWhenTimeout(
+    Visibility visibility) {
   const GURL kInitialUrl = GetUrl("/simple_links.html");
   const GURL kPrerenderUrl = GetUrl("/title2.html");
 
@@ -3345,18 +3524,31 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
                                                  kPrerenderUrl);
 
-  // Changing the visibility state to HIDDEN will not stop prerendering
+  // Changing the visibility state to HIDDEN/OCCLUDED will not stop prerendering
   // immediately, but start the timers.
-  web_contents()->WasHidden();
+  switch (visibility) {
+    case Visibility::HIDDEN:
+      web_contents()->WasHidden();
+      break;
+    case Visibility::OCCLUDED:
+      web_contents()->WasOccluded();
+      break;
+    case Visibility::VISIBLE:
+      ASSERT_TRUE(false);
+      break;
+  }
+
+  // The remaining part of this test assumes the timers are running.
   ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
 
+  // Expire the timers.
   task_runner->FastForwardBy(
       PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
-
-  prerender_observer.WaitForDestroyed();
   ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
   ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  prerender_observer.WaitForDestroyed();
   histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderFinalStatus::kTimeoutBackgrounded, 1);
@@ -3364,6 +3556,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // The navigation occurred in a new WebContents, so the original WebContents
   // should still be showing the initial trigger page.
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerenderWithTargetBlankWhenTimeout_Hidden) {
+  TestCancelPrerenderWithTargetBlankWhenTimeout(Visibility::HIDDEN);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerenderWithTargetBlankWhenTimeout_Occluded) {
+  TestCancelPrerenderWithTargetBlankWhenTimeout(Visibility::OCCLUDED);
 }
 
 enum class SSLPrerenderTestErrorBlockType { kClientCertRequested, kCertError };
@@ -4229,6 +4431,9 @@ class PrerenderSequentialPrerenderingBrowserTest : public PrerenderBrowserTest {
   }
 
   int MaxNumOfRunningPrerenders() const { return 4; }
+
+ protected:
+  void TestSequentialPrerenderingInBackground(Visibility visibility);
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -5144,8 +5349,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
 // Test that when the current tab gets hidden then the prerender sequence is
 // terminated, and when the current tab gets visible then we start the next
 // prerender if we have some pending prerender hosts.
-IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
-                       SequentialPrerenderingInBackground) {
+void PrerenderSequentialPrerenderingBrowserTest::
+    TestSequentialPrerenderingInBackground(Visibility visibility) {
   net::test_server::ControllableHttpResponse response1(
       embedded_test_server(), "/empty.html?prerender1");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -5169,8 +5374,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // Stop the first prerendering initial navigation.
   response1.WaitForRequest();
 
-  // Change the visibility status to HIDDEN.
-  web_contents()->WasHidden();
+  // Change the visibility status to HIDDEN/OCCLUDED.
+  switch (visibility) {
+    case Visibility::HIDDEN:
+      web_contents()->WasHidden();
+      break;
+    case Visibility::OCCLUDED:
+      web_contents()->WasOccluded();
+      break;
+    case Visibility::VISIBLE:
+      ASSERT_TRUE(false);
+      break;
+  }
 
   // Complete the first prerender response and finish its initial navigation.
   // This shouldn't start the pending prerender.
@@ -5188,8 +5403,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
                 .GetTriggeringOutcome(),
             PreloadingTriggeringOutcome::kTriggeredButPending);
 
-  // The hidden page gets back to the foreground. The next pending prerender
-  // should start.
+  // The hidden/occluded page gets back to the foreground. The next pending
+  // prerender should start.
   web_contents()->WasShown();
   WaitForPrerenderLoadCompletion(kPrerender2);
 
@@ -5198,6 +5413,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   prerender2_observer.WaitForActivation();
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kPrerender2);
   EXPECT_TRUE(prerender2_observer.was_activated());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
+                       SequentialPrerenderingInBackground_Hidden) {
+  TestSequentialPrerenderingInBackground(Visibility::HIDDEN);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
+                       SequentialPrerenderingInBackground_Occluded) {
+  TestSequentialPrerenderingInBackground(Visibility::OCCLUDED);
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,

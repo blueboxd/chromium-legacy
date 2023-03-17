@@ -97,6 +97,11 @@ AppInstall::AppInstall(SplashScreen::Maker splash_screen_maker,
 
 AppInstall::~AppInstall() = default;
 
+void AppInstall::Initialize() {
+  setup_lock_ =
+      ScopedLock::Create(kSetupMutex, updater_scope(), kWaitForSetupLock);
+}
+
 void AppInstall::FirstTaskRun() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::SequencedTaskRunner::HasCurrentDefault());
@@ -107,6 +112,12 @@ void AppInstall::FirstTaskRun() {
                     ? "Did you mean to run as admin/root?"
                     : "Did you mean to run as a non-admin/non-root user?");
     Shutdown(kErrorWrongUser);
+    return;
+  }
+
+  if (!setup_lock_) {
+    VLOG(0) << "Failed to acquire setup mutex; shutting down.";
+    Shutdown(kErrorFailedToLockSetupMutex);
     return;
   }
 

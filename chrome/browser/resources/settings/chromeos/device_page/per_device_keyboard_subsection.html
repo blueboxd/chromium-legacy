@@ -14,15 +14,16 @@
     padding-inline-start: 0;
   }
 </style>
-<h2>[[keyboard.name]]</h2>
+<h2>[[getKeyboardName(keyboard.name)]]</h2>
 <div class="subsection">
-  <template is="dom-if" if="[[keyboard.isExternal]]">
+  <template is="dom-if" if="[[keyboard.isExternal]]" restamp>
     <settings-toggle-button
         class="hr" inverted="true"
         id="externalTopRowAreFunctionKeysButton"
         pref="{{topRowAreFunctionKeysPref}}"
         label="$i18n{keyboardSendInvertedFunctionKeys}"
-        sub-label="$i18n{keyboardSendInvertedFunctionKeysDescription}">
+        sub-label="$i18n{keyboardSendInvertedFunctionKeysDescription}"
+        deep-link-focus-id$="[[Setting.kKeyboardFunctionKeys]]">
     </settings-toggle-button>
     <settings-toggle-button
         class="hr" id="blockMetaFunctionKeyRewritesButton"
@@ -31,7 +32,7 @@
         sub-label="$i18n{keyboardBlockMetaFunctionKeyRewritesDescription}">
     </settings-toggle-button>
   </template>
-  <template is="dom-if" if="[[!keyboard.isExternal]]">
+  <template is="dom-if" if="[[!keyboard.isExternal]]" restamp>
     <settings-toggle-button
         class="hr" id="internalTopRowAreFunctionKeysButton"
         pref="{{topRowAreFunctionKeysPref}}"
@@ -43,7 +44,8 @@
       id="enableAutoRepeatButton"
       class="hr"
       pref="{{enableAutoRepeatPref}}"
-      label="$i18n{keyboardEnableAutoRepeat}">
+      label="$i18n{keyboardEnableAutoRepeat}"
+      deep-link-focus-id$="[[Setting.kKeyboardAutoRepeat]]">
   </settings-toggle-button>
   <iron-collapse
       opened="[[enableAutoRepeatPref.value]]">

@@ -241,7 +241,6 @@
 <translation id="3226657629376379887">Menú de acciones de diseño</translation>
 <translation id="3246869037381808805">Los trabajos de impresión con más de 1 día de antigüedad se eliminarán</translation>
 <translation id="3268178239013324452">No se ha podido imprimir - Cierra la cubierta</translation>
-<translation id="3275506277319227640">Anclar en <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">Imagen del avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Editar archivo}other{Editar archivos}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -278,7 +277,6 @@
 <translation id="3595596368722241419">Batería al máximo</translation>
 <translation id="3600339377155080675">Proyectar pantalla</translation>
 <translation id="3602290021589620013">Vista previa</translation>
-<translation id="360282891121575443">Otros usuarios pueden actualizar las fotos de los álbumes compartidos. La opción Cambiar a diario podría mostrar fondos de pantalla que no estén en el álbum.</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Cambiar fondo de pantalla</translation>
 <translation id="360565022852130722">La red Wi-Fi está protegida con un protocolo poco seguro WEP 802.1x</translation>
@@ -360,7 +358,6 @@
 <translation id="4311195029067684288">Vista completa</translation>
 <translation id="4333390807948134856">Tecla <ph name="KEY_NAME" /> pulsada</translation>
 <translation id="435692326371619097">Gestiona los ajustes de APN de la red. Los APN establecen una conexión entre una red móvil e Internet. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Anclar en el lado más pequeño</translation>
 <translation id="4378373042927530923">Sin ejecutar</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -639,7 +636,6 @@
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6659594942844771486">Pestaña</translation>
 <translation id="6692996468359469499">Obtener información sobre tu selección</translation>
-<translation id="6698459586333070823">Otros usuarios pueden actualizar los álbumes compartidos</translation>
 <translation id="6704062477274546131">Resolución de DNS</translation>
 <translation id="6723839937902243910">Batería</translation>
 <translation id="6723847290197874913">Retroiluminación del teclado</translation>
@@ -795,7 +791,6 @@
 <translation id="8226628635270268143">Elige tus fotos y álbumes favoritos</translation>
 <translation id="8227119283605456246">Adjuntar archivo</translation>
 <translation id="8230672074305416752">Se ha producido un error al hacer ping en la puerta de enlace de red predeterminada</translation>
-<translation id="8242426110754782860">Continuar</translation>
 <translation id="8246209727385807362">Operador desconocido</translation>
 <translation id="827422111966801947">Índigo</translation>
 <translation id="8286154143153872371">Conéctate a una red y vuelve a cargar la página para ver el fondo de pantalla.</translation>
@@ -903,7 +898,6 @@
 <translation id="9137526406337347448">Servicios de Google</translation>
 <translation id="9138630967333032450">Mayús izquierda</translation>
 <translation id="9149391708638971077">Realizar prueba de memoria</translation>
-<translation id="9157515863513902090">Anclar en el lado más grande</translation>
 <translation id="9161276708550942948">barra espaciadora</translation>
 <translation id="9173638680043580060">Queda menos de 1 minuto</translation>
 <translation id="917720651393141712">Prueba</translation>

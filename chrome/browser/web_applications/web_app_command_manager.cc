@@ -22,7 +22,7 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -45,7 +45,7 @@ base::Value::Dict CreateLogValue(const WebAppCommand& command,
                                  absl::optional<CommandResult> result) {
   base::Value::Dict dict = CreateCommandMetadata(command);
   base::Value debug_value = command.ToDebugValue();
-  bool is_empty_dict = debug_value.is_dict() && debug_value.DictEmpty();
+  bool is_empty_dict = debug_value.is_dict() && debug_value.GetDict().empty();
   if (!debug_value.is_none() && !is_empty_dict) {
     dict.Set("value", command.ToDebugValue());
   }

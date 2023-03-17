@@ -314,8 +314,10 @@ void WebFrameWidgetImpl::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = To<WebLocalFrameImpl>(local_root);
   if (RuntimeEnabledFeatures::LongAnimationFrameTimingEnabled() &&
       !IsHidden()) {
+    DCHECK(local_root_->GetFrame());
     animation_frame_timing_monitor_ =
-        MakeGarbageCollected<AnimationFrameTimingMonitor>(*this);
+        MakeGarbageCollected<AnimationFrameTimingMonitor>(
+            *this, local_root_->GetFrame()->GetProbeSink());
   }
 }
 
@@ -1411,12 +1413,14 @@ void WebFrameWidgetImpl::ReportLongAnimationFrameTiming(
 bool WebFrameWidgetImpl::ShouldReportLongAnimationFrameTiming() const {
   return widget_base_ && !IsHidden();
 }
-void WebFrameWidgetImpl::OnTaskCompletedForFrame(base::TimeTicks start_time,
-                                                 base::TimeTicks end_time,
-                                                 LocalFrame* frame) {
+void WebFrameWidgetImpl::OnTaskCompletedForFrame(
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    base::TimeTicks desired_execution_time,
+    LocalFrame* frame) {
   if (animation_frame_timing_monitor_) {
-    animation_frame_timing_monitor_->OnTaskCompleted(start_time, end_time,
-                                                     frame);
+    animation_frame_timing_monitor_->OnTaskCompleted(
+        start_time, end_time, desired_execution_time, frame);
   }
 }
 
@@ -2211,6 +2215,14 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
                last_frame_time);
   DCHECK(!last_frame_time.is_null());
   CHECK(LocalRootImpl());
+
+  // The last_frame_time is created in the compositor thread, it's the time when
+  // the compositor is ready for a new frame and starts preparing it. For the
+  // purpose of animation frame timing, this is the desired time to start
+  // rendering, equivalent to the time when a work task is posted.
+  if (animation_frame_timing_monitor_) {
+    animation_frame_timing_monitor_->SetDesiredRenderStartTime(last_frame_time);
+  }
 
   // Dirty bit on MouseEventManager is not cleared in OOPIFs after scroll
   // or layout changes. Ensure the hover state is recomputed if necessary.
@@ -3591,7 +3603,7 @@ void WebFrameWidgetImpl::SetPanAction(mojom::blink::PanAction pan_action) {
 }
 
 void WebFrameWidgetImpl::DidHandleGestureEvent(const WebGestureEvent& event) {
-#if BUILDFLAG(IS_ANDROID) || defined(USE_AURA)
+#if BUILDFLAG(IS_ANDROID) || defined(USE_AURA) || BUILDFLAG(IS_IOS)
   if (event.GetType() == WebInputEvent::Type::kGestureTap) {
     widget_base_->ShowVirtualKeyboard();
   } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
@@ -3800,6 +3812,14 @@ void WebFrameWidgetImpl::CopyToFindPboard() {
   if (!focused_frame)
     return;
   To<WebLocalFrameImpl>(focused_frame)->CopyToFindPboard();
+}
+
+void WebFrameWidgetImpl::CenterSelection() {
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame) {
+    return;
+  }
+  To<WebLocalFrameImpl>(focused_frame)->CenterSelection();
 }
 
 void WebFrameWidgetImpl::Paste() {
@@ -4201,8 +4221,8 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
     // order to send IPCs that query and change compositing state. So
     // WebFrameWidgetImpl::Resize() must come after this call, as it runs the
     // entire document lifecycle.
-    View()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-        widget_base_->ComputePreferCompositingToLCDText());
+    View()->GetSettings()->SetLCDTextPreference(
+        widget_base_->ComputeLCDTextPreference());
   }
 
   // When the device scale changes, the size and position of the popup would
@@ -4286,8 +4306,10 @@ void WebFrameWidgetImpl::WasShown(bool was_evicted) {
 
   if (!animation_frame_timing_monitor_ &&
       RuntimeEnabledFeatures::LongAnimationFrameTimingEnabled()) {
+    DCHECK(local_root_->GetFrame());
     animation_frame_timing_monitor_ =
-        MakeGarbageCollected<AnimationFrameTimingMonitor>(*this);
+        MakeGarbageCollected<AnimationFrameTimingMonitor>(
+            *this, local_root_->GetFrame()->GetProbeSink());
   }
 }
 

@@ -726,8 +726,7 @@ void BrowserAutofillManager::OnVirtualCardCandidateSelected(
 }
 #endif
 
-bool BrowserAutofillManager::ShouldParseForms(
-    const std::vector<FormData>& forms) {
+bool BrowserAutofillManager::ShouldParseForms() {
   bool autofill_enabled = IsAutofillEnabled();
   // If autofill is disabled but the password manager is enabled, we still
   // need to parse the forms and query the server as the password manager
@@ -2121,20 +2120,14 @@ bool BrowserAutofillManager::RefreshDataModels() {
 }
 
 CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
-  // Unpack the |unique_id| into component parts.
-  Suggestion::BackendId credit_card_id;
-  Suggestion::BackendId profile_id;
-  suggestion_generator_->SplitFrontendId(unique_id, &credit_card_id,
-                                         &profile_id);
+  Suggestion::BackendId credit_card_id =
+      suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
   return personal_data_->GetCreditCardByGUID(credit_card_id.value());
 }
 
 AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
-  // Unpack the |unique_id| into component parts.
-  Suggestion::BackendId credit_card_id;
-  Suggestion::BackendId profile_id;
-  suggestion_generator_->SplitFrontendId(unique_id, &credit_card_id,
-                                         &profile_id);
+  Suggestion::BackendId profile_id =
+      suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
 
   std::string guid = profile_id.value();
   if (base::IsValidGUID(guid))
@@ -2704,8 +2697,9 @@ void BrowserAutofillManager::OnFormProcessed(
   if (auto* autofill_optimization_guide =
           client()->GetAutofillOptimizationGuide()) {
     // Initiate necessary pre-processing based on the forms and fields that are
-    // parsed.
-    autofill_optimization_guide->OnDidParseForm(form_structure);
+    // parsed, as well as the information that the user has saved in the web
+    // database based on `personal_data_`.
+    autofill_optimization_guide->OnDidParseForm(form_structure, personal_data_);
   }
 
   // If a form with the same name was previously filled, and there has not

@@ -7,9 +7,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_test_utils.h"
@@ -24,7 +26,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "sync_service_impl_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -314,7 +315,11 @@ bool ServerHistoryMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
 class SingleClientHistorySyncTest : public SyncTest {
  public:
   SingleClientHistorySyncTest() : SyncTest(SINGLE_CLIENT) {
-    features_.InitAndEnableFeature(syncer::kSyncEnableHistoryDataType);
+    features_.InitWithFeatures(
+        {syncer::kSyncEnableHistoryDataType},
+        // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+        // disable this feature.
+        /*disabled_features=*/{features::kHttpsUpgrades});
   }
   ~SingleClientHistorySyncTest() override = default;
 

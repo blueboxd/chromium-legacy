@@ -503,6 +503,24 @@
     'name': 'chromium.accessibility',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'fuchsia-x64-accessibility-rel': {
+        'additional_compile_targets': [
+          'content_browsertests',
+        ],
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fuchsia_accessibility_browsertests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+      },
       'linux-blink-web-tests-force-accessibility-rel': {
         'additional_compile_targets': [
           'blink_tests',
@@ -1720,7 +1738,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2651,7 +2668,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2666,7 +2682,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2735,7 +2750,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2750,7 +2764,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -3212,6 +3225,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
+          'mac_12_arm64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_14_main',
@@ -3311,6 +3325,7 @@
           'has_native_resultdb_integration',
           'mac_12_x64',
           'mac_toolchain',
+          'xcode_14_main',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_tests_ios',
@@ -3547,6 +3562,14 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_lacros_version_skew_tests',
+        },
+      },
+      'linux-network-sandbox-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'network_sandbox_browser_tests',
         },
       },
       'linux-perfetto-rel': {
@@ -4323,13 +4346,11 @@
         'mixins': [
           'android_t',
           'has_native_resultdb_integration',
-          'limited_capacity_bot',
           'oriole',
           'gpu-swarming-pool',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_pixel_4_and_6_telemetry_tests',
-          'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
       },
       'Android FYI Release (Samsung A13)': {
@@ -4596,7 +4617,8 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Retina Release (AMD)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
       'Mac FYI Experimental Retina Release (NVIDIA)': {

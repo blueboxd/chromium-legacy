@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">ກວດເຫັນ Firewall</translation>
 <translation id="1075811647922107217">ຂະຫນາດຫນ້າ</translation>
+<translation id="1082009148392559545">ກຳລັງດາວໂຫຼດພາບພັກໜ້າຈໍ</translation>
 <translation id="1094693127011229778">ທີ່ຢູ່ IP ບໍ່ສາມາດໃຊ້ໄດ້</translation>
 <translation id="1113892970288677790">ເລືອກໜ້າປົກ ແລະ ຮູບທີ່ຄັດສັນມາ</translation>
 <translation id="1119447706177454957">ຜິດພາດພາຍໃນ</translation>
@@ -90,6 +91,7 @@
 <translation id="1717874160321062422">ຈັດການໂດຍ <ph name="FIRST_MANAGER" /> ແລະ <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">ຕັ້ງຊື່ເຊີບເວີ</translation>
 <translation id="1731082422893354635">ແຜ່ນສໍາຜັດ Bluetooth</translation>
+<translation id="1738949837603788263">ເຂດ <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">ບໍ່ສາມາດໂຫຼດຮູບໄດ້. ກະລຸນາກວດສອບການເຊື່ອມຕໍ່ເຄືອຂ່າຍຂອງທ່ານ ຫຼື ລອງໂຫຼດຮູບຄືນໃໝ່.</translation>
 <translation id="1751249301761991853">ສ່ວນຕົວ</translation>
 <translation id="1753496554272155572">ອອກຈາກຕົວຢ່າງຮູບພື້ນຫຼັງ</translation>
@@ -241,7 +243,6 @@
 <translation id="3226657629376379887">ເມນູຄຳສັ່ງໂຄງຮ່າງ</translation>
 <translation id="3246869037381808805">ວຽກພິມທີ່ເກົ່າກວ່າ 1 ມື້ຈະຖືກລຶບອອກ</translation>
 <translation id="3268178239013324452">ບໍ່ສຳເລັດ, ຝາເປີດຢູ່</translation>
-<translation id="3275506277319227640">ດັອກຢູ່ <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">ຮູບແທນຕົວ</translation>
 <translation id="3283504360622356314">{0,plural, =1{ແກ້ໄຂໄຟລ໌}other{ແກ້ໄຂໄຟລ໌}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">ແບັດເຕີຣີເຕັມ</translation>
 <translation id="3600339377155080675">ສະທ້ອນໜ້າຈໍ</translation>
 <translation id="3602290021589620013">ເບິ່ງຕົວຢ່າງ</translation>
-<translation id="360282891121575443">ຮູບພາບໃນອະລະບໍ້າແບ່ງປັນສາມາດຖືກອັບເດດໂດຍຜູ້ໃຊ້ອື່ນໄດ້. ການປ່ຽນແປງປະຈໍາວັນອາດສະແດງຮູບພື້ນຫຼັງທີ່ບໍ່ໄດ້ຢູ່ໃນອະລະບໍ້າປັດຈຸບັນ.</translation>
 <translation id="3603829704940252505">ຮູບແທນຕົວ</translation>
 <translation id="3604713164406837697">ປ່ຽນພາບພື້ນຫຼັງ</translation>
 <translation id="360565022852130722">ເຄືອຂ່າຍ WiFi ມີການຮັກສາຄວາມປອດໄພດ້ວຍໂປຣໂຕຄໍ WEP 802.1x ທີ່ບໍ່ຮັດກຸມ</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">ເຕັມ</translation>
 <translation id="4333390807948134856">ກົດປຸ່ມ <ph name="KEY_NAME" /> ແລ້ວ</translation>
 <translation id="435692326371619097">ຈັດການການຕັ້ງຄ່າ APN ຂອງເຄືອຂ່າຍ. APN ສ້າງການເຊື່ອມຕໍ່ລະຫວ່າງເຄືອຂ່າຍມືຖື ແລະ ອິນເຕີເນັດ. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">ດັອກຢູ່ຂ້າງທີ່ນ້ອຍກວ່າ</translation>
 <translation id="4378373042927530923">ບໍ່ໄດ້ເອີ້ນໃຊ້</translation>
 <translation id="4378551569595875038">ກໍາລັງ​ເຊື່ອມ​ຕໍ່ ...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -601,6 +600,7 @@
 <translation id="636850387210749493">ການລົງທະບຽນວິສາຫະກິດ</translation>
 <translation id="6379086450106841622">ໜ້າຈໍສຳຜັດ</translation>
 <translation id="6381741036071372448">ທົດສອບແປ້ນພິມຂອງທ່ານ</translation>
+<translation id="6382182670717268353">ຕົວຢ່າງພາບພັກໜ້າຈໍ</translation>
 <translation id="6388847657025262518">ຕົວປ້ອນເອກະສານຂອງເຄື່ອງສະແກນຕິດຂັດ. ກະລຸນາກວດສອບຕົວປ້ອນເອກະສານແລ້ວລອງໃໝ່.</translation>
 <translation id="6394634179843537518">ເພີ່ມໄຟລ໌</translation>
 <translation id="6410257289063177456">ໄຟລ​໌​ຮູບ​</translation>
@@ -639,7 +639,6 @@
 <translation id="6657585470893396449">ລະຫັດຜ່ານ</translation>
 <translation id="6659594942844771486">ແຖບ</translation>
 <translation id="6692996468359469499">ຮັບຂໍ້ມູນທີ່ກ່ຽວຂ້ອງກັບການເລືອກຂອງທ່ານ</translation>
-<translation id="6698459586333070823">ອະລະບໍ້າແບ່ງປັນສາມາດຖືກອັບເດດໂດຍຜູ້ໃຊ້ອື່ນໄດ້</translation>
 <translation id="6704062477274546131">ຄວາມລະອຽດ DNS</translation>
 <translation id="6723839937902243910">ໄຟ</translation>
 <translation id="6723847290197874913">ໄຟແປ້ນພິມ</translation>
@@ -692,6 +691,7 @@
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> ນີ້ຈັດການໂດຍ <ph name="MANAGER" />. ຜູ້ເບິ່ງແຍງລະບົບອາດຈະຕັ້ງຄ່າອຸປະກອນຈາກທາງໄກໄດ້.</translation>
 <translation id="7180611975245234373">ຣີເຟຣຊ</translation>
 <translation id="7180865173735832675">ກໍານົດເອງ</translation>
+<translation id="7184043045742675738">ຄລິກໃສ່ປຸ່ມໃດກໍໄດ້ເພື່ອປັບແຕ່ງປຸ່ມຂອງທ່ານ. ປ່ຽນຕຳແໜ່ງປຸ່ມດ້ວຍເມົ້າ ຫຼື ປຸ່ມລູກສອນ.</translation>
 <translation id="7212734716605298123">ອັບເດດເຟີມແວສຳລັບອຸປະກອນພາຍໃນ</translation>
 <translation id="7216409898977639127">ຜູ້ໃຫ້ບໍລິການມືຖື</translation>
 <translation id="725133483556299729">ເລືອກອີເມວ</translation>
@@ -733,6 +733,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">ໜ້າຈໍສຳຜັດ USB</translation>
 <translation id="7595982850646262331">ຍັງເຫຼືອ <ph name="TIME_VALUE" /></translation>
+<translation id="7613724632293948900">ປ່ຽນຕຳແໜ່ງດ້ວຍເມົ້າ ຫຼື ປຸ່ມລູກສອນ.</translation>
 <translation id="7620771111601174153">ສຶກສາເພີ່ມເຕີມໃນສູນຊ່ວຍເຫຼືອ</translation>
 <translation id="763165478673169849">ເວລາຣີເຊັດຫຼ້າສຸດ</translation>
 <translation id="7648838807254605802">ເວລາແຝງ HTTPS ສູງ</translation>
@@ -796,7 +797,6 @@
 <translation id="8226628635270268143">ເລືອກຮູບພາບ ແລະ ອະລະບໍ້າທີ່ທ່ານມັກ</translation>
 <translation id="8227119283605456246">ຄັດ​ຕິດ​ໄຟລ໌</translation>
 <translation id="8230672074305416752">ໃຊ້ຄຳສັ່ງ ping ກັບເກດເວເຄືອຂ່າຍຄ່າເລີ່ມຕົ້ນບໍ່ໄດ້</translation>
-<translation id="8242426110754782860">ດຳ​ເນີນ​ຕໍ່</translation>
 <translation id="8246209727385807362">ຜູ້ໃຫ້ບໍລິການທີ່ບໍ່ຮູ້ຈັກ</translation>
 <translation id="827422111966801947">ສີຄາມ</translation>
 <translation id="8286154143153872371">ກະລຸນາເຊື່ອມຕໍ່ຫາເຄືອຂ່າຍແລ້ວໂຫຼດໜ້າຄືນໃໝ່ເພື່ອເບິ່ງຮູບພື້ນຫຼັງ.</translation>
@@ -856,6 +856,7 @@
 <translation id="8798441408945964110">ຊື່ຜູ້ໃຫ້ບໍລິການ</translation>
 <translation id="8814190375133053267">Wi​-Fi</translation>
 <translation id="8818152010000655963">ພາບພື້ນຫຼັງ</translation>
+<translation id="8820457400746201697">ຍ້າຍຈຸດສຳຜັດສີຟ້າໄປໃສ່ຄຳສັ່ງ. ເລືອກປຸ່ມທີ່ກ່ຽວຂ້ອງເພື່ອປັບແຕ່ງ.</translation>
 <translation id="8834539327799336565">ຕອນນີ້ເຊື່ອມຕໍ່ແລ້ວ</translation>
 <translation id="8845001906332463065">ຂໍການຊ່ວຍເຫຼືອ</translation>
 <translation id="8855781559874488009">ບໍ່ສາມາດເຊື່ອມຕໍ່ຜ່ານ firewall ຫາເວັບໄຊ HTTP ໄດ້</translation>
@@ -904,7 +905,6 @@
 <translation id="9137526406337347448">ການບໍລິການ Google</translation>
 <translation id="9138630967333032450">Shift ຊ້າຍ</translation>
 <translation id="9149391708638971077">ດຳເນີນການທົດສອບຄວາມຈຳ</translation>
-<translation id="9157515863513902090">ດັອກຢູ່ຂ້າງທີ່ໃຫຍ່ກວ່າ</translation>
 <translation id="9161276708550942948">ຍະຫວ່າງ</translation>
 <translation id="9173638680043580060">ເຫຼືອບໍ່ຮອດໜຶ່ງນາທີ</translation>
 <translation id="917720651393141712">ທົດສອບ</translation>

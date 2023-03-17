@@ -273,6 +273,7 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "components/remote_cocoa/app_shim/application_bridge.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #endif
@@ -543,8 +544,12 @@ class TabContainerOverlayView : public views::View {
         BrowserFrameActiveState::kUseCurrent);
     canvas->DrawColor(frame_color);
 
-    // TODO(https://crbug.com/1414521): Support extension based themes /
-    // backgrounds.
+    auto* theme_service =
+        ThemeServiceFactory::GetForProfile(browser_view_->browser()->profile());
+    if (!theme_service->UsingSystemTheme()) {
+      auto* non_client_frame_view = browser_view_->frame()->GetFrameView();
+      non_client_frame_view->PaintThemedFrame(canvas);
+    }
   }
 
  private:
@@ -1865,14 +1870,6 @@ void BrowserView::EnterFullscreen(const GURL& url,
     // Nothing to do.
     return;
   }
-
-  if (unified_side_panel_ && unified_side_panel_->GetVisible() &&
-      GetExclusiveAccessManager()
-          ->fullscreen_controller()
-          ->IsWindowFullscreenForTabOrPending()) {
-    toolbar_button_provider_->GetSidePanelButton()->HideSidePanel();
-  }
-
   ProcessFullscreen(true, url, bubble_type, display_id);
 }
 
@@ -3547,11 +3544,11 @@ views::View* BrowserView::CreateOverlayView() {
 views::View* BrowserView::CreateMacOverlayView() {
   DCHECK(UsesImmersiveFullscreenMode());
 
-  auto create_overlay_widget = [this]() -> views::Widget* {
+  auto create_overlay_widget = [this](views::Widget* parent) -> views::Widget* {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.child = true;
-    params.parent = GetWidget()->GetNativeView();
+    params.parent = parent->GetNativeView();
     OverlayWidget* overlay_widget = new OverlayWidget(GetWidget());
     overlay_widget->Init(std::move(params));
     overlay_widget->SetNativeWindowProperty(kBrowserViewKey, this);
@@ -3569,7 +3566,7 @@ views::View* BrowserView::CreateMacOverlayView() {
   };
 
   // Create the toolbar overlay widget.
-  overlay_widget_ = create_overlay_widget();
+  overlay_widget_ = create_overlay_widget(GetWidget());
 
   // Create a new TopContainerOverlayView. The tab strip, omnibox, bookmarks
   // etc. will be contained within this view. Right clicking on the blank space
@@ -3587,17 +3584,19 @@ views::View* BrowserView::CreateMacOverlayView() {
   overlay_widget_->GetRootView()->AddChildView(std::move(overlay_view));
 
   if (base::FeatureList::IsEnabled(features::kImmersiveFullscreenTabs)) {
-    // Create the tab overlay widget.
-    tab_overlay_widget_ = create_overlay_widget();
+    // Create the tab overlay widget as a child of overlay_widget_.
+    tab_overlay_widget_ = create_overlay_widget(overlay_widget_);
     std::unique_ptr<TabContainerOverlayView> tab_overlay_view =
         std::make_unique<TabContainerOverlayView>(
             weak_ptr_factory_.GetWeakPtr());
+    tab_overlay_view->set_context_menu_controller(frame());
+    tab_overlay_view_targeter_ =
+        std::make_unique<OverlayViewTargeterDelegate>();
+    tab_overlay_view->SetEventTargeter(std::make_unique<views::ViewTargeter>(
+        tab_overlay_view_targeter_.get()));
     tab_overlay_view_ = tab_overlay_view.get();
     tab_overlay_widget_->GetRootView()->AddChildView(
         std::move(tab_overlay_view));
-
-    // TODO(https://crbug.com/1414521): Figure out how to handle multiple view
-    // targeters.
   }
 
   return overlay_view_;
@@ -3724,18 +3723,6 @@ void BrowserView::CreateTabSearchBubble() {
 void BrowserView::CloseTabSearchBubble() {
   if (auto* tab_search_host = GetTabSearchBubbleHost())
     tab_search_host->CloseTabSearchBubble();
-}
-
-bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_side_search) {
-  // Check if any side panels are open before closing side panels.
-  if (!side_panel_visibility_controller_ ||
-      !side_panel_visibility_controller_->IsManagedSidePanelVisible()) {
-    return false;
-  }
-
-  toolbar()->side_panel_button()->HideSidePanel();
-
-  return true;
 }
 
 void BrowserView::RevealTabStripIfNeeded() {

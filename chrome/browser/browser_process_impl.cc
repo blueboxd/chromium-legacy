@@ -92,7 +92,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/breadcrumbs/core/application_breadcrumbs_logger.h"
-#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_util.h"
 #include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
@@ -139,6 +138,7 @@
 #include "net/log/net_log.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/base/idle/idle.h"
@@ -194,6 +194,7 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/initialize_extensions_client.h"
 #include "components/storage_monitor/storage_monitor.h"
+#include "extensions/common/context_data.h"
 #include "extensions/common/extension_l10n_util.h"
 #endif
 
@@ -251,7 +252,8 @@ bool ControlledFrameBrowserAvailabilityCheck(
     const GURL& url,
     extensions::Feature::Platform platform,
     int context_id,
-    bool check_developer_mode) {
+    bool check_developer_mode,
+    std::unique_ptr<extensions::ContextData> context_data) {
   return false;
 }
 
@@ -659,6 +661,11 @@ void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
   local_state_->CommitPendingWrite(std::move(reply));
 }
 
+device::GeolocationManager* BrowserProcessImpl::geolocation_manager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return geolocation_manager_.get();
+}
+
 void BrowserProcessImpl::EndSession() {
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
@@ -740,6 +747,12 @@ BrowserProcessImpl::GetMetricsServicesManager() {
 metrics::MetricsService* BrowserProcessImpl::metrics_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetMetricsServicesManager()->GetMetricsService();
+}
+
+void BrowserProcessImpl::SetGeolocationManager(
+    std::unique_ptr<device::GeolocationManager> geolocation_manager) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  geolocation_manager_ = std::move(geolocation_manager);
 }
 
 SystemNetworkContextManager*
@@ -1024,14 +1037,6 @@ BuildState* BrowserProcessImpl::GetBuildState() {
 #endif
 }
 
-breadcrumbs::BreadcrumbPersistentStorageManager*
-BrowserProcessImpl::GetBreadcrumbPersistentStorageManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return application_breadcrumbs_logger_
-             ? application_breadcrumbs_logger_->GetPersistentStorageManager()
-             : nullptr;
-}
-
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
@@ -1267,13 +1272,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
               return ChromeMetricsServiceAccessor::
                   IsMetricsAndCrashReportingEnabled();
             }));
-
-    // Get stored persistent breadcrumbs from last run to set on crash reports.
-    GetBreadcrumbPersistentStorageManager()->GetStoredEvents(
-        base::BindOnce([](std::vector<std::string> events) {
-          breadcrumbs::BreadcrumbManager::GetInstance()
-              .SetPreviousSessionEvents(events);
-        }));
   } else {
     breadcrumbs::DeleteBreadcrumbFiles(user_data_dir);
   }

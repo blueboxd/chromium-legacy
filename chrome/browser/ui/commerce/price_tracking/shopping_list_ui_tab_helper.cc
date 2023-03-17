@@ -6,15 +6,14 @@
 
 #include "base/check_is_test.h"
 #include "base/functional/bind.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/price_tracking_utils.h"
-#include "components/image_fetcher/core/image_fetcher_service.h"
-#include "components/prefs/pref_service.h"
+#include "components/image_fetcher/core/image_fetcher.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -59,31 +58,20 @@ constexpr char kImageFetcherUmaClient[] = "ShoppingList";
 ShoppingListUiTabHelper::ShoppingListUiTabHelper(
     content::WebContents* content,
     ShoppingService* shopping_service,
-    image_fetcher::ImageFetcherService* image_fetcher_service,
-    PrefService* prefs)
+    bookmarks::BookmarkModel* model,
+    image_fetcher::ImageFetcher* image_fetcher)
     : content::WebContentsObserver(content),
       content::WebContentsUserData<ShoppingListUiTabHelper>(*content),
       shopping_service_(shopping_service),
-      prefs_(prefs) {
-  if (image_fetcher_service) {
-    // TODO(1360846): Consider using the in-memory cache instead.
-    image_fetcher_ = image_fetcher_service->GetImageFetcher(
-        image_fetcher::ImageFetcherConfig::kNetworkOnly);
-  } else {
+      bookmark_model_(model),
+      image_fetcher_(image_fetcher) {
+  if (!image_fetcher_) {
     CHECK_IS_TEST();
   }
 
-  bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContext(content->GetBrowserContext());
-
-  if (bookmark_model) {
-    scoped_observation_.Observe(BookmarkModelFactory::GetForBrowserContext(
-        content->GetBrowserContext()));
+  if (shopping_service_) {
+    scoped_observation_.Observe(shopping_service_);
   } else {
-    CHECK_IS_TEST();
-  }
-
-  if (!shopping_service_) {
     CHECK_IS_TEST();
   }
 }
@@ -111,6 +99,7 @@ void ShoppingListUiTabHelper::NavigationEntryCommitted(
   last_fetched_image_url_ = GURL();
   is_cluster_id_tracked_by_user_ = false;
   cluster_id_for_page_.reset();
+  pending_tracking_state_.reset();
 
   if (!shopping_service_ || !shopping_service_->IsShoppingListEligible())
     return;
@@ -126,25 +115,30 @@ void ShoppingListUiTabHelper::NavigationEntryCommitted(
   UpdatePriceTrackingIconView();
 }
 
-void ShoppingListUiTabHelper::BookmarkModelChanged() {}
-
-void ShoppingListUiTabHelper::BookmarkNodeRemoved(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* parent,
-    size_t old_index,
-    const bookmarks::BookmarkNode* node,
-    const std::set<GURL>& no_longer_bookmarked) {
+void ShoppingListUiTabHelper::OnSubscribe(
+    const std::vector<CommerceSubscription>& subscriptions,
+    bool succeeded) {
+  // TODO(b:265216263): Block events here if the subscription does not match
+  //                    what is on the current page.
+  UpdatePriceTrackingStateFromSubscriptions();
   UpdatePriceTrackingIconView();
 }
 
-void ShoppingListUiTabHelper::BookmarkMetaInfoChanged(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* node) {
-  if (!commerce::IsProductBookmark(model, node))
-    return;
-
+void ShoppingListUiTabHelper::OnUnsubscribe(
+    const std::vector<CommerceSubscription>& subscriptions,
+    bool succeeded) {
   UpdatePriceTrackingStateFromSubscriptions();
   UpdatePriceTrackingIconView();
+}
+
+void ShoppingListUiTabHelper::SetShoppingServiceForTesting(
+    ShoppingService* shopping_service) {
+  CHECK_IS_TEST();
+  shopping_service_ = shopping_service;
+  scoped_observation_.Reset();
+  if (shopping_service_) {
+    scoped_observation_.Observe(shopping_service_);
+  }
 }
 
 bool ShoppingListUiTabHelper::ShouldShowPriceTrackingIconView() {
@@ -174,12 +168,57 @@ void ShoppingListUiTabHelper::HandleProductInfoResponse(
                                         kImageFetcherUmaClient));
 }
 
+void ShoppingListUiTabHelper::SetPriceTrackingState(
+    bool enable,
+    bool is_new_bookmark,
+    base::OnceCallback<void(bool)> callback) {
+  const bookmarks::BookmarkNode* node =
+      bookmark_model_->GetMostRecentlyAddedUserNodeForURL(
+          web_contents()->GetLastCommittedURL());
+
+  base::OnceCallback<void(bool)> wrapped_callback = base::BindOnce(
+      [](base::WeakPtr<ShoppingListUiTabHelper> helper,
+         base::OnceCallback<void(bool)> callback, bool success) {
+        if (helper) {
+          if (success) {
+            helper->is_cluster_id_tracked_by_user_ =
+                helper->pending_tracking_state_.value();
+          }
+          helper->pending_tracking_state_.reset();
+        }
+
+        std::move(callback).Run(success);
+      },
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  pending_tracking_state_.emplace(enable);
+
+  if (node) {
+    commerce::SetPriceTrackingStateForBookmark(
+        shopping_service_.get(), bookmark_model_.get(), node, enable,
+        std::move(wrapped_callback), enable && is_new_bookmark);
+  } else {
+    DCHECK(!enable);
+    absl::optional<commerce::ProductInfo> info =
+        shopping_service_->GetAvailableProductInfoForUrl(
+            web_contents()->GetLastCommittedURL());
+    if (info.has_value()) {
+      commerce::SetPriceTrackingStateForClusterId(
+          shopping_service_.get(), bookmark_model_, info->product_cluster_id,
+          enable, std::move(wrapped_callback));
+    }
+  }
+}
+
 void ShoppingListUiTabHelper::UpdatePriceTrackingStateFromSubscriptions() {
   if (!cluster_id_for_page_.has_value())
     return;
 
-  shopping_service_->IsClusterIdTrackedByUser(
-      cluster_id_for_page_.value(),
+  const bookmarks::BookmarkNode* bookmark_node =
+      bookmark_model_->GetMostRecentlyAddedUserNodeForURL(
+          web_contents()->GetLastCommittedURL());
+  commerce::IsBookmarkPriceTracked(
+      shopping_service_, bookmark_model_, bookmark_node,
       base::BindOnce(
           [](base::WeakPtr<ShoppingListUiTabHelper> helper, bool is_tracked) {
             if (!helper) {
@@ -214,20 +253,7 @@ const GURL& ShoppingListUiTabHelper::GetProductImageURL() {
 }
 
 bool ShoppingListUiTabHelper::IsPriceTracking() {
-  if (is_cluster_id_tracked_by_user_) {
-    return true;
-  }
-
-  if (!web_contents())
-    return false;
-
-  bookmarks::BookmarkModel* const bookmark_model =
-      BookmarkModelFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-  const bookmarks::BookmarkNode* bookmark_node =
-      bookmark_model->GetMostRecentlyAddedUserNodeForURL(
-          web_contents()->GetLastCommittedURL());
-  return commerce::IsBookmarkPriceTracked(bookmark_model, bookmark_node);
+  return pending_tracking_state_.value_or(is_cluster_id_tracked_by_user_);
 }
 
 void ShoppingListUiTabHelper::UpdatePriceTrackingIconView() {
@@ -240,6 +266,11 @@ void ShoppingListUiTabHelper::UpdatePriceTrackingIconView() {
   }
 
   browser->window()->UpdatePageActionIcon(PageActionIconType::kPriceTracking);
+}
+
+const absl::optional<bool>&
+ShoppingListUiTabHelper::GetPendingTrackingStateForTesting() {
+  return pending_tracking_state_;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ShoppingListUiTabHelper);

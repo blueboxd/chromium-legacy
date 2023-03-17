@@ -166,6 +166,8 @@ extern const char kEnterpriseForceManualEnrollmentInTestBuilds[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableForcedReEnrollment[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kEnterpriseEnableUnifiedStateDetermination[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableInitialEnrollment[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableZeroTouchEnrollment[];
@@ -175,6 +177,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnrollmentModulusLimit[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisallowPolicyBlockDevMode[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kEolIgnoreProfileCreationTime[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEolResetDismissedPrefs[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kExtensionInstallEventChromeLogForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)

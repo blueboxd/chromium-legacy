@@ -198,8 +198,15 @@ class WaylandWindowTest : public WaylandTest {
   void AdvanceFrameToCurrent(
       WaylandWindow* window,
       const MockWaylandPlatformWindowDelegate& delegate) {
+    AdvanceFrameToGivenVizSequenceId(window, delegate, delegate.viz_seq());
+  }
+
+  void AdvanceFrameToGivenVizSequenceId(
+      WaylandWindow* window,
+      const MockWaylandPlatformWindowDelegate& delegate,
+      int64_t viz_seq) {
     wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
-    window->OnSequencePoint(delegate.viz_seq());
+    window->OnSequencePoint(viz_seq);
     window->root_surface()->ApplyPendingState();
   }
 
@@ -1656,6 +1663,68 @@ TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {
   SendConfigureEvent(surface_id_, {0, 0}, states, 14u);
 }
 
+TEST_P(WaylandWindowTest, ConfigureEventIsNotAckedMultipleTimes) {
+  constexpr gfx::Rect kNormalBounds{500, 300};
+  constexpr gfx::Rect kSecondBounds{600, 600};
+
+  // Configure event makes Wayland update bounds, but does not change toplevel
+  // input region, opaque region or window geometry immediately. Such actions
+  // are postponed to OnSequencePoint();
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kDefaultBoundsChange)));
+
+  PostToServerAndWait([id = surface_id_, bounds = kNormalBounds](
+                          wl::TestWaylandServerThread* server) {
+    auto* mock_surface = server->GetObject<wl::MockSurface>(id);
+    ASSERT_TRUE(mock_surface);
+    auto* xdg_surface = mock_surface->xdg_surface();
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(bounds.size())))
+        .Times(0);
+    EXPECT_CALL(*xdg_surface, AckConfigure(_)).Times(0);
+    EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).Times(0);
+    EXPECT_CALL(*mock_surface, SetInputRegion(_)).Times(0);
+  });
+
+  auto state = InitializeWlArrayWithActivatedState();
+  constexpr uint32_t kConfigureSerial = 2u;
+  SendConfigureEvent(surface_id_, kNormalBounds.size(), state,
+                     kConfigureSerial);
+
+  PostToServerAndWait([id = surface_id_, bounds = kNormalBounds](
+                          wl::TestWaylandServerThread* server) {
+    auto* mock_surface = server->GetObject<wl::MockSurface>(id);
+    ASSERT_TRUE(mock_surface);
+    auto* xdg_surface = mock_surface->xdg_surface();
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(bounds));
+    EXPECT_CALL(*xdg_surface, AckConfigure(kConfigureSerial));
+    EXPECT_CALL(*mock_surface, SetOpaqueRegion(_));
+    EXPECT_CALL(*mock_surface, SetInputRegion(_));
+  });
+
+  // Get the viz sequence ID which will let us ack the configure event.
+  auto viz_seq = delegate_.viz_seq();
+
+  // Insert another change which will increase the viz sequence ID here.
+  // We want to make sure that when this viz sequence ID is reached, we
+  // don't send another ack for the configure.
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kDefaultBoundsChange)));
+  window_->SetBoundsInDIP(kSecondBounds);
+
+  AdvanceFrameToGivenVizSequenceId(window_.get(), delegate_, viz_seq);
+  VerifyAndClearExpectations();
+
+  PostToServerAndWait([id = surface_id_, bounds = kSecondBounds](
+                          wl::TestWaylandServerThread* server) {
+    auto* mock_surface = server->GetObject<wl::MockSurface>(id);
+    ASSERT_TRUE(mock_surface);
+    auto* xdg_surface = mock_surface->xdg_surface();
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(bounds));
+    EXPECT_CALL(*xdg_surface, AckConfigure(_)).Times(0);
+    EXPECT_CALL(*mock_surface, SetOpaqueRegion(_));
+    EXPECT_CALL(*mock_surface, SetInputRegion(_));
+  });
+  AdvanceFrameToCurrent(window_.get(), delegate_);
+}
+
 TEST_P(WaylandWindowTest, OnActivationChanged) {
   uint32_t serial = 0;
 
@@ -2261,14 +2330,15 @@ TEST_P(WaylandWindowTest, ToplevelWindowUpdateWindowScale) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Configure first output with scale 1.
     wl::TestOutput* output1 = server->output();
-    output1->SetRect(gfx::Rect(1920, 1080));
-    output1->SetScale(1);
+    output1->SetPhysicalAndLogicalBounds({1920, 1080});
+    output1->Flush();
 
     // Creating an output with scale 2.
-    wl::TestOutput* output2 = server->CreateAndInitializeOutput();
-    output2->SetRect(gfx::Rect(1920, 1080));
+    auto* output2 =
+        server->CreateAndInitializeOutput(wl::TestOutputMetrics({1920, 1080}));
     output2->SetScale(2);
   });
+  WaitForAllDisplaysReady();
 
   auto* output_manager = connection_->wayland_output_manager();
   EXPECT_EQ(2u, output_manager->GetAllOutputs().size());
@@ -2320,14 +2390,15 @@ TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Configure an output with scale 1.
     wl::TestOutput* output1 = server->output();
-    output1->SetRect(gfx::Rect(1920, 1080));
-    output1->SetScale(1);
+    output1->SetPhysicalAndLogicalBounds({1920, 1080});
+    output1->Flush();
 
     // Creating an output with scale 2.
-    wl::TestOutput* output2 = server->CreateAndInitializeOutput();
-    output2->SetRect(gfx::Rect(1920, 0, 1920, 1080));
+    auto* output2 = server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({1920, 0, 1920, 1080}));
     output2->SetScale(2);
   });
+  WaitForAllDisplaysReady();
 
   auto* output_manager = connection_->wayland_output_manager();
   EXPECT_EQ(2u, output_manager->GetAllOutputs().size());
@@ -2415,13 +2486,12 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Configure an output with scale 1.
     wl::TestOutput* main_output = server->output();
-    main_output->SetRect(gfx::Rect(1920, 1080));
-    main_output->SetScale(1);
+    main_output->SetPhysicalAndLogicalBounds({1920, 1080});
+    main_output->Flush();
 
-    // Creating an output with scale 2.
-    wl::TestOutput* secondary_output = server->CreateAndInitializeOutput();
-    secondary_output->SetRect(gfx::Rect(1921, 0, 1920, 1080));
-    secondary_output->SetScale(1);
+    // Creating an output with scale 1.
+    server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({1921, 0, 1920, 1080}));
   });
 
   auto* output_manager = connection_->wayland_output_manager();
@@ -2517,14 +2587,15 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferUsesParentScale) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Configure the the first output with scale 1.
     wl::TestOutput* main_output = server->output();
-    main_output->SetRect(gfx::Rect(1920, 1080));
-    main_output->SetScale(1);
+    main_output->SetPhysicalAndLogicalBounds({1920, 1080});
+    main_output->Flush();
 
     // Creating an output with scale 2.
-    wl::TestOutput* secondary_output = server->CreateAndInitializeOutput();
-    secondary_output->SetRect(gfx::Rect(1921, 0, 1920, 1080));
-    secondary_output->SetScale(2);
+    auto* output2 = server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({1921, 0, 1920, 1080}));
+    output2->SetScale(2);
   });
+  WaitForAllDisplaysReady();
 
   auto* output_manager = connection_->wayland_output_manager();
   EXPECT_EQ(2u, output_manager->GetAllOutputs().size());
@@ -2577,11 +2648,12 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Update first output.
     wl::TestOutput* output1 = server->output();
-    output1->SetRect(gfx::Rect(1920, 1080));
+    output1->SetPhysicalAndLogicalBounds({1920, 1080});
+    output1->Flush();
 
     // Creating a 2nd output.
-    wl::TestOutput* output2 = server->CreateAndInitializeOutput();
-    output2->SetRect(gfx::Rect(1921, 0, 1920, 1080));
+    server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({1921, 0, 1920, 1080}));
   });
 
   WaitForAllDisplaysReady();
@@ -2624,8 +2696,8 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Create the third output.
-    wl::TestOutput* output3 = server->CreateAndInitializeOutput();
-    output3->SetRect(gfx::Rect(0, 1081, 1920, 1080));
+    server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({0, 1081, 1920, 1080}));
   });
 
   WaitForAllDisplaysReady();
@@ -2718,11 +2790,12 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     // Update the first output.
     wl::TestOutput* output1 = server->output();
-    output1->SetRect(gfx::Rect(1920, 1080));
+    output1->SetPhysicalAndLogicalBounds({1920, 1080});
+    output1->Flush();
 
     // Create a 2nd output.
-    wl::TestOutput* output2 = server->CreateAndInitializeOutput();
-    output2->SetRect(gfx::Rect(1921, 0, 1920, 1080));
+    server->CreateAndInitializeOutput(
+        wl::TestOutputMetrics({1921, 0, 1920, 1080}));
   });
 
   WaitForAllDisplaysReady();

@@ -324,6 +324,8 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/privacy_sandbox/android:java",
       "//chrome/browser/profiles/android:java",
       "//chrome/browser/quick_delete:java",
+      "//chrome/browser/recent_tabs:factory_java",
+      "//chrome/browser/recent_tabs:java",
       "//chrome/browser/safe_browsing/android:java",
       "//chrome/browser/safety_check/android:java",
       "//chrome/browser/search_engines/android:java",
@@ -504,7 +506,7 @@ if (current_toolchain == default_toolchain) {
       "//components/webapps/common/android:webapk_install_java",
       "//components/webauthn/android:java",
       "//components/webrtc/android:java",
-      "//components/webxr/android:ar_java_interfaces",
+      "//components/webxr/android:xr_java",
       "//components/zoom/android:java",
       "//content/public/android:content_java",
       "//content/public/common:common_java",
@@ -581,7 +583,6 @@ if (current_toolchain == default_toolchain) {
       ":resource_id_javagen",
       "//chrome:offline_pages_enum_javagen",
       "//chrome:partner_bookmarks_javagen",
-      "//chrome:supervised_user_url_filter_enum_javagen",
       "//chrome/browser:screenshot_mode_enum",
       "//chrome/browser:sharing_dialog_type_generated_enum",
       "//chrome/browser:sharing_send_message_result_generated_enum",
@@ -593,6 +594,7 @@ if (current_toolchain == default_toolchain) {
       "//components/dom_distiller/core:distiller_type_java",
       "//components/ntp_tiles:ntp_tiles_enums_java",
       "//components/offline_pages/core:offline_page_model_enums_java",
+      "//components/supervised_user/core/browser:supervised_user_url_filter_enum_javagen",
       "//net:effective_connection_type_java",
     ]
 
@@ -608,16 +610,8 @@ if (current_toolchain == default_toolchain) {
     # Include sources from public_tab_management_java_sources.gni.
     sources += public_tab_management_java_sources
     sources += start_surface_java_sources
-
     if (enable_arcore) {
-      deps += [
-        "//components/webxr/android:ar_java",
-        "//components/webxr/android:webxr_android_enums_java",
-      ]
-    }
-
-    if (enable_cardboard) {
-      deps += [ "//third_party/cardboard:cardboard_java" ]
+      deps += [ "//third_party/arcore-android-sdk-client:com_google_ar_core_java__ignored_manifest" ]
     }
 
     if (enable_vr) {
@@ -720,6 +714,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/password_check:internal_java",
       "//chrome/browser/password_edit_dialog/android:java",
       "//chrome/browser/password_entry_edit/android/internal:java",
+      "//chrome/browser/recent_tabs/internal:java",
       "//chrome/browser/tabmodel/internal:java",
       "//chrome/browser/touch_to_fill/android/internal:java",
       "//chrome/browser/touch_to_fill/common/android:java",
@@ -925,6 +920,10 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/privacy_guide/android:java",
       "//chrome/browser/privacy_guide/android:junit",
       "//chrome/browser/profiles/android:java",
+      "//chrome/browser/profiles/android:junit",
+      "//chrome/browser/quick_delete:java",
+      "//chrome/browser/quick_delete:junit",
+      "//chrome/browser/recent_tabs/internal:junit",
       "//chrome/browser/safety_check/android:java",
       "//chrome/browser/safety_check/android:junit",
       "//chrome/browser/search_engines/android:java",
@@ -1486,6 +1485,8 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/privacy_sandbox/android:java",
       "//chrome/browser/privacy_sandbox/android:javatests",
       "//chrome/browser/profiles/android:java",
+      "//chrome/browser/quick_delete:java",
+      "//chrome/browser/quick_delete:javatests",
       "//chrome/browser/safe_browsing/android:java",
       "//chrome/browser/safe_browsing/android:javatests",
       "//chrome/browser/safety_check/android:java",
@@ -2868,7 +2869,6 @@ if (current_toolchain == default_toolchain) {
   if (enable_arcore) {
     monochrome_test_apk_tmpl("monochrome_public_test_ar_apk") {
       apk_name = "MonochromePublicTestAr"
-      min_sdk_version = 24
       target_sdk_version = android_sdk_version
 
       if (android_64bit_target_cpu) {
@@ -2891,9 +2891,12 @@ if (current_toolchain == default_toolchain) {
         "//third_party/android_sdk:android_test_mock_java",
       ]
 
-      # Include ArCore files directly instead of using bundles.
+      # Include ArCore files directly instead of using bundles. This does
+      # require us to explicitly re-declare our dependency on ARCore, which
+      # otherwise should have already been included, since the native libraries
+      # need to know that it is available. Though we'd always need to forcibly
+      # include the manifest DEP here as well
       deps += [
-        "//components/webxr/android:ar_java",
         "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
         "//third_party/arcore-android-sdk-client:com_google_ar_core_java__ignored_manifest",
       ]
@@ -3139,11 +3142,9 @@ if (current_toolchain == default_toolchain) {
 
     if (_is_trichrome) {
       _bundle_name = "TrichromeChrome${invoker.bundle_suffix}"
-      _min_sdk_version = 29
       _module_descs = trichrome_module_descs
     } else {
       _bundle_name = "MonochromePublic${invoker.bundle_suffix}"
-      _min_sdk_version = 24
       _module_descs = monochrome_module_descs
     }
 
@@ -3192,7 +3193,6 @@ if (current_toolchain == default_toolchain) {
       base_module_target = ":$_base_module_target_name"
       bundle_name = _bundle_name
       manifest_package = chrome_public_manifest_package
-      min_sdk_version = _min_sdk_version
       module_descs = _module_descs
       chrome_deps = [ ":delegate_public_impl_java" ]
       if (!_is_trichrome) {

@@ -2456,24 +2456,9 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   return !properties->ScrollTranslation()->HasDirectCompositingReasons();
 }
 
-static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
-  // Don't force composite scroll for select or text input elements.
-  if (Node* node = layer->GetLayoutObject().GetNode()) {
-    if (IsA<HTMLSelectElement>(node))
-      return false;
-    if (TextControlElement* text_control = EnclosingTextControl(node)) {
-      if (IsA<HTMLInputElement>(text_control)) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     bool force_prefer_compositing_to_lcd_text) {
   const auto* box = GetLayoutBox();
-  non_composited_main_thread_scrolling_reasons_ = 0;
   auto new_background_paint_location =
       box->ComputeBackgroundPaintLocationIfComposited();
   bool needs_composited_scrolling = ComputeNeedsCompositedScrollingInternal(
@@ -2492,32 +2477,26 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
   DCHECK_EQ(background_paint_location_if_composited,
             GetLayoutBox()->ComputeBackgroundPaintLocationIfComposited());
 
-  if (!Layer()->GetLayoutObject().GetFrameView()->IsVisible())
-    return false;
+  non_composited_main_thread_scrolling_reasons_ = 0;
 
-  if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer_))
+  if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer_)) {
     return true;
+  }
 
-  if (!layer_->ScrollsOverflow())
-    return false;
-
-  if (layer_->Size().IsEmpty())
-    return false;
-
-  const auto* box = GetLayoutBox();
-
-  if (!force_prefer_compositing_to_lcd_text &&
-      (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled() ||
-       !LayerNodeMayNeedCompositedScrolling(layer_))) {
+  if (!ScrollsOverflow()) {
     return false;
   }
 
-  bool needs_composited_scrolling = true;
-
   if (!force_prefer_compositing_to_lcd_text &&
-      !box->GetDocument()
-           .GetSettings()
-           ->GetPreferCompositingToLCDTextEnabled()) {
+      RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled()) {
+    return false;
+  }
+
+  const auto* box = GetLayoutBox();
+  bool needs_composited_scrolling = true;
+  if (!force_prefer_compositing_to_lcd_text &&
+      box->GetDocument().GetSettings()->GetLCDTextPreference() ==
+          LCDTextPreference::kStronglyPreferred) {
     if (!box->TextIsKnownToBeOnOpaqueBackground()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
@@ -2534,16 +2513,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
 
   DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
            ~cc::MainThreadScrollingReason::kNonCompositedReasons));
-
-  if (!box->GetFrame()->Client()->GetWebFrame()) {
-    // If there's no WebFrame, then there's no WebFrameWidget, and we can't do
-    // threaded scrolling.  This currently only happens in a WebPagePopup.
-    // (However, we still allow needs_composited_scrolling to be true in this
-    // case, so that the scroller gets layerized.)
-    non_composited_main_thread_scrolling_reasons_ |=
-        cc::MainThreadScrollingReason::kPopupNoThreadedInput;
-  }
-
   return needs_composited_scrolling;
 }
 

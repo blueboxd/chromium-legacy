@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/signin_features.h"
@@ -21,7 +22,10 @@
 #include "chrome/grit/intro_resources_map.h"
 #include "chrome/grit/signin_resources.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_google_chrome_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
 
 IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   DCHECK(base::FeatureList::IsEnabled(kForYouFre));
@@ -56,7 +60,15 @@ IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
     default:
       NOTREACHED();
   }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  int title_id = IDS_PRIMARY_PROFILE_FIRST_RUN_NO_NAME_TITLE;
 #endif
+
+  // Setting the title here instead of relying on the one provided from the
+  // page itself makes it available much earlier, and avoids having to fallback
+  // to the one obtained from `NavigationEntry::GetTitleForDisplay()` (which
+  // ends up being the URL) when we try to get it on startup for a11y purposes.
+  web_ui->OverrideTitle(l10n_util::GetStringUTF16(title_id));
 
   webui::LocalizedString localized_strings[] = {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -70,17 +82,16 @@ IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
     {"backupCardDescription", IDS_FRE_BACKUP_CARD_DESCRIPTION},
     {"declineSignInButtonTitle", IDS_FRE_DECLINE_SIGN_IN_BUTTON_TITLE},
     {"acceptSignInButtonTitle", IDS_FRE_ACCEPT_SIGN_IN_BUTTON_TITLE},
+    {"productLogoAltText", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     {"proceedLabel", IDS_PRIMARY_PROFILE_FIRST_RUN_NEXT_BUTTON_LABEL},
-    {"windowTitle", IDS_PRIMARY_PROFILE_FIRST_RUN_NO_NAME_TITLE},
 #endif
   };
   source->AddLocalizedStrings(localized_strings);
 
-  // TODO(crbug.com/1409028): Replace this function by a call to
-  // chrome::GetDeviceManagerIdentity()
-  const bool is_device_managed = chrome::ShouldDisplayManagedUi(profile);
+  const bool is_device_managed =
+      policy::ManagementServiceFactory::GetForPlatform()->IsManaged();
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   source->AddBoolean("isDeviceManaged", is_device_managed);
 
@@ -95,6 +106,9 @@ IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
                           IDR_SIGNIN_IMAGES_SHARED_RIGHT_BANNER_SVG);
   source->AddResourcePath("images/right_illustration_dark.svg",
                           IDR_SIGNIN_IMAGES_SHARED_RIGHT_BANNER_DARK_SVG);
+  source->AddResourcePath("tangible_sync_style_shared.css.js",
+                          IDR_SIGNIN_TANGIBLE_SYNC_STYLE_SHARED_CSS_JS);
+  source->AddResourcePath("signin_vars.css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath("images/gshield.svg", IDR_GSHIELD_ICON_SVG);

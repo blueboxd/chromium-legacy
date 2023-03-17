@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/web_app_startup_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -90,7 +91,6 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
-#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -139,6 +139,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ui/views/apps/app_dialog/app_uninstall_dialog_view.h"
 #else
+#include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
+#include "chrome/browser/ui/webui/app_home/app_home_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #endif
 
@@ -563,45 +565,6 @@ class UninstallCompleteWaiter final : public BrowserListObserver,
   base::ScopedObservation<WebAppInstallManager, WebAppInstallManagerObserver>
       observation_{this};
 };
-
-#if BUILDFLAG(IS_WIN)
-std::vector<std::wstring> GetFileExtensionsForProgId(
-    const std::wstring& file_handler_prog_id) {
-  const std::wstring prog_id_path =
-      base::StrCat({ShellUtil::kRegClasses, L"\\", file_handler_prog_id});
-
-  // Get list of handled file extensions from value FileExtensions at
-  // HKEY_CURRENT_USER\Software\Classes\<file_handler_prog_id>.
-  base::win::RegKey file_extensions_key(HKEY_CURRENT_USER, prog_id_path.c_str(),
-                                        KEY_QUERY_VALUE);
-  std::wstring handled_file_extensions;
-  EXPECT_EQ(file_extensions_key.ReadValue(L"FileExtensions",
-                                          &handled_file_extensions),
-            ERROR_SUCCESS);
-  return base::SplitString(handled_file_extensions, std::wstring(L";"),
-                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-}
-#endif
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-bool IconManagerCheckIconTopLeftColor(WebAppIconManager& icon_manager,
-                                      const AppId& app_id,
-                                      std::vector<int> sizes_px,
-                                      SkColor expected_icon_pixel_color) {
-  bool icons_exist = icon_manager.HasIcons(app_id, IconPurpose::ANY, sizes_px);
-  if (icons_exist) {
-    for (int size_px : sizes_px) {
-      SkColor icon_pixel_color =
-          IconManagerReadAppIconPixel(icon_manager, app_id, size_px, 0, 0);
-      if (icon_pixel_color != expected_icon_pixel_color) {
-        return false;
-      }
-    }
-    return true;
-  }
-  return false;
-}
-#endif
 
 absl::optional<ProfileState> GetStateForProfile(StateSnapshot* state_snapshot,
                                                 Profile* profile) {
@@ -2267,6 +2230,15 @@ void WebAppIntegrationTestDriver::CheckAppListEmpty() {
       GetStateForProfile(after_state_change_action_state_.get(), profile());
   ASSERT_TRUE(state.has_value());
   EXPECT_TRUE(state->apps.empty());
+#if !BUILDFLAG(IS_CHROMEOS)
+  webapps::AppHomePageHandler app_home_page_handler =
+      GetTestAppHomePageHandler();
+  base::test::TestFuture<std::vector<app_home::mojom::AppInfoPtr>>
+      result_future;
+  app_home_page_handler.GetApps(result_future.GetCallback());
+  EXPECT_TRUE(
+      result_future.Get<std::vector<app_home::mojom::AppInfoPtr>>().empty());
+#endif
   AfterStateCheckAction();
 }
 
@@ -2274,8 +2246,20 @@ void WebAppIntegrationTestDriver::CheckAppInListIconCorrect(Site site) {
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
-  GURL icon_url =
-      apps::AppIconSource::GetIconURL(active_app_id_, icon_size::k128);
+  GURL icon_url;
+  int icon_size_to_test = icon_size::k128;
+#if !BUILDFLAG(IS_CHROMEOS)
+  webapps::AppHomePageHandler app_home_page_handler =
+      GetTestAppHomePageHandler();
+  app_home::mojom::AppInfoPtr expected_app;
+  expected_app = app_home_page_handler.GetApp(active_app_id_);
+
+  EXPECT_NE(expected_app, app_home::mojom::AppInfoPtr());
+  icon_url = expected_app->icon_url;
+  icon_size_to_test = icon_size::k64;
+#else
+  icon_url = apps::AppIconSource::GetIconURL(active_app_id_, icon_size::k128);
+#endif
   SkBitmap icon_bitmap;
   base::RunLoop run_loop;
 
@@ -2300,7 +2284,7 @@ void WebAppIntegrationTestDriver::CheckAppInListIconCorrect(Site site) {
   // Compare the center pixel color instead of top left corner
   // The app list icon has a filter that changes the color at the corner.
   EXPECT_EQ(expected_color,
-            icon_bitmap.getColor(icon_size::k128 / 2, icon_size::k128 / 2));
+            icon_bitmap.getColor(icon_size_to_test / 2, icon_size_to_test / 2));
   chrome::CloseTab(browser());
   AfterStateCheckAction();
 }
@@ -2314,18 +2298,16 @@ void WebAppIntegrationTestDriver::CheckAppInListNotLocallyInstalled(Site site) {
       GetAppBySiteMode(after_state_change_action_state_.get(), profile(), site);
   ASSERT_TRUE(app_state.has_value());
   EXPECT_FALSE(app_state->is_installed_locally);
-  AfterStateCheckAction();
-}
+#if !BUILDFLAG(IS_CHROMEOS)
+  webapps::AppHomePageHandler app_home_page_handler =
+      GetTestAppHomePageHandler();
+  app_home::mojom::AppInfoPtr expected_app;
+  const AppId app_id = GetAppIdBySiteMode(site);
+  expected_app = app_home_page_handler.GetApp(app_id);
 
-void WebAppIntegrationTestDriver::CheckAppInListTabbed(Site site) {
-  if (!BeforeStateCheckAction(__FUNCTION__)) {
-    return;
-  }
-  // Note: This is a partially supported action.
-  absl::optional<AppState> app_state =
-      GetAppBySiteMode(after_state_change_action_state_.get(), profile(), site);
-  ASSERT_TRUE(app_state.has_value());
-  EXPECT_EQ(app_state->user_display_mode, mojom::UserDisplayMode::kBrowser);
+  EXPECT_NE(expected_app, app_home::mojom::AppInfoPtr());
+  EXPECT_FALSE(expected_app->is_locally_installed);
+#endif
   AfterStateCheckAction();
 }
 
@@ -2338,6 +2320,38 @@ void WebAppIntegrationTestDriver::CheckAppInListWindowed(Site site) {
       GetAppBySiteMode(after_state_change_action_state_.get(), profile(), site);
   ASSERT_TRUE(app_state.has_value());
   EXPECT_EQ(app_state->user_display_mode, mojom::UserDisplayMode::kStandalone);
+#if !BUILDFLAG(IS_CHROMEOS)
+  webapps::AppHomePageHandler app_home_page_handler =
+      GetTestAppHomePageHandler();
+  app_home::mojom::AppInfoPtr expected_app;
+  const AppId app_id = GetAppIdBySiteMode(site);
+  expected_app = app_home_page_handler.GetApp(app_id);
+
+  EXPECT_NE(expected_app, app_home::mojom::AppInfoPtr());
+  EXPECT_TRUE(expected_app->open_in_window);
+#endif
+  AfterStateCheckAction();
+}
+
+void WebAppIntegrationTestDriver::CheckAppInListTabbed(Site site) {
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
+  // Note: This is a partially supported action.
+  absl::optional<AppState> app_state =
+      GetAppBySiteMode(after_state_change_action_state_.get(), profile(), site);
+  ASSERT_TRUE(app_state.has_value());
+  EXPECT_EQ(app_state->user_display_mode, mojom::UserDisplayMode::kBrowser);
+#if !BUILDFLAG(IS_CHROMEOS)
+  webapps::AppHomePageHandler app_home_page_handler =
+      GetTestAppHomePageHandler();
+  app_home::mojom::AppInfoPtr expected_app;
+  const AppId app_id = GetAppIdBySiteMode(site);
+  expected_app = app_home_page_handler.GetApp(app_id);
+
+  EXPECT_NE(expected_app, app_home::mojom::AppInfoPtr());
+  EXPECT_FALSE(expected_app->open_in_window);
+#endif
   AfterStateCheckAction();
 }
 
@@ -2401,6 +2415,16 @@ void WebAppIntegrationTestDriver::CheckAppNotInList(Site site) {
   absl::optional<AppState> app_state =
       GetAppBySiteMode(after_state_change_action_state_.get(), profile(), site);
   EXPECT_FALSE(app_state.has_value());
+#if !BUILDFLAG(IS_CHROMEOS)
+  webapps::AppHomePageHandler app_home_page_handler =
+      GetTestAppHomePageHandler();
+  app_home::mojom::AppInfoPtr expected_app;
+  const AppId app_id = GetAppIdBySiteMode(site);
+  expected_app = app_home_page_handler.GetApp(app_id);
+
+  // An empty app received means that the app does not exist in chrome://apps.
+  EXPECT_EQ(expected_app, app_home::mojom::AppInfoPtr());
+#endif
   AfterStateCheckAction();
 }
 
@@ -2779,7 +2803,11 @@ void WebAppIntegrationTestDriver::CheckSiteHandlesFile(
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
-  ASSERT_TRUE(IsFileHandledBySite(site, file_extension));
+  AppId app_id = GetAppIdBySiteMode(site);
+  std::string app_name = GetSiteConfiguration(site).app_name;
+  std::string file_extension_str = "." + GetFileExtension(file_extension);
+  ASSERT_TRUE(override_registration_->test_override->IsFileExtensionHandled(
+      profile(), app_id, app_name, file_extension_str));
   AfterStateCheckAction();
 #endif
 }
@@ -2791,7 +2819,11 @@ void WebAppIntegrationTestDriver::CheckSiteNotHandlesFile(
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
-  ASSERT_FALSE(IsFileHandledBySite(site, file_extension));
+  AppId app_id = GetAppIdBySiteMode(site);
+  std::string app_name = GetSiteConfiguration(site).app_name;
+  std::string file_extension_str = "." + GetFileExtension(file_extension);
+  ASSERT_FALSE(override_registration_->test_override->IsFileExtensionHandled(
+      profile(), app_id, app_name, file_extension_str));
   AfterStateCheckAction();
 #endif
 }
@@ -3585,74 +3617,21 @@ bool WebAppIntegrationTestDriver::DoIconColorsMatch(Profile* profile,
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   SkColor expected_icon_pixel_color =
       GetSiteConfigurationFromAppName(name).icon_color;
-  do_icon_colors_match = IconManagerCheckIconTopLeftColor(
-      provider()->icon_manager(), id, {kLauncherIconSize, kInstallIconSize},
-      expected_icon_pixel_color);
+  absl::optional<SkColor> actual_color_install_icon_size =
+      override_registration_->test_override->GetShortcutIconTopLeftColor(
+          profile, base::FilePath(), id, name, kInstallIconSize);
+
+  absl::optional<SkColor> actual_color_launcher_icon_size =
+      override_registration_->test_override->GetShortcutIconTopLeftColor(
+          profile, base::FilePath(), id, name, kLauncherIconSize);
+  if (actual_color_install_icon_size.has_value() &&
+      actual_color_launcher_icon_size.has_value()) {
+    do_icon_colors_match =
+        (expected_icon_pixel_color == actual_color_install_icon_size.value() &&
+         expected_icon_pixel_color == actual_color_launcher_icon_size.value());
+  }
 #endif
   return do_icon_colors_match;
-}
-
-bool WebAppIntegrationTestDriver::IsFileHandledBySite(
-    Site site,
-    FileExtension file_extension) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  bool is_file_handled = false;
-  std::string file_extension_str = GetFileExtension(file_extension);
-#if BUILDFLAG(IS_WIN)
-  AppId app_id = GetAppIdBySiteMode(site);
-  const std::wstring prog_id =
-      GetProgIdForApp(browser()->profile()->GetPath(), app_id);
-  const std::vector<std::wstring> file_handler_prog_ids =
-      ShellUtil::GetFileHandlerProgIdsForAppId(prog_id);
-
-  base::win::RegKey key;
-  for (const auto& file_handler_prog_id : file_handler_prog_ids) {
-    const std::vector<std::wstring> supported_file_extensions =
-        GetFileExtensionsForProgId(file_handler_prog_id);
-    std::wstring extension = base::UTF8ToWide("." + file_extension_str);
-    if (base::Contains(supported_file_extensions, extension)) {
-      const std::wstring reg_key = std::wstring(ShellUtil::kRegClasses) +
-                                   base::FilePath::kSeparators[0] + extension +
-                                   base::FilePath::kSeparators[0] +
-                                   ShellUtil::kRegOpenWithProgids;
-      EXPECT_EQ(ERROR_SUCCESS,
-                key.Open(HKEY_CURRENT_USER, reg_key.data(), KEY_READ));
-      return key.HasValue(file_handler_prog_id.data());
-    }
-  }
-#elif BUILDFLAG(IS_MAC)
-  AppId app_id = GetAppIdBySiteMode(site);
-  std::string app_name = GetSiteConfiguration(site).app_name;
-  const base::FilePath test_file_path =
-      override_registration_->test_override->chrome_apps_folder().AppendASCII(
-          "test." + file_extension_str);
-  const base::File test_file(
-      test_file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  const GURL test_file_url = net::FilePathToFileURL(test_file_path);
-  base::FilePath app_path = GetShortcutPath(
-      override_registration_->test_override->chrome_apps_folder(), app_name,
-      app_id);
-  is_file_handled =
-      shell_integration::CanApplicationHandleURL(app_path, test_file_url);
-#elif BUILDFLAG(IS_LINUX)
-  AppId app_id = GetAppIdBySiteMode(site);
-  for (const LinuxFileRegistration& command :
-       override_registration_->test_override->linux_file_registration()) {
-    if (base::Contains(command.xdg_command, app_id) &&
-        base::Contains(command.xdg_command,
-                       profile()->GetPath().BaseName().value())) {
-      if (base::StartsWith(command.xdg_command, "xdg-mime install")) {
-        is_file_handled = base::Contains(command.file_contents,
-                                         "\"*." + file_extension_str + "\"");
-      } else {
-        DCHECK(base::StartsWith(command.xdg_command, "xdg-mime uninstall"))
-            << command.xdg_command;
-        is_file_handled = false;
-      }
-    }
-  }
-#endif
-  return is_file_handled;
 }
 
 void WebAppIntegrationTestDriver::SetFileHandlingEnabled(Site site,
@@ -3785,6 +3764,22 @@ WebAppIntegrationTestDriver::GetTestServerForSiteMode(Site site) const {
   return *delegate_->EmbeddedTestServer();
 }
 
+#if !BUILDFLAG(IS_CHROMEOS)
+webapps::AppHomePageHandler
+WebAppIntegrationTestDriver::GetTestAppHomePageHandler() {
+  content::TestWebUI test_web_ui;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  DCHECK(web_contents);
+  test_web_ui.set_web_contents(web_contents);
+  mojo::PendingReceiver<app_home::mojom::Page> page;
+  mojo::Remote<app_home::mojom::PageHandler> page_handler;
+  return webapps::AppHomePageHandler(&test_web_ui, profile(),
+                                     page_handler.BindNewPipeAndPassReceiver(),
+                                     page.InitWithNewPipeAndPassRemote());
+}
+#endif
+
 WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
@@ -3802,6 +3797,8 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1357905): Update test driver to work with new UI.
   disabled_features.push_back(apps::features::kLinkCapturingUiUpdate);
+#else
+  enabled_features.push_back(features::kDesktopPWAsAppHomePage);
 #endif
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }

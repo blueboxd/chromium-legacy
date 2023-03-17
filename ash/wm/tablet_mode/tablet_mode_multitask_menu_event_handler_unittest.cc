@@ -291,6 +291,31 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, CloseMultitaskMenuOnTap) {
   EXPECT_FALSE(GetMultitaskMenu());
 }
 
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, CloseOnDoubleTapDivider) {
+  auto window1 = CreateTestWindow(gfx::Rect(800, 600));
+  auto window2 = CreateTestWindow(gfx::Rect(800, 600));
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  split_view_controller->SnapWindow(
+      window2.get(), SplitViewController::SnapPosition::kSecondary);
+
+  // Open the menu on one of the windows.
+  ShowMultitaskMenu(*window1);
+  ASSERT_TRUE(GetMultitaskMenu());
+
+  // Double tap on the divider center.
+  const gfx::Point divider_center =
+      split_view_controller->split_view_divider()
+          ->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint();
+  GetEventGenerator()->GestureTapAt(divider_center);
+  GetEventGenerator()->GestureTapAt(divider_center);
+  ASSERT_FALSE(GetMultitaskMenu());
+}
+
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, HideMultitaskMenuInOverview) {
   auto window = CreateTestWindow();
 
@@ -331,13 +356,9 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HalfButtonFunctionality) {
             WindowState::Get(window.get())->GetStateType());
   const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  const gfx::Rect divider_bounds =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow())
-          ->split_view_divider()
-          ->GetDividerBoundsInScreen(
-              /*is_dragging*/ false);
-  ASSERT_NEAR(work_area_bounds.width() * 0.5f,
-              window->GetBoundsInScreen().width(), divider_bounds.width());
+  EXPECT_EQ(work_area_bounds.width() * 0.5f,
+            window->GetBoundsInScreen().width() +
+                kSplitviewDividerShortSideLength / 2);
 
   // Verify that the multitask menu has been closed.
   ASSERT_FALSE(GetMultitaskMenu());
@@ -362,13 +383,9 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
             WindowState::Get(window.get())->GetStateType());
   const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  const gfx::Rect divider_bounds =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow())
-          ->split_view_divider()
-          ->GetDividerBoundsInScreen(
-              /*is_dragging*/ false);
-  ASSERT_NEAR(work_area_bounds.width() * 0.67f, window->bounds().width(),
-              divider_bounds.width());
+  const int divider_delta = kSplitviewDividerShortSideLength / 2;
+  EXPECT_EQ(work_area_bounds.width() * 0.67f,
+            window->bounds().width() + divider_delta);
   ASSERT_FALSE(GetMultitaskMenu());
   histogram_tester_.ExpectBucketCount(
       chromeos::GetActionTypeHistogramName(),
@@ -378,8 +395,8 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
   PressPartialSecondary(*window);
   ASSERT_EQ(chromeos::WindowStateType::kSecondarySnapped,
             WindowState::Get(window.get())->GetStateType());
-  ASSERT_NEAR(work_area_bounds.width() * 0.33f, window->bounds().width(),
-              divider_bounds.width());
+  EXPECT_EQ(work_area_bounds.width() * 0.33f,
+            window->bounds().width() + divider_delta);
   ASSERT_FALSE(GetMultitaskMenu());
   histogram_tester_.ExpectBucketCount(
       chromeos::GetActionTypeHistogramName(),
@@ -402,8 +419,8 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, AdjustedMenuBounds) {
   // Test that the menu fits on the 1/3 window on the right.
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  ASSERT_NEAR(work_area.width() * 0.33f, window2->bounds().width(),
-              kSplitviewDividerShortSideLength);
+  EXPECT_EQ(work_area.width() * 0.33f,
+            window2->bounds().width() + kSplitviewDividerShortSideLength / 2);
   ShowMultitaskMenu(*window2);
   ASSERT_TRUE(GetMultitaskMenu());
   EXPECT_EQ(work_area.right(),

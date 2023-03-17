@@ -13,9 +13,9 @@
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/test/mock_sync_error_infobar_delegate.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -65,9 +65,6 @@ class SyncErrorInfobarBannerOverlayRequestConfigTest : public PlatformTest {
 // Tests the SyncErrorInfobarBannerOverlayRequestConfig then SF symbol is
 // enabled.
 TEST_F(SyncErrorInfobarBannerOverlayRequestConfigTest, IconConfigsForSFSymbol) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kUseSFSymbols);
-
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<SyncErrorBannerRequestConfig>(
           infobar_.get());
@@ -78,27 +75,6 @@ TEST_F(SyncErrorInfobarBannerOverlayRequestConfigTest, IconConfigsForSFSymbol) {
               config -> icon_image_tint_color());
   EXPECT_NSEQ([UIColor colorNamed:kRed500Color],
               config -> background_tint_color());
-  EXPECT_EQ(true, config->use_icon_background_tint());
-  EXPECT_EQ(kTitleText, config->title_text());
-  EXPECT_EQ(kMessageText, config->message_text());
-  EXPECT_EQ(kButtonLabelText, config->button_label_text());
-}
-
-// Tests the SyncErrorInfobarBannerOverlayRequestConfig when SF symbol is not
-// enabled.
-TEST_F(SyncErrorInfobarBannerOverlayRequestConfigTest,
-       IconConfigsForLegacyAsset) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kUseSFSymbols);
-
-  std::unique_ptr<OverlayRequest> request =
-      OverlayRequest::CreateWithConfig<SyncErrorBannerRequestConfig>(
-          infobar_.get());
-  SyncErrorBannerRequestConfig* config =
-      request->GetConfig<SyncErrorBannerRequestConfig>();
-
-  EXPECT_NSEQ(nullptr, config->icon_image_tint_color());
-  EXPECT_NSEQ(nullptr, config->background_tint_color());
   EXPECT_EQ(true, config->use_icon_background_tint());
   EXPECT_EQ(kTitleText, config->title_text());
   EXPECT_EQ(kMessageText, config->message_text());

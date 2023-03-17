@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "content/public/test/browser_task_environment.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -169,8 +170,9 @@ class AppIconFactoryTest : public testing::Test {
 #endif
 
  protected:
-  content::BrowserTaskEnvironment task_env_{};
-  base::ScopedTempDir tmp_dir_{};
+  content::BrowserTaskEnvironment task_env_;
+  base::ScopedTempDir tmp_dir_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
 TEST_F(AppIconFactoryTest, LoadFromFileSuccess) {
@@ -383,8 +385,6 @@ class AppServiceAppIconTest : public AppIconFactoryTest {
     ash::CiceroneClient::InitializeFake();
     profile_ = std::make_unique<TestingProfile>();
     proxy_ = AppServiceProxyFactory::GetForProfile(profile_.get());
-    scoped_decode_request_for_testing_ =
-        std::make_unique<ScopedDecodeRequestForTesting>();
 
     crostini_test_helper_ =
         std::make_unique<crostini::CrostiniTestHelper>(profile_.get());
@@ -442,8 +442,6 @@ class AppServiceAppIconTest : public AppIconFactoryTest {
   std::unique_ptr<TestingProfile> profile_;
   raw_ptr<AppServiceProxy> proxy_;
   std::unique_ptr<apps::FakePublisherForIconTest> fake_publisher_;
-  std::unique_ptr<ScopedDecodeRequestForTesting>
-      scoped_decode_request_for_testing_;
 
   std::unique_ptr<crostini::CrostiniTestHelper> crostini_test_helper_;
 

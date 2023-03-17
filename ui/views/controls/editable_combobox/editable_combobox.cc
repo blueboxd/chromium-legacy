@@ -80,23 +80,7 @@ class Arrow : public Button {
     button_controller()->set_notify_action(
         ButtonController::NotifyAction::kOnPress);
 
-    // TODO(pbos): Share ink-drop configuration code between here and
-    // Combobox's TransparentButton.
-    // Similar to Combobox's TransparentButton.
-    InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
-    SetHasInkDropActionOnClick(true);
-    InkDrop::UseInkDropForSquareRipple(InkDrop::Get(this),
-                                       /*highlight_on_hover=*/false);
-    InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
-        [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
-          return std::make_unique<views::FloodFillInkDropRipple>(
-              InkDrop::Get(host), host->size(),
-              InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
-              host->GetColorProvider()->GetColor(style::GetColorId(
-                  style::CONTEXT_TEXTFIELD, style::STYLE_PRIMARY)),
-              InkDrop::Get(host)->GetVisibleOpacity());
-        },
-        this));
+    ConfigureComboboxButtonInkDrop(this);
   }
   Arrow(const Arrow&) = delete;
   Arrow& operator=(const Arrow&) = delete;
@@ -113,10 +97,11 @@ class Arrow : public Button {
     gfx::Rect arrow_bounds = GetLocalBounds();
     arrow_bounds.ClampToCenteredSize(ComboboxArrowSize());
     // Make sure the arrow use the same color as the text in the combobox.
-    PaintComboboxArrow(style::GetColor(*this, style::CONTEXT_TEXTFIELD,
-                                       GetEnabled() ? style::STYLE_PRIMARY
-                                                    : style::STYLE_DISABLED),
-                       arrow_bounds, canvas);
+    PaintComboboxArrow(
+        GetColorProvider()->GetColor(style::GetColorId(
+            style::CONTEXT_TEXTFIELD,
+            GetEnabled() ? style::STYLE_PRIMARY : style::STYLE_DISABLED)),
+        arrow_bounds, canvas);
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -420,6 +405,14 @@ void EditableCombobox::SetText(const std::u16string& text) {
   HandleNewContent(text);
 }
 
+std::u16string EditableCombobox::GetPlaceholderText() const {
+  return textfield_->GetPlaceholderText();
+}
+
+void EditableCombobox::SetPlaceholderText(const std::u16string& text) {
+  textfield_->SetPlaceholderText(text);
+}
+
 const gfx::FontList& EditableCombobox::GetFontList() const {
   return style::GetFont(text_context_, text_style_);
 }
@@ -615,6 +608,8 @@ const ui::ComboboxModel* EditableCombobox::GetComboboxModel() const {
 }
 
 BEGIN_METADATA(EditableCombobox, View)
+ADD_PROPERTY_METADATA(std::u16string, Text)
+ADD_PROPERTY_METADATA(std::u16string, PlaceholderText)
 END_METADATA
 
 }  // namespace views

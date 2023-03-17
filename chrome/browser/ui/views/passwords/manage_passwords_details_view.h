@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_DETAILS_VIEW_H_
 
 #include "base/callback_list.h"
+#include "base/functional/callback_forward.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "ui/views/layout/box_layout_view.h"
 
 namespace views {
+class Label;
 class Textarea;
 class Textfield;
 class View;
@@ -22,12 +24,22 @@ class View;
 class ManagePasswordsDetailsView : public views::BoxLayoutView {
  public:
   // `password_form` is the password form to be displayed.
-  // `switched_to_edit_mode_callback` is invoked when the user decide to edit
-  // one of the editable field in the UI. This is to inform the embedder to do
-  // the necessary changes (e.g. show update/cancel button).
+  // The view uses `username_exists_callback` to check if the currently entered
+  // username in the edit mode already exists and hence should be considered an
+  // invalid input. `switched_to_edit_mode_callback` is invoked when the user
+  // decides to edit one of the editable fields in the UI. This is to inform the
+  // embedder to do the necessary changes (e.g. show update/cancel button).
+  // `on_activity_callback` is invoked upon user activity in the view e.g. user
+  // is typing a note in the edit view, or copying a username.
+  // `on_input_validation_callback` is invoked after validating user input to
+  // inform the embedder if the current input is invalid.
   ManagePasswordsDetailsView(
       password_manager::PasswordForm password_form,
-      base::RepeatingClosure switched_to_edit_mode_callback);
+      base::RepeatingCallback<bool(const std::u16string&)>
+          username_exists_callback,
+      base::RepeatingClosure switched_to_edit_mode_callback,
+      base::RepeatingClosure on_activity_callback,
+      base::RepeatingCallback<void(bool)> on_input_validation_callback);
 
   ManagePasswordsDetailsView(const ManagePasswordsDetailsView&) = delete;
   ManagePasswordsDetailsView& operator=(const ManagePasswordsDetailsView&) =
@@ -54,16 +66,36 @@ class ManagePasswordsDetailsView : public views::BoxLayoutView {
  private:
   void SwitchToEditUsernameMode();
   void SwitchToEditNoteMode();
+  void OnUserInputChanged();
 
+  // Can be used to check whether a credential with the same username already
+  // exists for this website.
+  base::RepeatingCallback<bool(const std::u16string&)>
+      username_exists_callback_;
+
+  // The callback that is invoked when the user decide to edit one of the
+  // editable field in the UI. This is to inform the embedder to do the
+  // necessary changes (e.g. show update/cancel button).
   base::RepeatingClosure switched_to_edit_mode_callback_;
+
+  // The callback that is invoked upon user activity in the view e.g. user is
+  // typing a note in the edit view, or copying a username.
+  base::RepeatingClosure on_activity_callback_;
+
+  // The callback that is invoked after validating user input to inform the
+  // embedder if the current input is invalid.
+  base::RepeatingCallback<void(bool)> on_input_validation_callback_;
 
   raw_ptr<views::View> read_username_row_ = nullptr;
   raw_ptr<views::View> edit_username_row_ = nullptr;
   raw_ptr<views::Textfield> username_textfield_ = nullptr;
+  raw_ptr<views::Label> username_error_label_ = nullptr;
+  std::vector<base::CallbackListSubscription> text_changed_subscriptions_;
 
   raw_ptr<views::View> read_note_row_ = nullptr;
   raw_ptr<views::View> edit_note_row_ = nullptr;
   raw_ptr<views::Textarea> note_textarea_ = nullptr;
+  raw_ptr<views::Label> note_error_label_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_DETAILS_VIEW_H_

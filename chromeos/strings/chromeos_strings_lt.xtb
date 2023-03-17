@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Aptikta užkarda</translation>
 <translation id="1075811647922107217">Puslapio dydis</translation>
+<translation id="1082009148392559545">Atsisiunčiama ekrano užsklanda</translation>
 <translation id="1094693127011229778">IP adresas nepasiekiamas</translation>
 <translation id="1113892970288677790">Pasirinkite kuruojamus plakatus ir vaizdus</translation>
 <translation id="1119447706177454957">Vidinė klaida</translation>
@@ -79,6 +80,7 @@
 <translation id="1641857168437328880">Dokumentų tiektuvas (vienpusis)</translation>
 <translation id="1643449475550628585">Kasdien keisti ekrano fono vaizdą</translation>
 <translation id="1644574205037202324">Istorija</translation>
+<translation id="1651925268237749928">Pasirinkote bendrinamą albumą. Kiti žmonės gali pridėti ar keisti nuotraukas. Ekrano fonui gali būti naudojamos nuotraukos, kurių šiuo metu nėra šiame albume.</translation>
 <translation id="1662989795263954667">Sustabdyta – baigėsi rašalas</translation>
 <translation id="1664796644829245314">Peržiūrėti kalendorių „<ph name="PREVIEW_OBJECT" />“</translation>
 <translation id="1668469839109562275">Įtaisytasis VPN</translation>
@@ -90,6 +92,7 @@
 <translation id="1717874160321062422">Tvarko <ph name="FIRST_MANAGER" /> ir <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Pavadinimų serveriai</translation>
 <translation id="1731082422893354635">„Bluetooth“ jutiklinė dalis</translation>
+<translation id="1738949837603788263"><ph name="ZONE_NUMBER" /> zona</translation>
 <translation id="1745577949879301685">Nepavyko įkelti vaizdų. Patikrinkite tinklo ryšį arba pabandykite dar kartą įkelti vaizdus.</translation>
 <translation id="1751249301761991853">Suasmeninimas</translation>
 <translation id="1753496554272155572">Išeiti iš ekrano fono peržiūros</translation>
@@ -236,12 +239,12 @@
 <translation id="319101249942218879">Pseudoportreto vaizdas pakeistas</translation>
 <translation id="3192947282887913208">Garso įrašų failai</translation>
 <translation id="3199982728237701504">Dokumentų tiektuvas (dvipusis)</translation>
+<translation id="3201315366910775591">Bendrinamus albumus gali atnaujinti kiti žmonės</translation>
 <translation id="3211671540163313381">Klavišų schemų valdymo pultas</translation>
 <translation id="3226405216343213872">Ieškoma skaitytuvų</translation>
 <translation id="3226657629376379887">Išdėstymo veiksmų meniu</translation>
 <translation id="3246869037381808805">Senesnės nei 1 dienos spausdinimo užduotys bus pašalintos</translation>
 <translation id="3268178239013324452">Nepavyko – atidarytos durelės</translation>
-<translation id="3275506277319227640">Įstatyti <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">Pseudoportreto vaizdas</translation>
 <translation id="3283504360622356314">{0,plural, =1{Redaguoti failą}one{Redaguoti failus}few{Redaguoti failus}many{Redaguoti failus}other{Redaguoti failus}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -278,7 +281,6 @@
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
 <translation id="3600339377155080675">Ekrano vaizdo bendrinimas</translation>
 <translation id="3602290021589620013">Peržiūra</translation>
-<translation id="360282891121575443">Bendrinamuose albumuose esančias nuotraukas gali atnaujinti kiti naudotojai. Kasdien keičiant gali būti rodomi ekrano fonai, kurių šiuo metu nėra albume.</translation>
 <translation id="3603829704940252505">Pseudoportretas</translation>
 <translation id="3604713164406837697">Pakeisti ekrano foną</translation>
 <translation id="360565022852130722">„Wi-Fi“ tinklas apsaugotas naudojant nepatikimą protokolą WEP 802.1x</translation>
@@ -360,7 +362,6 @@
 <translation id="4311195029067684288">Visas</translation>
 <translation id="4333390807948134856">Paspaustas klavišas <ph name="KEY_NAME" /></translation>
 <translation id="435692326371619097">Tvarkyti tinklo APN nustatymus. APN užmezga ryšį tarp mobiliojo ryšio tinklo ir interneto. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Įstatyti mažesnėje pusėje</translation>
 <translation id="4378373042927530923">Nevykdyti</translation>
 <translation id="4378551569595875038">Jungiamasi...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -601,6 +602,7 @@
 <translation id="636850387210749493">Įmonės registracija</translation>
 <translation id="6379086450106841622">Jutiklinis ekranas</translation>
 <translation id="6381741036071372448">Klaviatūros išbandymas</translation>
+<translation id="6382182670717268353">Ekrano užsklandos peržiūra</translation>
 <translation id="6388847657025262518">Skaitytuvo dokumentų tiektuvas užstrigo. Patikrinkite tiektuvą ir bandykite dar kartą.</translation>
 <translation id="6394634179843537518">Pridėti failą</translation>
 <translation id="6410257289063177456">Vaizdo failai</translation>
@@ -639,7 +641,6 @@
 <translation id="6657585470893396449">Slaptažodis</translation>
 <translation id="6659594942844771486">Skirtukas</translation>
 <translation id="6692996468359469499">Su pasirinkimu susijusios informacijos gavimas</translation>
-<translation id="6698459586333070823">Bendrinamus albumus gali atnaujinti kiti naudotojai</translation>
 <translation id="6704062477274546131">DNS pavadinimų vertimas</translation>
 <translation id="6723839937902243910">Maitinimas</translation>
 <translation id="6723847290197874913">Klaviatūros foninis apšvietimas</translation>
@@ -657,6 +658,7 @@
 <translation id="6838167112108853532">Šio APN išjungti arba pašalinti negalima. Įsitikinkite, kad įgalinti pridėti APN yra išjungti ar pašalinti.</translation>
 <translation id="6853312040151791195">Išsikrovimo rodiklis</translation>
 <translation id="6889786074662672253">Kol paleidžiama iš naujo, neatjunkite šio išorinio įrenginio ir neišjunkite kompiuterio. Galite sumažinti šį langą. Tai gali užtrukti kelias minutes ir tuo metu išorinis įrenginys gali neveikti.</translation>
+<translation id="6900701049656042631">Šiame albume nėra nuotraukų. Jei norite pridėti nuotraukų, eikite adresu <ph name="LINK" /></translation>
 <translation id="6905724422583748843">Atgal į puslapį „<ph name="PAGE_NAME" />“</translation>
 <translation id="6910312834584889076">Skaitytuvo dangtis atidarytas. Uždarykite dangtį ir bandykite dar kartą.</translation>
 <translation id="6911383237894364323">Nepavyko prisijungti prie medijos serverių</translation>
@@ -691,6 +693,7 @@
 <translation id="7177485034254901881">Šį „<ph name="DEVICE_TYPE" />“ valdo <ph name="MANAGER" />. Administratoriai gali nuotoliniu būdu konfigūruoti įrenginį.</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7180865173735832675">Tinkinti</translation>
+<translation id="7184043045742675738">Spustelėkite bet kurį klavišą, jei norite tinkinti mygtuką. Pakeiskite klavišo padėtį naudodami pelės arba rodyklių klavišus.</translation>
 <translation id="7212734716605298123">Išorinių įrenginių programinės aparatinės įrangos naujiniai</translation>
 <translation id="7216409898977639127">Mobiliojo ryšio teikėjas</translation>
 <translation id="725133483556299729">El. pašto adreso pasirinkimas</translation>
@@ -732,6 +735,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB jutiklinis ekranas</translation>
 <translation id="7595982850646262331">Liko <ph name="TIME_VALUE" /></translation>
+<translation id="7613724632293948900">Pakeiskite padėtį naudodami pelės arba rodyklių klavišus.</translation>
 <translation id="7620771111601174153">Sužinokite daugiau pagalbos centre</translation>
 <translation id="763165478673169849">Paskutinio nustatymo iš naujo laikas</translation>
 <translation id="7648838807254605802">Didelė HTTPS delsa</translation>
@@ -795,7 +799,6 @@
 <translation id="8226628635270268143">Pasirinkite mėgstamiausias nuotraukas ir albumus</translation>
 <translation id="8227119283605456246">Pridėtas failas</translation>
 <translation id="8230672074305416752">Nepavyko patikrinti ryšio su numatytuoju tinklų sietuvu</translation>
-<translation id="8242426110754782860">Tęsti</translation>
 <translation id="8246209727385807362">Nežinomas operatorius</translation>
 <translation id="827422111966801947">Indigo spalva</translation>
 <translation id="8286154143153872371">Jei norite peržiūrėti ekrano foną, prisijunkite prie tinklo ir iš naujo įkelkite puslapį.</translation>
@@ -855,6 +858,7 @@
 <translation id="8798441408945964110">Teikėjo pavadinimas</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
 <translation id="8818152010000655963">Ekrano fonas</translation>
+<translation id="8820457400746201697">Mėlyną lietimo tašką perkelkite į veiksmą. Pasirinkite susietą klavišą, kurį norite tinkinti.</translation>
 <translation id="8834539327799336565">Šiuo metu susieti</translation>
 <translation id="8845001906332463065">Gauti pagalbos</translation>
 <translation id="8855781559874488009">Nepavyko prisijungti per užkardą prie HTTP svetainių</translation>
@@ -903,7 +907,6 @@
 <translation id="9137526406337347448">„Google“ paslaugos</translation>
 <translation id="9138630967333032450">Kairysis antrojo lygio klavišas</translation>
 <translation id="9149391708638971077">Vykdyti atminties bandymą</translation>
-<translation id="9157515863513902090">Įstatyti didesnėje pusėje</translation>
 <translation id="9161276708550942948">tarpo klavišas</translation>
 <translation id="9173638680043580060">Liko mažiau nei minutė</translation>
 <translation id="917720651393141712">Bandyti</translation>

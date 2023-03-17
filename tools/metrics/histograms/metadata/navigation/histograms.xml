@@ -365,6 +365,39 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="BackForwardCache.PageWithForm.RestoreResult"
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-06-30">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Record for a page that has form attached is about to restored from the back
+    forward cache, to understand the success rate for bfcaching a page that has
+    form / input entry attached. This is recorded for page with form attached
+    only.
+
+    Recorded during a cross-page history navigation. If a page with form is
+    restored from the cache, &quot;PageRestored&quot; will be recorded; if the
+    page is not egligible to be restored due to any reason,
+    &quot;PageNotRestored&quot; will be recorded.
+  </summary>
+</histogram>
+
+<histogram name="BackForwardCache.PageWithForm.Storable"
+    enum="BackForwardCachePageWithFormStorable" expires_after="2023-06-30">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Record for a page that has form attached is egligible to be stored in back
+    forwad cache, to understand the success rate for bfcaching a page that has
+    form / input entry attached. This is recorded for page with form attached
+    only.
+
+    Recorded when a navigation is committed. If a page has form attached
+    &quot;PageSeen&quot; will be recorded; if the page is egligible to be stored
+    in the back forward cache, &quot;PageStored&quot; will be recorded.
+  </summary>
+</histogram>
+
 <histogram name="BackForwardCache.ReloadsAfterHistoryNavigation"
     enum="BackForwardCacheReloadsAfterHistoryNavigation"
     expires_after="2022-06-26">
@@ -1296,7 +1329,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess.HTTPOrHTTPS"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2023-03-19">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2024-03-19">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1319,7 +1352,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.StartToCommit" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>nasko@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -1369,7 +1402,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.TimeToReadyToCommit2" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -1813,23 +1846,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>
     Length of the redirect chain for main resources loaded by NoStatePrefetch.
     Recorded when the final response in the chain is received.
-  </summary>
-</histogram>
-
-<histogram name="Prerender.NoStatePrefetchRendererLifetimeExtension" units="ms"
-    expires_after="M77">
-  <owner>jam@chromium.org</owner>
-  <summary>
-    Time a prefetch renderer is kept alive after parsing to wait for
-    subresources to finish loading.
-  </summary>
-</histogram>
-
-<histogram name="Prerender.NoStatePrefetchRendererParseTime" units="ms"
-    expires_after="M81">
-  <owner>jam@chromium.org</owner>
-  <summary>
-    Time between prefetch renderer startup and when parsing is complete.
   </summary>
 </histogram>
 

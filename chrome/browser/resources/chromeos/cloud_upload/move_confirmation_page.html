@@ -10,6 +10,10 @@
     padding: 32px;
   }
 
+  #content:focus-visible {
+    outline: none;
+  }
+
   .title {
     color: var(--cros-text-color-primary);
     font: var(--cros-display-6-font);
@@ -43,6 +47,17 @@
   cr-lottie {
     height: 236px;
   }
+
+  cr-button {
+    border-radius: 16px;
+  }
+
+  cr-button:focus-visible {
+    /* disable cr-button default keyboard focus style */
+    box-shadow: none;
+    outline: 2px solid var(--cros-focus-ring-color);
+    outline-offset: 2px;
+  }
 </style>
 
 <!-- TODO(b/258071752): Use localized strings -->
@@ -50,18 +65,13 @@
 </cr-lottie>
 <div class="body-wrapper">
   <div class="title">
-    Move file to <span id="provider-name"></span> to open
+    Move <span id="number-of-files"></span> <span id="files-text"></span> to
+    <span id="provider-name"></span> to open?
   </div>
-  <div class="normal-text">
-    The <span id="app-name"></span> app requires files to be in
-    <span id="provider-short-name"></span>. We can move your files
-    whenever you choose to open them.
-  </div>
-  <cr-checkbox id="always-move-checkbox">
-    <span class="checkbox-text">Do this automatically next time</span>
-  </cr-checkbox>
+  <div class="normal-text" id="body-text"> </div>
+  <cr-checkbox id="always-move-checkbox"> </cr-checkbox>
   <div id="button-container">
     <cr-button class="cancel-button">$i18n{cancel}</cr-button>
-    <cr-button class="action-button">Move & open file</cr-button>
+    <cr-button class="action-button">Move and open</cr-button>
   </div>
 </div>

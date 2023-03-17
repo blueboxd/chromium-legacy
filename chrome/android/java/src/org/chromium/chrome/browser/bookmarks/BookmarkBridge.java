@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.google.common.primitives.UnsignedLongs;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.ContextUtils;
@@ -22,7 +21,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
@@ -30,19 +28,13 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.commerce.core.CommerceSubscription;
-import org.chromium.components.commerce.core.IdentifierType;
-import org.chromium.components.commerce.core.ManagementType;
 import org.chromium.components.commerce.core.ShoppingService;
-import org.chromium.components.commerce.core.SubscriptionsObserver;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.components.power_bookmarks.PowerBookmarkType;
-import org.chromium.components.power_bookmarks.ShoppingSpecifics;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -54,10 +46,8 @@ class BookmarkBridge {
     private boolean mIsDestroyed;
     private boolean mIsDoingExtensiveChanges;
     private boolean mIsNativeBookmarkModelLoaded;
-    private final ObserverList<BookmarkModelObserver> mObservers =
-            new ObserverList<BookmarkModelObserver>();
+    private final ObserverList<BookmarkModelObserver> mObservers = new ObserverList<>();
     private ShoppingService mShoppingService;
-    private SubscriptionsObserver mSubscriptionsObserver;
 
     /**
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
@@ -77,26 +67,6 @@ class BookmarkBridge {
         mNativeBookmarkBridge = nativeBookmarkBridge;
         mIsDoingExtensiveChanges = BookmarkBridgeJni.get().isDoingExtensiveChanges(
                 mNativeBookmarkBridge, BookmarkBridge.this);
-        // TODO(crbug.com/1382191): Move this observer to native.
-        mSubscriptionsObserver = new SubscriptionsObserver() {
-            @Override
-            public void onSubscribe(List<CommerceSubscription> subscriptions, boolean succeeded) {}
-
-            @Override
-            public void onUnsubscribe(List<CommerceSubscription> subscriptions, boolean succeeded) {
-                if (!succeeded) return;
-                removeExplicitShoppingSubscriptions(subscriptions);
-            }
-        };
-
-        mShoppingService =
-                ShoppingServiceFactory.getForProfile(Profile.getLastUsedRegularProfile());
-        mShoppingService.addSubscriptionsObserver(mSubscriptionsObserver);
-    }
-
-    @VisibleForTesting
-    SubscriptionsObserver getSubscriptionObserver() {
-        return mSubscriptionsObserver;
     }
 
     /**
@@ -110,10 +80,6 @@ class BookmarkBridge {
             mIsNativeBookmarkModelLoaded = false;
         }
         mObservers.clear();
-
-        if (mShoppingService != null) {
-            mShoppingService.removeSubscriptionsObserver(mSubscriptionsObserver);
-        }
     }
 
     /** Returns whether the bridge has been destroyed. */
@@ -248,9 +214,9 @@ class BookmarkBridge {
      */
     public List<BookmarkId> getTopLevelFolderParentIDs() {
         ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<BookmarkId>();
+        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         assert mIsNativeBookmarkModelLoaded;
-        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        List<BookmarkId> result = new ArrayList<>();
         BookmarkBridgeJni.get().getTopLevelFolderParentIDs(
                 mNativeBookmarkBridge, BookmarkBridge.this, result);
         return result;
@@ -264,9 +230,9 @@ class BookmarkBridge {
      */
     public List<BookmarkId> getTopLevelFolderIDs(boolean getSpecial, boolean getNormal) {
         ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<BookmarkId>();
+        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         assert mIsNativeBookmarkModelLoaded;
-        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        List<BookmarkId> result = new ArrayList<>();
         BookmarkBridgeJni.get().getTopLevelFolderIDs(
                 mNativeBookmarkBridge, BookmarkBridge.this, getSpecial, getNormal, result);
         return result;
@@ -421,68 +387,15 @@ class BookmarkBridge {
      */
     public List<BookmarkId> getChildIDs(BookmarkId id) {
         ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<BookmarkId>();
+        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         assert mIsNativeBookmarkModelLoaded;
         if (BookmarkId.SHOPPING_FOLDER.equals(id)) {
             return searchBookmarks("", null, PowerBookmarkType.SHOPPING, -1);
         }
-        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        List<BookmarkId> result = new ArrayList<>();
         BookmarkBridgeJni.get().getChildIDs(
                 mNativeBookmarkBridge, BookmarkBridge.this, id.getId(), id.getType(), result);
         return result;
-    }
-
-    /**
-     * Disable price tracking for the list of subscriptions. This flips the bit in ShoppingSpecifics
-     * but does not actually unsubscribe from the subscription service -- this assumes that is
-     * already done.
-     * TODO(1284730): This should live somewhere other than BookmarkBridge.
-     *
-     * @param subscriptions The list of subscriptions to disable.
-     */
-    private void removeExplicitShoppingSubscriptions(List<CommerceSubscription> subscriptions) {
-        if (mNativeBookmarkBridge == 0) return;
-        if (subscriptions == null) return;
-
-        List<BookmarkId> products = searchBookmarks("", null, PowerBookmarkType.SHOPPING, -1);
-        if (products == null || products.size() == 0) return;
-
-        // Put the offer and cluster IDs into a map so they can be quickly checked.
-        HashSet<Long> offerIdMap = new HashSet<>();
-        HashSet<Long> clusterIdMap = new HashSet<>();
-        for (CommerceSubscription c : subscriptions) {
-            // Ensure the subscription is explicit.
-            if (c == null || c.managementType != ManagementType.USER_MANAGED) {
-                continue;
-            }
-
-            if (c.idType == IdentifierType.OFFER_ID) {
-                offerIdMap.add(UnsignedLongs.parseUnsignedLong(c.id));
-            } else if (c.idType == IdentifierType.PRODUCT_CLUSTER_ID) {
-                clusterIdMap.add(UnsignedLongs.parseUnsignedLong(c.id));
-            }
-        }
-
-        // Look at all the products the user has saved to find any of the above product or cluster
-        // IDs.
-        for (BookmarkId product : products) {
-            PowerBookmarkMeta meta = getPowerBookmarkMeta(product);
-            if (!meta.hasShoppingSpecifics()) continue;
-
-            ShoppingSpecifics specifics = meta.getShoppingSpecifics();
-            if (offerIdMap.contains(specifics.getOfferId())
-                    || clusterIdMap.contains(specifics.getProductClusterId())) {
-                // Reset the meta using a copy of the existing one, but set the price tracking flag
-                // to false.
-                setPowerBookmarkMeta(product,
-                        PowerBookmarkMeta.newBuilder(meta)
-                                .setShoppingSpecifics(
-                                        ShoppingSpecifics.newBuilder(meta.getShoppingSpecifics())
-                                                .setIsPriceTracked(false)
-                                                .build())
-                                .build());
-            }
-        }
     }
 
     /**
@@ -534,7 +447,7 @@ class BookmarkBridge {
     public List<BookmarkId> searchBookmarks(String query, @Nullable String[] tags,
             @Nullable PowerBookmarkType powerBookmarkType, int maxNumberOfResult) {
         ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<BookmarkId>();
+        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         List<BookmarkId> bookmarkMatches = new ArrayList<>();
         int typeInt = powerBookmarkType == null ? -1 : powerBookmarkType.getNumber();
         BookmarkBridgeJni.get().searchBookmarks(mNativeBookmarkBridge, BookmarkBridge.this,
@@ -549,7 +462,7 @@ class BookmarkBridge {
      */
     public List<BookmarkId> getBookmarksOfType(@NonNull PowerBookmarkType powerBookmarkType) {
         ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<BookmarkId>();
+        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         List<BookmarkId> bookmarkMatches = new ArrayList<>();
         int typeInt = powerBookmarkType.getNumber();
         BookmarkBridgeJni.get().getBookmarksOfType(
@@ -644,9 +557,9 @@ class BookmarkBridge {
      */
     public List<BookmarkItem> getBookmarksForFolder(BookmarkId folderId) {
         ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<BookmarkItem>();
+        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         assert mIsNativeBookmarkModelLoaded;
-        List<BookmarkItem> result = new ArrayList<BookmarkItem>();
+        List<BookmarkItem> result = new ArrayList<>();
         BookmarkBridgeJni.get().getBookmarksForFolder(
                 mNativeBookmarkBridge, BookmarkBridge.this, folderId, result);
         return result;
@@ -998,9 +911,9 @@ class BookmarkBridge {
     }
 
     private static List<Pair<Integer, Integer>> createPairsList(int[] left, int[] right) {
-        List<Pair<Integer, Integer>> pairList = new ArrayList<Pair<Integer, Integer>>();
+        List<Pair<Integer, Integer>> pairList = new ArrayList<>();
         for (int i = 0; i < left.length; i++) {
-            pairList.add(new Pair<Integer, Integer>(left[i], right[i]));
+            pairList.add(new Pair<>(left[i], right[i]));
         }
         return pairList;
     }

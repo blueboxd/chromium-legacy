@@ -21,6 +21,7 @@
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/store_source_result.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -250,10 +251,9 @@ void SetLimit(base::Value::Dict& data_body, absl::optional<T> limit) {
   data_body.Set("limit", base::NumberToString(*limit));
 }
 
-base::Value::Dict GetReportDataBody(
-    DebugDataType data_type,
-    const StorableSource& source,
-    const AttributionStorage::StoreSourceResult& result) {
+base::Value::Dict GetReportDataBody(DebugDataType data_type,
+                                    const StorableSource& source,
+                                    const StoreSourceResult& result) {
   DCHECK(!source.is_within_fenced_frame());
 
   const attribution_reporting::SourceRegistration& registration =
@@ -262,7 +262,7 @@ base::Value::Dict GetReportDataBody(
   base::Value::Dict data_body;
   data_body.Set(kAttributionDestination, registration.destination_set.ToJson());
   SetSourceData(data_body, registration.source_event_id,
-                source.common_info().SourceSite(), registration.debug_key);
+                source.common_info().source_site(), registration.debug_key);
 
   switch (data_type) {
     case DebugDataType::kSourceDestinationLimit:
@@ -317,7 +317,7 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
 
   if (const absl::optional<StoredSource>& source = result.source()) {
     SetSourceData(data_body, source->source_event_id(),
-                  source->common_info().SourceSite(), source->debug_key());
+                  source->common_info().source_site(), source->debug_key());
   }
 
   switch (data_type) {
@@ -391,7 +391,7 @@ GURL ReportURL(const attribution_reporting::SuitableOrigin& reporting_origin) {
 absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     const StorableSource& source,
     bool is_debug_cookie_set,
-    const AttributionStorage::StoreSourceResult& result) {
+    const StoreSourceResult& result) {
   if (!source.registration().debug_reporting ||
       source.is_within_fenced_frame()) {
     return absl::nullopt;

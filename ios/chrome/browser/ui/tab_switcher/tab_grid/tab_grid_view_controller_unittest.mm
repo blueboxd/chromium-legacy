@@ -4,24 +4,23 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #import "base/test/metrics/user_action_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
-#import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -72,31 +71,15 @@ class TabGridViewControllerTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState local_state_;
   base::UserActionTester user_action_tester_;
   TabGridViewController* view_controller_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
 };
 
-// Checks that TabGridViewController returns key commands when the Keyboard
-// Shortcuts Menu feature is enabled.
-TEST_F(TabGridViewControllerTest, ReturnsKeyCommands_MenuEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{kKeyboardShortcutsMenu},
-      /*disabled_features=*/{});
-
-  EXPECT_GT(view_controller_.keyCommands.count, 0u);
-}
-
-// Checks that TabGridViewController returns key commands when the Keyboard
-// Shortcuts Menu feature is disabled.
-TEST_F(TabGridViewControllerTest, ReturnsKeyCommands_MenuDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{kKeyboardShortcutsMenu});
-
+// Checks that TabGridViewController returns key commands.
+TEST_F(TabGridViewControllerTest, ReturnsKeyCommands) {
   EXPECT_GT(view_controller_.keyCommands.count, 0u);
 }
 
@@ -143,6 +126,7 @@ TEST_F(TabGridViewControllerTest, ImplementsActions) {
   [view_controller_ keyCommand_find];
   [view_controller_ keyCommand_closeAll];
   [view_controller_ keyCommand_undo];
+  [view_controller_ keyCommand_close];
 }
 
 // Checks that metrics are correctly reported.
@@ -157,6 +141,7 @@ TEST_F(TabGridViewControllerTest, Metrics) {
   ExpectUMA(@"keyCommand_find", "MobileKeyCommandSearchTabs");
   ExpectUMA(@"keyCommand_closeAll", "MobileKeyCommandCloseAll");
   ExpectUMA(@"keyCommand_undo", "MobileKeyCommandUndo");
+  ExpectUMA(@"keyCommand_close", "MobileKeyCommandClose");
 }
 
 // This test ensure 2 things:
@@ -185,6 +170,7 @@ TEST_F(TabGridViewControllerTest, ValidateCommand_find) {
   }
 }
 
+// Checks when Close All and Undo keyboard shortcuts are possible.
 TEST_F(TabGridViewControllerTest, CanPerform_CloseAllAndUndo) {
   view_controller_ = [[TabGridViewController alloc]
       initWithPageConfiguration:TabGridPageConfiguration::kIncognitoPageOnly];
@@ -211,4 +197,10 @@ TEST_F(TabGridViewControllerTest, CanPerform_CloseAllAndUndo) {
   incognitoMediator.browser = nullptr;
   incognitoMediator = nil;
 }
+
+// Checks that the ESC keyboard shortcut is always possible.
+TEST_F(TabGridViewControllerTest, CanPerform_Close) {
+  EXPECT_TRUE(CanPerform(@"keyCommand_close"));
+}
+
 }  // namespace

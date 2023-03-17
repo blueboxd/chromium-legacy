@@ -581,7 +581,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ShouldNotFocusIframe', async function() {
   iframe.addEventListener('focus', function() {
     didFocus = true;
   });
-  ChromeVoxState.instance.currentRange_ = CursorRange.fromNode(button);
+  ChromeVoxRange.instance.current_ = CursorRange.fromNode(button);
   doCmd('previousElement');
   assertFalse(didFocus);
 });
@@ -602,7 +602,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ShouldFocusLink', async function() {
   link.addEventListener('focus', this.newCallback(function() {
     // Success
   }));
-  ChromeVoxState.instance.currentRange_ = CursorRange.fromNode(button);
+  ChromeVoxRange.instance.current_ = CursorRange.fromNode(button);
   doCmd('previousElement');
 });
 
@@ -3022,7 +3022,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'AlertNoAnnouncement', async function() {
   const button = root.find({role: RoleType.BUTTON});
   const alertEvt = new CustomAutomationEvent(EventType.ALERT, button);
   mockFeedback
-      .call(DesktopAutomationInterface.instance.onAlert.bind(
+      .call(DesktopAutomationInterface.instance.onAlert_.bind(
           DesktopAutomationInterface.instance, alertEvt))
       .call(() => assertFalse(mockFeedback.utteranceInQueue('Alert')));
   await mockFeedback.replay();
@@ -3040,7 +3040,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'AlertAnnouncement', async function() {
   const button = root.find({role: RoleType.BUTTON});
   const alertEvt = new CustomAutomationEvent(EventType.ALERT, button);
   mockFeedback
-      .call(DesktopAutomationInterface.instance.onAlert.bind(
+      .call(DesktopAutomationInterface.instance.onAlert_.bind(
           DesktopAutomationInterface.instance, alertEvt))
       .expectNextSpeechUtteranceIsNot('Alert')
       .expectSpeech('hello world');

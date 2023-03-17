@@ -44,22 +44,21 @@ import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkDelegate;
-import org.chromium.chrome.browser.bookmarks.BookmarkItemsAdapter;
 import org.chromium.chrome.browser.bookmarks.BookmarkManagerCoordinator;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow;
 import org.chromium.chrome.browser.bookmarks.BookmarkToolbar;
-import org.chromium.chrome.browser.bookmarks.BookmarkUiState;
+import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
+import org.chromium.chrome.browser.bookmarks.TestingDelegate;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.tab.Tab;
@@ -77,6 +76,7 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
@@ -94,6 +94,9 @@ public class ReadingListTest {
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Rule
+    public final DisableAnimationsTestRule mDisableAnimationsRule = new DisableAnimationsTestRule();
 
     private static final String TEST_PAGE_URL_GOOGLE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_TITLE_GOOGLE = "The Google";
@@ -190,16 +193,12 @@ public class ReadingListTest {
         return bookmarkId;
     }
 
-    private BookmarkItemsAdapter getReorderAdapter() {
-        return (BookmarkItemsAdapter) getAdapter();
-    }
-
-    private RecyclerView.Adapter getAdapter() {
-        return mItemsContainer.getAdapter();
+    private TestingDelegate getTestingDelegate() {
+        return mBookmarkManagerCoordinator.getTestingDelegate();
     }
 
     private BookmarkId getIdByPosition(int pos) {
-        return getReorderAdapter().getIdByPosition(pos);
+        return getTestingDelegate().getIdByPositionForTesting(pos);
     }
 
     private BookmarkDelegate getBookmarkDelegate() {
@@ -216,7 +215,7 @@ public class ReadingListTest {
         BookmarkToolbar toolbar = mBookmarkManagerCoordinator.getToolbarForTesting();
 
         // We should default to the root bookmark.
-        Assert.assertEquals(BookmarkUiState.STATE_FOLDER, delegate.getCurrentState());
+        Assert.assertEquals(BookmarkUiMode.FOLDER, delegate.getCurrentUiMode());
         Assert.assertEquals("chrome-native://bookmarks/folder/0",
                 BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
         Assert.assertEquals("Bookmarks", toolbar.getTitle());
@@ -235,7 +234,7 @@ public class ReadingListTest {
         ApplicationTestUtils.waitForActivityState(mBookmarkActivity, Stage.DESTROYED);
 
         // Reopen and make sure we're back in "Mobile bookmarks".
-        Assert.assertEquals(BookmarkUiState.STATE_FOLDER, delegate.getCurrentState());
+        Assert.assertEquals(BookmarkUiMode.FOLDER, delegate.getCurrentUiMode());
         Assert.assertEquals("chrome-native://bookmarks/folder/3",
                 BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
     }
@@ -295,8 +294,7 @@ public class ReadingListTest {
     }
 
     @Test
-    @SmallTest
-    @DisabledTest(message = "https://crbug.com/1231219")
+    @MediumTest
     public void testSearchReadingList_Deletion() throws Exception {
         addReadingListBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
         BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
@@ -307,8 +305,8 @@ public class ReadingListTest {
 
         // Enter search UI, but don't enter any search key word.
         TestThreadUtils.runOnUiThreadBlocking(getBookmarkDelegate()::openSearchUi);
-        Assert.assertEquals("Wrong state, should be searching", BookmarkUiState.STATE_SEARCHING,
-                getBookmarkDelegate().getCurrentState());
+        Assert.assertEquals("Wrong state, should be searching", BookmarkUiMode.SEARCHING,
+                getBookmarkDelegate().getCurrentUiMode());
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
         // Delete the reading list page in search state.
@@ -350,7 +348,7 @@ public class ReadingListTest {
 
         View readingListRow = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("The 2nd view should be reading list.", BookmarkType.READING_LIST,
-                getReorderAdapter().getIdByPosition(1).getType());
+                getIdByPosition(1).getType());
         TestThreadUtils.runOnUiThreadBlocking(() -> TouchCommon.singleClickView(readingListRow));
 
         ChromeTabbedActivity activity = BookmarkTestUtil.waitForTabbedActivity();
@@ -418,7 +416,7 @@ public class ReadingListTest {
         Assert.assertEquals("No overflow menu for reading list folder.", View.GONE,
                 readingListRow.findViewById(R.id.more).getVisibility());
         Assert.assertEquals("The 1st view should be reading list.", BookmarkType.READING_LIST,
-                getReorderAdapter().getIdByPosition(0).getType());
+                getIdByPosition(0).getType());
         onView(withText("Reading list")).check(matches(isDisplayed()));
     }
 

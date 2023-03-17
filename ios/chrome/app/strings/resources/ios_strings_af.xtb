@@ -81,6 +81,7 @@ Net iemand met jou wagfrase kan jou geënkripteerde data lees. Die wagfrase word
 <translation id="149095475893949513">Hierdie webwerf probeer tans om 'n opstellingprofiel af te laai.</translation>
 <translation id="1491277525950327607">Dubbeltik om instelling te wissel</translation>
 <translation id="1492417797159476138">Jy het hierdie gebruikernaam reeds vir hierdie werf gestoor</translation>
+<translation id="1497590942294823549">Kieslys → Wagwoordbestuuder</translation>
 <translation id="1498283581832036924">Jou <ph name="WEBSITE" />-rekening sal nie uitgevee word nie.</translation>
 <translation id="1506063256525392513">Dit maak dit vir jou moontlik om foto's te neem en op te laai, asook om QR-kodes te skandeer.</translation>
 <translation id="1509486075633541495">Meld by webwerf aan</translation>
@@ -518,6 +519,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="4737560986434232178">Soek onlangse oortjies</translation>
 <translation id="473775607612524610">Dateer op</translation>
 <translation id="4747097190499141774">Wagfrase-enkripsie sluit nie betaalmetodes en adresse van Google Pay af in nie. Net iemand met jou wagfrase kan jou geënkripteerde data lees. Die wagfrase word nie na Google toe gestuur of deur Google geberg nie. As jy jou wagfrase vergeet of hierdie instelling wil verander, sal jy sinkronisering moet terugstel. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
+<translation id="4751162929052964260"><ph name="TITLE" />, <ph name="STATE" />, Net op hierdie toestel, <ph name="URL" /></translation>
 <translation id="4751645464639803239">Nuwe incognito-oortjie</translation>
 <translation id="4766112107778026136">Ontdek en volg</translation>
 <translation id="4775879719735953715">Verstekblaaier</translation>
@@ -843,6 +845,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="6801927553864092214">Maak 'n Incognito-oortjie oop om privaat te blaai</translation>
 <translation id="6807889908376551050">Wys alles …</translation>
 <translation id="681368974849482173">Item is geskep</translation>
+<translation id="6822587385560699678">Indien dit aan is, word wagwoorde in <ph name="ACCOUNT" /> gestoor. Indien dit af is, word wagwoorde net op hierdie toestel gestoor.</translation>
 <translation id="683022620450280906">Jy kan gestoorde wagwoorde op enige toestel gebruik. Hulle word vir <ph name="EMAIL" /> in Google Wagwoordbestuurder gestoor</translation>
 <translation id="6831043979455480757">Vertaal</translation>
 <translation id="6842136130964845393">Verifieer dis jy om seker te maak dat jy altyd toegang tot jou gestoorde wagwoorde het</translation>
@@ -941,6 +944,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="7600965453749440009">Moet nooit <ph name="LANGUAGE" /> vertaal nie</translation>
 <translation id="7603852183842204213">Opspringers geblokkeer (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">Vee wagwoord uit</translation>
+<translation id="7611459119367035420">Jy kan jou vasgespelde oortjies hier kry.</translation>
 <translation id="7638584964844754484">Verkeerde wagwoordfrase</translation>
 <translation id="7646263789464975852">Kieslys → Instellings → Veiligheidskontrole</translation>
 <translation id="7646772052135772216">Wagwoordsinkronisering werk nie</translation>
@@ -953,6 +957,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="7701040980221191251">Geen</translation>
 <translation id="7720410380936703141">PROBEER WEER</translation>
 <translation id="7726702057919861819">Kieslys → Geskiedenis → Vee blaaierdata uit</translation>
+<translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Net op hierdie toestel.</translation>
 <translation id="7738120385185846461">Gee ’n kwessie aan …</translation>
 <translation id="7741325291586284254">Nuwe Incognito-oortjiebladsy</translation>
 <translation id="7744394900930577716">Wagwoorde in ander apps</translation>
@@ -1161,7 +1166,6 @@ Werwe kan webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te si
 <translation id="9165320910061267720">Jy sal kennisgewings in jou iOS-instellings moet aanskakel as jy kennisgewings vir prysdalingopletberigte wil ontvang.</translation>
 <translation id="9177438225260810839">Deursoek oop oortjies</translation>
 <translation id="9188680907066685419">Meld af uit bestuurde rekening</translation>
-<translation id="9193147658040604536">Sleep oortjie hierheen om vas te speld</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> d. gelede</translation>
 <translation id="9203116392574189331">Oorgee</translation>
 <translation id="9219154867334666734">Soek oortjies …</translation>

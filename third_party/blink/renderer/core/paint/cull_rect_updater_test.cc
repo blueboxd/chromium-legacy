@@ -303,7 +303,7 @@ TEST_P(CullRectUpdaterTest, ScrollingLayerCullRect) {
 }
 
 TEST_P(CullRectUpdaterTest, NonCompositedScrollingLayerCullRect) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <style>
       div::-webkit-scrollbar { width: 5px; }
@@ -360,7 +360,7 @@ TEST_P(CullRectUpdaterTest, TallScrolledLayerCullRect) {
 }
 
 TEST_P(CullRectUpdaterTest, WholeDocumentCullRect) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+  SetPreferCompositingToLCDText(true);
   GetDocument().GetSettings()->SetMainFrameClipsContent(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -434,7 +434,7 @@ TEST_P(CullRectUpdaterTest, FixedPositionUnderClipPathWillChangeTransform) {
 }
 
 TEST_P(CullRectUpdaterTest, AbsolutePositionUnderNonContainingStackingContext) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <div id="scroller" style="width: 200px; height: 200px; overflow: auto;
                               position: relative">
@@ -497,7 +497,7 @@ TEST_P(CullRectUpdaterTest, StackedChildOfNonStackingContextScroller) {
 }
 
 TEST_P(CullRectUpdaterTest, ContentsCullRectCoveringWholeContentsRect) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+  SetPreferCompositingToLCDText(true);
   SetBodyInnerHTML(R"HTML(
     <div id="scroller" style="width: 400px; height: 400px; overflow: scroll">
       <div style="width: 600px; height: 7000px"></div>
@@ -539,7 +539,7 @@ TEST_P(CullRectUpdaterTest, ContentsCullRectCoveringWholeContentsRect) {
 }
 
 TEST_P(CullRectUpdaterTest, SVGForeignObject) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <div id="scroller" style="width: 100px; height: 100px; overflow: scroll">
       <svg id="svg" style="width: 100px; height: 4000px">
@@ -606,7 +606,7 @@ TEST_P(CullRectUpdaterTest, PerspectiveDescendants) {
 
 // Test case for crbug.com/1382842.
 TEST_P(CullRectUpdaterTest, UpdateOnCompositedScrollingStatusChange) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <style>body {position: absolute}</style>
     <div id="scroller" style="width: 100px; height: 100px;
@@ -628,7 +628,7 @@ TEST_P(CullRectUpdaterTest, UpdateOnCompositedScrollingStatusChange) {
 }
 
 TEST_P(CullRectUpdaterTest, StickyPositionInCompositedScroller) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+  SetPreferCompositingToLCDText(true);
   SetBodyInnerHTML(R"HTML(
     <div id="scroller" style="width: 300px; height: 300px; overflow: scroll">
       <div style="height: 600px"></div>
@@ -684,7 +684,7 @@ TEST_P(CullRectUpdaterTest, StickyPositionInCompositedScroller) {
 }
 
 TEST_P(CullRectUpdaterTest, StickyPositionInNonCompositedScroller) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <div id="scroller" style="width: 300px; height: 300px; overflow: scroll">
       <div style="height: 600px"></div>
@@ -754,11 +754,12 @@ TEST_P(CullRectUpdaterTest, NestedOverriddenCullRectScopes) {
   CullRect cull_rect2 = GetCullRect(layer2);
   CullRect special_cull_rect1(gfx::Rect(12, 34, 56, 78));
   CullRect special_cull_rect2(gfx::Rect(87, 65, 43, 21));
+  const bool disable_expansion = false;
 
   {
-    OverriddenCullRectScope scope1(layer1, cull_rect1);
+    OverriddenCullRectScope scope1(layer1, cull_rect1, disable_expansion);
     {
-      OverriddenCullRectScope scope2(layer2, cull_rect2);
+      OverriddenCullRectScope scope2(layer2, cull_rect2, disable_expansion);
       EXPECT_EQ(cull_rect2, GetCullRect(layer2));
     }
     EXPECT_EQ(cull_rect1, GetCullRect(layer1));
@@ -767,9 +768,10 @@ TEST_P(CullRectUpdaterTest, NestedOverriddenCullRectScopes) {
   EXPECT_EQ(cull_rect2, GetCullRect(layer2));
 
   {
-    OverriddenCullRectScope scope1(layer1, special_cull_rect1);
+    OverriddenCullRectScope scope1(layer1, special_cull_rect1,
+                                   disable_expansion);
     {
-      OverriddenCullRectScope scope2(layer2, cull_rect2);
+      OverriddenCullRectScope scope2(layer2, cull_rect2, disable_expansion);
       EXPECT_EQ(cull_rect2, GetCullRect(layer2));
     }
     EXPECT_EQ(special_cull_rect1, GetCullRect(layer1));
@@ -778,9 +780,10 @@ TEST_P(CullRectUpdaterTest, NestedOverriddenCullRectScopes) {
   EXPECT_EQ(cull_rect2, GetCullRect(layer2));
 
   {
-    OverriddenCullRectScope scope1(layer1, cull_rect1);
+    OverriddenCullRectScope scope1(layer1, cull_rect1, disable_expansion);
     {
-      OverriddenCullRectScope scope2(layer2, special_cull_rect2);
+      OverriddenCullRectScope scope2(layer2, special_cull_rect2,
+                                     disable_expansion);
       EXPECT_EQ(special_cull_rect2, GetCullRect(layer2));
     }
     EXPECT_EQ(cull_rect1, GetCullRect(layer1));
@@ -789,15 +792,53 @@ TEST_P(CullRectUpdaterTest, NestedOverriddenCullRectScopes) {
   EXPECT_EQ(cull_rect2, GetCullRect(layer2));
 
   {
-    OverriddenCullRectScope scope1(layer1, special_cull_rect1);
+    OverriddenCullRectScope scope1(layer1, special_cull_rect1,
+                                   disable_expansion);
     {
-      OverriddenCullRectScope scope2(layer2, special_cull_rect2);
+      OverriddenCullRectScope scope2(layer2, special_cull_rect2,
+                                     disable_expansion);
       EXPECT_EQ(special_cull_rect2, GetCullRect(layer2));
     }
     EXPECT_EQ(special_cull_rect1, GetCullRect(layer1));
   }
   EXPECT_EQ(cull_rect1, GetCullRect(layer1));
   EXPECT_EQ(cull_rect2, GetCullRect(layer2));
+}
+
+TEST_P(CullRectUpdaterTest, OverriddenCullRectWithoutExpansion) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div id="clip" style="width: 300px; height: 300px; overflow: hidden">
+      <div id="scroller" style="width: 1000px; height: 1000px;
+                                overflow: scroll; will-change: scroll-position">
+        <div style="width: 2000px; height: 2000px"></div>
+      <div>
+    </div>
+  )HTML");
+
+  auto& clip = *GetPaintLayerByElementId("clip");
+  auto& scroller = *GetPaintLayerByElementId("scroller");
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 600), GetCullRect(clip).Rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 300), GetContentsCullRect(clip).Rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 300), GetCullRect(scroller).Rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 2000, 2000), GetContentsCullRect(scroller).Rect());
+
+  {
+    const bool disable_expansion = true;
+    OverriddenCullRectScope scope(*GetLayoutView().Layer(),
+                                  CullRect(gfx::Rect(100, 100, 400, 400)),
+                                  disable_expansion);
+    EXPECT_EQ(gfx::Rect(100, 100, 400, 400), GetCullRect(clip).Rect());
+    EXPECT_EQ(gfx::Rect(100, 100, 200, 200), GetContentsCullRect(clip).Rect());
+    EXPECT_EQ(gfx::Rect(100, 100, 200, 200), GetCullRect(scroller).Rect());
+    EXPECT_EQ(gfx::Rect(100, 100, 200, 200),
+              GetContentsCullRect(scroller).Rect());
+  }
+
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 600), GetCullRect(clip).Rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 300), GetContentsCullRect(clip).Rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 300), GetCullRect(scroller).Rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 2000, 2000), GetContentsCullRect(scroller).Rect());
 }
 
 TEST_P(CullRectUpdaterTest, ViewScrollNeedsCullRectUpdate) {

@@ -42,11 +42,13 @@ void SolidColorLayer::SetBackgroundColor(SkColor4f color) {
 
 void SolidColorLayer::AppendQuads(viz::CompositorRenderPass& render_pass,
                                   FrameData& data,
-                                  const gfx::Transform& transform,
+                                  const gfx::Transform& transform_to_root,
+                                  const gfx::Transform& transform_to_target,
                                   const gfx::Rect* clip_in_target,
-                                  const gfx::Rect& visible_rect) {
+                                  const gfx::Rect& visible_rect,
+                                  float opacity) {
   viz::SharedQuadState* quad_state = CreateAndAppendSharedQuadState(
-      render_pass, transform, clip_in_target, visible_rect);
+      render_pass, transform_to_target, clip_in_target, visible_rect, opacity);
   viz::SolidColorDrawQuad* quad =
       render_pass.CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   quad->SetNew(quad_state, quad_state->quad_layer_rect,

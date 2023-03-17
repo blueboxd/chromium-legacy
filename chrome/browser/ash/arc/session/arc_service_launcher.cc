@@ -97,6 +97,7 @@
 #include "chrome/browser/ash/arc/tts/arc_tts_service.h"
 #include "chrome/browser/ash/arc/user_session/arc_user_session_service.h"
 #include "chrome/browser/ash/arc/video/gpu_arc_video_service_host.h"
+#include "chrome/browser/ash/arc/vmm/arc_system_state_bridge.h"
 #include "chrome/browser/ash/arc/vmm/arc_vmm_manager.h"
 #include "chrome/browser/ash/arc/wallpaper/arc_wallpaper_service.h"
 #include "chrome/browser/ash/login/startup_utils.h"
@@ -152,8 +153,10 @@ ArcServiceLauncher::ArcServiceLauncher(
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
 
-  if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
+  if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData) ||
+      base::FeatureList::IsEnabled(kEnableArcVmDataMigration)) {
     arc_disk_space_monitor_ = std::make_unique<ArcDiskSpaceMonitor>();
+  }
 }
 
 ArcServiceLauncher::~ArcServiceLauncher() {
@@ -318,6 +321,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
     ArcMemoryPressureBridge::GetForBrowserContext(profile);
     ArcVmmManager::GetForBrowserContext(profile)->set_user_id_hash(
         user_id_hash);
+    ArcSystemStateBridge::GetForBrowserContext(profile);
 
     if (base::FeatureList::IsEnabled(kEnableArcVmDataMigration)) {
       arc_vm_data_migration_notifier_ =
@@ -439,6 +443,7 @@ void ArcServiceLauncher::EnsureFactoriesBuilt() {
   ArcKioskBridge::EnsureFactoryBuilt();
   ArcLockScreenBridge::EnsureFactoryBuilt();
   ArcMediaSessionBridge::EnsureFactoryBuilt();
+  ArcMemoryPressureBridge::EnsureFactoryBuilt();
   ArcMetricsServiceFactory::GetInstance();
   ArcMetricsServiceProxy::EnsureFactoryBuilt();
   ArcMidisBridge::EnsureFactoryBuilt();
@@ -463,12 +468,14 @@ void ArcServiceLauncher::EnsureFactoriesBuilt() {
   ArcSharesheetBridge::EnsureFactoryBuilt();
   ArcSurveyService::EnsureFactoryBuilt();
   ArcSystemUIBridge::EnsureFactoryBuilt();
+  ArcSystemStateBridge::EnsureFactoryBuilt();
   ArcTimerBridge::EnsureFactoryBuilt();
   ArcTracingBridge::EnsureFactoryBuilt();
   ArcTtsService::EnsureFactoryBuilt();
   ArcUsbHostBridge::EnsureFactoryBuilt();
   ArcUsbHostPermissionManagerFactory::GetInstance();
   ArcUserSessionService::EnsureFactoryBuilt();
+  ArcVmmManager::EnsureFactoryBuilt();
   ArcVolumeMounterBridge::EnsureFactoryBuilt();
   ArcWakeLockBridge::EnsureFactoryBuilt();
   ArcWallpaperService::EnsureFactoryBuilt();

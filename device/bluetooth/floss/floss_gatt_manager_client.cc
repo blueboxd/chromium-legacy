@@ -91,6 +91,24 @@ const DBusTypeInfo& GetDBusTypeInfo(const GattStatus*) {
 }
 
 template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    GattWriteRequestStatus* status) {
+  uint32_t value;
+  if (FlossDBusClient::ReadDBusParam(reader, &value)) {
+    *status = static_cast<GattWriteRequestStatus>(value);
+    return true;
+  }
+
+  return false;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo(const GattWriteRequestStatus*) {
+  static DBusTypeInfo info{"u", "GattWriteRequestStatus"};
+  return info;
+}
+
+template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const AuthRequired& auth_req) {
   int32_t value = static_cast<int32_t>(auth_req);
@@ -290,6 +308,20 @@ void FlossGattManagerClient::Disconnect(ResponseCallback<Void> callback,
                        remote_device);
 }
 
+void FlossGattManagerClient::BeginReliableWrite(
+    ResponseCallback<Void> callback,
+    const std::string& remote_device) {
+  CallGattMethod<Void>(std::move(callback), gatt::kBeginReliableWrite,
+                       client_id_, remote_device);
+}
+
+void FlossGattManagerClient::EndReliableWrite(ResponseCallback<Void> callback,
+                                              const std::string& remote_device,
+                                              bool execute) {
+  CallGattMethod<Void>(std::move(callback), gatt::kEndReliableWrite, client_id_,
+                       remote_device, execute);
+}
+
 void FlossGattManagerClient::Refresh(ResponseCallback<Void> callback,
                                      const std::string& remote_device) {
   CallGattMethod<Void>(std::move(callback), gatt::kRefreshDevice, client_id_,
@@ -333,15 +365,14 @@ void FlossGattManagerClient::ReadUsingCharacteristicUuid(
 }
 
 void FlossGattManagerClient::WriteCharacteristic(
-    ResponseCallback<Void> callback,
+    ResponseCallback<GattWriteRequestStatus> callback,
     const std::string& remote_device,
     const int32_t handle,
     const WriteType write_type,
     const AuthRequired auth_required,
     const std::vector<uint8_t> data) {
-  CallGattMethod<Void>(std::move(callback), gatt::kWriteCharacteristic,
-                       client_id_, remote_device, handle, write_type,
-                       auth_required, data);
+  CallGattMethod(std::move(callback), gatt::kWriteCharacteristic, client_id_,
+                 remote_device, handle, write_type, auth_required, data);
 }
 
 void FlossGattManagerClient::ReadDescriptor(ResponseCallback<Void> callback,
@@ -491,7 +522,8 @@ void FlossGattManagerClient::ServerSendNotification(
 
 void FlossGattManagerClient::Init(dbus::Bus* bus,
                                   const std::string& service_name,
-                                  const int adapter_index) {
+                                  const int adapter_index,
+                                  base::OnceClosure on_ready) {
   // Set field variables.
   bus_ = bus;
   service_name_ = service_name;
@@ -603,6 +635,9 @@ void FlossGattManagerClient::Init(dbus::Bus* bus,
     LOG(ERROR) << "Unable to successfully export FlossGattServerObserver.";
     return;
   }
+
+  // Everything is queued for registration so save |on_ready| for later.
+  on_ready_ = std::move(on_ready);
 }
 
 void FlossGattManagerClient::RegisterClient() {
@@ -623,6 +658,12 @@ void FlossGattManagerClient::RegisterServer() {
       dbus::ObjectPath(kExportedCallbacksPath), kDefaultEattSupport);
 }
 
+void FlossGattManagerClient::CompleteInit() {
+  if (client_id_ && server_id_ && on_ready_) {
+    std::move(on_ready_).Run();
+  }
+}
+
 void FlossGattManagerClient::GattClientRegistered(GattStatus status,
                                                   int32_t client_id) {
   if (client_id_ != 0) {
@@ -638,6 +679,7 @@ void FlossGattManagerClient::GattClientRegistered(GattStatus status,
   }
 
   client_id_ = client_id;
+  CompleteInit();
 }
 
 void FlossGattManagerClient::GattClientConnectionState(GattStatus status,
@@ -793,6 +835,7 @@ void FlossGattManagerClient::GattServerRegistered(GattStatus status,
   }
 
   server_id_ = server_id;
+  CompleteInit();
 }
 
 void FlossGattManagerClient::GattServerConnectionState(GattStatus status,

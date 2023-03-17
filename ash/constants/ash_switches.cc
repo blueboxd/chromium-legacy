@@ -496,6 +496,10 @@ const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 const char kEnterpriseForceManualEnrollmentInTestBuilds[] =
     "enterprise-force-manual-enrollment-in-test-builds";
 
+// Whether to enable unified state determination.
+const char kEnterpriseEnableUnifiedStateDetermination[] =
+    "enterprise-enable-unified-state-determination";
+
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";
@@ -523,6 +527,14 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // - Don't apply new device policy if it would block dev mode.
 // This is only usable on test builds.
 const char kDisallowPolicyBlockDevMode[] = "disallow-policy-block-dev-mode";
+
+// Ignore the profile creation time when determining whether to show the end of
+// life notification incentive. This is meant to make manual testing easier.
+const char kEolIgnoreProfileCreationTime[] = "eol-ignore-profile-creation-time";
+
+// Reset the end of life notification prefs to their default value, at the
+// start of the user session. This is meant to make manual testing easier.
+const char kEolResetDismissedPrefs[] = "eol-reset-dismissed-prefs";
 
 // Write extension install events to chrome log for integration test.
 const char kExtensionInstallEventChromeLogForTests[] =

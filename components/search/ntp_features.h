@@ -40,6 +40,7 @@ BASE_DECLARE_FEATURE(kNtpDummyModules);
 BASE_DECLARE_FEATURE(kNtpComprehensiveTheming);
 BASE_DECLARE_FEATURE(kNtpComprehensiveThemeRealbox);
 BASE_DECLARE_FEATURE(kNtpLogo);
+BASE_DECLARE_FEATURE(kNtpReducedLogoSpace);
 BASE_DECLARE_FEATURE(kNtpMiddleSlotPromo);
 BASE_DECLARE_FEATURE(kNtpMiddleSlotPromoDismissal);
 BASE_DECLARE_FEATURE(kNtpModulesLoadTimeoutMilliseconds);
@@ -68,6 +69,7 @@ BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleBeginTimeDuration);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleMinimumImagesRequired);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleCategories);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleLoad);
+BASE_DECLARE_FEATURE(kNtpModulesHeaderIcon);
 
 // Parameter for controlling the luminosity difference for NTP elements on light
 // backgrounds.
@@ -147,7 +149,10 @@ extern const char kNtpHistoryClustersModuleBeginTimeDurationHoursParam[];
 extern const char kNtpHistoryClustersModuleMinimumImagesRequiredParam[];
 // Parameter for determining the categories a history cluster must fall into to
 // be shown.
-extern const char kNtpHistoryClustersModuleCategoriesParam[];
+extern const char kNtpHistoryClustersModuleCategoriesAllowlistParam[];
+// Parameter for determining the categories a history cluster must not fall into
+// to be shown.
+extern const char kNtpHistoryClustersModuleCategoriesBlocklistParam[];
 
 // Returns the timeout after which the load of a module should be aborted.
 base::TimeDelta GetModulesLoadTimeout();

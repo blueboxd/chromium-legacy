@@ -125,21 +125,24 @@ static constexpr char kCrossDocumentCachedResource[] =
   }
 
 const std::string ResourceTypeName(ResourceType type) {
+  // `ResourceType` variants in
+  // tools/metrics/histograms/metadata/blink/histograms.xml
+  // should be updated when you update the followings.
   switch (type) {
-    RESOURCE_TYPE_NAME(CSSStyleSheet)
-    RESOURCE_TYPE_NAME(Font)
-    RESOURCE_TYPE_NAME(Image)
-    RESOURCE_TYPE_NAME(LinkPrefetch)
-    RESOURCE_TYPE_NAME(Manifest)
-    RESOURCE_TYPE_NAME(Audio)
-    RESOURCE_TYPE_NAME(Video)
-    RESOURCE_TYPE_NAME(Mock)
-    RESOURCE_TYPE_NAME(Raw)
-    RESOURCE_TYPE_NAME(Script)
-    RESOURCE_TYPE_NAME(SVGDocument)
-    RESOURCE_TYPE_NAME(TextTrack)
-    RESOURCE_TYPE_NAME(SpeculationRules)
-    RESOURCE_TYPE_NAME(XSLStyleSheet)
+    RESOURCE_TYPE_NAME(Image)             // 1
+    RESOURCE_TYPE_NAME(CSSStyleSheet)     // 2
+    RESOURCE_TYPE_NAME(Script)            // 3
+    RESOURCE_TYPE_NAME(Font)              // 4
+    RESOURCE_TYPE_NAME(Raw)               // 5
+    RESOURCE_TYPE_NAME(SVGDocument)       // 6
+    RESOURCE_TYPE_NAME(XSLStyleSheet)     // 7
+    RESOURCE_TYPE_NAME(LinkPrefetch)      // 8
+    RESOURCE_TYPE_NAME(TextTrack)         // 9
+    RESOURCE_TYPE_NAME(Audio)             // 10
+    RESOURCE_TYPE_NAME(Video)             // 11
+    RESOURCE_TYPE_NAME(Manifest)          // 12
+    RESOURCE_TYPE_NAME(SpeculationRules)  // 13
+    RESOURCE_TYPE_NAME(Mock)              // 14
   }
 }
 
@@ -181,6 +184,31 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
          params.GetResourceRequest().HttpMethod() == http_names::kGET &&
          params.Options().data_buffering_policy != kDoNotBufferData &&
          !IsRawResource(*resource);
+}
+
+bool ShouldResourceBeKeptStrongReferenceByType(Resource* resource) {
+  // Image, fonts, stylesheets and scripts are the most commonly reused scripts.
+  return (resource->GetType() == ResourceType::kImage ||
+          resource->GetType() == ResourceType::kFont ||
+          resource->GetType() == ResourceType::kCSSStyleSheet ||
+          resource->GetType() == ResourceType::kScript);
+}
+
+bool ShouldResourceBeKeptStrongReference(Resource* resource) {
+  return IsMainThread() && resource->IsLoaded() &&
+         resource->GetResourceRequest().HttpMethod() == http_names::kGET &&
+         resource->Options().data_buffering_policy != kDoNotBufferData &&
+         ShouldResourceBeKeptStrongReferenceByType(resource) &&
+         !resource->GetResponse().CacheControlContainsNoCache() &&
+         !resource->GetResponse().CacheControlContainsNoStore();
+}
+
+base::TimeDelta GetResourceStrongReferenceTimeout(Resource* resource) {
+  base::TimeDelta lifetime = resource->FreshnessLifetime();
+  if (resource->GetResponse().ResponseTime() + lifetime < base::Time::Now()) {
+    return base::TimeDelta();
+  }
+  return resource->GetResponse().ResponseTime() + lifetime - base::Time::Now();
 }
 
 static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
@@ -583,8 +611,12 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
 
-  if (IsMainThread())
+  if (IsMainThread()) {
     MainThreadFetchersSet().insert(this);
+    if (MemoryPressureListenerRegistry::IsLowEndDevice()) {
+      MemoryPressureListenerRegistry::Instance().RegisterClient(this);
+    }
+  }
 }
 
 ResourceFetcher::~ResourceFetcher() {
@@ -1271,6 +1303,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     String resource_url =
         MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
     cached_resources_map_.Set(resource_url, resource);
+    MaybeSaveResourceToStrongReference(resource);
     if (PriorityObserverMapCreated() &&
         PriorityObservers()->Contains(resource_url)) {
       // Resolve the promise.
@@ -1320,6 +1353,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   }
 
   return resource;
+}
+
+void ResourceFetcher::RemoveImageStrongReference(Resource* image_resource) {
+  document_resource_strong_refs_.erase(image_resource);
 }
 
 void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
@@ -2134,6 +2171,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
         resource->GetResponse().DecodedBodyLength(),
         should_report_corb_blocking);
   }
+  MaybeSaveResourceToStrongReference(resource);
 }
 
 void ResourceFetcher::HandleLoaderError(Resource* resource,
@@ -2619,6 +2657,27 @@ void ResourceFetcher::CancelWebBundleSubresourceLoadersFor(
   }
 }
 
+void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
+  if (base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference) &&
+      ShouldResourceBeKeptStrongReference(resource)) {
+    if (resource->GetType() != ResourceType::kImage ||
+        !base::FeatureList::IsEnabled(
+            features::kMemoryCacheStrongReferenceFilterImages)) {
+      document_resource_strong_refs_.insert(resource);
+      freezable_task_runner_->PostDelayedTask(
+          FROM_HERE,
+          WTF::BindOnce(&ResourceFetcher::RemoveImageStrongReference,
+                        WrapWeakPersistent(this), WrapWeakPersistent(resource)),
+          GetResourceStrongReferenceTimeout(resource));
+    }
+  }
+}
+
+void ResourceFetcher::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  document_resource_strong_refs_.clear();
+}
+
 void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   visitor->Trace(properties_);
@@ -2640,6 +2699,8 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(resource_timing_info_map_);
   visitor->Trace(blob_registry_remote_);
   visitor->Trace(subresource_web_bundles_);
+  visitor->Trace(document_resource_strong_refs_);
+  MemoryPressureListener::Trace(visitor);
 }
 
 // static

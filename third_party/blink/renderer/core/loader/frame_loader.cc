@@ -116,6 +116,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -1004,6 +1005,7 @@ void FrameLoader::CommitNavigation(
   DCHECK(document_loader_);
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
+
   if (!frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal) {
@@ -1313,10 +1315,7 @@ void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
   CHECK(document_loader_);
 
   document_loader_->SetCommitReason(commit_reason);
-
-  virtual_time_pauser_.PauseVirtualTime();
   document_loader_->StartLoading();
-  virtual_time_pauser_.UnpauseVirtualTime();
 
   if (commit_reason != CommitReason::kInitialization) {
     // Following the call to StartLoading, the DocumentLoader state has taken
@@ -1569,6 +1568,12 @@ bool FrameLoader::ShouldClose(bool is_reload) {
     if (!descendant_frame->Tree().IsDescendantOf(frame_))
       continue;
     descendant_frame->GetDocument()->BeforeUnloadDoneWillUnload();
+  }
+
+  if (!frame_->IsDetached() && frame_->IsOutermostMainFrame() &&
+      base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference)) {
+    MemoryCache::Get()->SavePageResourceStrongReferences(
+        frame_->AllResourcesUnderFrame());
   }
 
   if (!is_reload) {

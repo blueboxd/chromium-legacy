@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/debug/crash_logging.h"
@@ -408,6 +409,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsServedFromBackForwardCache() override;
   void SetIsOverridingUserAgent(bool override_ua) override;
   void SetSilentlyIgnoreErrors() override;
+  network::mojom::WebSandboxFlags SandboxFlagsInherited() override;
   network::mojom::WebSandboxFlags SandboxFlagsToCommit() override;
   bool IsWaitingToCommit() override;
   bool WasResourceHintsReceived() override;
@@ -896,9 +898,9 @@ class CONTENT_EXPORT NavigationRequest
   // separate callback, WillCommitWithoutUrlLoader().
   bool NeedsUrlLoader();
 
-  network::mojom::PrivateNetworkRequestPolicy private_network_request_policy()
+  network::mojom::LocalNetworkRequestPolicy local_network_request_policy()
       const {
-    return private_network_request_policy_;
+    return local_network_request_policy_;
   }
 
   // Whether this navigation request waits for the result of beforeunload before
@@ -1134,6 +1136,10 @@ class CONTENT_EXPORT NavigationRequest
   // request and is instead pulled from the committed context on the main frame.
   bool GetIsThirdPartyCookiesUserBypassEnabled();
 
+  void set_resume_commit_closure_for_test(base::OnceClosure closure) {
+    resume_commit_closure_ = std::move(closure);
+  }
+
  private:
   friend class NavigationRequestTest;
 
@@ -1252,6 +1258,20 @@ class CONTENT_EXPORT NavigationRequest
   absl::optional<NavigationEarlyHintsManagerParams>
   CreateNavigationEarlyHintsManagerParams(
       const network::mojom::EarlyHints& early_hints) override;
+
+  // Selecting a `RenderFrameHost` to commit a navigation may occasionally fail.
+  // When this happens, the navigation will bind a closure to continue the
+  // navigation and assign it to `resume_commit_closure_`. This closure may run
+  // even when it is still not possible to proceed; see the comment on the
+  // `resume_commit_closure_` field for the full details.
+
+  // Corresponds to navigations committing from `OnResponseStarted()`:
+  void SelectFrameHostForOnResponseStarted(
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      bool is_download,
+      absl::optional<SubresourceLoaderParams> subresource_loader_params);
+  // TODO(https://crbug.com/1220337): Implement this logic for
+  // OnRequestFailedInternal() and BeginNavigationImpl() as well.
 
   // To be called whenever a navigation request fails. If |skip_throttles| is
   // true, the registered NavigationThrottle(s) won't get a chance to intercept
@@ -1421,15 +1441,17 @@ class CONTENT_EXPORT NavigationRequest
   // renderer process.
   void UpdateCommitNavigationParamsHistory();
 
-  // Called when the renderer requesting a navigation cancellation, or because
-  // the renderer crashed.
-  void OnRendererRequestedNavigationCancellation();
+  // The disconnect handler for the NavigationClient Mojo interface; used as a
+  // signal to potentially cancel navigations, e.g. when the renderer replaces
+  // an existing NavigationClient connection with a new one or when the renderer
+  // process crashes.
+  void OnNavigationClientDisconnected(uint32_t reason,
+                                      const std::string& description);
 
   // Binds the given error_handler to be called when an interface disconnection
   // happens on the renderer side.
   void HandleInterfaceDisconnection(
-      mojo::AssociatedRemote<mojom::NavigationClient>*,
-      base::OnceClosure error_handler);
+      mojo::AssociatedRemote<mojom::NavigationClient>&);
 
   // When called, this NavigationRequest will no longer interpret the interface
   // disconnection on the renderer side as an AbortNavigation.
@@ -1532,11 +1554,11 @@ class CONTENT_EXPORT NavigationRequest
   // redirect.
   void UpdateStateFollowingRedirect(const GURL& new_referrer_url);
 
-  // Updates |private_network_request_policy_| for ReadyToCommitNavigation().
+  // Updates |local_network_request_policy_| for ReadyToCommitNavigation().
   //
   // Must not be called for same-document navigation requests nor for requests
   // served from the back-forward cache or from prerendered pages.
-  void UpdatePrivateNetworkRequestPolicy();
+  void UpdateLocalNetworkRequestPolicy();
 
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.
@@ -2280,8 +2302,8 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(ahemery, titouan): Move some elements to the policy container or
   // rework inheritance.
   // https://crbug.com/1154729
-  network::mojom::PrivateNetworkRequestPolicy private_network_request_policy_ =
-      network::mojom::PrivateNetworkRequestPolicy::kWarn;
+  network::mojom::LocalNetworkRequestPolicy local_network_request_policy_ =
+      network::mojom::LocalNetworkRequestPolicy::kWarn;
 
   // The list of web features that were used by the new document during
   // navigation. These can only be logged once the document commits, so they are

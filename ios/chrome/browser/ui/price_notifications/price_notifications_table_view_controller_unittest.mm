@@ -7,13 +7,13 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_consumer.h"
 #import "ios/chrome/browser/ui/price_notifications/test_price_notifications_mutator.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "testing/platform_test.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -392,4 +392,29 @@ TEST_F(
 
   EXPECT_EQ(trackable_section_items.count, 1u);
   EXPECT_EQ(tracked_section_items.count, 4u);
+}
+
+// Simulates untracking a product that is visible on the current site but the
+// site's product is not tracked.
+TEST_F(PriceNotificationsTableViewControllerTest,
+       UntrackCrossMerchantItemWithItemOnCurrentPageNotTracked) {
+  id<PriceNotificationsConsumer> consumer =
+      base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
+  PriceNotificationsTableViewItem* trackable_item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+  [consumer setTrackableItem:trackable_item currentlyTracking:NO];
+  PriceNotificationsTableViewItem* tracked_item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+  [consumer addTrackedItem:tracked_item toBeginning:NO];
+
+  [consumer didStopPriceTrackingItem:tracked_item onCurrentSite:YES];
+  NSArray<PriceNotificationsTableViewItem*>* trackable_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackableItemsOnCurrentSite);
+  NSArray<PriceNotificationsTableViewItem*>* tracked_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackedItems);
+
+  EXPECT_EQ(trackable_section_items.count, 1u);
+  EXPECT_EQ(tracked_section_items.count, 0u);
 }

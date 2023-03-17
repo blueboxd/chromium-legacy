@@ -2920,6 +2920,13 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'ChromeOS FYI Release Skylab (kevin)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
+      },
       'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
@@ -3405,6 +3412,13 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'ChromeOS FYI Release Skylab (kevin)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
+      },
       'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
@@ -3543,6 +3557,7 @@
           # TODO(crbug.com/1264654): Fix the failed tests
           '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
         ],
+        'ci_only': True,
         'swarming': {
           'shards': 3,
           'inverse_quickrun_shards': 4,
@@ -4151,6 +4166,11 @@
           '--enable-metal-debug-layers',
         ],
       },
+      'Mac FYI Experimental Retina Release (AMD)': {
+        'args': [
+          '--enable-metal-debug-layers',
+        ],
+      },
       'Mac FYI Release (Intel)': {
         'args': [
           '--enable-metal-debug-layers',
@@ -4245,6 +4265,11 @@
       'Mac FYI ASAN (Intel)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
+          '--enable-metal-debug-layers',
+        ],
+      },
+      'Mac FYI Experimental Retina Release (AMD)': {
+        'args': [
           '--enable-metal-debug-layers',
         ],
       },
@@ -4644,6 +4669,22 @@
         'swarming': {
           'shards': 8,
         },
+        'experiment_percentage': 100,
+      },
+      'mac10.15-wpt-content-shell-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+      'mac11-wpt-content-shell-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+      'mac12-arm64-wpt-content-shell-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+      'mac13-arm64-wpt-content-shell-fyi-rel': {
+        'experiment_percentage': 100,
+      },
+      'mac13-wpt-content-shell-fyi-rel': {
+        'experiment_percentage': 100,
       },
       'win10-wpt-content-shell-fyi-rel': {
         'args': [

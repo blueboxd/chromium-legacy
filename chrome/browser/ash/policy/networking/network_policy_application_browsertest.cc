@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
@@ -16,7 +15,9 @@
 #include "base/functional/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/test/values_test_util.h"
@@ -76,6 +77,9 @@ constexpr char kServiceWifi3[] = "/service/3";
 constexpr char kServiceWifi4[] = "/service/4";
 
 constexpr char kUIDataKeyUserSettings[] = "user_settings";
+
+constexpr char kOncRecommendedFieldsWorkaroundActionHistogram[] =
+    "Network.Ethernet.Policy.OncRecommendedFieldsWorkaroundAction";
 
 // A utility to wait until a FakeShillServiceClient's service has been
 // connected.
@@ -338,12 +342,8 @@ class CrosNetworkConfigGuidsAvailableWaiter
       const std::vector<network_mojom::NetworkStatePropertiesPtr>&
           network_states) {
     std::set<std::string> guids;
-    std::transform(
-        network_states.begin(), network_states.end(),
-        std::inserter(guids, guids.begin()),
-        [](const network_mojom::NetworkStatePropertiesPtr& network_state) {
-          return network_state->guid;
-        });
+    base::ranges::transform(network_states, std::inserter(guids, guids.begin()),
+                            &network_mojom::NetworkStateProperties::guid);
     return guids;
   }
 
@@ -1366,23 +1366,30 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest, RetainEthernetIPAddr) {
                                          "ethernet_any", shill::kTypeEthernet,
                                          shill::kStateOnline, /*visible=*/true);
 
-  // For Ethernet, not mentioning "Recommended" currently means that the IP
-  // address is editable by the user.
-  std::string kDeviceONC1 = base::StringPrintf(R"(
-    {
-      "NetworkConfigurations": [
-        {
-          "GUID": "%s",
-          "Name": "EthernetName",
-          "Type": "Ethernet",
-          "Ethernet": {
-             "Authentication": "None"
+  {
+    base::HistogramTester histogram_tester;
+    // For Ethernet, not mentioning "Recommended" currently means that the IP
+    // address is editable by the user.
+    std::string kDeviceONC1 = base::StringPrintf(R"(
+      {
+        "NetworkConfigurations": [
+          {
+            "GUID": "%s",
+            "Name": "EthernetName",
+            "Type": "Ethernet",
+            "Ethernet": {
+               "Authentication": "None"
+            }
           }
-        }
-      ]
-    })",
-                                               kEthernetGuid);
-  SetDeviceOpenNetworkConfiguration(kDeviceONC1, /*wait_applied=*/true);
+        ]
+      })",
+                                                 kEthernetGuid);
+    SetDeviceOpenNetworkConfiguration(kDeviceONC1, /*wait_applied=*/true);
+    // Expect "Enabled by feature, ONC NetworkConfiguration eligible".
+    histogram_tester.ExpectUniqueSample(
+        kOncRecommendedFieldsWorkaroundActionHistogram,
+        /*sample=kEnabledAndAffected*/ 1, /*count=*/1);
+  }
 
   {
     const base::Value::Dict* eth_service_properties =
@@ -1426,9 +1433,11 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest, RetainEthernetIPAddr) {
               "192.168.1.44");
   }
 
-  // Modify the policy: Force custom nameserver, but allow IP address to be
-  // modifiable.
-  std::string kDeviceONC2 = base::StringPrintf(R"(
+  {
+    base::HistogramTester histogram_tester;
+    // Modify the policy: Force custom nameserver, but allow IP address to be
+    // modifiable.
+    std::string kDeviceONC2 = base::StringPrintf(R"(
     {
       "NetworkConfigurations": [
         {
@@ -1447,8 +1456,13 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest, RetainEthernetIPAddr) {
         }
       ]
     })",
-                                               kEthernetGuid);
-  SetDeviceOpenNetworkConfiguration(kDeviceONC2, /*wait_applied=*/true);
+                                                 kEthernetGuid);
+    SetDeviceOpenNetworkConfiguration(kDeviceONC2, /*wait_applied=*/true);
+    // Expect "Enabled by feature, ONC NetworkConfiguration not eligible".
+    histogram_tester.ExpectUniqueSample(
+        kOncRecommendedFieldsWorkaroundActionHistogram,
+        /*sample=kEnabledAndNotAffected*/ 0, /*count=*/1);
+  }
 
   // Verify that the Static IP is still active, and the custom name server has
   // been applied.
@@ -1735,6 +1749,8 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationNoEthernetWorkaroundTest,
                                          "ethernet_any", shill::kTypeEthernet,
                                          shill::kStateOnline, /*visible=*/true);
 
+  base::HistogramTester histogram_tester;
+
   // For Ethernet, not mentioning "Recommended" currently means that the IP
   // address is not editable by the user.
   std::string kDeviceONCNothingRecommended = base::StringPrintf(R"(
@@ -1753,6 +1769,10 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationNoEthernetWorkaroundTest,
                                                                 kEthernetGuid);
   SetDeviceOpenNetworkConfiguration(kDeviceONCNothingRecommended,
                                     /*wait_applied=*/true);
+  // Expect "Disabled by feature, ONC NetworkConfiguration eligible".
+  histogram_tester.ExpectUniqueSample(
+      kOncRecommendedFieldsWorkaroundActionHistogram,
+      /*sample=kDisabledAndAffected*/ 3, /*count=*/1);
 
   {
     const base::Value::Dict* eth_service_properties =
@@ -1812,6 +1832,8 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationNoEthernetWorkaroundTest,
                                          "ethernet_any", shill::kTypeEthernet,
                                          shill::kStateOnline, /*visible=*/true);
 
+  base::HistogramTester histogram_tester;
+
   // Modify the policy: Explicitly recommend both IP address and Nameservers,
   // allowing the user to modify them.
   std::string kDeviceONCEverythingRecommended =
@@ -1836,6 +1858,10 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationNoEthernetWorkaroundTest,
                          kEthernetGuid);
   SetDeviceOpenNetworkConfiguration(kDeviceONCEverythingRecommended,
                                     /*wait_applied=*/true);
+  // Expect "Disabled by feature, ONC NetworkConfiguration not eligible".
+  histogram_tester.ExpectUniqueSample(
+      kOncRecommendedFieldsWorkaroundActionHistogram,
+      /*sample=kDisabledAndAffected*/ 2, /*count=*/1);
 
   // Check that IP address is modifiable and policy-recommended.
   {

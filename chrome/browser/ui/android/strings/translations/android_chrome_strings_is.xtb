@@ -34,6 +34,7 @@ Aðeins einstaklingar sem eru með aðgangsorðið þitt geta lesið dulkóðuð
 <translation id="1173894706177603556">Endurnefna</translation>
 <translation id="1177863135347784049">Sérsniðið</translation>
 <translation id="1181037720776840403">Fjarlægja</translation>
+<translation id="1181366777303791449"><ph name="MAIN_FRAME_ETLD_PLUS_ONE" /></translation>
 <translation id="1193729455103054076">Nota traust aðgangsorð?</translation>
 <translation id="1197267115302279827">Færa bókamerki</translation>
 <translation id="1201402288615127009">Áfram</translation>
@@ -165,7 +166,6 @@ Aðeins einstaklingar sem eru með aðgangsorðið þitt geta lesið dulkóðuð
 <translation id="1928696683969751773">Uppfærslur</translation>
 <translation id="19288952978244135">Opnaðu Chrome aftur.</translation>
 <translation id="1933845786846280168">Valinn flipi</translation>
-<translation id="193571872656840963">Þakkaðu þessum höfundi fyrir</translation>
 <translation id="1943432128510653496">Vista aðgangsorð</translation>
 <translation id="1952172573699511566">Vefsvæði birta texta á því tungumáli sem þú hefur valið þegar hægt er.</translation>
 <translation id="1959679933317802873">Bíður eftir efni</translation>
@@ -201,7 +201,6 @@ Aðeins einstaklingar sem eru með aðgangsorðið þitt geta lesið dulkóðuð
 <translation id="2122601567107267586">Ekki var hægt að opna forritið</translation>
 <translation id="2132122640199389833">Fjarlægja öll tengd tæki</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> lokað</translation>
-<translation id="2134927169889348449">Með því að nota Chrome samþykkir þú <ph name="BEGIN_TOS_LINK" />þjónustuskilmála Google<ph name="END_TOS_LINK" />og <ph name="BEGIN_ATOS_LINK" />viðbótarskilmála Google Chrome og ChromeOS<ph name="END_ATOS_LINK" />.</translation>
 <translation id="2139186145475833000">Setja á heimaskjá</translation>
 <translation id="2141396931810938595">Miðað við notkun þína</translation>
 <translation id="214888715418183969">Veldu hverju þú vilt deila með Chrome. Mæligildin sem þú deilir verða notuð til að bæta eiginleika, afköst og stöðugleika Chrome.</translation>
@@ -554,7 +553,6 @@ Traustslyklar bæta persónuvernd á netinu og ekki er hægt að nota þá til a
 <translation id="409109920254068737">Þú getur notað þessa spjaldtölvu til að skrá þig inn í tækinu sem birtir þennan QR-kóða.</translation>
 <translation id="4095146165863963773">Eyða forritsgögnum?</translation>
 <translation id="4096227151372679484">Vistun bókamerkja opnuð á hálfum skjánum</translation>
-<translation id="4099578267706723511">Hjálpaðu til við að bæta Google Chrome með því að senda talnagögn um notkun og tilkynningar um hrun til Google.</translation>
 <translation id="4101475238162928417">Samstilltu til að fá aðgangsorðin þín, bókamerkin og fleira í hinum tækjunum þínum</translation>
 <translation id="410351446219883937">Sjálfvirk spilun</translation>
 <translation id="4106587138345390261">Chrome er að kanna nýja eiginleika sem gera vefsvæðum kleift að skila sömu vafraupplifun án þess að nota jafn mikið af upplýsingum frá þér</translation>
@@ -592,7 +590,6 @@ Traustslyklar bæta persónuvernd á netinu og ekki er hægt að nota þá til a
 <translation id="4269820728363426813">Afrita slóð tengils</translation>
 <translation id="4283102315569707115">Biðja sjálfgefið um tölvuvefi?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Kveiktu á skjálás í stillingum Android<ph name="END_LINK" /></translation>
-<translation id="4293476595220860475">Með því að nota Chrome samþykkir þú <ph name="BEGIN_TOS_LINK" />þjónustuskilmála Google<ph name="END_TOS_LINK" />og <ph name="BEGIN_ATOS_LINK" />viðbótarskilmála Google Chrome og ChromeOS<ph name="END_ATOS_LINK" />. <ph name="BEGIN_PRIVACY_LINK" />Persónuverndarstefnan<ph name="END_PRIVACY_LINK" /> gildir einnig.</translation>
 <translation id="4296252229500326964">Nýr huliðsflipi</translation>
 <translation id="4298388696830689168">Tengd vefsvæði</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -633,6 +630,7 @@ Traustslyklar bæta persónuvernd á netinu og ekki er hægt að nota þá til a
 
 Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil, svo sem yfir leit og virkni í annarri þjónustu Google, á <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="452750746583162491">Fara yfir samstillt gögn</translation>
+<translation id="4528638190900283934">Skráðu þig inn til að fá fleiri eiginleika</translation>
 <translation id="4532845899244822526">Velja möppu</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> flipi}one{<ph name="TAB_COUNT_MANY" /> flipi, <ph name="TAB_COUNT_INCOGNITO" /> huliðsflipi}other{<ph name="TAB_COUNT_MANY" /> flipar, <ph name="TAB_COUNT_INCOGNITO" /> huliðsflipar}}</translation>
 <translation id="4554077758708533499">Tengt með USB-snúru</translation>
@@ -765,7 +763,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5161254044473106830">Titil vantar</translation>
 <translation id="5170568018924773124">Sýna í möppu</translation>
 <translation id="5171045022955879922">Leitaðu eða sláðu inn vefslóð</translation>
-<translation id="517734441743343109">Með því að halda áfram samþykkirðu <ph name="BEGIN_TOS_LINK" />þjónustuskilmálana<ph name="END_TOS_LINK" /> og <ph name="BEGIN_PRIVACY_LINK" />persónuverndarstefnuna<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="5184329579814168207">Opna í Chrome</translation>
 <translation id="5191251636205085390">Kynntu þér og hafðu umsjón með nýrri tækni sem er ætlað að koma í stað fótspora þriðja aðila</translation>
 <translation id="5193988420012215838">Afritað á klippiborðið</translation>
@@ -1245,10 +1242,10 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7707922173985738739">Nota farsímagögn</translation>
 <translation id="7709094866268987903">Áhugamál sem þú fjarlægðir birtast hér</translation>
 <translation id="7709918231054955894">Skoðaðu alla flipana þína</translation>
+<translation id="772434085369393266">Uppfæra flettingar í HTTPS og vara þig við áður en vefsvæðum sem ekki styðja það er hlaðið. Þú getur ekki breytt þessari stillingu vegna þess að þú ert með kveikt á ítarlegri vernd.</translation>
 <translation id="7725024127233776428">Síður sem þú setur í bókamerki birtast hér</translation>
 <translation id="7757787379047923882">Texta deilt af <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
-<translation id="7762928140712606393">Skráðu þig inn til að fá viðbótareiginleika og njóta hámarksöryggis Chrome</translation>
 <translation id="7764225426217299476">Bæta við heimilisfangi</translation>
 <translation id="7772032839648071052">Staðfestu aðgangsorðið</translation>
 <translation id="7772375229873196092">Loka <ph name="APP_NAME" /></translation>

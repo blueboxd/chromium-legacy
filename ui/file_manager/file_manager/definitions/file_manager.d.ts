@@ -17,6 +17,7 @@ interface FileManager {
   selectionHandler: FileSelectionHandler;
   taskController: TaskController;
   dialogType: DialogType;
+  directoryModel: DirectoryModel;
 }
 
 /**
@@ -26,6 +27,7 @@ declare global {
   interface Window {
     fileManager: FileManager;
     IN_TEST: boolean;
+    store: Store;
   }
 }
 

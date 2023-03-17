@@ -4,6 +4,8 @@
 
 #include "ash/wm/client_controlled_state.h"
 
+#include <queue>
+
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -28,6 +30,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/wm/constants.h"
 #include "chromeos/ui/wm/features.h"
@@ -477,6 +480,46 @@ TEST_F(ClientControlledStateTest, SnapWindow) {
             delegate()->requested_bounds().bottom_right());
   EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
   EXPECT_EQ(WindowStateType::kSecondarySnapped, delegate()->new_state());
+}
+
+TEST_F(ClientControlledStateTest, PartialSnap) {
+  // Snap enabled.
+  widget_delegate()->EnableSnap();
+
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+
+  // Test that snap from half to partial works.
+  const WMEvent snap_left_half(WM_EVENT_SNAP_PRIMARY);
+  window_state()->OnWMEvent(&snap_left_half);
+  gfx::Rect expected_bounds(work_area.x(), work_area.y(),
+                            work_area.width() * chromeos::kDefaultSnapRatio,
+                            work_area.height());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, delegate()->new_state());
+  EXPECT_EQ(expected_bounds, delegate()->requested_bounds());
+
+  const WMEvent snap_left_partial(WM_EVENT_SNAP_PRIMARY,
+                                  chromeos::kTwoThirdSnapRatio);
+  window_state()->OnWMEvent(&snap_left_partial);
+  expected_bounds.set_width(work_area.width() * chromeos::kTwoThirdSnapRatio);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, delegate()->new_state());
+  EXPECT_EQ(expected_bounds, delegate()->requested_bounds());
+
+  // Test that snap from primary to secondary works.
+  const WMEvent snap_right_half(WM_EVENT_SNAP_SECONDARY);
+  window_state()->OnWMEvent(&snap_right_half);
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, delegate()->new_state());
+  expected_bounds.set_x(work_area.width() * chromeos::kDefaultSnapRatio);
+  expected_bounds.set_width(work_area.width() * chromeos::kDefaultSnapRatio);
+  EXPECT_EQ(expected_bounds, delegate()->requested_bounds());
+
+  const WMEvent snap_right_partial(WM_EVENT_SNAP_SECONDARY,
+                                   chromeos::kOneThirdSnapRatio);
+  window_state()->OnWMEvent(&snap_right_partial);
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, delegate()->new_state());
+  expected_bounds.set_x(work_area.width() * chromeos::kTwoThirdSnapRatio);
+  expected_bounds.set_width(work_area.width() * chromeos::kOneThirdSnapRatio);
+  EXPECT_EQ(expected_bounds, delegate()->requested_bounds());
 }
 
 TEST_F(ClientControlledStateTest, SnapInSecondaryDisplay) {
@@ -1076,6 +1119,53 @@ TEST_P(ClientControlledStateTestClamshellAndTablet,
     EXPECT_EQ(split_view_controller->state(),
               SplitViewController::State::kNoSnap);
     EXPECT_FALSE(overview_controller->InOverviewSession());
+  }
+}
+
+TEST_P(ClientControlledStateTestClamshellAndTablet,
+       SnapBeforePreviousEventIsApplied) {
+  auto* const overview_controller = Shell::Get()->overview_controller();
+  auto* const split_view_controller = SplitViewController::Get(window());
+
+  widget_delegate()->EnableSnap();
+
+  std::queue<WindowStateType> new_state_queue;
+  std::queue<gfx::Rect> requested_bounds_queue;
+
+  // Send a maximize request.
+  const WMEvent maximize(WM_EVENT_MAXIMIZE);
+  window_state()->OnWMEvent(&maximize);
+  new_state_queue.push(delegate()->new_state());
+  requested_bounds_queue.push(delegate()->requested_bounds());
+
+  // Send a snap request.
+  const WMEvent snap(WM_EVENT_SNAP_PRIMARY);
+  window_state()->OnWMEvent(&snap);
+  new_state_queue.push(delegate()->new_state());
+  requested_bounds_queue.push(delegate()->requested_bounds());
+
+  // Process requests sequentially.
+  ASSERT_EQ(new_state_queue.size(), requested_bounds_queue.size());
+  while (!new_state_queue.empty() && !requested_bounds_queue.empty()) {
+    state()->EnterNextState(window_state(), new_state_queue.front());
+    state()->set_bounds_locally(true);
+    widget()->SetBounds(requested_bounds_queue.front());
+    state()->set_bounds_locally(false);
+
+    new_state_queue.pop();
+    requested_bounds_queue.pop();
+  }
+
+  // The window should be snapped as it's the last requested state.
+  EXPECT_TRUE(window_state()->IsSnapped());
+
+  // In tablet mode, split view mode should be activated.
+  if (InTabletMode()) {
+    EXPECT_TRUE(split_view_controller->InSplitViewMode());
+    EXPECT_EQ(split_view_controller->state(),
+              SplitViewController::State::kPrimarySnapped);
+    EXPECT_EQ(split_view_controller->primary_window(), window());
+    EXPECT_TRUE(overview_controller->InOverviewSession());
   }
 }
 

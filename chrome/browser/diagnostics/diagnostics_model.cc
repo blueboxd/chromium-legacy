@@ -25,17 +25,17 @@ namespace diagnostics {
 // This is the count of diagnostic tests on each platform.  This should
 // only be used by testing code.
 #if BUILDFLAG(IS_WIN)
-const int DiagnosticsModel::kDiagnosticsTestCount = 17;
+const int DiagnosticsModel::kDiagnosticsTestCount = 18;
 #elif BUILDFLAG(IS_MAC)
-const int DiagnosticsModel::kDiagnosticsTestCount = 14;
+const int DiagnosticsModel::kDiagnosticsTestCount = 15;
 #elif BUILDFLAG(IS_POSIX)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const int DiagnosticsModel::kDiagnosticsTestCount = 18;
+const int DiagnosticsModel::kDiagnosticsTestCount = 19;
 #else
-const int DiagnosticsModel::kDiagnosticsTestCount = 16;
+const int DiagnosticsModel::kDiagnosticsTestCount = 17;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #elif BUILDFLAG(IS_FUCHSIA)
-const int DiagnosticsModel::kDiagnosticsTestCount = 16;
+const int DiagnosticsModel::kDiagnosticsTestCount = 17;
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace {
@@ -161,7 +161,8 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
     tests_.push_back(MakeDiskSpaceTest());
     tests_.push_back(MakePreferencesTest());
     tests_.push_back(MakeLocalStateTest());
-    tests_.push_back(MakeBookMarksTest());
+    tests_.push_back(MakeLocalOrSyncableBookmarksTest());
+    tests_.push_back(MakeAccountBookmarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
     tests_.push_back(MakeSqliteFaviconsDbTest());
@@ -185,7 +186,8 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeDiskSpaceTest());
     tests_.push_back(MakePreferencesTest());
     tests_.push_back(MakeLocalStateTest());
-    tests_.push_back(MakeBookMarksTest());
+    tests_.push_back(MakeLocalOrSyncableBookmarksTest());
+    tests_.push_back(MakeAccountBookmarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
     tests_.push_back(MakeSqliteFaviconsDbTest());
@@ -211,7 +213,8 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
     tests_.push_back(MakeDiskSpaceTest());
     tests_.push_back(MakePreferencesTest());
     tests_.push_back(MakeLocalStateTest());
-    tests_.push_back(MakeBookMarksTest());
+    tests_.push_back(MakeLocalOrSyncableBookmarksTest());
+    tests_.push_back(MakeAccountBookmarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
     tests_.push_back(MakeSqliteFaviconsDbTest());
@@ -242,7 +245,8 @@ class DiagnosticsModelFuchsia : public DiagnosticsModelImpl {
     tests_.push_back(MakeDiskSpaceTest());
     tests_.push_back(MakePreferencesTest());
     tests_.push_back(MakeLocalStateTest());
-    tests_.push_back(MakeBookMarksTest());
+    tests_.push_back(MakeLocalOrSyncableBookmarksTest());
+    tests_.push_back(MakeAccountBookmarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
     tests_.push_back(MakeSqliteFaviconsDbTest());

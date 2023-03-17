@@ -326,6 +326,7 @@
   E_CPONLY(kColorSidePanelFilterChipIcon) \
   E_CPONLY(kColorSidePanelFilterChipIconSelected) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundSelected) \
+  E_CPONLY(kColorSidePanelScrollbarThumb) \
   E_CPONLY(kColorSidePanelTextfieldBorder) \
   /* Status bubble colors. */ \
   E_CPONLY(kColorStatusBubbleBackgroundFrameActive) \
@@ -507,6 +508,11 @@
   E_CPONLY(kColorReadAnythingSeparatorDark) \
   E_CPONLY(kColorReadAnythingSeparatorLight) \
   E_CPONLY(kColorReadAnythingSeparatorYellow) \
+  E_CPONLY(kColorReadAnythingDropdownBackground) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundBlue) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundDark) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundLight) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundYellow) \
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \

@@ -27,6 +27,8 @@ constexpr char kFinalStatusUMA[] = "Ash.BrowserDataBackMigrator.FinalStatus";
 constexpr char kPosixErrnoUMA[] = "Ash.BrowserDataBackMigrator.PosixErrno.";
 constexpr char kSuccessfulMigrationTimeUMA[] =
     "Ash.BrowserDataBackMigrator.SuccessfulMigrationTime";
+constexpr char kNumberOfLacrosSecondaryProfilesUMA[] =
+    "Ash.BrowserDataBackMigrator.NumberOfLacrosSecondaryProfiles";
 
 constexpr char kPreMigrationCleanUpTimeUMA[] =
     "Ash.BrowserDataBackMigrator.ElapsedTimePreMigrationCleanUp";
@@ -122,6 +124,8 @@ class BrowserDataBackMigrator {
                            RecordPosixErrnoIfAvailable);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest,
                            RecordMigrationTimeIfSuccessful);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
+                           RecordNumberOfLacrosSecondaryProfiles);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest, TaskStatusToString);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
                            MergesAshOnlyPreferencesCorrectly);
@@ -196,9 +200,8 @@ class BrowserDataBackMigrator {
   // Creates `kTmpDir` and deletes its contents if it already exists. Deletes
   // ash and lacros `ItemType::kDeletable` items to free up extra space but this
   // does not affect `PreMigrationCleanUpResult::success`.
-  static TaskResult PreMigrationCleanUp(
-      const base::FilePath& ash_profile_dir,
-      const base::FilePath& lacros_profile_dir);
+  static TaskResult PreMigrationCleanUp(const base::FilePath& ash_profile_dir,
+                                        const base::FilePath& lacros_dir);
 
   // Called as a reply to `PreMigrationCleanUp()`.
   void OnPreMigrationCleanUp(TaskResult result);
@@ -251,10 +254,10 @@ class BrowserDataBackMigrator {
   void OnMarkMigrationComplete();
 
   // For `target_dir` copy subdirectories belonging to extensions that are in
-  // both Chromes from `lacros_profile_dir` to `tmp_user_dir`.
+  // both Chromes from `lacros_default_profile_dir` to `tmp_user_dir`.
   static bool MergeCommonExtensionsDataFiles(
       const base::FilePath& ash_profile_dir,
-      const base::FilePath& lacros_profile_dir,
+      const base::FilePath& lacros_default_profile_dir,
       const base::FilePath& tmp_user_dir,
       const std::string& target_dir);
 
@@ -266,13 +269,14 @@ class BrowserDataBackMigrator {
       const std::string& target_dir);
 
   // Merge IndexedDB objects for extensions that are both in Ash and Lacros.
-  // If both exists, delete Ash version and move Lacros version to its place.
+  // If both exist, delete Ash version and move Lacros version to its place.
   // If only Ash exists, do not delete it, i.e. do nothing.
   // If only Lacros exists, move to the expected Ash location.
   // If neither exists, do nothing.
-  static bool MergeCommonIndexedDB(const base::FilePath& ash_profile_dir,
-                                   const base::FilePath& lacros_profile_dir,
-                                   const char* extension_id);
+  static bool MergeCommonIndexedDB(
+      const base::FilePath& ash_profile_dir,
+      const base::FilePath& lacros_default_profile_dir,
+      const char* extension_id);
 
   // Merge Preferences.
   static bool MergePreferences(const base::FilePath& ash_pref_path,
@@ -354,6 +358,11 @@ class BrowserDataBackMigrator {
   static void RecordMigrationTimeIfSuccessful(
       TaskResult result,
       base::TimeTicks migration_start_time);
+
+  // Records `kNumberOfLacrosSecondaryProfilesUMA` with the number of secondary
+  // profiles in Lacros at the time of starting backward migration.
+  static void RecordNumberOfLacrosSecondaryProfiles(
+      const base::FilePath& ash_profile_dir);
 
   // Converts `TaskStatus` to string.
   static std::string TaskStatusToString(TaskStatus task_status);

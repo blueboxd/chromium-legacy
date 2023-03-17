@@ -129,6 +129,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebNfc,
     &features::kIncognitoDownloadsWarning,
     &features::kIncognitoNtpRevamp,
+    &features::kKeepAndroidTintedResources,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feature_engagement::kUseClientConfigIPH,
@@ -176,6 +177,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCloseTabSuggestions,
     &kCriticalPersistedTabData,
     &kCommerceCoupons,
+    &kCCTAllowCrossUidActivitySwitchFromBelow,
     &kCCTBackgroundTab,
     &kCCTBottomBarSwipeUpGesture,
     &kCCTBrandTransparency,
@@ -185,7 +187,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTIntentFeatureOverrides,
     &kCCTNewDownloadTab,
-    &kCCTPackageNameRecording,
     &kCCTPostMessageAPI,
     &kCCTPostMessageOrigin,
     &kCCTPrefetchDelayShowOnStart,
@@ -244,6 +245,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackGestureRefactorActivityAndroid,
     &kBackGestureRefactorAndroid,
     &kOmahaMinSdkVersionAndroid,
+    &kOmniboxAdaptNarrowTabletWindows,
     &kOmniboxConsumesImeInsets,
     &kOmniboxModernizeVisualUpdate,
     &kOpaqueOriginForIncomingIntents,
@@ -312,13 +314,13 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStartSurfaceReturnTime,
     &kStartSurfaceRefactor,
     &kStartSurfaceDisabledFeedImprovement,
+    &kStartSurfaceWithAccessibility,
     &kUmaBackgroundSessions,
     &kUpdateNotificationScheduleServiceImmediateShowOption,
     &kUseLibunwindstackNativeUnwinderAndroid,
     &kVoiceSearchAudioCapturePolicy,
     &kVoiceButtonInTopToolbar,
     &kWebOtpCrossDeviceSimpleString,
-    &content_creation::kWebNotesDynamicTemplates,
     &content_creation::kWebNotesStylizeEnabled,
     &kWebApkAllowIconUpdate,
     &kWebApkInstallService,
@@ -512,6 +514,10 @@ BASE_FEATURE(kCommerceCoupons,
              "CommerceCoupons",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTAllowCrossUidActivitySwitchFromBelow,
+             "CCTAllowCrossUidActivitySwitchFromBelow",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTBottomBarSwipeUpGesture,
              "CCTBottomBarSwipeUpGesture",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -544,10 +550,6 @@ BASE_FEATURE(kCCTIncognitoAvailableToThirdParty,
 
 BASE_FEATURE(kCCTIntentFeatureOverrides,
              "CCTIntentFeatureOverrides",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kCCTPackageNameRecording,
-             "CCTPackageNameRecording",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTPostMessageAPI,
@@ -782,6 +784,10 @@ BASE_FEATURE(kOmahaMinSdkVersionAndroid,
              "OmahaMinSdkVersionAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kOmniboxAdaptNarrowTabletWindows,
+             "OmniboxAdaptNarrowTabletWindows",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOmniboxConsumesImeInsets,
              "OmniboxConsumesImeInsets",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -967,7 +973,7 @@ BASE_FEATURE(kTabGridLayoutAndroid,
 
 BASE_FEATURE(kTabSelectionEditorV2,
              "TabSelectionEditorV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabStateV1Optimizations,
              "TabStateV1Optimizations",
@@ -1057,6 +1063,10 @@ BASE_FEATURE(kStartSurfaceRefactor,
 
 BASE_FEATURE(kStartSurfaceDisabledFeedImprovement,
              "StartSurfaceDisabledFeedImprovement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStartSurfaceWithAccessibility,
+             "StartSurfaceWithAccessibility",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, keep logging and reporting UMA while chrome is backgrounded.

@@ -9,6 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -39,29 +40,6 @@ class FakeSensorDisabledNotificationDelegate
 
  private:
   std::vector<std::u16string> apps_;
-};
-
-class RemoveNotificationWaiter : public message_center::MessageCenterObserver {
- public:
-  RemoveNotificationWaiter() {
-    message_center::MessageCenter::Get()->AddObserver(this);
-  }
-  ~RemoveNotificationWaiter() override {
-    message_center::MessageCenter::Get()->RemoveObserver(this);
-  }
-
-  void Wait() { run_loop_.Run(); }
-
-  // message_center::MessageCenterObserver:
-  void OnNotificationRemoved(const std::string& notification_id,
-                             const bool by_user) override {
-    if (notification_id == kNotificationId) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  base::RunLoop run_loop_;
 };
 
 // A waiter class, once `Wait()` is invoked, waits until a pop up of the
@@ -185,22 +163,12 @@ TEST(PrivacyHubNotificationClickDelegateDeathTest, AddButton) {
       base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
           base::DoNothing());
 
-  if (DCHECK_IS_ON()) {
-    EXPECT_DEATH(
-        delegate->Click(1, absl::nullopt),
-        "Check failed: !button_callbacks_\\[button_index\\]\\.is_null\\(\\). "
-        "button_index=1");
-  }
-}
+  // There is no valid callback for the first button. This should only fail on
+  // debug builds, in release builds this will simply not run the callback.
+  EXPECT_DCHECK_DEATH(delegate->Click(1, absl::nullopt));
 
-// TODO(b/271280503): Reenable when the failing builder is fixed.
-TEST(PrivacyHubNotificationClickDelegateDeathTest, DISABLED_AddButton2) {
-  scoped_refptr<PrivacyHubNotificationClickDelegate> delegate =
-      base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
-          base::DoNothing());
-  EXPECT_DEATH(delegate->Click(2, absl::nullopt),
-               "Check failed: button_callbacks_.size\\(\\) > button_index \\(2 "
-               "vs. 2\\)");
+  // There is no second button, this could lead to out of bounds issues.
+  EXPECT_CHECK_DEATH(delegate->Click(2, absl::nullopt));
 }
 
 TEST_F(PrivacyHubNotificationTest, ShowAndHide) {
@@ -211,12 +179,6 @@ TEST_F(PrivacyHubNotificationTest, ShowAndHide) {
   EXPECT_TRUE(GetNotification());
 
   notification().Hide();
-
-  EXPECT_TRUE(GetNotification());
-
-  RemoveNotificationWaiter waiter;
-
-  waiter.Wait();
 
   EXPECT_FALSE(GetNotification());
 }

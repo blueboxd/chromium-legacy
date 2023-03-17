@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Zaznan je požarni zid</translation>
 <translation id="1075811647922107217">Velikost strani</translation>
+<translation id="1082009148392559545">Prenos ohranjevalnika zaslona</translation>
 <translation id="1094693127011229778">Naslov IP ni na voljo.</translation>
 <translation id="1113892970288677790">Izberite izbrani slikovni material in slike</translation>
 <translation id="1119447706177454957">Notranja napaka</translation>
@@ -90,6 +91,7 @@
 <translation id="1717874160321062422">Napravo upravljata <ph name="FIRST_MANAGER" /> in <ph name="SECOND_MANAGER" />.</translation>
 <translation id="1726100011689679555">Imenski strežniki</translation>
 <translation id="1731082422893354635">Sledilna ploščica Bluetooth</translation>
+<translation id="1738949837603788263">Območje <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">Slik ni bilo mogoče naložiti. Preverite omrežno povezavo ali znova poskusite naložiti slike.</translation>
 <translation id="1751249301761991853">Osebno</translation>
 <translation id="1753496554272155572">Zapiranje predogleda zaslonskega ozadja</translation>
@@ -241,7 +243,6 @@
 <translation id="3226657629376379887">Meni z dejanji za postavitev</translation>
 <translation id="3246869037381808805">Izbrisana bodo tiskalna opravila, starejša od 1 dneva</translation>
 <translation id="3268178239013324452">Napaka – vrata so odprta</translation>
-<translation id="3275506277319227640">Sidranje <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">Slika avatarja</translation>
 <translation id="3283504360622356314">{0,plural, =1{Uredi datoteko}one{Uredi datoteke}two{Uredi datoteke}few{Uredi datoteke}other{Uredi datoteke}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">Baterija je polna</translation>
 <translation id="3600339377155080675">Zrcaljenje zaslona</translation>
 <translation id="3602290021589620013">Predogled</translation>
-<translation id="360282891121575443">Drugi uporabniki lahko posodobijo fotografije v deljenih albumih. Dnevna sprememba lahko prikaže zaslonska ozadja, ki trenutno niso v albumu.</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Sprememba ozadja</translation>
 <translation id="360565022852130722">Omrežje Wi-Fi je zavarovano s šibkim protokolom WEP 802.1x</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">V celoti</translation>
 <translation id="4333390807948134856">Tipka <ph name="KEY_NAME" /> je bila pritisnjena.</translation>
 <translation id="435692326371619097">Upravljanje nastavitev APN-ja. APN-ji vzpostavijo povezavo med mobilnim omrežjem in internetom. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Sidranje na manjši strani</translation>
 <translation id="4378373042927530923">Ni se izvedlo</translation>
 <translation id="4378551569595875038">Povezovanje …</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -601,6 +600,7 @@
 <translation id="636850387210749493">Prijava v podjetje</translation>
 <translation id="6379086450106841622">Zaslon na dotik</translation>
 <translation id="6381741036071372448">Preizkusite tipkovnico</translation>
+<translation id="6382182670717268353">Predogled ohranjevalnika zaslona</translation>
 <translation id="6388847657025262518">V podajalniku papirja optičnega bralnika se je zagozdil papir. Preverite podajalnik in poskusite znova.</translation>
 <translation id="6394634179843537518">Dodaj datoteko</translation>
 <translation id="6410257289063177456">Slikovne datoteke</translation>
@@ -639,7 +639,6 @@
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="6659594942844771486">Zavihek</translation>
 <translation id="6692996468359469499">Prejemanje podatkov, povezanih z izborom</translation>
-<translation id="6698459586333070823">Deljene albume lahko posodobijo drugi uporabniki</translation>
 <translation id="6704062477274546131">Razrešitev DNS-ja</translation>
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6723847290197874913">Osvetlitev tipkovnice</translation>
@@ -691,6 +690,7 @@
 <translation id="7177485034254901881">To napravo <ph name="DEVICE_TYPE" /> upravlja domena <ph name="MANAGER" />. Skrbniki lahko napravo konfigurirajo na daljavo.</translation>
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7180865173735832675">Prilagodi</translation>
+<translation id="7184043045742675738">Če želite prilagoditi gumb, kliknite katero koli tipko. Prestavite tipko z miško ali puščičnimi tipkami.</translation>
 <translation id="7212734716605298123">Posodobitve vdelane programske opreme za zunanje naprave</translation>
 <translation id="7216409898977639127">Ponudnik mobilnih storitev</translation>
 <translation id="725133483556299729">Izberite e-poštni naslov</translation>
@@ -732,6 +732,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">Zaslon na dotik USB</translation>
 <translation id="7595982850646262331">Še <ph name="TIME_VALUE" /></translation>
+<translation id="7613724632293948900">Prestavljanje z miško ali puščičnimi tipkami.</translation>
 <translation id="7620771111601174153">Preberite več v centru za pomoč</translation>
 <translation id="763165478673169849">Čas zadnje ponastavitve</translation>
 <translation id="7648838807254605802">Velika zakasnitev HTTPS</translation>
@@ -795,7 +796,6 @@
 <translation id="8226628635270268143">Izberite priljubljene fotografije in albume</translation>
 <translation id="8227119283605456246">Prilaganje datoteke</translation>
 <translation id="8230672074305416752">Ni mogoče preveriti privzetega prehoda omrežja</translation>
-<translation id="8242426110754782860">Naprej</translation>
 <translation id="8246209727385807362">Neznani operater</translation>
 <translation id="827422111966801947">Indigo</translation>
 <translation id="8286154143153872371">Povežite se z omrežjem in znova naložite stran, če si želite ogledati zaslonsko ozadje.</translation>
@@ -855,6 +855,7 @@
 <translation id="8798441408945964110">Ime ponudnika</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Ozadje</translation>
+<translation id="8820457400746201697">Premaknite modro točko stika k dejanju. Izberite povezano tipko za prilagajanje.</translation>
 <translation id="8834539327799336565">Trenutno povezano</translation>
 <translation id="8845001906332463065">Poiščite pomoč</translation>
 <translation id="8855781559874488009">Ni mogoče vzpostaviti povezave s spletnimi mesti HTTP prek požarnega zidu.</translation>
@@ -903,7 +904,6 @@
 <translation id="9137526406337347448">Googlove storitve</translation>
 <translation id="9138630967333032450">Leva tipka Shift</translation>
 <translation id="9149391708638971077">Zaženi preizkus pomnilnika</translation>
-<translation id="9157515863513902090">Sidranje na večji strani</translation>
 <translation id="9161276708550942948">preslednica</translation>
 <translation id="9173638680043580060">Še manj kot minuta</translation>
 <translation id="917720651393141712">Preizkus</translation>

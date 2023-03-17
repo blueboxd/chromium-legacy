@@ -22,6 +22,14 @@
 
 namespace ash {
 
+namespace {
+
+const char kCellularServicePath[] = "/service/cellular0";
+const char kCellularServiceGuid[] = "cellular_guid0";
+const char kCellularServiceName[] = "cellular_name0";
+
+}  // namespace
+
 class HotspotMetricsHelperTest : public testing::Test {
  public:
   HotspotMetricsHelperTest() = default;
@@ -47,11 +55,23 @@ class HotspotMetricsHelperTest : public testing::Test {
                               hotspot_state_handler_.get(),
                               technology_state_controller_.get());
     hotspot_metrics_helper_ = std::make_unique<HotspotMetricsHelper>();
-    hotspot_metrics_helper_->Init(hotspot_capabilities_provider_.get(),
-                                  hotspot_state_handler_.get(),
-                                  hotspot_controller_.get());
+    hotspot_metrics_helper_->Init(
+        hotspot_capabilities_provider_.get(), hotspot_state_handler_.get(),
+        hotspot_controller_.get(),
+        network_state_test_helper_.network_state_handler());
 
     base::RunLoop().RunUntilIdle();
+  }
+
+  void PrepareEnableHotspotForTesting() {
+    SetHotspotAllowStatus(hotspot_config::mojom::HotspotAllowStatus::kAllowed);
+    network_state_test_helper_.manager_test()
+        ->SetSimulateCheckTetheringReadinessResult(
+            FakeShillSimulatedResult::kSuccess,
+            shill::kTetheringReadinessReady);
+    network_state_test_helper_.manager_test()->SetSimulateTetheringEnableResult(
+        FakeShillSimulatedResult::kSuccess,
+        shill::kTetheringEnableResultSuccess);
   }
 
   void SetHotspotAllowStatus(
@@ -122,7 +142,6 @@ TEST_F(HotspotMetricsHelperTest, HotspotAllowStatusHistogram) {
 }
 
 TEST_F(HotspotMetricsHelperTest, HotspotUsageConfigHistogram) {
-  SetHotspotAllowStatus(hotspot_config::mojom::HotspotAllowStatus::kAllowed);
   LoginState::Get()->SetLoggedInState(
       LoginState::LoggedInState::LOGGED_IN_ACTIVE,
       LoginState::LoggedInUserType::LOGGED_IN_USER_OWNER);
@@ -136,11 +155,7 @@ TEST_F(HotspotMetricsHelperTest, HotspotUsageConfigHistogram) {
                                            base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
-  network_state_test_helper_.manager_test()
-      ->SetSimulateCheckTetheringReadinessResult(
-          FakeShillSimulatedResult::kSuccess, shill::kTetheringReadinessReady);
-  network_state_test_helper_.manager_test()->SetSimulateTetheringEnableResult(
-      FakeShillSimulatedResult::kSuccess, shill::kTetheringEnableResultSuccess);
+  PrepareEnableHotspotForTesting();
   hotspot_controller_->EnableHotspot(base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
@@ -156,6 +171,145 @@ TEST_F(HotspotMetricsHelperTest, HotspotUsageConfigHistogram) {
       HotspotMetricsHelper::kHotspotUsageConfigCompatibilityMode, 1);
   histogram_tester_.ExpectBucketCount(
       HotspotMetricsHelper::kHotspotUsageConfigCompatibilityMode, false, 1);
+}
+
+TEST_F(HotspotMetricsHelperTest, HotspotUsageDurationHistogram) {
+  const base::TimeDelta kHotspotUsageTime = base::Seconds(123);
+  PrepareEnableHotspotForTesting();
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  task_environment_.FastForwardBy(kHotspotUsageTime);
+
+  hotspot_controller_->DisableHotspot(
+      base::DoNothing(), hotspot_config::mojom::DisableReason::kUserInitiated);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectTimeBucketCount(
+      HotspotMetricsHelper::kHotspotUsageDuration, kHotspotUsageTime, 1);
+
+  // Verifies that the usage duration is logged if hotspot is torn down by
+  // internal error.
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  task_environment_.FastForwardBy(kHotspotUsageTime);
+
+  base::Value::Dict status_dict;
+  status_dict.Set(shill::kTetheringStatusStateProperty,
+                  shill::kTetheringStateIdle);
+  status_dict.Set(shill::kTetheringStatusIdleReasonProperty,
+                  shill::kTetheringIdleReasonError);
+  network_state_test_helper_.manager_test()->SetManagerProperty(
+      shill::kTetheringStatusProperty, base::Value(status_dict.Clone()));
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectTimeBucketCount(
+      HotspotMetricsHelper::kHotspotUsageDuration, kHotspotUsageTime, 2);
+}
+
+TEST_F(HotspotMetricsHelperTest, HotspotMaxClientCountHistogram) {
+  PrepareEnableHotspotForTesting();
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  base::Value::Dict status_dict;
+  status_dict.Set(shill::kTetheringStatusStateProperty,
+                  shill::kTetheringStateActive);
+  // Update tethering status with one active client.
+  base::Value::List active_clients_list;
+  base::Value::Dict client;
+  client.Set(shill::kTetheringStatusClientIPv4Property, "IPV4:001");
+  client.Set(shill::kTetheringStatusClientHostnameProperty, "hostname1");
+  client.Set(shill::kTetheringStatusClientMACProperty, "persist");
+  active_clients_list.Append(std::move(client));
+  status_dict.Set(shill::kTetheringStatusClientsProperty,
+                  active_clients_list.Clone());
+  network_state_test_helper_.manager_test()->SetManagerProperty(
+      shill::kTetheringStatusProperty, base::Value(status_dict.Clone()));
+  base::RunLoop().RunUntilIdle();
+
+  hotspot_controller_->DisableHotspot(
+      base::DoNothing(), hotspot_config::mojom::DisableReason::kUserInitiated);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotMaxClientCount,
+      /*sample=*/1, /*expected_count=*/1);
+
+  // Verifies that the max client count is logged if hotspot is torn down by
+  // internal error.
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  // Add one more connected client.
+  base::Value::Dict client2;
+  client2.Set(shill::kTetheringStatusClientIPv4Property, "IPV4:002");
+  client2.Set(shill::kTetheringStatusClientHostnameProperty, "hostname2");
+  active_clients_list.Append(std::move(client2));
+  status_dict.Set(shill::kTetheringStatusClientsProperty,
+                  std::move(active_clients_list));
+  network_state_test_helper_.manager_test()->SetManagerProperty(
+      shill::kTetheringStatusProperty, base::Value(status_dict.Clone()));
+  base::RunLoop().RunUntilIdle();
+
+  status_dict.Set(shill::kTetheringStatusStateProperty,
+                  shill::kTetheringStateIdle);
+  status_dict.Set(shill::kTetheringStatusIdleReasonProperty,
+                  shill::kTetheringIdleReasonError);
+  network_state_test_helper_.manager_test()->SetManagerProperty(
+      shill::kTetheringStatusProperty, base::Value(status_dict.Clone()));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotMaxClientCount,
+      /*sample=*/2, /*expected_count=*/1);
+}
+
+TEST_F(HotspotMetricsHelperTest, HotspotIsDeviceManagedHistogram) {
+  PrepareEnableHotspotForTesting();
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotIsDeviceManaged, false,
+      /*expected_count=*/1);
+  hotspot_controller_->DisableHotspot(
+      base::DoNothing(), hotspot_config::mojom::DisableReason::kUserInitiated);
+  base::RunLoop().RunUntilIdle();
+
+  hotspot_metrics_helper_->set_is_enterprise_managed(
+      /*is_enterprise_managed=*/true);
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotIsDeviceManaged, true,
+      /*expected_count=*/1);
+}
+
+TEST_F(HotspotMetricsHelperTest, HotspotEnabledUpstreamStatusHistogram) {
+  ShillServiceClient::TestInterface* service_test =
+      network_state_test_helper_.service_test();
+  service_test->AddService(kCellularServicePath, kCellularServiceGuid,
+                           kCellularServiceName, shill::kTypeCellular,
+                           shill::kStateOnline, /*visible=*/true);
+  PrepareEnableHotspotForTesting();
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotUpstreamStatusWhenEnabled,
+      HotspotMetricsHelper::HotspotMetricsUpstreamStatus::
+          kWifiWithCellularConnected,
+      /*expected_count=*/1);
+  hotspot_controller_->DisableHotspot(
+      base::DoNothing(), hotspot_config::mojom::DisableReason::kUserInitiated);
+  base::RunLoop().RunUntilIdle();
+
+  // Bring the cellular network down.
+  service_test->RemoveService(kCellularServicePath);
+  base::RunLoop().RunUntilIdle();
+  hotspot_controller_->EnableHotspot(base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      HotspotMetricsHelper::kHotspotUpstreamStatusWhenEnabled,
+      HotspotMetricsHelper::HotspotMetricsUpstreamStatus::
+          kWifiWithCellularNotConnected,
+      /*expected_count=*/1);
 }
 
 }  // namespace ash

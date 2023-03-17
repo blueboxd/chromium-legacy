@@ -79,6 +79,7 @@
 <translation id="1641857168437328880">文件送紙器 (單面)</translation>
 <translation id="1643449475550628585">每天變更桌布圖片</translation>
 <translation id="1644574205037202324">歷史記錄</translation>
+<translation id="1651925268237749928">你已選取共享相簿。其他使用者可以新增或變更相片。系統不一定會使用目前這本相簿中的相片做為桌布。</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用盡</translation>
 <translation id="1664796644829245314">預覽「<ph name="PREVIEW_OBJECT" />」</translation>
 <translation id="1668469839109562275">內建 VPN</translation>
@@ -236,12 +237,12 @@
 <translation id="319101249942218879">顯示圖片已變更</translation>
 <translation id="3192947282887913208">音訊檔</translation>
 <translation id="3199982728237701504">文件送紙器 (雙面)</translation>
+<translation id="3201315366910775591">其他使用者可更新共享相簿</translation>
 <translation id="3211671540163313381">按鍵對應 D-pad</translation>
 <translation id="3226405216343213872">正在尋找掃描器</translation>
 <translation id="3226657629376379887">版面配置動作選單</translation>
 <translation id="3246869037381808805">系統會移除 1 天前的列印工作</translation>
 <translation id="3268178239013324452">失敗 - 蓋子處於開啟狀態</translation>
-<translation id="3275506277319227640">固定在<ph name="DIRECTION" />側</translation>
 <translation id="3275729367986477355">顯示圖片</translation>
 <translation id="3283504360622356314">{0,plural, =1{編輯檔案}other{編輯檔案}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -278,7 +279,6 @@
 <translation id="3595596368722241419">電池已充滿</translation>
 <translation id="3600339377155080675">螢幕鏡像</translation>
 <translation id="3602290021589620013">預覽</translation>
-<translation id="360282891121575443">其他使用者可以更新共享相簿中的相片。如果每天變更，系統可能會使用目前不在相簿中的相片做為桌布。</translation>
 <translation id="3603829704940252505">顯示圖片</translation>
 <translation id="3604713164406837697">變更桌布</translation>
 <translation id="360565022852130722">已使用防護力較弱的通訊協定 WEP 802.1x 保護 Wi-Fi 網路</translation>
@@ -360,7 +360,6 @@
 <translation id="4311195029067684288">完整</translation>
 <translation id="4333390807948134856">已按下 <ph name="KEY_NAME" /> 鍵</translation>
 <translation id="435692326371619097">管理網路 APN 設定。APN 會在行動網路和網際網路之間建立連線。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">固定在較小的一側</translation>
 <translation id="4378373042927530923">未執行</translation>
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -639,7 +638,6 @@
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6692996468359469499">取得選取項目的相關資訊</translation>
-<translation id="6698459586333070823">其他使用者可更新共享相簿</translation>
 <translation id="6704062477274546131">DNS 解析</translation>
 <translation id="6723839937902243910">電源</translation>
 <translation id="6723847290197874913">鍵盤背光</translation>
@@ -657,6 +655,7 @@
 <translation id="6838167112108853532">無法停用或移除這個 APN，請務必停用或移除已啟用的連結 APN。</translation>
 <translation id="6853312040151791195">放電率</translation>
 <translation id="6889786074662672253">在重新啟動新期間，請勿拔除這台外部裝置的插頭或關閉電腦。你可以將這個視窗縮到最小。這項作業可能需要幾分鐘才會完成，這段期間外部裝置可能無法正常運作。</translation>
+<translation id="6900701049656042631">這本相簿中沒有任何相片。如要新增，請前往 <ph name="LINK" /></translation>
 <translation id="6905724422583748843">返回「<ph name="PAGE_NAME" />」頁面</translation>
 <translation id="6910312834584889076">掃描器的蓋子已打開。請蓋上蓋子，然後再試一次。</translation>
 <translation id="6911383237894364323">無法連線至媒體伺服器</translation>
@@ -795,7 +794,6 @@
 <translation id="8226628635270268143">選擇你最喜愛的相片和相簿</translation>
 <translation id="8227119283605456246">附加檔案</translation>
 <translation id="8230672074305416752">無法連線偵測預設的網路閘道</translation>
-<translation id="8242426110754782860">Proceed</translation>
 <translation id="8246209727385807362">不明電信業者</translation>
 <translation id="827422111966801947">靛藍</translation>
 <translation id="8286154143153872371">如要查看桌布，請連上網路並重新載入網頁。</translation>
@@ -903,7 +901,6 @@
 <translation id="9137526406337347448">Google 服務</translation>
 <translation id="9138630967333032450">左移</translation>
 <translation id="9149391708638971077">執行記憶體測試</translation>
-<translation id="9157515863513902090">固定在較大的一側</translation>
 <translation id="9161276708550942948">空格鍵</translation>
 <translation id="9173638680043580060">還剩不到 1 分鐘</translation>
 <translation id="917720651393141712">測試</translation>

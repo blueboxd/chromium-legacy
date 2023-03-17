@@ -23,9 +23,11 @@ using testing::UnorderedElementsAre;
 
 namespace autofill {
 
-constexpr char16_t kIbanValue_0[] = u"IE12 BOFI 9000 0112 3456 78";
+// Valid Ireland IBAN number.
+constexpr char16_t kIbanValue_0[] = u"IE64 IRCE 9205 0112 3456 78";
+// Two valid Switzerland IBAN numbers.
 constexpr char16_t kIbanValue_1[] = u"CH56 0483 5012 3456 7800 9";
-constexpr char16_t kIbanValue_2[] = u"CH56 9483 5012 3456 7800 9";
+constexpr char16_t kIbanValue_2[] = u"CH93 0076 2011 6238 5295 7";
 
 constexpr char16_t kNickname_0[] = u"Nickname 0";
 constexpr char16_t kNickname_1[] = u"Nickname 1";
@@ -103,7 +105,7 @@ class IBANManagerTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  autofill::test::AutofillEnvironment autofill_environment_;
+  test::AutofillUnitTestEnvironment autofill_test_environment_;
   MockSuggestionsHandler suggestions_handler_;
   TestAutofillClient autofill_client_;
   TestPersonalDataManager personal_data_manager_;
@@ -176,7 +178,7 @@ TEST_F(IBANManagerTest, ShowsIBANSuggestions_OnlyPrefixMatch) {
       SetUpIBANAndSuggestion(kIbanValue_2, kNickname_1);
 
   AutofillField test_field;
-  test_field.value = u"CH56";
+  test_field.value = u"CH";
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Setting up mock to verify that the handler is returned a list of
@@ -272,6 +274,36 @@ TEST_F(IBANManagerTest, DoesNotShowIBANsForBlockedWebsite) {
 
   // Simulate request for suggestions.
   EXPECT_FALSE(iban_manager_.OnGetSingleFieldSuggestions(
+      AutoselectFirstSuggestion(false), test_field, autofill_client_,
+      suggestions_handler_.GetWeakPtr(),
+      /*context=*/context));
+}
+
+// Test that suggestions are returned on platforms that don't have an
+// AutofillOptimizationGuide. Having no AutofillOptimizationGuide means that
+// suggestions cannot and will not be blocked.
+TEST_F(IBANManagerTest, ShowsIBANSuggestions_OptimizationGuideNotPresent) {
+  Suggestion iban_suggestion_0 =
+      SetUpIBANAndSuggestion(kIbanValue_0, kNickname_0);
+  AutofillField test_field;
+  SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
+
+  // Delete the AutofillOptimizationGuide.
+  autofill_client_.ResetAutofillOptimizationGuide();
+
+  // Setting up mock to verify that the handler is returned a list of
+  // iban-based suggestions and the iban details line.
+  EXPECT_CALL(suggestions_handler_,
+              OnSuggestionsReturned(
+                  test_field.global_id(), AutoselectFirstSuggestion(false),
+                  UnorderedElementsAre(Field(&Suggestion::main_text,
+                                             iban_suggestion_0.main_text))))
+      .Times(1);
+
+  // Simulate request for suggestions.
+  // Because all criteria are met to trigger returning to the handler,
+  // the handler should be triggered and this should return true.
+  EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
       AutoselectFirstSuggestion(false), test_field, autofill_client_,
       suggestions_handler_.GetWeakPtr(),
       /*context=*/context));

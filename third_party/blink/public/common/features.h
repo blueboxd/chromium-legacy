@@ -20,6 +20,8 @@ namespace features {
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnonymousIframeOriginTrial);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAttributionReportingCrossAppWeb);
+BLINK_COMMON_EXPORT
+BASE_DECLARE_FEATURE(kAutofillDetectRemovedFormControls);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAutomaticLazyFrameLoadingToAds);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kTimeoutMillisForLazyAds;
@@ -73,6 +75,14 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFencedFrames);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFullUserAgent);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPath2DPaintCache);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrivacySandboxAdsAPIs);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrivateAggregationApi);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPrivateAggregationApiEnabledInSharedStorage;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPrivateAggregationApiEnabledInFledge;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPrivateAggregationApiFledgeExtensionsEnabled;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPI);
 // Maximum number of URLs allowed to be included in the input parameter for
@@ -271,8 +281,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasCompressHibernatedImage);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCreateImageBitmapOrientationNone);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDiscardCodeCacheAfterFirstUse);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCacheCodeOnIdle);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -522,7 +530,6 @@ BLINK_COMMON_EXPORT bool IsSetTimeoutWithoutClampEnabled();
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMaxUnthrottledTimeoutNestingLevel);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxUnthrottledTimeoutNestingLevelParam;
-BLINK_COMMON_EXPORT void ClearUnthrottledNestedTimeoutOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
 
@@ -1030,6 +1037,24 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // process.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kRuntimeFeatureStateControllerApplyFeatureDiff);
+
+// Disallow setting URL ports with a value that will overflow.
+// See https://crbug.com/1416017
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kURLSetPortCheckOverflow);
+
+// Keep strong references in the blink memory cache to maximize resource reuse.
+// See https://crbug.com/1409349.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMemoryCacheStrongReference);
+
+// Save only one unloaded page's resources in the memory cache.
+// See https://crbug.com/1409349.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kMemoryCacheStrongReferenceSingleUnload);
+
+// Save strong references only for fonts, stylesheets and scripts
+// See https://crbug.com/1409349.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kMemoryCacheStrongReferenceFilterImages);
 
 }  // namespace features
 }  // namespace blink

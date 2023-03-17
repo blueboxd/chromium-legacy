@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_notification_manager.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/check.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
-#include "ui/gfx/vector_icon_types.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 namespace ash::cloud_upload {
@@ -41,11 +41,13 @@ CloudUploadNotificationManager::CloudUploadNotificationManager(
     Profile* profile,
     const std::string& file_name,
     const std::string& cloud_provider_name,
-    const std::string& target_app_name)
+    const std::string& target_app_name,
+    int num_files)
     : profile_(profile),
       file_name_(file_name),
       cloud_provider_name_(cloud_provider_name),
-      target_app_name_(target_app_name) {
+      target_app_name_(target_app_name),
+      num_files_(num_files) {
   // Generate a unique ID for the cloud upload notifications.
   notification_id_ =
       "cloud-upload-" +
@@ -76,13 +78,16 @@ CloudUploadNotificationManager::GetNotificationDisplayService() {
 std::unique_ptr<message_center::Notification>
 CloudUploadNotificationManager::CreateUploadProgressNotification() {
   std::string title =
-      "Moving \"" + file_name_ + "\" to " + cloud_provider_name_;
-  std::string message =
-      "Your file will open in " + target_app_name_ + " when completed.";
+      // TODO(b/242685536) Use "files" for multi-files when support for
+      // multi-files is added.
+      "Moving " + base::NumberToString(num_files_) + " file to " +
+      cloud_provider_name_;
+  std::string message = "File will open in " + target_app_name_;
 
   return ash::CreateSystemNotificationPtr(
       /*type=*/message_center::NOTIFICATION_TYPE_PROGRESS,
       /*id=*/notification_id_, base::UTF8ToUTF16(title),
+      // TODO(b/272601262) Display or delete this message.
       base::UTF8ToUTF16(message), /*display_source=*/display_source_,
       /*origin_url=*/GURL(), /*notifier_id=*/message_center::NotifierId(),
       /*optional_fields=*/{},
@@ -91,14 +96,16 @@ CloudUploadNotificationManager::CreateUploadProgressNotification() {
           base::BindRepeating(
               &CloudUploadNotificationManager::CloseNotification,
               weak_ptr_factory_.GetWeakPtr())),
-      /*small_image=*/gfx::VectorIcon(),
+      /*small_image=*/ash::kFolderIcon,
       /*warning_level=*/message_center::SystemNotificationWarningLevel::NORMAL);
 }
 
 std::unique_ptr<message_center::Notification>
 CloudUploadNotificationManager::CreateUploadCompleteNotification() {
-  std::string title = file_name_ + " moved to " + cloud_provider_name_;
-  std::string message = "Your file will open momentarily";
+  // TODO(b/242685536) Use "files" for multi-files when support for multi-files
+  // is added.
+  std::string title = "Moved " + base::NumberToString(num_files_) + " file";
+  std::string message = "Opening in " + target_app_name_;
   auto notification = ash::CreateSystemNotificationPtr(
       /*type=*/message_center::NOTIFICATION_TYPE_SIMPLE,
       /*id=*/notification_id_, base::UTF8ToUTF16(title),
@@ -111,7 +118,7 @@ CloudUploadNotificationManager::CreateUploadCompleteNotification() {
           base::BindRepeating(
               &CloudUploadNotificationManager::HandleNotificationClick,
               weak_ptr_factory_.GetWeakPtr())),
-      /*small_image=*/gfx::VectorIcon(),
+      /*small_image=*/ash::kFolderIcon,
       /*warning_level=*/
       message_center::SystemNotificationWarningLevel::NORMAL);
 
@@ -129,7 +136,7 @@ CloudUploadNotificationManager::CreateUploadCompleteNotification() {
 std::unique_ptr<message_center::Notification>
 CloudUploadNotificationManager::CreateUploadErrorNotification(
     std::string message) {
-  std::string title = "Failed to move " + file_name_;
+  std::string title = "Can't move file";
   return ash::CreateSystemNotificationPtr(
       /*type=*/message_center::NOTIFICATION_TYPE_SIMPLE,
       /*id=*/notification_id_, base::UTF8ToUTF16(title),
@@ -142,7 +149,7 @@ CloudUploadNotificationManager::CreateUploadErrorNotification(
           base::BindRepeating(
               &CloudUploadNotificationManager::CloseNotification,
               weak_ptr_factory_.GetWeakPtr())),
-      /*small_image=*/gfx::VectorIcon(),
+      /*small_image=*/ash::kFolderIcon,
       /*warning_level=*/
       message_center::SystemNotificationWarningLevel::WARNING);
 }

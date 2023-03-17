@@ -19,7 +19,8 @@ BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard);
 
 // Features that affect the "twiddle" step of AutocompleteController, e.g.,
 // deduping or `SortAndCull()`.
-BASE_DECLARE_FEATURE(kGroupingFramework);
+BASE_DECLARE_FEATURE(kGroupingFrameworkForZPS);
+BASE_DECLARE_FEATURE(kGroupingFrameworkForNonZPS);
 BASE_DECLARE_FEATURE(kOmniboxDemoteByType);
 BASE_DECLARE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls);
 BASE_DECLARE_FEATURE(kPreferNonShortcutMatchesWhenDeduping);
@@ -108,6 +109,7 @@ BASE_DECLARE_FEATURE(kOmniboxSteadyStateTextStyle);
 BASE_DECLARE_FEATURE(kDiscardTemporaryInputOnTabSwitch);
 BASE_DECLARE_FEATURE(kRedoCurrentMatch);
 BASE_DECLARE_FEATURE(kRevertModelBeforeClosingPopup);
+BASE_DECLARE_FEATURE(kUseExistingAutocompleteClient);
 
 // Omnibox & Suggestions UI - these affect both the omnibox and the suggestions
 // popup.
@@ -132,6 +134,9 @@ BASE_DECLARE_FEATURE(kReportSearchboxStats);
 BASE_DECLARE_FEATURE(kLogUrlScoringSignals);
 BASE_DECLARE_FEATURE(kMlRelevanceScoring);
 BASE_DECLARE_FEATURE(kUrlScoringModel);
+
+// Inspire Me - additional suggestions based on user's location and interests.
+BASE_DECLARE_FEATURE(kInspireMe);
 
 }  // namespace omnibox
 

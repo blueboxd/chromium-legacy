@@ -19,11 +19,17 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/common/storage_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
+#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker_factory.h"
+#endif
 
 namespace {
 
@@ -36,7 +42,14 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
       std::make_unique<BookmarkModel>(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
           BookmarkSyncServiceFactory::GetForProfile(profile)));
-  bookmark_model->Load(profile->GetPrefs(), profile->GetPath());
+#if defined(TOOLKIT_VIEWS)
+  // BookmarkExpandedStateTracker depends on the loading event, so this
+  // coupling must happen before the loading happens.
+  BookmarkExpandedStateTrackerFactory::GetForProfile(profile)->Init(
+      bookmark_model.get());
+#endif
+  bookmark_model->Load(profile->GetPath(),
+                       bookmarks::StorageType::kLocalOrSyncable);
   BookmarkUndoServiceFactory::GetForProfile(profile)->Start(
       bookmark_model.get());
   return bookmark_model;
@@ -87,6 +100,9 @@ BookmarkModelFactory::BookmarkModelFactory()
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ManagedBookmarkServiceFactory::GetInstance());
   DependsOn(BookmarkSyncServiceFactory::GetInstance());
+#if defined(TOOLKIT_VIEWS)
+  DependsOn(BookmarkExpandedStateTrackerFactory::GetInstance());
+#endif
 }
 
 BookmarkModelFactory::~BookmarkModelFactory() {

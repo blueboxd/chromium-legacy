@@ -40,18 +40,8 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/120808
     "race:base/threading/watchdog.cc\n"
 
-    // http://crbug.com/157586
-    "race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c\n"
-
     // http://crbug.com/244856
     "race:libpulsecommon*.so\n"
-
-    // http://crbug.com/268924
-    "race:base::g_power_monitor\n"
-    "race:base::PowerMonitor::PowerMonitor\n"
-    "race:base::PowerMonitor::AddObserver\n"
-    "race:base::PowerMonitor::RemoveObserver\n"
-    "race:base::PowerMonitor::IsOnBatteryPower\n"
 
     // http://crbug.com/308590
     "race:CustomThreadWatcher::~CustomThreadWatcher\n"
@@ -70,14 +60,6 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/380554
     "deadlock:g_type_add_interface_static\n"
-
-    // http://crbug.com/397022
-    "deadlock:"
-    "base::trace_event::TraceEventTestFixture_ThreadOnceBlocking_Test::"
-    "TestBody\n"
-
-    // http://crbug.com/415472
-    "deadlock:base::trace_event::TraceLog::GetCategoryGroupEnabled\n"
 
     // Lock inversion in third party code, won't fix.
     // https://crbug.com/455638
@@ -104,14 +86,6 @@ char kTSanDefaultSuppressions[] =
 
     // https://crbug.com/977085
     "race:vp3_update_thread_context\n"
-
-    // Benign data race in libjpeg-turbo, won't fix
-    // (https://github.com/libjpeg-turbo/libjpeg-turbo/issues/87).
-    // https://crbug.com/1056011
-    "race:third_party/libjpeg_turbo/simd/x86_64/jsimd.c\n"
-
-    // https://crbug.com/1158622
-    "race:absl::synchronization_internal::Waiter::Post\n"
 
     // Harmless data races, see WTF::StringImpl::Release code comments.
     "race:scoped_refptr<WTF::StringImpl>::AddRef\n"

@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/history_fuzzy_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
@@ -259,7 +260,9 @@ OmniboxEditModel::OmniboxEditModel(
       is_keyword_hint_(false),
       keyword_mode_entry_method_(OmniboxEventProto::INVALID),
       in_revert_(false),
-      allow_exact_keyword_match_(false) {
+      allow_exact_keyword_match_(false),
+      use_existing_autocomplete_client_(base::FeatureList::IsEnabled(
+          omnibox::kUseExistingAutocompleteClient)) {
   omnibox_controller_ =
       std::make_unique<OmniboxController>(this, client_.get());
 }
@@ -368,13 +371,24 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
   // If we have a valid match use it. Otherwise get one for the current text.
   AutocompleteMatch match =
       redo ? current_match_ : omnibox_controller_->current_match();
-  if (!redo && !match.destination_url.is_valid()) {
+  if (!match.destination_url.is_valid()) {
     GetInfoForCurrentText(&match, alternate_nav_url);
   } else if (alternate_nav_url) {
-    std::unique_ptr<AutocompleteProviderClient> provider_client =
-        client_->CreateAutocompleteProviderClient();
+    // Use the existing provider client in the experiment arm, otherwise create
+    // a new one.
+    AutocompleteProviderClient* provider_client;
+    std::unique_ptr<AutocompleteProviderClient> new_provider_client;
+    if (!use_existing_autocomplete_client_) {
+      // Create a new client.
+      new_provider_client = client_->CreateAutocompleteProviderClient();
+      provider_client = new_provider_client.get();
+    } else {
+      // Use the existing client.
+      provider_client =
+          autocomplete_controller()->autocomplete_provider_client();
+    }
     *alternate_nav_url = AutocompleteResult::ComputeAlternateNavUrl(
-        input_, match, provider_client.get());
+        input_, match, provider_client);
   }
   return match;
 }
@@ -1136,9 +1150,14 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
           match.destination_url)) {
     base::RecordAction(
         base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
-    base::UmaHistogramBoolean(
-        "Omnibox.Search.OffTheRecord",
-        client_->CreateAutocompleteProviderClient()->IsOffTheRecord());
+
+    // Re-use the result of the incognito check above in the experiment arm,
+    // otherwise re-compute the off the record state.
+    bool is_off_the_record =
+        use_existing_autocomplete_client_
+            ? is_incognito
+            : client_->CreateAutocompleteProviderClient()->IsOffTheRecord();
+    base::UmaHistogramBoolean("Omnibox.Search.OffTheRecord", is_off_the_record);
   }
 
   if (match.destination_url.is_valid()) {
@@ -1167,15 +1186,18 @@ void OmniboxEditModel::OpenSelection(OmniboxPopupSelection selection,
                                      base::TimeTicks timestamp,
                                      WindowOpenDisposition disposition) {
   // Intentionally accept input when selection has no line.
-  // This will reach `OpenMatch` indirectly.
+  // This will usually reach `OpenMatch` indirectly.
   if (selection.line >= result().size()) {
     AcceptInput(disposition, timestamp);
     return;
   }
 
-  // Keyword mode is handled separately, and other selections should
-  // only be opened when there is a popup view.
-  DCHECK_NE(selection.state, OmniboxPopupSelection::KEYWORD_MODE);
+  // The keyword mode button doesn't commit the omnibox, it's a
+  // transient UI element leading to other normal omnibox selections.
+  if (selection.state == OmniboxPopupSelection::KEYWORD_MODE) {
+    return;
+  }
+
   DCHECK(popup_view_);
 
   const AutocompleteMatch& match = result().match_at(selection.line);
@@ -1972,10 +1994,21 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     }
     if (found_match_for_text && alternate_nav_url &&
         (!popup_view_ || IsPopupSelectionOnInitialLine())) {
-      std::unique_ptr<AutocompleteProviderClient> provider_client =
-          client_->CreateAutocompleteProviderClient();
+      // Use the existing provider client in the experiment arm, otherwise
+      // create a new one.
+      AutocompleteProviderClient* provider_client;
+      std::unique_ptr<AutocompleteProviderClient> new_provider_client;
+      if (!use_existing_autocomplete_client_) {
+        // Create a new client.
+        new_provider_client = client_->CreateAutocompleteProviderClient();
+        provider_client = new_provider_client.get();
+      } else {
+        // Use the existing client.
+        provider_client =
+            autocomplete_controller()->autocomplete_provider_client();
+      }
       *alternate_nav_url = AutocompleteResult::ComputeAlternateNavUrl(
-          input_, *match, provider_client.get());
+          input_, *match, provider_client);
     }
   }
 
@@ -2116,6 +2149,8 @@ void OmniboxEditModel::SetPopupSelection(OmniboxPopupSelection new_selection,
   // Cancel the query so the matches don't change on the user.
   autocomplete_controller()->Stop(false);
 
+  // This occurs when e.g. pressing tab to select an action chip or the x delete
+  // icon.
   if (new_selection == popup_selection_ && !force_update_ui) {
     return;  // Nothing else to do.
   }
@@ -2126,7 +2161,10 @@ void OmniboxEditModel::SetPopupSelection(OmniboxPopupSelection new_selection,
   popup_selection_ = new_selection;
   popup_view_->OnSelectionChanged(old_selection, popup_selection_);
 
+  // This occurs when e.g., pressing escape to select the null match in
+  // zero-input mode.
   if (popup_selection_.line == OmniboxPopupSelection::kNoMatch) {
+    current_match_ = AutocompleteMatch();
     return;
   }
 

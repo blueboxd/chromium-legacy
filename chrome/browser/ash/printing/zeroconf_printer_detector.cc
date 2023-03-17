@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ash/printing/zeroconf_printer_detector.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/hash/md5.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -232,14 +234,14 @@ bool ConvertToPrinter(const std::string& service_type,
   if (!metadata.pdl.empty()) {
     // Per Bonjour Printer Spec v1.2 section 9.2.8, it is invalid for the pdl to
     // end with a comma.
-    auto media_types = base::SplitString(
+    auto media_types = base::SplitStringPiece(
         metadata.pdl, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (!media_types.empty() && !media_types.back().empty()) {
       // Prune any empty splits.
       base::EraseIf(media_types, [](base::StringPiece s) { return s.empty(); });
 
-      std::transform(
-          media_types.begin(), media_types.end(),
+      base::ranges::transform(
+          media_types,
           std::back_inserter(
               detected_printer->ppd_search_data.supported_document_formats),
           [](base::StringPiece s) { return base::ToLowerASCII(s); });

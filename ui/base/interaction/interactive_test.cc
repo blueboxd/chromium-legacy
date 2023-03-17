@@ -186,39 +186,6 @@ InteractionSequence::StepBuilder InteractiveTestApi::Confirm(
   return builder;
 }
 
-InteractiveTestApi::StepBuilder InteractiveTestApi::Check(
-    CheckCallback check_callback) {
-  StepBuilder builder;
-  builder.SetDescription("Check()");
-  builder.SetElementID(kInteractiveTestPivotElementId);
-  builder.SetStartCallback(base::BindOnce(
-      [](CheckCallback check_callback, InteractionSequence* seq,
-         TrackedElement*) {
-        const bool result = std::move(check_callback).Run();
-        if (!result)
-          seq->FailForTesting();
-      },
-      std::move(check_callback)));
-  return builder;
-}
-
-// static
-InteractiveTestApi::StepBuilder InteractiveTestApi::Do(
-    base::OnceClosure action) {
-  StepBuilder builder;
-  builder.SetDescription("Do()");
-  builder.SetElementID(kInteractiveTestPivotElementId);
-  builder.SetStartCallback(std::move(action));
-  return builder;
-}
-
-// static
-InteractionSequence::StepBuilder InteractiveTestApi::CheckElement(
-    ElementSpecifier element,
-    base::OnceCallback<bool(TrackedElement* el)> check) {
-  return CheckElement(element, std::move(check), true);
-}
-
 // static
 InteractionSequence::StepBuilder InteractiveTestApi::WaitForShow(
     ElementSpecifier element,
@@ -398,22 +365,6 @@ void InteractiveTestApi::AddStep(MultiStep& dest, StepBuilder src) {
 void InteractiveTestApi::AddStep(MultiStep& dest, MultiStep src) {
   for (auto& step : src)
     dest.emplace_back(std::move(step));
-}
-
-InteractiveTest::InteractiveTest()
-    : InteractiveTestApi(std::make_unique<internal::InteractiveTestPrivate>(
-          std::make_unique<InteractionTestUtil>())) {}
-
-InteractiveTest::~InteractiveTest() = default;
-
-void InteractiveTest::SetUp() {
-  Test::SetUp();
-  private_test_impl().DoTestSetUp();
-}
-
-void InteractiveTest::TearDown() {
-  private_test_impl().DoTestTearDown();
-  Test::TearDown();
 }
 
 }  // namespace ui::test

@@ -26,6 +26,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "mul";
     case MLOperator::OperatorKind::kDiv:
       return "div";
+    case MLOperator::OperatorKind::kLeakyRelu:
+      return "leakyRelu";
     case MLOperator::OperatorKind::kMax:
       return "max";
     case MLOperator::OperatorKind::kMin:
@@ -65,7 +67,6 @@ void MLOperator::Trace(Visitor* visitor) const {
   visitor->Trace(options_);
   visitor->Trace(inputs_);
   visitor->Trace(outputs_);
-  ScriptWrappable::Trace(visitor);
 }
 
 MLOperator::OperatorKind MLOperator::Kind() const {

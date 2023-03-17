@@ -93,7 +93,7 @@ void AbortPostTaskCallbackTraceEventData(perfetto::TracedValue trace_context,
 
 DOMTask::DOMTask(ScriptPromiseResolver* resolver,
                  V8SchedulerPostTaskCallback* callback,
-                 AbortSignal* signal,
+                 DOMTaskSignal* signal,
                  DOMScheduler::DOMTaskQueue* task_queue,
                  base::TimeDelta delay)
     : callback_(callback),
@@ -105,10 +105,11 @@ DOMTask::DOMTask(ScriptPromiseResolver* resolver,
       queue_time_(delay.is_zero() ? base::TimeTicks::Now() : base::TimeTicks()),
       delay_(delay),
       task_id_for_tracing_(NextIdForTracing()) {
-  DCHECK(task_queue_);
-  DCHECK(callback_);
+  CHECK(task_queue_);
+  CHECK(callback_);
+  CHECK(signal_);
 
-  if (signal_) {
+  if (signal_->CanAbort()) {
     abort_handle_ = signal_->AddAlgorithm(
         WTF::BindOnce(&DOMTask::OnAbort, WrapWeakPersistent(this)));
   }
@@ -191,7 +192,8 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
       WebSchedulingPriorityToString(task_queue_->GetPriority()),
       delay_.InMillisecondsF());
   probe::AsyncTask async_task(context, &async_task_context_);
-  probe::UserCallback probe(context, "postTask", AtomicString(), true);
+  probe::UserCallback probe(context, "Scheduler", "postTask", AtomicString(),
+                            true);
 
   std::unique_ptr<scheduler::TaskAttributionTracker::TaskScope>
       task_attribution_scope;

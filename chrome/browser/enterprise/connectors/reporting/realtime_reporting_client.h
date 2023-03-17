@@ -53,6 +53,8 @@ namespace enterprise_connectors {
 class RealtimeReportingClient : public KeyedService,
                                 public policy::CloudPolicyClient::Observer {
  public:
+  static const char kKeyProfileIdentifier[];
+
   explicit RealtimeReportingClient(content::BrowserContext* context);
 
   RealtimeReportingClient(const RealtimeReportingClient&) = delete;
@@ -78,8 +80,9 @@ class RealtimeReportingClient : public KeyedService,
   // Determines if the real-time reporting feature is enabled.
   // Obtain settings to apply to a reporting event from ConnectorsService.
   // absl::nullopt represents that reporting should not be done.
-  absl::optional<enterprise_connectors::ReportingSettings>
-  GetReportingSettings();
+  // Declared virtual for tests.
+  absl::optional<
+      enterprise_connectors::ReportingSettings> virtual GetReportingSettings();
 
   // Returns the Gaia email address of the account signed in to the profile or
   // an empty string if the profile is not signed in (declared virtual for
@@ -115,6 +118,10 @@ class RealtimeReportingClient : public KeyedService,
       const enterprise_connectors::ReportingSettings& settings,
       base::Value::Dict event,
       const base::Time& time);
+
+  // Returns the profile identifier which is the path to the current profile on
+  // managed browsers or the globally unique profile identifier otherwise.
+  std::string GetProfileIdentifier() const;
 
   // Sub-methods called by InitRealtimeReportingClient to make appropriate
   // verifications and initialize the corresponding client. Returns a policy

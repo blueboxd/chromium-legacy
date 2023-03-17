@@ -202,6 +202,7 @@ data/browsing_data/storage_accessor.html.mock-http-headers
 data/browsing_data/worker.js
 data/browsing_data/worker_setup.html
 data/browsing_data/worker_test.html
+data/browsing_topics/page_with_iframe.html
 data/browsing_topics/service_worker_factory.html
 data/browsing_topics/topics_service_worker.js
 data/browsing_topics/v0.init_too_old.sql
@@ -792,8 +793,6 @@ data/gpu/webcodecs/encode-color-space.html
 data/gpu/webcodecs/encode-decode.html
 data/gpu/webcodecs/encode.html
 data/gpu/webcodecs/encoding-modes.html
-data/gpu/webcodecs/gpu-device-destroy-expire-active-external-texture.html
-data/gpu/webcodecs/gpu-external-texture-expired.html
 data/gpu/webcodecs/svc.html
 data/gpu/webcodecs/tex-image-2d.html
 data/gpu/webcodecs/webcodecs_common.js
@@ -999,6 +998,8 @@ data/interest_group/bidding_logic_use_wasm.js
 data/interest_group/bidding_logic_use_wasm.js.mock-http-headers
 data/interest_group/bidding_logic_with_debugging_report.js
 data/interest_group/bidding_logic_with_debugging_report.js.mock-http-headers
+data/interest_group/bidding_logic_with_size.js
+data/interest_group/bidding_logic_with_size.js.mock-http-headers
 data/interest_group/bidding_no_direct_from_seller_signals_validator.js
 data/interest_group/bidding_no_direct_from_seller_signals_validator.js.mock-http-headers
 data/interest_group/component_auction_bidding_argument_validator.js

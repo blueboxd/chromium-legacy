@@ -76,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DriveCommon.Lifecycle.Mount" enum="DriveMountStatus"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Records outcomes of attempts to mount Google Drive.</summary>
@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DriveCommon.RemoteSearch.SharedSearchTime" units="ms"
-    expires_after="M112">
+    expires_after="M118">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -136,7 +136,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DriveCommon.RemoteSearch.TextSearchTime" units="ms"
-    expires_after="M112">
+    expires_after="M118">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -208,8 +208,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.Create" enum="FileDialogType"
-    expires_after="2023-04-15">
+<histogram name="FileBrowser.Create" enum="FileDialogType" expires_after="M125">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -533,7 +532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.NonTopLevel"
-    enum="FileManagerRootType" expires_after="2023-04-15">
+    enum="FileManagerRootType" expires_after="M125">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -817,6 +816,29 @@ chromium-metrics-reviews@google.com.
     Time to load a recently modified file list from all sources. It is triggered
     when the user opens or reloads Recent view in the Files app.
   </summary>
+</histogram>
+
+<histogram name="FileBrowser.Search.ResultCount" units="count"
+    expires_after="M120">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    ChromeOS File Browser: The number of results returned by a search query.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.Search.{Source}.Latency" units="ms"
+    expires_after="M120">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    ChromeOS File Browser: The time it took to complete user search request.
+  </summary>
+  <token key="Source">
+    <variant name="Drive"/>
+    <variant name="Local"/>
+    <variant name="Removable"/>
+  </token>
 </histogram>
 
 <histogram name="FileBrowser.SWA.Create" enum="FileDialogType"

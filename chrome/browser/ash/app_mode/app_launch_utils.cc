@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/ash/app_mode/app_session_ash.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
@@ -47,7 +48,12 @@ std::vector<std::string>* test_prefs_to_reset = nullptr;
 class AppLaunchManager : public KioskAppLauncher::NetworkDelegate,
                          public KioskAppLauncher::Observer {
  public:
-  AppLaunchManager(Profile* profile, const KioskAppId& kiosk_app_id) {
+  AppLaunchManager(Profile* profile,
+                   const KioskAppId& kiosk_app_id,
+                   bool should_start_app_session_ash)
+      : kiosk_app_id_(kiosk_app_id),
+        profile_(profile),
+        should_start_app_session_ash_(should_start_app_session_ash) {
     CHECK(kiosk_app_id.type != KioskAppType::kArcApp);
 
     if (kiosk_app_id.type == KioskAppType::kChromeApp) {
@@ -90,21 +96,36 @@ class AppLaunchManager : public KioskAppLauncher::NetworkDelegate,
   void OnAppInstalling() override {}
   void OnAppPrepared() override { app_launcher_->LaunchApp(); }
   void OnAppLaunched() override {}
-  void OnAppWindowCreated() override { Cleanup(); }
+  void OnAppWindowCreated(
+      const absl::optional<std::string>& app_name) override {
+    if (should_start_app_session_ash_) {
+      // Only create a new `AppSessionAsh` if this is an Ash recovery flow. Do
+      // not create it during a Lacros recovery flow.
+      CreateAppSession(kiosk_app_id_, profile_, app_name);
+    }
+    Cleanup();
+  }
   void OnLaunchFailed(KioskAppLaunchError::Error error) override {
     KioskAppLaunchError::Save(error);
     chrome::AttemptUserExit();
     Cleanup();
   }
 
+  const KioskAppId kiosk_app_id_;
+  const raw_ptr<Profile> profile_;
+  const bool should_start_app_session_ash_;
+
   std::unique_ptr<KioskAppLauncher> app_launcher_;
   base::ScopedObservation<KioskAppLauncher, KioskAppLauncher::Observer>
       observation_{this};
 };
 
-void LaunchAppOrDie(Profile* profile, const KioskAppId& kiosk_app_id) {
+void LaunchAppOrDie(Profile* profile,
+                    const KioskAppId& kiosk_app_id,
+                    bool should_start_app_session_ash) {
   // AppLaunchManager manages its own lifetime.
-  (new AppLaunchManager(profile, kiosk_app_id))->Start();
+  (new AppLaunchManager(profile, kiosk_app_id, should_start_app_session_ash))
+      ->Start();
 }
 
 void ResetEphemeralKioskPreferences(PrefService* prefs) {
@@ -145,6 +166,22 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
          // of enterprise rollback, when keeping the enrollment, policy, not
          // clearing TPM, but wiping stateful partition.
          StartupUtils::IsOobeCompleted() && !prevent_autolaunch;
+}
+
+void CreateAppSession(const KioskAppId& kiosk_app_id,
+                      Profile* profile,
+                      const absl::optional<std::string>& app_name) {
+  switch (kiosk_app_id.type) {
+    case KioskAppType::kWebApp:
+      WebKioskAppManager::Get()->InitSession(profile, kiosk_app_id, app_name);
+      return;
+    case KioskAppType::kChromeApp:
+      KioskAppManager::Get()->InitSession(profile, kiosk_app_id);
+      return;
+    case KioskAppType::kArcApp:
+      // Do not create an `AppSession` for ARC kiosk
+      return;
+  }
 }
 
 }  // namespace ash

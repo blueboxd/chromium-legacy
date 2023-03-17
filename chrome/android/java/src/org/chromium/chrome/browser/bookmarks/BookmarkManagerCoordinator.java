@@ -13,13 +13,13 @@ import android.view.ViewGroup;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkListEntry.ViewType;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
@@ -57,11 +57,11 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
     private final BookmarkOpener mBookmarkOpener;
     private final BookmarkToolbarCoordinator mBookmarkToolbarCoordinator;
     private final BookmarkManagerMediator mMediator;
-    private final BookmarkUndoController mUndoController;
     private final ImageFetcher mImageFetcher;
     private final SnackbarManager mSnackbarManager;
     private final BookmarkPromoHeader mPromoHeaderManager;
     private final BookmarkModel mBookmarkModel;
+    private final Profile mProfile;
 
     /**
      * Creates an instance of {@link BookmarkManager}. It also initializes resources,
@@ -76,6 +76,7 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
     public BookmarkManagerCoordinator(Context context, ComponentName openBookmarkComponentName,
             boolean isDialogUi, boolean isIncognito, SnackbarManager snackbarManager,
             Profile profile) {
+        mProfile = profile;
         mImageFetcher =
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
                         profile.getProfileKey(), GlobalDiscardableReferencePool.getReferencePool());
@@ -83,11 +84,12 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
 
         mMainView = (ViewGroup) LayoutInflater.from(context).inflate(R.layout.bookmark_main, null);
         mBookmarkModel = BookmarkModel.getForProfile(profile);
+        mBookmarkOpener = new BookmarkOpener(mBookmarkModel, context, openBookmarkComponentName);
         if (ShoppingFeatures.isShoppingListEligible()) {
             ShoppingServiceFactory.getForProfile(profile).scheduleSavedProductUpdate();
         }
 
-        SelectionDelegate selectionDelegate = new SelectionDelegate<BookmarkId>() {
+        SelectionDelegate<BookmarkId> selectionDelegate = new SelectionDelegate<>() {
             @Override
             public boolean toggleSelectionForItem(BookmarkId bookmark) {
                 if (mBookmarkModel.getBookmarkById(bookmark) != null
@@ -103,26 +105,32 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
                 mMainView.findViewById(R.id.selectable_list);
         mSelectableListLayout = selectableList;
         mSelectableListLayout.initializeEmptyView(R.string.bookmarks_folder_empty);
+
         BookmarkItemsAdapter bookmarkItemsAdapter =
-                new BookmarkItemsAdapter(context, profile, this::createView, this::bindView);
+                new BookmarkItemsAdapter(context, this::createView, this::bindView);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(
                 (RecyclerView.Adapter<RecyclerView.ViewHolder>) bookmarkItemsAdapter);
 
+        // Using OneshotSupplier as an alternative to a 2-step initialization process.
+        OneshotSupplierImpl<BookmarkDelegate> bookmarkDelegateSupplier =
+                new OneshotSupplierImpl<>();
         mBookmarkToolbarCoordinator = new BookmarkToolbarCoordinator(mSelectableListLayout,
-                selectionDelegate, /*searchDelegate=*/this, bookmarkItemsAdapter, isDialogUi);
+                selectionDelegate, /*searchDelegate=*/this, bookmarkItemsAdapter, isDialogUi,
+                bookmarkDelegateSupplier, mBookmarkModel, mBookmarkOpener);
         mSelectableListLayout.configureWideDisplayStyle();
 
-        LargeIconBridge largeIconBridge = new LargeIconBridge(profile);
+        LargeIconBridge largeIconBridge = new LargeIconBridge(mProfile);
         largeIconBridge.createCache(computeCacheMaxSize());
 
-        mUndoController = new BookmarkUndoController(context, mBookmarkModel, snackbarManager);
-        mBookmarkOpener = new BookmarkOpener(mBookmarkModel, context, openBookmarkComponentName);
+        BookmarkUndoController bookmarkUndoController =
+                new BookmarkUndoController(context, mBookmarkModel, snackbarManager);
         mMediator = new BookmarkManagerMediator(context, mBookmarkModel, mBookmarkOpener,
                 mSelectableListLayout, selectionDelegate, mRecyclerView, bookmarkItemsAdapter,
-                largeIconBridge, isDialogUi, isIncognito, mBackPressStateSupplier);
+                largeIconBridge, isDialogUi, isIncognito, mBackPressStateSupplier, mProfile,
+                bookmarkUndoController);
+        mPromoHeaderManager = mMediator.getPromoHeaderManager();
 
-        mPromoHeaderManager = bookmarkItemsAdapter.getPromoHeaderManager();
-        mBookmarkToolbarCoordinator.initialize(/*bookmarkDelegate=*/mMediator);
+        bookmarkDelegateSupplier.set(/*bookmarkDelegate=*/mMediator);
 
         RecordUserAction.record("MobileBookmarkManagerOpen");
         if (!isDialogUi) {
@@ -196,7 +204,7 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
 
     @Override
     public void onSearchTextChanged(String query) {
-        mMediator.onSearchTextChanged(query);
+        mMediator.search(query);
     }
 
     @Override
@@ -312,7 +320,7 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
         PowerBookmarkShoppingItemRow row = (PowerBookmarkShoppingItemRow) inflateBookmarkRow(
                 parent, org.chromium.chrome.R.layout.power_bookmark_shopping_item_row);
         // TODO(https://crbug.com/1416611): Move init to view binding.
-        row.init(mImageFetcher, mBookmarkModel, mSnackbarManager);
+        row.init(mImageFetcher, mBookmarkModel, mSnackbarManager, mProfile);
         return row;
     }
 
@@ -338,17 +346,14 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
 
     // Testing methods.
 
-    @VisibleForTesting
     public BookmarkToolbar getToolbarForTesting() {
         return mBookmarkToolbarCoordinator.getToolbarForTesting(); // IN-TEST
     }
 
-    @VisibleForTesting
     public BookmarkUndoController getUndoControllerForTesting() {
-        return mUndoController;
+        return mMediator.getUndoControllerForTesting();
     }
 
-    @VisibleForTesting
     public RecyclerView getRecyclerViewForTesting() {
         return mRecyclerView;
     }
@@ -362,6 +367,10 @@ public class BookmarkManagerCoordinator implements SearchDelegate, BackPressHand
     }
 
     public BookmarkDelegate getBookmarkDelegateForTesting() {
+        return mMediator;
+    }
+
+    public TestingDelegate getTestingDelegate() {
         return mMediator;
     }
 }

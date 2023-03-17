@@ -319,6 +319,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   void OnTaskCompletedForFrame(base::TimeTicks start_time,
                                base::TimeTicks end_time,
+                               base::TimeTicks desired_execution_time,
                                LocalFrame*) override;
   void SetVirtualKeyboardResizeHeightForTesting(int);
   bool GetMayThrottleIfUndrawnFramesForTesting();
@@ -795,6 +796,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void Cut() override;
   void Copy() override;
   void CopyToFindPboard() override;
+  void CenterSelection() override;
   void Paste() override;
   void PasteAndMatchStyle() override;
   void Delete() override;

@@ -19,6 +19,7 @@
 #include "ash/style/system_shadow.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -28,6 +29,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor_extra/shadow.h"
@@ -260,9 +262,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   SetAccessibleWindowRole(ax::mojom::Role::kDialog);
   // We force to create contents background since the bubble border background
   // is not shown in this view.
-  if (features::IsDarkLightModeEnabled()) {
-    set_force_create_contents_background(true);
-  }
+  set_force_create_contents_background(true);
   // Bubbles that use transparent colors should not paint their ClientViews to a
   // layer as doing so could result in visual artifacts.
   SetPaintClientToLayer(false);
@@ -285,8 +285,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   if (init_params.translucent) {
     // TODO(crbug/1313073): In the dark light mode feature, remove layer
     // creation in children views of this view to improve performance.
-    SetPaintToLayer(features::IsDarkLightModeEnabled() ? ui::LAYER_TEXTURED
-                                                       : ui::LAYER_SOLID_COLOR);
+    SetPaintToLayer(ui::LAYER_TEXTURED);
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF{static_cast<float>(params_.corner_radius)});
@@ -299,7 +298,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     // NativeViewHost and may steal events.
     SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
-    if (features::IsDarkLightModeEnabled() && !init_params.transparent) {
+    if (!init_params.transparent) {
       SetPaintToLayer();
       layer()->SetRoundedCornerRadius(
           gfx::RoundedCornersF{static_cast<float>(params_.corner_radius)});
@@ -535,19 +534,13 @@ void TrayBubbleView::OnThemeChanged() {
     return;
   }
 
-  if (features::IsDarkLightModeEnabled()) {
-    SetBorder(std::make_unique<views::HighlightBorder>(
-        params_.corner_radius, views::HighlightBorder::Type::kHighlightBorder1,
-        /*use_light_colors=*/false));
-    set_color(GetColorProvider()->GetColor(kColorAshShieldAndBase80));
-    return;
-  }
-
-  DCHECK(layer());
-  if (layer()->type() != ui::LAYER_SOLID_COLOR) {
-    return;
-  }
-  layer()->SetColor(GetColorProvider()->GetColor(kColorAshShieldAndBase80));
+  SetBorder(std::make_unique<views::HighlightBorder>(
+      params_.corner_radius, views::HighlightBorder::Type::kHighlightBorder1,
+      /*use_light_colors=*/false));
+  set_color(GetColorProvider()->GetColor(
+      chromeos::features::IsJellyEnabled()
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
+          : kColorAshShieldAndBase80));
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {

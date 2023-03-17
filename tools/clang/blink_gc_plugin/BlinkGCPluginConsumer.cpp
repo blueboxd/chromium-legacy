@@ -90,7 +90,9 @@ BlinkGCPluginConsumer::BlinkGCPluginConsumer(
   options_.checked_namespaces.insert("cppgc");
 
   if (options_.enable_checks_for_pdfium_directory) {
-    options_.checked_directories.push_back("pdfium/");
+    options_.checked_directories.push_back("fpdfsdk/");
+    options_.checked_directories.push_back("fxjs/");
+    options_.checked_directories.push_back("xfa/");
   }
 
   // Ignore GC implementation files.
@@ -273,12 +275,9 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
         reporter_.ClassContainsGCRoots(info, visitor.gc_roots());
     }
 
-    if (options_.enable_forbidden_fields_check) {
-      CheckForbiddenFieldsVisitor visitor(options_);
-      if (visitor.ContainsForbiddenFields(info)) {
-        reporter_.ClassContainsForbiddenFields(info,
-                                               visitor.forbidden_fields());
-      }
+    CheckForbiddenFieldsVisitor visitor(options_);
+    if (visitor.ContainsForbiddenFields(info)) {
+      reporter_.ClassContainsForbiddenFields(info, visitor.forbidden_fields());
     }
 
     if (info->NeedsFinalization())

@@ -63,8 +63,6 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
-#include "base/allocator/partition_allocator/partition_tag.h"
-#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/tagging.h"
@@ -395,12 +393,6 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 
   bool quarantine_always_for_testing = false;
 
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-  partition_alloc::PartitionTag current_partition_tag = 0;
-  // Points to the end of the committed tag bitmap region.
-  uintptr_t next_tag_bitmap_page = 0;
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-
   PartitionRoot()
       : flags{QuarantineMode::kAlwaysDisabled, ScanMode::kDisabled} {}
   explicit PartitionRoot(PartitionOptions opts) : flags() { Init(opts); }
@@ -712,7 +704,7 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     return flags.scan_mode == ScanMode::kEnabled;
   }
 
-  static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+  PA_ALWAYS_INLINE static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR size_t
   GetDirectMapMetadataAndGuardPagesSize() {
     // Because we need to fake a direct-map region to look like a super page, we
     // need to allocate more pages around the payload:
@@ -725,7 +717,7 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     return 2 * internal::PartitionPageSize();
   }
 
-  static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+  PA_ALWAYS_INLINE static PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR size_t
   GetDirectMapSlotSize(size_t raw_size) {
     // Caller must check that the size is not above the MaxDirectMapped()
     // limit before calling. This also guards against integer overflow in the
@@ -735,8 +727,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
         raw_size, internal::SystemPageSize());
   }
 
-  static PA_ALWAYS_INLINE size_t
-  GetDirectMapReservationSize(size_t padded_raw_size) {
+  PA_ALWAYS_INLINE static size_t GetDirectMapReservationSize(
+      size_t padded_raw_size) {
     // Caller must check that the size is not above the MaxDirectMapped()
     // limit before calling. This also guards against integer overflow in the
     // calculation here.
@@ -833,17 +825,6 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   void UncapEmptySlotSpanMemoryForTesting() {
     max_empty_slot_spans_dirty_bytes_shift = 0;
   }
-
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-  PA_ALWAYS_INLINE partition_alloc::PartitionTag GetNewPartitionTag() {
-    // TODO(crbug.com/1298696): performance is not an issue. We can use
-    // random tags in lieu of sequential ones.
-    auto tag = ++current_partition_tag;
-    tag += !tag;  // Avoid 0.
-    current_partition_tag = tag;
-    return tag;
-  }
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
   // Enables the sorting of active slot spans in PurgeMemory().
   static void EnableSortActiveSlotSpans();
@@ -946,9 +927,11 @@ class ScopedSyscallTimer {
   ~ScopedSyscallTimer() {
     root_->syscall_count.fetch_add(1, std::memory_order_relaxed);
 
-    uint64_t elapsed_nanos = (base::TimeTicks::Now() - tick_).InNanoseconds();
-    root_->syscall_total_time_ns.fetch_add(elapsed_nanos,
-                                           std::memory_order_relaxed);
+    int64_t elapsed_nanos = (base::TimeTicks::Now() - tick_).InNanoseconds();
+    if (elapsed_nanos > 0) {
+      root_->syscall_total_time_ns.fetch_add(
+          static_cast<uint64_t>(elapsed_nanos), std::memory_order_relaxed);
+    }
   }
 
  private:
@@ -1293,13 +1276,6 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
   // been touched above.
   PA_PREFETCH(slot_span);
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
-
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-  if (!root->IsDirectMappedBucket(slot_span->bucket)) {
-    partition_alloc::internal::PartitionTagIncrementValue(
-        slot_start, slot_span->bucket->slot_size);
-  }
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(USE_STARSCAN)
   // TODO(bikineev): Change the condition to PA_LIKELY once PCScan is enabled by

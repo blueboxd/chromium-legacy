@@ -34,6 +34,7 @@
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/store_source_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/attribution_reporting/test/mock_attribution_manager.h"
 #include "content/browser/attribution_reporting/test/mock_content_browser_client.h"
@@ -63,8 +64,6 @@ using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationError;
 using ::attribution_reporting::mojom::SourceType;
-
-using AttributionFilters = ::attribution_reporting::Filters;
 
 using ::base::test::RunOnceCallback;
 
@@ -1008,8 +1007,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     return AttributionTrigger(
         /*reporting_origin=*/*SuitableOrigin::Deserialize("https://r.test"),
         attribution_reporting::TriggerRegistration(
-            FilterPair{.positive = AttributionFilters({{{"a", {"b"}}}}),
-                       .negative = AttributionFilters({{{"g", {"h"}}}})},
+            FilterPair(/*positive=*/{{{"a", {"b"}}}},
+                       /*negative=*/{{{"g", {"h"}}}}),
             /*debug_key=*/1,
             {attribution_reporting::AggregatableDedupKey(
                 /*dedup_key=*/18, FilterPair())},
@@ -1018,23 +1017,24 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                     /*data=*/2,
                     /*priority=*/3,
                     /*dedup_key=*/absl::nullopt,
-                    FilterPair{.positive =
-                                   AttributionFilters({{{"c", {"d"}}}})}),
+                    FilterPair(
+                        /*positive=*/{{{"c", {"d"}}}},
+                        /*negative=*/{})),
                 attribution_reporting::EventTriggerData(
                     /*data=*/4,
                     /*priority=*/5,
                     /*dedup_key=*/6,
-                    FilterPair{.negative =
-                                   AttributionFilters({{{"e", {"f"}}}})}),
+                    FilterPair(/*positive=*/{}, /*negative=*/{{{"e", {"f"}}}})),
             },
             {*attribution_reporting::AggregatableTriggerData::Create(
                  /*key_piece=*/345,
                  /*source_keys=*/{"a"},
-                 FilterPair{.positive = AttributionFilters({{{"c", {"d"}}}})}),
+                 FilterPair(/*positive=*/{},
+                            /*negative=*/{{{"c", {"d"}}}})),
              *attribution_reporting::AggregatableTriggerData::Create(
                  /*key_piece=*/678,
                  /*source_keys=*/{"b"},
-                 FilterPair{.negative = AttributionFilters({{{"e", {"f"}}}})})},
+                 FilterPair(/*positive=*/{}, /*negative=*/{{{"e", {"f"}}}}))},
             /*aggregatable_values=*/
             *attribution_reporting::AggregatableValues::Create(
                 {{"a", 123}, {"b", 456}}),
@@ -1310,8 +1310,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       AttributionDebugReport::Create(
           SourceBuilder().SetDebugReporting(true).Build(),
           /*is_debug_cookie_set=*/true,
-          AttributionStorage::StoreSourceResult(
-              StorableSource::Result::kInternalError));
+          StoreSourceResult(StorableSource::Result::kInternalError));
   ASSERT_TRUE(report);
 
   static constexpr char kScript[] = R"(

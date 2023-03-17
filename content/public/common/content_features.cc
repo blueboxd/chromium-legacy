@@ -219,7 +219,7 @@ BASE_FEATURE(kBrowserSideDownloadPolicySandbox,
 // enabled.
 BASE_FEATURE(kCanvas2DImageChromium,
              "Canvas2DImageChromium",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS_LACROS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -1368,6 +1368,12 @@ BASE_FEATURE(kWebAssemblyLazyCompilation,
 // Enable the use of WebAssembly Relaxed SIMD operations
 BASE_FEATURE(kWebAssemblyRelaxedSimd,
              "WebAssemblyRelaxedSimd",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable support for the WebAssembly Stringref proposal:
+// https://github.com/WebAssembly/stringref.
+BASE_FEATURE(kWebAssemblyStringref,
+             "WebAssemblyStringref",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable WebAssembly tiering (Liftoff -> TurboFan).

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/cpu_reduction_experiment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -239,9 +238,7 @@ void V4Store::Initialize() {
 
 bool V4Store::HasValidData() {
   // Record every 256th time (`record_has_valid_data_counter_` is 8-bit).
-  if (++record_has_valid_data_counter_ == 1 ||
-      // TODO(crbug.com/1295441): Remove the condition below.
-      !base::IsRunningCpuReductionExperiment()) {
+  if (++record_has_valid_data_counter_ == 1) {
     RecordBooleanWithAndWithoutSuffix("SafeBrowsing.V4Store.IsStoreValid",
                                       has_valid_data_, store_path_);
   }
@@ -966,6 +963,8 @@ void V4Store::CollectStoreInfo(
     store_info->set_last_apply_update_time_millis(
         last_apply_update_time_millis_.ToJavaTime());
   }
+
+  hash_prefix_map_->GetPrefixInfo(store_info->mutable_prefix_sets());
 }
 
 }  // namespace safe_browsing

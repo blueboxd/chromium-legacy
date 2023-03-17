@@ -2171,20 +2171,23 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
       return;
 
     // GetPrintSettingsFromUser() could return nullptr when
-    // |print_manager_host_| is closed.
-    if (!print_settings)
+    // |print_manager_host_| is closed, or when the user cancels.
+    if (!print_settings) {
+      if (print_manager_host_) {
+        // Release resources and fail silently if the user cancels.
+        DidFinishPrinting(OK);
+      }
       return;
+    }
+
+    CHECK(print_settings->params->document_cookie);
+    CHECK(!print_settings->params->dpi.IsEmpty());
 
     print_settings->params->print_scaling_option =
         print_settings->params->prefer_css_page_size
             ? mojom::PrintScalingOption::kSourceSize
             : scaling_option;
     SetPrintPagesParams(*print_settings);
-    if (print_settings->params->dpi.IsEmpty() ||
-        !print_settings->params->document_cookie) {
-      DidFinishPrinting(OK);  // Release resources and fail silently on failure.
-      return;
-    }
   }
 
   // Render Pages for printing.
@@ -2316,12 +2319,11 @@ bool PrintRenderFrameHelper::PrintPagesNative(
   const mojom::PrintPagesParams& params = *print_pages_params_;
   const mojom::PrintParams& print_params = *params.params;
 
+  // Provide a typeface context to use with serializing to the print compositor.
+  ContentProxySet typeface_content_info;
   MetafileSkia metafile(print_params.printed_doc_type,
                         print_params.document_cookie);
   CHECK(metafile.Init());
-
-  // Provide a typeface context to use with serializing to the print compositor.
-  ContentProxySet typeface_content_info;
   metafile.UtilizeTypefaceContext(&typeface_content_info);
 
   // If tagged PDF exporting is enabled, we also need to capture an
@@ -2500,19 +2502,9 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
   }
 
   mojom::PrintPagesParamsPtr settings;
-  bool canceled = false;
-  GetPrintManagerHost()->UpdatePrintSettings(job_settings->Clone(), &settings,
-                                             &canceled);
-
-  // If mojom::PrintManagerHost is disconnected in the browser after calling
-  // UpdatePrintSettings(), |settings| could be null.
+  GetPrintManagerHost()->UpdatePrintSettings(job_settings->Clone(), &settings);
   if (!settings) {
     print_preview_context_.set_error(PREVIEW_ERROR_EMPTY_PRINTER_SETTINGS);
-    return false;
-  }
-
-  if (canceled) {
-    notify_browser_of_print_failure_ = false;
     return false;
   }
 
@@ -2534,6 +2526,7 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
   if (PrintMsgPrintParamsIsValid(*settings->params))
     return true;
 
+  // TODO(thestig): Make sure this is not reachable and delete this block.
   print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
   print_preview_context_.set_error_details(
       PrintMsgPrintParamsErrorDetails(*settings->params));

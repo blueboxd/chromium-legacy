@@ -241,7 +241,6 @@
 <translation id="3226657629376379887">Меню с действия за оформлението</translation>
 <translation id="3246869037381808805">Заданията за отпечатване, по-стари от 1 ден, ще бъдат премахнати</translation>
 <translation id="3268178239013324452">Неуспешно – вратичката е отворена</translation>
-<translation id="3275506277319227640">Прикрепване: <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">Изображение на аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Редактиране на файла}other{Редактиране на файловете}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГХц</translation>
@@ -278,7 +277,6 @@
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3600339377155080675">Дублиране на екрана</translation>
 <translation id="3602290021589620013">Визуализация</translation>
-<translation id="360282891121575443">Снимките в споделените албуми могат да бъдат актуализирани от други потребители. При опцията „Промяна всеки ден“ може да се показват тапети, които понастоящем не са в албума.</translation>
 <translation id="3603829704940252505">Аватар</translation>
 <translation id="3604713164406837697">Промяна на тапета</translation>
 <translation id="360565022852130722">Wi-Fi мрежата е защитена със слабия протокол WEP 802.1x</translation>
@@ -360,7 +358,6 @@
 <translation id="4311195029067684288">Пълно</translation>
 <translation id="4333390807948134856">Клавишът <ph name="KEY_NAME" /> е натиснат</translation>
 <translation id="435692326371619097">Управление на настройките за името на точката за достъп (APN) за мрежата. Чрез APN се установява връзка между мобилна мрежа и интернет. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Прикрепване в по-малката част</translation>
 <translation id="4378373042927530923">Не е стартирано</translation>
 <translation id="4378551569595875038">Свързване...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -639,7 +636,6 @@
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6659594942844771486">Раздел</translation>
 <translation id="6692996468359469499">Получаване на информация, свързана с избраното от вас</translation>
-<translation id="6698459586333070823">Споделените албуми могат да се актуализират от други потребители</translation>
 <translation id="6704062477274546131">Преобразуване от DNS</translation>
 <translation id="6723839937902243910">Захранване</translation>
 <translation id="6723847290197874913">Фоново осветление на клавиатурата</translation>
@@ -795,7 +791,6 @@
 <translation id="8226628635270268143">Изберете любимите си снимки и албуми</translation>
 <translation id="8227119283605456246">Прикачване на файл</translation>
 <translation id="8230672074305416752">Неуспех при команда ping към шлюза на основната мрежа</translation>
-<translation id="8242426110754782860">Продължаване</translation>
 <translation id="8246209727385807362">Неизвестен оператор</translation>
 <translation id="827422111966801947">индиго</translation>
 <translation id="8286154143153872371">Моля, свържете се с мрежа и презаредете страницата, за да прегледате тапета.</translation>
@@ -903,7 +898,6 @@
 <translation id="9137526406337347448">Услуги на Google</translation>
 <translation id="9138630967333032450">Клавиш „shift“ вляво</translation>
 <translation id="9149391708638971077">Тестване на паметта</translation>
-<translation id="9157515863513902090">Прикрепване в по-голямата част</translation>
 <translation id="9161276708550942948">интервал</translation>
 <translation id="9173638680043580060">Остава по-малко от минута</translation>
 <translation id="917720651393141712">Тест</translation>

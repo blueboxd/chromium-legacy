@@ -22,14 +22,17 @@ const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
 const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";
 
-// Uses the android SkFontManager on linux. The specified directory should
-// include the configuration xml file with the name "fonts.xml".
-// This is used in blimp to emulate android fonts on linux.
-const char kAndroidFontsPath[]          = "android-fonts-path";
-
 // Causes the Attribution Report API to run without delays or noise.
 const char kAttributionReportingDebugMode[] =
     "attribution-reporting-debug-mode";
+
+// Bypasses the dialog prompting the user for permission to capture
+// cameras and microphones. Useful in automatic tests of video-conferencing
+// Web applications.
+// This is nearly identical to kUseFakeUIForMediaStream, with the exception
+// being that this flag does NOT affect screen-capture.
+const char kAutoAcceptCameraAndMicrophoneCapture[] =
+    "auto-accept-camera-and-microphone-capture";
 
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
@@ -481,6 +484,11 @@ const char kForcePresentationReceiverForTesting[] =
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
+
+// Force Skia's CPU backend to use analytic anti-aliasing for all content
+// (rather than a mix of analytic and supersampling). Test migration tool for
+// https://crbug.com/1421297
+const char kForceSkiaAnalyticAntialiasing[] = "force-skia-analytic-aa";
 
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {FilesAppState} from '../files_app_state.js';
-import {addEntries, ENTRIES, EntryType, getCaller, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {addEntries, ENTRIES, EntryType, getCaller, getDateWithDayDiff, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
 import {navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
@@ -114,6 +114,9 @@ testcase.searchDownloadsClearSearch = async () => {
 
   // Click on the clear search button.
   await remoteCall.waitAndClickElement(appId, '#search-box .clear');
+
+  // Wait for the search box to fully collapse.
+  await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
 
   // Wait for file list to display all files.
   await remoteCall.waitForFiles(
@@ -419,6 +422,48 @@ testcase.searchWithRecencyOptions = async () => {
 };
 
 /**
+ * Checks that changing recency options correctly filters search results on
+ * drive.
+ */
+testcase.searchDriveWithRecencyOptions = async () => {
+  // Open Files app on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Modify the basic entry set by adding another hello file with
+  // a recent date. We cannot make it today's date as those dates
+  // are rendered with 'Today' string rather than actual date string.
+  const recentHello = ENTRIES.hello.cloneWith({
+    nameText: 'hello-recent.txt',
+    lastModifiedTime: getDateWithDayDiff(3),
+    targetPath: 'hello-recent.txt',
+  });
+  await addEntries(['drive'], [recentHello]);
+
+  // Navigate to Google Drive. We are searching "local" directory, which limits
+  // search results to Drive.
+  await navigateWithDirectoryTree(appId, '/My Drive');
+
+  // Search for all files with "hello" in their name.
+  await remoteCall.typeSearchText(appId, 'hello');
+
+  // Expect two files, with no recency restrictions.
+  await remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows([
+    ENTRIES.hello,
+    recentHello,
+  ]));
+
+  // Click the fourth button, which is "Last week" option.
+  chrome.test.assertTrue(
+      !!await remoteCall.selectSearchOption(appId, 'recency', 4),
+      'Failed to click "Last week" recency selector');
+
+  // Expect only the recent hello file to be found.
+  await remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows([
+    recentHello,
+  ]));
+};
+
+/**
  * Checks that changing file types options correctly filters local
  * search results.
  */
@@ -518,7 +563,7 @@ testcase.resetSearchOptionsOnFolderChange = async () => {
   chrome.test.assertEq(
       'This folder', await getSelectedOptionText(appId, 'location'));
   chrome.test.assertEq(
-      'All time', await getSelectedOptionText(appId, 'recency'));
+      'Any time', await getSelectedOptionText(appId, 'recency'));
   chrome.test.assertEq('All types', await getSelectedOptionText(appId, 'type'));
 
   // Change options.
@@ -538,7 +583,7 @@ testcase.resetSearchOptionsOnFolderChange = async () => {
   chrome.test.assertEq(
       'This folder', await getSelectedOptionText(appId, 'location'));
   chrome.test.assertEq(
-      'All time', await getSelectedOptionText(appId, 'recency'));
+      'Any time', await getSelectedOptionText(appId, 'recency'));
   chrome.test.assertEq('All types', await getSelectedOptionText(appId, 'type'));
 };
 

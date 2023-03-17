@@ -12,7 +12,10 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/ash/arc_vm_data_migration_confirmation_dialog.h"
@@ -32,6 +35,11 @@ constexpr char kNotifierId[] = "arc_vm_data_migration_notifier";
 constexpr char kNotificationId[] = "arc_vm_data_migration_notification";
 
 bool ShouldShowNotification(Profile* profile) {
+  // Do not show a notification for managed users.
+  if (policy_util::IsAccountManaged(profile)) {
+    return false;
+  }
+
   switch (GetArcVmDataMigrationStatus(profile->GetPrefs())) {
     case ArcVmDataMigrationStatus::kUnnotified:
     case ArcVmDataMigrationStatus::kNotified:
@@ -41,6 +49,17 @@ bool ShouldShowNotification(Profile* profile) {
     case ArcVmDataMigrationStatus::kFinished:
       return false;
   }
+}
+
+void ReportNotificationShownForTheFirstTime() {
+  base::UmaHistogramBoolean(
+      "Arc.VmDataMigration.NotificationShownForTheFirstTime", true);
+}
+
+void ReportNotificationShown(int days_until_deadline) {
+  base::UmaHistogramExactLinear(
+      "Arc.VmDataMigration.RemainingDays.NotificationShown",
+      days_until_deadline, kArcVmDataMigrationNumberOfDismissibleDays);
 }
 
 }  // namespace
@@ -58,19 +77,28 @@ void ArcVmDataMigrationNotifier::OnArcStarted() {
   if (!base::FeatureList::IsEnabled(kEnableArcVmDataMigration))
     return;
 
+  // Report the migration status at the beginning of each ARC session.
+  // The status might have been changed to kFinished by ArcSessionManager in its
+  // initialization step when there is no Android /data to migrate.
+  // The status might be changed to kNotified within this function call when the
+  // notification is shown.
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType(
+          kArcVmDataMigrationStatusOnArcStartedHistogramName, profile_),
+      GetArcVmDataMigrationStatus(profile_->GetPrefs()));
+
   // Do not show a notification if virtio-blk /data is forcibly enabled, in
   // which case the migration is not needed.
   if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
     return;
 
-  // TODO(b/258278176): Check policies and eligibility (e.g. whether LVM
-  // application containers are enabled) before showing a notification.
   if (!ShouldShowNotification(profile_)) {
     return;
   }
 
   if (GetArcVmDataMigrationStatus(profile_->GetPrefs()) ==
       ArcVmDataMigrationStatus::kUnnotified) {
+    ReportNotificationShownForTheFirstTime();
     profile_->GetPrefs()->SetTime(
         prefs::kArcVmDataMigrationNotificationFirstShownTime,
         base::Time::Now());
@@ -87,6 +115,7 @@ void ArcVmDataMigrationNotifier::OnArcSessionStopped(ArcStopReason reason) {
 void ArcVmDataMigrationNotifier::ShowNotification() {
   const int days_until_deadline =
       GetDaysUntilArcVmDataMigrationDeadline(profile_->GetPrefs());
+  ReportNotificationShown(days_until_deadline);
 
   message_center::Notification notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
@@ -155,7 +184,6 @@ void ArcVmDataMigrationNotifier::OnRestartAccepted(bool accepted) {
                                 ArcVmDataMigrationStatus::kConfirmed);
     chrome::AttemptRestart();
   }
-  // TODO(b/258278176): Report when the confirmation dialog is canceled.
 }
 
 }  // namespace arc

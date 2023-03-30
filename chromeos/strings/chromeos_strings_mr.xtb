@@ -291,7 +291,7 @@
 <translation id="3820172043799983114">चुकीचे पिन.</translation>
 <translation id="3824259034819781947">फाइल अटॅच करा</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
-<translation id="3845880861638660475">डायलॉग बंद करण्यासाठी,<ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> दाबा.</translation>
+<translation id="3845880861638660475">डायलॉग बंद करण्यासाठी,<ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> प्रेस करा.</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3858860766373142691">नाव</translation>
 <translation id="3862598938296403232">वर्णन आवश्यक आहे</translation>
@@ -410,7 +410,7 @@
 <translation id="4835901797422965222">कोणतीही अ‍ॅक्टिव्ह नेटवर्क नाहीत</translation>
 <translation id="4839698083503556542">स्वतः चित्रपट तयार करा</translation>
 <translation id="484462545196658690">ऑटो</translation>
-<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> निवडले, <ph name="TOPIC_SOURCE" /> अल्बम निवडण्यासाठी एंटर दाबा</translation>
+<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> निवडले, <ph name="TOPIC_SOURCE" /> अल्बम निवडण्यासाठी एंटर प्रेस करा</translation>
 <translation id="484790837831576105">(Android) DNS रिझोल्यूशन</translation>
 <translation id="4848429997038228357">रन होत आहे</translation>
 <translation id="4854586501323951986">बिल्ट-इन टचस्क्रीन</translation>
@@ -686,7 +686,7 @@
 <translation id="7308203371573257315">Chromebook मदत फोरममध्ये तज्ञांना विचारा</translation>
 <translation id="7311368985037279727">कीबोर्डचा रंग</translation>
 <translation id="7319430975418800333">A3</translation>
-<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search मध्ये परिणाम पाहण्यासाठी सर्च आणि स्पेस दाबा.</translation>
+<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search मध्ये परिणाम पाहण्यासाठी सर्च आणि स्पेस प्रेस करा.</translation>
 <translation id="7343649194310845056">नेटवर्क डिव्हाइस</translation>
 <translation id="7359657277149375382">फाइल प्रकार</translation>
 <translation id="73631062356239394">निदानासंबंधित डेटा शेअर करा</translation>

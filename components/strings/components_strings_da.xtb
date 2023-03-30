@@ -192,7 +192,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="139305205187523129"><ph name="HOST_NAME" /> har ikke sendt nogen data.</translation>
 <translation id="1396259464226642517">Var resultatet ikke som forventet? <ph name="BEGIN_LINK" />Send feedback<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">Lysegrøn</translation>
-<translation id="1406500794671479665">Bekræfter...</translation>
+<translation id="1406500794671479665">Verificerer...</translation>
 <translation id="1407135791313364759">Åbn alle</translation>
 <translation id="1408787208417187241">Trehæftning øverst</translation>
 <translation id="1410941016594047814">Konvolut Invitation</translation>
@@ -547,7 +547,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="225943865679747347">Fejlkode: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
 <translation id="226481340855943334">Slægtsforskning og slægtshistorie</translation>
-<translation id="2267047181501709434">Bekræfter din identitet...</translation>
+<translation id="2267047181501709434">Verificerer din identitet...</translation>
 <translation id="2268743667444073169">Tv-sæbeoperaer</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2276057643614339130">Udskrivningsbase</translation>
@@ -713,7 +713,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="2704606927547763573">Kopieret</translation>
 <translation id="2705137772291741111">Den gemte (cachelagrede) kopi af dette website kunne ikke læses.</translation>
-<translation id="2709516037105925701">AutoFyld</translation>
+<translation id="2709516037105925701">Autofyld</translation>
 <translation id="2712173769900027643">Spørg om tilladelse</translation>
 <translation id="2713444072780614174">Hvid</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" /> – tryk på Tab-tasten efterfulgt af Enter for at administrere oplysninger om dine betalinger og betalingskort i Chrome-indstillingerne</translation>
@@ -1293,7 +1293,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="4203769790323223880">Adgang til kamera er ikke tilladt</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tjekke firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
 <translation id="4209092469652827314">Stor</translation>
-<translation id="4210602799576081649">Bekræftelseskoden udløb. Anmod om en ny kode.</translation>
+<translation id="4210602799576081649">Verificeringskoden udløb. Anmod om en ny kode.</translation>
 <translation id="421066178035138955">Anvende virtual reality-enheder og -data</translation>
 <translation id="4213305257324635756">Animationsfilm</translation>
 <translation id="4213500579045346575">Bodybuilding</translation>
@@ -1374,7 +1374,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="4349810866125026513">Upload alligevel</translation>
 <translation id="4350629523305688469">Multifunktionsbakke</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> vil gerne søge efter Bluetooth-enheder i nærheden. Følgende enheder blev fundet:</translation>
-<translation id="4351175281479794167">Angiv bekræftelseskode</translation>
+<translation id="4351175281479794167">Angiv verificeringskode</translation>
 <translation id="4356973930735388585">Hackere på dette website vil muligvis forsøge at installere skadelige programmer på din computer, som stjæler eller sletter dine oplysninger (f.eks. billeder, adgangskoder, beskeder og kreditkortoplysninger).</translation>
 <translation id="4358059973562876591">De skabeloner, du har angivet, anvendes muligvis ikke på grund af en fejl med politikken DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Administrer betalingsmetoder...</translation>
@@ -1575,7 +1575,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="4854362297993841467">Denne leveringsmetode er ikke tilgængelig. Prøv en anden metode.</translation>
 <translation id="4854853140771946034">Opret hurtigt en ny note i Google Keep</translation>
 <translation id="4858792381671956233">Du har spurgt dine forældre, om det er i orden at besøge dette website.</translation>
-<translation id="485902285759009870">Bekræfter koden...</translation>
+<translation id="485902285759009870">Verificerer koden...</translation>
 <translation id="486459320933704969">En forælder eller værge skal godkende, at du må besøge dette website</translation>
 <translation id="4866506163384898554">Tryk på |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| for at se din markør</translation>
 <translation id="4876188919622883022">Enkel visning</translation>
@@ -1949,7 +1949,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5781136890105823427">Eksperimentet er aktiveret</translation>
 <translation id="578305955206182703">Ravgul</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
-<translation id="5784606427469807560">Der opstod et problem under bekræftelsen af dit kort. Kontrollér, at du har forbindelse til internettet, og prøv igen.</translation>
+<translation id="5784606427469807560">Der opstod et problem under verificeringen af dit kort. Kontrollér, at du har forbindelse til internettet, og prøv igen.</translation>
 <translation id="5785756445106461925">Desuden indeholder denne side andre ressourcer, som ikke er sikre. Disse ressourcer kan ses af andre under overførslen og kan ændres af en hacker, så siden ser anderledes ud.</translation>
 <translation id="5786044859038896871">Skal dine kortoplysninger udfyldes?</translation>
 <translation id="578633867165174378">Chrome har fundet den adgangskode, du netop har brugt, i forbindelse med et brud på datasikkerheden. Vi anbefaler, at du ændrer adgangskoden med det samme.</translation>
@@ -2354,7 +2354,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6858034839887287663">A2x4</translation>
 <translation id="6864189428899665393">267 x 389 mm</translation>
 <translation id="686485648936420384">Forbrugerressourcer</translation>
-<translation id="6865412394715372076">Dette kort kan ikke bekræftes lige nu</translation>
+<translation id="6865412394715372076">Dette kort kan ikke verificeres lige nu</translation>
 <translation id="6869334554832814367">Privatlån</translation>
 <translation id="6873456682041376666">Øverste bakke</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
@@ -2450,7 +2450,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="7083258188081898530">Bakke 9</translation>
 <translation id="7086090958708083563">Brugeren anmodede om upload</translation>
 <translation id="7095139009144195559"><ph name="MANAGE_SITE_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, tryk på Tab-tasten efterfulgt af Enter for at administrere tilladelser og data, der gemmes på websites, i Chrome-indstillingerne</translation>
-<translation id="7096937462164235847">Dette websites identitet er ikke bekræftet.</translation>
+<translation id="7096937462164235847">Dette websites identitet er ikke verificeret.</translation>
 <translation id="7101893872976785596">Gyserfilm</translation>
 <translation id="7102079138917191645">Byggeri og vedligeholdelse</translation>
 <translation id="7102554173784142865">Spil Chrome Dino-spillet</translation>
@@ -2804,7 +2804,7 @@ Yderligere oplysninger:
 <translation id="793209273132572360">Vil du opdater adressen?</translation>
 <translation id="7932579305932748336">Bestrygning</translation>
 <translation id="79338296614623784">Angiv et gyldigt telefonnummer</translation>
-<translation id="7934414805353235750"><ph name="URL" /> vil afspille beskyttet indhold. Din enheds identitet bekræftes af Google.</translation>
+<translation id="7934414805353235750"><ph name="URL" /> vil afspille beskyttet indhold. Din enheds identitet verificeres af Google.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Udløber <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Serverens certifikatet er endnu ikke gyldigt.</translation>
@@ -3116,7 +3116,7 @@ Yderligere oplysninger:
 <translation id="8718314106902482036">Betalingen blev ikke fuldført</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, søgeforslag</translation>
 <translation id="8719528812645237045">Flere huller øverst</translation>
-<translation id="8723535127346307411">Angiv bekræftelseskode</translation>
+<translation id="8723535127346307411">Angiv verificeringskode</translation>
 <translation id="8724824364712796726">Konvolut B6</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8726549941689275341">Sidestørrelse:</translation>

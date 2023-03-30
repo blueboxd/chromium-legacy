@@ -654,7 +654,7 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="15916883652754430">Configurações de voz do sistema</translation>
 <translation id="1592074621872221573"><ph name="MANAGER" /> desativou a depuração do adb, o que redefinirá seu <ph name="DEVICE_TYPE" />. Faça backup dos seus arquivos antes de reiniciar.</translation>
 <translation id="1592126057537046434">Tradução das Respostas rápidas</translation>
-<translation id="1593327942193951498">{NUM_SITES,plural, =1{Permissões removidas de <ph name="BEGIN_BOLD" />um site<ph name="END_BOLD" /> que você não visita há algum tempo}one{Permissões removidas de <ph name="BEGIN_BOLD" />{NUM_SITES} site<ph name="END_BOLD" /> que você não visita há algum tempo}other{Permissões removidas de <ph name="BEGIN_BOLD" />{NUM_SITES} sites<ph name="END_BOLD" /> que você não visita há algum tempo}}</translation>
+<translation id="1593327942193951498">{NUM_SITES,plural, =1{Permissões removidas de <ph name="BEGIN_BOLD" />um site<ph name="END_BOLD" /> que você não acessa há algum tempo}one{Permissões removidas de <ph name="BEGIN_BOLD" />{NUM_SITES} site<ph name="END_BOLD" /> que você não acessa há algum tempo}other{Permissões removidas de <ph name="BEGIN_BOLD" />{NUM_SITES} sites<ph name="END_BOLD" /> que você não acessa há algum tempo}}</translation>
 <translation id="1593594475886691512">Formatando...</translation>
 <translation id="159359590073980872">Cache de imagem</translation>
 <translation id="1593926297800505364">Salvar forma de pagamento</translation>
@@ -756,7 +756,7 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1665328953287874063">Use uma senha ou um PIN para desbloquear o <ph name="DEVICE_TYPE" /></translation>
 <translation id="1666232093776384142">Desativar proteção de acesso a dados para periféricos</translation>
 <translation id="1667842670298352129">Ouvir um texto específico lido em voz alta. Primeiro, selecione o ícone do recurso "Selecionar para ouvir" na parte de baixo da tela e depois destaque o texto. Você também pode usar um atalho do teclado, destacando texto e depois pressionando as teclas Pesquisa + S.</translation>
-<translation id="1668435968811469751">Inscrever-se manualmente</translation>
+<translation id="1668435968811469751">Registrar manualmente</translation>
 <translation id="1668979692599483141">Saiba mais sobre sugestões</translation>
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quer ver a marca e o modelo da sua chave de segurança</translation>
@@ -3388,7 +3388,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3993887353483242788">Sincronize o <ph name="DEVICE_TYPE" /> para que suas preferências estejam em qualquer dispositivo em que você fizer login na Conta do Google. As preferências incluem apps, configurações, senhas de Wi-Fi, idiomas, planos de fundo, atalhos do teclado e muito mais.</translation>
 <translation id="3994318741694670028">Infelizmente, seu computador está configurado com um ID de hardware incorreto. Isso impede que o ChromeOS Flex seja atualizado com as correções de segurança mais recentes e, por isso, ele <ph name="BEGIN_BOLD" />pode ficar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="3994374631886003300">Desbloqueie seu smartphone e aproxime-o para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
-<translation id="3994708120330953242">Algumas das suas senhas foram encontradas em uma violação de dados. Para proteger suas contas, mude as senhas imediatamente.</translation>
+<translation id="3994708120330953242">Algumas das suas senhas foram encontradas em um vazamento de dados. Para proteger suas contas, mude as senhas imediatamente.</translation>
 <translation id="3994878504415702912">&amp;Zoom</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="3995963973192100066">Iniciar animação</translation>
